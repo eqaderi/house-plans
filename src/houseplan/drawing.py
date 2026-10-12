@@ -160,6 +160,16 @@ def _rooms(msp, design: Design, lg: LevelGeom, k: int):
         _text(msp, sub, (c.x, c.y - 3.6 * k), 1.6 * k, "A-AREA-IDEN")
 
 
+def _balconies(msp, design: Design, lg: LevelGeom, k: int):
+    for b in (b for b in design.balconies if b.level == lg.level_id):
+        poly = lg.balconies[b.id]
+        _poly(msp, poly.exterior.coords, "A-WALL-HEAD")
+        c = poly.representative_point()
+        minx, miny, maxx, maxy = poly.bounds
+        _text(msp, b.name.upper(), (c.x, c.y + 2.0 * k), 2.5 * k, "A-AREA-IDEN")
+        _text(msp, f"{poly.area / 1e6:.2f} m²", (c.x, c.y - 2.0 * k), 2.0 * k, "A-AREA-IDEN")
+
+
 def _chains(msp, design: Design, lg: LevelGeom, k: int):
     """Three exterior dimension chains per side, from the wall outward:
     openings and corners, wall faces, overall."""
@@ -169,6 +179,9 @@ def _chains(msp, design: Design, lg: LevelGeom, k: int):
     fp = raw.simplify(0)
     minx, miny, maxx, maxy = fp.bounds
     sides = {"S": (0, -1, miny), "N": (0, 1, maxy), "W": (-1, 0, minx), "E": (1, 0, maxx)}
+    # chains measure the walls but stand clear of any balcony on that side
+    bminx, bminy, bmaxx, bmaxy = unary_union([fp, *lg.balconies.values()]).bounds
+    clear = {(0, -1): bminy, (0, 1): bmaxy, (-1, 0): bminx, (1, 0): bmaxx}
     for dx, dy, edge in sides.values():
         horizontal = dy != 0
 
@@ -199,7 +212,7 @@ def _chains(msp, design: Design, lg: LevelGeom, k: int):
         rows = [sorted(openings), sorted(faces), [min(corners), max(corners)]]
         rows = [r for i, r in enumerate(rows) if len(r) >= 2 and r not in rows[:i]]
         for ring, values in enumerate(rows, start=1):
-            off = edge + (dx + dy) * (ring * 7.0 * k + 3.0 * k)
+            off = clear[(dx, dy)] + (dx + dy) * (ring * 7.0 * k + 3.0 * k)
             if horizontal:
                 points, base, angle = [(v, edge) for v in values], (values[0], off), 0
             else:
@@ -370,6 +383,7 @@ def plan_dxf(design: Design, lg: LevelGeom, scale: int = 100, status: str = "unc
     _openings(msp, lg)
     _stairs(msp, design, lg, scale)
     _rooms(msp, design, lg, scale)
+    _balconies(msp, design, lg, scale)
     _chains(msp, design, lg, scale)
     bounds = lg.footprint.bounds if not lg.footprint.is_empty else (0, 0, 1, 1)
     if design.site is not None:

@@ -128,6 +128,7 @@ class LevelGeom:
     openings: dict[str, OpeningGeom]
     rooms: dict[str, RoomGeom]
     stairs: dict[str, Polygon]
+    balconies: dict[str, Polygon] = field(default_factory=dict)  # outside the footprint, never part of it
 
 
 def build_walls(walls: list[Wall]) -> dict[str, WallGeom]:
@@ -203,7 +204,8 @@ def build_level(design: Design, level_id: str) -> LevelGeom:
             rooms[r.id] = RoomGeom(r, None, "seed is not in any space enclosed by walls")
 
     stairs = {s.id: stair_footprint(s) for s in design.stairs if s.level == level_id}
-    return LevelGeom(level_id, wgs, union, enclosed, footprint, openings, rooms, stairs)
+    balconies = {b.id: snap(Polygon(b.outline)) for b in design.balconies if b.level == level_id}
+    return LevelGeom(level_id, wgs, union, enclosed, footprint, openings, rooms, stairs, balconies)
 
 
 def build(design: Design) -> dict[str, LevelGeom]:

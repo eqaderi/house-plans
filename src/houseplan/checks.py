@@ -132,13 +132,17 @@ def _room_at(lg: LevelGeom, p: Point) -> str | None:
             return rid
     if lg.footprint.contains(p):
         return "?"
+    for bid, b in lg.balconies.items():
+        if b.contains(p):
+            return bid
     return "outside"
 
 
 def access_graph(lg: LevelGeom) -> dict[str, dict[str, list[Point]]]:
-    """Rooms joined by doors and openings: room -> neighbour -> door centres.
-    The neighbour is "outside" for an exterior door and "?" for unnamed space."""
-    graph: dict[str, dict[str, list[Point]]] = {rid: {} for rid in lg.rooms}
+    """Rooms and balconies joined by doors and openings: room -> neighbour ->
+    door centres. The neighbour is "outside" for an exterior door and "?" for
+    unnamed space."""
+    graph: dict[str, dict[str, list[Point]]] = {rid: {} for rid in (*lg.rooms, *lg.balconies)}
     for og in lg.openings.values():
         if og.opening.kind is OpeningKind.window:
             continue
@@ -373,8 +377,30 @@ def check_daylight_presence(design: Design, geo: dict[str, LevelGeom]) -> list[F
 
 
 def built_area(design: Design, geo: dict[str, LevelGeom]):
-    """Everything built, on any level, seen from above."""
-    return unary_union([lg.footprint for lg in geo.values() if not lg.footprint.is_empty])
+    """Everything built, on any level, seen from above, balconies included."""
+    return unary_union([g for lg in geo.values() for g in (lg.footprint, *lg.balconies.values()) if not g.is_empty])
+
+
+def check_balconies(design: Design, geo: dict[str, LevelGeom]) -> list[Finding]:
+    out: list[Finding] = []
+    for lg in geo.values():
+        graph = access_graph(lg)
+        for bid, b in lg.balconies.items():
+            if not b.is_valid or b.area <= AREA_EPS:
+                out.append(_err("BALCONY_INVALID", bid, "outline is not a valid polygon with area"))
+                continue
+            inside = b.intersection(lg.footprint).area
+            if inside > AREA_EPS:
+                out.append(_err("BALCONY_OVERLAPS_BUILDING", bid, f"{inside / 1e6:.3f} m² lies inside the walls; a balcony is outside them"))
+            elif b.distance(lg.footprint) > TOUCH:
+                out.append(_err("BALCONY_DETACHED", bid, f"{b.distance(lg.footprint):.0f} mm from the outer wall face of {lg.level_id}"))
+            for other, ob in lg.balconies.items():
+                if other > bid and b.intersection(ob).area > AREA_EPS:
+                    out.append(_err("BALCONY_OVERLAP", f"{bid}/{other}", "balconies overlap; make them one outline"))
+            if not [n for n in graph.get(bid, {}) if n in lg.rooms]:
+                out.append(_warn("BALCONY_NO_DOOR", bid, "no door or opening leads onto it from a room"))
+            out.append(Finding("BALCONY_GUARD_UNCHECKED", "info", bid, "guard (railing) height not checked: no cited value in rules/ yet"))
+    return out
 
 
 def check_site(design: Design, geo: dict[str, LevelGeom]) -> list[Finding]:
@@ -410,6 +436,7 @@ ALL = (
     check_stairs,
     check_stacking,
     check_daylight_presence,
+    check_balconies,
     check_site,
 )
 

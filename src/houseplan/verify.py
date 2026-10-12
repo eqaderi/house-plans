@@ -75,7 +75,7 @@ def verify_text(path: str, lg: LevelGeom, scale: int) -> list[Finding]:
             text = v.plain_text() if v.dxftype() == "MTEXT" else v.dxf.text
             if any(j != idx and tb.intersects(ln) for j, ln in lines):
                 out.append(Finding("DIM_TEXT_CROSSED", "error", repr(text), "a line of another dimension runs through this dimension text"))
-    rooms = unary_union([rg.outline.buffer(-0.5 * scale) for rg in lg.rooms.values() if rg.outline is not None])
+    rooms = unary_union([rg.outline.buffer(-0.5 * scale) for rg in lg.rooms.values() if rg.outline is not None] + [b.buffer(-0.5 * scale) for b in lg.balconies.values()])
     walls = lg.walls_union
     for layer, text, b in texts:
         if layer == "A-AREA-IDEN" and not rooms.contains(b):
@@ -133,6 +133,9 @@ def verify_ifc(path: str, design: Design, geo: dict[str, LevelGeom]) -> list[Fin
             net = qto.get("NetFloorArea")
             if net is None or abs(net - want / 1e6) > 1e-4:
                 out.append(Finding("IFC_SPACE_QTO", "error", space.Name, f"NetFloorArea {net} vs spec {want / 1e6:.4f} m²"))
+    slabs = sorted(s.Name for s in model.by_type("IfcSlab"))
+    if slabs != sorted(b.id for b in design.balconies):
+        out.append(Finding("IFC_BALCONIES", "error", path, f"balcony slabs {slabs} vs spec {sorted(b.id for b in design.balconies)}"))
     n_open = len(model.by_type("IfcOpeningElement"))
     if n_open != len(design.openings):
         out.append(Finding("IFC_OPENINGS", "error", path, f"{n_open} openings in IFC, {len(design.openings)} in spec"))

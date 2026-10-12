@@ -77,6 +77,15 @@ stairs:
 ```
 
 ```yaml
+balconies:
+  - { id: B1, level: L1, name: Balcony, outline: [[6000, -1650], [11500, -1650], [11500, -150], [6000, -150]] }
+  # A slab outside the walls, given by its outline (it has no walls to be
+  # found from). It must touch the level's outer wall face; a door or opening
+  # in that wall leads onto it. Not part of the footprint (windows behind it
+  # still face outward); part of the built area for the site check.
+```
+
+```yaml
 site: ../derived/site/d7.yaml   # or the block inline; a path is relative to the spec
 # The file is written by scripts/site_frame.py --write; never type it by hand:
 #   source, frame {crs, origin_e, origin_n, x_azimuth_deg}  (survey E/N live only here)
@@ -127,6 +136,9 @@ sheets show the boundary and no-build zones.
 | LIGHT_ONE_SIDE / LIVING_NOT_SOUTH | info | daylight from one side only / no south-facing window in a living room |
 | SITE_OUTSIDE_BOUNDARY / SITE_IN_NO_BUILD | error | any level's outline leaves the plot or enters a no-build zone (a wall face on the line is allowed, 1 mm tolerance) |
 | SITE_NOT_SET | info | no site block: boundary not checked |
+| BALCONY_OVERLAPS_BUILDING / BALCONY_DETACHED / BALCONY_OVERLAP / BALCONY_INVALID | error | a balcony inside the walls, not touching them, doubled, or degenerate |
+| BALCONY_NO_DOOR | warning | no door or opening leads onto the balcony |
+| BALCONY_GUARD_UNCHECKED | info | railing height not checked: no cited value yet |
 
 `bin/hp build` (final stage) adds the read-back: DXF units and dimension
 chains (DXF_CHAIN_OPEN), text overlap and crowding below 1 mm on paper
@@ -140,7 +152,7 @@ Then `rules/<ruleset>.yaml` runs through `src/houseplan/rules.py`: a failed
 
 ## Not modelled yet
 
-Curved walls, columns, sloped and stepped slabs, terraces and balconies
-outside the enclosure, split levels, winder and L/U stairs, roofs, sections and
+Curved walls, columns, sloped and stepped slabs, balcony depth on the
+dimension chains (the area is labelled; chains measure the walls), split levels, winder and L/U stairs, roofs, sections and
 elevations. When a design needs one of them, extend the kit first: schema
 field, geometry, a check, a drawing routine, a test that fails without it.

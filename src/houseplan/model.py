@@ -176,6 +176,18 @@ class Stair(Strict):
     going: Mm = Field(gt=0, description="Horizontal tread depth, nosing to nosing.")
 
 
+class Balcony(Strict):
+    """A slab outside the walls, given by its outline: it has no walls to be
+    found from. It must touch its level's outer wall face and is reached by a
+    door or opening in that wall."""
+
+    id: str
+    level: str
+    name: str = "Balcony"
+    name_fa: str | None = None
+    outline: list[Point] = Field(min_length=3)
+
+
 class SiteFrame(Strict):
     """Where the spec frame sits on the survey (houseplan.site.SurveyFrame):
     survey E/N in metres of spec (0, 0), and the grid azimuth of spec +x.
@@ -233,14 +245,15 @@ class Design(Strict):
     openings: list[Opening] = []
     rooms: list[Room] = []
     stairs: list[Stair] = []
+    balconies: list[Balcony] = []
     program: Program = Program()
     site: Site | None = None
 
     @model_validator(mode="after")
     def _references(self) -> Design:
-        ids: list[str] = [x.id for group in (self.levels, self.walls, self.openings, self.rooms, self.stairs) for x in group]
+        ids: list[str] = [x.id for group in (self.levels, self.walls, self.openings, self.rooms, self.stairs, self.balconies) for x in group]
         dupes = sorted({i for i in ids if ids.count(i) > 1})
-        points = [p for w in self.walls for p in (w.start, w.end)] + [r.seed for r in self.rooms] + [s.origin for s in self.stairs]
+        points = [p for w in self.walls for p in (w.start, w.end)] + [r.seed for r in self.rooms] + [s.origin for s in self.stairs] + [p for b in self.balconies for p in b.outline]
         if self.site is not None:
             points += self.site.points()
         far = [p for p in points if max(abs(p[0]), abs(p[1])) > MAX_COORD]
@@ -250,7 +263,7 @@ class Design(Strict):
             raise ValueError(f"duplicate ids: {dupes}")
         levels = {l.id for l in self.levels}
         walls = {w.id for w in self.walls}
-        for item in (*self.walls, *self.rooms, *self.stairs):
+        for item in (*self.walls, *self.rooms, *self.stairs, *self.balconies):
             if item.level not in levels:
                 raise ValueError(f"{item.id}: unknown level {item.level!r}")
         for s in self.stairs:

@@ -125,6 +125,16 @@ def build_ifc(design: Design, geo: dict[str, LevelGeom]):
             })
             ifcopenshell.api.aggregate.assign_object(model, relating_object=storey, products=[space])
 
+        for b in (b for b in design.balconies if b.level == level.id):
+            slab = ifcopenshell.api.root.create_entity(model, ifc_class="IfcSlab", name=b.id, predefined_type="FLOOR")
+            _placement(model, slab, z=level.ffl - level.slab)
+            ifcopenshell.api.geometry.assign_representation(model, product=slab, representation=_extrusion(model, body, lg.balconies[b.id].exterior.coords, level.slab))
+            ifcopenshell.api.pset.edit_pset(model, pset=ifcopenshell.api.pset.add_pset(model, product=slab, name="Pset_SlabCommon"), properties={
+                "IsExternal": True,
+                "Reference": b.id,
+            })
+            contained.append(slab)
+
         if contained:
             ifcopenshell.api.spatial.assign_container(model, relating_structure=storey, products=contained)
     return model
