@@ -9,16 +9,9 @@
   - Owner's brief entered: road, alley strip, parking, lift.
   - Datum and origin decided (`docs/decisions.md`).
 - **Next (in order):**
-  1. **Spec frame.** Walls are axis-aligned and stairs take only ±x/±y, so
-     the spec must be rotated:
-     - x along the south boundary (V3 → V2, grid 67.19°), y square to it,
-       origin at V3.
-     - Extend `scripts/measure_site.py` (or add a sibling) to print the plot,
-       the road edge, the 1 m strip line and every `height-points` point in
-       spec mm, plus the `north_angle_deg` value.
-     - Then add a dated decisions entry superseding "x east, y north (grid)".
-     - Rotation is already handled: `family.py` adds `north_angle_deg` to
-       window bearings and `drawing.py` rotates the north arrow.
+  1. ~~**Spec frame.**~~ Done 2026-10-13: origin V3, x along the south
+     boundary, `north_angle_deg: 337.97` (`scripts/site_frame.py`,
+     `houseplan.site`, decisions entry "spec frame turned to the plot").
   2. **Phase 2 kit extension** (test first):
      - a `site` block in the spec: the boundary polygon in mm and no-build
        strips;

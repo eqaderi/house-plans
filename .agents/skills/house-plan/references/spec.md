@@ -6,9 +6,12 @@ keys rejected). `design/examples/bungalow.yaml` is a complete, passing example.
 ## Conventions
 
 - **Units:** integer millimetres for every length. Angles in degrees.
-- **Axes:** x east, y north, origin at a chosen grid crossing near the
-  building's south-west. Keep coordinates small; survey eastings/northings
-  never go into wall points.
+- **Axes:** a right-handed plan frame, origin at a chosen point near the
+  building's corner. On a site, x and y follow the plot (here: x along the
+  south boundary, see `docs/decisions.md`), and `north_angle_deg` is the true
+  bearing of +y. `houseplan.site.SurveyFrame` converts survey eastings and
+  northings to spec millimetres and back. Keep coordinates small; survey
+  eastings and northings never go into wall points.
 - **Heights:** relative to the datum ±0.00 (finished floor of the entrance
   level). `project.datum.survey_z_mm` ties it to the survey; leave it `null`
   until the survey gives it.
@@ -26,7 +29,7 @@ project:
   ruleset: iran               # rules/iran.yaml
   datum: { label: "±0.00", survey_z_mm: null, source: null }
   allowed_wall_thicknesses: [100, 150, 200, 300, 350]
-  north_angle_deg: 0          # true north, clockwise from +y
+  north_angle_deg: 0          # true bearing of +y, clockwise from true north
 
 levels:
   - { id: GF, name: Ground floor, ffl: 0, floor_to_floor: 3200, slab: 350 }

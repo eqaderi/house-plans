@@ -133,3 +133,27 @@ warnings it explains.
   No toilet–qibla check is added to the kit. Any toilet on a wall in the
   two agreed directions is acceptable.
 - **Who:** owner.
+
+## 2026-10-13: spec frame turned to the plot (supersedes "x east, y north (grid)")
+
+- **What:** the spec frame for this site:
+  - origin at plot corner V3 (SW, road and alley), E 623809.167,
+    N 3870456.033 (unchanged);
+  - +x along the south boundary towards V2, grid azimuth 67.1878°;
+  - +y square to it, into the plot (grid 337.19°);
+  - `project.north_angle_deg: 337.97`, the true bearing of +y.
+
+  In this frame the plot is V3 (0, 0), V2 (32570, 0), V1 (42651, 18422),
+  V0 (10081, 18422), and the 1 m alley strip is the band 0 ≤ y ≤ 1000.
+  Every number is printed by `scripts/site_frame.py`; the transform is
+  `houseplan.site.SurveyFrame`, tested in `tests/test_site.py` against
+  `docs/site.md`.
+- **Why:** walls are axis-aligned and stairs run only along ±x/±y. The
+  owner wants the house parallel to the north and south boundaries
+  (decision "house orientation"), so the frame must follow them. The old
+  entry's origin and height reference stand; only the axes change.
+- **Note:** the boundary rounded to whole millimetres encloses 600.005 m²
+  (survey 600.004 m²). `north_angle_deg` means the true bearing of +y, as
+  `family.py` and `drawing.py` already used it; the field's description said
+  otherwise and was corrected.
+- **Who:** agent, carrying out the owner's orientation decision.

@@ -1,8 +1,9 @@
 """The design spec: the single source of truth for a house.
 
 Every length is an integer number of millimetres. Coordinates are plan
-coordinates in mm, x to the east and y to the north, relative to the project
-origin. Heights are relative to the project datum (±0.00 = finished floor of
+coordinates in mm in the project's own frame, relative to the project origin:
+x and y need not point east and north (a site frame is usually turned to the
+plot); `project.north_angle_deg` says where +y points. Heights are relative to the project datum (±0.00 = finished floor of
 the entrance level) unless a field says otherwise.
 """
 
@@ -40,7 +41,7 @@ class Project(Strict):
     allowed_wall_thicknesses: list[Mm] = Field(
         description="Every wall must use one of these thicknesses (finished, mm)."
     )
-    north_angle_deg: float = Field(0.0, description="Angle of true north from +y, clockwise.")
+    north_angle_deg: float = Field(0.0, description="True bearing of +y (clockwise from true north); 0 when +y is true north.")
     stage: Literal["sketch", "final"] = Field(
         "sketch",
         description="sketch: options shown to the owner, sheets only. final: the agreed plan, full documentation.",

@@ -118,7 +118,8 @@ architecture; the IFC is generated from the spec.
 
 `references/architect.md` gives the reasoning; these are the reflexes.
 
-- **Millimetres, integers, one origin.** x east, y north, z up from ±0.00.
+- **Millimetres, integers, one origin.** A plan frame turned to the plot
+  (`north_angle_deg` = true bearing of +y), z up from ±0.00.
   Survey coordinates go into the datum, never into wall points.
 - **Walls by their reference line and justification.** Exterior walls are
   usually justified to their outer face so the footprint matches the survey
