@@ -66,6 +66,8 @@ program:                       # the brief as checkable requirements (owner's, n
   connect: [ [R5, R6] ]        # rooms that must share a door or opening
   private_uses: [bedroom, bath, wc]   # no route may pass through these
   area_tolerance: 0.10         # vs each room's target_area
+  vehicles:                    # cars parked side by side in the largest garage (rule garage_fits_vehicles)
+    - { name: ..., length: 4985, width: 1980, source: "maker's page, market, model year" }
 # rooms may also carry target_area (m², from the brief) and via (the room an
 # en-suite bath or walk-in closet is reached through on purpose)
 

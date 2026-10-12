@@ -151,6 +151,16 @@ class Requirement(Strict):
     count: int = Field(ge=1)
 
 
+class Vehicle(Strict):
+    """A car the household parks under cover, sized from the maker's data."""
+
+    name: str
+    length: Mm = Field(gt=0)
+    width: Mm = Field(gt=0, description="Body width without mirrors.")
+    height: Mm | None = Field(None, gt=0)
+    source: str = Field(description="Manufacturer page, market and model year.")
+
+
 class Program(Strict):
     """What the brief asks for, as checkable requirements."""
 
@@ -161,6 +171,7 @@ class Program(Strict):
         description="Rooms no route may pass through, unless a room names it in `via`.",
     )
     area_tolerance: float = Field(0.10, ge=0, description="Allowed relative deviation from target_area.")
+    vehicles: list[Vehicle] = Field([], description="Cars to park in the garage, side by side.")
 
 
 class Stair(Strict):

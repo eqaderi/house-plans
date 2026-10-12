@@ -216,6 +216,22 @@ def lift_entrance_min_width(design, geo, rule):
                 yield rid, max(widths) >= rule.value, f"landing entrance {max(widths)} mm (min {rule.value:.0f} mm)"
 
 
+def garage_fits_vehicles(design, geo, rule):
+    """All of program.vehicles side by side in the largest garage: across,
+    the car widths plus `value` mm beside every car and wall; deep, the
+    longest car plus params.end mm. Measured on the bounding rectangle."""
+    cars = design.program.vehicles
+    garages = [rg for _, rg in _rooms(design, geo, rule) if rg.room.use.value == "garage"]
+    if not cars or not garages:
+        return
+    g = max(garages, key=lambda rg: rg.area_mm2)
+    short, long = sides_of(g.outline)
+    across = sum(c.width for c in cars) + (len(cars) + 1) * rule.value
+    deep = max(c.length for c in cars) + rule.params["end"]
+    ok = (across <= long and deep <= short) or (across <= short and deep <= long)
+    yield g.room.id, ok, f"{len(cars)} cars side by side need {across:.0f} x {deep:.0f} mm; garage is {short:.0f} x {long:.0f} mm"
+
+
 EVALUATORS: dict[str, Callable] = {
     f.__name__: f
     for f in (
@@ -236,6 +252,7 @@ EVALUATORS: dict[str, Callable] = {
         lift_car_min,
         lift_shaft_min,
         lift_entrance_min_width,
+        garage_fits_vehicles,
     )
 }
 

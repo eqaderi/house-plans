@@ -189,3 +189,46 @@ def test_lift_rules(tmp_path, monkeypatch):
     assert ("SHAFT", "error", "LF") in found  # 2400 wide < 2500
     entry = {f[2] for f in found if f[0] == "ENTRY"}
     assert entry == {"R3"}  # D4 is 800 wide; U2's opening UO is 900
+
+
+# --- cars in the garage ---------------------------------------------------------
+
+
+def garage_spec(monkeypatch, tmp_path, side=600, end=500) -> dict:
+    """Living room R5 (6.15 x 5.28 m net) used as a garage for two cars."""
+    (tmp_path / "g.yaml").write_text(yaml.safe_dump({
+        "ruleset": "g", "jurisdiction": "IR", "title": "test",
+        "rules": [{"id": "GAR", "check": "garage_fits_vehicles", "title": "cars fit", "value": side, "params": {"end": end}, "source": "test", "status": "verified"}],
+    }))
+    monkeypatch.setattr(rules, "RULES_DIR", tmp_path)
+    s = yaml.safe_load(EXAMPLE.read_text(encoding="utf-8"))
+    s["project"]["ruleset"] = "g"
+    next(r for r in s["rooms"] if r["id"] == "R5")["use"] = "garage"
+    s.setdefault("program", {})["vehicles"] = [
+        {"name": "car A", "length": 4900, "width": 1900, "source": "test"},
+        {"name": "car B", "length": 4400, "width": 1700, "source": "test"},
+    ]
+    return s
+
+
+def gar(spec):
+    design, geo, _ = analyse(spec)
+    return [f for f in rules.run_rules(design, geo) if f.code == "GAR"]
+
+
+def test_cars_fit_side_by_side(monkeypatch, tmp_path):
+    # across 6150: 1900 + 1700 + 3 x 600 = 5400; deep 5275 >= 4900 + 500
+    assert gar(garage_spec(monkeypatch, tmp_path, side=600, end=300)) == []
+
+
+def test_cars_do_not_fit(monkeypatch, tmp_path):
+    found = gar(garage_spec(monkeypatch, tmp_path, side=900, end=300))  # 1900 + 1700 + 2700 = 6300 > 6150
+    assert len(found) == 1 and "6300" in found[0].message
+
+
+def test_no_garage_for_the_cars_is_not_passed(monkeypatch, tmp_path):
+    s = garage_spec(monkeypatch, tmp_path)
+    next(r for r in s["rooms"] if r["id"] == "R5")["use"] = "living"
+    design, geo, _ = analyse(s)
+    idle = [f for f in rules.run_rules(design, geo) if f.code == "RULES_NOT_APPLICABLE"]
+    assert idle and "GAR" in idle[0].message
