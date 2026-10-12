@@ -421,3 +421,16 @@ def test_survey_report(spec, tmp_path, capsys):
     survey(str(path))
     text = capsys.readouterr().out
     assert "$INSUNITS=4 (millimetres)" in text and "A-WALL" in text
+
+
+def test_window_wall_ratio(spec, tmp_path, monkeypatch):
+    # bungalow: windows 11.55 m² over 42 m of exterior wall axis x 2.85 m = 9.6 %
+    (tmp_path / "w.yaml").write_text(yaml.safe_dump({
+        "ruleset": "w", "jurisdiction": "IR", "title": "test",
+        "rules": [{"id": "W", "check": "window_wall_ratio_max", "title": "wwr", "value": 0.09, "source": "test", "status": "verified"}],
+    }))
+    monkeypatch.setattr(rules, "RULES_DIR", tmp_path)
+    spec["project"]["ruleset"] = "w"
+    design, geo, _ = analyse(spec)
+    found = [f for f in rules.run_rules(design, geo) if f.code == "W"]
+    assert len(found) == 1 and "window-to-wall ratio 10%" in found[0].message

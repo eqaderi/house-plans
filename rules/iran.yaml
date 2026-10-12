@@ -189,3 +189,10 @@ rules:
     url: https://maktabsaze.org/p-irregularity
     status: unverified
     note: An irregular plan is allowed but changes the structural analysis; the structural engineer decides.
+
+  - id: IR19-WWR
+    check: window_wall_ratio_max
+    title: Window-to-wall ratio of the envelope (Mabhas 19 checklist)
+    value: 0.50
+    source: "Ministry circular cited in Mabhas 19 (5th ed., 1404) checklist guidance (secondary)"
+    status: unverified

@@ -22,6 +22,11 @@ blank if unsure, and it becomes an open question.
 - Lift now or space for one later:
 - Outdoor: courtyard, garden, terraces, balconies, pool:
 
+## Use and energy
+- Permanent home or second home (affects the gas tariff and winter use):
+- Heating preference (gas, heat pump, hybrid) and interest in solar PV / battery:
+- Water: storage tank size wanted, rainwater or greywater reuse:
+
 ## Priorities and limits
 - Target total floor area (زیربنا) or budget:
 - What matters most (rank): sun, view, privacy, garden, low cost, low energy, accessibility:

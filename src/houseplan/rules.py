@@ -178,6 +178,16 @@ def reentrant_corner_ratio_max(design, geo, rule):
         yield lg.level_id, worst <= rule.value, f"deepest notch is {worst:.0%} of the plan in both directions (max {rule.value:.0%})"
 
 
+def window_wall_ratio_max(design, geo, rule):
+    """Window area over the area of exterior wall faces, per level."""
+    for lg in geo.values():
+        clear = design.level(lg.level_id).clear_height
+        walls = sum(g.frame.length for g in lg.walls.values() if g.wall.kind.value == "exterior") * clear
+        glass = sum(og.opening.width * og.opening.height for og in lg.openings.values() if og.opening.kind is OpeningKind.window and og.wall.kind.value == "exterior")
+        if walls:
+            yield lg.level_id, glass / walls <= rule.value, f"window-to-wall ratio {glass / walls:.0%} (max {rule.value:.0%}), measured on wall axes and clear height"
+
+
 EVALUATORS: dict[str, Callable] = {
     f.__name__: f
     for f in (
@@ -194,6 +204,7 @@ EVALUATORS: dict[str, Callable] = {
         entrance_door_min_width,
         main_room_min_area,
         reentrant_corner_ratio_max,
+        window_wall_ratio_max,
     )
 }
 
