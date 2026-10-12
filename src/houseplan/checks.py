@@ -10,7 +10,7 @@ from collections import deque
 from dataclasses import asdict, dataclass
 from typing import Literal
 
-from shapely.geometry import Point
+from shapely.geometry import Point, Polygon
 from shapely.ops import unary_union
 
 from .geometry import TOUCH, LevelGeom, raw_body, side_probe, sides_of
@@ -21,6 +21,7 @@ MIN_JAMB = 100  # mm; nearest an opening may come to a wall junction before warn
 SLIVER = 300  # mm; a room with no part this wide is a drafting accident
 MAX_ASPECT = 3.0  # room proportion beyond which furnishing suffers (GFLAN, arXiv 2512.16275)
 CIRCULATION_DETOUR = 1.5  # walking route / straight line from the entrance (GFLAN)
+SITE_TOL = 1.0  # mm; site points are rounded to whole mm when converted from the survey
 
 
 @dataclass(frozen=True)
@@ -371,6 +372,32 @@ def check_daylight_presence(design: Design, geo: dict[str, LevelGeom]) -> list[F
     return out
 
 
+def built_area(design: Design, geo: dict[str, LevelGeom]):
+    """Everything built, on any level, seen from above."""
+    return unary_union([lg.footprint for lg in geo.values() if not lg.footprint.is_empty])
+
+
+def check_site(design: Design, geo: dict[str, LevelGeom]) -> list[Finding]:
+    """The building stays inside the plot and out of its no-build zones.
+    A wall face on the boundary is allowed (the brief allows building on the
+    road line), within SITE_TOL."""
+    site = design.site
+    if site is None:
+        return [Finding("SITE_NOT_SET", "info", "site", "no site block: plot boundary and no-build zones not checked")]
+    out: list[Finding] = []
+    built = built_area(design, geo)
+    if built.is_empty:
+        return out
+    outside = built.difference(Polygon(site.boundary).buffer(SITE_TOL)).area
+    if outside > AREA_EPS:
+        out.append(_err("SITE_OUTSIDE_BOUNDARY", "site", f"{outside / 1e6:.3f} m² of the building lies outside the plot boundary"))
+    for zone in site.no_build:
+        inside = built.intersection(Polygon(zone.outline).buffer(-SITE_TOL)).area
+        if inside > AREA_EPS:
+            out.append(_err("SITE_IN_NO_BUILD", zone.name, f"{inside / 1e6:.3f} m² of the building lies in the no-build zone"))
+    return out
+
+
 ALL = (
     check_walls,
     check_openings,
@@ -383,6 +410,7 @@ ALL = (
     check_stairs,
     check_stacking,
     check_daylight_presence,
+    check_site,
 )
 
 

@@ -76,6 +76,20 @@ stairs:
   # rise = (to_level.ffl - level.ffl) / risers, computed by the code.
 ```
 
+```yaml
+site: ../derived/site/d7.yaml   # or the block inline; a path is relative to the spec
+# The file is written by scripts/site_frame.py --write; never type it by hand:
+#   source, frame {crs, origin_e, origin_n, x_azimuth_deg}  (survey E/N live only here)
+#   boundary: [[x, y], ...]                     plot, spec mm
+#   no_build: [{name, outline: [[x, y], ...]}]  nothing built here at any height
+#   roads:    [{name, points: [[x, y], ...]}]
+#   spot_heights: [{name, at: [x, y], survey_z_mm}]   survey Z, not relative to ±0.00
+```
+
+With a site, `hp sketch` adds `sketch-site.png` (1:200: boundary with side
+lengths, roads, no-build zones, spot heights, each level's outline) and plan
+sheets show the boundary and no-build zones.
+
 ## What the checks do
 
 `bin/hp check` runs, in `src/houseplan/checks.py`:
@@ -107,6 +121,8 @@ stairs:
 | BEDROOM_OFF_SOCIAL | warning | a bedroom opens straight onto living, reception, dining or kitchen |
 | BEDROOM_NEXT_TO_NOISE | info | a bedroom shares a wall with a noisy room |
 | LIGHT_ONE_SIDE / LIVING_NOT_SOUTH | info | daylight from one side only / no south-facing window in a living room |
+| SITE_OUTSIDE_BOUNDARY / SITE_IN_NO_BUILD | error | any level's outline leaves the plot or enters a no-build zone (a wall face on the line is allowed, 1 mm tolerance) |
+| SITE_NOT_SET | info | no site block: boundary not checked |
 
 `bin/hp build` (final stage) adds the read-back: DXF units and dimension
 chains (DXF_CHAIN_OPEN), text overlap and crowding below 1 mm on paper

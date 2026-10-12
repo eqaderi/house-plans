@@ -12,12 +12,11 @@
   1. ~~**Spec frame.**~~ Done 2026-10-13: origin V3, x along the south
      boundary, `north_angle_deg: 337.97` (`scripts/site_frame.py`,
      `houseplan.site`, decisions entry "spec frame turned to the plot").
-  2. **Phase 2 kit extension** (test first):
-     - a `site` block in the spec: the boundary polygon in mm and no-build
-       strips;
-     - a check that the footprint stays inside the boundary minus the strips;
-     - the boundary, road edge, strip and spot heights drawn on the sheet,
-       which also gives the missing site sheet.
+  2. ~~**Phase 2 kit extension.**~~ Done 2026-10-13: `site:` block
+     (`derived/site/d7.yaml`, written by `scripts/site_frame.py --write`),
+     checks SITE_OUTSIDE_BOUNDARY / SITE_IN_NO_BUILD, site sheet
+     (`sketch-site.png`), boundary and strip on plan sheets. Options use
+     `site: ../derived/site/d7.yaml`.
   3. **Terrain:**
      - a linear TIN from `height-points.dxf` only, no smoothing, labelled
        "interpolated" with its method and source points;

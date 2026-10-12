@@ -10,6 +10,7 @@ the entrance level) unless a field says otherwise.
 from __future__ import annotations
 
 from enum import Enum
+from pathlib import Path
 from typing import Literal
 
 import yaml
@@ -175,6 +176,53 @@ class Stair(Strict):
     going: Mm = Field(gt=0, description="Horizontal tread depth, nosing to nosing.")
 
 
+class SiteFrame(Strict):
+    """Where the spec frame sits on the survey (houseplan.site.SurveyFrame):
+    survey E/N in metres of spec (0, 0), and the grid azimuth of spec +x.
+    Survey coordinates live here and nowhere else."""
+
+    crs: str | None = None
+    origin_e: float
+    origin_n: float
+    x_azimuth_deg: float
+
+
+class NoBuild(Strict):
+    """Part of the plot where nothing may be built, at any height."""
+
+    name: str
+    outline: list[Point] = Field(min_length=3)
+
+
+class SiteLine(Strict):
+    name: str
+    points: list[Point] = Field(min_length=2)
+
+
+class SpotHeight(Strict):
+    """A surveyed ground height. survey_z_mm is the survey's own Z, not a
+    height relative to ±0.00."""
+
+    name: str
+    at: Point
+    survey_z_mm: int
+
+
+class Site(Strict):
+    """The plot in spec coordinates, converted from the survey by a script,
+    never typed in by hand."""
+
+    source: str = Field(description="Where these numbers come from (file, script).")
+    frame: SiteFrame | None = None
+    boundary: list[Point] = Field(min_length=3, description="Plot boundary, in order.")
+    no_build: list[NoBuild] = []
+    roads: list[SiteLine] = []
+    spot_heights: list[SpotHeight] = []
+
+    def points(self) -> list[Point]:
+        return [*self.boundary, *(p for z in self.no_build for p in z.outline), *(p for r in self.roads for p in r.points), *(h.at for h in self.spot_heights)]
+
+
 class Design(Strict):
     schema_version: Literal[1] = 1
     project: Project
@@ -184,12 +232,15 @@ class Design(Strict):
     rooms: list[Room] = []
     stairs: list[Stair] = []
     program: Program = Program()
+    site: Site | None = None
 
     @model_validator(mode="after")
     def _references(self) -> Design:
         ids: list[str] = [x.id for group in (self.levels, self.walls, self.openings, self.rooms, self.stairs) for x in group]
         dupes = sorted({i for i in ids if ids.count(i) > 1})
         points = [p for w in self.walls for p in (w.start, w.end)] + [r.seed for r in self.rooms] + [s.origin for s in self.stairs]
+        if self.site is not None:
+            points += self.site.points()
         far = [p for p in points if max(abs(p[0]), abs(p[1])) > MAX_COORD]
         if far:
             raise ValueError(f"coordinates beyond {MAX_COORD // 1_000_000} km from the origin, e.g. {far[0]}: survey coordinates belong in project.datum, not in the plan")
@@ -230,5 +281,11 @@ class Design(Strict):
 
 
 def load(path: str) -> Design:
+    """Load a spec. `site` may name a YAML file, relative to the spec, so all
+    options share one converted site."""
     with open(path, encoding="utf-8") as fh:
-        return Design.model_validate(yaml.safe_load(fh))
+        raw = yaml.safe_load(fh)
+    if isinstance(raw.get("site"), str):
+        with open(Path(path).parent / raw["site"], encoding="utf-8") as fh:
+            raw["site"] = yaml.safe_load(fh)
+    return Design.model_validate(raw)

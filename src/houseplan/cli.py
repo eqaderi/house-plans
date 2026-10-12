@@ -87,7 +87,7 @@ def cmd_check(args) -> int:
 
 def cmd_sketch(args) -> int:
     from . import render
-    from .drawing import plan_dxf
+    from .drawing import plan_dxf, site_dxf
 
     worst = 0
     for path in args.design:
@@ -107,6 +107,11 @@ def cmd_sketch(args) -> int:
             doc, sheet = plan_dxf(design, geo[lv.id], scale=args.scale, status=status)
             png = out / f"sketch-{lv.id}.png"
             render.render(doc, sheet, str(out / f"sketch-{lv.id}.pdf"), str(png))
+            print(f"   {png}")
+        if design.site is not None:
+            doc, sheet = site_dxf(design, geo, status=status)
+            png = out / "sketch-site.png"
+            render.render(doc, sheet, str(out / "sketch-site.pdf"), str(png))
             print(f"   {png}")
         worst = max(worst, 1 if errors else 0)
     return worst
@@ -133,7 +138,7 @@ def cmd_zoom(args) -> int:
 
 def cmd_build(args) -> int:
     from . import ifc, render, verify
-    from .drawing import plan_dxf
+    from .drawing import plan_dxf, site_dxf
 
     try:
         design, geo, findings = _analyse(args.design)
@@ -152,6 +157,14 @@ def cmd_build(args) -> int:
         files += [f"{stem}.dxf", f"{stem}.pdf", f"{stem}.png"]
         findings += verify.verify_dxf(f"{stem}.dxf", geo[lv.id])
         findings += verify.verify_text(f"{stem}.dxf", geo[lv.id], args.scale)
+    if design.site is not None:
+        doc, sheet = site_dxf(design, geo, status=status)
+        stem = out / "site"
+        doc.saveas(f"{stem}.dxf")
+        render.render(doc, sheet, f"{stem}.pdf", f"{stem}.png")
+        files += [f"{stem}.dxf", f"{stem}.pdf", f"{stem}.png"]
+        lowest = min(design.levels, key=lambda l: l.ffl).id
+        findings += [f for f in verify.verify_text(f"{stem}.dxf", geo[lowest], sheet.scale) if f.code.startswith("DXF_TEXT")]
     ifc_path = out / "model.ifc"
     ifc.build_ifc(design, geo).write(str(ifc_path))
     files.append(str(ifc_path))
