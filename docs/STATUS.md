@@ -11,9 +11,9 @@
 - **Next:** phase 2. Draw the envelope over the survey: the plot minus the
   1 m south strip, with walls allowed on the road line. Then phase 3, the
   sketch options.
-- **Still open for the owner:** #18 (neighbours north and east) and
-  #21–27 (guest room, kitchen sides, toilets, area or budget, heating,
-  laundry and storage, labels).
+- **Brief:** complete enough to sketch. Only #25 (water tank, solar) is
+  left, and it matters only at the final stage.
+- **Kit gap:** Persian labels (the owner prefers Persian; English for now).
 - **Owner action:** the checksum manifest is still empty (agent writes
   under `sources/` are blocked). Run:
   `shasum -a 256 sources/height-points.dwg sources/seperated.dwg >> sources/MANIFEST.sha256 && shasum -a 256 -c sources/MANIFEST.sha256`

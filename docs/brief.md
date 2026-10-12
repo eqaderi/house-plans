@@ -35,8 +35,10 @@ anything else is a close paraphrase.
   Surveyed by a private person, date not given: "It might have made
   mistakes, so just fix them yourself." On the drawings, up is north, right
   is east and left is west.
-- Neighbours: south, a plot whose owner will leave 1 m for the alley. Others
-  not given.
+- Neighbours: only the west side is the road. North, east and south are
+  empty fields today, but houses can be built on all three: "there might be
+  a house in the future". The southern neighbour will leave 1 m for the
+  alley, which runs downhill from west to east.
 
 ## Household and program
 - Who lives here (adults, children, elderly, guests that stay over): a family
@@ -46,15 +48,26 @@ anything else is a close paraphrase.
 - Bedrooms: "you have to figure it out". The owner's suggestion: two boys and
   two girls, the boys sharing a room, the girls sharing a room, and a room
   for the parents (three bedrooms).
-- Formal guest room (پذیرایی) separate from family living (نشیمن)?
+- Formal guest room (پذیرایی) separate from family living (نشیمن)? No guest
+  room.
+- Prayer room: wanted, facing the qibla, "with a wudhu place somewhere near
+  it, preferably".
 - Kitchen: neither open nor closed, and no island. The side facing the living
   room is closed by a wall up to the ceiling. "Two ends should be open." A
   door from the kitchen to the balcony is wanted, for frying outside.
+  The two open ends: one towards the entrance, "when you come into the house
+  and want to directly go to the kitchen"; one "probably connects you to the
+  dining area". The wall towards the living room "could hide the woman there
+  from the living room".
 - Bathrooms and WCs: "this is going to be a duplex house". The floor with the
   living room, the kitchen and the main entrance, where the family spends
   most of its time, definitely needs a toilet. A shower there is optional.
   Showers and the rest can be on the other floor, where the bedrooms are.
-- Laundry, storage, plant / boiler room, roof access:
+  Toilets: Iranian, "but probably it's a good idea to have one Western
+  toilet, or both could also be there."
+- Laundry, storage, plant / boiler room, roof access: a laundry room
+  (could have); storage needed; a boiler room "is also a good idea". The
+  owner is unsure whether the boiler could go on the balcony.
 - Parking: two big cars, a Toyota Land Cruiser 300 and a Peugeot 301, in a
   parking with a roof: "We don't want an open parking."
 - Basement wanted? Floors above ground: two floors (duplex). Living room,
@@ -70,22 +83,29 @@ anything else is a close paraphrase.
 
 ## Use and energy
 - Permanent home or second home (affects the gas tariff and winter use):
+  permanent; the family lives there about 20 years.
 - Heating preference (gas, heat pump, hybrid) and interest in solar PV / battery:
+  mains gas is available.
 - Water: storage tank size wanted, rainwater or greywater reuse:
 
 ## Priorities and limits
-- Target total floor area (زیربنا) or budget:
+- Target total floor area (زیربنا) or budget: neither limits the design.
+  "We don't want to make it big unnecessarily or make it small without
+  reason. What just fits there? What's good is the response."
 - What matters most (rank): sun, view, privacy, garden, low cost, low energy,
   accessibility: not ranked. The owner: "This is going to be a house which
   people will live in for many, many years, so we shouldn't regret doing
   anything or not doing anything. Try your best." Ageing and wheelchair use
   must be possible later (see household).
-- Views to keep and directions to avoid:
+- Views to keep and directions to avoid: the view east, downhill, over the
+  town: "absolutely amazing. Nobody can block it if they build a 20-floor
+  building on the eastern side."
 - Structure if already decided (RC frame / steel / confined masonry), and the structural engineer:
 - Exterior wall build-up / thickness if known:
 - Style or reference houses you like (photos into assets/):
 
 ## Process
-- Drawing labels in English, Persian or both:
+- Drawing labels in English, Persian or both: "if you can handle Persian,
+  let it be Persian. If not, English is fine."
 - Dimension unit on drawings (default cm):
 - The licensed architect / engineer who will review and sign:

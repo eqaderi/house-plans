@@ -70,3 +70,20 @@ warnings it explains.
   which is the owner's own aim ("built in a way that just benefits us").
   `AGENTS.md` forbids weakening checks and requires an engineer's sign-off.
 - **Who:** agent, following the owner's statement.
+
+## 2026-10-13: owner answers on neighbours and program
+
+- **What:** brief updated with the owner's answers:
+  - Neighbours on north, east and south may build later.
+  - The east view is to be kept.
+  - No guest room; a prayer room facing the qibla, with a wudhu place
+    nearby.
+  - The kitchen's two open ends face the entrance and the dining area.
+  - Iranian toilets plus at least one western.
+  - No area or budget limit.
+  - Mains gas is available; laundry, storage and a boiler room are wanted.
+  - Persian labels if the kit can render them.
+- **Who:** owner.
+- **Note:** the drawing kit has no Persian text shaping (no
+  `arabic_reshaper`/`python-bidi`, no Persian font setting). Sketches use
+  English until the kit is extended.

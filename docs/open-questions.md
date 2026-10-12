@@ -21,15 +21,15 @@ Facts the design needs and does not have yet. Never fill these by guessing.
 | 15 | Is the 1 m alley strip inside D7, measured square to the south side? | envelope | owner | **closed 2026-10-13** (owner): inside the plot, 1 m perpendicular to the south boundary; nothing left along the road. |
 | 16 | Who surveyed, when, and on which height datum? Why do the two files differ by +0.49 to +0.89 m in Z at the corners? Which file's heights rule? | datum, levels | surveyor | **closed 2026-10-13**: private surveyor, date unknown. Owner delegated the fix; agent decision in `docs/decisions.md`. |
 | 17 | What does "seperated" mean: a plot subdivided (تفکیک) from a larger parcel? | boundary status | owner, deed | open |
-| 18 | Neighbours north and east: built or empty, heights, what is downhill to the east (street, field)? | privacy, light, retaining, access | owner | open |
+| 18 | Neighbours north and east: built or empty, heights, what is downhill to the east? | privacy, light, retaining, access | owner | **closed 2026-10-13** (owner): north, east and south are empty fields where houses may be built; only the west is the road. The view east over the town is the one to keep. |
 | 19 | Parking: how many cars, covered, where? | entrance floor layout | owner | **closed 2026-10-13** (owner): Land Cruiser 300 + Peugeot 301, roofed, not open. Location is a design question. |
 | 20 | Future accessibility: lift, shaft or accessible bedroom on the entrance floor? | stair/lift, program | owner | **closed 2026-10-13** (owner): a lift is built now; an accessible bedroom on the entrance floor is optional. |
-| 21 | Formal guest room (پذیرایی) separate from family living? | program | owner | open |
-| 22 | Kitchen: what do its two open sides open onto (dining, hall, balcony)? | kitchen layout | owner | open |
-| 23 | Toilets: Iranian, western or both, and how many bathrooms? | wet rooms | owner | open |
-| 24 | Target floor area (زیربنا) or budget | program size | owner | open |
-| 25 | Permanent home? Heating (gas available?), water tank, solar | services rooms | owner | open |
-| 26 | Laundry, storage, boiler / plant room, roof access | program | owner | open |
-| 27 | Drawing labels (English / Persian / both), dimension unit | drawings | owner | open |
+| 21 | Formal guest room (پذیرایی) separate from family living? | program | owner | **closed 2026-10-13**: no guest room. A prayer room facing the qibla, with a wudhu place near it, is wanted. |
+| 22 | Kitchen: what do its two open sides open onto? | kitchen layout | owner | **closed 2026-10-13**: one towards the entrance, one to dining; a full wall to living; a door to the balcony. |
+| 23 | Toilets: Iranian, western or both? | wet rooms | owner | **closed 2026-10-13**: Iranian, plus at least one western. The number of bathrooms is left to the design. |
+| 24 | Target floor area (زیربنا) or budget | program size | owner | **closed 2026-10-13**: no limit; size to what fits, neither oversized nor cramped. |
+| 25 | Permanent home? Heating (gas available?), water tank, solar | services rooms | owner | **partly**: permanent home, mains gas available. Water tank and solar not answered (needed only at the final stage). |
+| 26 | Laundry, storage, boiler / plant room, roof access | program | owner | **closed 2026-10-13**: laundry, storage and a boiler room. Boiler location (balcony or not) to be proposed by the agent. |
+| 27 | Drawing labels (English / Persian / both), dimension unit | drawings | owner | **closed 2026-10-13**: Persian if the kit can, else English. The kit cannot shape Persian text yet, so sketches use English for now. |
 | 28 | Reading of "free to not follow the rules" | how checks are treated | owner | **closed 2026-10-13** (owner): plot is outside the city limits, no municipal restrictions. Agent keeps the safety and comfort checks (stairs, headroom, daylight, seismic), as they serve the family; see `docs/decisions.md`. |
 | 29 | Height datum and local origin | datum | owner | **closed 2026-10-13**: owner delegated; agent decision in `docs/decisions.md`. |
