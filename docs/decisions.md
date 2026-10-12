@@ -100,3 +100,24 @@ warnings it explains.
   - The accepted tolerance is the owner's to confirm (open question #30).
   - The kit gets a fixture model and a check before the first sketch.
 - **Who:** owner (requirement); agent (measurement).
+
+## 2026-10-13: house orientation and the prayer room
+
+- **What:** the owner wants the house "along the lines that go from west to
+  east". The agent reads this as walls parallel to the plot's north and
+  south boundaries (grid 67.19°), with cross walls square to them
+  (grid 157.19°): a rectangular house in a parallelogram plot. The owner
+  prefers the prayer room to face the qibla, but it is optional.
+- **Measured:**
+  - Against the qibla line, the long walls are 43.22° off and the cross
+    walls 46.78° off.
+  - The qibla therefore runs diagonally across every room.
+  - Cross walls parallel to the road instead would be only 18.09° off,
+    which is bad for toilets.
+- **Consequence:**
+  - Toilets set along either wall direction are about 45° from the qibla.
+    That is common practice; the accepted tolerance is open question #30.
+  - The prayer room cannot have a wall square to the qibla unless one wall
+    is angled. Otherwise the person prays along the room's diagonal. Either
+    option is shown in the sketch; the owner chooses.
+- **Who:** owner (orientation, preference); agent (reading, measurement).

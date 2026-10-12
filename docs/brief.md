@@ -50,8 +50,14 @@ anything else is a close paraphrase.
   for the parents (three bedrooms).
 - Formal guest room (پذیرایی) separate from family living (نشیمن)? No guest
   room.
-- Prayer room: wanted, facing the qibla, "with a wudhu place somewhere near
-  it, preferably".
+- Prayer room: wanted, "with a wudhu place somewhere near it, preferably".
+  Facing the qibla is preferred but optional: "The house has to be along the
+  lines that go from west to east, but if possible, the prayer room should
+  face the qibla ... If not, or if it makes problems, then it's not
+  necessary."
+- House orientation: "along the lines that go from west to east" (read by
+  the agent as parallel to the plot's north and south boundaries, grid
+  67.19°).
 - Kitchen: neither open nor closed, and no island. The side facing the living
   room is closed by a wall up to the ceiling. "Two ends should be open." A
   door from the kitchen to the balcony is wanted, for frying outside.
