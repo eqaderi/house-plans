@@ -2,4 +2,4 @@
 *.pdf binary
 *.png binary
 *.ifc -diff linguist-generated
-*.dxf -diff linguist-generated
+*.dxf -text -diff linguist-generated

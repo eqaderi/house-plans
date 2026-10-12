@@ -423,6 +423,23 @@ def test_survey_report(spec, tmp_path, capsys):
     assert "$INSUNITS=4 (millimetres)" in text and "A-WALL" in text
 
 
+def test_survey_outline_closed_by_end_points(tmp_path, capsys):
+    # surveyors often close a boundary by repeating its first vertex instead of setting the flag
+    import ezdxf
+    from houseplan.survey import survey
+
+    doc = ezdxf.new()
+    doc.header["$INSUNITS"] = 6
+    doc.modelspace().add_lwpolyline([(0, 0), (30, 0), (30, 20), (0, 20), (0, 0)], close=False)
+    doc.modelspace().add_lwpolyline([(0, 25), (30, 25), (30, 40)], close=False)
+    path = tmp_path / "s.dxf"
+    doc.saveas(path)
+    survey(str(path))
+    text = capsys.readouterr().out
+    assert "600.000" in text and "closed by end points" in text
+    assert "450.000" not in text
+
+
 def test_window_wall_ratio(spec, tmp_path, monkeypatch):
     # bungalow: windows 11.55 m² over 42 m of exterior wall axis x 2.85 m = 9.6 %
     (tmp_path / "w.yaml").write_text(yaml.safe_dump({
