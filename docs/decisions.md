@@ -168,14 +168,16 @@ warnings it explains.
 - **The benchmark نقطه مبنا is not a ground point** (`ground: false` in
   `derived/site/d7.yaml`). It stands 20.8 m NNW of the plot by the road.
   Measured over a 100 mm grid of the plot (60254 points):
-  - With it, 459 points fall outside the hull; without it, 723 (all four
-    plot corners are outside either way: the corner shots lie a few cm
-    inside the boundary).
+  - With it, 459 points fall outside the hull; without it, 723.
+  - Without it, all four plot corners are outside the hull (the corner
+    shots lie a few cm inside the boundary). With it, V0 gets a height from
+    the triangle Pt16/Pt15/BM.
   - Including it changes the ground by up to 0.833 m along the north
     boundary, through triangles reaching 21 m beyond the plot.
 - **Known weak spots** (long hull triangles):
-  - Pt16/Pt9/Pt1 (32.5 m edge) covers only 1.66 m², within 0.26 m of the
-    north boundary.
+  - Pt16/Pt9/Pt1 (32.5 m edge) covers only 1.66 m² of the plot, at
+    y 18268..18420 (the north boundary is y 18422).
+  - Pt10/Pt9/Pt16 (17.2 m edge) covers 1.12 m², at y 18161..18314.
   - Pt5/Pt12/Pt19 (21.4 m edge) lies inside the alley strip.
   - Pt9/Pt2/Pt1 (15.3 m edge) covers 50.37 m² at the NE.
 - **Who:** agent. The builder checks levels on site before setting out

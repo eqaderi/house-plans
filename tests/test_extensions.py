@@ -232,3 +232,15 @@ def test_no_garage_for_the_cars_is_not_passed(monkeypatch, tmp_path):
     design, geo, _ = analyse(s)
     idle = [f for f in rules.run_rules(design, geo) if f.code == "RULES_NOT_APPLICABLE"]
     assert idle and "GAR" in idle[0].message
+
+
+def test_garage_entrance_must_pass_the_cars(monkeypatch, tmp_path):
+    s = garage_spec(monkeypatch, tmp_path)
+    s["program"]["vehicles"][0]["height"] = 1925
+    _, _, findings = analyse(s)  # D1, R5's only exterior door, is 1000 wide
+    assert "GARAGE_ENTRANCE" in codes(findings)
+    next(o for o in s["openings"] if o["id"] == "D1").update(kind="opening", width=2400, height=2100)
+    del next(o for o in s["openings"] if o["id"] == "D1")["hinge"]
+    del next(o for o in s["openings"] if o["id"] == "D1")["swing"]
+    _, _, findings = analyse(s)
+    assert "GARAGE_ENTRANCE" not in codes(findings)

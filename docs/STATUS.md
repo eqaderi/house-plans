@@ -21,15 +21,18 @@
      `houseplan.terrain`); benchmark kept out; weak spots in
      `docs/decisions.md`. Use it in phase 3 to choose which floor meets the
      road and which the garden.
-  4. **Brief items the kit cannot model yet** (see `references/spec.md`, "Not
-     modelled yet"):
-     - balconies outside the enclosure;
-     - a lift: car and shaft size from a cited source, or the rule marked
-       `unverified`;
-     - covered parking: Land Cruiser 300 and Peugeot 301 dimensions from the
-       manufacturer pages, with links, into `docs/research.md`.
+  4. **Brief items the kit could not model.** Kit done 2026-10-13:
+     `balconies` (outline outside the walls), `lifts` (stacked shaft rooms of
+     use `lift`, car size, rule evaluators `lift_car_min`, `lift_shaft_min`,
+     `lift_entrance_min_width`), `program.vehicles` with the rule
+     `garage_fits_vehicles`. **Pending:** cited car and lift sizes into
+     `docs/research.md` and `rules/iran.yaml`.
   5. **Phase 3:** the first sketch options (`design/option-a.yaml`, ...).
   6. **Later:** Persian labels.
+- **Note:** `bin/hp ground` answers "unknown" at the four plot corners and
+  in thin strips along the boundary: the survey's corner shots lie a few cm
+  inside it, and the TIN never extrapolates. That is by design
+  (`docs/decisions.md`, "terrain model").
 - **Note:** `references/slope.md` §5 (sun angles) is written for 35.7° N;
   this site is at 34.97° N. It is guidance only and no check consumes it.
   Neither `rules/iran.yaml` nor any check uses a Tehran-specific value.

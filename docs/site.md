@@ -9,6 +9,7 @@ from a tool's output; rerun the commands to reproduce it.
 |---|---|---|
 | `sources/height-points.dwg` | `9689880c47d9d0780089c5d4077f9396f5c29a2feeb298fafb86840bbae02f02` | `derived/survey/height-points.dxf` |
 | `sources/seperated.dwg` | `27624ba14003e3d898143a9d86985d50d3d7098db0a45b94ae2dd999571519ed` | `derived/survey/seperated.dxf` |
+| both DXFs above | | `derived/site/d7.yaml`: the site in spec mm (`PYTHONPATH=src ~/.venvs/architecture-ai/bin/python scripts/site_frame.py --write`) |
 
 ```sh
 bin/hp dwg2dxf sources/height-points.dwg derived/survey/

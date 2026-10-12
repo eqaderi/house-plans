@@ -152,6 +152,7 @@ sheets show the boundary and no-build zones.
 | BALCONY_GUARD_UNCHECKED | info | railing height not checked: no cited value yet |
 | LIFT_ROOM_USE / LIFT_LEVELS / LIFT_NO_DOOR / LIFT_NOT_STACKED / LIFT_CAR_IN_SHAFT | error | shaft room not of use lift, two on a level, no landing door, shafts not over each other (< 95 % clear on all levels), car does not fit |
 | LIFT_UNLISTED | warning | a lift room that no lift names |
+| GARAGE_ENTRANCE | error | no exterior door or opening of a garage is as wide and tall as the largest car (body, no clearance) |
 
 `bin/hp build` (final stage) adds the read-back: DXF units and dimension
 chains (DXF_CHAIN_OPEN), text overlap and crowding below 1 mm on paper

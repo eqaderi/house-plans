@@ -411,6 +411,29 @@ def check_lifts(design: Design, geo: dict[str, LevelGeom]) -> list[Finding]:
     return out
 
 
+def check_garage_entrance(design: Design, geo: dict[str, LevelGeom]) -> list[Finding]:
+    """The cars must physically pass the garage's way in: some exterior door
+    or opening at least as wide as the widest car body and as tall as the
+    tallest. No clearance is added; that is a rule's business, with a source."""
+    cars = design.program.vehicles
+    if not cars:
+        return []
+    width = max(c.width for c in cars)
+    height = max((c.height for c in cars if c.height), default=0)
+    out: list[Finding] = []
+    for lg in geo.values():
+        for rid, rg in lg.rooms.items():
+            if rg.outline is None or rg.room.use is not RoomUse.garage:
+                continue
+            ways = [og.opening for og in lg.openings.values()
+                    if og.opening.kind is not OpeningKind.window and "outside" in {_room_at(lg, side_probe(og, 1)), _room_at(lg, side_probe(og, -1))}
+                    and rid in {_room_at(lg, side_probe(og, 1)), _room_at(lg, side_probe(og, -1))}]
+            if not any((o.leaf or o.width) >= width and o.height >= height for o in ways):
+                have = ", ".join(f"{o.id} {o.leaf or o.width} x {o.height}" for o in ways) or "none"
+                out.append(_err("GARAGE_ENTRANCE", rid, f"no way in for a car {width} mm wide and {height} mm tall (exterior openings: {have})"))
+    return out
+
+
 def built_area(design: Design, geo: dict[str, LevelGeom]):
     """Everything built, on any level, seen from above, balconies included."""
     return unary_union([g for lg in geo.values() for g in (lg.footprint, *lg.balconies.values()) if not g.is_empty])
@@ -473,6 +496,7 @@ ALL = (
     check_daylight_presence,
     check_balconies,
     check_lifts,
+    check_garage_entrance,
     check_site,
 )
 
