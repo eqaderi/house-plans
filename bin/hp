@@ -3,7 +3,7 @@
 set -euo pipefail
 here="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 py="${HP_PYTHON:-$HOME/.venvs/architecture-ai/bin/python}"
-if [ ! -x "$py" ]; then
+if ! command -v "$py" >/dev/null 2>&1; then
   echo "No Python environment at $py. Run bin/doctor to see what is missing, then bin/setup." >&2
   exit 1
 fi
