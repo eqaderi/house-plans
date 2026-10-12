@@ -10,8 +10,8 @@
 #
 # Units: areas in m², lengths in mm, ratios as fractions.
 # Not encoded yet (need data the spec does not hold): plot coverage, light
-# wells, building height from mean street level, parking, guards, headroom,
-# beam clearance. See .agents/skills/house-plan/references/iran.md.
+# wells, building height from mean street level, guards, headroom, beam
+# clearance, parking ramps and turning, lift pit and overhead. See .agents/skills/house-plan/references/iran.md.
 ruleset: iran
 jurisdiction: IR
 title: Iranian National Building Regulations, Mabhas 4 (1396) and Standard 2800 layout rules
@@ -196,3 +196,55 @@ rules:
     value: 0.50
     source: "Ministry circular cited in Mabhas 19 (5th ed., 1404) checklist guidance (secondary)"
     status: unverified
+
+  # --- lift (owner: built now; wheelchairs expected later) ---------------------
+  # Mabhas 15 requires a lift only above 7 m of travel (15-2-1-2); the owner
+  # wants one regardless, so the wheelchair-capable sizes apply by choice.
+  - id: IR15-LIFT-CAR
+    check: lift_car_min
+    title: Wheelchair-capable lift car, inside width x depth
+    value: 1100
+    params: { depth: 1400 }
+    source: "Mabhas 15 (3rd ed., 1392) 15-2-1-9; same size in the Iranian accessibility regulation 3-6-4-3 and EN 81-70 Type 2"
+    url: https://dl.civilgeotech.ir/free/library/national-building-regulations/building-codes/mabhas-15/mabhas-15-1392.pdf
+    status: transcribed
+    note: Read from a mirror PDF of the official text (inbr.ir refused the download); compare with the official edition.
+
+  - id: IR15-LIFT-ENTRANCE
+    check: lift_entrance_min_width
+    title: Lift landing entrance width
+    value: 800
+    source: "Mabhas 15 (3rd ed., 1392) 15-2-3-1 (landing doors min 800 mm; automatic 900 mm recommended), 15-2-1-9 (car door 800 mm)"
+    url: https://dl.civilgeotech.ir/free/library/national-building-regulations/building-codes/mabhas-15/mabhas-15-1392.pdf
+    status: transcribed
+    note: Compared with the spec's rough opening; the door's clear width comes from the chosen product.
+
+  - id: IR15-LIFT-SHAFT
+    check: lift_shaft_min
+    title: Lift shaft for a 630 kg, 1100 x 1400 car (suggested size)
+    value: 1600
+    params: { depth: 1900 }
+    source: "Mabhas 15 (3rd ed., 1392) Appendix 2, fig. 4, residential, series الف (suggested, not a minimum)"
+    url: https://dl.civilgeotech.ir/free/library/national-building-regulations/building-codes/mabhas-15/mabhas-15-1392.pdf
+    status: unverified
+    note: The appendix calls these sizes suggested. The real shaft, pit and headroom come from the chosen product (open question 32); KONE MonoSpace 4 DX needs 1600 x 1750 with a 900 mm door, a Cibes C1 home lift a 1550 x 1690 cut-out.
+
+  # --- covered parking (small private car park, Mabhas 4 chapter 4-5-10) --------
+  - id: IR4-PARK-STALL
+    check: garage_stalls_min
+    title: Parking stalls side by side, one per car in program.vehicles
+    value: 2500
+    params: { length: 5000 }
+    source: "Mabhas 4 (1396) 4-5-10-2-4 الف (2.50 x 5.00 m each, side by side)"
+    url: https://dl.civilgeotech.ir/free/library/national-building-regulations/building-codes/mabhas-4/mabhas-04-1396.pdf
+    status: transcribed
+    note: "Read from a scan of the printed edition. A single stall between two walls needs 3.00 m (4-5-10-2-4 پ); a wheelchair user's stall 3.50 m axis to axis plus 0.25 m per wall (ب). No source gives a door-opening clearance beside a car."
+
+  - id: IR4-PARK-HEIGHT
+    check: clear_height_min
+    title: Clear height of a small car park
+    value: 2200
+    uses: [garage]
+    source: "Mabhas 4 (1396) 4-5-10-2-1"
+    url: https://dl.civilgeotech.ir/free/library/national-building-regulations/building-codes/mabhas-4/mabhas-04-1396.pdf
+    status: transcribed

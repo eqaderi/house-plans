@@ -21,12 +21,12 @@
      `houseplan.terrain`); benchmark kept out; weak spots in
      `docs/decisions.md`. Use it in phase 3 to choose which floor meets the
      road and which the garden.
-  4. **Brief items the kit could not model.** Kit done 2026-10-13:
-     `balconies` (outline outside the walls), `lifts` (stacked shaft rooms of
-     use `lift`, car size, rule evaluators `lift_car_min`, `lift_shaft_min`,
-     `lift_entrance_min_width`), `program.vehicles` with the rule
-     `garage_fits_vehicles`. **Pending:** cited car and lift sizes into
-     `docs/research.md` and `rules/iran.yaml`.
+  4. ~~**Brief items the kit could not model.**~~ Done 2026-10-13:
+     balconies, lifts, `program.vehicles` with GARAGE_TOO_SMALL /
+     GARAGE_ENTRANCE, and rules IR15-LIFT-CAR, IR15-LIFT-ENTRANCE,
+     IR4-PARK-STALL, IR4-PARK-HEIGHT (transcribed), plus IR15-LIFT-SHAFT
+     (unverified, suggested size). Sizes and sources are in
+     `docs/research.md`; open questions 31 (which LC300) and 32 (which lift).
   5. **Phase 3:** the first sketch options (`design/option-a.yaml`, ...).
   6. **Later:** Persian labels.
 - **Note:** `bin/hp ground` answers "unknown" at the four plot corners and

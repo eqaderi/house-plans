@@ -194,11 +194,11 @@ def test_lift_rules(tmp_path, monkeypatch):
 # --- cars in the garage ---------------------------------------------------------
 
 
-def garage_spec(monkeypatch, tmp_path, side=600, end=500) -> dict:
+def garage_spec(monkeypatch, tmp_path, stall=2500, length=5000) -> dict:
     """Living room R5 (6.15 x 5.28 m net) used as a garage for two cars."""
     (tmp_path / "g.yaml").write_text(yaml.safe_dump({
         "ruleset": "g", "jurisdiction": "IR", "title": "test",
-        "rules": [{"id": "GAR", "check": "garage_fits_vehicles", "title": "cars fit", "value": side, "params": {"end": end}, "source": "test", "status": "verified"}],
+        "rules": [{"id": "GAR", "check": "garage_stalls_min", "title": "stalls", "value": stall, "params": {"length": length}, "source": "test", "status": "verified"}],
     }))
     monkeypatch.setattr(rules, "RULES_DIR", tmp_path)
     s = yaml.safe_load(EXAMPLE.read_text(encoding="utf-8"))
@@ -216,14 +216,13 @@ def gar(spec):
     return [f for f in rules.run_rules(design, geo) if f.code == "GAR"]
 
 
-def test_cars_fit_side_by_side(monkeypatch, tmp_path):
-    # across 6150: 1900 + 1700 + 3 x 600 = 5400; deep 5275 >= 4900 + 500
-    assert gar(garage_spec(monkeypatch, tmp_path, side=600, end=300)) == []
+def test_stalls_fit_side_by_side(monkeypatch, tmp_path):
+    assert gar(garage_spec(monkeypatch, tmp_path)) == []  # 2 x 2500 = 5000 <= 6150; 5000 <= 5275
 
 
-def test_cars_do_not_fit(monkeypatch, tmp_path):
-    found = gar(garage_spec(monkeypatch, tmp_path, side=900, end=300))  # 1900 + 1700 + 2700 = 6300 > 6150
-    assert len(found) == 1 and "6300" in found[0].message
+def test_stalls_do_not_fit(monkeypatch, tmp_path):
+    found = gar(garage_spec(monkeypatch, tmp_path, stall=3100))  # 6200 > 6150
+    assert len(found) == 1 and "6200" in found[0].message
 
 
 def test_no_garage_for_the_cars_is_not_passed(monkeypatch, tmp_path):
@@ -232,6 +231,18 @@ def test_no_garage_for_the_cars_is_not_passed(monkeypatch, tmp_path):
     design, geo, _ = analyse(s)
     idle = [f for f in rules.run_rules(design, geo) if f.code == "RULES_NOT_APPLICABLE"]
     assert idle and "GAR" in idle[0].message
+
+
+def test_car_body_longer_than_the_garage(monkeypatch, tmp_path):
+    s = garage_spec(monkeypatch, tmp_path)
+    s["program"]["vehicles"][0]["length"] = 6200  # garage is 5275 x 6150 net
+    _, _, findings = analyse(s)
+    assert "GARAGE_TOO_SMALL" in codes(findings)
+
+
+def test_car_bodies_fit(monkeypatch, tmp_path):
+    _, _, findings = analyse(garage_spec(monkeypatch, tmp_path))
+    assert "GARAGE_TOO_SMALL" not in codes(findings)
 
 
 def test_garage_entrance_must_pass_the_cars(monkeypatch, tmp_path):

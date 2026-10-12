@@ -412,15 +412,23 @@ def check_lifts(design: Design, geo: dict[str, LevelGeom]) -> list[Finding]:
 
 
 def check_garage_entrance(design: Design, geo: dict[str, LevelGeom]) -> list[Finding]:
-    """The cars must physically pass the garage's way in: some exterior door
-    or opening at least as wide as the widest car body and as tall as the
-    tallest. No clearance is added; that is a rule's business, with a source."""
+    """The cars must physically fit: their bodies side by side inside the
+    largest garage, and through some exterior door or opening as wide as the
+    widest body and as tall as the tallest. No clearance is added; stall sizes
+    are a rule's business, with a source."""
     cars = design.program.vehicles
     if not cars:
         return []
     width = max(c.width for c in cars)
     height = max((c.height for c in cars if c.height), default=0)
     out: list[Finding] = []
+    garages = [rg for lg in geo.values() for rg in lg.rooms.values() if rg.outline is not None and rg.room.use is RoomUse.garage]
+    if garages:
+        g = max(garages, key=lambda rg: rg.area_mm2)
+        short, long = sides_of(g.outline)
+        across, deep = sum(c.width for c in cars), max(c.length for c in cars)
+        if not ((across <= long and deep <= short) or (across <= short and deep <= long)):
+            out.append(_err("GARAGE_TOO_SMALL", g.room.id, f"car bodies side by side are {across} x {deep} mm; garage is {short:.0f} x {long:.0f} mm"))
     for lg in geo.values():
         for rid, rg in lg.rooms.items():
             if rg.outline is None or rg.room.use is not RoomUse.garage:

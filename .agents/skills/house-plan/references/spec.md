@@ -66,7 +66,7 @@ program:                       # the brief as checkable requirements (owner's, n
   connect: [ [R5, R6] ]        # rooms that must share a door or opening
   private_uses: [bedroom, bath, wc]   # no route may pass through these
   area_tolerance: 0.10         # vs each room's target_area
-  vehicles:                    # cars parked side by side in the largest garage (rule garage_fits_vehicles)
+  vehicles:                    # cars parked side by side in the largest garage (GARAGE_* checks, rule garage_stalls_min)
     - { name: ..., length: 4985, width: 1980, source: "maker's page, market, model year" }
 # rooms may also carry target_area (m², from the brief) and via (the room an
 # en-suite bath or walk-in closet is reached through on purpose)
@@ -152,7 +152,7 @@ sheets show the boundary and no-build zones.
 | BALCONY_GUARD_UNCHECKED | info | railing height not checked: no cited value yet |
 | LIFT_ROOM_USE / LIFT_LEVELS / LIFT_NO_DOOR / LIFT_NOT_STACKED / LIFT_CAR_IN_SHAFT | error | shaft room not of use lift, two on a level, no landing door, shafts not over each other (< 95 % clear on all levels), car does not fit |
 | LIFT_UNLISTED | warning | a lift room that no lift names |
-| GARAGE_ENTRANCE | error | no exterior door or opening of a garage is as wide and tall as the largest car (body, no clearance) |
+| GARAGE_TOO_SMALL / GARAGE_ENTRANCE | error | the car bodies do not fit side by side in the largest garage / no exterior door or opening of a garage is as wide and tall as the largest car (bodies, no clearance) |
 
 `bin/hp build` (final stage) adds the read-back: DXF units and dimension
 chains (DXF_CHAIN_OPEN), text overlap and crowding below 1 mm on paper
