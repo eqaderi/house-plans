@@ -24,9 +24,8 @@ shapely 2.1.2, pyproj 3.7.2 / PROJ 9.5.1.
 This file holds the `derived/` inventory because `.claude/settings.json`
 denies agent edits under `derived/`, including `derived/README.md`.
 
-`sources/MANIFEST.sha256` is still empty: the same settings block agent
-writes under `sources/`. The owner records the checksums (command in
-`docs/STATUS.md`).
+`sources/MANIFEST.sha256` was written by the owner (2026-10-13), since the
+same settings block agent writes under `sources/`. It verifies OK.
 
 ## What each file holds
 

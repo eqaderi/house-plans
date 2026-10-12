@@ -18,7 +18,4 @@
      comparing each toilet axis with the qibla, grid 203.97°. The owner
      requires it.
   2. Persian labels (the owner prefers Persian; English until then).
-- **Owner action:** the checksum manifest is still empty (agent writes
-  under `sources/` are blocked). Run:
-  `shasum -a 256 sources/height-points.dwg sources/seperated.dwg >> sources/MANIFEST.sha256 && shasum -a 256 -c sources/MANIFEST.sha256`
 - **Blocking:** see docs/open-questions.md
