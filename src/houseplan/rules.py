@@ -188,6 +188,34 @@ def window_wall_ratio_max(design, geo, rule):
             yield lg.level_id, glass / walls <= rule.value, f"window-to-wall ratio {glass / walls:.0%} (max {rule.value:.0%}), measured on wall axes and clear height"
 
 
+def lift_car_min(design, geo, rule):
+    """Car inside size: width >= value, depth >= params.depth."""
+    for lift in design.lifts:
+        w, d = lift.car
+        yield lift.id, w >= rule.value and d >= rule.params["depth"], f"car {w} x {d} mm (min {rule.value:.0f} x {rule.params['depth']:.0f} mm)"
+
+
+def lift_shaft_min(design, geo, rule):
+    """Clear shaft, free on every served level: short side >= value, long
+    side >= params.depth."""
+    from .geometry import lift_shafts
+
+    for lid, common in lift_shafts(design, geo).items():
+        short, long = sides_of(common) if not common.is_empty else (0, 0)
+        yield lid, short >= rule.value and long >= rule.params["depth"], f"clear shaft {short:.0f} x {long:.0f} mm (min {rule.value:.0f} x {rule.params['depth']:.0f} mm); measured on the bounding rectangle"
+
+
+def lift_entrance_min_width(design, geo, rule):
+    """The widest door or opening from each shaft room to its landing."""
+    shafts = {r for lift in design.lifts for r in lift.shafts}
+    for lg in geo.values():
+        for rid in shafts & set(lg.rooms):
+            widths = [og.opening.leaf or og.opening.width for og in lg.openings.values()
+                      if og.opening.kind is not OpeningKind.window and lg.rooms[rid].outline is not None and lg.rooms[rid].outline.distance(og.cut) < 1.0]
+            if widths:
+                yield rid, max(widths) >= rule.value, f"landing entrance {max(widths)} mm (min {rule.value:.0f} mm)"
+
+
 EVALUATORS: dict[str, Callable] = {
     f.__name__: f
     for f in (
@@ -205,6 +233,9 @@ EVALUATORS: dict[str, Callable] = {
         main_room_min_area,
         reentrant_corner_ratio_max,
         window_wall_ratio_max,
+        lift_car_min,
+        lift_shaft_min,
+        lift_entrance_min_width,
     )
 }
 

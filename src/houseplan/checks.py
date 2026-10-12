@@ -13,7 +13,7 @@ from typing import Literal
 from shapely.geometry import Point, Polygon
 from shapely.ops import unary_union
 
-from .geometry import TOUCH, LevelGeom, raw_body, side_probe, sides_of
+from .geometry import TOUCH, LevelGeom, lift_shafts, raw_body, side_probe, sides_of
 from .model import HABITABLE, WET, Design, OpeningKind, RoomUse
 
 AREA_EPS = 1.0  # mm²; overlaps smaller than this are float noise
@@ -157,7 +157,7 @@ def access_graph(lg: LevelGeom) -> dict[str, dict[str, list[Point]]]:
 def _starts(lg: LevelGeom, graph) -> list[str]:
     return [
         rid for rid, rg in lg.rooms.items()
-        if rg.room.entrance or "outside" in graph.get(rid, {}) or rg.room.use is RoomUse.stair
+        if rg.room.entrance or "outside" in graph.get(rid, {}) or rg.room.use in (RoomUse.stair, RoomUse.lift)
     ]
 
 
@@ -376,6 +376,41 @@ def check_daylight_presence(design: Design, geo: dict[str, LevelGeom]) -> list[F
     return out
 
 
+def check_lifts(design: Design, geo: dict[str, LevelGeom]) -> list[Finding]:
+    """Each lift: one shaft room of use `lift` per served level, stacked, with
+    a landing door or opening on every level, and a car that fits the shaft."""
+    out: list[Finding] = []
+    listed = {r for lift in design.lifts for r in lift.shafts}
+    for lg in geo.values():
+        for rid, rg in lg.rooms.items():
+            if rg.room.use is RoomUse.lift and rid not in listed:
+                out.append(_warn("LIFT_UNLISTED", rid, "lift room is not a shaft of any entry in lifts"))
+    for lift in design.lifts:
+        rooms = [rg for lg in geo.values() for rid, rg in lg.rooms.items() if rid in lift.shafts]
+        wrong = [rg.room.id for rg in rooms if rg.room.use is not RoomUse.lift]
+        if wrong:
+            out.append(_err("LIFT_ROOM_USE", lift.id, f"shaft rooms {wrong} do not have use lift"))
+        levels = [rg.room.level for rg in rooms]
+        if len(set(levels)) != len(levels):
+            out.append(_err("LIFT_LEVELS", lift.id, f"two shaft rooms on one level: {sorted(levels)}"))
+        if any(rg.outline is None for rg in rooms):
+            continue
+        for rg in rooms:
+            lg = geo[rg.room.level]
+            if not [n for n in access_graph(lg).get(rg.room.id, {}) if n in lg.rooms and lg.rooms[n].room.use is not RoomUse.lift]:
+                out.append(_err("LIFT_NO_DOOR", rg.room.id, f"no landing door or opening on {rg.room.level}"))
+        common = lift_shafts(design, geo)[lift.id]
+        for rg in rooms:
+            share = common.area / rg.outline.area if rg.outline.area else 0
+            if share < 0.95:
+                out.append(_err("LIFT_NOT_STACKED", rg.room.id, f"only {share:.0%} of this shaft is clear on every served level"))
+        short, long = sides_of(common) if not common.is_empty else (0, 0)
+        cw, cd = sorted(lift.car)
+        if cw > short or cd > long:
+            out.append(_err("LIFT_CAR_IN_SHAFT", lift.id, f"car {lift.car[0]} x {lift.car[1]} mm does not fit the clear shaft {short:.0f} x {long:.0f} mm"))
+    return out
+
+
 def built_area(design: Design, geo: dict[str, LevelGeom]):
     """Everything built, on any level, seen from above, balconies included."""
     return unary_union([g for lg in geo.values() for g in (lg.footprint, *lg.balconies.values()) if not g.is_empty])
@@ -437,6 +472,7 @@ ALL = (
     check_stacking,
     check_daylight_presence,
     check_balconies,
+    check_lifts,
     check_site,
 )
 

@@ -17,7 +17,7 @@ from shapely.geometry import LineString, Point, Polygon, box
 from shapely.ops import unary_union
 
 from .geometry import LevelGeom, faces_of, frame_of
-from .model import Design, OpeningKind, Site, WallKind
+from .model import Design, OpeningKind, RoomUse, Site, WallKind
 
 # name: (ACI colour, lineweight in 1/100 mm per ISO 128 series)
 LAYERS = {
@@ -153,6 +153,9 @@ def _rooms(msp, design: Design, lg: LevelGeom, k: int):
             continue
         c = rg.outline.representative_point()
         minx, miny, maxx, maxy = rg.outline.bounds
+        if rg.room.use is RoomUse.lift:  # the shaft symbol: a cross corner to corner
+            msp.add_line((minx, miny), (maxx, maxy), dxfattribs={"layer": "A-STAIR"})
+            msp.add_line((minx, maxy), (maxx, miny), dxfattribs={"layer": "A-STAIR"})
         rect = abs(rg.outline.area - (maxx - minx) * (maxy - miny)) < 1.0
         _text(msp, rg.room.name.upper(), (c.x, c.y + 4.0 * k), 2.5 * k, "A-AREA-IDEN")
         _text(msp, f"{rg.area_mm2 / 1e6:.2f} m²", (c.x, c.y), 2.0 * k, "A-AREA-IDEN")

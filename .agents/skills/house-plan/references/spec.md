@@ -77,6 +77,15 @@ stairs:
 ```
 
 ```yaml
+lifts:
+  - { id: LF, shafts: [R3, U2], car: [1100, 1400], source: "product data sheet ..." }
+  # The shaft is a room of use `lift` on every served level, stacked; car is
+  # the inside of the car, width (door side) x depth. A lift room is a start
+  # for reachability, like a stair. Size rules: lift_car_min, lift_shaft_min,
+  # lift_entrance_min_width in rules/<ruleset>.yaml, each with its source.
+```
+
+```yaml
 balconies:
   - { id: B1, level: L1, name: Balcony, outline: [[6000, -1650], [11500, -1650], [11500, -150], [6000, -150]] }
   # A slab outside the walls, given by its outline (it has no walls to be
@@ -139,6 +148,8 @@ sheets show the boundary and no-build zones.
 | BALCONY_OVERLAPS_BUILDING / BALCONY_DETACHED / BALCONY_OVERLAP / BALCONY_INVALID | error | a balcony inside the walls, not touching them, doubled, or degenerate |
 | BALCONY_NO_DOOR | warning | no door or opening leads onto the balcony |
 | BALCONY_GUARD_UNCHECKED | info | railing height not checked: no cited value yet |
+| LIFT_ROOM_USE / LIFT_LEVELS / LIFT_NO_DOOR / LIFT_NOT_STACKED / LIFT_CAR_IN_SHAFT | error | shaft room not of use lift, two on a level, no landing door, shafts not over each other (< 95 % clear on all levels), car does not fit |
+| LIFT_UNLISTED | warning | a lift room that no lift names |
 
 `bin/hp build` (final stage) adds the read-back: DXF units and dimension
 chains (DXF_CHAIN_OPEN), text overlap and crowding below 1 mm on paper
@@ -153,6 +164,7 @@ Then `rules/<ruleset>.yaml` runs through `src/houseplan/rules.py`: a failed
 ## Not modelled yet
 
 Curved walls, columns, sloped and stepped slabs, balcony depth on the
-dimension chains (the area is labelled; chains measure the walls), split levels, winder and L/U stairs, roofs, sections and
-elevations. When a design needs one of them, extend the kit first: schema
+dimension chains (the area is labelled; chains measure the walls), lift pit
+and overhead (need sections), split levels, winder and L/U stairs, roofs,
+sections and elevations. When a design needs one of them, extend the kit first: schema
 field, geometry, a check, a drawing routine, a test that fails without it.

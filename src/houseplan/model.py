@@ -114,6 +114,7 @@ class RoomUse(str, Enum):
     corridor = "corridor"
     hall = "hall"
     stair = "stair"
+    lift = "lift"  # the shaft on one level, آسانسور
     storage = "storage"
     pantry = "pantry"  # انباری
     laundry = "laundry"
@@ -174,6 +175,17 @@ class Stair(Strict):
     width: Mm = Field(gt=0, description="Clear width between finished walls or handrails.")
     risers: int = Field(gt=1)
     going: Mm = Field(gt=0, description="Horizontal tread depth, nosing to nosing.")
+
+
+class Lift(Strict):
+    """A lift: its shaft is a room of use `lift` on every level it serves,
+    stacked one above the other. car is the inside of the car, width (door
+    side) x depth, from the chosen product's data."""
+
+    id: str
+    shafts: list[str] = Field(min_length=2, description="Room ids of the shaft, one per served level.")
+    car: tuple[Mm, Mm]
+    source: str | None = Field(None, description="Where the car size comes from.")
 
 
 class Balcony(Strict):
@@ -246,12 +258,13 @@ class Design(Strict):
     rooms: list[Room] = []
     stairs: list[Stair] = []
     balconies: list[Balcony] = []
+    lifts: list[Lift] = []
     program: Program = Program()
     site: Site | None = None
 
     @model_validator(mode="after")
     def _references(self) -> Design:
-        ids: list[str] = [x.id for group in (self.levels, self.walls, self.openings, self.rooms, self.stairs, self.balconies) for x in group]
+        ids: list[str] = [x.id for group in (self.levels, self.walls, self.openings, self.rooms, self.stairs, self.balconies, self.lifts) for x in group]
         dupes = sorted({i for i in ids if ids.count(i) > 1})
         points = [p for w in self.walls for p in (w.start, w.end)] + [r.seed for r in self.rooms] + [s.origin for s in self.stairs] + [p for b in self.balconies for p in b.outline]
         if self.site is not None:
@@ -273,6 +286,10 @@ class Design(Strict):
         for r in self.rooms:
             if r.via is not None and r.via not in rooms:
                 raise ValueError(f"{r.id}: via names unknown room {r.via!r}")
+        for lift in self.lifts:
+            for r in lift.shafts:
+                if r not in rooms:
+                    raise ValueError(f"{lift.id}: unknown shaft room {r!r}")
         for a, b in self.program.connect:
             if a not in rooms or b not in rooms:
                 raise ValueError(f"program.connect: unknown room in {a!r}-{b!r}")

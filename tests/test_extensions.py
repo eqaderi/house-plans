@@ -106,3 +106,86 @@ def test_balcony_drawn_labelled_and_in_ifc(spec, tmp_path):
     build_ifc(design, geo).write(str(ifc_path))
     assert [s.Name for s in ifcopenshell.open(str(ifc_path)).by_type("IfcSlab")] == ["B1"]
     assert verify.verify_ifc(str(ifc_path), design, geo) == []
+
+
+# --- lift ---------------------------------------------------------------------
+
+def lift_spec() -> dict:
+    """The bungalow's bath R3 (2.40 x 3.48 m net) becomes a lift shaft, and
+    an upper level repeats its walls: shaft U2 above R3, hall U1 beside it.
+    The upper level has no stair, so U1 is reached by the lift alone."""
+    s = yaml.safe_load(EXAMPLE.read_text(encoding="utf-8"))
+    r3 = next(r for r in s["rooms"] if r["id"] == "R3")
+    r3.update(name="Lift", use="lift")
+    s["levels"].append({"id": "L1", "name": "First floor", "ffl": 3200, "floor_to_floor": 3000, "slab": 350})
+    for w in [w for w in s["walls"] if w["kind"] == "exterior" or w["id"] in ("H2", "V2")]:
+        s["walls"].append({**w, "id": w["id"] + "u", "level": "L1"})
+    s["rooms"] += [
+        {"id": "U1", "level": "L1", "name": "Hall", "use": "hall", "seed": [8000, 4500]},
+        {"id": "U2", "level": "L1", "name": "Lift", "use": "lift", "seed": [1300, 7000]},
+    ]
+    s["openings"].append({"id": "UO", "wall": "H2u", "kind": "opening", "offset": 1200, "width": 900, "height": 2100})
+    s["openings"].append({"id": "UF", "wall": "WSu", "kind": "window", "offset": 2000, "width": 1200, "height": 1200, "sill": 900})
+    s["lifts"] = [{"id": "LF", "shafts": ["R3", "U2"], "car": [1100, 1400]}]
+    return s
+
+
+def test_lift_is_clean_and_serves_the_upper_level():
+    _, geo, findings = analyse(lift_spec())
+    assert not {c for c in codes(findings) if c.startswith("LIFT")}
+    assert "ROOM_UNREACHABLE" not in codes(findings)
+
+
+def test_lift_shaft_not_stacked():
+    s = lift_spec()
+    next(w for w in s["walls"] if w["id"] == "V2u").update(start=[2000, 5300], end=[2000, 9000])
+    _, _, findings = analyse(s)
+    assert "LIFT_NOT_STACKED" in codes(findings)
+
+
+def test_lift_without_landing_door():
+    s = lift_spec()
+    s["openings"] = [o for o in s["openings"] if o["id"] != "UO"]
+    _, _, findings = analyse(s)
+    assert "LIFT_NO_DOOR" in codes(findings)
+
+
+def test_lift_car_bigger_than_shaft():
+    s = lift_spec()
+    s["lifts"][0]["car"] = [1100, 3600]  # shaft is 2400 x 3475
+    _, _, findings = analyse(s)
+    assert "LIFT_CAR_IN_SHAFT" in codes(findings)
+
+
+def test_lift_shaft_room_must_have_lift_use():
+    s = lift_spec()
+    next(r for r in s["rooms"] if r["id"] == "U2")["use"] = "storage"
+    _, _, findings = analyse(s)
+    assert "LIFT_ROOM_USE" in codes(findings)
+
+
+def test_lift_room_not_listed():
+    s = lift_spec()
+    del s["lifts"]
+    _, _, findings = analyse(s)
+    assert "LIFT_UNLISTED" in codes(findings, "warning")
+
+
+def test_lift_rules(tmp_path, monkeypatch):
+    (tmp_path / "l.yaml").write_text(yaml.safe_dump({
+        "ruleset": "l", "jurisdiction": "IR", "title": "test",
+        "rules": [
+            {"id": "CAR", "check": "lift_car_min", "title": "car", "value": 1100, "params": {"depth": 1500}, "source": "test", "status": "unverified"},
+            {"id": "SHAFT", "check": "lift_shaft_min", "title": "shaft", "value": 2500, "params": {"depth": 3000}, "source": "test", "status": "verified"},
+            {"id": "ENTRY", "check": "lift_entrance_min_width", "title": "entrance", "value": 900, "source": "test", "status": "verified"},
+        ],
+    }))
+    monkeypatch.setattr(rules, "RULES_DIR", tmp_path)
+    s = lift_spec()
+    s["project"]["ruleset"] = "l"
+    design, geo, _ = analyse(s)
+    found = {(f.code, f.severity, f.subject) for f in rules.run_rules(design, geo)}
+    assert ("CAR", "warning", "LF") in found  # 1400 deep < 1500
+    assert ("SHAFT", "error", "LF") in found  # 2400 wide < 2500
+    entry = {f[2] for f in found if f[0] == "ENTRY"}
+    assert entry == {"R3"}  # D4 is 800 wide; U2's opening UO is 900

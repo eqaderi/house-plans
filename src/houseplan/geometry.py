@@ -212,6 +212,19 @@ def build(design: Design) -> dict[str, LevelGeom]:
     return {l.id: build_level(design, l.id) for l in design.levels}
 
 
+def lift_shafts(design: Design, geo: dict[str, LevelGeom]) -> dict[str, BaseGeometry]:
+    """The clear shaft of each lift: the part of its shaft rooms that is free
+    on every level it serves."""
+    out = {}
+    for lift in design.lifts:
+        outlines = [rg.outline for lg in geo.values() for rid, rg in lg.rooms.items() if rid in lift.shafts]
+        common = outlines[0] if outlines and all(o is not None for o in outlines) else Polygon()
+        for o in outlines[1:]:
+            common = common.intersection(o) if o is not None else Polygon()
+        out[lift.id] = common
+    return out
+
+
 def sides_of(poly: Polygon) -> tuple[float, float]:
     """Short and long side of the smallest rotated rectangle around a polygon."""
     with np.errstate(divide="ignore", invalid="ignore"):
