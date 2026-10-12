@@ -13,21 +13,28 @@ anything else is a close paraphrase.
 - Land status and restrictions: "It's a free land ... We are allowed to build
   on it however we want. No restrictions there." The owner also said "You
   are free to not follow any of the rules which are limiting you" (see
-  open question #28).
-- Plot area per the deed (سند), and plot number (پلاک ثبتی):
+  open question #28). Later (2026-10-13): "our field is not inside the city.
+  It's just beside it, so we're free to build however we want there. It
+  should be built in a way that just benefits us, so no restrictions."
+- Plot area per the deed (سند), and plot number (پلاک ثبتی): no plot number.
+  The surveyed outline (`docs/site.md`, 600.004 m²) is the plot; the owner:
+  "Don't worry about it."
 - Municipal conditions (دستور نقشه): none, per the owner (above).
   - Street: on the west side and uphill. 9 m wide, including the pavement.
     The plot starts at the road's edge and runs east and downhill. The
     building's wall may stand directly on the 9 m line, with no setback.
-  - South side: leave a 1 m strip along the south boundary, measured
-    northwards, for an alley. The southern neighbour will also leave 1 m, so
-    the alley is 2 m wide.
+  - South side (downhill side of the plot): no building on a 1 m strip
+    inside the plot, measured perpendicular to the south boundary, for an
+    alley. The southern neighbour will also leave 1 m, so the alley is 2 m
+    wide. Nothing is left along the road.
   - A door from the alley into the plot, so that someone coming up from the
     downhill side can enter.
 - Which DWG is the survey, which are existing drawings, who surveyed and when:
   `sources/height-points.dwg` and `sources/seperated.dwg`; the owner: "In the
   DWG files, the western side is right there ... the road is 9 m wide."
-  Surveyor and date not given.
+  Surveyed by a private person, date not given: "It might have made
+  mistakes, so just fix them yourself." On the drawings, up is north, right
+  is east and left is west.
 - Neighbours: south, a plot whose owner will leave 1 m for the alley. Others
   not given.
 
@@ -48,10 +55,13 @@ anything else is a close paraphrase.
   most of its time, definitely needs a toilet. A shower there is optional.
   Showers and the rest can be on the other floor, where the bedrooms are.
 - Laundry, storage, plant / boiler room, roof access:
-- Parking: how many cars, covered?
+- Parking: two big cars, a Toyota Land Cruiser 300 and a Peugeot 301, in a
+  parking with a roof: "We don't want an open parking."
 - Basement wanted? Floors above ground: two floors (duplex). Living room,
   kitchen and main entrance on one floor; bedrooms on the other.
-- Lift now or space for one later:
+- Lift now or space for one later: "We're going to build a lift." A bedroom
+  with an accessible bathroom on the entrance floor is not needed: "Maybe you
+  can consider it, but it's not necessary."
 - Outdoor:
   - "We need a big balcony from as many sides as possible for the upper floor
     if the living room and kitchen are there."

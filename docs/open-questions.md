@@ -5,7 +5,7 @@ Facts the design needs and does not have yet. Never fill these by guessing.
 | # | Question | Needed for | Source that can answer it | Status |
 |---|---|---|---|---|
 | 1 | City / municipality / district or village of the site | municipal rules, submission format | user | **closed 2026-10-13**: Banavreh (Banehvreh), Paveh County, Kermanshah (owner). The coordinates agree under UTM 38N (`docs/site.md`). The Tehran elevation-zone limits no longer apply. |
-| 2 | Survey DWG files and their CRS / units | footprint, levels, datum | sources/ | **partly**: files in `sources/`, units metres (`$INSUNITS=6`, road 9.000 m checks). CRS inferred as UTM 38N, not stated in the files; needs the surveyor's confirmation. |
+| 2 | Survey DWG files and their CRS / units | footprint, levels, datum | sources/ | **closed 2026-10-13**: metres; up = north (owner). Zone UTM 38N inferred, consistent with Banehvreh. |
 | 3 | Municipal conditions: coverage, height, setbacks, street widening | footprint limits | دستور نقشه from the municipality | **answered verbally** by the owner, 2026-10-13: no restrictions, wall allowed at the road line, 1 m alley strip on the south. No written دستور نقشه seen. |
 | 4 | Structural system | grid, wall thicknesses | structural engineer | open |
 | 5 | Qibla bearing at the site | WC orientation | computed from site coordinates | **computed**: true 204.75°, grid 203.97° (`scripts/measure_site.py`). Valid only if the CRS is 38N (#2). |
@@ -17,13 +17,13 @@ Facts the design needs and does not have yet. Never fill these by guessing.
 | 11 | Geotechnical report (soil, rock depth, slope stability, groundwater). **Critical: the plot falls about 37–38 % west to east (12.5 m over 32.6 m).** | foundations, retaining, cut/fill | geotechnical engineer | open |
 | 12 | Land status: urban plot, garden (باغ), farmland or village plot | everything | deed, municipality | **closed 2026-10-13** (owner): "free land", building unrestricted. Not checked against a document. |
 | 13 | Ground snow load zone (Mabhas 6) and seismic hazard level for the locality (Standard 2800) | roofs, structure | structural engineer | open |
-| 14 | Is plot outline D7 (32.570 × 21.000 m parallelogram, 600.004 m²) the deed boundary? Deed area and plot number (پلاک ثبتی) | boundary, envelope | deed (سند) | open |
-| 15 | Is the 1 m alley strip inside D7, measured square to the south side? | envelope | owner | open |
-| 16 | Who surveyed, when, and on which height datum? Why do the two files differ by +0.49 to +0.89 m in Z at the corners? Which file's heights rule? | datum, levels | surveyor | open |
+| 14 | Is plot outline D7 (32.570 × 21.000 m parallelogram, 600.004 m²) the plot boundary? Plot number | boundary, envelope | owner | **closed 2026-10-13** (owner): no plot number; D7 is the plot. |
+| 15 | Is the 1 m alley strip inside D7, measured square to the south side? | envelope | owner | **closed 2026-10-13** (owner): inside the plot, 1 m perpendicular to the south boundary; nothing left along the road. |
+| 16 | Who surveyed, when, and on which height datum? Why do the two files differ by +0.49 to +0.89 m in Z at the corners? Which file's heights rule? | datum, levels | surveyor | **closed 2026-10-13**: private surveyor, date unknown. Owner delegated the fix; agent decision in `docs/decisions.md`. |
 | 17 | What does "seperated" mean: a plot subdivided (تفکیک) from a larger parcel? | boundary status | owner, deed | open |
 | 18 | Neighbours north and east: built or empty, heights, what is downhill to the east (street, field)? | privacy, light, retaining, access | owner | open |
-| 19 | Parking: how many cars, covered, where? | entrance floor layout | owner | open |
-| 20 | Future accessibility (wheelchair, grandparent): a lift now, a shaft for one later, or a bedroom with an accessible bathroom on the entrance floor? | stair/lift, program | owner | open |
+| 19 | Parking: how many cars, covered, where? | entrance floor layout | owner | **closed 2026-10-13** (owner): Land Cruiser 300 + Peugeot 301, roofed, not open. Location is a design question. |
+| 20 | Future accessibility: lift, shaft or accessible bedroom on the entrance floor? | stair/lift, program | owner | **closed 2026-10-13** (owner): a lift is built now; an accessible bedroom on the entrance floor is optional. |
 | 21 | Formal guest room (پذیرایی) separate from family living? | program | owner | open |
 | 22 | Kitchen: what do its two open sides open onto (dining, hall, balcony)? | kitchen layout | owner | open |
 | 23 | Toilets: Iranian, western or both, and how many bathrooms? | wet rooms | owner | open |
@@ -31,5 +31,5 @@ Facts the design needs and does not have yet. Never fill these by guessing.
 | 25 | Permanent home? Heating (gas available?), water tank, solar | services rooms | owner | open |
 | 26 | Laundry, storage, boiler / plant room, roof access | program | owner | open |
 | 27 | Drawing labels (English / Persian / both), dimension unit | drawings | owner | open |
-| 28 | Confirm the reading of "free to not follow the rules": it covers land status and municipal limits only. Code safety checks, `sources/` handling and the engineer's sign-off stay. | how checks are treated | owner | open |
-| 29 | Height datum (benchmark `نقطه مبنا`, Z 1677.462) and local origin (SW corner V3), as proposed in `docs/site.md` | datum | owner | open |
+| 28 | Reading of "free to not follow the rules" | how checks are treated | owner | **closed 2026-10-13** (owner): plot is outside the city limits, no municipal restrictions. Agent keeps the safety and comfort checks (stairs, headroom, daylight, seismic), as they serve the family; see `docs/decisions.md`. |
+| 29 | Height datum and local origin | datum | owner | **closed 2026-10-13**: owner delegated; agent decision in `docs/decisions.md`. |

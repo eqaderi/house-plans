@@ -55,7 +55,7 @@ points.
   listed at 34.97056 N, 46.36000 E
   ([Wikipedia/OSM](https://en.wikipedia.org/wiki/Banehvreh)). Under 39N the
   same point falls at 52.36 E, outside Kermanshah province.
-  **Assumed 38N, pending the surveyor's confirmation.**
+  **Assumed 38N; the owner confirms up = north.**
 - North: drawing +Y is grid north (`$ANGBASE 0`, no UCS). Grid north points
   `0.778°` east of true north. True azimuth = grid azimuth + 0.778°.
 - Qibla: true azimuth `204.75°`, grid azimuth `203.97°`. Valid only if the
@@ -147,7 +147,9 @@ step is assumed yet (see #16 in `docs/open-questions.md`):
 5. **Who set the benchmark `نقطه مبنا`, and on which datum?** It sits
    20.772 m NNW of the plot, in or beside the road.
 
-## Proposed (not decided; owner to confirm)
+## Decided 2026-10-13 (delegated by the owner; see `docs/decisions.md`)
+
+- Plan geometry from `seperated.dxf`, all heights from `height-points.dxf`.
 
 - Height datum: the benchmark `نقطه مبنا`, Z 1677.462, with ±0.00 chosen in
   phase 3.
