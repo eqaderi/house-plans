@@ -12,9 +12,8 @@ anything else is a close paraphrase.
   town lately." No detailed plan applies, per the owner (next line).
 - Land status and restrictions: "It's a free land ... We are allowed to build
   on it however we want. No restrictions there." The owner also said "You
-  are free to not follow any of the rules which are limiting you". The
-  agent reads this as being about land status and municipal limits only.
-  Not yet confirmed by the owner.
+  are free to not follow any of the rules which are limiting you" (see
+  open question #28).
 - Plot area per the deed (سند), and plot number (پلاک ثبتی):
 - Municipal conditions (دستور نقشه): none, per the owner (above).
   - Street: on the west side and uphill. 9 m wide, including the pavement.

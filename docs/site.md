@@ -39,8 +39,11 @@ entity handle, not by layer name.
 | `height-points.dxf` | 21 POINT, each with an MTEXT label (name and Z) | Pt1–Pt20 spot heights on the plot; `نقطه مبنا` (benchmark), 20.772 m outside the plot to the NNW, Z 1677.462. Every label equals its point's Z. |
 | `seperated.dxf` | 6 POINT with MTEXT labels (name only); LWPOLYLINE `BC`, `C5`, `D7` | `BC` is the road's west edge (through Pt1–Pt3). `C5` is the road's east edge, which is also the plot's west boundary. `D7` is the plot outline, closed by repeating its first vertex. Pt4 and Pt5 are in the road; Pt6 is 1.390 m outside the plot's NE corner. The polylines' elevation 1678.998 copies Pt1's Z and is not a measurement. |
 
-`hp survey` counts heights as `n=42` and `n=15`. Each POINT and its MTEXT are
-counted separately, so there are 21 and 6 measured points.
+`hp survey` counts heights as `n=42` and `n=15`. In `height-points.dxf` each
+POINT and its MTEXT label are counted separately (21 + 21). In
+`seperated.dxf` the 15 are 6 POINT + 6 MTEXT + the three polylines'
+elevation 1678.998, which is not a measurement. There are 21 and 6 measured
+points.
 
 ## Units and coordinates
 
@@ -112,10 +115,16 @@ The site falls steeply from the road (west) to the east, at about 37–38 %.
 It is almost level along the road. The interior points (Pt5–Pt15, Pt18) are
 listed with their Z in the script output. No terrain model has been made yet.
 
-The road is above the plot. On its east edge, seperated Pt5 (0.679 m outside
-the NW corner) is Z 1678.330 and Pt4 is Z 1679.131. On its west edge,
-Pt1–Pt3 run from 1678.998 to 1680.071. Along the road the ground rises to
-the south.
+The two files disagree on how the road meets the plot, so no road-to-plot
+step is assumed yet (see #16 in `docs/open-questions.md`):
+
+- `height-points.dxf`: its points just outside the west boundary, in the road
+  edge, are Pt17 (0.859 m out) at Z 1677.805, Pt20 (0.230 m out) at
+  1677.632 and Pt19 (0.055 m out) at 1677.613. That puts the road edge close
+  to the corner heights V0 1677.438 and V3 1677.613.
+- `seperated.dxf`: on the road's east edge, Pt5 (0.679 m outside the NW
+  corner) is Z 1678.330 and Pt4 is Z 1679.131. On the road's west edge,
+  Pt1–Pt3 run from 1678.998 to 1680.071.
 
 ## Ambiguities (for the owner / surveyor)
 
