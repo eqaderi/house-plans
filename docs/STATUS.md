@@ -1,13 +1,12 @@
 # Status
 
-- **Phase:** 1, site: done; brief complete. Next: phase 2, envelope.
+- **Phase:** 2, envelope: done (plot, alley strip, terrain, kit). Next: phase 3, sketch options.
 - **Revision:** none yet
-- **Last session (2026-10-13, Claude Code, laptop 1):**
-  - Survey converted and measured (`docs/site.md`, `scripts/measure_site.py`).
-  - Plot D7: a 32.570 × 21.000 m parallelogram, 600.004 m², corners
-    61°/119°. Road 9.000 m on the west. The plot falls 37–38 % to the east.
-  - Owner's brief entered: road, alley strip, parking, lift.
-  - Datum and origin decided (`docs/decisions.md`).
+- **Last session (2026-10-13, Claude Code, laptop 1, second session):**
+  kit for phase 2–3: spec frame turned to the plot, `site:` block and site
+  sheet, boundary and alley-strip checks, `bin/hp ground` (linear TIN),
+  balconies, lifts, cars in the garage, cited lift and parking rules.
+  92 tests pass; gate exits 0. No option drawn yet.
 - **Next (in order):**
   1. ~~**Spec frame.**~~ Done 2026-10-13: origin V3, x along the south
      boundary, `north_angle_deg: 337.97` (`scripts/site_frame.py`,
@@ -27,7 +26,24 @@
      IR4-PARK-STALL, IR4-PARK-HEIGHT (transcribed), plus IR15-LIFT-SHAFT
      (unverified, suggested size). Sizes and sources are in
      `docs/research.md`; open questions 31 (which LC300) and 32 (which lift).
-  5. **Phase 3:** the first sketch options (`design/option-a.yaml`, ...).
+  5. **Phase 3: the first sketch options** (`design/option-a.yaml`, ...).
+     Inputs ready:
+     - `site: ../derived/site/d7.yaml` and `project.north_angle_deg: 337.97`;
+       the alley strip is y 0..1000, the west boundary is slanted (the
+       wedge is accepted).
+     - Run `bin/hp ground` first to decide which floor meets the road (west,
+       about Z 1677.6) and which the garden (east, about Z 1665.3), then set
+       `datum.survey_z_mm` and the level FFLs. Record the choice in
+       `docs/decisions.md`.
+     - `program.vehicles`: LC300 5145 × 1990 × 1945 (envelope, open question 31),
+       Peugeot 301 4445 × 1748 × 1477 (`docs/research.md`).
+     - Lift: car 1100 × 1400, shaft room at least 1600 × 1900 clear (open question 32).
+     - Program per `docs/brief.md`: 3 bedrooms, kitchen with two open ends
+       and a wall to living and a door to the balcony, a WC on the living
+       floor, a prayer room with wudhu nearby, laundry, storage, boiler
+       room, a roofed garage, a big balcony on as many sides as possible
+       of the upper floor if living and kitchen are there, the lower floor
+       on the garden, a door from the alley.
   6. **Later:** Persian labels.
 - **Note:** `bin/hp ground` answers "unknown" at the four plot corners and
   in thin strips along the boundary: the survey's corner shots lie a few cm
