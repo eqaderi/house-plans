@@ -121,3 +121,15 @@ warnings it explains.
     is angled. Otherwise the person prays along the room's diagonal. Either
     option is shown in the sketch; the owner chooses.
 - **Who:** owner (orientation, preference); agent (reading, measurement).
+
+## 2026-10-13: orientation accepted; toilets need no special treatment
+
+- **What:** the owner accepts:
+  - the house parallel to the north and south boundaries, with cross walls
+    square to them;
+  - toilets about 45° from the qibla (43.22° / 46.78°);
+  - the wedge left between the house and the slanted road side.
+  
+  No toilet–qibla check is added to the kit. Any toilet on a wall in the
+  two agreed directions is acceptable.
+- **Who:** owner.

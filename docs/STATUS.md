@@ -13,9 +13,9 @@
   sketch options.
 - **Brief:** complete enough to sketch. Only #25 (water tank, solar) is
   left, and it matters only at the final stage.
-- **Kit gaps, before the first sketch:**
-  1. Model toilet fixtures with an axis, and add a QIBLA check (test first)
-     comparing each toilet axis with the qibla, grid 203.97°. The owner
-     requires it.
-  2. Persian labels (the owner prefers Persian; English until then).
+- **Kit gaps, before the first sketch:** Persian labels (the owner prefers
+  Persian; English until then). The toilet–qibla check is not needed: every
+  wall of the agreed orientation is 43–47° from the qibla, which the owner
+  accepts. That holds only while toilets stand on walls in those two
+  directions.
 - **Blocking:** see docs/open-questions.md
