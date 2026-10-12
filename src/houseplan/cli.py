@@ -2,6 +2,7 @@
 
   hp check  <design.yaml>            schema, geometry and rule checks
   hp sketch <design.yaml>...         check, then one PDF + PNG per level: for showing options
+  hp zoom   <design.yaml> [--room R]  1:50 close-ups of every room, for inspection
   hp build  <design.yaml> [--out D]  final stage: DXF/PDF/PNG per level, IFC, report, read-back
   hp doctor                          which external tools are available
   hp dwg2dxf <file.dwg> <out_dir>    convert a survey DWG with ODA, original untouched
@@ -110,6 +111,25 @@ def cmd_sketch(args) -> int:
     return worst
 
 
+def cmd_zoom(args) -> int:
+    """Close-ups of every room at 1:50, for looking at junctions, doors and labels."""
+    from . import render
+    from .drawing import plan_dxf
+
+    design, geo, _ = _analyse(args.design)
+    out = ROOT / "out" / Path(args.design).stem / "zoom"
+    out.mkdir(parents=True, exist_ok=True)
+    for lv in design.levels:
+        doc, _ = plan_dxf(design, geo[lv.id], scale=args.scale)
+        for rid, rg in geo[lv.id].rooms.items():
+            if rg.outline is None or (args.room and rid not in args.room):
+                continue
+            png = out / f"{lv.id}-{rid}.png"
+            render.close_up(doc, rg.outline.bounds, args.scale, str(png))
+            print(png)
+    return 0
+
+
 def cmd_build(args) -> int:
     from . import ifc, render, verify
     from .drawing import plan_dxf
@@ -164,6 +184,11 @@ def main(argv: list[str] | None = None) -> int:
     k.add_argument("design", nargs="+")
     k.add_argument("--scale", type=int, default=100)
     k.set_defaults(fn=cmd_sketch)
+    z = sub.add_parser("zoom")
+    z.add_argument("design")
+    z.add_argument("--room", nargs="*")
+    z.add_argument("--scale", type=int, default=50)
+    z.set_defaults(fn=cmd_zoom)
     b = sub.add_parser("build")
     b.add_argument("design")
     b.add_argument("--out")

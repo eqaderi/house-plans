@@ -10,14 +10,11 @@ A plan is verified in three layers. None of them replaces the others.
 
 ## Looking at the sheets
 
-Read every `out/<name>/plan-*.png`. Then crop and zoom; a full A3 at 200 dpi
-hides small faults. With the architecture venv:
-
-```python
-from PIL import Image
-im = Image.open("out/<name>/plan-GF.png"); w, h = im.size
-im.crop((int(w*.25), int(h*.25), int(w*.75), int(h*.8))).save("/tmp/zoom.png")
-```
+Read every sheet PNG. Then look closer: a full A3 at 200 dpi hides small
+faults. `bin/hp zoom design/<name>.yaml` renders every room at 1:50 into
+`out/<name>/zoom/` (`--room R1 R4` for some); read each one. The first close-up
+ever taken here found dimension text crossed by another chain's extension
+line, invisible on the full sheet — that is now the DIM_TEXT_CROSSED audit.
 
 Checklist, every level:
 

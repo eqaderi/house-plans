@@ -10,7 +10,7 @@ from collections import defaultdict
 
 import ezdxf
 from ezdxf import bbox
-from shapely.geometry import box
+from shapely.geometry import LineString, box
 from shapely.ops import unary_union
 import ifcopenshell
 import ifcopenshell.util.element
@@ -60,6 +60,21 @@ def verify_text(path: str, lg: LevelGeom, scale: int) -> list[Finding]:
             elif a.buffer(pad).intersects(b.buffer(pad)):
                 gap = a.distance(b) / scale
                 out.append(Finding("DXF_TEXT_CROWDED", "warning", f"{ta!r}/{tb!r}", f"only {gap:.1f} mm apart on paper (< {TEXT_GAP} mm)"))
+    msp = ezdxf.readfile(path).modelspace()
+    lines = []
+    for idx, dim in enumerate(msp.query("DIMENSION")):
+        for v in dim.virtual_entities():
+            if v.dxftype() == "LINE":
+                lines.append((idx, LineString([(v.dxf.start.x, v.dxf.start.y), (v.dxf.end.x, v.dxf.end.y)])))
+    for idx, dim in enumerate(msp.query("DIMENSION")):
+        for v in dim.virtual_entities():
+            if v.dxftype() not in ("TEXT", "MTEXT"):
+                continue
+            b = bbox.extents([v], fast=False)
+            tb = box(b.extmin.x, b.extmin.y, b.extmax.x, b.extmax.y)
+            text = v.plain_text() if v.dxftype() == "MTEXT" else v.dxf.text
+            if any(j != idx and tb.intersects(ln) for j, ln in lines):
+                out.append(Finding("DIM_TEXT_CROSSED", "error", repr(text), "a line of another dimension runs through this dimension text"))
     rooms = unary_union([rg.outline.buffer(-0.5 * scale) for rg in lg.rooms.values() if rg.outline is not None])
     walls = lg.walls_union
     for layer, text, b in texts:

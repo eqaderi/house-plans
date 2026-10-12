@@ -32,6 +32,7 @@ tools and quote their output.
 bin/hp doctor                      # which tools are available on this machine
 bin/hp check design/<name>.yaml    # schema + geometry + rules; exit 1 on any error
 bin/hp sketch design/<name>.yaml   # sketch stage: checks + one PDF/PNG per level, nothing else
+bin/hp zoom design/<name>.yaml     # 1:50 close-ups of every room, for inspection
 bin/hp build design/<name>.yaml    # final stage: DXF/PDF/PNG per level, IFC, report, read-back checks
 bin/hp dwg2dxf sources/<f>.dwg derived/survey/   # survey DWG to DXF, original untouched
 hooks/gate.sh                      # the done-gate; must exit 0 before you say "done"

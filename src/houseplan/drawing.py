@@ -66,6 +66,8 @@ def _setup(doc, scale: int, dim_unit: str):
     ds.dxf.dimblk = "ARCHTICK"
     ds.dxf.dimasz = 1.2 * k
     ds.dxf.dimexe = 1.0 * k
+    ds.dxf.dimfxlon = 1
+    ds.dxf.dimfxl = 1.5 * k
     ds.dxf.dimexo = 1.0 * k
     ds.dxf.dimgap = 0.6 * k
     ds.dxf.dimtad = 1

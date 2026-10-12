@@ -22,7 +22,7 @@ MM_PER_INCH = 25.4
 
 
 def render(doc, sheet: Sheet, pdf_path: str | None, png_path: str | None, dpi: int = 200) -> None:
-    w_mm, h_mm = PAPERS[sheet.paper]
+    w_mm, h_mm = PAPERS[sheet.paper] if sheet.paper in PAPERS else _custom(sheet)
     fig = plt.figure(figsize=(w_mm / MM_PER_INCH, h_mm / MM_PER_INCH), dpi=dpi)
     ax = fig.add_axes([0, 0, 1, 1])
     ax.set_axis_off()
@@ -44,3 +44,15 @@ def render(doc, sheet: Sheet, pdf_path: str | None, png_path: str | None, dpi: i
     if png_path:
         fig.savefig(png_path, dpi=dpi)
     plt.close(fig)
+
+
+def _custom(sheet: Sheet) -> tuple[float, float]:
+    x0, y0, x1, y1 = sheet.frame
+    return (x1 - x0) / sheet.scale, (y1 - y0) / sheet.scale
+
+
+def close_up(doc, around, scale: int, png_path: str, margin: float = 1200, dpi: int = 300) -> None:
+    """Render one region of a plan (a room's bounds plus margin) at `scale`."""
+    x0, y0, x1, y1 = around
+    frame = (x0 - margin, y0 - margin, x1 + margin, y1 + margin)
+    render(doc, Sheet(scale, "custom", frame), None, png_path, dpi=dpi)
