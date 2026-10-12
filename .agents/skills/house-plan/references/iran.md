@@ -72,10 +72,8 @@ Every entry carries its clause and status.
 
 ## Municipal rules (only after the site's plan is known)
 
-The site is at about 1678 m in Tehran province. That may be Tehran city,
-Shemiranat, Lavasan or another municipality; **confirm which detailed plan
-governs it and get the دستور نقشه first.** For reference, the Tehran detailed
-plan (1398 compilation, holding-golestan.com/images/1400/06/tarh.pdf):
+**Confirm which plan governs the plot and get its دستور نقشه first** (the
+project's own facts live in `docs/`). For reference, the Tehran detailed plan (1398 compilation, holding-golestan.com/images/1400/06/tarh.pdf):
 
 - Coverage (R1) ≤ 60 % of the **deed area**, useful plus common areas (2-6, 8-1).
 - +2 m length extension if the plot is ≥ 25 m long or ≥ 180 m²; +1 m more on
@@ -97,3 +95,39 @@ need a 1:2000 survey approved by a qualified engineer. Sheet list, scales and
 title-block fields are not verified from a primary source: treat 1:100 for
 permit plans and 1:50 for construction as convention, and confirm with the
 local engineering organisation (سازمان نظام مهندسی ساختمان).
+
+## Sloped and mountain sites (researched 2026-10-13; mostly secondary sources)
+
+**Can it be built at all?** At high elevations that depends on the
+jurisdiction. Per the director-general of Tehran's peripheral zone (ILNA, 1402):
+building above **1800 m** is prohibited in District 1, above **1600 m** in
+District 5 and above **1450 m** in District 22; older permits inside the city
+boundary are not barred. The new detailed plan reportedly marks the northern
+edge as zone G323 (special protection, no residential permits) — unverified.
+Lavasanat, Shemiranat villages, Damavand, Rudehen and Fasham follow their own
+local plans (طرح هادی / طرح تفصیلی) or the peripheral-zone (حریم) rules; none
+were found online. A written zoning inquiry (استعلام دستور نقشه) settles it.
+
+| Rule | Value | Source | Status |
+|---|---|---|---|
+| Building height on a slope | from the **average level of the adjacent street** to the top of the parapet (flat roof) or mean roof height | Mabhas 4 ch. 2, via mohandesan.org, nezamat.ir | secondary |
+| ±0.00 on a sloped plot | flat street: lower property-line point if the wall is < 1.80 m from it, else the level 1.80 m from the building; sloped street: mean of upper and lower street levels; ground floor up to +1.20 m above ±0.00 | Mabhas 3, via cadkhoda-academy.ir | unverified |
+| Excavation risk class | normal: depth/critical depth < 0.5, < 6 m below ±0.00, not below the neighbour's foundation; high: 0.5–2, 6–20 m, 0–20 m below it; very sensitive neighbour → very high; avoid > 20 m | Mabhas 7 table 7-3-1, 7-3-3-1 (1392/1400), via omransara.ir | secondary |
+| Excavation safety officer | required for high and very-high risk | Mabhas 12, via bartaran.org | unverified |
+| Fault zones | very important buildings banned inside fault setbacks; setback widths not published in the 1397 Supreme Council resolution (notice 177743/300); "50 m" from the North Tehran fault is **unverified**; Lavasan lies in the North Tehran / Mosha fault zone (news) | lamtakam.com/law/approved_urban_planning/1069412 | partly verified |
+| Private parking ramp | ≤ 15 % (public 12 %); turning radius ≥ 6.5 m; not past the property line; first and last 1 m ≤ 10 % (Mabhas 4, unverified) | Tehran detailed plan, via haftshahraria.com | secondary |
+| Farmland or garden outside city limits | change of use banned except by the provincial commission (note 1, art. 1); owner's own residence up to 500 m², once, fee-exempt | Land-use law 1374/1385, ekhtebar.ir | verified |
+| Garden land inside Tehran (art. 14) | min. 2000 m², density 20 %, coverage 10 %, 2 floors over pilotis/basement; larger lots 7.5 % coverage; setbacks 4/8/12/16 m by floors (sources conflict) | dogoharani.com; 1398 amendment not verified | unverified |
+| Garden in Tehran's peripheral zone | min. 2 ha; one house ≤ 150 m² footprint, 2 floors + basement | old resolution via tabnak.ir | unverified, maybe superseded |
+| Villages | build only inside the approved طرح هادی; permit from the village council / دهیاری with Bonyad Maskan; "60 % coverage, 2 floors" is a generic example only | bonyadmaskan.ir | verified (process) |
+
+Not found anywhere: a slope percentage that triggers special approval, the
+Mabhas 7 slope trigger for a geotechnical study, retaining-wall clauses,
+fault setbacks in metres for North Tehran and Mosha. Ask the engineering
+organisation and the structural engineer.
+
+**Who approves:** in a city, the municipality (plan changes: Article 5
+commission); in Tehran's peripheral zone, the municipality's peripheral-zone
+directorate; in a village, the village council with Bonyad Maskan; change of
+use of farmland or gardens, the note-1 commission; design and supervision,
+the provincial engineering organisation (نظام مهندسی).

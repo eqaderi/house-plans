@@ -38,7 +38,7 @@ hooks/gate.sh                                  # the done-gate
 | `derived/` | Reproducible conversions of sources |
 | `docs/` | Brief, open questions, decisions, research |
 | `tests/` | Each test breaks the example one way and expects the matching finding |
-| `evals/evals.json` | Test prompts and what a good agent answer contains |
+| `.agents/skills/house-plan/evals/` | Test prompts with gradeable expectations, pressure cases and should-not-trigger prompts |
 | `hooks/` | `check-design.sh` (after spec edits) and `gate.sh` (before "done") |
 
 ## On any laptop

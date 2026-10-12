@@ -24,6 +24,8 @@ for spec in "$root"/design/*.yaml; do
     problems+="- $spec has errors: run bin/hp check $spec"$'\n'
   elif [ -z "$marker" ] || [ ! -f "$marker" ] || [ "$spec" -nt "$marker" ]; then
     problems+="- $spec changed since its sheets were drawn: run bin/hp $cmd $spec and look at the PNGs"$'\n'
+  elif [ "$cmd" = build ] && ! python3 -c 'import json,sys; sys.exit(any(f["severity"] == "error" for f in json.load(open(sys.argv[1]))["findings"]))' "$marker"; then
+    problems+="- $spec: the final build has errors (read-back or audit): see out/$stem/report.md"$'\n'
   fi
 done
 if ! (cd "$root" && PYTHONPATH=src "${HP_PYTHON:-$HOME/.venvs/architecture-ai/bin/python}" -m pytest -q tests >/dev/null 2>&1); then

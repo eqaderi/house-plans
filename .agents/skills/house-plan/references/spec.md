@@ -54,8 +54,9 @@ rooms:
   - { id: R1, level: GF, name: Bedroom 1, name_fa: اتاق خواب ۱, use: bedroom,
       seed: [2500, 2000], entrance: false }
   # The outline is the wall-enclosed space containing the seed. Area is net,
-  # from finished wall faces. uses: living bedroom kitchen bath wc corridor hall
-  # stair storage laundry garage plant balcony terrace
+  # from finished wall faces. uses: living (نشیمن) reception (پذیرایی) dining
+  # entry (ورودی/کفش‌کن) bedroom kitchen bath wc corridor hall stair storage
+  # pantry (انباری) laundry garage plant balcony terrace
 
 program:                       # the brief as checkable requirements (owner's, not yours)
   required: [ { use: bedroom, count: 3 }, { use: wc, count: 1 } ]
@@ -98,6 +99,11 @@ stairs:
 | PROGRAM_MISSING / CONNECTION_MISSING | error | the brief's rooms or connections are not in the plan |
 | AREA_OFF_TARGET | warning | room area outside the brief's tolerance |
 | RULES_NOT_APPLICABLE | info | rules with nothing to test: not checked, not passed |
+| ENTRY_VIEW_PRIVATE | warning | from the open entrance, a bedroom, bath or WC door is in view (محرمیت) |
+| ENTRY_INTO_LIVING | warning | the house is entered straight into a living space |
+| BEDROOM_OFF_SOCIAL | warning | a bedroom opens straight onto living, reception, dining or kitchen |
+| BEDROOM_NEXT_TO_NOISE | info | a bedroom shares a wall with a noisy room |
+| LIGHT_ONE_SIDE / LIVING_NOT_SOUTH | info | daylight from one side only / no south-facing window in a living room |
 
 `bin/hp build` (final stage) adds the read-back: DXF units and dimension
 chains (DXF_CHAIN_OPEN), text overlap and crowding below 1 mm on paper

@@ -101,7 +101,10 @@ class Opening(Strict):
 
 
 class RoomUse(str, Enum):
-    living = "living"
+    living = "living"  # family living, نشیمن
+    reception = "reception"  # guest reception, پذیرایی
+    dining = "dining"
+    entry = "entry"  # entrance, ورودی / کفش‌کن / هشتی
     bedroom = "bedroom"
     kitchen = "kitchen"
     bath = "bath"
@@ -110,6 +113,7 @@ class RoomUse(str, Enum):
     hall = "hall"
     stair = "stair"
     storage = "storage"
+    pantry = "pantry"  # انباری
     laundry = "laundry"
     garage = "garage"
     plant = "plant"
@@ -117,7 +121,10 @@ class RoomUse(str, Enum):
     terrace = "terrace"
 
 
-HABITABLE = {RoomUse.living, RoomUse.bedroom, RoomUse.kitchen}
+HABITABLE = {RoomUse.living, RoomUse.reception, RoomUse.dining, RoomUse.bedroom, RoomUse.kitchen}
+PRIVATE_VIEW = {RoomUse.bedroom, RoomUse.bath, RoomUse.wc}
+SOCIAL = {RoomUse.living, RoomUse.reception, RoomUse.dining, RoomUse.kitchen}
+NOISY = {RoomUse.kitchen, RoomUse.living, RoomUse.reception, RoomUse.laundry, RoomUse.plant, RoomUse.garage}
 WET = {RoomUse.bath, RoomUse.wc, RoomUse.kitchen, RoomUse.laundry}
 
 

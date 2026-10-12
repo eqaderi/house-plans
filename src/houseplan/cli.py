@@ -6,6 +6,7 @@
   hp build  <design.yaml> [--out D]  final stage: DXF/PDF/PNG per level, IFC, report, read-back
   hp doctor                          which external tools are available
   hp dwg2dxf <file.dwg> <out_dir>    convert a survey DWG with ODA, original untouched
+  hp survey <file.dxf>               units, layers, extents, outlines, measured heights
 
 Exit status is 1 when any error is found, so hooks and CI can gate on it.
 """
@@ -19,7 +20,7 @@ from pathlib import Path
 
 from pydantic import ValidationError
 
-from . import checks, geometry, model, rules
+from . import checks, family, geometry, model, rules
 from .checks import Finding
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -28,7 +29,7 @@ ROOT = Path(__file__).resolve().parents[2]
 def _analyse(path: str):
     design = model.load(path)
     geo = geometry.build(design)
-    findings = checks.run_all(design, geo) + rules.run_rules(design, geo)
+    findings = checks.run_all(design, geo) + family.run_family(design, geo) + rules.run_rules(design, geo)
     return design, geo, findings
 
 
@@ -168,6 +169,12 @@ def cmd_doctor(args) -> int:
     return doctor()
 
 
+def cmd_survey(args) -> int:
+    from .survey import survey
+
+    return survey(args.dxf)
+
+
 def cmd_dwg2dxf(args) -> int:
     from .tools import dwg_to_dxf
 
@@ -196,6 +203,9 @@ def main(argv: list[str] | None = None) -> int:
     b.set_defaults(fn=cmd_build)
     d = sub.add_parser("doctor")
     d.set_defaults(fn=cmd_doctor)
+    v = sub.add_parser("survey")
+    v.add_argument("dxf")
+    v.set_defaults(fn=cmd_survey)
     w = sub.add_parser("dwg2dxf")
     w.add_argument("dwg")
     w.add_argument("out_dir")

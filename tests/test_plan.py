@@ -378,3 +378,46 @@ def test_rules_not_applicable_are_listed(spec):
     design, geo, _ = analyse(spec)
     idle = [f for f in rules.run_rules(design, geo) if f.code == "RULES_NOT_APPLICABLE"]
     assert idle and "IR4-STAIR-GOING" in idle[0].message
+
+
+def family_findings(spec):
+    from houseplan import family
+
+    design, geo, _ = analyse(spec)
+    return {(f.code, f.subject) for f in family.run_family(design, geo)}
+
+
+def test_entry_straight_into_living_is_flagged(spec):
+    assert ("ENTRY_INTO_LIVING", "R5") in family_findings(spec)
+
+
+def test_entry_view_sees_bedroom_door(spec):
+    # a front door in the west wall, looking straight down the corridor at
+    # the bath door D4's wall: move D4 into the line of sight on V1's side
+    spec["openings"].append({"id": "DW", "wall": "WW", "kind": "door", "offset": 4150, "width": 1000, "height": 2200, "hinge": "start", "swing": "right"})
+    item(spec, "openings", "D2")["kind"] = "door"
+    found = family_findings(spec)
+    assert any(code == "ENTRY_VIEW_PRIVATE" and subject == "DW" for code, subject in found)
+
+
+def test_bedroom_off_living_is_flagged(spec):
+    spec["openings"].append({"id": "DX", "wall": "V1", "kind": "door", "offset": 2000, "width": 900, "height": 2100, "hinge": "start", "swing": "left"})
+    assert ("BEDROOM_OFF_SOCIAL", "R1") in family_findings(spec)
+
+
+def test_living_room_window_orientation(spec):
+    assert ("LIVING_NOT_SOUTH", "R5") not in family_findings(spec)
+    spec["project"]["north_angle_deg"] = 180
+    assert ("LIVING_NOT_SOUTH", "R5") in family_findings(spec)
+
+
+def test_survey_report(spec, tmp_path, capsys):
+    from houseplan.survey import survey
+
+    design, geo, _ = analyse(spec)
+    doc, _ = plan_dxf(design, geo["GF"])
+    path = tmp_path / "s.dxf"
+    doc.saveas(path)
+    survey(str(path))
+    text = capsys.readouterr().out
+    assert "$INSUNITS=4 (millimetres)" in text and "A-WALL" in text

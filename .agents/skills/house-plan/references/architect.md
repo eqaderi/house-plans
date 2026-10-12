@@ -1,5 +1,9 @@
 # How a senior architect lays out a house
 
+Companion references: `slope.md` (the site), `family.md` (how the family
+lives, Iranian specifics, red flags), `ergonomics.md` (clearances),
+`iran.md` (rules), `visualization.md` (3D and Unreal after approval).
+
 These are design judgements, not regulations. Regulation numbers live in
 `rules/` with their sources; where a value below is a rule of thumb, it is
 called one. Apply them in this order: each step constrains the next.

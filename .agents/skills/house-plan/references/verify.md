@@ -48,9 +48,12 @@ prompt.
 > 3. Read every PNG and work through the checklist in references/verify.md.
 > 4. Compare the spec with its sources (survey, brief, docs/trace.md):
 >    anything invented or changed from a source is a defect.
-> 5. Report only defects and unverified assumptions, each with file, element
->    id, evidence (command and output), and severity. No praise, no
->    suggestions beyond correctness and the brief.
+> 5. Report only defects and unverified assumptions, most severe first, each
+>    with file, element id, evidence (command and the relevant output line),
+>    and severity (blocker / major / minor). Then list every UNVERIFIED RULE
+>    and open question the owner must resolve. No praise, no style advice, no
+>    suggestions beyond correctness and the brief. If you find nothing, say
+>    so and list what you checked.
 > Do not edit any file.
 
 ## When the checks miss something

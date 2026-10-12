@@ -71,6 +71,19 @@ chat remembers.
 - **Resuming a chat** works too (`claude --continue`, `codex resume`), but the
   state files are what make a new session as good as an old one.
 
+## Unattended rounds (Claude Code)
+
+For a round the agent can finish alone, give it a measurable end state with
+`/goal`, for example:
+
+> /goal design/house.yaml applies every item in docs/feedback/rev-C.md;
+> `bin/hp check design/house.yaml` prints 0 errors; `hooks/gate.sh` exits 0;
+> docs/brief.md and the program block are unchanged; show the outputs. Stop
+> after 20 turns.
+
+The goal is re-checked after every turn and survives `--resume`. In Codex,
+put the same end state at the top of the prompt.
+
 ## Opening prompt for a new session
 
 > Continue the house plan. Read AGENTS.md, the house-plan skill,

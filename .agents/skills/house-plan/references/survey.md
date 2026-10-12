@@ -24,16 +24,12 @@ macOS the ODA window may flash; that is normal.
 
 ## Reading the survey DXF
 
-In `~/.venvs/architecture-ai/bin/python`:
-
-```python
-import ezdxf
-doc = ezdxf.readfile("derived/survey/<file>.dxf")
-print(doc.header.get("$INSUNITS"), doc.header.get("$EXTMIN"), doc.header.get("$EXTMAX"))
-msp = doc.modelspace()
-for layer in sorted({e.dxf.layer for e in msp}):
-    print(layer, len(msp.query(f'*[layer=="{layer}"]')))
+```sh
+bin/hp survey derived/survey/<file>.dxf
 ```
+
+prints units, every layer with its entity types, the extents, the non-zero
+heights per layer, and the largest closed outlines with their areas. Then:
 
 1. **Units first.** `$INSUNITS` (4 = mm, 6 = m) and sanity-check one known
    distance (a plot side from the deed, a building edge). Iranian surveys are
