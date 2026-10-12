@@ -206,6 +206,8 @@ class SpotHeight(Strict):
     name: str
     at: Point
     survey_z_mm: int
+    ground: bool = Field(True, description="False for a point that is not on the natural ground (a benchmark, a road crown); kept out of the terrain.")
+    note: str | None = None
 
 
 class Site(Strict):

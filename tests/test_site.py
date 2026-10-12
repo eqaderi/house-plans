@@ -208,3 +208,52 @@ def test_plan_sheet_shows_boundary(spec):
     assert {"V-PROP-LINE", "A-SITE-NOBLD"} <= {e.dxf.layer for e in doc.modelspace()}
     x0, y0, x1, y1 = sheet.frame
     assert x1 > 20000 and y1 > 20000
+
+
+# --- terrain (linear TIN over the spot heights) ------------------------------
+
+from houseplan.terrain import Terrain  # noqa: E402
+
+
+@pytest.fixture(scope="module")
+def site():
+    return model.Site.model_validate(yaml.safe_load(SITE.read_text(encoding="utf-8")))
+
+
+def test_tin_returns_survey_z_at_a_spot_height(site):
+    t = Terrain(site)
+    pt8 = next(h for h in site.spot_heights if h.name == "Pt8")
+    assert t.z_at(*pt8.at).z_mm == pytest.approx(pt8.survey_z_mm, abs=1e-6)
+
+
+def test_tin_is_linear_on_an_edge(site):
+    t = Terrain(site)
+    a, b = t.points[t.tri.simplices[0][0]], t.points[t.tri.simplices[0][1]]
+    mid = ((a.at[0] + b.at[0]) / 2, (a.at[1] + b.at[1]) / 2)
+    assert t.z_at(*mid).z_mm == pytest.approx((a.survey_z_mm + b.survey_z_mm) / 2, abs=1e-6)
+
+
+def test_tin_never_extrapolates(site):
+    t = Terrain(site)
+    assert t.z_at(60000, 9000) is None  # east of every point
+
+
+def test_tin_leaves_out_points_not_on_the_ground(site):
+    bm = next(h for h in site.spot_heights if h.name == "BM")
+    assert bm.ground is False
+    t = Terrain(site)
+    assert "BM" not in {p.name for p in t.points}
+    assert t.z_at(*bm.at) is None
+
+
+def test_ground_command_reports_method(tmp_path, capsys):
+    from houseplan import cli
+
+    spec = yaml.safe_load(EXAMPLE.read_text(encoding="utf-8"))
+    spec["site"] = str(SITE)
+    path = tmp_path / "g.yaml"
+    path.write_text(yaml.safe_dump(spec, allow_unicode=True), encoding="utf-8")
+    assert cli.main(["ground", str(path), "--at", "21396,95"]) == 0
+    out = capsys.readouterr().out
+    assert "interpolated" in out and "linear TIN" in out
+    assert "1669.394" in out  # Pt5 sits at (21396, 95)

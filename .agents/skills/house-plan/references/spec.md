@@ -86,6 +86,10 @@ site: ../derived/site/d7.yaml   # or the block inline; a path is relative to the
 #   spot_heights: [{name, at: [x, y], survey_z_mm}]   survey Z, not relative to ±0.00
 ```
 
+`bin/hp ground <spec> [--at x,y ...]` reports the interpolated ground Z (linear
+TIN over the `ground` spot heights, never extrapolated) at points, or under
+every corner of each level and of the plot.
+
 With a site, `hp sketch` adds `sketch-site.png` (1:200: boundary with side
 lengths, roads, no-build zones, spot heights, each level's outline) and plan
 sheets show the boundary and no-build zones.

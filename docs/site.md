@@ -154,3 +154,21 @@ step is assumed yet (see #16 in `docs/open-questions.md`):
   phase 3.
 - Local origin: corner V3 (SW, where the road meets the alley), E 623809.167,
   N 3870456.033.
+
+## Terrain (2026-10-13)
+
+`bin/hp ground <spec> [--at x,y ...]`: a linear TIN over the 20 ground spot
+heights (benchmark excluded; see `docs/decisions.md`, "terrain model").
+Sample, in spec mm:
+
+```
+interpolated: linear TIN (Delaunay triangles, plane per triangle, no extrapolation), 20 spot heights from scripts/site_frame.py from derived/survey/seperated.dxf (D7, BC, C5) and height-points.dxf
+  point          (547, 1000)  Z 1677.572  from Pt13/Pt20/Pt19 (longest edge 9.07 m)
+  point          (10081, 17422)  Z 1677.174  from Pt17/Pt14/Pt16 (longest edge 8.68 m)
+  point          (32570, 1000)  Z 1665.810  from Pt3/Pt8/Pt4 (longest edge 9.63 m)
+  point          (41000, 17422)  Z 1665.321  from Pt9/Pt2/Pt1 (longest edge 15.30 m)
+  point          (21000, 9000)  Z 1670.998  from Pt10/Pt11/Pt6 (longest edge 12.59 m)
+```
+
+The plot corners themselves lie just outside the surveyed points and report
+"unknown".

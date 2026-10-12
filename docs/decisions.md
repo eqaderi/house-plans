@@ -157,3 +157,26 @@ warnings it explains.
   `family.py` and `drawing.py` already used it; the field's description said
   otherwise and was corrected.
 - **Who:** agent, carrying out the owner's orientation decision.
+
+## 2026-10-13: terrain model, benchmark kept out
+
+- **What:** ground heights between survey points come from a linear TIN
+  (`houseplan.terrain`, `bin/hp ground`): Delaunay triangles over the
+  `height-points.dxf` spot heights, a plane per triangle, no smoothing and
+  no extrapolation. Every reported height is labelled "interpolated" with
+  its three source points and the triangle's longest edge.
+- **The benchmark نقطه مبنا is not a ground point** (`ground: false` in
+  `derived/site/d7.yaml`). It stands 20.8 m NNW of the plot by the road.
+  Measured over a 100 mm grid of the plot (60254 points):
+  - With it, 459 points fall outside the hull; without it, 723 (all four
+    plot corners are outside either way: the corner shots lie a few cm
+    inside the boundary).
+  - Including it changes the ground by up to 0.833 m along the north
+    boundary, through triangles reaching 21 m beyond the plot.
+- **Known weak spots** (long hull triangles):
+  - Pt16/Pt9/Pt1 (32.5 m edge) covers only 1.66 m², within 0.26 m of the
+    north boundary.
+  - Pt5/Pt12/Pt19 (21.4 m edge) lies inside the alley strip.
+  - Pt9/Pt2/Pt1 (15.3 m edge) covers 50.37 m² at the NE.
+- **Who:** agent. The builder checks levels on site before setting out
+  (decision "survey heights and datum").

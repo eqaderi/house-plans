@@ -17,13 +17,10 @@
      checks SITE_OUTSIDE_BOUNDARY / SITE_IN_NO_BUILD, site sheet
      (`sketch-site.png`), boundary and strip on plan sheets. Options use
      `site: ../derived/site/d7.yaml`.
-  3. **Terrain:**
-     - a linear TIN from `height-points.dxf` only, no smoothing, labelled
-       "interpolated" with its method and source points;
-     - a tool that reports ground Z at any footprint point.
-
-     This decides which floor meets the road and which meets the garden
-     (12.5 m of fall).
+  3. ~~**Terrain.**~~ Done 2026-10-13: `bin/hp ground` (linear TIN,
+     `houseplan.terrain`); benchmark kept out; weak spots in
+     `docs/decisions.md`. Use it in phase 3 to choose which floor meets the
+     road and which the garden.
   4. **Brief items the kit cannot model yet** (see `references/spec.md`, "Not
      modelled yet"):
      - balconies outside the enclosure;

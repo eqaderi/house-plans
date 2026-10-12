@@ -90,3 +90,5 @@ spot_heights:
 - name: BM
   at: [10145, 39194]
   survey_z_mm: 1677462
+  ground: false
+  note: survey benchmark, 20.8 m NNW of the plot by the road; kept out of the terrain (docs/decisions.md)

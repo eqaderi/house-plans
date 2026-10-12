@@ -4,6 +4,7 @@
   hp sketch <design.yaml>...         check, then one PDF + PNG per level: for showing options
   hp zoom   <design.yaml> [--room R]  1:50 close-ups of every room, for inspection
   hp build  <design.yaml> [--out D]  final stage: DXF/PDF/PNG per level, IFC, report, read-back
+  hp ground <design.yaml> [--at x,y]  interpolated ground Z under each level's corners, or at points
   hp doctor                          which external tools are available
   hp dwg2dxf <file.dwg> <out_dir>    convert a survey DWG with ODA, original untouched
   hp survey <file.dxf>               units, layers, extents, outlines, measured heights
@@ -176,6 +177,37 @@ def cmd_build(args) -> int:
     return 1 if any(f.severity == "error" for f in findings) else 0
 
 
+def cmd_ground(args) -> int:
+    """Ground Z from the site's spot heights: at --at points, else at every
+    corner of each level's outline and of the plot."""
+    from .terrain import Terrain
+
+    design = model.load(args.design)
+    if design.site is None:
+        print("no site block: no spot heights to interpolate")
+        return 1
+    t = Terrain(design.site)
+    datum = design.project.datum.survey_z_mm
+    print(t.describe())
+    print(f"datum ±0.00 = survey Z {datum / 1000:.3f} m" if datum is not None else "datum ±0.00 not tied to the survey yet: heights are survey Z only")
+    if args.at:
+        targets = [("point", tuple(int(v) for v in a.split(","))) for a in args.at]
+    else:
+        geo = geometry.build(design)
+        targets = [(f"{lv.id} corner", (round(x), round(y))) for lv in sorted(design.levels, key=lambda l: l.ffl)
+                   for p in getattr(geo[lv.id].footprint, "geoms", [geo[lv.id].footprint]) if not p.is_empty
+                   for x, y in p.exterior.coords[:-1]]
+        targets += [("plot corner", tuple(p)) for p in design.site.boundary]
+    for what, (x, y) in targets:
+        g = t.z_at(x, y)
+        if g is None:
+            print(f"  {what:14} ({x}, {y})  outside the surveyed points: unknown")
+            continue
+        rel = f"  {(g.z_mm - datum) / 1000:+.3f} m to ±0.00" if datum is not None else ""
+        print(f"  {what:14} ({x}, {y})  Z {g.z_mm / 1000:.3f}{rel}  from {'/'.join(g.corners)} (longest edge {g.longest_edge_mm / 1000:.2f} m)")
+    return 0
+
+
 def cmd_doctor(args) -> int:
     from .tools import doctor
 
@@ -214,6 +246,10 @@ def main(argv: list[str] | None = None) -> int:
     b.add_argument("--out")
     b.add_argument("--scale", type=int, default=100)
     b.set_defaults(fn=cmd_build)
+    g = sub.add_parser("ground")
+    g.add_argument("design")
+    g.add_argument("--at", nargs="*", help="spec points x,y in mm")
+    g.set_defaults(fn=cmd_ground)
     d = sub.add_parser("doctor")
     d.set_defaults(fn=cmd_doctor)
     v = sub.add_parser("survey")
