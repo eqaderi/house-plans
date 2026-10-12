@@ -1,0 +1,5 @@
+# The IFC MCP server's own dependencies. ifcopenshell-mcp itself is installed
+# with --no-deps so it cannot pull a different IfcOpenShell.
+ifcedit==0.9.0
+ifcquery==0.9.0
+mcp>=1.30,<2

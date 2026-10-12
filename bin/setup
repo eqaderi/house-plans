@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+# Bring a Mac up to what this project needs. Safe to re-run.
+#   bin/setup          Python environment only (never upgrades what is already there)
+#   bin/setup --apps   also install missing GUI apps with Homebrew
+set -euo pipefail
+here="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+venv="${HP_VENV:-$HOME/.venvs/architecture-ai}"
+
+if [ ! -x "$venv/bin/python" ]; then
+  py="$(command -v python3.13 || command -v /opt/homebrew/bin/python3.13 || true)"
+  [ -n "$py" ] || { echo "Python 3.13 not found: brew install python@3.13"; exit 1; }
+  "$py" -m venv "$venv"
+fi
+"$venv/bin/python" -m pip install --quiet --upgrade-strategy only-if-needed -r "$here/requirements.txt"
+# The IFC MCP server: installed without letting it change IfcOpenShell.
+"$venv/bin/python" -m pip install --quiet --no-deps "ifcopenshell-mcp==0.9.0"
+"$venv/bin/python" -m pip install --quiet --upgrade-strategy only-if-needed -r "$here/requirements-mcp.txt" -r "$here/requirements.txt"
+
+if [ "${1:-}" = "--apps" ]; then
+  for cask in blender freecad qgis inkscape; do
+    case "$cask" in
+      blender) app=/Applications/Blender.app ;;
+      freecad) app=/Applications/FreeCAD.app ;;
+      inkscape) app=/Applications/Inkscape.app ;;
+      qgis) app="$(ls -d /Applications/QGIS*.app 2>/dev/null | head -1)" ;;
+    esac
+    [ -n "$app" ] && [ -d "$app" ] && continue
+    brew install --cask "$cask"
+  done
+  if ! /Applications/Blender.app/Contents/MacOS/Blender --command extension list 2>/dev/null | grep -q "bonsai \[installed\]"; then
+    /Applications/Blender.app/Contents/MacOS/Blender --command extension sync >/dev/null 2>&1 || true
+    /Applications/Blender.app/Contents/MacOS/Blender --command extension install bonsai || echo "Install Bonsai from Blender > Preferences > Get Extensions"
+  fi
+fi
+
+if [ ! -d /Applications/ODAFileConverter.app ]; then
+  echo "ODA File Converter is missing. Download the macOS build from"
+  echo "  https://www.opendesign.com/guestfiles/oda_file_converter"
+  echo "accept its license, and drag it to /Applications."
+fi
+"$here/bin/doctor"

@@ -1,0 +1,10 @@
+# Default tool locations (macOS). Override any of them on a machine with an
+# environment variable named HP_<KEY>, e.g. HP_ODA=/path/to/ODAFileConverter.
+[tools]
+python   = "~/.venvs/architecture-ai/bin/python"
+ifcmcp   = "~/.venvs/architecture-ai/bin/ifcmcp"
+oda      = "/Applications/ODAFileConverter.app/Contents/MacOS/ODAFileConverter"
+blender  = "/Applications/Blender.app/Contents/MacOS/Blender"
+freecad  = "/Applications/FreeCAD.app/Contents/Resources/bin/freecadcmd"
+qgis     = "/Applications/QGIS.app/Contents/MacOS/qgis_process"
+inkscape = "/Applications/Inkscape.app/Contents/MacOS/inkscape"

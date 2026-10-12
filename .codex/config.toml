@@ -1,0 +1,4 @@
+# Project-scoped Codex settings. Codex loads this when the project is trusted.
+[mcp_servers.ifc]
+command = "sh"
+args = ["-c", "exec \"${HP_VENV:-$HOME/.venvs/architecture-ai}/bin/ifcmcp\""]

@@ -1,0 +1,51 @@
+# Worked example: a one-storey house, 12.0 x 9.0 m on wall axes.
+# Everything in integer millimetres. x east, y north, origin at the
+# south-west wall axis crossing. Rooms are found from the walls by their seed
+# points; their areas are computed, never typed.
+schema_version: 1
+
+project:
+  name: Example bungalow
+  jurisdiction: IR
+  municipality: null
+  ruleset: iran
+  datum: { label: "±0.00", survey_z_mm: null, source: null }
+  allowed_wall_thicknesses: [100, 150, 200, 300]
+  north_angle_deg: 0
+
+levels:
+  - { id: GF, name: Ground floor, ffl: 0, floor_to_floor: 3200, slab: 350 }
+
+walls:
+  # exterior, centred on the axes
+  - { id: WS, level: GF, start: [0, 0],       end: [12000, 0],    thickness: 300, kind: exterior, loadbearing: true }
+  - { id: WE, level: GF, start: [12000, 0],   end: [12000, 9000], thickness: 300, kind: exterior, loadbearing: true }
+  - { id: WN, level: GF, start: [0, 9000],    end: [12000, 9000], thickness: 300, kind: exterior, loadbearing: true }
+  - { id: WW, level: GF, start: [0, 0],       end: [0, 9000],     thickness: 300, kind: exterior, loadbearing: true }
+  # interior
+  - { id: V1, level: GF, start: [5600, 0],    end: [5600, 9000],  thickness: 200, kind: interior, loadbearing: true }
+  - { id: H1, level: GF, start: [0, 4000],    end: [5600, 4000],  thickness: 150, kind: interior }
+  - { id: H2, level: GF, start: [0, 5300],    end: [5600, 5300],  thickness: 150, kind: interior }
+  - { id: V2, level: GF, start: [2600, 5300], end: [2600, 9000],  thickness: 100, kind: interior }
+  - { id: H3, level: GF, start: [5600, 5500], end: [12000, 5500], thickness: 150, kind: interior }
+
+openings:
+  - { id: D1, wall: WE, kind: door,   offset: 2500, width: 1000, height: 2200, hinge: start, swing: left }
+  - { id: D2, wall: V1, kind: door,   offset: 4200, width: 900,  height: 2100, hinge: start, swing: left }
+  - { id: D3, wall: H1, kind: door,   offset: 3800, width: 900,  height: 2100, hinge: end,   swing: right }
+  - { id: D4, wall: H2, kind: door,   offset: 1200, width: 800,  height: 2100, hinge: start, swing: left }
+  - { id: D5, wall: H2, kind: door,   offset: 3600, width: 900,  height: 2100, hinge: start, swing: left }
+  - { id: O1, wall: H3, kind: opening, offset: 1500, width: 2400, height: 2400 }
+  - { id: F1, wall: WS, kind: window, offset: 1700, width: 1800, height: 1500, sill: 900 }
+  - { id: F2, wall: WS, kind: window, offset: 7500, width: 2400, height: 1800, sill: 600 }
+  - { id: F3, wall: WN, kind: window, offset: 8000, width: 1500, height: 1200, sill: 1050 }
+  - { id: F4, wall: WN, kind: window, offset: 900,  width: 800,  height: 600,  sill: 1500 }
+  - { id: F5, wall: WN, kind: window, offset: 3400, width: 1500, height: 1500, sill: 900 }
+
+rooms:
+  - { id: R1, level: GF, name: Bedroom 1, name_fa: اتاق خواب ۱, use: bedroom,  seed: [2500, 2000] }
+  - { id: R2, level: GF, name: Corridor,  name_fa: راهرو,       use: corridor, seed: [2500, 4650] }
+  - { id: R3, level: GF, name: Bath,      name_fa: حمام,        use: bath,     seed: [1300, 7000] }
+  - { id: R4, level: GF, name: Bedroom 2, name_fa: اتاق خواب ۲, use: bedroom,  seed: [4100, 7000] }
+  - { id: R5, level: GF, name: Living,    name_fa: پذیرایی،‌ نشیمن, use: living, seed: [8800, 2700], entrance: true }
+  - { id: R6, level: GF, name: Kitchen,   name_fa: آشپزخانه,    use: kitchen,  seed: [8800, 7200] }

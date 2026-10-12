@@ -1,0 +1,5 @@
+*.dwg binary
+*.pdf binary
+*.png binary
+*.ifc -diff linguist-generated
+*.dxf -diff linguist-generated

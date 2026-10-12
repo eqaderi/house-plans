@@ -1,0 +1,117 @@
+# The design spec
+
+`design/<name>.yaml`, validated by `src/houseplan/model.py` (pydantic, unknown
+keys rejected). `design/examples/bungalow.yaml` is a complete, passing example.
+
+## Conventions
+
+- **Units:** integer millimetres for every length. Angles in degrees.
+- **Axes:** x east, y north, origin at a chosen grid crossing near the
+  building's south-west. Keep coordinates small; survey eastings/northings
+  never go into wall points.
+- **Heights:** relative to the datum ±0.00 (finished floor of the entrance
+  level). `project.datum.survey_z_mm` ties it to the survey; leave it `null`
+  until the survey gives it.
+- **IDs:** unique across the whole file. Suggested: `W*` exterior walls,
+  `V*`/`H*` interior walls, `D*` doors, `F*` windows (پنجره), `O*` openings,
+  `R*` rooms, `S*` stairs, level ids such as `B1`, `GF`, `L1`, `RF`.
+
+## Blocks
+
+```yaml
+project:
+  name: ...
+  jurisdiction: IR            # ISO 3166
+  municipality: Tehran        # or null until known
+  ruleset: iran               # rules/iran.yaml
+  datum: { label: "±0.00", survey_z_mm: null, source: null }
+  allowed_wall_thicknesses: [100, 150, 200, 300, 350]
+  north_angle_deg: 0          # true north, clockwise from +y
+
+levels:
+  - { id: GF, name: Ground floor, ffl: 0, floor_to_floor: 3200, slab: 350 }
+  # clear height = floor_to_floor - slab (slab + floor build-up + ceiling)
+
+walls:
+  - { id: WS, level: GF, start: [0, 0], end: [12000, 0], thickness: 300,
+      kind: exterior, loadbearing: true, justify: center }
+  # justify: center | left | right — where the start→end line sits in the wall,
+  # seen walking from start to end. "left" means the line is the wall's left
+  # face, so the wall lies to the right of the line. An outline walked
+  # clockwise with justify: left (or counter-clockwise with justify: right)
+  # has its line on the outer face.
+
+openings:
+  - { id: D1, wall: WE, kind: door, offset: 2500, width: 1000, height: 2200,
+      hinge: start, swing: left }       # doors need hinge and swing
+  - { id: F1, wall: WS, kind: window, offset: 1700, width: 1800, height: 1500, sill: 900 }
+  - { id: O1, wall: H3, kind: opening, offset: 1500, width: 2400, height: 2400 }
+  # offset: from the wall's start point along the line to the near jamb.
+  # width/height: structural (rough) opening. leaf: clear door leaf if different.
+  # swing: the side of the wall line the leaf opens into (left/right of start→end).
+
+rooms:
+  - { id: R1, level: GF, name: Bedroom 1, name_fa: اتاق خواب ۱, use: bedroom,
+      seed: [2500, 2000], entrance: false }
+  # The outline is the wall-enclosed space containing the seed. Area is net,
+  # from finished wall faces. uses: living bedroom kitchen bath wc corridor hall
+  # stair storage laundry garage plant balcony terrace
+
+program:                       # the brief as checkable requirements (owner's, not yours)
+  required: [ { use: bedroom, count: 3 }, { use: wc, count: 1 } ]
+  connect: [ [R5, R6] ]        # rooms that must share a door or opening
+  private_uses: [bedroom, bath, wc]   # no route may pass through these
+  area_tolerance: 0.10         # vs each room's target_area
+# rooms may also carry target_area (m², from the brief) and via (the room an
+# en-suite bath or walk-in closet is reached through on purpose)
+
+stairs:
+  - { id: S1, level: GF, to_level: L1, origin: [6400, 300], direction: "+y",
+      width: 1000, risers: 18, going: 280 }
+  # origin: foot of the first riser on the run's centre line. Straight runs only.
+  # rise = (to_level.ffl - level.ffl) / risers, computed by the code.
+```
+
+## What the checks do
+
+`bin/hp check` runs, in `src/houseplan/checks.py`:
+
+| Code | Severity | Meaning |
+|---|---|---|
+| WALL_THICKNESS / WALL_ZERO_LENGTH / WALL_OVERLAP | error | wall not in the allowed set, degenerate, or doubled |
+| OPENING_PAST_WALL_END / OPENING_IN_JUNCTION / OPENING_OVERLAP / OPENING_TOO_TALL | error | opening does not fit its wall or the storey |
+| OPENING_NEAR_JUNCTION / NARROW_PIER | warning | jamb or pier under 100 mm |
+| ROOM_NOT_ENCLOSED / ROOM_SHARED | error | seed not enclosed, or two rooms in one space (missing wall) |
+| SPACE_UNNAMED | warning | enclosed space without a room |
+| ROOM_UNREACHABLE | error | no route through doors/openings from an entrance or stair |
+| DOOR_SWING_HITS_WALL / DOOR_SWING_HITS_STAIR | error | the leaf sweeps a wall or stair |
+| DOOR_SWINGS_CLASH | warning | two leaves sweep the same floor |
+| STAIR_IN_WALL / STAIR_NOT_IN_ROOM | error | stair footprint does not fit |
+| STAIR_NO_WELL | warning | nothing above the run marks the stairwell |
+| BEARING_NOT_STACKED | warning | load-bearing wall not carried by one below |
+| NO_WINDOW | error | habitable room without an exterior window |
+| WALL_END_FREE | warning | a wall end touches nothing (a gap, or a deliberate stub) |
+| ROOM_SLIVER / ROOM_ASPECT | error / warning | no part 300 mm wide / proportion beyond 3:1 |
+| PASS_THROUGH_PRIVATE | error | a room reached only through a bedroom or bath (unless `via`) |
+| BEDROOM_TO_BEDROOM | warning | a door between two bedrooms |
+| CIRCULATION_DETOUR | warning | walking route from the entrance over 1.5× the straight line |
+| PROGRAM_MISSING / CONNECTION_MISSING | error | the brief's rooms or connections are not in the plan |
+| AREA_OFF_TARGET | warning | room area outside the brief's tolerance |
+| RULES_NOT_APPLICABLE | info | rules with nothing to test: not checked, not passed |
+
+`bin/hp build` (final stage) adds the read-back: DXF units and dimension
+chains (DXF_CHAIN_OPEN), text overlap and crowding below 1 mm on paper
+(DXF_TEXT_OVERLAP / DXF_TEXT_CROWDED), labels inside rooms, dimension text off
+walls, IFC walls / openings / storeys / space areas and NetFloorArea against
+the spec, IFC schema validation with express rules, unique GlobalIds.
+
+Then `rules/<ruleset>.yaml` runs through `src/houseplan/rules.py`: a failed
+`verified` rule is an error, a failed `unverified` rule is a warning tagged
+`UNVERIFIED RULE`.
+
+## Not modelled yet
+
+Curved walls, columns, sloped and stepped slabs, terraces and balconies
+outside the enclosure, split levels, winder and L/U stairs, roofs, sections and
+elevations. When a design needs one of them, extend the kit first: schema
+field, geometry, a check, a drawing routine, a test that fails without it.

@@ -1,0 +1,23 @@
+[project]
+name = "houseplan"
+version = "0.1.0"
+description = "Accurate, checkable house plans generated from a single design spec"
+requires-python = ">=3.11"
+dependencies = [
+  "ifcopenshell>=0.8.5",
+  "ezdxf>=1.4.4",
+  "shapely>=2.1",
+  "pyproj>=3.7",
+  "pydantic>=2.9",
+  "pyyaml>=6",
+  "matplotlib>=3.9",
+  "pillow>=10",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8"]
+mcp = ["ifcopenshell-mcp"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]

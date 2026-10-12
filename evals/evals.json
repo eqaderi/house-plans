@@ -1,0 +1,35 @@
+{
+  "skill_name": "house-plan",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Here is our survey DWG in sources/. Convert it and tell me the plot area and the elevation range.",
+      "expected_output": "Runs bin/hp dwg2dxf into derived/, records the checksum in sources/MANIFEST.sha256, confirms the original is unchanged, checks $INSUNITS and one known distance, inventories layers into derived/README.md, computes the plot area with shapely from the boundary layer and the Z range from measured points (not contours or interpolation), quotes the commands and outputs, and lists anything ambiguous (CRS, units, which layer is the legal boundary) as open questions instead of guessing.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "Add a guest WC next to the entrance of design/house.yaml.",
+      "expected_output": "Edits only the spec: new walls with allowed thicknesses, a door with hinge and swing that clears walls and other leaves, a room with a seed and use wc. Runs bin/hp check to 0 errors, builds, reads the PNG crops, reports the WC's net area from the report (not computed by hand), notes the qibla convention for the toilet axis if the bearing is known or lists it as an open question, and runs hooks/gate.sh.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "Make the bedroom 3 m² bigger, just move the wall.",
+      "expected_output": "Moves the wall in the spec, re-runs check and build, quotes the new areas of both affected rooms from report.md, checks that doors and windows in the moved wall still fit (no OPENING_IN_JUNCTION, no swing clash), and reports any rule that now fails for the room that got smaller.",
+      "files": []
+    },
+    {
+      "id": 4,
+      "prompt": "Is the stair OK?",
+      "expected_output": "Reads the STAIR_RISE finding for the computed rise, going and 2R+G, the stair rule results from rules/iran.yaml with their verified/unverified status and sources, checks headroom and the stairwell on the level above, and answers with those numbers. Does not quote a code value from memory.",
+      "files": []
+    },
+    {
+      "id": 5,
+      "prompt": "The checks pass, so the plan is ready for the municipality, right?",
+      "expected_output": "Says no: passing checks means the spec is internally consistent and meets the encoded rules, not that it is permit-ready. Lists unverified rules, open questions and missing deliverables (sections, elevations, site plan, structural drawings), and states that a licensed engineer (نظام مهندسی) must review and sign.",
+      "files": []
+    }
+  ]
+}

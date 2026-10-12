@@ -1,0 +1,182 @@
+# Iran, single-family dwelling (occupancy م-۴, following م-۲ rules).
+#
+# Status meanings (see src/houseplan/rules.py):
+#   transcribed  value read from a transcription of the regulation text
+#                (Pouyesh Group's transcription of Mabhas 4, 1396 edition). That
+#                transcription is known to reverse digits in places, so every
+#                value must be compared with the official edition (inbr.ir) and
+#                then marked verified. A failure is already an error.
+#   unverified   secondary sources only. A failure is a warning.
+#
+# Units: areas in m², lengths in mm, ratios as fractions.
+# Not encoded yet (need data the spec does not hold): plot coverage, light
+# wells, building height from mean street level, parking, guards, headroom,
+# beam clearance. See .agents/skills/house-plan/references/iran.md.
+ruleset: iran
+jurisdiction: IR
+title: Iranian National Building Regulations, Mabhas 4 (1396) and Standard 2800 layout rules
+
+rules:
+  - id: IR4-HAB-AREA
+    check: room_min_area
+    title: Habitable room minimum area
+    value: 6.5
+    uses: [living, bedroom]
+    source: "Mabhas 4 (1396) 4-5-2-2-1"
+    url: https://pouyeshgroup.org/national-building/
+    status: transcribed
+
+  - id: IR4-HAB-WIDTH
+    check: room_min_width
+    title: Habitable room minimum width
+    value: 2150
+    uses: [living, bedroom]
+    source: "Mabhas 4 (1396) 4-5-2-2-2"
+    status: transcribed
+
+  - id: IR4-ROOM-WIDTH-RES
+    check: room_min_width
+    title: Other rooms of a dwelling, minimum width
+    value: 2400
+    uses: [bedroom]
+    source: "Mabhas 4 (1396) 4-7-1-1-8"
+    status: transcribed
+    note: The clause covers residential rooms other than the main room; applied here to bedrooms.
+
+  - id: IR4-MAIN-ROOM-75
+    check: main_room_min_area
+    title: Main room in a dwelling of 75 m² or more
+    value: 12.0
+    params: { unit_area_from: 75 }
+    uses: [living]
+    source: "Mabhas 4 (1396) 4-7-1-1-8"
+    status: transcribed
+    note: The same clause also asks for a 2.70 m minimum width of that room; checked by hand until the evaluator supports it.
+
+  - id: IR4-HAB-HEIGHT
+    check: clear_height_min
+    title: Habitable room clear height
+    value: 2400
+    uses: [living, bedroom, kitchen]
+    source: "Mabhas 4 (1396) 4-5-2-2-3, 4-7-1-1-9"
+    status: transcribed
+    note: A 2.60 m requirement for larger rooms exists (4-7-1-1-9) but its area threshold is unreadable in the transcription; open question.
+
+  - id: IR4-KITCHEN-AREA
+    check: room_min_area
+    title: Kitchen minimum area (cooking only; 7.50 m² with dining)
+    value: 5.5
+    uses: [kitchen]
+    source: "Mabhas 4 (1396) 4-7-1-1-10/11"
+    status: transcribed
+
+  - id: IR4-KITCHEN-WIDTH
+    check: room_min_width
+    title: Kitchen minimum width (cooking only; 2.15 m with dining)
+    value: 1800
+    uses: [kitchen]
+    source: "Mabhas 4 (1396) 4-7-1-1-12"
+    status: transcribed
+
+  - id: IR4-WET-WIDTH
+    check: room_min_width
+    title: Bathroom / WC minimum clear size 1.00 x 1.20 m (short side)
+    value: 1000
+    uses: [bath, wc]
+    source: "Mabhas 4 (1396) 4-7-1-1-18"
+    status: transcribed
+
+  - id: IR4-WET-AREA
+    check: room_min_area
+    title: Bathroom / WC minimum clear size 1.00 x 1.20 m (area)
+    value: 1.2
+    uses: [bath, wc]
+    source: "Mabhas 4 (1396) 4-7-1-1-18"
+    status: transcribed
+
+  - id: IR4-WET-HEIGHT
+    check: clear_height_min
+    title: Bathroom / WC clear height (over 80% of the area)
+    value: 2200
+    uses: [bath, wc]
+    source: "Mabhas 4 (1396) 4-7-1-1-19"
+    status: transcribed
+
+  - id: IR4-DAYLIGHT
+    check: window_area_ratio
+    title: Window area of habitable rooms, at least 1/8 of floor area
+    value: 0.125
+    uses: [living, bedroom]
+    source: "Mabhas 4 (1396) 4-5-2-3-2"
+    status: transcribed
+    note: 1/7 when all windows are on one wall and the room is deeper than 4.50 m; 1/6 (1/5) when the window head is below 2.10 m (4-5-2-3-3). Not yet distinguished by the evaluator; check those cases by hand.
+
+  - id: IR4-KITCHEN-VENT
+    check: window_area_ratio
+    title: Kitchen ventilation opening, at least 1/16 of floor area
+    value: 0.0625
+    uses: [kitchen]
+    source: "Mabhas 4 (1396) 4-7-1-1-15"
+    status: transcribed
+    note: The clause concerns the ventilation opening; the evaluator uses the window rough opening, which overstates the openable area.
+
+  - id: IR4-DOOR-ENTRANCE
+    check: entrance_door_min_width
+    title: Main entrance door clear width
+    value: 900
+    source: "Mabhas 4 (1396) 4-5-1-5-1"
+    status: transcribed
+
+  - id: IR4-DOOR-ROOM
+    check: door_min_width
+    title: Room door clear width
+    value: 800
+    uses: [living, bedroom, kitchen]
+    source: "Mabhas 4 (1396) 4-5-2-8-2"
+    status: transcribed
+
+  - id: IR4-CORRIDOR
+    check: room_min_width
+    title: Corridor clear width inside a dwelling
+    value: 900
+    uses: [corridor, hall]
+    source: "Mabhas 4 (1396) 4-7-1-1-6"
+    status: transcribed
+
+  - id: IR4-STAIR-WIDTH
+    check: stair_width_min
+    title: Stair clear width, straight run, building groups 1-3 (1.10 m with a turn or landing)
+    value: 900
+    source: "Mabhas 4 (1396) 4-7-1-1-3"
+    status: transcribed
+
+  - id: IR4-STAIR-GOING
+    check: stair_going_min
+    title: Stair going (tread)
+    value: 280
+    source: "Mabhas 4 (1396) 4-5-1-7-1"
+    status: transcribed
+
+  - id: IR4-STAIR-2RG
+    check: stair_step_formula
+    title: Step formula 630 <= 2R + G <= 640 mm
+    value: 630
+    value_max: 640
+    source: "Mabhas 4 (1396) 4-5-1-7-1"
+    status: transcribed
+
+  - id: IR4-STAIR-RISE
+    check: stair_rise_max
+    title: Stair rise (follows from the going and step formula)
+    value: 180
+    source: "Derived from Mabhas 4 (1396) 4-5-1-7-1"
+    status: unverified
+
+  - id: IR2800-REENTRANT
+    check: reentrant_corner_ratio_max
+    title: Plan irregularity, re-entrant corner deeper than 20% in both directions
+    value: 0.20
+    source: "Standard 2800, 5th edition (secondary: maktabsaze.org/p-irregularity)"
+    url: https://maktabsaze.org/p-irregularity
+    status: unverified
+    note: An irregular plan is allowed but changes the structural analysis; the structural engineer decides.

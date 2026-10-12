@@ -1,0 +1,14 @@
+# Exact versions of everything that affects geometry, drawings or IFC, so
+# every laptop and CI compute the same numbers. Installed by bin/setup.
+ifcopenshell==0.8.5
+ezdxf==1.4.4
+shapely==2.1.2
+pyproj==3.7.2
+pydantic==2.14.1
+PyYAML==6.0.3
+matplotlib==3.11.2
+pillow==12.3.0
+pytest==9.1.1
+numpy>=2.0
+scipy>=1.13
+pandas>=2.2
