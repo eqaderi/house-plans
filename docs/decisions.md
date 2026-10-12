@@ -87,3 +87,16 @@ warnings it explains.
 - **Note:** the drawing kit has no Persian text shaping (no
   `arabic_reshaper`/`python-bidi`, no Persian font setting). Sketches use
   English until the kit is extended.
+
+## 2026-10-13: toilets must not face or back the qibla
+
+- **What:** an owner requirement. Every toilet's axis must keep clear of the
+  qibla line, grid 203.97° / true 204.75°.
+  - Measured: walls parallel to the road side are 18.09° off the qibla
+    line, so a toilet set along them would face or back it.
+  - Walls parallel to the north and south sides are 43.22° off.
+  - The safest toilet axis is perpendicular to the qibla: grid 113.97° or
+    293.97°.
+  - The accepted tolerance is the owner's to confirm (open question #30).
+  - The kit gets a fixture model and a check before the first sketch.
+- **Who:** owner (requirement); agent (measurement).

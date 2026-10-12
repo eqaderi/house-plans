@@ -64,7 +64,9 @@ anything else is a close paraphrase.
   most of its time, definitely needs a toilet. A shower there is optional.
   Showers and the rest can be on the other floor, where the bedrooms are.
   Toilets: Iranian, "but probably it's a good idea to have one Western
-  toilet, or both could also be there."
+  toilet, or both could also be there." The owner: "we need to make sure the
+  toilet and qibla, based on Islamic rules, are not a problem": no toilet may
+  face the qibla or have its back to it.
 - Laundry, storage, plant / boiler room, roof access: a laundry room
   (could have); storage needed; a boiler room "is also a good idea". The
   owner is unsure whether the boiler could go on the balcony.
