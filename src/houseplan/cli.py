@@ -21,7 +21,7 @@ from pathlib import Path
 
 from pydantic import ValidationError
 
-from . import checks, family, geometry, model, rules
+from . import checks, family, geometry, model, rules, usability
 from .checks import Finding
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -30,7 +30,7 @@ ROOT = Path(__file__).resolve().parents[2]
 def _analyse(path: str):
     design = model.load(path)
     geo = geometry.build(design)
-    findings = checks.run_all(design, geo) + family.run_family(design, geo) + rules.run_rules(design, geo)
+    findings = checks.run_all(design, geo) + family.run_family(design, geo) + usability.run_usability(design, geo) + rules.run_rules(design, geo)
     return design, geo, findings
 
 

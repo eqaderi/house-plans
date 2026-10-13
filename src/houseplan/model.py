@@ -162,6 +162,15 @@ class Vehicle(Strict):
     source: str = Field(description="Manufacturer page, market and model year.")
 
 
+class Scenario(Strict):
+    """An everyday trip through the house, from the brief: the rooms visited
+    in order. Reported by `hp check` as a walking route (usability.py)."""
+
+    name: str
+    route: list[str] = Field(min_length=2, description="Room ids, visited in this order.")
+    lift: bool = Field(False, description="Change levels by lift instead of the stairs.")
+
+
 class Program(Strict):
     """What the brief asks for, as checkable requirements."""
 
@@ -173,6 +182,7 @@ class Program(Strict):
     )
     area_tolerance: float = Field(0.10, ge=0, description="Allowed relative deviation from target_area.")
     vehicles: list[Vehicle] = Field([], description="Cars to park in the garage, side by side.")
+    scenarios: list[Scenario] = Field([], description="Everyday trips to walk through the plan.")
 
 
 class Stair(Strict):

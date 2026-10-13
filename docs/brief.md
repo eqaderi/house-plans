@@ -101,10 +101,32 @@ anything else is a close paraphrase.
 - Stairs (owner, 2026-10-13): if not in the centre of the house, a stair
   should have daylight; "When you go down, in front of you, you could have
   a window or something like that."
+- The stair is a main room, not a side thing (owner, 2026-10-13): "they
+  connect two parts of the house. People use that frequently every day ...
+  It should be very easy to use. It should not be dangerous at all, and it
+  should have a great look. When you use it, you should feel good and
+  possibly see some scenery." Riser height, resting landings and a possible
+  U-turn are to be considered. Guidance from reputable sources, not
+  invented values ("we shouldn't create things which are stupid, not being
+  used, or just a waste of money or space").
 - Plan character (owner, 2026-10-13): "Try not to make the house plans,
   both floors, very compact, with lots of corners or a lot of cells here and
   there. Build walls when they matter."
 - Prayer room (owner, 2026-10-13): not beside a WC ("they will hear it").
+- Everyday use (owner, 2026-10-13), to be tested cheaply, "I don't want
+  you to create long tests or expensive simulations":
+  - Groceries: park the car, carry the shopping to the kitchen.
+  - Coming home in a hurry: the toilet "shouldn't be in a far place".
+  - Dinner: the dining area close to the kitchen.
+  - TV late at night without waking those asleep in the bedrooms.
+  - A bookshelf somewhere, for reading and decor (living room or elsewhere).
+  - Open, but with private areas: from the opened front door no direct view
+    into the house and the living area; women working in the kitchen not
+    directly observable from the living room; someone going to the toilet
+    not seen entering it from where people sit in the living room.
+  - Mornings: children get up, toilet, breakfast, off to school; the father
+    may shower; then to the car. "Living in this house should be easy
+    overall."
 - Outdoor:
   - "We need a big balcony from as many sides as possible for the upper floor
     if the living room and kitchen are there."
