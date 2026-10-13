@@ -1,12 +1,17 @@
 # Status
 
-- **Phase:** 2, envelope: done (plot, alley strip, terrain, kit). Next: phase 3, sketch options.
+- **Phase:** 3, sketch options. Option A superseded by the owner's three-level section; option B drawn.
 - **Revision:** none yet
-- **Last session (2026-10-13, Claude Code, laptop 1, second session):**
-  kit for phase 2–3: spec frame turned to the plot, `site:` block and site
-  sheet, boundary and alley-strip checks, `bin/hp ground` (linear TIN),
-  balconies, lifts, cars in the garage, cited lift and parking rules.
-  92 tests pass; gate exits 0. No option drawn yet.
+- **Last session (2026-10-13, Claude Code, laptop 1, third session):**
+  owner moved the garage to its own level at the road with the two house
+  floors below, the house to the north-west of the plot, and asked for
+  daylit safe stairs, open plans, no WC beside the prayer room and
+  cheap everyday-use tests (all in `docs/brief.md`). Kit: `hp ground`
+  against each level's floor; WINDOW/DOOR_BELOW_GROUND; routes, sight
+  lines and living-over-bedroom checks (`usability.py`); two-flight
+  stairs (L/U/straight with landing); cited stair rules; WALL_OVERLAP no
+  longer counts junction squares. Research: `docs/research-usability.md`,
+  `docs/research-stairs.md`. 116 tests pass.
 - **Next (in order):**
   1. ~~**Spec frame.**~~ Done 2026-10-13: origin V3, x along the south
      boundary, `north_angle_deg: 337.97` (`scripts/site_frame.py`,
@@ -27,7 +32,15 @@
      (unverified, suggested size). Sizes and sources are in
      `docs/research.md`; open questions 31 (which LC300) and 32 (which lift).
   5. **Phase 3: the first sketch options** (`design/option-a.yaml`, ...).
-     - **Option A** (2026-10-13): 13.0 × 12.0 m box by the road, garage NW,
+     - **Option B** (2026-10-13): three levels, G ±0.00 garage at the road,
+       UF −3.20 living floor entered at grade from the SW, LF −6.40 bedrooms
+       further east; stacked U stair (19 × 168.4 / 300, 10 + 9) with the
+       lift; house against the north boundary. `bin/hp check`: 0 errors,
+       12 warnings. Open: living over the parents' room (decisions.md), LF
+       east floor 1.2–2.1 m above ground (terrace), north windows where the
+       TIN is unknown, the irregular G plan (IR2800 unverified).
+       Next: the owner's reaction; then option C if he wants one.
+     - **Option A** (2026-10-13, superseded by the owner): 13.0 × 12.0 m box by the road, garage NW,
        living/kitchen/dining on the road floor with a U balcony, bedrooms
        below. `bin/hp check`: 0 errors, 6 warnings. LF east half stands over
        an undercroft (ground −6.1 to −8.0 under a −3.2 floor).

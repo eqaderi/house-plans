@@ -54,7 +54,8 @@ def _graph(design: Design, geo: dict[str, LevelGeom]):
             where[node] = p
             r = _room_at(geo[lid], p)
             rooms_of[node] = [(lid, r)] if r in geo[lid].rooms else []
-        extra.append((("stair", s.id, "bottom"), ("stair", s.id, "top"), math.hypot(run, climb), "stair"))
+        b_node, t_node, length = ("stair", s.id, "bottom"), ("stair", s.id, "top"), math.hypot(run, climb)
+        extra += [(b_node, t_node, length, "stair"), (t_node, b_node, length, "stair")]
     for lift in design.lifts:
         nodes = []
         for rid in lift.shafts:

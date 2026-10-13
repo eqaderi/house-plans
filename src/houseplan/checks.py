@@ -65,7 +65,12 @@ def check_walls(design: Design, geo: dict[str, LevelGeom]) -> list[Finding]:
                 cross = abs(a.frame.ux * b.frame.uy - a.frame.uy * b.frame.ux)
                 if cross > 1e-9:
                     continue
-                overlap = a.body.intersection(b.body).area
+                shared = a.body.intersection(b.body)
+                if shared.area <= AREA_EPS:
+                    continue
+                # a junction square inside a third wall is that wall's, not a doubled wall
+                third = unary_union([o.body for o in items if o is not a and o is not b])
+                overlap = shared.difference(third).area if not third.is_empty else shared.area
                 if overlap > AREA_EPS:
                     out.append(_err("WALL_OVERLAP", f"{a.wall.id}/{b.wall.id}", f"parallel walls overlap by {overlap / 1e6:.4f} m²"))
     return out

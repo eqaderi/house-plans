@@ -235,3 +235,42 @@ warnings it explains.
   height of 3200).
 - **Option A** (`design/option-a.yaml`) is kept as a record and is not
   developed further.
+
+## 2026-10-13: the stair (option B)
+
+- **What:** one U stair per storey, stacked over all three levels with the
+  lift beside it: 19 risers of 168.42 mm, going 300 mm (2R+G 636.8),
+  flights of 10 + 9, a 1200 deep half landing, 1200 wide, 150 gap
+  (`bin/hp check` STAIR_RISE). Handrails on both sides at 900 mm, closed
+  risers, contrasting nosings, light switches at both ends (to specify at
+  the final stage).
+- **Why:** `docs/research-stairs.md`. The first draft (18 × 177.8 / 280 in
+  one flight) broke the 12-step limit (Mabhas 4 4-5-1-7-5) and sat on every
+  limit. 168/300 meets Mabhas 4 and 3 and the accessibility regulation's
+  17 / 30 cm; the U keeps every arrival on the same side, next to the lift.
+- **Half landings on the south wall, not the east:** the three levels have
+  three different east walls, so a stacked core can only reach a facade
+  that all of them share. The north wall is buried at the lower half
+  landing (ground about 3 m above the LF floor there), so the landing
+  window is on the south: going down each upper flight you face a south
+  window over the garden (`FU8`, `FL8`; no WINDOW_BELOW_GROUND).
+- **Who:** agent, from the owner's request that the stair be safe,
+  comfortable and beautiful, with a window ahead going down.
+
+## 2026-10-13: living room over the parents' bedroom (option B), accepted with mitigation
+
+- **What:** the UF living room lies over the LF parents' bedroom for
+  14.0 m² (`LIVING_OVER_BEDROOM`, warning). The children's rooms lie under
+  the kitchen and dining (info only).
+- **Why:** the lower floor only meets the ground near the UF's east half,
+  so its best rooms sit under the UF's best rooms. Avoiding the overlap
+  meant either stretching the LF east, where its floor already stands
+  1.2–2.1 m above the ground (`bin/hp ground`), or deepening the house into
+  the south garden the owner wants kept open. The research ranks this as
+  guidance (London Housing Design Guide); Approved Document E sets no
+  impact-sound limit inside one dwelling.
+- **Mitigation:** a floating screed under the living room; the TV wall on
+  the living room's north (kitchen) wall; a door (DL1) between the stair
+  hall and the bedroom corridor, since an open stair carries sound down
+  (Approved Document E 5.11, `docs/research-usability.md`).
+- **Who:** agent; the owner decides (shown in the option B report).

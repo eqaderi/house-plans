@@ -483,3 +483,32 @@ def test_stair_rules_for_flights_and_landings(spec, tmp_path, monkeypatch):
     s["stairs"][0].update(flights=[9, 9], turn="U-right", landing=800)
     design, geo, _ = analyse(s)
     assert {f.code for f in rules.run_rules(design, geo) if f.severity == "error"} == {"W", "L"}
+
+
+def _walls_only(walls):
+    return Design.model_validate({
+        "schema_version": 1,
+        "project": {"name": "t", "jurisdiction": "IR", "ruleset": None, "allowed_wall_thicknesses": [150, 300]},
+        "levels": [{"id": "A", "name": "A", "ffl": 0, "floor_to_floor": 3000, "slab": 300}],
+        "walls": [{"level": "A", **w} for w in walls],
+    })
+
+
+def test_interior_wall_in_line_with_a_stepped_outline_is_not_an_overlap():
+    # an outline steps out at a re-entrant corner; a partition continues the step's line
+    design = _walls_only([
+        {"id": "E1", "start": [6000, 3000], "end": [4000, 3000], "thickness": 300, "kind": "exterior", "justify": "left"},
+        {"id": "E2", "start": [4000, 3000], "end": [4000, 0], "thickness": 300, "kind": "exterior", "justify": "left"},
+        {"id": "P1", "start": [0, 3000], "end": [3700, 3000], "thickness": 150, "kind": "interior"},
+    ])
+    found = checks.run_all(design, geometry.build(design))
+    assert "WALL_OVERLAP" not in {f.code for f in found}
+
+
+def test_doubled_wall_is_still_an_overlap():
+    design = _walls_only([
+        {"id": "P1", "start": [0, 0], "end": [4000, 0], "thickness": 150, "kind": "interior"},
+        {"id": "P2", "start": [1000, 50], "end": [3000, 50], "thickness": 150, "kind": "interior"},
+    ])
+    found = checks.run_all(design, geometry.build(design))
+    assert "WALL_OVERLAP" in {f.code for f in found}

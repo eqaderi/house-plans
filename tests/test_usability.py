@@ -105,3 +105,14 @@ def test_kitchen_over_a_bedroom_is_only_info(spec):
     spec["rooms"].append({"id": "K1", "level": "L1", "name": "Kitchen", "use": "kitchen", "seed": [3000, 3000]})
     found = [f for f in run(spec) if f.code == "LIVING_OVER_BEDROOM"]
     assert found and all(f.severity == "info" for f in found)
+
+
+def test_routes_go_down_stairs_as_well_as_up(spec):
+    spec["levels"].append({"id": "L1", "name": "First floor", "ffl": 3200, "floor_to_floor": 3000, "slab": 350})
+    for w in [w for w in spec["walls"] if w["kind"] == "exterior"]:
+        spec["walls"].append({**w, "id": w["id"] + "1", "level": "L1"})
+    spec["rooms"].append({"id": "U1", "level": "L1", "name": "Stair hall", "use": "stair", "seed": [6000, 4500]})
+    spec["stairs"] = [{"id": "S1", "level": "GF", "to_level": "L1", "origin": [6400, 600], "direction": "+y", "width": 1000, "risers": 18, "going": 280}]  # foot of the stair inside the living room
+    spec["program"] = {"scenarios": [{"name": "up", "route": ["R5", "U1"]}, {"name": "down", "route": ["U1", "R5"]}]}
+    found = {f.subject: f for f in run(spec) if f.code in ("ROUTE", "ROUTE_NONE")}
+    assert found["up"].code == "ROUTE" and found["down"].code == "ROUTE"
