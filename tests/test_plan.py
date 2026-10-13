@@ -451,3 +451,16 @@ def test_window_wall_ratio(spec, tmp_path, monkeypatch):
     design, geo, _ = analyse(spec)
     found = [f for f in rules.run_rules(design, geo) if f.code == "W"]
     assert len(found) == 1 and "window-to-wall ratio 10%" in found[0].message
+
+
+def test_u_stair_landing_shallower_than_the_stair_is_flagged(spec, tmp_path):
+    s = two_storey(spec)
+    s["stairs"][0].update(flights=[9, 9], turn="U-right", landing=800)
+    _, _, findings = analyse(s)
+    assert "STAIR_LANDING_SHORT" in codes(findings, "warning")
+    assert not {"STAIR_IN_WALL", "STAIR_NOT_IN_ROOM"} & codes(findings)
+    s["stairs"][0]["landing"] = 1000
+    design, geo, findings = analyse(s)
+    assert "STAIR_LANDING_SHORT" not in codes(findings, "warning")
+    doc, _ = plan_dxf(design, geo["GF"])  # two flights and a landing drawn
+    assert len([e for e in doc.modelspace() if e.dxf.layer == "A-STAIR" and e.dxftype() == "LWPOLYLINE"]) >= 4

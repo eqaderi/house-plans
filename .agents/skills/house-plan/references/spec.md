@@ -76,8 +76,13 @@ program:                       # the brief as checkable requirements (owner's, n
 stairs:
   - { id: S1, level: GF, to_level: L1, origin: [6400, 300], direction: "+y",
       width: 1000, risers: 18, going: 280 }
-  # origin: foot of the first riser on the run's centre line. Straight runs only.
+  # origin: foot of the first riser on the run's centre line.
   # rise = (to_level.ffl - level.ffl) / risers, computed by the code.
+  - { id: S2, level: GF, to_level: L1, origin: [6400, 300], direction: "+y", width: 1100,
+      risers: 18, going: 280, flights: [9, 9], turn: U-right, landing: 1200, gap: 100 }
+  # Two flights with a landing between: turn straight, L-left/L-right (a quarter
+  # turn) or U-left/U-right (back beside the first flight, `gap` apart).
+  # landing: depth along the walking line (default the width). Winders: not modelled.
 ```
 
 ```yaml
@@ -133,6 +138,7 @@ sheets show the boundary and no-build zones.
 | DOOR_SWINGS_CLASH | warning | two leaves sweep the same floor |
 | STAIR_IN_WALL / STAIR_NOT_IN_ROOM | error | stair footprint does not fit |
 | STAIR_NO_WELL | warning | nothing above the run marks the stairwell |
+| STAIR_LANDING_SHORT | warning | a landing shallower than the stair is wide |
 | BEARING_NOT_STACKED | warning | load-bearing wall not carried by one below |
 | NO_WINDOW | error | habitable room without an exterior window |
 | WALL_END_FREE | warning | a wall end touches nothing (a gap, or a deliberate stub) |
@@ -175,6 +181,6 @@ Then `rules/<ruleset>.yaml` runs through `src/houseplan/rules.py`: a failed
 
 Curved walls, columns, sloped and stepped slabs, balcony depth on the
 dimension chains (the area is labelled; chains measure the walls), lift pit
-and overhead (need sections), split levels, winder and L/U stairs, roofs,
+and overhead (need sections), split levels, winder stairs, roofs,
 sections and elevations. When a design needs one of them, extend the kit first: schema
 field, geometry, a check, a drawing routine, a test that fails without it.

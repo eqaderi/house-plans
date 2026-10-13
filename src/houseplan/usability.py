@@ -19,7 +19,7 @@ from shapely.ops import unary_union
 from shapely.prepared import prep
 
 from .checks import Finding, _room_at
-from .geometry import LevelGeom, faces_of, frame_of, side_probe
+from .geometry import LevelGeom, faces_of, frame_of, side_probe, stair_ends
 from .model import Design, OpeningKind, RoomUse, WallKind
 
 SEEN_SHARE_WARN = 0.10  # judgement: a glimpse is fine, a tenth of the room is a view
@@ -46,11 +46,9 @@ def _graph(design: Design, geo: dict[str, LevelGeom]):
             where[node] = og.centre_line.interpolate(0.5, normalized=True)
             rooms_of[node] = [(lid, r) for r in {_room_at(lg, side_probe(og, 1)), _room_at(lg, side_probe(og, -1))} if r in lg.rooms]
     for s in design.stairs:
-        dx, dy = {"+x": (1, 0), "-x": (-1, 0), "+y": (0, 1), "-y": (0, -1)}[s.direction]
-        run = (s.risers - 1) * s.going
-        ox, oy = s.origin
-        bottom = Point(ox - 400 * dx, oy - 400 * dy)
-        top = Point(ox + (run + 400) * dx, oy + (run + 400) * dy)
+        b, t = stair_ends(s)
+        bottom, top = Point(b), Point(t)
+        run = sum((k - 1) * s.going for k in s.flight_risers) + (s.landing_depth if len(s.flight_risers) > 1 else 0)
         climb = design.level(s.to_level).ffl - design.level(s.level).ffl
         for node, lid, p in ((("stair", s.id, "bottom"), s.level, bottom), (("stair", s.id, "top"), s.to_level, top)):
             where[node] = p

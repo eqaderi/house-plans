@@ -328,7 +328,10 @@ def check_stairs(design: Design, geo: dict[str, LevelGeom]) -> list[Finding]:
             out.append(_err("STAIR_DIRECTION", s.id, f"{s.to_level} is not above {s.level}"))
             continue
         rise = climb / s.risers
-        out.append(Finding("STAIR_RISE", "info", s.id, f"{s.risers} risers × {rise:.2f} mm = {climb} mm; going {s.going} mm; 2R+G = {2 * rise + s.going:.1f} mm"))
+        split = f" in flights of {'+'.join(map(str, s.flight_risers))}, {s.turn}" if s.flights else ""
+        out.append(Finding("STAIR_RISE", "info", s.id, f"{s.risers} risers × {rise:.2f} mm = {climb} mm{split}; going {s.going} mm; 2R+G = {2 * rise + s.going:.1f} mm"))
+        if len(s.flight_risers) > 1 and s.landing_depth < s.width:
+            out.append(_warn("STAIR_LANDING_SHORT", s.id, f"landing {s.landing_depth} mm deep, less than the stair width {s.width} mm"))
         lg = geo[s.level]
         fp = lg.stairs[s.id]
         if fp.intersection(lg.walls_union).area > AREA_EPS:

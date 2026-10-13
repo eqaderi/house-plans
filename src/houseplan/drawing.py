@@ -16,7 +16,7 @@ from ezdxf.enums import TextEntityAlignment
 from shapely.geometry import LineString, Point, Polygon, box
 from shapely.ops import unary_union
 
-from .geometry import LevelGeom, faces_of, frame_of
+from .geometry import LevelGeom, faces_of, frame_of, _stair_parts
 from .model import Design, OpeningKind, RoomUse, Site, WallKind
 
 # name: (ACI colour, lineweight in 1/100 mm per ISO 128 series)
@@ -128,22 +128,35 @@ def _openings(msp, lg: LevelGeom):
 
 def _stairs(msp, design: Design, lg: LevelGeom, k: int):
     for s in (s for s in design.stairs if s.level == lg.level_id):
-        fp = lg.stairs[s.id]
-        _poly(msp, fp.exterior.coords, "A-STAIR")
-        x, y = s.origin
-        ux, uy = {"+x": (1, 0), "-x": (-1, 0), "+y": (0, 1), "-y": (0, -1)}[s.direction]
-        nx, ny = -uy, ux
+        parts, start, d, end, d2 = _stair_parts(s)
+        for part in parts:
+            _poly(msp, part.exterior.coords, "A-STAIR")
         half = s.width / 2
-        for i in range(1, s.risers - 1):
-            d = i * s.going
-            msp.add_line((x + ux * d + nx * half, y + uy * d + ny * half), (x + ux * d - nx * half, y + uy * d - ny * half), dxfattribs={"layer": "A-STAIR"})
-        run = (s.risers - 1) * s.going
-        msp.add_line((x, y), (x + ux * run, y + uy * run), dxfattribs={"layer": "A-STAIR"})
-        tip = (x + ux * run, y + uy * run)
+        x, y = start
+        line = [start]
+        legs = [((x, y), d, s.flight_risers[0])]
+        if len(parts) > 1:
+            n2 = s.flight_risers[1]
+            sx, sy = end[0] - d2[0] * (n2 - 1) * s.going, end[1] - d2[1] * (n2 - 1) * s.going
+            legs.append(((sx, sy), d2, n2))
+            run1 = (s.flight_risers[0] - 1) * s.going
+            line += [(x + d[0] * run1, y + d[1] * run1), (sx, sy)]
+        line.append(end)
+        for (fx, fy), (ux, uy), n in legs:
+            nx, ny = -uy, ux
+            for i in range(1, n - 1):
+                t = i * s.going
+                msp.add_line((fx + ux * t + nx * half, fy + uy * t + ny * half), (fx + ux * t - nx * half, fy + uy * t - ny * half), dxfattribs={"layer": "A-STAIR"})
+        msp.add_lwpolyline(line, dxfattribs={"layer": "A-STAIR"})
+        ux, uy = d2
+        nx, ny = -uy, ux
         ah = 1.5 * k
+        tip = end
         msp.add_lwpolyline([(tip[0] - ux * ah + nx * ah / 2, tip[1] - uy * ah + ny * ah / 2), tip, (tip[0] - ux * ah - nx * ah / 2, tip[1] - uy * ah - ny * ah / 2)], dxfattribs={"layer": "A-STAIR"})
         climb = design.level(s.to_level).ffl - design.level(s.level).ffl
-        _text(msp, f"{s.risers} x {climb / s.risers:.1f} / {s.going}", (x + nx * (half + 2.5 * k), y + ny * (half + 2.5 * k)), 1.8 * k, "A-STAIR", TextEntityAlignment.MIDDLE_CENTER)
+        nx0, ny0 = -d[1], d[0]
+        split = f" ({'+'.join(map(str, s.flight_risers))})" if s.flights else ""
+        _text(msp, f"{s.risers} x {climb / s.risers:.1f} / {s.going}{split}", (x - d[0] * 2.5 * k - nx0 * (half + 2.5 * k), y - d[1] * 2.5 * k - ny0 * (half + 2.5 * k)), 1.8 * k, "A-STAIR", TextEntityAlignment.MIDDLE_CENTER)
 
 
 def _rooms(msp, design: Design, lg: LevelGeom, k: int):

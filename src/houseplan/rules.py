@@ -134,7 +134,8 @@ def stair_step_formula(design, geo, rule):
 
 def stair_risers_per_flight_max(design, geo, rule):
     for s, _ in _stair_values(design):
-        yield s.id, s.risers <= rule.value, f"{s.risers} risers in one flight (max {rule.value:.0f})"
+        n = max(s.flight_risers)
+        yield s.id, n <= rule.value, f"{n} risers in one flight (max {rule.value:.0f})"
 
 
 def entrance_door_min_width(design, geo, rule):

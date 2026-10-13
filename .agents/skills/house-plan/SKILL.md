@@ -109,7 +109,7 @@ so it passes".
 | Exact CAD cross-check of a detail | FreeCAD (`freecadcmd`) |
 | 3D and Unreal after approval | `references/visualization.md` |
 
-Sections, elevations, roofs, columns and L/U stairs are not modelled yet:
+Sections, elevations, roofs, columns and winder stairs are not modelled yet:
 extend the kit first (`references/spec.md`, "Not modelled yet"); never draw
 one by hand. Do not use generic Blender meshes or hand-drawn SVG as
 architecture; the IFC is generated from the spec.

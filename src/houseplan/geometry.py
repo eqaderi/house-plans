@@ -167,16 +167,56 @@ def opening_geom(o: Opening, wg: WallGeom) -> OpeningGeom:
     return OpeningGeom(o, w, cut, centre, swing)
 
 
-def stair_footprint(s: Stair) -> Polygon:
-    run = (s.risers - 1) * s.going
+_DIRS = {"+x": (1, 0), "-x": (-1, 0), "+y": (0, 1), "-y": (0, -1)}
+
+
+def _band(a: tuple[float, float], d: tuple[int, int], length: float, width: float) -> Polygon:
+    """Rectangle of `width` centred on the line from a, `length` along d."""
+    (x, y), (dx, dy), h = a, d, width / 2
+    xs = (x, x + dx * length, x - dy * h, x + dy * h, x + dx * length - dy * h, x + dx * length + dy * h)
+    ys = (y, y + dy * length, y + dx * h, y - dx * h, y + dy * length + dx * h, y + dy * length - dx * h)
+    return box(min(xs), min(ys), max(xs), max(ys))
+
+
+def _stair_parts(s: Stair):
+    """Flights and landing as rectangles, and the walking line's end points."""
+    d = _DIRS[s.direction]
+    left = (-d[1], d[0])
     x, y = s.origin
-    half = s.width / 2
-    return {
-        "+x": box(x, y - half, x + run, y + half),
-        "-x": box(x - run, y - half, x, y + half),
-        "+y": box(x - half, y, x + half, y + run),
-        "-y": box(x - half, y - run, x + half, y),
-    }[s.direction]
+    w = s.width
+    runs = [(k - 1) * s.going for k in s.flight_risers]
+    first = _band((x, y), d, runs[0], w)
+    end1 = (x + d[0] * runs[0], y + d[1] * runs[0])
+    if len(runs) == 1:
+        return [first], (x, y), d, end1, d
+    ld = s.landing_depth
+    if s.turn == "straight":
+        landing = _band(end1, d, ld, w)
+        start2, d2 = (end1[0] + d[0] * ld, end1[1] + d[1] * ld), d
+    else:
+        side = left if s.turn.endswith("left") else (-left[0], -left[1])
+        if s.turn.startswith("L"):
+            landing = _band(end1, d, ld, w)
+            mid = (end1[0] + d[0] * ld / 2, end1[1] + d[1] * ld / 2)
+            start2, d2 = (mid[0] + side[0] * w / 2, mid[1] + side[1] * w / 2), side
+        else:
+            off = w + s.gap
+            centre = (end1[0] + side[0] * off / 2, end1[1] + side[1] * off / 2)
+            landing = _band(centre, d, ld, 2 * w + s.gap)
+            start2, d2 = (end1[0] + side[0] * off, end1[1] + side[1] * off), (-d[0], -d[1])
+    second = _band(start2, d2, runs[1], w)
+    end2 = (start2[0] + d2[0] * runs[1], start2[1] + d2[1] * runs[1])
+    return [first, landing, second], (x, y), d, end2, d2
+
+
+def stair_footprint(s: Stair) -> Polygon:
+    return unary_union(_stair_parts(s)[0])
+
+
+def stair_ends(s: Stair, step: float = 400.0) -> tuple[tuple[float, float], tuple[float, float]]:
+    """Where a walker stands below the first riser and beyond the last."""
+    _, (x, y), d, end, d2 = _stair_parts(s)
+    return (x - d[0] * step, y - d[1] * step), (end[0] + d2[0] * step, end[1] + d2[1] * step)
 
 
 def build_level(design: Design, level_id: str) -> LevelGeom:

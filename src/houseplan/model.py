@@ -186,8 +186,11 @@ class Program(Strict):
 
 
 class Stair(Strict):
-    """A straight run. origin is the bottom of the first riser on the run's
-    centre line; direction is the walking direction going up."""
+    """One or two straight flights. origin is the bottom of the first riser on
+    the first flight's centre line; direction is the walking direction going
+    up the first flight. With two flights a landing lies between them; the
+    second flight goes on straight, turns a quarter (L) or turns back beside
+    the first (U), to the walker's left or right."""
 
     id: str
     level: str = Field(description="Level the stair starts from.")
@@ -197,6 +200,27 @@ class Stair(Strict):
     width: Mm = Field(gt=0, description="Clear width between finished walls or handrails.")
     risers: int = Field(gt=1)
     going: Mm = Field(gt=0, description="Horizontal tread depth, nosing to nosing.")
+    flights: list[int] | None = Field(None, description="Risers per flight, adding up to risers; two flights have a landing between them.")
+    turn: Literal["straight", "L-left", "L-right", "U-left", "U-right"] = "straight"
+    landing: Mm | None = Field(None, gt=0, description="Landing depth along the walking line; default the stair width.")
+    gap: Mm = Field(0, ge=0, description="U stairs: clear gap between the two flights.")
+
+    @model_validator(mode="after")
+    def _flights(self) -> "Stair":
+        n = self.flights or [self.risers]
+        if sum(n) != self.risers or any(k < 2 for k in n) or len(n) > 2:
+            raise ValueError(f"{self.id}: flights {n} must be one or two flights of 2+ risers adding up to {self.risers}")
+        if self.turn != "straight" and len(n) != 2:
+            raise ValueError(f"{self.id}: turn {self.turn} needs two flights")
+        return self
+
+    @property
+    def flight_risers(self) -> list[int]:
+        return self.flights or [self.risers]
+
+    @property
+    def landing_depth(self) -> int:
+        return self.landing or self.width
 
 
 class Lift(Strict):
