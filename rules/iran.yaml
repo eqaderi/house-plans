@@ -156,30 +156,73 @@ rules:
     check: stair_width_min
     title: Stair clear width, straight run, building groups 1-3 (1.10 m with a turn or landing)
     value: 900
-    source: "Mabhas 4 (1396) 4-7-1-1-3"
+    source: "Mabhas 4 (1396) 4-7-1-1-3, printed p. 85"
+    url: https://dl.civilgeotech.ir/free/library/national-building-regulations/building-codes/mabhas-4/mabhas-04-1396.pdf
     status: transcribed
+    note: Read from a scan of the printed edition (docs/research-stairs.md 1.1).
+
+  - id: IR4-STAIR-WIDTH-LANDING
+    check: stair_width_min
+    title: Stair clear width with a turn or landing, building groups 1-3
+    value: 1100
+    params: { with_landing: 1 }
+    source: "Mabhas 4 (1396) 4-7-1-1-3, printed p. 85"
+    url: https://dl.civilgeotech.ir/free/library/national-building-regulations/building-codes/mabhas-4/mabhas-04-1396.pdf
+    status: transcribed
+    note: Read from a scan of the printed edition (docs/research-stairs.md 1.1).
 
   - id: IR4-STAIR-GOING
     check: stair_going_min
     title: Stair going (tread)
     value: 280
-    source: "Mabhas 4 (1396) 4-5-1-7-1"
+    source: "Mabhas 4 (1396) 4-5-1-7-1, printed p. 48; also Mabhas 3 (1395) 3-6-4-3-4, p. 91"
+    url: https://dl.civilgeotech.ir/free/library/national-building-regulations/building-codes/mabhas-4/mabhas-04-1396.pdf
     status: transcribed
+    note: Read from a scan of the printed edition (docs/research-stairs.md 1.1).
 
   - id: IR4-STAIR-2RG
     check: stair_step_formula
     title: Step formula 630 <= 2R + G <= 640 mm
     value: 630
     value_max: 640
-    source: "Mabhas 4 (1396) 4-5-1-7-1"
+    source: "Mabhas 4 (1396) 4-5-1-7-1, printed p. 48; also Mabhas 3 (1395) 3-6-4-3-4, p. 91"
+    url: https://dl.civilgeotech.ir/free/library/national-building-regulations/building-codes/mabhas-4/mabhas-04-1396.pdf
     status: transcribed
+    note: Read from a scan of the printed edition (docs/research-stairs.md 1.1).
 
   - id: IR4-STAIR-RISE
     check: stair_rise_max
-    title: Stair rise (follows from the going and step formula)
+    title: Stair rise, 100 to 180 mm
     value: 180
-    source: "Derived from Mabhas 4 (1396) 4-5-1-7-1"
+    source: "Mabhas 3 (1395) 3-6-4-3-4, printed p. 91 (made binding for stairs by Mabhas 4 4-5-1-7-2)"
+    status: transcribed
+    note: Read from a scan of the printed edition (docs/research-stairs.md 1.2).
+
+  - id: IR4-STAIR-LANDING
+    check: stair_landing_depth_min
+    title: Landing depth at least the stair width
+    value: 1.0
+    source: "Mabhas 4 (1396) 4-5-1-7-4, printed p. 48"
+    url: https://dl.civilgeotech.ir/free/library/national-building-regulations/building-codes/mabhas-4/mabhas-04-1396.pdf
+    status: transcribed
+    note: Read from a scan of the printed edition (docs/research-stairs.md 1.1).
+
+  - id: IR3-STAIR-FLIGHT-RISE
+    check: stair_flight_rise_max
+    title: Rise of one flight between floors or landings
+    value: 3700
+    source: "Mabhas 3 (1395) 3-6-4-3-10, printed p. 93"
+    status: transcribed
+    note: Read from a scan of the printed edition (docs/research-stairs.md 1.2).
+
+  - id: IR4-STAIR-12-STEPS
+    check: stair_risers_per_flight_max
+    title: At most 12 steps between two landings
+    value: 12
+    source: "Mabhas 4 (1396) 4-5-1-7-5, printed p. 48; accessibility regulation 2-1-5-8, p. 50"
+    url: https://dl.civilgeotech.ir/free/library/national-building-regulations/building-codes/mabhas-4/mabhas-04-1396.pdf
     status: unverified
+    note: "The clause covers buildings used by people with disabilities or reduced mobility; whether that includes this private house is not settled (docs/research-stairs.md 1.1), so it stays a warning. The owner expects elderly and wheelchair users."
 
   - id: IR2800-REENTRANT
     check: reentrant_corner_ratio_max

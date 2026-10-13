@@ -464,3 +464,22 @@ def test_u_stair_landing_shallower_than_the_stair_is_flagged(spec, tmp_path):
     assert "STAIR_LANDING_SHORT" not in codes(findings, "warning")
     doc, _ = plan_dxf(design, geo["GF"])  # two flights and a landing drawn
     assert len([e for e in doc.modelspace() if e.dxf.layer == "A-STAIR" and e.dxftype() == "LWPOLYLINE"]) >= 4
+
+
+def test_stair_rules_for_flights_and_landings(spec, tmp_path, monkeypatch):
+    (tmp_path / "s.yaml").write_text(yaml.safe_dump({
+        "ruleset": "s", "jurisdiction": "IR", "title": "test",
+        "rules": [
+            {"id": "W", "check": "stair_width_min", "title": "w", "value": 1100, "params": {"with_landing": 1}, "source": "test", "status": "verified"},
+            {"id": "L", "check": "stair_landing_depth_min", "title": "l", "value": 1.0, "source": "test", "status": "verified"},
+            {"id": "F", "check": "stair_flight_rise_max", "title": "f", "value": 3000, "source": "test", "status": "verified"},
+        ],
+    }))
+    monkeypatch.setattr(rules, "RULES_DIR", tmp_path)
+    s = two_storey(spec)
+    s["project"]["ruleset"] = "s"
+    design, geo, _ = analyse(s)  # one straight flight, 1000 wide, climbing 3200
+    assert {f.code for f in rules.run_rules(design, geo) if f.severity == "error"} == {"F"}
+    s["stairs"][0].update(flights=[9, 9], turn="U-right", landing=800)
+    design, geo, _ = analyse(s)
+    assert {f.code for f in rules.run_rules(design, geo) if f.severity == "error"} == {"W", "L"}

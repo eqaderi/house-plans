@@ -122,8 +122,25 @@ def stair_going_min(design, geo, rule):
 
 
 def stair_width_min(design, geo, rule):
+    """params.with_landing: 1 limits the rule to stairs with a landing or turn."""
     for s, _ in _stair_values(design):
+        if rule.params.get("with_landing") and len(s.flight_risers) < 2:
+            continue
         yield s.id, s.width >= rule.value, f"clear width {s.width} mm (min {rule.value:.0f} mm)"
+
+
+def stair_landing_depth_min(design, geo, rule):
+    """value: the landing depth as a multiple of the stair width."""
+    for s, _ in _stair_values(design):
+        if len(s.flight_risers) > 1:
+            need = rule.value * s.width
+            yield s.id, s.landing_depth >= need, f"landing {s.landing_depth} mm deep (min {need:.0f} mm)"
+
+
+def stair_flight_rise_max(design, geo, rule):
+    for s, rise in _stair_values(design):
+        h = max(s.flight_risers) * rise
+        yield s.id, h <= rule.value, f"one flight climbs {h:.0f} mm (max {rule.value:.0f} mm)"
 
 
 def stair_step_formula(design, geo, rule):
@@ -244,6 +261,8 @@ EVALUATORS: dict[str, Callable] = {
         stair_going_min,
         stair_width_min,
         stair_risers_per_flight_max,
+        stair_landing_depth_min,
+        stair_flight_rise_max,
         stair_step_formula,
         entrance_door_min_width,
         main_room_min_area,

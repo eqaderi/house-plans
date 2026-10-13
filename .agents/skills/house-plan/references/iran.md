@@ -41,7 +41,7 @@ Every entry carries its clause and status.
 | Landing depth | ≥ stair width | 4-5-1-7-4 | transcribed |
 | Stair width with a turn or landing | ≥ 1.10 m | 4-7-1-1-3 | transcribed |
 | Nosing radius | ≤ 13 mm | 4-5-1-12-3 | transcribed |
-| Guard height where the drop exceeds 0.70 m | ≥ 1.10 m; baluster gap ≤ 0.11 m; stair handrail ≥ 0.90 m | 4-5-7-1-4, 4-8-9-4, 4-9-9-1 | transcribed |
+| Guard height where the drop exceeds 0.70 m | ≥ 1.10 m; baluster gap ≤ 0.11 m; stair handrail ≥ 0.90 m | 4-5-1-11-1/2 (printed pp. 50–51), 4-9-9-1-1/2 (p. 105), 4-9-9-2-1 (p. 106); see docs/research-stairs.md | transcribed |
 | Daylight 1/7 (one wall, room deeper than 4.50 m); 1/6 or 1/5 when the head is below 2.10 m | — | 4-5-2-3-2/3 | transcribed |
 | Daylight depth from a window | ≤ 7 m | 4-5-2-8-3 | transcribed |
 | Kitchen with dining | ≥ 7.50 m², width ≥ 2.15 m | 4-7-1-1-11/12 | transcribed |
