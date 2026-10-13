@@ -257,3 +257,57 @@ def test_ground_command_reports_method(tmp_path, capsys):
     out = capsys.readouterr().out
     assert "interpolated" in out and "linear TIN" in out
     assert "1669.394" in out  # Pt5 sits at (21396, 95)
+
+
+def test_ground_command_gives_each_level_corner_against_its_own_floor(tmp_path, capsys):
+    from houseplan import cli
+    from houseplan.model import Site
+
+    spec = yaml.safe_load(EXAMPLE.read_text(encoding="utf-8"))
+    for w in spec["walls"]:  # move the bungalow onto the surveyed slope
+        w["start"] = [w["start"][0] + 15000, w["start"][1] + 4000]
+        w["end"] = [w["end"][0] + 15000, w["end"][1] + 4000]
+    for r in spec["rooms"]:
+        r["seed"] = [r["seed"][0] + 15000, r["seed"][1] + 4000]
+    spec["site"] = str(SITE)
+    spec["project"]["datum"] = {"label": "±0.00", "survey_z_mm": 1672000, "source": "test"}
+    spec["levels"][0]["ffl"] = -1000
+    path = tmp_path / "g.yaml"
+    path.write_text(yaml.safe_dump(spec, allow_unicode=True), encoding="utf-8")
+    assert cli.main(["ground", str(path)]) == 0
+    out = capsys.readouterr().out
+    t = Terrain(Site.model_validate(yaml.safe_load(SITE.read_text(encoding="utf-8"))))
+    z = t.z_at(14850, 3850).z_mm  # GF footprint corner: wall axis -150
+    line = next(l for l in out.splitlines() if "GF corner" in l and "(14850, 3850)" in l)
+    assert f"{(z - 1672000 + 1000) / 1000:+.3f} m to GF floor" in line
+    assert ("buried" if z > 1672000 - 1000 else "floor above ground") in line
+
+
+def _bungalow_on_slope(datum_z: int) -> dict:
+    spec = yaml.safe_load(EXAMPLE.read_text(encoding="utf-8"))
+    for w in spec["walls"]:
+        w["start"] = [w["start"][0] + 15000, w["start"][1] + 4000]
+        w["end"] = [w["end"][0] + 15000, w["end"][1] + 4000]
+    for r in spec["rooms"]:
+        r["seed"] = [r["seed"][0] + 15000, r["seed"][1] + 4000]
+    spec["site"] = yaml.safe_load(SITE.read_text(encoding="utf-8"))
+    spec["project"]["datum"] = {"label": "±0.00", "survey_z_mm": datum_z, "source": "test"}
+    return spec
+
+
+def _ground_findings(spec):
+    from houseplan import checks, geometry
+    from houseplan.model import Design
+
+    design = Design.model_validate(spec)
+    return [f for f in checks.run_all(design, geometry.build(design)) if f.code in ("WINDOW_BELOW_GROUND", "DOOR_BELOW_GROUND")]
+
+
+def test_window_below_the_ground_is_an_error():
+    # the slope rises to the west (x 15000 side): sunk 2 m, the west-end windows are buried
+    found = _ground_findings(_bungalow_on_slope(1670500))
+    assert any(f.code == "WINDOW_BELOW_GROUND" and f.severity == "error" for f in found)
+
+
+def test_house_standing_on_the_ground_has_no_buried_openings():
+    assert _ground_findings(_bungalow_on_slope(1676000)) == []

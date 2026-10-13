@@ -14,7 +14,7 @@ from shapely.geometry import Point, Polygon
 from shapely.ops import unary_union
 
 from .geometry import TOUCH, LevelGeom, lift_shafts, raw_body, side_probe, sides_of
-from .model import HABITABLE, WET, Design, OpeningKind, RoomUse
+from .model import HABITABLE, WET, Design, OpeningKind, RoomUse, WallKind
 
 AREA_EPS = 1.0  # mm²; overlaps smaller than this are float noise
 MIN_JAMB = 100  # mm; nearest an opening may come to a wall junction before warning
@@ -489,6 +489,37 @@ def check_site(design: Design, geo: dict[str, LevelGeom]) -> list[Finding]:
     return out
 
 
+def check_openings_vs_ground(design: Design, geo: dict[str, LevelGeom]) -> list[Finding]:
+    """Ground outside each exterior window and door, from the site's terrain
+    (linear TIN). The other checks do not know the ground: a window whose sill
+    is at or below it is buried, a door below it needs steps down and a drain."""
+    if design.site is None or design.project.datum.survey_z_mm is None:
+        return []
+    from .terrain import Terrain
+
+    terrain = Terrain(design.site)
+    datum = design.project.datum.survey_z_mm
+    out: list[Finding] = []
+    for lv in design.levels:
+        lg = geo[lv.id]
+        for og in lg.openings.values():
+            o = og.opening
+            if og.wall.kind is not WallKind.exterior:
+                continue
+            outside = next((p for p in (side_probe(og, 1), side_probe(og, -1)) if not lg.footprint.contains(p)), None)
+            if outside is None:
+                continue
+            g = terrain.z_at(outside.x, outside.y)
+            if g is None:
+                out.append(Finding("GROUND_UNKNOWN", "info", o.id, "ground outside lies beyond the surveyed points: not checked"))
+                continue
+            above = g.z_mm - datum - lv.ffl  # ground over this level's floor
+            if o.kind is OpeningKind.window and above >= (o.sill or 0):
+                out.append(_err("WINDOW_BELOW_GROUND", o.id, f"ground outside is {above / 1000:+.3f} m to the {lv.id} floor, at or above the sill ({o.sill} mm)"))
+            elif o.kind is not OpeningKind.window and above > 0:
+                out.append(_warn("DOOR_BELOW_GROUND", o.id, f"ground outside is {above / 1000:+.3f} m above the {lv.id} floor: steps down, a sunken yard and a drain"))
+    return out
+
 ALL = (
     check_walls,
     check_openings,
@@ -505,6 +536,7 @@ ALL = (
     check_lifts,
     check_garage_entrance,
     check_site,
+    check_openings_vs_ground,
 )
 
 

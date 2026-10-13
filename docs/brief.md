@@ -78,11 +78,33 @@ anything else is a close paraphrase.
   owner is unsure whether the boiler could go on the balcony.
 - Parking: two big cars, a Toyota Land Cruiser 300 and a Peugeot 301, in a
   parking with a roof: "We don't want an open parking."
-- Basement wanted? Floors above ground: two floors (duplex). Living room,
-  kitchen and main entrance on one floor; bedrooms on the other.
+  Owner, 2026-10-13: "I think the garage itself should be on a separate
+  level, at the same level as the road. Below it is the upper level of the
+  house, and below that is the lower level." And: "You need to ... consider
+  the height difference. The slope is steep."
+- Basement wanted? Floors above ground: two house floors (duplex) below a
+  garage level at the road (above). Living room, kitchen and main entrance
+  on one floor; bedrooms on the other.
 - Lift now or space for one later: "We're going to build a lift." A bedroom
   with an accessible bathroom on the entrance floor is not needed: "Maybe you
   can consider it, but it's not necessary."
+- Placing on the plot (owner, 2026-10-13): "it should be closer to the
+  northwestern side of the field ... the south and eastern sides, if it's
+  possible to leave them free, that would be nice, because when someone
+  builds a house, for example, on the southern side, they will block the
+  sunlight." Build near the north boundary "unless you want to have a
+  private balcony or something there". South and east are "the valuable
+  places for scenery and sunlight"; the east has the view.
+- Windows (owner, 2026-10-13): "We need windows wherever possible on the
+  lower floor on the east side." "The north and west sides, we can excavate
+  for windows" (window wells where the ground is high).
+- Stairs (owner, 2026-10-13): if not in the centre of the house, a stair
+  should have daylight; "When you go down, in front of you, you could have
+  a window or something like that."
+- Plan character (owner, 2026-10-13): "Try not to make the house plans,
+  both floors, very compact, with lots of corners or a lot of cells here and
+  there. Build walls when they matter."
+- Prayer room (owner, 2026-10-13): not beside a WC ("they will hear it").
 - Outdoor:
   - "We need a big balcony from as many sides as possible for the upper floor
     if the living room and kitchen are there."

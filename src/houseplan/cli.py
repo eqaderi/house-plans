@@ -191,19 +191,22 @@ def cmd_ground(args) -> int:
     print(t.describe())
     print(f"datum ±0.00 = survey Z {datum / 1000:.3f} m" if datum is not None else "datum ±0.00 not tied to the survey yet: heights are survey Z only")
     if args.at:
-        targets = [("point", tuple(int(v) for v in a.split(","))) for a in args.at]
+        targets = [("point", tuple(int(v) for v in a.split(",")), None) for a in args.at]
     else:
         geo = geometry.build(design)
-        targets = [(f"{lv.id} corner", (round(x), round(y))) for lv in sorted(design.levels, key=lambda l: l.ffl)
+        targets = [(f"{lv.id} corner", (round(x), round(y)), lv) for lv in sorted(design.levels, key=lambda l: l.ffl)
                    for p in getattr(geo[lv.id].footprint, "geoms", [geo[lv.id].footprint]) if not p.is_empty
                    for x, y in p.exterior.coords[:-1]]
-        targets += [("plot corner", tuple(p)) for p in design.site.boundary]
-    for what, (x, y) in targets:
+        targets += [("plot corner", tuple(p), None) for p in design.site.boundary]
+    for what, (x, y), lv in targets:
         g = t.z_at(x, y)
         if g is None:
             print(f"  {what:14} ({x}, {y})  outside the surveyed points: unknown")
             continue
         rel = f"  {(g.z_mm - datum) / 1000:+.3f} m to ±0.00" if datum is not None else ""
+        if datum is not None and lv is not None:
+            d = g.z_mm - datum - lv.ffl
+            rel += f", {d / 1000:+.3f} m to {lv.id} floor ({'buried' if d > 0 else 'floor above ground'})"
         print(f"  {what:14} ({x}, {y})  Z {g.z_mm / 1000:.3f}{rel}  from {'/'.join(g.corners)} (longest edge {g.longest_edge_mm / 1000:.2f} m)")
     return 0
 

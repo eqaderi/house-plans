@@ -108,7 +108,8 @@ site: ../derived/site/d7.yaml   # or the block inline; a path is relative to the
 
 `bin/hp ground <spec> [--at x,y ...]` reports the interpolated ground Z (linear
 TIN over the `ground` spot heights, never extrapolated) at points, or under
-every corner of each level and of the plot.
+every corner of each level (also against that level's own floor: buried or
+floor above ground) and of the plot.
 
 With a site, `hp sketch` adds `sketch-site.png` (1:200: boundary with side
 lengths, roads, no-build zones, spot heights, each level's outline) and plan
@@ -153,6 +154,7 @@ sheets show the boundary and no-build zones.
 | LIFT_ROOM_USE / LIFT_LEVELS / LIFT_NO_DOOR / LIFT_NOT_STACKED / LIFT_CAR_IN_SHAFT | error | shaft room not of use lift, two on a level, no landing door, shafts not over each other (< 95 % clear on all levels), car does not fit |
 | LIFT_UNLISTED | warning | a lift room that no lift names |
 | GARAGE_TOO_SMALL / GARAGE_ENTRANCE | error | the car bodies do not fit side by side in the largest garage / no exterior door or opening of a garage is as wide and tall as the largest car (bodies, no clearance) |
+| WINDOW_BELOW_GROUND / DOOR_BELOW_GROUND / GROUND_UNKNOWN | error / warning / info | with a site and a tied datum: the ground outside an exterior window is at or above its sill, or outside a door above its floor (linear TIN); unknown where the TIN does not reach |
 
 `bin/hp build` (final stage) adds the read-back: DXF units and dimension
 chains (DXF_CHAIN_OPEN), text overlap and crowding below 1 mm on paper

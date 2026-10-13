@@ -183,7 +183,7 @@ warnings it explains.
 - **Who:** agent. The builder checks levels on site before setting out
   (decision "survey heights and datum").
 
-## 2026-10-13: which floor meets the road, which the garden; ±0.00
+## 2026-10-13: which floor meets the road, which the garden; ±0.00 (superseded the same day, see "garage level at the road")
 
 - **What:**
   - The upper floor (UF: entrance, garage, living, kitchen) meets the road
@@ -216,3 +216,22 @@ warnings it explains.
 - **Who:** agent; the owner delegated the datum (decision "survey heights
   and datum"). The builder checks the road-edge and corner heights with a
   level before setting out.
+
+## 2026-10-13: garage level at the road, two house floors below it (supersedes "which floor meets the road")
+
+- **What:** three levels stepping down the slope:
+  - **G** at the road: the garage and a road-level lobby with the lift and
+    stair. FFL ±0.00 = survey Z 1677.900 (unchanged; reasons in the
+    superseded entry: just above road-edge shot Pt17 1677.805).
+  - **UF** one storey down (FFL −3.200): living, kitchen, dining, main
+    entrance, WC, prayer room. Part of it lies under the garage.
+  - **LF** another storey down (FFL −6.400): bedrooms, opening onto the
+    garden. Set further east than UF, where the ground is lower.
+- **Why:** the owner's instruction (quoted in `docs/brief.md`, "Parking").
+  Option A put both house floors under 3.2 m of section while the ground
+  falls −0.565 to −7.957 m across its 13 m footprint (`bin/hp ground
+  design/option-a.yaml`), leaving the lower floor's east half over a void.
+- **Who:** owner (levels); agent (FFLs, which follow one floor-to-floor
+  height of 3200).
+- **Option A** (`design/option-a.yaml`) is kept as a record and is not
+  developed further.
