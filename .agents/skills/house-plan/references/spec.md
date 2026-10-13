@@ -68,6 +68,8 @@ program:                       # the brief as checkable requirements (owner's, n
   area_tolerance: 0.10         # vs each room's target_area
   vehicles:                    # cars parked side by side in the largest garage (GARAGE_* checks, rule garage_stalls_min)
     - { name: ..., length: 4985, width: 1980, source: "maker's page, market, model year" }
+  scenarios:                   # everyday trips from the brief, walked by hp check (ROUTE findings)
+    - { name: groceries, route: [R1, R6], lift: true }   # rooms in order; lift: change levels by lift
 # rooms may also carry target_area (m², from the brief) and via (the room an
 # en-suite bath or walk-in closet is reached through on purpose)
 
@@ -154,6 +156,9 @@ sheets show the boundary and no-build zones.
 | LIFT_ROOM_USE / LIFT_LEVELS / LIFT_NO_DOOR / LIFT_NOT_STACKED / LIFT_CAR_IN_SHAFT | error | shaft room not of use lift, two on a level, no landing door, shafts not over each other (< 95 % clear on all levels), car does not fit |
 | LIFT_UNLISTED | warning | a lift room that no lift names |
 | GARAGE_TOO_SMALL / GARAGE_ENTRANCE | error | the car bodies do not fit side by side in the largest garage / no exterior door or opening of a garage is as wide and tall as the largest car (bodies, no clearance) |
+| ROUTE / ROUTE_THROUGH_PRIVATE / ROUTE_NONE | info / warning / warning | each `program.scenarios` trip walked through the plan (`usability.py`): rooms passed, metres (straight lines between door centres: a lower bound), flights or lift rides; a trip through a bedroom, bath or WC not on its list; no way at all |
+| LIVING_SEES_WC / KITCHEN_SEEN / ENTRY_SEES_LIVING | warning (KITCHEN_SEEN info under 10 %) | sight lines with doors closed and openings see-through: a WC or bath door in view from the living room; share of the kitchen floor in view from the living room; share of the living room in view from an open exterior door (10 % is a judgement default) |
+| LIVING_OVER_BEDROOM | warning | living, dining or kitchen over or under a bedroom on the next level (≥ 1 m²): TV and footsteps at night |
 | WINDOW_BELOW_GROUND / DOOR_BELOW_GROUND / GROUND_UNKNOWN | error / warning / info | with a site and a tied datum: the ground outside an exterior window is at or above its sill, or outside a door above its floor (linear TIN); unknown where the TIN does not reach |
 
 `bin/hp build` (final stage) adds the read-back: DXF units and dimension
