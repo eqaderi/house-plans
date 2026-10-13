@@ -255,3 +255,18 @@ def test_garage_entrance_must_pass_the_cars(monkeypatch, tmp_path):
     del next(o for o in s["openings"] if o["id"] == "D1")["swing"]
     _, _, findings = analyse(s)
     assert "GARAGE_ENTRANCE" not in codes(findings)
+
+
+def test_prayer_room_is_a_room_use_the_program_can_require(spec):
+    spec["program"] = {"required": [{"use": "prayer", "count": 1}]}
+    _, _, findings = analyse(spec)
+    assert "PROGRAM_MISSING" in codes(findings)
+    next(r for r in spec["rooms"] if r["id"] == "R3")["use"] = "prayer"
+    _, _, findings = analyse(spec)
+    assert "PROGRAM_MISSING" not in codes(findings)
+
+
+def test_bedroom_door_onto_its_balcony_is_not_bedroom_to_bedroom(spec):
+    next(r for r in spec["rooms"] if r["id"] == "R5")["use"] = "bedroom"  # B1 lies in front of R5
+    _, _, findings = analyse(spec)
+    assert "BEDROOM_TO_BEDROOM" not in codes(findings, "warning")

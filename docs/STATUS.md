@@ -27,6 +27,10 @@
      (unverified, suggested size). Sizes and sources are in
      `docs/research.md`; open questions 31 (which LC300) and 32 (which lift).
   5. **Phase 3: the first sketch options** (`design/option-a.yaml`, ...).
+     - **Option A** (2026-10-13): 13.0 × 12.0 m box by the road, garage NW,
+       living/kitchen/dining on the road floor with a U balcony, bedrooms
+       below. `bin/hp check`: 0 errors, 6 warnings. LF east half stands over
+       an undercroft (ground −6.1 to −8.0 under a −3.2 floor).
      Inputs ready:
      - `site: ../derived/site/d7.yaml` and `project.north_angle_deg: 337.97`;
        the alley strip is y 0..1000, the west boundary is slanted (the

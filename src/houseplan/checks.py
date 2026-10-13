@@ -187,8 +187,7 @@ def check_doors_and_access(design: Design, geo: dict[str, LevelGeom]) -> list[Fi
             left, right = _room_at(lg, side_probe(og, 1)), _room_at(lg, side_probe(og, -1))
             if left == right:
                 out.append(_warn("OPENING_SAME_ROOM", o.id, f"both sides are {left}"))
-            uses = {lg.rooms[r].room.use for r in (left, right) if r in lg.rooms}
-            if left != right and uses == {RoomUse.bedroom}:
+            if left != right and all(r in lg.rooms and lg.rooms[r].room.use is RoomUse.bedroom for r in (left, right)):
                 out.append(_warn("BEDROOM_TO_BEDROOM", o.id, f"connects two bedrooms ({left}, {right})"))
             if og.swing is None:
                 continue

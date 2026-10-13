@@ -182,3 +182,37 @@ warnings it explains.
   - Pt9/Pt2/Pt1 (15.3 m edge) covers 50.37 m² at the NE.
 - **Who:** agent. The builder checks levels on site before setting out
   (decision "survey heights and datum").
+
+## 2026-10-13: which floor meets the road, which the garden; ±0.00
+
+- **What:**
+  - The upper floor (UF: entrance, garage, living, kitchen) meets the road
+    on the west. Its FFL is ±0.00 = survey Z **1677.900**
+    (`project.datum.survey_z_mm: 1677900`).
+  - The lower floor (LF: bedrooms) is one full storey down, FFL −3.200
+    (floor-to-floor 3200, 18 risers of 177.78 mm, from `bin/hp check`
+    STAIR_RISE). No split levels inside the block (`references/slope.md` §3).
+- **Why ±0.00 there:** the road-edge spot heights in `derived/site/d7.yaml`
+  are Pt19 1677.613, Pt20 1677.632, Pt17 1677.805 and Pt16 1677.438. ±0.00
+  sits just above the highest of them (Pt17, by the garage door), so the
+  forecourt and the garage apron fall towards the road and rain stays out.
+  The TIN gives "unknown" along most of the road edge, so the shots
+  themselves were used, not an interpolation.
+- **What the ground does under option A** (`bin/hp ground
+  design/option-a.yaml`, heights relative to ±0.00):
+  - West face: −3.566 at the SW corner, −2.955 at the LF garden door
+    (y 5500), −2.351 at the UF entrance (y 7800), −1.423 at the garage door
+    (y 11500), −0.565 at the NW corner. The LF is buried at the north-west
+    and at grade near the south-west, where its side door leads to the
+    path and the alley.
+  - East face: −6.138 (NE) to −7.957 (SE). The LF floor (−3.200) stands
+    well above the ground there: the space under its east half is a
+    storey-high undercroft or needs fill and retaining walls. A garden at
+    LF level on the east would need a built terrace; it is not drawn.
+  - The plot falls about 37 % west to east (`docs/site.md`), and the
+    contours run parallel to the slanted road, so any house parallel to the
+    north and south boundaries meets this. Option B tries a footprint that
+    follows the contours.
+- **Who:** agent; the owner delegated the datum (decision "survey heights
+  and datum"). The builder checks the road-edge and corner heights with a
+  level before setting out.

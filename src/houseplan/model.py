@@ -117,6 +117,7 @@ class RoomUse(str, Enum):
     lift = "lift"  # the shaft on one level, آسانسور
     storage = "storage"
     pantry = "pantry"  # انباری
+    prayer = "prayer"  # نمازخانه, a prayer room
     laundry = "laundry"
     garage = "garage"
     plant = "plant"
