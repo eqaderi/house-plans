@@ -254,6 +254,11 @@ warnings it explains.
   landing (ground about 3 m above the LF floor there), so the landing
   window is on the south: going down each upper flight you face a south
   window over the garden (`FU8`, `FL8`; no WINDOW_BELOW_GROUND).
+- **Landing windows are a fall hazard and must act as guards:** their sill
+  (1900 above the floor below) is only about 216 mm above the half landing
+  (+1684), with 1.5 m to over 4 m of drop outside. Safety glass and a rail
+  to 1100 mm above the landing (guard clauses in `docs/research-stairs.md`
+  1.1); the kit does not check guards yet.
 - **Who:** agent, from the owner's request that the stair be safe,
   comfortable and beautiful, with a window ahead going down.
 

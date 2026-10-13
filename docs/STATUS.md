@@ -37,8 +37,14 @@
        further east; stacked U stair (19 × 168.4 / 300, 10 + 9) with the
        lift; house against the north boundary. `bin/hp check`: 0 errors,
        12 warnings. Open: living over the parents' room (decisions.md), LF
-       east floor 1.2–2.1 m above ground (terrace), north windows where the
-       TIN is unknown, the irregular G plan (IR2800 unverified).
+       east floor 1.2–2.1 m above ground (terrace), the irregular G plan
+       (IR2800 unverified), dining reached only through the kitchen (a
+       main idea for option C: swap them), LF garden access only via the
+       parents' room, landing windows need guards, garage walls over
+       non-bearing UF partitions. North windows: the TIN says "unknown"
+       at the wall; measured just inside it (`--at x,18300`), FL1 moved
+       to clear the ground by 0.16 m on the weak 32.5 m triangle.
+       Report page (private): https://claude.ai/artifact/KUYzje7XXC16TEyap3hhqC
        Next: the owner's reaction; then option C if he wants one.
      - **Option A** (2026-10-13, superseded by the owner): 13.0 × 12.0 m box by the road, garage NW,
        living/kitchen/dining on the road floor with a U balcony, bedrooms
