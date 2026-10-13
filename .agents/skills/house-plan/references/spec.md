@@ -164,7 +164,7 @@ sheets show the boundary and no-build zones.
 | GARAGE_TOO_SMALL / GARAGE_ENTRANCE | error | the car bodies do not fit side by side in the largest garage / no exterior door or opening of a garage is as wide and tall as the largest car (bodies, no clearance) |
 | ROUTE / ROUTE_THROUGH_PRIVATE / ROUTE_NONE | info / warning / warning | each `program.scenarios` trip walked through the plan (`usability.py`): rooms passed, metres (straight lines between door centres: a lower bound), flights or lift rides; a trip through a bedroom, bath or WC not on its list; no way at all |
 | LIVING_SEES_WC / KITCHEN_SEEN / ENTRY_SEES_LIVING | warning (KITCHEN_SEEN info under 10 %) | sight lines with doors closed and openings see-through: a WC or bath door in view from the living room; share of the kitchen floor in view from the living room; share of the living room in view from an open exterior door (10 % is a judgement default) |
-| LIVING_OVER_BEDROOM | warning | living, dining or kitchen over or under a bedroom on the next level (≥ 1 m²): TV and footsteps at night |
+| LIVING_OVER_BEDROOM | warning / info | living over or under a bedroom on the next level (≥ 1 m²): the TV at night; kitchen or dining: info |
 | WINDOW_BELOW_GROUND / DOOR_BELOW_GROUND / GROUND_UNKNOWN | error / warning / info | with a site and a tied datum: the ground outside an exterior window is at or above its sill, or outside a door above its floor (linear TIN); unknown where the TIN does not reach |
 
 `bin/hp build` (final stage) adds the read-back: DXF units and dimension

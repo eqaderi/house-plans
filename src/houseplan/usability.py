@@ -229,7 +229,8 @@ def check_living_over_bedrooms(design: Design, geo: dict[str, LevelGeom]) -> lis
                 for bid, brg in _rooms(lower, {RoomUse.bedroom}):
                     area = srg.outline.intersection(brg.outline).area
                     if area >= OVERLAP_MIN:
-                        out.append(Finding("LIVING_OVER_BEDROOM", "warning", sid, f"{srg.room.use.value} {word} bedroom {bid} on {lower.level_id} for {area / 1e6:.1f} m²: TV and footsteps at night"))
+                        sev = "warning" if srg.room.use in SITTING else "info"  # the TV at night is the owner's case
+                        out.append(Finding("LIVING_OVER_BEDROOM", sev, sid, f"{srg.room.use.value} {word} bedroom {bid} on {lower.level_id} for {area / 1e6:.1f} m²: TV and footsteps at night"))
     return out
 
 
