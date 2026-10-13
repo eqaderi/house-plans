@@ -59,7 +59,7 @@ rooms:
   # The outline is the wall-enclosed space containing the seed. Area is net,
   # from finished wall faces. uses: living (نشیمن) reception (پذیرایی) dining
   # entry (ورودی/کفش‌کن) bedroom kitchen bath wc corridor hall stair storage
-  # pantry (انباری) prayer (نمازخانه) laundry garage plant balcony terrace
+  # pantry (انباری) prayer (نمازخانه) wudhu (وضوخانه) laundry garage plant balcony terrace
 
 program:                       # the brief as checkable requirements (owner's, not yours)
   required: [ { use: bedroom, count: 3 }, { use: wc, count: 1 } ]

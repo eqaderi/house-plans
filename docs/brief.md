@@ -127,6 +127,30 @@ anything else is a close paraphrase.
   - Mornings: children get up, toilet, breakfast, off to school; the father
     may shower; then to the car. "Living in this house should be easy
     overall."
+- Reaction to option B (owner, 2026-10-13, close paraphrase except quotes):
+  - Kitchen: "two ends open" means open to the living side. The kitchen sits
+    beside the living room; from the living room you enter the kitchen at one
+    end and leave at the other, or enter near the main hallway and leave to
+    the living or dining area. Dining and living are connected. The living
+    room is "too small", it "should be bigger than this".
+  - "We have a 30-meter store ... completely not needed, not acceptable. We
+    have a lot of wasted space." (UF store 29 m²).
+  - Prayer room had no wudhu place near it. The entrance hashti is "just
+    stupid because you enter and you are in a room like a box": no boxed
+    entrance room.
+  - Lower floor: the walk-in closet "looks stupid", drop it. The rest is fine.
+  - Terraces: bigger for the upper floor, so the lower floor is bigger than
+    the upper one and lies further east and south. Some of the terrace can be
+    a rail balcony that overhangs, "the balcony doesn't have to be all the roof
+    over the lower floor".
+  - North: attached to the north boundary "you cannot have windows"; the
+    neighbour may build there. Stairs were "wasted" on the south: "the
+    southern part is where we catch light". The stairs "probably should have
+    been on the more northern side of the house".
+  - North, later the same turn: "If you put a distance between the house and
+    the northern side of the field, you can have windows there to catch
+    light." So the house is set back from the north boundary and the north
+    walls may carry windows.
 - Outdoor:
   - "We need a big balcony from as many sides as possible for the upper floor
     if the living room and kitchen are there."

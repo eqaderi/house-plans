@@ -46,6 +46,16 @@
        to clear the ground by 0.16 m on the weak 32.5 m triangle.
        Report page (private): https://claude.ai/artifact/KUYzje7XXC16TEyap3hhqC
        Next: the owner's reaction; then option C if he wants one.
+     - **Option C** (2026-10-13, WIP, owner rejected the layout): reworked
+       from the owner's reaction to B (`docs/brief.md`, "Reaction to option
+       B"): house 3.0 m off the north boundary, stair and lift on the north,
+       LF stepping out east and south, no hashti, wudhu room (new `wudhu`
+       use, tested), no walk-in closet. `bin/hp check`: 0 errors,
+       11 warnings; kitchen still 43 % in view
+       from the living room; LF gross 133 m² is smaller than UF 148 m².
+       Kept: the brief notes, the `wudhu` use, the ground table (ground
+       falls about 0.35 m/m east, 0.16 m/m south). Layout itself to be redone
+       with the owner.
      - **Option A** (2026-10-13, superseded by the owner): 13.0 × 12.0 m box by the road, garage NW,
        living/kitchen/dining on the road floor with a U balcony, bedrooms
        below. `bin/hp check`: 0 errors, 6 warnings. LF east half stands over

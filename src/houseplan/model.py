@@ -118,6 +118,7 @@ class RoomUse(str, Enum):
     storage = "storage"
     pantry = "pantry"  # انباری
     prayer = "prayer"  # نمازخانه, a prayer room
+    wudhu = "wudhu"  # وضوخانه, the washing place beside the prayer room: wet, but not a toilet
     laundry = "laundry"
     garage = "garage"
     plant = "plant"
@@ -129,7 +130,7 @@ HABITABLE = {RoomUse.living, RoomUse.reception, RoomUse.dining, RoomUse.bedroom,
 PRIVATE_VIEW = {RoomUse.bedroom, RoomUse.bath, RoomUse.wc}
 SOCIAL = {RoomUse.living, RoomUse.reception, RoomUse.dining, RoomUse.kitchen}
 NOISY = {RoomUse.kitchen, RoomUse.living, RoomUse.reception, RoomUse.laundry, RoomUse.plant, RoomUse.garage}
-WET = {RoomUse.bath, RoomUse.wc, RoomUse.kitchen, RoomUse.laundry}
+WET = {RoomUse.bath, RoomUse.wc, RoomUse.kitchen, RoomUse.laundry, RoomUse.wudhu}
 
 
 class Room(Strict):

@@ -116,3 +116,14 @@ def test_routes_go_down_stairs_as_well_as_up(spec):
     spec["program"] = {"scenarios": [{"name": "up", "route": ["R5", "U1"]}, {"name": "down", "route": ["U1", "R5"]}]}
     found = {f.subject: f for f in run(spec) if f.code in ("ROUTE", "ROUTE_NONE")}
     assert found["up"].code == "ROUTE" and found["down"].code == "ROUTE"
+
+
+def test_wudhu_is_a_wet_room_that_is_not_a_toilet(spec):
+    """A wudhu place beside the prayer room (owner, brief "Prayer room") must
+    not set off the WC and bath privacy checks, yet it is still a wet room."""
+    from houseplan.model import PRIVATE_VIEW, WET, RoomUse
+
+    assert RoomUse.wudhu in WET
+    assert RoomUse.wudhu not in PRIVATE_VIEW and RoomUse.wudhu not in usability.TOILETS
+    next(r for r in spec["rooms"] if r["id"] == "R3")["use"] = "wudhu"
+    Design.model_validate(spec)  # the use is known to the schema
