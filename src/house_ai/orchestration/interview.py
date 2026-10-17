@@ -352,7 +352,7 @@ class InterviewService:
         _require_human(actor, "confirm interpretations")
         self._check_open()
         pending = self.state().unconfirmed()
-        chosen = pending if not slots else [s for s in slots if s in pending]
+        chosen = pending if slots is None else [s for s in slots if s in pending]
         unknown = set(slots or []) - set(pending)
         if unknown:
             raise ValueError(f"nothing to confirm for: {', '.join(sorted(unknown))}")

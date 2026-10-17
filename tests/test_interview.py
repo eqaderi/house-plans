@@ -29,6 +29,7 @@ from house_ai.domain.workflow import Gate, WorkflowState
 from house_ai.interview import parsing
 from house_ai.interview.questions import QUESTIONS, SLOTS
 from house_ai.interview.slot_types import InvalidValue, check
+from house_ai.interview.state import pick_option
 from house_ai.orchestration.interview import InterviewLocked, InterviewService
 from house_ai.orchestration.interview_llm import LlmAssist
 from house_ai.orchestration.site_ingestion import SiteConfirmation, confirm_site, ingest_site
@@ -578,3 +579,40 @@ def test_cli_interactive_run_confirms_each_answer_and_can_stop(new_store, monkey
     rejected = [t for t in svc.session().turns if t.kind is TurnKind.REJECTION]
     assert rejected and rejected[0].slots == ["bedrooms"]
     assert "Your answers are saved" in out
+
+
+def test_an_empty_confirmation_confirms_nothing(svc, monkeypatch):
+    svc.answer("Two adults.", HUMAN)
+    assert svc.confirm(HUMAN, []) == []
+    assert svc.state().slots["adults"].status == "inference"
+
+
+def test_cli_run_never_confirms_more_than_the_owner_was_shown(new_store, monkeypatch, capsys):
+    from house_ai.cli.main import main
+
+    store = _project(new_store)
+    replies = iter(["Two adults.", "ok", "not sure", "y", ":quit"])
+    monkeypatch.setattr("sys.stdin.isatty", lambda: True)
+    monkeypatch.setattr("builtins.input", lambda *_: next(replies))
+    assert main(["interview", "run", str(store.root), "--owner", "example-owner"]) == 0
+    assert InterviewService(store).state().slots["adults"].status == "inference"
+
+
+def test_a_number_inside_the_reply_is_not_taken_as_the_option(svc):
+    svc.answer("Two adults and two children.", HUMAN)
+    svc.answer("Each child their own room.", HUMAN)
+    svc.answer("Two bedrooms.", HUMAN)
+    assert svc.pending().id == "resolve:c-too-few-bedrooms"
+    svc.answer("keep 2 bedrooms", HUMAN)  # the words of option 3, not "option 2"
+    state = svc.state()
+    assert state.values["children_own_rooms"] is True  # option 2 was not applied
+    assert state.resolutions["c-too-few-bedrooms"][0].option == 2
+    assert pick_option("1 - keep it on one floor", state_options()) == 0
+    assert pick_option("bedrooms", state_options()) is None  # ambiguous: ask again
+
+
+def state_options():
+    from house_ai.interview.rules import Option
+
+    return (Option("Plan 3 bedrooms"), Option("Let the children share bedrooms"),
+            Option("Keep 2 bedrooms; we will manage"))  # fmt: skip

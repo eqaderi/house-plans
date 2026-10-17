@@ -199,17 +199,27 @@ def prompt_by_id(prompt_id: str, state: State, site: SiteContext | None) -> Prom
 
 
 def pick_option(text: str, options: tuple[Option, ...]) -> int | None:
-    """Which option the owner chose: a number, or words only one option contains."""
-    m = re.search(r"\b(\d+)\b", text)
-    if m and 1 <= int(m.group(1)) <= len(options):
-        return int(m.group(1)) - 1
-    words = {w for w in re.findall(r"[a-z]{4,}", text.lower())}
-    hits = [
-        i
-        for i, o in enumerate(options)
-        if words & ({w for w in re.findall(r"[a-z]{4,}", o.label.lower())} - _COMMON)
-    ]
-    return hits[0] if len(hits) == 1 else None
+    """Which option the owner chose.
+
+    A number counts only at the start of the reply ("2", "option 2", "1 - keep it"),
+    so "keep 2 bedrooms" is not option 2. Otherwise the option sharing the most words
+    with the reply wins, if exactly one does; else None and the question is asked again.
+    """
+    m = re.match(r"\s*(?:option\s*)?(\d+)\b", text, re.I)
+    if m:
+        n = int(m.group(1))
+        return n - 1 if 1 <= n <= len(options) else None
+    words = _tokens(text)
+    scores = [len(words & _tokens(o.label)) for o in options]
+    best = max(scores, default=0)
+    if best == 0 or scores.count(best) > 1:
+        return None
+    return scores.index(best)
 
 
-_COMMON = {"keep", "with", "that", "this", "plan", "have", "will", "them", "they", "house"}
+_STOP = {"the", "a", "an", "and", "or", "we", "will", "it", "is", "to", "of", "for", "with",
+         "on", "in", "be", "that", "this", "them", "they", "some", "our", "my", "i", "let"}
+
+
+def _tokens(text: str) -> set[str]:
+    return {w for w in re.findall(r"[a-z]+|\d+", text.lower()) if w not in _STOP}

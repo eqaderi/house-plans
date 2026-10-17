@@ -625,8 +625,9 @@ def cmd_interview_run(args: argparse.Namespace) -> int:
             ok = input("Did I understand that correctly? [y/n] ").strip().lower()
             slots = [u.slot for u in result.understood if u.method != "resolution"]
             pending = set(svc.state().unconfirmed())
-            if ok.startswith("y"):
-                svc.confirm(owner, [s for s in slots if s in pending])
+            shown = [s for s in slots if s in pending]
+            if ok.startswith("y") and shown:
+                svc.confirm(owner, shown)
             elif ok.startswith("n"):
                 wrong = [s for s in slots if s in svc.state().slots]
                 if wrong:
