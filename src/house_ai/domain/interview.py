@@ -60,7 +60,11 @@ class InterviewTurn(StrictModel):
     contradiction_id: str | None = None
     #: Index of the chosen resolution option, when one was chosen.
     option: int | None = Field(default=None, ge=0)
+    #: Consent: the provider allowed. Answer or revision: the AI provider that worded the
+    #: question or read the answer, if one did.
     provider: str | None = None
+    #: The AI model behind ``provider`` on an answer or revision.
+    model: str | None = None
 
     @model_validator(mode="after")
     def _owner_turns_are_human(self) -> InterviewTurn:

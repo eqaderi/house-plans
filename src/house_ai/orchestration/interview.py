@@ -9,6 +9,7 @@ gate.
 
 from __future__ import annotations
 
+import json
 from dataclasses import dataclass, field
 
 from house_ai.domain.brief import DesignBrief, FactValue
@@ -39,11 +40,12 @@ from house_ai.interview.state import (
 from house_ai.interview.summary import summary_markdown
 from house_ai.program.builder import ProgramResult, build_program
 from house_ai.program.validation import ProgramFinding, validate_program
-from house_ai.providers.base import DataFlowPolicy, PrivateDataFlowError
+from house_ai.providers.base import DataFlowPolicy, PrivateDataFlowError, ProviderError
 from house_ai.storage import ProjectStore, StoreError
 
 from .interview_llm import LlmAssist
 from .site_context import latest_site_context
+from .statements import owner_statements
 from .workflow import ApprovalRequiresHuman, TransitionNotAllowed, Workflow, WorkflowError
 
 SESSION_ID = "interview"
@@ -75,6 +77,26 @@ class TurnResult:
             lines.append("I understood:")
             lines += [f"  - {SLOTS[u.slot].label}: {describe(u.value)}" for u in self.understood]
         return "\n".join(lines)
+
+
+#: Shown with any AI wording while the site gate is not approved (added by code, not the AI).
+UNCONFIRMED_SITE_LABEL = (
+    "(Site figures here come from the survey; you have not confirmed the site yet.)"
+)
+
+
+_SITE_WORDS = ("site", "land", "plot", "parcel", "slope", "steep", "terrain", "road", "drop")
+
+
+@dataclass
+class AskedQuestion:
+    """A question as shown to the owner, and who worded it."""
+
+    prompt_id: str
+    text: str
+    provider: str | None = None
+    model: str | None = None
+    notes: list[str] = field(default_factory=list)
 
 
 @dataclass
@@ -145,6 +167,72 @@ class InterviewService:
         if ref is None:
             raise StoreError("no design brief yet")
         return self.store.get(ref, DesignBrief)
+
+    def ai_context(self) -> str:
+        """What the AI may know when wording a question: site values with their status, the
+        owner's own statements and what has been understood so far."""
+        session = self.session()
+        site = session.site
+        context: dict = {}
+        if site is not None and site.site_ref is not None:
+            context["site"] = {
+                "status": "confirmed by the owner" if site.verified
+                else "from the survey; NOT yet confirmed by the owner",
+                "parcel_area_m2": site.parcel_area_m2,
+                "relief_m": site.relief_m,
+                "mean_slope_pct": site.mean_slope_pct,
+                "frontage_m": site.frontage_m,
+            }  # fmt: skip
+        statements = owner_statements(self.store)
+        if statements:
+            context["owner_said"] = [{"about": st.subject, "words": st.words} for st in statements]
+        state = fold(session)
+        context["understood_so_far"] = {
+            SLOTS[k].label: describe(v.value) for k, v in sorted(state.slots.items())
+        }
+        return json.dumps(context, ensure_ascii=False, sort_keys=True)
+
+    def _live_assist(self) -> LlmAssist | None:
+        """The assist with the consent recorded in the session right now."""
+        if self.assist is not None:
+            self.assist.policy = self.policy()
+        return self.assist
+
+    def _provider_failed(self, exc: ProviderError, what: str) -> str:
+        if exc.fatal:
+            self.assist = None
+            return f"The AI could not {what} ({exc}); it is off for the rest of this session."
+        return f"The AI could not {what} ({exc}); I used the built-in one instead."
+
+    def ask(self, prompt: Prompt) -> AskedQuestion:
+        """The pending question, worded by the AI when one is allowed; else as planned.
+
+        Contradiction choices keep their exact numbered wording.
+        """
+        assist = self._live_assist()
+        if assist is None or prompt.kind == "resolve":
+            return AskedQuestion(prompt.id, prompt.text)
+        try:
+            phrased = assist.phrase(prompt.text, self.ai_context())
+        except PrivateDataFlowError:
+            return AskedQuestion(prompt.id, prompt.text, notes=[
+                f"(You have not allowed {assist.provider.name} to receive your answers, so I "
+                "use my standard questions.)"])  # fmt: skip
+        except ProviderError as exc:
+            note = self._provider_failed(exc, "word the question")
+            return AskedQuestion(prompt.id, prompt.text, notes=[note])
+        if phrased.model is None:
+            return AskedQuestion(prompt.id, prompt.text)
+        site = self.session().site
+        about_site = any(c.isdigit() for c in phrased.text) or any(
+            w in phrased.text.lower() for w in _SITE_WORDS
+        )
+        notes = (
+            [UNCONFIRMED_SITE_LABEL]
+            if site is not None and site.site_ref is not None and not site.verified and about_site
+            else []
+        )
+        return AskedQuestion(prompt.id, phrased.text, assist.provider.name, phrased.model, notes)
 
     def policy(self) -> DataFlowPolicy:
         """Providers the owner allowed to receive interview content, from the session."""
@@ -223,7 +311,10 @@ class InterviewService:
             )
         return TurnResult(s_ref, b_ref, prompt=self.pending(), notes=notes)
 
-    def _read(self, prompt: Prompt, text: str, state: State) -> list[Understood]:
+    def _read(
+        self, prompt: Prompt, text: str, state: State
+    ) -> tuple[list[Understood], list[str], str | None]:
+        """What the answer says, notes for the owner, and the AI model that helped, if any."""
         q, slot = question_for(prompt.id)
         slots = [slot] if slot else list(q.slots)
         parsed: dict[str, FactValue] = (
@@ -232,25 +323,34 @@ class InterviewService:
             else q.parse(text)
         )
         method = {k: "parser" for k in parsed}
+        notes: list[str] = []
+        model: str | None = None
         for extra, parser in OPPORTUNISTIC.items():
             if extra not in parsed and extra not in state.slots:
                 for k, v in parser(text).items():
                     parsed[k] = v
                     method[k] = "parser"
-        if not any(s in parsed for s in slots) and self.assist is not None:
+        assist = self._live_assist()
+        if not any(s in parsed for s in slots) and assist is not None:
             try:
-                for k, v in self.assist.extract(prompt.text, slots, text).items():
+                for k, v in assist.extract(prompt.text, slots, text).items():
                     parsed[k] = v
-                    method[k] = self.assist.method
+                    method[k] = assist.method
+                model = assist.last_model
             except PrivateDataFlowError:
                 pass  # the owner has not allowed this provider; the parser result stands
+            except ProviderError as exc:
+                notes.append(self._provider_failed(exc, "read your answer"))
         if parsing.is_unknown(text):
             for s in slots:
                 parsed.setdefault(s, None)
-        return [Understood(slot=k, value=v, method=method.get(k, "parser"))
-                for k, v in parsed.items()]  # fmt: skip
+        understood = [Understood(slot=k, value=v, method=method.get(k, "parser"))
+                      for k, v in parsed.items()]  # fmt: skip
+        return understood, notes, model
 
-    def answer(self, text: str, actor: Actor) -> TurnResult:
+    def answer(self, text: str, actor: Actor, shown: AskedQuestion | None = None) -> TurnResult:
+        """Record the owner's answer to the pending question. ``shown`` is the question as the
+        owner saw it (e.g. worded by the AI); it is kept with the answer."""
         _require_human(actor, "answer interview questions")
         self._check_open()
         text = text.strip()
@@ -263,7 +363,13 @@ class InterviewService:
         state = fold(s)
         if prompt.kind == "resolve":
             return self._resolve(prompt, text, actor, s)
-        understood = self._read(prompt, text, state)
+        understood, ai_notes, read_model = self._read(prompt, text, state)
+        if shown is not None and shown.prompt_id != prompt.id:
+            shown = None  # shown for another question; record the planned wording
+        provider = shown.provider if shown else None
+        model = shown.model if shown else None
+        if read_model is not None and self.assist is not None:
+            provider, model = self.assist.provider.name, read_model
         q, slot = question_for(prompt.id)
         wanted = [slot] if slot else list(q.slots)
         got_any = any(u.slot in wanted for u in understood)
@@ -271,15 +377,16 @@ class InterviewService:
             understood += [Understood(slot=w, value=None, method="unparsed") for w in wanted
                            if all(u.slot != w for u in understood)]  # fmt: skip
         session = self._append(
-            {"kind": TurnKind.ANSWER, "question_id": prompt.id, "question_text": prompt.text,
-             "text": text, "understood": understood},
+            {"kind": TurnKind.ANSWER, "question_id": prompt.id,
+             "question_text": shown.text if shown else prompt.text, "text": text,
+             "understood": understood, "provider": provider, "model": model},
             actor,
         )  # fmt: skip
         if not got_any:
             session = session.model_copy(update={"pending_attempts": s.pending_attempts + 1})
         s_ref, b_ref = self._write(session, actor, f"owner answered {prompt.id}")
         new_state = fold(self.session())
-        notes = []
+        notes = list(ai_notes)
         if not got_any and s.pending_attempts + 1 < MAX_ATTEMPTS:
             notes.append("I could not read that clearly; let me ask again.")
         elif not got_any:
@@ -335,14 +442,18 @@ class InterviewService:
         q, slot = question_for(question_id)
         prompt = Prompt(question_id, q.render(state.values, self.session().site)
                         if not slot else SLOTS[slot].followup, "question")  # fmt: skip
-        understood = self._read(prompt, text, state)
+        understood, notes, read_model = self._read(prompt, text, state)
+        ai = read_model is not None and self.assist is not None
         session = self._append(
             {"kind": TurnKind.REVISION, "question_id": question_id, "question_text": prompt.text,
-             "text": text.strip(), "understood": understood},
+             "text": text.strip(), "understood": understood,
+             "provider": self.assist.provider.name if ai else None,
+             "model": read_model if ai else None},
             actor,
         )  # fmt: skip
         s_ref, b_ref = self._write(session, actor, f"owner revised {question_id}")
-        notes = [] if understood else ["I could not read a new value; nothing else changed."]
+        if not understood:
+            notes.append("I could not read a new value; nothing else changed.")
         return TurnResult(s_ref, b_ref, understood=understood, prompt=self.pending(),
                           contradictions=open_contradictions(fold(self.session())),
                           notes=notes)  # fmt: skip

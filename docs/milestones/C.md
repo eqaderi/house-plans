@@ -1,10 +1,12 @@
 # Milestone C: owner interview and space program
 
 Date: 2026-10-17. Branch: `milestone-c`, created from `milestone-b` at
-commit 011c8c8; `milestone-b` (0a22f8a) is merged into it. `milestone-b` is **not merged into `main`** yet, so
-`milestone-c` contains all of Milestone B and must be merged after it (or
-together with it). Nothing is pushed or merged; both need the owner's
-approval. Design: [ADR 0008](../adr/0008-owner-interview-and-space-program.md).
+commit 011c8c8; the latest `milestone-b` (07cdfdd, with the project folders of
+ADR 0009) is merged into it. Neither branch is merged into `main`; `milestone-c`
+contains all of Milestone B and must be merged after it (or together with it),
+with the owner's approval. Both are pushed to GitHub (private repository) with
+the owner's authorisation. Design: [ADR 0008](../adr/0008-owner-interview-and-space-program.md),
+the Claude adapter: [ADR 0010](../adr/0010-claude-adapter-for-the-interview.md).
 
 ## What works
 
@@ -112,8 +114,21 @@ against known answers.
   Output is validated against strict slot types (`interview/slot_types.py`);
   invalid values or non-JSON replies are dropped. What is kept is still an
   inference until confirmed. `providers/scripted.py` is the deterministic
-  test provider. No vendor adapter ships (no credentials); the deterministic
-  parser is the default.
+  test provider.
+- **Real AI interview** (ADR 0010): `interview run <project> --owner <name>
+  --ai anthropic [--model <id>]` uses Claude (`providers/claude.py`, the
+  official `anthropic` SDK, default `claude-opus-5-5`) to word each planned
+  question as an architect would, using the project's site values, the owner's
+  statements and the answers so far, and to read free answers the parser
+  cannot. The owner types `allow anthropic` once (a consent turn). Structured
+  output is schema-constrained and validated again; every value read is an
+  inference until the owner confirms it. The code, not the AI, adds "Site
+  figures here come from the survey; you have not confirmed the site yet"
+  while the site gate is open. Each answer turn keeps the wording shown and
+  the provider and model. Provider errors (no key, refused key, rate limit,
+  outage, network, refusal, cut-off reply) fall back to the built-in question
+  or parser with a note; the key never appears in output. Without the SDK or a
+  key the interview runs exactly as before.
 - **Files** (`program build --out <dir>`): `design_brief.yaml`,
   `space_program.yaml`, `assumptions.yaml`, `open_questions.yaml`,
   `interview-summary.md` and `program-review.md`, a review sheet in plain
@@ -132,6 +147,8 @@ against known answers.
 
 # an interview on any project (the owner runs this in their own terminal)
 .venv/bin/house-ai interview run <dir> --owner <name>     # :summary, :revise <id>, :quit
+# with Claude (needs: pip install -e '.[ai]' and ANTHROPIC_API_KEY in that terminal)
+.venv/bin/house-ai interview run my-house --owner <name> --ai anthropic
 .venv/bin/house-ai interview summary <dir>
 .venv/bin/house-ai program build <dir> --actor agent:<tool> --out <dir>-program
 .venv/bin/house-ai program review <dir> --actor agent:<tool>    # needs the approved site
@@ -151,10 +168,22 @@ checked by a test.
 
 ## Test results
 
-`390 passed` on Python 3.13.3 (locked versions) and on Python 3.11.12
-(macOS arm64; numpy 2.4.6 and pyproj 3.7.2, because the lock's numpy 2.5.4
-and pyproj 3.8.0 have no 3.11 builds), 0 failed, 0 skipped. `ruff check src tests examples`: all checks passed.
-`house-ai schemas check`: 21 schemas up to date (new: `interview_session`).
+`410 passed` on Python 3.13.3 (locked versions, with the `[ai]` extra), 0
+failed, 0 skipped, after merging the latest `milestone-b` and adding the
+Claude adapter (2026-10-17). `ruff check src tests examples`: all checks
+passed. `house-ai schemas check`: 22 schemas up to date (new:
+`interview_session`, `owner_statements`). Before that: `390 passed` on Python
+3.13.3 and on Python 3.11.12 (numpy 2.4.6 and pyproj 3.7.2 there, because the
+lock's numpy 2.5.4 and pyproj 3.8.0 have no 3.11 builds).
+
+`tests/test_ai_interview.py` (12 tests, fake Anthropic client and scripted
+provider; no network, no key) covers the request (model, structured-output
+schema, server-side fallback, attachments), refusals and cut-off replies,
+SDK errors mapped without leaking the key, AI wording kept with provider and
+model, the deterministic unconfirmed-site label, no request without consent,
+fallback on transient and fatal errors, AI reading of an unreadable answer,
+contradiction choices never reworded, and the CLI consent and no-credentials
+paths.
 
 `tests/test_interview.py` (30 tests) covers:
 
@@ -183,12 +212,15 @@ and pyproj 3.8.0 have no 3.11 builds), 0 failed, 0 skipped. `ruff check src test
 ## Known limitations
 
 - The deterministic parser reads common English phrasings only. Unusual
-  answers are asked again and then recorded as unknown. An LLM can help once
-  a vendor adapter exists and the owner consents. Every reading needs the
-  owner's confirmation either way.
-- No vendor LLM adapter (OpenAI, Anthropic, Gemini) is included yet; the
-  interface and the consent path are in place and tested with the scripted
-  provider.
+  answers are asked again and then recorded as unknown unless the owner runs
+  with `--ai anthropic`. Every reading needs the owner's confirmation.
+- The Claude adapter is tested with a fake client only: no live API call has
+  been made (no key in this environment). The first real run is the owner's.
+- The AI words the planner's questions and reads answers; it does not invent
+  new questions (AI follow-up questions are not implemented). Only Anthropic
+  has an adapter; OpenAI and Gemini would be further adapters.
+- AI wording is requested again when an interview resumes, so the resumed
+  question may read differently; what was shown with each answer is kept.
 - Typical room sizes are a small fixed table, not a jurisdiction's rules;
   areas are not checked against any building code ("not checked").
 - Cost is not estimated: the budget is recorded and reported as not checked.
@@ -208,11 +240,14 @@ and pyproj 3.8.0 have no 3.11 builds), 0 failed, 0 skipped. `ruff check src test
 
 ## The owner's real project
 
-`project-data/my-house` is in `SITE_NEEDS_VERIFICATION`; nothing in it is
-approved. The interview can run on it now (`house-ai interview run
-project-data/my-house --owner <name>`). Site values are shown as unconfirmed,
-and program review waits for the site gate. No answers were recorded by an
-agent.
+`projects/my-house` (ADR 0009) is in `SITE_NEEDS_VERIFICATION`; nothing in
+it is approved. The interview can run on it now (`house-ai interview run
+my-house --owner <name> [--ai anthropic]`); it has not been started. The AI
+receives the site values marked "NOT yet confirmed by the owner" and the
+owner's recorded statements (UTM, metres above sea level, the 12–12.5 m drop,
+the steep land). Program review waits for the site gate. No answers were
+recorded by an agent; a start on a scratch copy of the project confirmed the
+first question and the context.
 
 ## Next: Milestone D (plan)
 

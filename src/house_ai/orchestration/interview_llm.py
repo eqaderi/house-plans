@@ -21,6 +21,14 @@ from house_ai.interview.questions import SLOTS
 from house_ai.interview.slot_types import InvalidValue, check
 from house_ai.providers.base import DataFlowPolicy, ModelProvider, ProviderRequest, send
 
+PHRASE_SYSTEM = (
+    "You are an architect interviewing a homeowner about the house they will build on their "
+    "own land. Rephrase the question you are given so it is warm, brief and specific to this "
+    "household and site. Keep its meaning and everything it asks, and ask one question only. "
+    "Use the context only as given: when it says the site is not confirmed, do not present "
+    "site figures as confirmed. Never invent facts, sizes, costs or regulations. Return only "
+    "the question."
+)
 SYSTEM = (
     "You help an architect interview a homeowner. Read the owner's answer and return only "
     "what the answer clearly states, as JSON matching the schema. Use null when the owner "
@@ -39,11 +47,20 @@ class _Extraction(BaseModel):
     values: list[_Proposal]
 
 
+@dataclass(frozen=True)
+class Phrased:
+    text: str
+    #: The model that wrote it; None when the original question is kept.
+    model: str | None
+
+
 @dataclass
 class LlmAssist:
     provider: ModelProvider
     policy: DataFlowPolicy
     classification: DataClassification = DataClassification.PRIVATE
+    #: The model behind the last reply, for the session record.
+    last_model: str | None = None
 
     @property
     def method(self) -> str:
@@ -60,6 +77,7 @@ class LlmAssist:
             response_schema=_Extraction.model_json_schema(),
         )
         response = send(self.provider, request, self.policy)
+        self.last_model = response.model
         try:
             parsed = _Extraction.model_validate_json(response.text)
         except ValidationError:
@@ -74,13 +92,16 @@ class LlmAssist:
                 continue
         return out
 
-    def phrase(self, question: str, context: str) -> str:
-        """A friendlier wording of ``question``; the original if the reply is unusable."""
+    def phrase(self, question: str, context: str) -> Phrased:
+        """An architect's wording of ``question``; the original if the reply is unusable."""
         request = ProviderRequest(
-            system="Rephrase the architect's question warmly and briefly. Keep its meaning. "
-            "Return only the question.",
+            system=PHRASE_SYSTEM,
             prompt=json.dumps({"question": question, "context": context}, ensure_ascii=False),
             classification=self.classification,
         )
-        text = send(self.provider, request, self.policy).text.strip()
-        return text if 0 < len(text) <= 600 and "\n\n\n" not in text else question
+        response = send(self.provider, request, self.policy)
+        self.last_model = response.model
+        text = response.text.strip()
+        if 0 < len(text) <= 600 and "\n\n\n" not in text:
+            return Phrased(text, response.model)
+        return Phrased(question, None)

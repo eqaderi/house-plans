@@ -1,8 +1,8 @@
 """Provider-neutral AI interface and explicit data-flow policy.
 
-The domain never imports a vendor SDK. Adapters for OpenAI, Anthropic and
-Google Gemini implement :class:`ModelProvider` and are only constructed when
-credentials exist (none ship in Milestone A).
+The domain never imports a vendor SDK. Vendor adapters implement
+:class:`ModelProvider` (``providers/claude.py`` is the first, ADR 0010) and
+raise :class:`ProviderError` for anything that goes wrong on the vendor side.
 
 Private project data (the owner's survey, brief, photos) never leaves the
 machine implicitly: every request declares the classification of what it
@@ -61,6 +61,25 @@ class DataFlowPolicy:
 
 class PrivateDataFlowError(PermissionError):
     pass
+
+
+class ProviderError(RuntimeError):
+    """A provider could not answer. The message is safe to show: it never holds a key.
+
+    ``kind`` is one of: not_configured, auth, rate_limit, unavailable, network,
+    bad_request, refused, incomplete.
+    """
+
+    def __init__(self, kind: str, message: str) -> None:
+        super().__init__(message)
+        self.kind = kind
+
+    #: Kinds that will not go away by asking again in this session.
+    FATAL = frozenset({"not_configured", "auth", "bad_request"})
+
+    @property
+    def fatal(self) -> bool:
+        return self.kind in self.FATAL
 
 
 def check_data_flow(provider: str, request: ProviderRequest, policy: DataFlowPolicy) -> None:

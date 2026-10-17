@@ -99,8 +99,11 @@ def test_roster_schema_refuses_an_approving_role():
         AgentRoster.model_validate(doc)
 
 
-def test_domain_never_imports_a_vendor_sdk():
+def test_only_vendor_adapters_import_a_vendor_sdk():
+    """A vendor SDK appears only in its adapter (ADR 0010), never in domain, storage,
+    orchestration or the CLI, and nothing outside the CLI imports an adapter."""
     src = REPO / "src" / "house_ai"
+    adapters = {src / "providers" / "claude.py"}
     vendors = (
         "import openai",
         "import anthropic",
@@ -109,7 +112,10 @@ def test_domain_never_imports_a_vendor_sdk():
     )
     for path in src.rglob("*.py"):
         text = path.read_text()
-        assert not any(v in text for v in vendors), path
+        if path not in adapters:
+            assert not any(v in text for v in vendors), path
+        if path.parent.name != "cli" and path not in adapters:
+            assert "providers.claude" not in text, path
 
 
 def test_bare_or_private_prompt_is_refused_without_consent():

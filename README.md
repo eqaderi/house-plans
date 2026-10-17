@@ -35,6 +35,24 @@ No paid AI API, Blender or Unreal is needed. DXF needs nothing extra;
 DWG needs the free ODA File Converter (optional; its test is skipped
 without it).
 
+### Optional: the AI-assisted interview (Claude)
+
+`interview run ... --ai anthropic` lets Claude word the questions for your site
+and read free answers (ADR 0010). It needs an **Anthropic API key**, which is
+separate from any chat subscription: a Claude Team/Pro plan, ChatGPT Plus or
+Google AI Pro does not give this program API access. Create a key at
+[console.anthropic.com](https://console.anthropic.com) (API usage is billed
+there, prepaid credits), then in your own terminal:
+
+```bash
+.venv/bin/pip install -e '.[ai]'
+export ANTHROPIC_API_KEY=...        # never put it in a file in this repository
+.venv/bin/house-ai interview run my-house --owner <you> --ai anthropic
+```
+
+It asks you to type `allow anthropic` before your answers or site details are
+sent. Without a key the interview runs with the built-in questions.
+
 ## Run the tests
 
 ```bash

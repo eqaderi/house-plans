@@ -25,6 +25,11 @@ dev = [
   "pytest>=8.0",
   "ruff>=0.9",
 ]
+# Milestone C: the Claude adapter for the AI-assisted interview (ADR 0010). Optional;
+# everything else, including the tests, runs without it.
+ai = [
+  "anthropic>=1.15,<2",
+]
 
 [project.scripts]
 house-ai = "house_ai.cli.main:main"

@@ -41,6 +41,7 @@ from house_ai.geospatial.validation import report_markdown, validate_site
 from house_ai.interview.brief_builder import describe
 from house_ai.interview.questions import SLOTS
 from house_ai.orchestration.interview import InterviewService
+from house_ai.orchestration.interview_llm import LlmAssist
 from house_ai.orchestration.site_ingestion import SiteConfirmation, confirm_site, ingest_site
 from house_ai.orchestration.statements import owner_statements, record_owner_statement
 from house_ai.orchestration.survey_inspection import inspect_files, inspection_markdown
@@ -50,6 +51,7 @@ from house_ai.orchestration.workflow import (
     WorkflowError,
 )
 from house_ai.program.report import program_markdown
+from house_ai.providers.base import ModelProvider, ProviderError
 from house_ai.render2d.review_html import render_review_html
 from house_ai.render2d.site_svg import render_site_svg
 from house_ai.render2d.terrain_svg import render_terrain_svg
@@ -541,13 +543,15 @@ def _owner_terminal(what: str) -> bool:
     return False
 
 
-def _show_turn(result) -> None:
+def _show_turn(result, *, prompt: bool = True) -> None:
     text = result.message()
     if text:
         _out(text)
     for f in result.contradictions:
         if result.prompt is None or result.prompt.id != f"resolve:{f.id}":
             _out(f"NOTE {f.statement}")
+    if not prompt:
+        return
     if result.prompt is not None:
         _out("")
         _out(f"[{result.prompt.id}] {result.prompt.text}")
@@ -633,19 +637,54 @@ def cmd_interview_summary(args: argparse.Namespace) -> int:
     return EXIT_OK
 
 
+def _ai_provider(name: str, model: str | None) -> ModelProvider:
+    from house_ai.providers.claude import ClaudeProvider
+
+    return ClaudeProvider.from_environment(model)
+
+
+def _attach_ai(svc: InterviewService, owner: Actor, name: str, model: str | None) -> None:
+    """Give the interview an AI assistant if it is installed, configured and allowed."""
+    try:
+        provider = _ai_provider(name, model)
+    except ProviderError as exc:
+        _out(f"(AI not available: {exc}. Continuing with the built-in questions.)")
+        return
+    if provider.name not in svc.policy().allowed_private_providers:
+        _out(f"Your answers and your site's details are private. With your permission they "
+             f"are sent to {provider.name} ({getattr(provider, 'model', '')}) so it can word "
+             "the questions and read free answers. Nothing it says is accepted without you.")
+        phrase = f"allow {provider.name}"
+        typed = input(f'Type "{phrase}" to allow, or press Enter to continue without AI: ')
+        if typed.strip() != phrase:
+            _out("(Continuing without AI.)")
+            return
+        svc.consent(owner, provider.name)
+    svc.assist = LlmAssist(provider, svc.policy())
+    _out(f"(AI assistant: {provider.name} {getattr(provider, 'model', '')}. It words the "
+         "questions and helps read answers; you confirm everything it understood.)")  # fmt: skip
+
+
 def cmd_interview_run(args: argparse.Namespace) -> int:
     """The interactive interview for the owner: one question at a time."""
     if not _owner_terminal("interview run"):
         return EXIT_USAGE
     owner = Actor(kind=ActorKind.HUMAN, id=args.owner)
     svc = InterviewService(ProjectStore(_dir(args.dir)))
-    _show_turn(svc.start(owner))
+    _show_turn(svc.start(owner), prompt=False)
+    if args.ai:
+        _attach_ai(svc, owner, args.ai, args.model)
     _out("(Commands: :summary, :revise <question-id>, :quit. Answer in your own words.)")
     while True:
         prompt = svc.pending()
         if prompt is None:
             _out("All questions are answered.")
             break
+        asked = svc.ask(prompt)
+        for note in asked.notes:
+            _out(note)
+        _out("")
+        _out(f"[{prompt.id}] {asked.text}")
         try:
             text = input("> ").strip()
         except EOFError:
@@ -661,10 +700,10 @@ def cmd_interview_run(args: argparse.Namespace) -> int:
         if text.startswith(":revise "):
             qid = text.split(maxsplit=1)[1]
             new = input("Your new answer: ").strip()
-            _show_turn(svc.revise(qid, new, owner))
+            _show_turn(svc.revise(qid, new, owner), prompt=False)
             continue
-        result = svc.answer(text, owner)
-        _show_turn(result)
+        result = svc.answer(text, owner, shown=asked)
+        _show_turn(result, prompt=False)
         if result.understood and any(u.method != "resolution" for u in result.understood):
             ok = input("Did I understand that correctly? [y/n] ").strip().lower()
             slots = [u.slot for u in result.understood if u.method != "resolution"]
@@ -961,6 +1000,9 @@ def build_parser() -> argparse.ArgumentParser:
     s = iv.add_parser("run", help="interactive interview for the owner")
     s.add_argument("dir")
     s.add_argument("--owner", required=True, help="the owner's name or id")
+    s.add_argument("--ai", choices=["anthropic"],
+                   help="let an AI word the questions and read free answers (needs consent)")
+    s.add_argument("--model", help="AI model id (default: claude-opus-5-5)")
     s.set_defaults(func=cmd_interview_run)
 
     pr = sub.add_parser("program", help="space program from the brief (Milestone C)")

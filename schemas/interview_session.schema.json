@@ -147,6 +147,18 @@
         "kind": {
           "$ref": "#/$defs/TurnKind"
         },
+        "model": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Model"
+        },
         "option": {
           "anyOf": [
             {
