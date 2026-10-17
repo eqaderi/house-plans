@@ -57,13 +57,14 @@ the orchestration layer.
 |---|---|---|
 | `house_ai.domain` | A | Pydantic models for every canonical schema, units, geometry, coordinate frames, integrity checks, compliance language, schema registry |
 | `house_ai.storage` | A | `ProjectStore` (write-once artifacts, immutable sources, hash-chained event log), canonical hashing, folder importer |
-| `house_ai.orchestration` | A, B | Workflow state machine, transition guards, approval gates, reopen; site ingestion, human site confirmation, read-only survey inspection |
+| `house_ai.orchestration` | A, B, C | Workflow state machine, transition guards, approval gates, reopen; site ingestion, human site confirmation, read-only survey inspection; interview service (store, workflow, site context), optional LLM assist through `providers.base.send` |
 | `house_ai.cli` | A | `house-ai` command, a thin layer over the library |
-| `house_ai.providers` | A (interface) | `ModelProvider` protocol, `DataFlowPolicy`, `send()` |
+| `house_ai.providers` | A (interface), C | `ModelProvider` protocol, `DataFlowPolicy`, `send()`; `ScriptedProvider` for tests (no vendor adapter yet) |
 | `house_ai.cad` | B | `CadAdapter` / `CadSiteExtractor` protocols; format detection from bytes; ezdxf DXF adapter; DWG via ODA File Converter; layer roles from a human mapping; raw SOURCE-frame extraction and site interpretation with explicit ambiguity |
 | `house_ai.geospatial` | B | CRS lookup and validation (pyproj/PROJ), UTM candidates, grid-to-true-north, Delaunay TIN, parcel measurements and frontage, site validation report |
-| `house_ai.render2d` | B (site), D (plans) | Site plan SVG from the canonical site; plan SVG planned |
-| `house_ai.interview`, `house_ai.program` | C | Adaptive interview, brief → program (planned) |
+| `house_ai.render2d` | B (site), D (plans) | Site plan SVG, terrain slope SVG and the static site review page from the canonical site; plan SVG planned |
+| `house_ai.interview` | C | Question bank with conditions and follow-ups, deterministic answer parsers, slot types, contradiction rules with options, session fold and planner, brief builder, summary (pure, domain only) |
+| `house_ai.program` | C | Brief → space program, adjacencies, zones, assumptions and open questions; program validation (missing information, unconfirmed interpretations, conflicts, sizes, totals, site fit); review sheet |
 | `house_ai.constraints`, `house_ai.generation`, `house_ai.evaluation` | D | Constraint compilation, `PlanGenerator` and `Evaluator` protocols (planned) |
 | `house_ai.blender` | F | Deterministic canonical-plan → Blender scripts (planned) |
 | `house_ai.unreal` | G | FBX + `scene_manifest.json` → Unreal importer (planned) |

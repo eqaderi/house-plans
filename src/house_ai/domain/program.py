@@ -7,7 +7,7 @@ from enum import StrEnum
 from pydantic import Field, model_validator
 
 from .base import EXTERIOR, SCHEMA_VERSION, Id, StrictModel
-from .brief import Priority
+from .brief import Money, Priority
 from .provenance import ArtifactRef, Provenance
 
 
@@ -69,6 +69,8 @@ class ProgramItem(StrictModel):
     level_preference: str | None = None
     priority: Priority = Priority.MUST
     daylight: DaylightNeed = DaylightNeed.PREFERRED
+    #: Must be reachable and usable step-free (e.g. by a wheelchair user).
+    accessible: bool = False
     #: Brief facts this item derives from.
     source_fact_ids: list[Id] = Field(default_factory=list)
     notes: str | None = None
@@ -141,6 +143,13 @@ class SpaceProgram(StrictModel):
     target_gross_area_m2: float | None = Field(default=None, gt=0)
     #: Circulation and walls as a fraction of net program area, if assumed.
     circulation_factor: float | None = Field(default=None, ge=0, lt=1)
+    #: Number of storeys the owner wants; None means UNKNOWN.
+    levels: int | None = Field(default=None, ge=1, le=10)
+    #: None means UNKNOWN.
+    budget: Money | None = None
+    #: Site version the program was checked against, and whether it was approved.
+    site_ref: ArtifactRef | None = None
+    site_verified: bool = False
     provenance: Provenance
 
     @model_validator(mode="after")

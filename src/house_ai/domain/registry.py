@@ -18,6 +18,7 @@ from .build import BuildRecord, SceneManifest
 from .codepack import CodePack
 from .constraints import ConstraintSet
 from .evaluation import EvaluationReport
+from .interview import InterviewSession
 from .model import HouseModel
 from .plan import ChangeRequest, PlanVersion, RevisionReport
 from .program import SpaceProgram
@@ -40,6 +41,7 @@ ARTIFACT_MODELS: dict[ArtifactKind, type[BaseModel]] = {
     ArtifactKind.EVALUATION_REPORT: EvaluationReport,
     ArtifactKind.REVISION_REPORT: RevisionReport,
     ArtifactKind.BUILD_RECORD: BuildRecord,
+    ArtifactKind.INTERVIEW_SESSION: InterviewSession,
 }
 
 SCHEMAS: dict[str, type[BaseModel]] = {

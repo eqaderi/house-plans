@@ -4,14 +4,19 @@ A model-provider-neutral system for exploring the design of a real house on
 a real surveyed site. Its outputs are structured semantic geometry, not
 pictures. The full specification is [docs/MASTER_SPEC.md](docs/MASTER_SPEC.md).
 
-**Current state: Milestone B (site ingestion), on branch `milestone-b`.**
+**Current state: Milestone C (owner interview and space program), on branch
+`milestone-c`, built on `milestone-b` (not yet merged into `main`).**
 Milestone A ([report](docs/milestones/A.md)) delivered canonical schemas,
 project storage with provenance and the workflow with human approval gates.
 Milestone B ([report](docs/milestones/B.md)) turns a DXF or DWG survey into
 a validated site model: read-only inspection, raw CAD extraction, unit and
 CRS verification by a human, a reversible survey-to-local transform,
-boundary and terrain, a validation report and a site SVG. Interview, plan
-generation, Blender and Unreal come in later milestones.
+boundary and terrain, a validation report, site and terrain SVGs and a
+review page. Milestone C ([report](docs/milestones/C.md)) adds a
+conversational owner interview that becomes a design brief and a validated
+space program for the floor-plan solver, with owner confirmation and the
+program approval gate. Plan generation, Blender and Unreal come in later
+milestones.
 
 ## Setup
 

@@ -84,7 +84,12 @@ class Contradiction(StrictModel):
     statement: str = Field(min_length=1)
     fact_ids: list[Id] = Field(min_length=2)
     resolved: bool = False
+    #: The owner's choice, in their words, when resolved.
     resolution: str | None = None
+    #: What each way out costs, in plain language.
+    tradeoff: str | None = None
+    #: Ways to resolve it, for the owner to choose from; none is applied silently.
+    options: list[str] = Field(default_factory=list)
 
 
 class AssumptionsFile(StrictModel):

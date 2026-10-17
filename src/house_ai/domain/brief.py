@@ -64,6 +64,10 @@ class BriefTopic(StrEnum):
     SCHEDULE = "schedule"
     FUTURE_EXPANSION = "future_expansion"
     PRIORITIES = "priorities"
+    LEVELS = "levels"
+    ROOM_SIZES = "room_sizes"
+    ROOM_RELATIONSHIPS = "room_relationships"
+    SITE_RESPONSE = "site_response"
 
 
 class Priority(StrEnum):

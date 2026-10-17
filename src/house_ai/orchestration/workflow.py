@@ -38,7 +38,10 @@ from house_ai.domain.workflow import (
     WorkflowEvent,
     WorkflowState,
 )
+from house_ai.program.validation import blocking, validate_program
 from house_ai.storage import ProjectStore, StoreError
+
+from .site_context import site_context_for
 
 S = WorkflowState
 
@@ -286,6 +289,16 @@ class Workflow:
             known_facts.update(f.id for f in brief.facts)
             for c in brief.unresolved_contradictions():
                 reasons.append(f"unresolved contradiction {c.id}: {c.statement}")
+        if loaded_any_brief and len(brief_refs) == 1:
+            site = None
+            if Gate.SITE in status.approvals:
+                site_ref = status.approvals[Gate.SITE].artifact
+                site = site_context_for(
+                    self.store.get(site_ref, Site), site_ref, status.approvals[Gate.SITE]
+                )
+            for finding in blocking(validate_program(program, brief, site)):
+                if finding.code != "contradiction":  # reported above
+                    reasons.append(f"program check {finding.code}: {finding.message}")
         if loaded_any_brief:
             for item in program.items:
                 for fid in item.source_fact_ids:

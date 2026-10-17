@@ -168,7 +168,8 @@
         "plan",
         "evaluation_report",
         "revision_report",
-        "build_record"
+        "build_record",
+        "interview_session"
       ],
       "title": "ArtifactKind",
       "type": "string"
@@ -216,6 +217,27 @@
       "title": "DaylightNeed",
       "type": "string"
     },
+    "Money": {
+      "additionalProperties": false,
+      "properties": {
+        "amount": {
+          "minimum": 0,
+          "title": "Amount",
+          "type": "number"
+        },
+        "currency": {
+          "pattern": "^[A-Z]{3}$",
+          "title": "Currency",
+          "type": "string"
+        }
+      },
+      "required": [
+        "amount",
+        "currency"
+      ],
+      "title": "Money",
+      "type": "object"
+    },
     "Priority": {
       "enum": [
         "must",
@@ -239,6 +261,11 @@
     "ProgramItem": {
       "additionalProperties": false,
       "properties": {
+        "accessible": {
+          "default": false,
+          "title": "Accessible",
+          "type": "boolean"
+        },
         "daylight": {
           "$ref": "#/$defs/DaylightNeed",
           "default": "preferred"
@@ -539,6 +566,17 @@
       ],
       "default": null
     },
+    "budget": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Money"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
     "circulation_factor": {
       "anyOf": [
         {
@@ -568,6 +606,20 @@
       "title": "Items",
       "type": "array"
     },
+    "levels": {
+      "anyOf": [
+        {
+          "maximum": 10,
+          "minimum": 1,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Levels"
+    },
     "project_id": {
       "maxLength": 64,
       "minLength": 1,
@@ -582,6 +634,22 @@
       "default": "0.1.0",
       "title": "Schema Version",
       "type": "string"
+    },
+    "site_ref": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ArtifactRef"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "site_verified": {
+      "default": false,
+      "title": "Site Verified",
+      "type": "boolean"
     },
     "target_gross_area_m2": {
       "anyOf": [

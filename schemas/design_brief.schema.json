@@ -80,7 +80,8 @@
         "plan",
         "evaluation_report",
         "revision_report",
-        "build_record"
+        "build_record",
+        "interview_session"
       ],
       "title": "ArtifactKind",
       "type": "string"
@@ -245,7 +246,11 @@
         "target_area",
         "schedule",
         "future_expansion",
-        "priorities"
+        "priorities",
+        "levels",
+        "room_sizes",
+        "room_relationships",
+        "site_response"
       ],
       "title": "BriefTopic",
       "type": "string"
@@ -272,6 +277,13 @@
           "title": "Id",
           "type": "string"
         },
+        "options": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Options",
+          "type": "array"
+        },
         "resolution": {
           "anyOf": [
             {
@@ -293,6 +305,18 @@
           "minLength": 1,
           "title": "Statement",
           "type": "string"
+        },
+        "tradeoff": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Tradeoff"
         }
       },
       "required": [

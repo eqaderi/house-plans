@@ -226,5 +226,11 @@ house-ai site report <dir> --id site --out <dir>
 house-ai workflow transition <dir> <STATE> --reason "..." --actor agent:<tool>
 house-ai workflow assess-site <dir> --id site --actor agent:<tool>
 house-ai workflow request-approval <dir> <gate> --id <id> --actor agent:<tool>
+house-ai interview start <dir> --actor agent:<tool>   # agents may start, read and build
+house-ai interview next|summary <dir>
+house-ai program build <dir> --actor agent:<tool> [--out <dir>]
+house-ai program review <dir> --actor agent:<tool>    # needs INTERVIEWING (site approved)
+# owner only, in their own terminal: interview run|answer|revise|confirm|reject|consent,
+# program reject, workflow approve
 house-ai schemas export | house-ai schemas check
 ```

@@ -1,0 +1,64 @@
+schema_version: 0.1.0
+project_id: synthetic-family
+assumptions:
+- id: asm-typical-sizes
+  statement: 'Rooms without a size from you use typical sizes for a first layout:
+    Entrance hall 6 m², Kitchen 13.8 m², Dining 14 m², Main bedroom 15 m², Child''s
+    bedroom 1 11 m², Child''s bedroom 2 11 m², En-suite bathroom 5 m², Bathroom 1
+    6 m², Study 1 9 m², Carport 18 m², Laundry 6 m², Store room 5 m², Plant / technical
+    room 4 m², Stair 10 m², Terrace 16 m². These are not building-code minimums; no
+    local rules are loaded.'
+  basis: house-ai typical-size table (program.builder.TYPICAL)
+  status: assumption
+  affects:
+  - pi-entry
+  - pi-kitchen
+  - pi-dining
+  - pi-bed-main
+  - pi-bed-child-1
+  - pi-bed-child-2
+  - pi-bath-ensuite
+  - pi-bath-1
+  - pi-study-1
+  - pi-garage
+  - pi-laundry
+  - pi-storage
+  - pi-mechanical
+  - pi-stair
+  - pi-terrace
+  confirm_with: owner
+  made_by: null
+- id: asm-circulation
+  statement: Halls, walls and structure add 20% to the room areas.
+  basis: Typical share for a compact house; checked again in Milestone D.
+  status: assumption
+  affects:
+  - program
+  confirm_with: architect
+  made_by: null
+- id: asm-entry-and-plant
+  statement: The house has an entrance hall and a small plant / technical room.
+  basis: Every house needs a way in and room for heating, water and electrics.
+  status: assumption
+  affects:
+  - pi-entry
+  - pi-mechanical
+  confirm_with: owner
+  made_by: null
+provenance:
+  created_at: '2026-10-17T09:02:03Z'
+  created_by:
+    kind: system
+    id: house-ai-program
+    display_name: null
+    provider: null
+    model: null
+  method: program_from_brief
+  tool: house-ai program
+  tool_version: null
+  inputs:
+  - kind: design_brief
+    id: brief
+    version: 27
+    sha256: f566a6a8c279a2bf0c59a4ea0ce7e49e7f578fdf33b05b492b2f62c9aadfad57
+  notes: Deterministic; sizes not given by the owner are typical values (assumptions).

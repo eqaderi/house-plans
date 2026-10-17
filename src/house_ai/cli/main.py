@@ -38,6 +38,9 @@ from house_ai.domain.units import LengthUnit
 from house_ai.domain.workflow import Gate, WorkflowState
 from house_ai.geospatial.crs import describe_epsg, utm_candidates
 from house_ai.geospatial.validation import report_markdown, validate_site
+from house_ai.interview.brief_builder import describe
+from house_ai.interview.questions import SLOTS
+from house_ai.orchestration.interview import InterviewService
 from house_ai.orchestration.site_ingestion import SiteConfirmation, confirm_site, ingest_site
 from house_ai.orchestration.survey_inspection import inspect_files, inspection_markdown
 from house_ai.orchestration.workflow import (
@@ -45,6 +48,7 @@ from house_ai.orchestration.workflow import (
     Workflow,
     WorkflowError,
 )
+from house_ai.program.report import program_markdown
 from house_ai.render2d.review_html import render_review_html
 from house_ai.render2d.site_svg import render_site_svg
 from house_ai.render2d.terrain_svg import render_terrain_svg
@@ -478,6 +482,229 @@ def cmd_crs_utm(args: argparse.Namespace) -> int:
     return EXIT_OK
 
 
+# ------------------------------------------------------------------- interview
+
+
+def _owner_terminal(what: str) -> bool:
+    """Owner words and decisions need an interactive terminal (like gate approval)."""
+    if sys.stdin.isatty():
+        return True
+    _err(
+        f"{what} records the owner's own words or decisions, so it needs an interactive "
+        "terminal. An agent must not answer or decide for the owner; ask the owner to run "
+        "this command (or `house-ai interview run`) themselves."
+    )
+    return False
+
+
+def _show_turn(result) -> None:
+    text = result.message()
+    if text:
+        _out(text)
+    for f in result.contradictions:
+        if result.prompt is None or result.prompt.id != f"resolve:{f.id}":
+            _out(f"NOTE {f.statement}")
+    if result.prompt is not None:
+        _out("")
+        _out(f"[{result.prompt.id}] {result.prompt.text}")
+    else:
+        _out("All questions are answered. Review with `house-ai interview summary`.")
+
+
+def cmd_interview_start(args: argparse.Namespace) -> int:
+    _show_turn(InterviewService(ProjectStore(Path(args.dir))).start(args.actor))
+    return EXIT_OK
+
+
+def cmd_interview_next(args: argparse.Namespace) -> int:
+    prompt = InterviewService(ProjectStore(Path(args.dir))).pending()
+    _out(f"[{prompt.id}] {prompt.text}" if prompt else "No question pending.")
+    return EXIT_OK
+
+
+def cmd_interview_answer(args: argparse.Namespace) -> int:
+    if not _owner_terminal("interview answer"):
+        return EXIT_USAGE
+    _show_turn(InterviewService(ProjectStore(Path(args.dir))).answer(args.text, args.actor))
+    return EXIT_OK
+
+
+def cmd_interview_revise(args: argparse.Namespace) -> int:
+    if not _owner_terminal("interview revise"):
+        return EXIT_USAGE
+    svc = InterviewService(ProjectStore(Path(args.dir)))
+    _show_turn(svc.revise(args.question, args.text, args.actor))
+    return EXIT_OK
+
+
+def cmd_interview_confirm(args: argparse.Namespace) -> int:
+    if not _owner_terminal("interview confirm"):
+        return EXIT_USAGE
+    svc = InterviewService(ProjectStore(Path(args.dir)))
+    pending = svc.state().unconfirmed()
+    chosen = args.slot or pending
+    if not chosen:
+        _out("Nothing waits for confirmation.")
+        return EXIT_OK
+    _out("You are confirming that I understood these correctly:")
+    state = svc.state()
+    for s in chosen:
+        if s in state.slots:
+            _out(f"  - {SLOTS[s].label}: {describe(state.slots[s].value)}")
+    if input('Type "yes" to confirm: ').strip().lower() != "yes":
+        _err("nothing confirmed")
+        return EXIT_FAIL
+    _out(f"confirmed {len(svc.confirm(args.actor, args.slot or None))} item(s)")
+    return EXIT_OK
+
+
+def cmd_interview_reject(args: argparse.Namespace) -> int:
+    if not _owner_terminal("interview reject"):
+        return EXIT_USAGE
+    svc = InterviewService(ProjectStore(Path(args.dir)))
+    _show_turn(svc.reject(args.actor, args.slot, args.text))
+    return EXIT_OK
+
+
+def cmd_interview_consent(args: argparse.Namespace) -> int:
+    if not _owner_terminal("interview consent"):
+        return EXIT_USAGE
+    phrase = f"allow {args.provider}"
+    _out(f"Your interview answers are private. Allowing {args.provider} sends them to it.")
+    if input(f'Type "{phrase}" to allow: ').strip() != phrase:
+        _err("not allowed")
+        return EXIT_FAIL
+    InterviewService(ProjectStore(Path(args.dir))).consent(args.actor, args.provider)
+    _out(f"{args.provider} may now receive interview content")
+    return EXIT_OK
+
+
+def cmd_interview_summary(args: argparse.Namespace) -> int:
+    text = InterviewService(ProjectStore(Path(args.dir))).summary()
+    if args.out:
+        Path(args.out).write_text(text, encoding="utf-8")
+        _out(f"wrote {args.out}")
+    else:
+        _out(text)
+    return EXIT_OK
+
+
+def cmd_interview_run(args: argparse.Namespace) -> int:
+    """The interactive interview for the owner: one question at a time."""
+    if not _owner_terminal("interview run"):
+        return EXIT_USAGE
+    owner = Actor(kind=ActorKind.HUMAN, id=args.owner)
+    svc = InterviewService(ProjectStore(Path(args.dir)))
+    _show_turn(svc.start(owner))
+    _out("(Commands: :summary, :revise <question-id>, :quit. Answer in your own words.)")
+    while True:
+        prompt = svc.pending()
+        if prompt is None:
+            _out("All questions are answered.")
+            break
+        try:
+            text = input("> ").strip()
+        except EOFError:
+            break
+        if not text:
+            continue
+        if text == ":quit":
+            _out("Stopped. Your answers are saved; run this again to continue.")
+            break
+        if text == ":summary":
+            _out(svc.summary())
+            continue
+        if text.startswith(":revise "):
+            qid = text.split(maxsplit=1)[1]
+            new = input("Your new answer: ").strip()
+            _show_turn(svc.revise(qid, new, owner))
+            continue
+        result = svc.answer(text, owner)
+        _show_turn(result)
+        if result.understood and any(u.method != "resolution" for u in result.understood):
+            ok = input("Did I understand that correctly? [y/n] ").strip().lower()
+            slots = [u.slot for u in result.understood if u.method != "resolution"]
+            pending = set(svc.state().unconfirmed())
+            if ok.startswith("y"):
+                svc.confirm(owner, [s for s in slots if s in pending])
+            elif ok.startswith("n"):
+                wrong = [s for s in slots if s in svc.state().slots]
+                if wrong:
+                    _show_turn(svc.reject(owner, wrong))
+    _out(svc.summary())
+    return EXIT_OK
+
+
+# --------------------------------------------------------------------- program
+
+
+def _export(svc: InterviewService, build, out: Path) -> None:
+    import yaml
+
+    out.mkdir(parents=True, exist_ok=True)
+
+    def dump(model) -> str:
+        return yaml.safe_dump(model.model_dump(mode="json"), sort_keys=False, allow_unicode=True)
+
+    brief = svc.brief()
+    files = {
+        "design_brief.yaml": dump(brief),
+        "space_program.yaml": dump(build.result.program),
+        "assumptions.yaml": dump(build.result.assumptions),
+        "open_questions.yaml": dump(build.result.open_questions),
+        "interview-summary.md": svc.summary(),
+        "program-review.md": program_markdown(
+            build.result.program, brief, build.findings, build.result.assumptions,
+            build.result.open_questions,
+        ),
+    }  # fmt: skip
+    for name, text in files.items():
+        (out / name).write_text(text, encoding="utf-8")
+        _out(f"wrote {out / name}")
+
+
+def _show_findings(findings) -> None:
+    for f in findings:
+        _out(f"{f.severity.value.upper():8} {f.code}: {f.message}")
+        for o in f.options:
+            _out(f"         option: {o}")
+
+
+def cmd_program_build(args: argparse.Namespace) -> int:
+    svc = InterviewService(ProjectStore(Path(args.dir)))
+    build = svc.build_program(args.actor)
+    for ref in (build.program_ref, build.assumptions_ref, build.open_questions_ref):
+        _out(f"stored {ref.kind.value}/{ref.id} v{ref.version}")
+    _show_findings(build.findings)
+    if args.out:
+        _export(svc, build, Path(args.out))
+    return EXIT_OK
+
+
+def cmd_program_review(args: argparse.Namespace) -> int:
+    svc = InterviewService(ProjectStore(Path(args.dir)))
+    build, reasons = svc.review_program(args.actor)
+    _show_findings(build.findings)
+    for r in reasons:
+        _out(f"OPEN {r}")
+    ref = build.program_ref
+    _out(f"state PROGRAM_REVIEW; the owner reviews space_program/{ref.id} v{ref.version}")
+    if not reasons:
+        _out(f"next: the owner runs `house-ai workflow approve {args.dir} program --id {ref.id} "
+             "--approver <name>` or `house-ai program reject`")  # fmt: skip
+    if args.out:
+        _export(svc, build, Path(args.out))
+    return EXIT_OK
+
+
+def cmd_program_reject(args: argparse.Namespace) -> int:
+    if not _owner_terminal("program reject"):
+        return EXIT_USAGE
+    InterviewService(ProjectStore(Path(args.dir))).reject_program(args.actor, args.reason)
+    _out("program rejected; back to INTERVIEWING. Your words are recorded in the brief.")
+    return EXIT_OK
+
+
 # ---------------------------------------------------------------------- parser
 
 
@@ -620,6 +847,69 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("zone", type=int)
     s.add_argument("hemisphere", choices=["N", "S", "n", "s"])
     s.set_defaults(func=cmd_crs_utm)
+
+    iv = sub.add_parser("interview", help="the owner interview (Milestone C)")
+    iv = iv.add_subparsers(dest="sub", required=True)
+    s = iv.add_parser("start", help="start or resume the interview; shows the next question")
+    s.add_argument("dir")
+    actor_arg(s)
+    s.set_defaults(func=cmd_interview_start)
+    s = iv.add_parser("next", help="show the pending question")
+    s.add_argument("dir")
+    s.set_defaults(func=cmd_interview_next)
+    s = iv.add_parser("answer", help="the owner answers the pending question (terminal only)")
+    s.add_argument("dir")
+    s.add_argument("text")
+    actor_arg(s)
+    s.set_defaults(func=cmd_interview_answer)
+    s = iv.add_parser("revise", help="the owner changes an earlier answer (terminal only)")
+    s.add_argument("dir")
+    s.add_argument("question", help="question id, e.g. q-bedrooms")
+    s.add_argument("text")
+    actor_arg(s)
+    s.set_defaults(func=cmd_interview_revise)
+    s = iv.add_parser("confirm", help="the owner confirms what was understood (terminal only)")
+    s.add_argument("dir")
+    s.add_argument("--slot", action="append", default=[])
+    actor_arg(s)
+    s.set_defaults(func=cmd_interview_confirm)
+    s = iv.add_parser("reject", help="the owner says an interpretation is wrong (terminal only)")
+    s.add_argument("dir")
+    s.add_argument("--slot", action="append", required=True)
+    s.add_argument("--text", help="what is wrong, in the owner's words")
+    actor_arg(s)
+    s.set_defaults(func=cmd_interview_reject)
+    s = iv.add_parser("consent", help="the owner allows an AI provider (terminal only)")
+    s.add_argument("dir")
+    s.add_argument("provider")
+    actor_arg(s)
+    s.set_defaults(func=cmd_interview_consent)
+    s = iv.add_parser("summary", help="what has been understood so far")
+    s.add_argument("dir")
+    s.add_argument("--out")
+    s.set_defaults(func=cmd_interview_summary)
+    s = iv.add_parser("run", help="interactive interview for the owner")
+    s.add_argument("dir")
+    s.add_argument("--owner", required=True, help="the owner's name or id")
+    s.set_defaults(func=cmd_interview_run)
+
+    pr = sub.add_parser("program", help="space program from the brief (Milestone C)")
+    pr = pr.add_subparsers(dest="sub", required=True)
+    s = pr.add_parser("build", help="derive, store and check the space program")
+    s.add_argument("dir")
+    s.add_argument("--out", help="also write design_brief.yaml, space_program.yaml, ...")
+    actor_arg(s)
+    s.set_defaults(func=cmd_program_build)
+    s = pr.add_parser("review", help="build the program and ask the owner to review it")
+    s.add_argument("dir")
+    s.add_argument("--out")
+    actor_arg(s)
+    s.set_defaults(func=cmd_program_review)
+    s = pr.add_parser("reject", help="the owner rejects the program at review (terminal only)")
+    s.add_argument("dir")
+    s.add_argument("--reason", required=True, help="what is wrong, in the owner's words")
+    actor_arg(s)
+    s.set_defaults(func=cmd_program_reject)
 
     wf = sub.add_parser("workflow").add_subparsers(dest="sub", required=True)
     s = wf.add_parser("transition")

@@ -36,7 +36,10 @@ sustainability; budget; target area; schedule; future expansion; priorities and 
 def test_brief_topics_cover_every_spec_interview_topic():
     spec_topics = [t.strip() for t in SPEC_INTERVIEW_TOPICS.replace("\n", " ").split(";")]
     assert len(spec_topics) == 45
-    assert len(BriefTopic) == len(spec_topics)
+    # Milestone C adds the owner's interview topics the spec list does not name.
+    milestone_c = {"levels", "room_sizes", "room_relationships", "site_response"}
+    assert milestone_c <= {t.value for t in BriefTopic}
+    assert len(BriefTopic) == len(spec_topics) + len(milestone_c)
 
 
 def test_golden_brief_is_valid_and_keeps_unknowns_unknown():
