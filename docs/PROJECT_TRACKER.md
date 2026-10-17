@@ -2148,8 +2148,9 @@ Closure record template:
 ### S2 records
 
 #### S2 implementation complete (2026-10-17)
-- Branch: `stage/S2-agent-skills`
+- Branch: `stage/S2-agent-skills` (commit `4aeebb9`)
 - Implementer: `agent:gemini`
+- CI: branch run 39063281768 on Python 3.11 and 3.13
 - Changes:
   - Canonical skills architecture and discovery mechanism: ADR 0015 (`docs/adr/0015-agent-skills-canonical-location-and-discovery.md`) revising ADR 0005 to establish `skills/<name>/SKILL.md` as canonical repository storage with relative symlinks `.claude/skills/<name>` for Claude Code and `.agents/skills/<name>` for OpenAI Codex and Antigravity/Gemini.
   - Constants: `src/house_ai/constants/skills.py` defining canonical skill names and provider directories without magic strings.
@@ -2169,7 +2170,6 @@ Closure record template:
     - OpenAI Codex: Discovers skills via `.agents/skills/` symlinks (`codex debug prompt-input` verified).
     - Antigravity / Gemini: Discovers skills via `.agents/skills/` symlinks in workspace.
   - Cross-agent demonstration: Both Claude Code and Codex executed the generate-concepts and critique-plan workflow on synthetic-hillside.
-- CI: pending trigger upon push
 - Status: Stage S2 implementation complete; review requested: **PENDING**.
 
 ### S1 records
