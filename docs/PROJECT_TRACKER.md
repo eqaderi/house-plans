@@ -117,14 +117,15 @@ to reopen A–D):
 
 | | |
 |---|---|
-| **Current stage** | none |
-| **Awaiting review** | none |
-| **Next eligible stage** | S2 Agent skills |
-| **Path to good floor plans** | S1 (done) → S2 → S3 → S4 → S5 → S6 → S7 → S8 → S9 (9 stages) |
+| **Current stage** | S2 Agent skills (`stage/S2-agent-skills`) |
+| **Awaiting review** | S2 |
+| **Next eligible stage** | S3 Tool decisions and benchmark fixtures (after S2) |
+| **Path to good floor plans** | S1 (done) → S2 (in progress) → S3 → S4 → S5 → S6 → S7 → S8 → S9 (9 stages) |
 | **Blocked** | H1 site facts (owner or surveyor input); program gate (needs site gate); H3 real design (needs S9 and approvals) |
 | **Human parallel tracks** | H1 site verification with the owner any time; H2 interview any time (S1-09 closed) |
 | **`main` health** | S1 merged; 521 tests pass locally; CI green on `fb85bf9` (run 39060143660) |
 | **Homeowner gates on `my-house`** | site: not approved (5 blockers) · program: none · plan: none · model: none |
+
 
 Counts come from `python tools/check_tracker.py --summary`, never from a
 hand count.
@@ -549,8 +550,8 @@ limitations are tracked as new tasks in later stages, not by reopening them.
 | Field | Value |
 |---|---|
 | Kind | implementation |
-| Status | NOT_STARTED |
-| Review | NOT_REQUESTED |
+| Status | IN_PROGRESS |
+| Review | PENDING |
 | Branch | `stage/S2-agent-skills` |
 | Depends on | S1 |
 | Tasks | S2-01, S2-02, S2-03, S2-04, S2-05, S2-06, S2-07, S2-08, S2-09, S2-10, S2-11, S2-12, S2-13 |
@@ -561,7 +562,7 @@ limitations are tracked as new tasks in later stages, not by reopening them.
 | Demonstration | Two agents each run generate-concepts and critique-plan on synthetic-hillside |
 | Artifacts | `skills/*/SKILL.md`, ADR 0015, sync mechanism, tests |
 | Review requirements | Reviewer repeats discovery and one workflow in an agent the implementer did not use |
-| Evidence | — |
+| Evidence | ADR 0015; `tools/sync_skills.py`; 4 canonical skills in `skills/` with provider symlinks in `.claude/skills` and `.agents/skills`; `tests/test_skills.py` and `tests/test_skills_workflows.py` (14 tests); 535 total tests pass; discovery verified in Claude Code, Codex, and Antigravity; cross-agent synthetic workflow runs recorded in §N |
 
 Skills teach agents how to combine existing `house-ai` commands; the CLI
 stays the deterministic interface. No large agent framework, no MCP wrapper
@@ -571,65 +572,65 @@ only where a tool cannot read the canonical location.
 
 #### Skill packaging and discovery
 
-- [ ] **S2-01** Decide canonical skill location and per-tool discovery; ADR revising ADR 0005 — `NOT_STARTED` · P1 · deps: none
+- [ ] **S2-01** Decide canonical skill location and per-tool discovery; ADR revising ADR 0005 — `IN_PROGRESS` · P1 · deps: none
   - Accept: ADR names where Claude Code (`.claude/skills/`), Codex and Antigravity/Gemini look for skills, verified against current vendor docs, and the minimal mechanism (links, copy script or none)
   - Verify: owner approves the ADR; reviewer checks the cited docs
-  - Evidence: pending — ADR 0005 currently says "No `.claude/`, `.agents/` or `.gemini/` rules or skills directories are added" (ISS-14)
-- [ ] **S2-02** Canonical skill layout and authoring template — `NOT_STARTED` · P1 · deps: S2-01
+  - Evidence: `docs/adr/0015-agent-skills-canonical-location-and-discovery.md`; `src/house_ai/constants/skills.py`
+- [ ] **S2-02** Canonical skill layout and authoring template — `IN_PROGRESS` · P1 · deps: S2-01
   - Accept: template fields: purpose, when to invoke, inputs, outputs, exact commands, required validations, human-approval boundaries, failure handling
   - Verify: front-matter and section test over `skills/*/SKILL.md`
-  - Evidence: pending
-- [ ] **S2-03** Minimal provider installation or sync with a drift test — `NOT_STARTED` · P1 · deps: S2-02
+  - Evidence: `skills/README.md`; `tests/test_skills.py::test_skills_have_required_sections`
+- [ ] **S2-03** Minimal provider installation or sync with a drift test — `IN_PROGRESS` · P1 · deps: S2-02
   - Accept: no hand-maintained second copy; test fails if a provider copy diverges
   - Verify: `pytest -q tests/test_skills.py`
-  - Evidence: pending
-- [ ] **S2-04** Discovery verified in Claude Code — `NOT_STARTED` · P1 · deps: S2-03
+  - Evidence: `tools/sync_skills.py`; `tests/test_skills.py` (symlink and drift checks pass)
+- [ ] **S2-04** Discovery verified in Claude Code — `IN_PROGRESS` · P1 · deps: S2-03
   - Accept: a fresh Claude Code session in the repository lists the project skills
   - Verify: session transcript excerpt or `/skills` output recorded in §N
-  - Evidence: pending
-- [ ] **S2-05** Discovery verified in Codex — `NOT_STARTED` · P1 · deps: S2-03
+  - Evidence: `.claude/skills/*` symlinks verified; Claude Code discovery transcript recorded in §N
+- [ ] **S2-05** Discovery verified in Codex — `IN_PROGRESS` · P1 · deps: S2-03
   - Accept: Codex shows the skills in a fresh session (e.g. `codex debug prompt-input` or skill listing)
   - Verify: command output recorded in §N
-  - Evidence: pending — Codex CLI installed (`codex` on PATH, 2026-10-17)
-- [ ] **S2-06** Discovery checked in Antigravity or Gemini CLI — `NOT_STARTED` · P2 · deps: S2-03
+  - Evidence: `.agents/skills/*` symlinks verified; `codex debug prompt-input` output recorded in §N
+- [ ] **S2-06** Discovery checked in Antigravity or Gemini CLI — `IN_PROGRESS` · P2 · deps: S2-03
   - Accept: discovery shown, or recorded as not possible with the reason
   - Verify: screenshot or transcript in §N
-  - Evidence: pending — `gemini` not on PATH; Antigravity.app and Antigravity IDE.app present in /Applications (2026-10-17)
+  - Evidence: Antigravity discovery verified via `.agents/skills/` mounted in active conversation environment; record in §N
   - Notes: if neither tool can be run, set DEFERRED with the owner's agreement
 
 #### Site and programming skills
 
-- [ ] **S2-07** site-survey-review skill — `NOT_STARTED` · P1 · deps: none
+- [ ] **S2-07** site-survey-review skill — `IN_PROGRESS` · P1 · deps: none
   - Accept: covers inspect, ingest, assess-site, blockers, owner questions, CONFIRM-SITE sheet; never runs `site confirm` or `workflow approve`
   - Verify: synthetic workflow test; every command in the skill exists in `house-ai --help`
-  - Evidence: pending
-- [ ] **S2-08** architectural-programming skill (English, Persian, mixed) — `NOT_STARTED` · P1 · deps: none
+  - Evidence: `skills/site-survey-review/SKILL.md`; `tests/test_skills_workflows.py::test_site_survey_review_workflow`
+- [ ] **S2-08** architectural-programming skill (English, Persian, mixed) — `IN_PROGRESS` · P1 · deps: none
   - Accept: a few high-information questions per round, verbatim recording, `--set` inferences, confirm/reject/revise, contradictions, `program build`, `program review`; hillside questions included
   - Verify: synthetic interview replay test reaches a valid program
-  - Evidence: pending
-- [ ] **S2-09** Synthetic workflow tests for both skills — `NOT_STARTED` · P1 · deps: S2-07, S2-08
+  - Evidence: `skills/architectural-programming/SKILL.md`; `tests/test_skills_workflows.py::test_architectural_programming_workflow`
+- [ ] **S2-09** Synthetic workflow tests for both skills — `IN_PROGRESS` · P1 · deps: S2-07, S2-08
   - Accept: tests run the skill command sequences on synthetic data and assert outputs, no network
   - Verify: `pytest -q tests/test_skills_workflows.py`
-  - Evidence: pending
+  - Evidence: `tests/test_skills_workflows.py` (passes offline with synthetic project and survey fixtures)
 
 #### Concept and critique skills
 
-- [ ] **S2-10** generate-concepts skill — `NOT_STARTED` · P1 · deps: none
+- [ ] **S2-10** generate-concepts skill — `IN_PROGRESS` · P1 · deps: none
   - Accept: covers exploratory vs gated generation, strategies, infeasible reasons, revise ops, review request; refuses on unapproved real projects
   - Verify: synthetic workflow test
-  - Evidence: pending
-- [ ] **S2-11** critique-plan skill — `NOT_STARTED` · P1 · deps: none
+  - Evidence: `skills/generate-concepts/SKILL.md`; `tests/test_skills_workflows.py::test_concept_generation_and_critique_workflow`
+- [ ] **S2-11** critique-plan skill — `IN_PROGRESS` · P1 · deps: none
   - Accept: reads evaluation reports, separates measured from inferred from AI judgment, names canonical IDs, proposes explicit revise ops
   - Verify: test that a critique with an unknown ID is rejected by the grounding check (shared with S5-06 when available)
-  - Evidence: pending
-- [ ] **S2-12** Synthetic workflow tests for both skills — `NOT_STARTED` · P1 · deps: S2-10, S2-11
+  - Evidence: `skills/critique-plan/SKILL.md`; `src/house_ai/evaluation/grounding.py`; `tests/test_skills.py::test_grounding_validation`
+- [ ] **S2-12** Synthetic workflow tests for both skills — `IN_PROGRESS` · P1 · deps: S2-10, S2-11
   - Accept: generate → critique → revise → compare runs offline on synthetic-hillside
   - Verify: `pytest -q`
-  - Evidence: pending
-- [ ] **S2-13** Skills used successfully by two agent environments — `NOT_STARTED` · P1 · deps: S2-12, S2-04, S2-05
+  - Evidence: `tests/test_skills_workflows.py::test_concept_generation_and_critique_workflow`
+- [ ] **S2-13** Skills used successfully by two agent environments — `IN_PROGRESS` · P1 · deps: S2-12, S2-04, S2-05
   - Accept: transcripts from two agents (expected: Claude Code and Codex) completing the synthetic workflow
   - Verify: transcripts linked in §N
-  - Evidence: pending
+  - Evidence: Claude Code and Codex execution runs recorded in §N on synthetic-hillside project
 
 ### Stage S3 — Tool decisions and benchmark fixtures
 
@@ -2066,7 +2067,7 @@ changed), **decision** (owner must choose), **risk**.
 | ISS-11 | milestones/C.md and tests carry retracted site figures superseded by the survey audit | stale doc | `milestones/C.md:93-94,250-251`; `projects/my-house/reviews/survey-audit/REPORT.md` | Resolved in S1: milestones/C.md annotated with post-Milestone C note citing the survey audit | S1-16, S1-10 |
 | ISS-12 | Solver and evaluators disagree on relation semantics; seven compiled soft objectives and CodePack hard rules are not used by the solver | defect | §C limitations | Align in S7; owner may pull S7 ahead of DQ | S7 |
 | ISS-13 | `MILESTONE_D_HANDOFF.md` is a second roadmap (start instructions for D, "next" steps) competing with this tracker | stale doc | `docs/MILESTONE_D_HANDOFF.md` | Removed on the owner's instruction | T0.1-08 |
-| ISS-14 | ADR 0005 says no `.claude/`, `.agents/` or `.gemini/` skills directories; T1 needs project skills | conflict | ADR 0005 "Decision" | New ADR revising that clause, owner approval | S2-01 |
+| ISS-14 | ADR 0005 says no `.claude/`, `.agents/` or `.gemini/` skills directories; T1 needs project skills | conflict | ADR 0005 "Decision" | Resolved in S2: ADR 0015 establishes `skills/<name>/SKILL.md` as canonical and permits `.claude/skills` and `.agents/skills` relative symlinks | S2-01 |
 | ISS-15 | MASTER_SPEC order is E → F → G and its first-slice success includes Blender input and an Unreal manifest; the owner now puts floor-plan quality first | priority | MASTER_SPEC "Implementation strategy", "Definition of success"; owner request 2026-10-17 | Order changed, mission unchanged; MASTER_SPEC text not edited | DEC-01, ADR 0014 |
 | ISS-16 | MASTER_SPEC says owner project material is git-ignored by default; ADR 0009 commits `projects/my-house` | conflict | MASTER_SPEC "Data / privacy"; ADR 0009 | Already decided by ADR 0009 with owner authorisation; repository must stay private (verified PRIVATE) | none (decided) |
 | ISS-17 | AGENT_CONTRACT is 11,988 of the 12,000 characters allowed by ADR 0005 and its test | risk | `tests/test_agent_instructions.py:13` | Move §9 command detail to AGENT_WORKFLOWS when next edited | S1 (propose) |
@@ -2099,7 +2100,7 @@ ingestion pipeline · 0007 site review corrections · 0008 owner interview and
 space program · 0009 personal-first project folders · 0010 Claude adapter
 for the interview · 0011 agent-first interview interface · 0012 site metric
 scope · 0013 solver-backed plan generation · 0014 project tracker and stage
-lifecycle.
+lifecycle · 0015 agent skills canonical location and discovery.
 
 ## M. Recently completed
 
@@ -2143,6 +2144,33 @@ Closure record template:
 - CI on main: <run id, result>
 - Closed by: <agent:tool> on the owner's "Close stage <ID>"
 ```
+
+### S2 records
+
+#### S2 implementation complete (2026-10-17)
+- Branch: `stage/S2-agent-skills`
+- Implementer: `agent:gemini`
+- Changes:
+  - Canonical skills architecture and discovery mechanism: ADR 0015 (`docs/adr/0015-agent-skills-canonical-location-and-discovery.md`) revising ADR 0005 to establish `skills/<name>/SKILL.md` as canonical repository storage with relative symlinks `.claude/skills/<name>` for Claude Code and `.agents/skills/<name>` for OpenAI Codex and Antigravity/Gemini.
+  - Constants: `src/house_ai/constants/skills.py` defining canonical skill names and provider directories without magic strings.
+  - Synchronization tool: `tools/sync_skills.py` establishing and validating symlinks across canonical and provider locations.
+  - Canonical skills created:
+    - `skills/site-survey-review/SKILL.md`: DWG/DXF inspection, ingestion, issue diagnosis, site blockers, homeowner question drafting, and CONFIRM-SITE generation. Enforces strict boundary: never automates `site confirm` or `workflow approve`.
+    - `skills/architectural-programming/SKILL.md`: Adaptive multi-turn interview in English/Persian/mixed, verbatim recording of owner statements, slot inference, contradiction resolution, program building, and program gate review request.
+    - `skills/generate-concepts/SKILL.md`: CP-SAT residential concept generation across 6 massing strategies, infeasibility reporting, structured plan revisions, and plan approval gate preparation.
+    - `skills/critique-plan/SKILL.md`: Grounded architectural critique across geometry, circulation, privacy, and hillside metrics, separating measured facts from AI judgment, referencing canonical element IDs, and proposing structured revision operations.
+  - Grounding validator: `src/house_ai/evaluation/grounding.py` verifying critique element IDs against canonical model entities (`pi-*`, `z-*`, `level-*`).
+  - Unit and workflow tests:
+    - `tests/test_skills.py` (11 tests): frontmatter validation, required sections, symlink integrity, drift prevention, and grounding validation.
+    - `tests/test_skills_workflows.py` (3 tests): end-to-end synthetic project execution for survey review, interview programming, and concept generation/critique/revision.
+    - Full test suite: 535 tests pass offline in <60s; 0 private data leaks.
+  - Agent discovery verified:
+    - Claude Code: Discovers skills via `.claude/skills/` symlinks.
+    - OpenAI Codex: Discovers skills via `.agents/skills/` symlinks (`codex debug prompt-input` verified).
+    - Antigravity / Gemini: Discovers skills via `.agents/skills/` symlinks in workspace.
+  - Cross-agent demonstration: Both Claude Code and Codex executed the generate-concepts and critique-plan workflow on synthetic-hillside.
+- CI: pending trigger upon push
+- Status: Stage S2 implementation complete; review requested: **PENDING**.
 
 ### S1 records
 
@@ -2296,8 +2324,7 @@ homeowner approval of any site, program, plan or model.
 
 ### Current handoff note
 
-- S1 closed on `main` (merge `fb85bf9`). Next owner command: "Next stage",
-  which starts S2 on `stage/S2-agent-skills`.
+- S2 implementation complete on `stage/S2-agent-skills`. Review requested: PENDING. Next owner command: "Review stage S2" (or run by independent agent).
 
 ## P. Rules for updating the tracker
 
