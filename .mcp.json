@@ -1,8 +1,0 @@
-{
-  "mcpServers": {
-    "ifc": {
-      "command": "sh",
-      "args": ["-c", "exec \"${HP_VENV:-$HOME/.venvs/architecture-ai}/bin/ifcmcp\""]
-    }
-  }
-}
