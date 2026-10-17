@@ -370,7 +370,7 @@ def cmd_site_ingest(args: argparse.Namespace) -> int:
     result = ingest_site(
         store, args.source, load_layer_mapping(Path(args.layers)), args.actor, site_id=args.site_id
     )
-    for ref in (result.cad_ref, result.site_ref):
+    for ref in (*result.cad_refs, result.site_ref):
         _out(f"stored {ref.kind.value}/{ref.id} v{ref.version} sha256 {ref.sha256}")
     for b in result.blockers:
         _out(f"BLOCKER {b}")
@@ -567,7 +567,12 @@ def build_parser() -> argparse.ArgumentParser:
     s.set_defaults(func=cmd_site_inspect)
     s = site.add_parser("ingest", help="extract a stored survey into cad_import + site")
     s.add_argument("dir")
-    s.add_argument("--source", required=True, help="source document id (from `source add`)")
+    s.add_argument(
+        "--source",
+        required=True,
+        action="append",
+        help="source document id (from `source add`); repeat for a survey in several files",
+    )
     s.add_argument("--layers", required=True, help="layer mapping file (YAML/JSON)")
     s.add_argument("--site-id", default="site")
     actor_arg(s)

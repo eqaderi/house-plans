@@ -28,7 +28,8 @@ Then write a layer mapping (copy `examples/surveys/synthetic/layers.yaml` to
 .venv/bin/house-ai project init project-data/my-house --id my-house --name "My house" --actor human:<you>
 .venv/bin/house-ai source add project-data/my-house project-data/surveys/<survey>.dwg --actor human:<you>
 .venv/bin/house-ai workflow transition project-data/my-house SITE_INGESTION --reason "survey received" --actor human:<you>
-.venv/bin/house-ai site ingest project-data/my-house --source <src-id> --layers project-data/my-house-layers.yaml --actor human:<you>
+# one --source per file, e.g. a boundary DWG and a separate heights DWG
+.venv/bin/house-ai site ingest project-data/my-house --source <src-id> [--source <src-id-2>] --layers project-data/my-house-layers.yaml --actor human:<you>
 .venv/bin/house-ai workflow assess-site project-data/my-house --id site --actor human:<you>
 .venv/bin/house-ai crs utm-candidates <zone> <N|S>        # if you know the UTM zone but not the EPSG code
 .venv/bin/house-ai site confirm project-data/my-house --confirmer <you> \

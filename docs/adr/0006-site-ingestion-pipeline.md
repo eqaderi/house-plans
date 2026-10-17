@@ -58,7 +58,12 @@ below.
    Elevation 0 counts as "not set" unless the mapping says otherwise. Two
    different elevations at one position are a blocking conflict and both
    are left out. scipy was not needed.
-8. **Outputs are derived.** The validation report and the site SVG are
+8. **Several files, one site.** A survey split over files (boundary in one,
+   heights in another) is ingested together: one `cad_import` per file, ids
+   namespaced by source because DXF handles restart per file, a boundary
+   from one file only, and declarations that must agree. Disagreeing units
+   or EPSG codes are a blocking issue that confirmation cannot clear.
+9. **Outputs are derived.** The validation report and the site SVG are
    computed from a site version and never stored as truth. Grid and true
    bearings and north arrows appear only once a human has confirmed the
    CRS. Example outputs are committed as snapshots and checked by a test.

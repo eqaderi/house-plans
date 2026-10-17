@@ -155,6 +155,11 @@ class MappedLayerSiteExtractor:
 
     # --------------------------------------------------------------- helpers
 
+    def _id(self, prefix: str, ent: RawPoint | RawPolyline) -> str:
+        """Ids carry the source, because DXF handles restart in every file."""
+        tag = self.source_id.removeprefix("src-")[:24].rstrip("-_")
+        return f"{prefix}-{tag}-{ent.handle.lower()}"
+
     def _ref(self, ent: RawPoint | RawPolyline) -> str:
         return f"{self.source_id}#{ent.handle} (layer {ent.layer})"
 
@@ -278,7 +283,7 @@ class MappedLayerSiteExtractor:
             local = [transform.source_to_local((x, y, line.elevation)) for x, y in verts]
             out.contours.append(
                 Contour(
-                    id=f"ctr-{line.handle.lower()}",
+                    id=self._id("ctr", line),
                     z_m=local[0][2],
                     line=Polyline2D(points=[(x, y) for x, y, _ in local], closed=ring is not None),
                     source_ref=self._ref(line),
@@ -314,7 +319,7 @@ class MappedLayerSiteExtractor:
                 (
                     p,
                     SpotElevation(
-                        id=f"spot-{p.handle.lower()}", xy=(x, y), z_m=z, source_ref=self._ref(p)
+                        id=self._id("spot", p), xy=(x, y), z_m=z, source_ref=self._ref(p)
                     ),
                 )
             )
@@ -355,7 +360,7 @@ class MappedLayerSiteExtractor:
                 continue
             out.features.append(
                 SiteFeature(
-                    id=f"{prefix}-{p.handle.lower()}",
+                    id=self._id(prefix, p),
                     kind=kind,
                     name=p.block_name,
                     geometry=PointGeometry(xy=transform.source_to_local_2d(p.xy)),
@@ -380,7 +385,7 @@ class MappedLayerSiteExtractor:
                 continue
             out.features.append(
                 SiteFeature(
-                    id=f"{prefix}-{line.handle.lower()}",
+                    id=self._id(prefix, line),
                     kind=kind,
                     geometry=geometry,
                     status=Epistemic.INFERENCE,

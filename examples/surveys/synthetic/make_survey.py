@@ -83,8 +83,13 @@ def build_survey(
     extra_boundary: bool = False,
     crossing_contour: bool = False,
     conflicting_spot: bool = False,
+    layers: set[str] | None = None,
 ) -> Path:
-    """Write the synthetic survey. Options create the broken variants used in tests."""
+    """Write the synthetic survey. Options create the broken variants used in tests.
+
+    ``layers`` keeps only entities on those layers, e.g. to split the survey
+    into a boundary file and a heights file as surveyors often deliver it.
+    """
     m_per_unit, insunits = UNITS[unit]
     k = 1.0 / m_per_unit
 
@@ -171,6 +176,10 @@ def build_survey(
         geo.dxf.horizontal_units = insunits
         geo.dxf.vertical_units = insunits
         geo.coordinate_system_definition = GEODATA_XML.format(epsg=EPSG)
+    if layers is not None:
+        for e in list(msp):
+            if e.dxf.layer not in layers:
+                msp.delete_entity(e)
     path = Path(path)
     doc.saveas(path)
     return path

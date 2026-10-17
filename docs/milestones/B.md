@@ -52,6 +52,12 @@ survey, with numbers checked against known ground truth in the tests.
   heights and contour vertices with no extrapolation; slope, contour
   interval, coverage of the parcel; crossing contours and elevation
   conflicts block; frontage derived where the boundary runs along a road.
+- **Several survey files per site**: `site ingest --source A --source B`
+  (e.g. the boundary in one DWG and the heights in another). Each file gets
+  its own `cad_import` record, ids are namespaced per file because DXF
+  handles restart in every file, a boundary may come from one file only,
+  and the files' declarations must agree. A test splits the synthetic
+  survey into two files and gets the same site.
 - **Workflow**: `workflow assess-site` puts an unconfirmed site in
   `SITE_NEEDS_VERIFICATION`; elevation units are now a site-gate blocker
   when the site has elevations; only a human can confirm site facts or
@@ -118,16 +124,16 @@ confirmation by the synthetic actor `human:example-owner`, as in the tests.
 
 ## Test results
 
-`328 passed` (Python 3.13.3, macOS arm64), 0 failed, 0 skipped. The DWG
+`332 passed` (Python 3.13.3, macOS arm64), 0 failed, 0 skipped. The DWG
 test ran against ODA File Converter 27.9. The CI install (version ranges,
-fresh Homebrew Python 3.11 venv, pyproj 3.7.2) also gave 328 passed, ruff
+fresh Homebrew Python 3.11 venv, pyproj 3.7.2) also passed in full, ruff
 clean, 20 schemas up to date; the DWG test skips where ODA is absent.
 
 | File | Tests |
 |---|---|
 | `test_cad.py` (new) | 20 |
 | `test_geospatial.py` (new) | 31 |
-| `test_site_pipeline.py` (new) | 37 |
+| `test_site_pipeline.py` (new) | 41 |
 | `test_units_coordinates.py` | 37 |
 | `test_schemas.py` | 32 |
 | `test_workflow.py` | 40 |
@@ -160,8 +166,9 @@ GDAL. QGIS 4.2.3 bundles GDAL 3.13.3, but it has no DWG driver.
   lon/lat that `site confirm` and the report print.
 - A DXF GEODATA "local grid" transform (design point ≠ reference point, or
   rotated north) is not applied; it raises a blocking issue instead.
-- One survey file per site. Merging several files (for example a boundary
-  DWG and a separate heights DWG) is not supported yet.
+- Several survey files form one site only if they share one unit and one
+  CRS. Files that declare different units or EPSG codes raise a blocking
+  issue; converting one of them is up to the owner or surveyor.
 - Arcs (polyline bulges) are reduced to their vertices; areas and lengths
   are chord approximations, with a warning.
 - Block attributes (e.g. an `ELEV` tag) are not read as elevations; only

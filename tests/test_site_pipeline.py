@@ -174,8 +174,21 @@ def test_unitless_drawing_produces_no_geometry(ingest, make_survey):
     site = _site(store, result.site_ref)
     assert site.boundary is None and site.coordinates.local is None
     assert site.terrain.spot_elevations == [] and site.features == []
-    assert any(i.id == "iss-units-unknown" and i.severity.value == "blocking" for i in site.issues)
     assert any("drawing units are unknown" in b for b in result.blockers)
+
+
+def test_a_unitless_drawing_can_be_fully_confirmed(ingest, make_survey):
+    store, _ = ingest(make_survey(declare_units=False))
+    # Only the horizontal unit: elevations stay out, never converted with a guessed unit.
+    ref = confirm_site(store, "site", HUMAN, SiteConfirmation(units=LengthUnit.METRE))
+    site = _site(store, ref)
+    assert validate_site(site).boundary.area_m2 == pytest.approx(1400.0)
+    assert site.terrain.spot_elevations == [] and site.terrain.contours == []
+    assert any("elevation unit" in b for b in site_verification_blockers(site))
+    ref = confirm_site(store, "site", HUMAN, FULL)
+    site = _site(store, ref)
+    assert site_verification_blockers(site) == []
+    assert len(site.terrain.spot_elevations) == 8 and site.terrain.surface is not None
 
 
 def test_ambiguous_entities_are_listed_with_reasons(ingest):
@@ -619,3 +632,56 @@ def test_committed_fixture_matches_its_generator(tmp_path, survey):
     b = EzdxfAdapter().extract_cad(fresh, {})
     assert a.points == b.points and a.polylines == b.polylines
     assert a.inspection.geodata == b.inspection.geodata
+
+
+# ------------------------------------------------------- several survey files
+
+BOUNDARY_LAYERS = {"PARCEL_BOUNDARY", "ROAD", "EXIST_BUILDING", "TREES", "ACCESS", "TEXT_ANNO"}
+HEIGHT_LAYERS = {"CONTOURS", "SPOT_HEIGHTS"}
+
+
+@pytest.fixture
+def ingest_many(new_store, mapping):
+    def run(paths: list[Path], mapping: LayerMapping = mapping):
+        store = new_store("synthetic-survey")
+        ids = [
+            store.add_source(p, HUMAN, classification=DataClassification.SYNTHETIC).id
+            for p in paths
+        ]
+        return store, ingest_site(store, ids, mapping, AGENT)
+
+    return run
+
+
+def test_a_survey_split_over_two_files_gives_the_same_site(ingest, ingest_many, make_survey):
+    store1, single = ingest()
+    split = [make_survey(layers=BOUNDARY_LAYERS), make_survey(layers=HEIGHT_LAYERS)]
+    store2, result = ingest_many(split)
+    a, b = _site(store1, single.site_ref), _site(store2, result.site_ref)
+    assert b.coordinates.local.origin == a.coordinates.local.origin
+    assert sorted(b.boundary.outer) == sorted(a.boundary.outer)
+    assert len(b.terrain.spot_elevations) == 8 and len(b.terrain.contours) == 4
+    assert validate_site(b).frontage.length_m == pytest.approx(40.0)
+    ids = [s.id for s in b.terrain.spot_elevations] + [f.id for f in b.features]
+    assert len(ids) == len(set(ids))  # DXF handles restart per file; ids must not collide
+    assert [r.kind for r in b.provenance.inputs].count(K.CAD_IMPORT) == 2
+    assert result.blockers == single.blockers
+    ref = confirm_site(store2, "site", HUMAN, FULL)
+    assert site_verification_blockers(_site(store2, ref)) == []
+
+
+def test_files_that_declare_different_units_block(ingest_many, make_survey):
+    store, result = ingest_many(
+        [make_survey(layers=BOUNDARY_LAYERS), make_survey(unit="mm", layers=HEIGHT_LAYERS)]
+    )
+    site = _site(store, result.site_ref)
+    assert any(i.id == "iss-sources-disagree-units" for i in site.issues)
+    ref = confirm_site(store, "site", HUMAN, FULL)
+    assert any("different units" in b for b in site_verification_blockers(_site(store, ref)))
+
+
+def test_a_boundary_in_two_files_is_ambiguous(ingest_many, make_survey):
+    store, result = ingest_many([make_survey(), make_survey(layers=BOUNDARY_LAYERS)])
+    site = _site(store, result.site_ref)
+    assert site.boundary is None
+    assert any(i.id == "iss-boundary-in-several-files" for i in site.issues)

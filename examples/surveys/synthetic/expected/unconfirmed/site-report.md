@@ -36,7 +36,7 @@ Derived from the canonical site model. This report approves nothing.
 ## Access and frontage
 
 - Frontage length: 40.000 m in 1 segment(s)
-- Access points on the frontage: access-5c
+- Access points on the frontage: access-survey-5c
 - Features: {'access_point': 1, 'existing_structure': 1, 'frontage': 1, 'road': 1, 'tree': 1}
 
 ## Findings
