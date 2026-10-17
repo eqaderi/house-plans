@@ -1,0 +1,18 @@
+# A SYNTHETIC, UNVERIFIED code pack. Its rules are invented for tests; it is
+# not any jurisdiction's regulation. Because it is unverified, results that
+# use it can only ever be labelled "conceptual best-practice check only".
+schema_version: "0.1.0"
+id: synthetic-codepack
+jurisdiction: Nowhere (synthetic)
+authority: None (synthetic test data)
+edition: "0.0-test"
+effective_date: 2026-01-01
+source: Invented for house-ai tests
+rule_ids: [r-min-bedroom-area]
+rules:
+  - id: r-min-bedroom-area
+    title: Minimum bedroom area (invented)
+    summary: Bedrooms at least 9 m² (synthetic value).
+    citation: synthetic-codepack §1
+    parameters: {min_area_m2: 9.0}
+verification_status: unverified

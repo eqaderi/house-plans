@@ -1,0 +1,609 @@
+{
+  "$defs": {
+    "Actor": {
+      "additionalProperties": false,
+      "properties": {
+        "display_name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Display Name"
+        },
+        "id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "$ref": "#/$defs/ActorKind"
+        },
+        "model": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Model"
+        },
+        "provider": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Provider"
+        }
+      },
+      "required": [
+        "kind",
+        "id"
+      ],
+      "title": "Actor",
+      "type": "object"
+    },
+    "ActorKind": {
+      "enum": [
+        "human",
+        "agent",
+        "system"
+      ],
+      "title": "ActorKind",
+      "type": "string"
+    },
+    "AdjacencyKind": {
+      "enum": [
+        "connected",
+        "adjacent",
+        "near",
+        "visual",
+        "separated",
+        "acoustic_separation"
+      ],
+      "title": "AdjacencyKind",
+      "type": "string"
+    },
+    "AdjacencyRequirement": {
+      "additionalProperties": false,
+      "properties": {
+        "a": {
+          "maxLength": 64,
+          "minLength": 1,
+          "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+          "title": "A",
+          "type": "string"
+        },
+        "b": {
+          "maxLength": 64,
+          "minLength": 1,
+          "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+          "title": "B",
+          "type": "string"
+        },
+        "id": {
+          "maxLength": 64,
+          "minLength": 1,
+          "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "$ref": "#/$defs/AdjacencyKind"
+        },
+        "rationale": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Rationale"
+        },
+        "source_fact_ids": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Source Fact Ids",
+          "type": "array"
+        },
+        "strength": {
+          "$ref": "#/$defs/Strength"
+        },
+        "weight": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Weight"
+        }
+      },
+      "required": [
+        "id",
+        "a",
+        "b",
+        "kind",
+        "strength"
+      ],
+      "title": "AdjacencyRequirement",
+      "type": "object"
+    },
+    "ArtifactKind": {
+      "description": "Kinds of versioned artifacts kept in a project store.",
+      "enum": [
+        "source_document",
+        "cad_import",
+        "site",
+        "design_brief",
+        "space_program",
+        "assumptions",
+        "open_questions",
+        "constraint_set",
+        "codepack",
+        "plan",
+        "evaluation_report",
+        "revision_report",
+        "build_record"
+      ],
+      "title": "ArtifactKind",
+      "type": "string"
+    },
+    "ArtifactRef": {
+      "additionalProperties": false,
+      "description": "Pointer to one immutable version of an artifact, pinned by content hash.",
+      "properties": {
+        "id": {
+          "maxLength": 64,
+          "minLength": 1,
+          "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "$ref": "#/$defs/ArtifactKind"
+        },
+        "sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Sha256",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "kind",
+        "id",
+        "version",
+        "sha256"
+      ],
+      "title": "ArtifactRef",
+      "type": "object"
+    },
+    "DaylightNeed": {
+      "enum": [
+        "required",
+        "preferred",
+        "not_needed"
+      ],
+      "title": "DaylightNeed",
+      "type": "string"
+    },
+    "Priority": {
+      "enum": [
+        "must",
+        "should",
+        "could",
+        "wont"
+      ],
+      "title": "Priority",
+      "type": "string"
+    },
+    "Privacy": {
+      "enum": [
+        "public",
+        "semi_private",
+        "private",
+        "service"
+      ],
+      "title": "Privacy",
+      "type": "string"
+    },
+    "ProgramItem": {
+      "additionalProperties": false,
+      "properties": {
+        "daylight": {
+          "$ref": "#/$defs/DaylightNeed",
+          "default": "preferred"
+        },
+        "function": {
+          "$ref": "#/$defs/SpaceFunction"
+        },
+        "id": {
+          "maxLength": 64,
+          "minLength": 1,
+          "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "level_preference": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Level Preference"
+        },
+        "max_area_m2": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Max Area M2"
+        },
+        "min_area_m2": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Min Area M2"
+        },
+        "min_width_m": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Min Width M"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "notes": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Notes"
+        },
+        "priority": {
+          "$ref": "#/$defs/Priority",
+          "default": "must"
+        },
+        "privacy": {
+          "$ref": "#/$defs/Privacy"
+        },
+        "quantity": {
+          "default": 1,
+          "minimum": 1,
+          "title": "Quantity",
+          "type": "integer"
+        },
+        "source_fact_ids": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Source Fact Ids",
+          "type": "array"
+        },
+        "target_area_m2": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Target Area M2"
+        },
+        "zone_id": {
+          "anyOf": [
+            {
+              "maxLength": 64,
+              "minLength": 1,
+              "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Zone Id"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "function",
+        "privacy"
+      ],
+      "title": "ProgramItem",
+      "type": "object"
+    },
+    "ProgramZone": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "maxLength": 64,
+          "minLength": 1,
+          "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "privacy": {
+          "$ref": "#/$defs/Privacy"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "privacy"
+      ],
+      "title": "ProgramZone",
+      "type": "object"
+    },
+    "Provenance": {
+      "additionalProperties": false,
+      "properties": {
+        "created_at": {
+          "format": "date-time",
+          "title": "Created At",
+          "type": "string"
+        },
+        "created_by": {
+          "$ref": "#/$defs/Actor"
+        },
+        "inputs": {
+          "items": {
+            "$ref": "#/$defs/ArtifactRef"
+          },
+          "title": "Inputs",
+          "type": "array"
+        },
+        "method": {
+          "minLength": 1,
+          "title": "Method",
+          "type": "string"
+        },
+        "notes": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Notes"
+        },
+        "tool": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Tool"
+        },
+        "tool_version": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Tool Version"
+        }
+      },
+      "required": [
+        "created_at",
+        "created_by",
+        "method"
+      ],
+      "title": "Provenance",
+      "type": "object"
+    },
+    "SpaceFunction": {
+      "enum": [
+        "entry",
+        "hall",
+        "corridor",
+        "living",
+        "family",
+        "reception",
+        "dining",
+        "kitchen",
+        "pantry",
+        "bedroom",
+        "bathroom",
+        "wc",
+        "ablution",
+        "prayer",
+        "study",
+        "gym",
+        "play",
+        "storage",
+        "laundry",
+        "mechanical",
+        "garage",
+        "stair",
+        "lift",
+        "guest_suite",
+        "terrace",
+        "balcony",
+        "other"
+      ],
+      "title": "SpaceFunction",
+      "type": "string"
+    },
+    "Strength": {
+      "enum": [
+        "hard",
+        "soft"
+      ],
+      "title": "Strength",
+      "type": "string"
+    }
+  },
+  "$id": "https://house-ai.local/schemas/space_program.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "adjacencies": {
+      "items": {
+        "$ref": "#/$defs/AdjacencyRequirement"
+      },
+      "title": "Adjacencies",
+      "type": "array"
+    },
+    "brief_ref": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ArtifactRef"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "circulation_factor": {
+      "anyOf": [
+        {
+          "exclusiveMaximum": 1,
+          "minimum": 0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Circulation Factor"
+    },
+    "id": {
+      "maxLength": 64,
+      "minLength": 1,
+      "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+      "title": "Id",
+      "type": "string"
+    },
+    "items": {
+      "items": {
+        "$ref": "#/$defs/ProgramItem"
+      },
+      "minItems": 1,
+      "title": "Items",
+      "type": "array"
+    },
+    "project_id": {
+      "maxLength": 64,
+      "minLength": 1,
+      "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+      "title": "Project Id",
+      "type": "string"
+    },
+    "provenance": {
+      "$ref": "#/$defs/Provenance"
+    },
+    "schema_version": {
+      "default": "0.1.0",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "target_gross_area_m2": {
+      "anyOf": [
+        {
+          "exclusiveMinimum": 0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Target Gross Area M2"
+    },
+    "zones": {
+      "items": {
+        "$ref": "#/$defs/ProgramZone"
+      },
+      "title": "Zones",
+      "type": "array"
+    }
+  },
+  "required": [
+    "id",
+    "project_id",
+    "items",
+    "provenance"
+  ],
+  "title": "SpaceProgram",
+  "type": "object"
+}

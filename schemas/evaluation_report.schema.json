@@ -1,0 +1,520 @@
+{
+  "$defs": {
+    "Actor": {
+      "additionalProperties": false,
+      "properties": {
+        "display_name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Display Name"
+        },
+        "id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "$ref": "#/$defs/ActorKind"
+        },
+        "model": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Model"
+        },
+        "provider": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Provider"
+        }
+      },
+      "required": [
+        "kind",
+        "id"
+      ],
+      "title": "Actor",
+      "type": "object"
+    },
+    "ActorKind": {
+      "enum": [
+        "human",
+        "agent",
+        "system"
+      ],
+      "title": "ActorKind",
+      "type": "string"
+    },
+    "ArtifactKind": {
+      "description": "Kinds of versioned artifacts kept in a project store.",
+      "enum": [
+        "source_document",
+        "cad_import",
+        "site",
+        "design_brief",
+        "space_program",
+        "assumptions",
+        "open_questions",
+        "constraint_set",
+        "codepack",
+        "plan",
+        "evaluation_report",
+        "revision_report",
+        "build_record"
+      ],
+      "title": "ArtifactKind",
+      "type": "string"
+    },
+    "ArtifactRef": {
+      "additionalProperties": false,
+      "description": "Pointer to one immutable version of an artifact, pinned by content hash.",
+      "properties": {
+        "id": {
+          "maxLength": 64,
+          "minLength": 1,
+          "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "$ref": "#/$defs/ArtifactKind"
+        },
+        "sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Sha256",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "kind",
+        "id",
+        "version",
+        "sha256"
+      ],
+      "title": "ArtifactRef",
+      "type": "object"
+    },
+    "ClaimStatus": {
+      "description": "How an evaluator produced a reported value.",
+      "enum": [
+        "measured",
+        "inferred",
+        "simulated",
+        "ai_judgment",
+        "not_checked"
+      ],
+      "title": "ClaimStatus",
+      "type": "string"
+    },
+    "ComplianceStatement": {
+      "additionalProperties": false,
+      "properties": {
+        "codepack_id": {
+          "anyOf": [
+            {
+              "maxLength": 64,
+              "minLength": 1,
+              "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Codepack Id"
+        },
+        "edition": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Edition"
+        },
+        "jurisdiction": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Jurisdiction"
+        },
+        "rule_ids_checked": {
+          "items": {
+            "maxLength": 64,
+            "minLength": 1,
+            "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+            "type": "string"
+          },
+          "title": "Rule Ids Checked",
+          "type": "array"
+        },
+        "status": {
+          "$ref": "#/$defs/ComplianceStatus"
+        }
+      },
+      "required": [
+        "status"
+      ],
+      "title": "ComplianceStatement",
+      "type": "object"
+    },
+    "ComplianceStatus": {
+      "enum": [
+        "not_checked",
+        "conceptual_best_practice_only",
+        "checked_against_codepack"
+      ],
+      "title": "ComplianceStatus",
+      "type": "string"
+    },
+    "EvaluatorRun": {
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "reason": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Reason"
+        },
+        "status": {
+          "$ref": "#/$defs/EvaluatorRunStatus"
+        },
+        "version": {
+          "title": "Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "version",
+        "status"
+      ],
+      "title": "EvaluatorRun",
+      "type": "object"
+    },
+    "EvaluatorRunStatus": {
+      "enum": [
+        "ran",
+        "not_run",
+        "failed"
+      ],
+      "title": "EvaluatorRunStatus",
+      "type": "string"
+    },
+    "MetricClaim": {
+      "additionalProperties": false,
+      "properties": {
+        "evaluator": {
+          "title": "Evaluator",
+          "type": "string"
+        },
+        "evaluator_version": {
+          "title": "Evaluator Version",
+          "type": "string"
+        },
+        "method": {
+          "title": "Method",
+          "type": "string"
+        },
+        "metric": {
+          "pattern": "^[a-z][a-z0-9_]*$",
+          "title": "Metric",
+          "type": "string"
+        },
+        "status": {
+          "$ref": "#/$defs/ClaimStatus"
+        },
+        "subject_ids": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Subject Ids",
+          "type": "array"
+        },
+        "unit": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Unit"
+        },
+        "value": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Value"
+        }
+      },
+      "required": [
+        "metric",
+        "value",
+        "method",
+        "status",
+        "evaluator",
+        "evaluator_version"
+      ],
+      "title": "MetricClaim",
+      "type": "object"
+    },
+    "Provenance": {
+      "additionalProperties": false,
+      "properties": {
+        "created_at": {
+          "format": "date-time",
+          "title": "Created At",
+          "type": "string"
+        },
+        "created_by": {
+          "$ref": "#/$defs/Actor"
+        },
+        "inputs": {
+          "items": {
+            "$ref": "#/$defs/ArtifactRef"
+          },
+          "title": "Inputs",
+          "type": "array"
+        },
+        "method": {
+          "minLength": 1,
+          "title": "Method",
+          "type": "string"
+        },
+        "notes": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Notes"
+        },
+        "tool": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Tool"
+        },
+        "tool_version": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Tool Version"
+        }
+      },
+      "required": [
+        "created_at",
+        "created_by",
+        "method"
+      ],
+      "title": "Provenance",
+      "type": "object"
+    },
+    "Strength": {
+      "enum": [
+        "hard",
+        "soft"
+      ],
+      "title": "Strength",
+      "type": "string"
+    },
+    "Violation": {
+      "additionalProperties": false,
+      "properties": {
+        "code": {
+          "pattern": "^[a-z][a-z0-9_]*$",
+          "title": "Code",
+          "type": "string"
+        },
+        "constraint_id": {
+          "anyOf": [
+            {
+              "maxLength": 64,
+              "minLength": 1,
+              "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Constraint Id"
+        },
+        "evaluator": {
+          "title": "Evaluator",
+          "type": "string"
+        },
+        "id": {
+          "maxLength": 64,
+          "minLength": 1,
+          "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "message": {
+          "title": "Message",
+          "type": "string"
+        },
+        "status": {
+          "$ref": "#/$defs/ClaimStatus"
+        },
+        "strength": {
+          "$ref": "#/$defs/Strength"
+        },
+        "subject_ids": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Subject Ids",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "code",
+        "strength",
+        "message",
+        "status",
+        "evaluator"
+      ],
+      "title": "Violation",
+      "type": "object"
+    }
+  },
+  "$id": "https://house-ai.local/schemas/evaluation_report.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "compliance": {
+      "$ref": "#/$defs/ComplianceStatement"
+    },
+    "evaluators": {
+      "items": {
+        "$ref": "#/$defs/EvaluatorRun"
+      },
+      "minItems": 1,
+      "title": "Evaluators",
+      "type": "array"
+    },
+    "id": {
+      "maxLength": 64,
+      "minLength": 1,
+      "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+      "title": "Id",
+      "type": "string"
+    },
+    "metrics": {
+      "items": {
+        "$ref": "#/$defs/MetricClaim"
+      },
+      "title": "Metrics",
+      "type": "array"
+    },
+    "plan_ref": {
+      "$ref": "#/$defs/ArtifactRef"
+    },
+    "provenance": {
+      "$ref": "#/$defs/Provenance"
+    },
+    "schema_version": {
+      "default": "0.1.0",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "violations": {
+      "items": {
+        "$ref": "#/$defs/Violation"
+      },
+      "title": "Violations",
+      "type": "array"
+    }
+  },
+  "required": [
+    "id",
+    "plan_ref",
+    "evaluators",
+    "compliance",
+    "provenance"
+  ],
+  "title": "EvaluationReport",
+  "type": "object"
+}

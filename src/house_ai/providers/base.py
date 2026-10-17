@@ -1,0 +1,85 @@
+"""Provider-neutral AI interface and explicit data-flow policy.
+
+The domain never imports a vendor SDK. Adapters for OpenAI, Anthropic and
+Google Gemini implement :class:`ModelProvider` and are only constructed when
+credentials exist (none ship in Milestone A).
+
+Private project data (the owner's survey, brief, photos) never leaves the
+machine implicitly: every request declares the classification of what it
+carries, and :func:`check_data_flow` refuses private content unless a human
+has explicitly allowed that provider to receive it.
+"""
+
+from __future__ import annotations
+
+from dataclasses import dataclass, field
+from typing import Protocol
+
+from house_ai.domain.provenance import Actor, ActorKind, DataClassification
+
+
+@dataclass(frozen=True)
+class Attachment:
+    #: What the content is, e.g. "site artifact v3", "design_brief.yaml".
+    label: str
+    classification: DataClassification
+    content: str
+
+
+@dataclass(frozen=True)
+class ProviderRequest:
+    system: str
+    prompt: str
+    attachments: list[Attachment] = field(default_factory=list)
+    #: JSON Schema the response must satisfy, when structured output is needed.
+    response_schema: dict | None = None
+
+
+@dataclass(frozen=True)
+class ProviderResponse:
+    text: str
+    provider: str
+    model: str
+
+
+@dataclass(frozen=True)
+class DataFlowPolicy:
+    """Which providers may receive private data, and who said so."""
+
+    allowed_private_providers: frozenset[str] = frozenset()
+    granted_by: Actor | None = None
+
+    def __post_init__(self) -> None:
+        if self.allowed_private_providers and (
+            self.granted_by is None or self.granted_by.kind is not ActorKind.HUMAN
+        ):
+            raise ValueError("only a human can allow private data to reach a provider")
+
+
+class PrivateDataFlowError(PermissionError):
+    pass
+
+
+def check_data_flow(provider: str, request: ProviderRequest, policy: DataFlowPolicy) -> None:
+    private = [
+        a.label for a in request.attachments if a.classification is DataClassification.PRIVATE
+    ]
+    if private and provider not in policy.allowed_private_providers:
+        raise PrivateDataFlowError(
+            f"refusing to send private data to {provider!r} without explicit consent: "
+            + ", ".join(private)
+        )
+
+
+class ModelProvider(Protocol):
+    name: str
+
+    def complete(self, request: ProviderRequest) -> ProviderResponse: ...
+
+
+def send(
+    provider: ModelProvider, request: ProviderRequest, policy: DataFlowPolicy
+) -> ProviderResponse:
+    """The only sanctioned path to a provider: policy first, then the call."""
+    check_data_flow(provider.name, request, policy)
+    return provider.complete(request)

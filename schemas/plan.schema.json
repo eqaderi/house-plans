@@ -1,0 +1,1555 @@
+{
+  "$defs": {
+    "Actor": {
+      "additionalProperties": false,
+      "properties": {
+        "display_name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Display Name"
+        },
+        "id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "$ref": "#/$defs/ActorKind"
+        },
+        "model": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Model"
+        },
+        "provider": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Provider"
+        }
+      },
+      "required": [
+        "kind",
+        "id"
+      ],
+      "title": "Actor",
+      "type": "object"
+    },
+    "ActorKind": {
+      "enum": [
+        "human",
+        "agent",
+        "system"
+      ],
+      "title": "ActorKind",
+      "type": "string"
+    },
+    "ArtifactKind": {
+      "description": "Kinds of versioned artifacts kept in a project store.",
+      "enum": [
+        "source_document",
+        "cad_import",
+        "site",
+        "design_brief",
+        "space_program",
+        "assumptions",
+        "open_questions",
+        "constraint_set",
+        "codepack",
+        "plan",
+        "evaluation_report",
+        "revision_report",
+        "build_record"
+      ],
+      "title": "ArtifactKind",
+      "type": "string"
+    },
+    "ArtifactRef": {
+      "additionalProperties": false,
+      "description": "Pointer to one immutable version of an artifact, pinned by content hash.",
+      "properties": {
+        "id": {
+          "maxLength": 64,
+          "minLength": 1,
+          "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "$ref": "#/$defs/ArtifactKind"
+        },
+        "sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Sha256",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "kind",
+        "id",
+        "version",
+        "sha256"
+      ],
+      "title": "ArtifactRef",
+      "type": "object"
+    },
+    "Assumption": {
+      "additionalProperties": false,
+      "properties": {
+        "affects": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Affects",
+          "type": "array"
+        },
+        "basis": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Basis"
+        },
+        "confirm_with": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Confirm With"
+        },
+        "id": {
+          "maxLength": 64,
+          "minLength": 1,
+          "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "made_by": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Actor"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "statement": {
+          "minLength": 1,
+          "title": "Statement",
+          "type": "string"
+        },
+        "status": {
+          "$ref": "#/$defs/Epistemic",
+          "default": "assumption"
+        }
+      },
+      "required": [
+        "id",
+        "statement"
+      ],
+      "title": "Assumption",
+      "type": "object"
+    },
+    "Ceiling": {
+      "additionalProperties": false,
+      "properties": {
+        "height_m": {
+          "exclusiveMinimum": 0,
+          "title": "Height M",
+          "type": "number"
+        },
+        "id": {
+          "maxLength": 64,
+          "minLength": 1,
+          "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "material_id": {
+          "anyOf": [
+            {
+              "maxLength": 64,
+              "minLength": 1,
+              "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Material Id"
+        },
+        "space_id": {
+          "maxLength": 64,
+          "minLength": 1,
+          "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+          "title": "Space Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "space_id",
+        "height_m"
+      ],
+      "title": "Ceiling",
+      "type": "object"
+    },
+    "ChangeRequest": {
+      "additionalProperties": false,
+      "properties": {
+        "base_versions": {
+          "items": {
+            "$ref": "#/$defs/ArtifactRef"
+          },
+          "title": "Base Versions",
+          "type": "array"
+        },
+        "id": {
+          "maxLength": 64,
+          "minLength": 1,
+          "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "$ref": "#/$defs/ChangeRequestKind"
+        },
+        "requested_at": {
+          "format": "date-time",
+          "title": "Requested At",
+          "type": "string"
+        },
+        "requested_by": {
+          "$ref": "#/$defs/Actor"
+        },
+        "text": {
+          "minLength": 1,
+          "title": "Text",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "text",
+        "kind",
+        "requested_by",
+        "requested_at"
+      ],
+      "title": "ChangeRequest",
+      "type": "object"
+    },
+    "ChangeRequestKind": {
+      "enum": [
+        "modify",
+        "alternatives",
+        "restart_from_program",
+        "combine",
+        "other"
+      ],
+      "title": "ChangeRequestKind",
+      "type": "string"
+    },
+    "Epistemic": {
+      "description": "Epistemic status of a statement about the project.",
+      "enum": [
+        "verified_fact",
+        "inference",
+        "assumption",
+        "preference",
+        "simulation_result",
+        "professional_approval",
+        "unknown"
+      ],
+      "title": "Epistemic",
+      "type": "string"
+    },
+    "Fixture": {
+      "additionalProperties": false,
+      "properties": {
+        "depth_m": {
+          "exclusiveMinimum": 0,
+          "title": "Depth M",
+          "type": "number"
+        },
+        "fixture_type": {
+          "pattern": "^[a-z][a-z0-9_]*$",
+          "title": "Fixture Type",
+          "type": "string"
+        },
+        "id": {
+          "maxLength": 64,
+          "minLength": 1,
+          "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "material_id": {
+          "anyOf": [
+            {
+              "maxLength": 64,
+              "minLength": 1,
+              "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Material Id"
+        },
+        "position": {
+          "maxItems": 2,
+          "minItems": 2,
+          "prefixItems": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            }
+          ],
+          "title": "Position",
+          "type": "array"
+        },
+        "rotation_deg": {
+          "default": 0.0,
+          "title": "Rotation Deg",
+          "type": "number"
+        },
+        "space_id": {
+          "maxLength": 64,
+          "minLength": 1,
+          "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+          "title": "Space Id",
+          "type": "string"
+        },
+        "width_m": {
+          "exclusiveMinimum": 0,
+          "title": "Width M",
+          "type": "number"
+        }
+      },
+      "required": [
+        "id",
+        "space_id",
+        "fixture_type",
+        "position",
+        "width_m",
+        "depth_m"
+      ],
+      "title": "Fixture",
+      "type": "object"
+    },
+    "HouseModel": {
+      "additionalProperties": false,
+      "properties": {
+        "assumptions": {
+          "items": {
+            "$ref": "#/$defs/Assumption"
+          },
+          "title": "Assumptions",
+          "type": "array"
+        },
+        "ceilings": {
+          "items": {
+            "$ref": "#/$defs/Ceiling"
+          },
+          "title": "Ceilings",
+          "type": "array"
+        },
+        "coordinate_system_id": {
+          "maxLength": 64,
+          "minLength": 1,
+          "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+          "title": "Coordinate System Id",
+          "type": "string"
+        },
+        "fixtures": {
+          "items": {
+            "$ref": "#/$defs/Fixture"
+          },
+          "title": "Fixtures",
+          "type": "array"
+        },
+        "id": {
+          "maxLength": 64,
+          "minLength": 1,
+          "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "issues": {
+          "items": {
+            "$ref": "#/$defs/Issue"
+          },
+          "title": "Issues",
+          "type": "array"
+        },
+        "levels": {
+          "items": {
+            "$ref": "#/$defs/Level"
+          },
+          "minItems": 1,
+          "title": "Levels",
+          "type": "array"
+        },
+        "materials": {
+          "items": {
+            "$ref": "#/$defs/MaterialRef"
+          },
+          "title": "Materials",
+          "type": "array"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "openings": {
+          "items": {
+            "$ref": "#/$defs/Opening"
+          },
+          "title": "Openings",
+          "type": "array"
+        },
+        "program_ref": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ArtifactRef"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "relationships": {
+          "items": {
+            "$ref": "#/$defs/SpaceRelationship"
+          },
+          "title": "Relationships",
+          "type": "array"
+        },
+        "schema_version": {
+          "default": "0.1.0",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "site_ref": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ArtifactRef"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "slabs": {
+          "items": {
+            "$ref": "#/$defs/Slab"
+          },
+          "title": "Slabs",
+          "type": "array"
+        },
+        "spaces": {
+          "items": {
+            "$ref": "#/$defs/Space"
+          },
+          "title": "Spaces",
+          "type": "array"
+        },
+        "stairs": {
+          "items": {
+            "$ref": "#/$defs/Stair"
+          },
+          "title": "Stairs",
+          "type": "array"
+        },
+        "units": {
+          "const": "m",
+          "default": "m",
+          "title": "Units",
+          "type": "string"
+        },
+        "walls": {
+          "items": {
+            "$ref": "#/$defs/Wall"
+          },
+          "title": "Walls",
+          "type": "array"
+        },
+        "zones": {
+          "items": {
+            "$ref": "#/$defs/Zone"
+          },
+          "title": "Zones",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "coordinate_system_id",
+        "levels"
+      ],
+      "title": "HouseModel",
+      "type": "object"
+    },
+    "Issue": {
+      "additionalProperties": false,
+      "description": "An unresolved problem attached to a site, program or plan.",
+      "properties": {
+        "description": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Description"
+        },
+        "id": {
+          "maxLength": 64,
+          "minLength": 1,
+          "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "raised_by": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Actor"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "severity": {
+          "$ref": "#/$defs/Severity"
+        },
+        "status": {
+          "$ref": "#/$defs/IssueStatus",
+          "default": "open"
+        },
+        "subject_ids": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Subject Ids",
+          "type": "array"
+        },
+        "title": {
+          "minLength": 1,
+          "title": "Title",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "title",
+        "severity"
+      ],
+      "title": "Issue",
+      "type": "object"
+    },
+    "IssueStatus": {
+      "enum": [
+        "open",
+        "resolved",
+        "accepted"
+      ],
+      "title": "IssueStatus",
+      "type": "string"
+    },
+    "Level": {
+      "additionalProperties": false,
+      "properties": {
+        "elevation_m": {
+          "title": "Elevation M",
+          "type": "number"
+        },
+        "floor_to_floor_m": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Floor To Floor M"
+        },
+        "id": {
+          "maxLength": 64,
+          "minLength": 1,
+          "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "elevation_m"
+      ],
+      "title": "Level",
+      "type": "object"
+    },
+    "MaterialCategory": {
+      "enum": [
+        "wall",
+        "floor",
+        "ceiling",
+        "roof",
+        "glazing",
+        "door",
+        "frame",
+        "terrain",
+        "fixture",
+        "other"
+      ],
+      "title": "MaterialCategory",
+      "type": "string"
+    },
+    "MaterialRef": {
+      "additionalProperties": false,
+      "description": "A reference to a material; render/BIM details live in libraries.",
+      "properties": {
+        "base_color_hex": {
+          "anyOf": [
+            {
+              "pattern": "^#[0-9a-fA-F]{6}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Base Color Hex"
+        },
+        "category": {
+          "$ref": "#/$defs/MaterialCategory"
+        },
+        "id": {
+          "maxLength": 64,
+          "minLength": 1,
+          "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "library": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Library"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "uri": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Uri"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "category"
+      ],
+      "title": "MaterialRef",
+      "type": "object"
+    },
+    "Opening": {
+      "additionalProperties": false,
+      "description": "A door, window or cased opening hosted by exactly one wall.",
+      "properties": {
+        "connects": {
+          "maxItems": 2,
+          "minItems": 2,
+          "prefixItems": [
+            {
+              "maxLength": 64,
+              "minLength": 1,
+              "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+              "type": "string"
+            },
+            {
+              "maxLength": 64,
+              "minLength": 1,
+              "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+              "type": "string"
+            }
+          ],
+          "title": "Connects",
+          "type": "array"
+        },
+        "height_m": {
+          "exclusiveMinimum": 0,
+          "title": "Height M",
+          "type": "number"
+        },
+        "host_wall_id": {
+          "maxLength": 64,
+          "minLength": 1,
+          "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+          "title": "Host Wall Id",
+          "type": "string"
+        },
+        "id": {
+          "maxLength": 64,
+          "minLength": 1,
+          "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "$ref": "#/$defs/OpeningKind"
+        },
+        "material_id": {
+          "anyOf": [
+            {
+              "maxLength": 64,
+              "minLength": 1,
+              "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Material Id"
+        },
+        "offset_m": {
+          "minimum": 0,
+          "title": "Offset M",
+          "type": "number"
+        },
+        "operation": {
+          "$ref": "#/$defs/Operation",
+          "default": "none"
+        },
+        "sill_m": {
+          "default": 0.0,
+          "minimum": 0,
+          "title": "Sill M",
+          "type": "number"
+        },
+        "width_m": {
+          "exclusiveMinimum": 0,
+          "title": "Width M",
+          "type": "number"
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "host_wall_id",
+        "offset_m",
+        "width_m",
+        "height_m",
+        "connects"
+      ],
+      "title": "Opening",
+      "type": "object"
+    },
+    "OpeningKind": {
+      "enum": [
+        "door",
+        "window",
+        "opening"
+      ],
+      "title": "OpeningKind",
+      "type": "string"
+    },
+    "Operation": {
+      "enum": [
+        "none",
+        "swing_left",
+        "swing_right",
+        "double_swing",
+        "sliding",
+        "fixed",
+        "casement",
+        "tilt_turn"
+      ],
+      "title": "Operation",
+      "type": "string"
+    },
+    "Polygon2D": {
+      "additionalProperties": false,
+      "description": "A simple polygon, optionally with holes. Rings are not closed explicitly.",
+      "properties": {
+        "holes": {
+          "items": {
+            "items": {
+              "maxItems": 2,
+              "minItems": 2,
+              "prefixItems": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                }
+              ],
+              "type": "array"
+            },
+            "minItems": 3,
+            "type": "array"
+          },
+          "title": "Holes",
+          "type": "array"
+        },
+        "outer": {
+          "items": {
+            "maxItems": 2,
+            "minItems": 2,
+            "prefixItems": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "type": "array"
+          },
+          "minItems": 3,
+          "title": "Outer",
+          "type": "array"
+        }
+      },
+      "required": [
+        "outer"
+      ],
+      "title": "Polygon2D",
+      "type": "object"
+    },
+    "Privacy": {
+      "enum": [
+        "public",
+        "semi_private",
+        "private",
+        "service"
+      ],
+      "title": "Privacy",
+      "type": "string"
+    },
+    "Provenance": {
+      "additionalProperties": false,
+      "properties": {
+        "created_at": {
+          "format": "date-time",
+          "title": "Created At",
+          "type": "string"
+        },
+        "created_by": {
+          "$ref": "#/$defs/Actor"
+        },
+        "inputs": {
+          "items": {
+            "$ref": "#/$defs/ArtifactRef"
+          },
+          "title": "Inputs",
+          "type": "array"
+        },
+        "method": {
+          "minLength": 1,
+          "title": "Method",
+          "type": "string"
+        },
+        "notes": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Notes"
+        },
+        "tool": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Tool"
+        },
+        "tool_version": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Tool Version"
+        }
+      },
+      "required": [
+        "created_at",
+        "created_by",
+        "method"
+      ],
+      "title": "Provenance",
+      "type": "object"
+    },
+    "RelationshipKind": {
+      "enum": [
+        "connected",
+        "adjacent",
+        "visual",
+        "separated"
+      ],
+      "title": "RelationshipKind",
+      "type": "string"
+    },
+    "Severity": {
+      "enum": [
+        "blocking",
+        "warning",
+        "info"
+      ],
+      "title": "Severity",
+      "type": "string"
+    },
+    "Slab": {
+      "additionalProperties": false,
+      "properties": {
+        "boundary": {
+          "$ref": "#/$defs/Polygon2D"
+        },
+        "id": {
+          "maxLength": 64,
+          "minLength": 1,
+          "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "$ref": "#/$defs/SlabKind"
+        },
+        "level_id": {
+          "maxLength": 64,
+          "minLength": 1,
+          "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+          "title": "Level Id",
+          "type": "string"
+        },
+        "material_id": {
+          "anyOf": [
+            {
+              "maxLength": 64,
+              "minLength": 1,
+              "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Material Id"
+        },
+        "thickness_m": {
+          "exclusiveMinimum": 0,
+          "title": "Thickness M",
+          "type": "number"
+        },
+        "top_offset_m": {
+          "default": 0.0,
+          "title": "Top Offset M",
+          "type": "number"
+        }
+      },
+      "required": [
+        "id",
+        "level_id",
+        "kind",
+        "boundary",
+        "thickness_m"
+      ],
+      "title": "Slab",
+      "type": "object"
+    },
+    "SlabKind": {
+      "enum": [
+        "floor",
+        "roof",
+        "terrace",
+        "foundation"
+      ],
+      "title": "SlabKind",
+      "type": "string"
+    },
+    "Space": {
+      "additionalProperties": false,
+      "properties": {
+        "boundary": {
+          "$ref": "#/$defs/Polygon2D"
+        },
+        "floor_material_id": {
+          "anyOf": [
+            {
+              "maxLength": 64,
+              "minLength": 1,
+              "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Floor Material Id"
+        },
+        "function": {
+          "$ref": "#/$defs/SpaceFunction"
+        },
+        "id": {
+          "maxLength": 64,
+          "minLength": 1,
+          "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "level_id": {
+          "maxLength": 64,
+          "minLength": 1,
+          "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+          "title": "Level Id",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "program_item_id": {
+          "anyOf": [
+            {
+              "maxLength": 64,
+              "minLength": 1,
+              "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Program Item Id"
+        },
+        "zone_id": {
+          "anyOf": [
+            {
+              "maxLength": 64,
+              "minLength": 1,
+              "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Zone Id"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "function",
+        "level_id",
+        "boundary"
+      ],
+      "title": "Space",
+      "type": "object"
+    },
+    "SpaceFunction": {
+      "enum": [
+        "entry",
+        "hall",
+        "corridor",
+        "living",
+        "family",
+        "reception",
+        "dining",
+        "kitchen",
+        "pantry",
+        "bedroom",
+        "bathroom",
+        "wc",
+        "ablution",
+        "prayer",
+        "study",
+        "gym",
+        "play",
+        "storage",
+        "laundry",
+        "mechanical",
+        "garage",
+        "stair",
+        "lift",
+        "guest_suite",
+        "terrace",
+        "balcony",
+        "other"
+      ],
+      "title": "SpaceFunction",
+      "type": "string"
+    },
+    "SpaceRelationship": {
+      "additionalProperties": false,
+      "description": "A declared design intent between two spaces (geometry decides if it holds).",
+      "properties": {
+        "a": {
+          "maxLength": 64,
+          "minLength": 1,
+          "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+          "title": "A",
+          "type": "string"
+        },
+        "b": {
+          "maxLength": 64,
+          "minLength": 1,
+          "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+          "title": "B",
+          "type": "string"
+        },
+        "id": {
+          "maxLength": 64,
+          "minLength": 1,
+          "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "$ref": "#/$defs/RelationshipKind"
+        },
+        "requirement_id": {
+          "anyOf": [
+            {
+              "maxLength": 64,
+              "minLength": 1,
+              "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Requirement Id"
+        }
+      },
+      "required": [
+        "id",
+        "a",
+        "b",
+        "kind"
+      ],
+      "title": "SpaceRelationship",
+      "type": "object"
+    },
+    "Stair": {
+      "additionalProperties": false,
+      "properties": {
+        "bottom_space_id": {
+          "maxLength": 64,
+          "minLength": 1,
+          "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+          "title": "Bottom Space Id",
+          "type": "string"
+        },
+        "footprint": {
+          "$ref": "#/$defs/Polygon2D"
+        },
+        "from_level_id": {
+          "maxLength": 64,
+          "minLength": 1,
+          "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+          "title": "From Level Id",
+          "type": "string"
+        },
+        "id": {
+          "maxLength": 64,
+          "minLength": 1,
+          "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "$ref": "#/$defs/StairKind"
+        },
+        "riser_count": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Riser Count"
+        },
+        "riser_height_m": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Riser Height M"
+        },
+        "to_level_id": {
+          "maxLength": 64,
+          "minLength": 1,
+          "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+          "title": "To Level Id",
+          "type": "string"
+        },
+        "top_space_id": {
+          "maxLength": 64,
+          "minLength": 1,
+          "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+          "title": "Top Space Id",
+          "type": "string"
+        },
+        "tread_depth_m": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Tread Depth M"
+        },
+        "width_m": {
+          "exclusiveMinimum": 0,
+          "title": "Width M",
+          "type": "number"
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "from_level_id",
+        "to_level_id",
+        "footprint",
+        "bottom_space_id",
+        "top_space_id",
+        "width_m"
+      ],
+      "title": "Stair",
+      "type": "object"
+    },
+    "StairKind": {
+      "enum": [
+        "straight",
+        "l_shaped",
+        "u_shaped",
+        "spiral",
+        "other"
+      ],
+      "title": "StairKind",
+      "type": "string"
+    },
+    "Wall": {
+      "additionalProperties": false,
+      "description": "A straight wall defined by its centerline on a level.",
+      "properties": {
+        "base_offset_m": {
+          "default": 0.0,
+          "title": "Base Offset M",
+          "type": "number"
+        },
+        "end": {
+          "maxItems": 2,
+          "minItems": 2,
+          "prefixItems": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            }
+          ],
+          "title": "End",
+          "type": "array"
+        },
+        "height_m": {
+          "exclusiveMinimum": 0,
+          "title": "Height M",
+          "type": "number"
+        },
+        "id": {
+          "maxLength": 64,
+          "minLength": 1,
+          "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "$ref": "#/$defs/WallKind"
+        },
+        "level_id": {
+          "maxLength": 64,
+          "minLength": 1,
+          "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+          "title": "Level Id",
+          "type": "string"
+        },
+        "material_id": {
+          "anyOf": [
+            {
+              "maxLength": 64,
+              "minLength": 1,
+              "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Material Id"
+        },
+        "start": {
+          "maxItems": 2,
+          "minItems": 2,
+          "prefixItems": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            }
+          ],
+          "title": "Start",
+          "type": "array"
+        },
+        "thickness_m": {
+          "exclusiveMinimum": 0,
+          "title": "Thickness M",
+          "type": "number"
+        }
+      },
+      "required": [
+        "id",
+        "level_id",
+        "start",
+        "end",
+        "thickness_m",
+        "height_m",
+        "kind"
+      ],
+      "title": "Wall",
+      "type": "object"
+    },
+    "WallKind": {
+      "enum": [
+        "exterior",
+        "interior",
+        "retaining",
+        "parapet"
+      ],
+      "title": "WallKind",
+      "type": "string"
+    },
+    "Zone": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "maxLength": 64,
+          "minLength": 1,
+          "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "privacy": {
+          "$ref": "#/$defs/Privacy"
+        },
+        "space_ids": {
+          "items": {
+            "maxLength": 64,
+            "minLength": 1,
+            "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+            "type": "string"
+          },
+          "title": "Space Ids",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "privacy"
+      ],
+      "title": "Zone",
+      "type": "object"
+    }
+  },
+  "$id": "https://house-ai.local/schemas/plan.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "One immutable version of a plan option. Stored under artifact id = option_id.",
+  "properties": {
+    "change_request": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ChangeRequest"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "label": {
+      "title": "Label",
+      "type": "string"
+    },
+    "model": {
+      "$ref": "#/$defs/HouseModel"
+    },
+    "option_id": {
+      "maxLength": 64,
+      "minLength": 1,
+      "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+      "title": "Option Id",
+      "type": "string"
+    },
+    "parent": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ArtifactRef"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "provenance": {
+      "$ref": "#/$defs/Provenance"
+    },
+    "schema_version": {
+      "default": "0.1.0",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "strategy": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Strategy"
+    }
+  },
+  "required": [
+    "option_id",
+    "label",
+    "provenance",
+    "model"
+  ],
+  "title": "PlanVersion",
+  "type": "object"
+}

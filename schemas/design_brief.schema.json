@@ -1,0 +1,609 @@
+{
+  "$defs": {
+    "Actor": {
+      "additionalProperties": false,
+      "properties": {
+        "display_name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Display Name"
+        },
+        "id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "$ref": "#/$defs/ActorKind"
+        },
+        "model": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Model"
+        },
+        "provider": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Provider"
+        }
+      },
+      "required": [
+        "kind",
+        "id"
+      ],
+      "title": "Actor",
+      "type": "object"
+    },
+    "ActorKind": {
+      "enum": [
+        "human",
+        "agent",
+        "system"
+      ],
+      "title": "ActorKind",
+      "type": "string"
+    },
+    "ArtifactKind": {
+      "description": "Kinds of versioned artifacts kept in a project store.",
+      "enum": [
+        "source_document",
+        "cad_import",
+        "site",
+        "design_brief",
+        "space_program",
+        "assumptions",
+        "open_questions",
+        "constraint_set",
+        "codepack",
+        "plan",
+        "evaluation_report",
+        "revision_report",
+        "build_record"
+      ],
+      "title": "ArtifactKind",
+      "type": "string"
+    },
+    "ArtifactRef": {
+      "additionalProperties": false,
+      "description": "Pointer to one immutable version of an artifact, pinned by content hash.",
+      "properties": {
+        "id": {
+          "maxLength": 64,
+          "minLength": 1,
+          "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "$ref": "#/$defs/ArtifactKind"
+        },
+        "sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Sha256",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "kind",
+        "id",
+        "version",
+        "sha256"
+      ],
+      "title": "ArtifactRef",
+      "type": "object"
+    },
+    "BriefFact": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "maxLength": 64,
+          "minLength": 1,
+          "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "key": {
+          "pattern": "^[a-z][a-z0-9_]*$",
+          "title": "Key",
+          "type": "string"
+        },
+        "priority": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Priority"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "source": {
+          "$ref": "#/$defs/FactSource"
+        },
+        "statement": {
+          "minLength": 1,
+          "title": "Statement",
+          "type": "string"
+        },
+        "status": {
+          "$ref": "#/$defs/Epistemic"
+        },
+        "topic": {
+          "$ref": "#/$defs/BriefTopic"
+        },
+        "value": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "boolean"
+            },
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Value"
+        }
+      },
+      "required": [
+        "id",
+        "topic",
+        "key",
+        "statement",
+        "status",
+        "source"
+      ],
+      "title": "BriefFact",
+      "type": "object"
+    },
+    "BriefTopic": {
+      "description": "Topics the adaptive interview investigates (MASTER_SPEC, owner interview).",
+      "enum": [
+        "household",
+        "ages",
+        "future_children",
+        "multigenerational",
+        "long_term_guests",
+        "accessibility",
+        "lifestyle",
+        "sleep_patterns",
+        "entertaining",
+        "privacy",
+        "cultural_practices",
+        "religious_needs",
+        "guest_family_separation",
+        "cooking",
+        "kitchen_type",
+        "dining",
+        "bedrooms_bathrooms",
+        "work_study",
+        "hobbies",
+        "gym",
+        "storage",
+        "laundry",
+        "service_spaces",
+        "pets",
+        "vehicles",
+        "ev_charging",
+        "outdoor_living",
+        "garden",
+        "pool",
+        "views",
+        "undesirable_views",
+        "noise",
+        "security",
+        "smart_home",
+        "materials_style",
+        "maintenance",
+        "climate_comfort",
+        "daylight",
+        "natural_ventilation",
+        "sustainability",
+        "budget",
+        "target_area",
+        "schedule",
+        "future_expansion",
+        "priorities"
+      ],
+      "title": "BriefTopic",
+      "type": "string"
+    },
+    "Contradiction": {
+      "additionalProperties": false,
+      "description": "Two or more brief facts that cannot all hold.",
+      "properties": {
+        "fact_ids": {
+          "items": {
+            "type": "string"
+          },
+          "minItems": 2,
+          "title": "Fact Ids",
+          "type": "array"
+        },
+        "id": {
+          "maxLength": 64,
+          "minLength": 1,
+          "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "resolution": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Resolution"
+        },
+        "resolved": {
+          "default": false,
+          "title": "Resolved",
+          "type": "boolean"
+        },
+        "statement": {
+          "minLength": 1,
+          "title": "Statement",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "statement",
+        "fact_ids"
+      ],
+      "title": "Contradiction",
+      "type": "object"
+    },
+    "Epistemic": {
+      "description": "Epistemic status of a statement about the project.",
+      "enum": [
+        "verified_fact",
+        "inference",
+        "assumption",
+        "preference",
+        "simulation_result",
+        "professional_approval",
+        "unknown"
+      ],
+      "title": "Epistemic",
+      "type": "string"
+    },
+    "FactSource": {
+      "additionalProperties": false,
+      "properties": {
+        "interview_round": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Interview Round"
+        },
+        "kind": {
+          "$ref": "#/$defs/FactSourceKind"
+        },
+        "ref": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Ref"
+        }
+      },
+      "required": [
+        "kind"
+      ],
+      "title": "FactSource",
+      "type": "object"
+    },
+    "FactSourceKind": {
+      "enum": [
+        "owner_answer",
+        "document",
+        "agent_inference",
+        "default"
+      ],
+      "title": "FactSourceKind",
+      "type": "string"
+    },
+    "HouseholdMember": {
+      "additionalProperties": false,
+      "properties": {
+        "age_years": {
+          "anyOf": [
+            {
+              "maximum": 130,
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Age Years"
+        },
+        "id": {
+          "maxLength": 64,
+          "minLength": 1,
+          "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "label": {
+          "title": "Label",
+          "type": "string"
+        },
+        "needs": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Needs",
+          "type": "array"
+        },
+        "role": {
+          "$ref": "#/$defs/MemberRole"
+        }
+      },
+      "required": [
+        "id",
+        "role",
+        "label"
+      ],
+      "title": "HouseholdMember",
+      "type": "object"
+    },
+    "MemberRole": {
+      "enum": [
+        "adult",
+        "child",
+        "elder",
+        "long_term_guest",
+        "staff",
+        "expected_child"
+      ],
+      "title": "MemberRole",
+      "type": "string"
+    },
+    "Money": {
+      "additionalProperties": false,
+      "properties": {
+        "amount": {
+          "minimum": 0,
+          "title": "Amount",
+          "type": "number"
+        },
+        "currency": {
+          "pattern": "^[A-Z]{3}$",
+          "title": "Currency",
+          "type": "string"
+        }
+      },
+      "required": [
+        "amount",
+        "currency"
+      ],
+      "title": "Money",
+      "type": "object"
+    },
+    "Priority": {
+      "enum": [
+        "must",
+        "should",
+        "could",
+        "wont"
+      ],
+      "title": "Priority",
+      "type": "string"
+    },
+    "Provenance": {
+      "additionalProperties": false,
+      "properties": {
+        "created_at": {
+          "format": "date-time",
+          "title": "Created At",
+          "type": "string"
+        },
+        "created_by": {
+          "$ref": "#/$defs/Actor"
+        },
+        "inputs": {
+          "items": {
+            "$ref": "#/$defs/ArtifactRef"
+          },
+          "title": "Inputs",
+          "type": "array"
+        },
+        "method": {
+          "minLength": 1,
+          "title": "Method",
+          "type": "string"
+        },
+        "notes": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Notes"
+        },
+        "tool": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Tool"
+        },
+        "tool_version": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Tool Version"
+        }
+      },
+      "required": [
+        "created_at",
+        "created_by",
+        "method"
+      ],
+      "title": "Provenance",
+      "type": "object"
+    }
+  },
+  "$id": "https://house-ai.local/schemas/design_brief.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "budget": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Money"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "contradictions": {
+      "items": {
+        "$ref": "#/$defs/Contradiction"
+      },
+      "title": "Contradictions",
+      "type": "array"
+    },
+    "facts": {
+      "items": {
+        "$ref": "#/$defs/BriefFact"
+      },
+      "title": "Facts",
+      "type": "array"
+    },
+    "household": {
+      "items": {
+        "$ref": "#/$defs/HouseholdMember"
+      },
+      "title": "Household",
+      "type": "array"
+    },
+    "id": {
+      "maxLength": 64,
+      "minLength": 1,
+      "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+      "title": "Id",
+      "type": "string"
+    },
+    "interview_rounds_completed": {
+      "default": 0,
+      "minimum": 0,
+      "title": "Interview Rounds Completed",
+      "type": "integer"
+    },
+    "project_id": {
+      "maxLength": 64,
+      "minLength": 1,
+      "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+      "title": "Project Id",
+      "type": "string"
+    },
+    "provenance": {
+      "$ref": "#/$defs/Provenance"
+    },
+    "schema_version": {
+      "default": "0.1.0",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "target_gross_area_m2": {
+      "anyOf": [
+        {
+          "exclusiveMinimum": 0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Target Gross Area M2"
+    }
+  },
+  "required": [
+    "id",
+    "project_id",
+    "provenance"
+  ],
+  "title": "DesignBrief",
+  "type": "object"
+}

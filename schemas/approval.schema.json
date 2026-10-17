@@ -1,0 +1,182 @@
+{
+  "$defs": {
+    "Actor": {
+      "additionalProperties": false,
+      "properties": {
+        "display_name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Display Name"
+        },
+        "id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "$ref": "#/$defs/ActorKind"
+        },
+        "model": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Model"
+        },
+        "provider": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Provider"
+        }
+      },
+      "required": [
+        "kind",
+        "id"
+      ],
+      "title": "Actor",
+      "type": "object"
+    },
+    "ActorKind": {
+      "enum": [
+        "human",
+        "agent",
+        "system"
+      ],
+      "title": "ActorKind",
+      "type": "string"
+    },
+    "ArtifactKind": {
+      "description": "Kinds of versioned artifacts kept in a project store.",
+      "enum": [
+        "source_document",
+        "cad_import",
+        "site",
+        "design_brief",
+        "space_program",
+        "assumptions",
+        "open_questions",
+        "constraint_set",
+        "codepack",
+        "plan",
+        "evaluation_report",
+        "revision_report",
+        "build_record"
+      ],
+      "title": "ArtifactKind",
+      "type": "string"
+    },
+    "ArtifactRef": {
+      "additionalProperties": false,
+      "description": "Pointer to one immutable version of an artifact, pinned by content hash.",
+      "properties": {
+        "id": {
+          "maxLength": 64,
+          "minLength": 1,
+          "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "$ref": "#/$defs/ArtifactKind"
+        },
+        "sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Sha256",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "kind",
+        "id",
+        "version",
+        "sha256"
+      ],
+      "title": "ArtifactRef",
+      "type": "object"
+    },
+    "Gate": {
+      "description": "The four things a human must explicitly approve.",
+      "enum": [
+        "site",
+        "program",
+        "plan",
+        "model"
+      ],
+      "title": "Gate",
+      "type": "string"
+    }
+  },
+  "$id": "https://house-ai.local/schemas/approval.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "approved_at": {
+      "format": "date-time",
+      "title": "Approved At",
+      "type": "string"
+    },
+    "approved_by": {
+      "$ref": "#/$defs/Actor"
+    },
+    "artifact": {
+      "$ref": "#/$defs/ArtifactRef"
+    },
+    "conditions": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Conditions",
+      "type": "array"
+    },
+    "gate": {
+      "$ref": "#/$defs/Gate"
+    },
+    "id": {
+      "maxLength": 64,
+      "minLength": 1,
+      "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+      "title": "Id",
+      "type": "string"
+    },
+    "statement": {
+      "minLength": 1,
+      "title": "Statement",
+      "type": "string"
+    }
+  },
+  "required": [
+    "id",
+    "gate",
+    "artifact",
+    "approved_by",
+    "approved_at",
+    "statement"
+  ],
+  "title": "Approval",
+  "type": "object"
+}

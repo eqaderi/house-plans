@@ -1,0 +1,109 @@
+"""Provider data-flow policy and the agent role roster."""
+
+from __future__ import annotations
+
+import pytest
+
+from house_ai.domain.agents import AgentRoster
+from house_ai.domain.provenance import DataClassification
+from house_ai.providers.base import (
+    Attachment,
+    DataFlowPolicy,
+    PrivateDataFlowError,
+    ProviderRequest,
+    ProviderResponse,
+    send,
+)
+from house_ai.storage.hashing import load_document
+
+from .conftest import AGENT, HUMAN, REPO
+
+
+class RecordingProvider:
+    name = "test-provider"
+
+    def __init__(self) -> None:
+        self.calls: list[ProviderRequest] = []
+
+    def complete(self, request: ProviderRequest) -> ProviderResponse:
+        self.calls.append(request)
+        return ProviderResponse(text="ok", provider=self.name, model="none")
+
+
+def _request(classification: DataClassification) -> ProviderRequest:
+    return ProviderRequest(
+        system="s",
+        prompt="p",
+        attachments=[Attachment("site v1", classification, "{...}")],
+    )
+
+
+def test_private_data_is_refused_by_default():
+    provider = RecordingProvider()
+    with pytest.raises(PrivateDataFlowError, match="site v1"):
+        send(provider, _request(DataClassification.PRIVATE), DataFlowPolicy())
+    assert provider.calls == []
+
+
+def test_synthetic_data_flows_without_consent():
+    provider = RecordingProvider()
+    send(provider, _request(DataClassification.SYNTHETIC), DataFlowPolicy())
+    assert len(provider.calls) == 1
+
+
+def test_private_data_flows_only_to_the_provider_a_human_allowed():
+    policy = DataFlowPolicy(frozenset({"test-provider"}), granted_by=HUMAN)
+    provider = RecordingProvider()
+    send(provider, _request(DataClassification.PRIVATE), policy)
+    assert len(provider.calls) == 1
+    other = RecordingProvider()
+    other.name = "other-provider"
+    with pytest.raises(PrivateDataFlowError):
+        send(other, _request(DataClassification.PRIVATE), policy)
+
+
+def test_an_agent_cannot_grant_private_data_flow():
+    with pytest.raises(ValueError, match="only a human"):
+        DataFlowPolicy(frozenset({"test-provider"}), granted_by=AGENT)
+
+
+SPEC_ROLES = [
+    "Orchestrator",
+    "Site Analyst",
+    "Architectural Programmer",
+    "Design Architect",
+    "Planning Critic",
+    "Building Science Critic",
+    "Code Critic",
+    "Structural Concept Critic",
+    "MEP Concept Critic",
+    "Cost/Constructability Critic",
+    "Blender Agent",
+    "Unreal Agent",
+]
+
+
+def test_roster_has_every_spec_role_and_none_can_approve():
+    roster = AgentRoster.model_validate(load_document(REPO / "agents" / "roles.yaml"))
+    assert [r.name for r in roster.roles] == SPEC_ROLES
+    assert all(r.may_approve is False for r in roster.roles)
+
+
+def test_roster_schema_refuses_an_approving_role():
+    doc = load_document(REPO / "agents" / "roles.yaml")
+    doc["roles"][0]["may_approve"] = True
+    with pytest.raises(ValueError):
+        AgentRoster.model_validate(doc)
+
+
+def test_domain_never_imports_a_vendor_sdk():
+    src = REPO / "src" / "house_ai"
+    vendors = (
+        "import openai",
+        "import anthropic",
+        "google.generativeai",
+        "from google import genai",
+    )
+    for path in src.rglob("*.py"):
+        text = path.read_text()
+        assert not any(v in text for v in vendors), path

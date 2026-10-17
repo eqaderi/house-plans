@@ -1,0 +1,96 @@
+{
+  "$defs": {
+    "AgentRole": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "maxLength": 64,
+          "minLength": 1,
+          "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "invoke_when": {
+          "title": "Invoke When",
+          "type": "string"
+        },
+        "may_approve": {
+          "const": false,
+          "default": false,
+          "title": "May Approve",
+          "type": "boolean"
+        },
+        "may_transition": {
+          "default": false,
+          "title": "May Transition",
+          "type": "boolean"
+        },
+        "may_write": {
+          "items": {
+            "$ref": "#/$defs/ArtifactKind"
+          },
+          "title": "May Write",
+          "type": "array"
+        },
+        "milestone": {
+          "title": "Milestone",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "purpose": {
+          "title": "Purpose",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "purpose",
+        "invoke_when",
+        "milestone"
+      ],
+      "title": "AgentRole",
+      "type": "object"
+    },
+    "ArtifactKind": {
+      "description": "Kinds of versioned artifacts kept in a project store.",
+      "enum": [
+        "source_document",
+        "cad_import",
+        "site",
+        "design_brief",
+        "space_program",
+        "assumptions",
+        "open_questions",
+        "constraint_set",
+        "codepack",
+        "plan",
+        "evaluation_report",
+        "revision_report",
+        "build_record"
+      ],
+      "title": "ArtifactKind",
+      "type": "string"
+    }
+  },
+  "$id": "https://house-ai.local/schemas/agent_roster.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "roles": {
+      "items": {
+        "$ref": "#/$defs/AgentRole"
+      },
+      "title": "Roles",
+      "type": "array"
+    }
+  },
+  "required": [
+    "roles"
+  ],
+  "title": "AgentRoster",
+  "type": "object"
+}

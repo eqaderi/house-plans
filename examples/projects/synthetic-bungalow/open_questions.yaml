@@ -1,0 +1,20 @@
+schema_version: "0.1.0"
+project_id: synthetic-bungalow
+questions:
+  - id: q-study
+    question: Does anyone work from home more than two days a week?
+    topic: work_study
+    why_it_matters: Decides whether a study is a program item or a corner of the living room.
+    blocking: false
+    asked_in_round: 2
+  - id: q-levels
+    question: Must everything be on one level?
+    topic: accessibility
+    blocking: true
+    status: answered
+    answer: "Yes; the visiting grandparent cannot use stairs."
+    asked_in_round: 1
+provenance:
+  created_at: "2026-10-17T09:12:00Z"
+  created_by: {kind: human, id: example-author}
+  method: hand_authored
