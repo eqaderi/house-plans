@@ -630,7 +630,7 @@ only where a tool cannot read the canonical location.
 - [ ] **S2-13** Skills used successfully by two agent environments — `IN_PROGRESS` · P1 · deps: S2-12, S2-04, S2-05
   - Accept: transcripts from two agents (expected: Claude Code and Codex) completing the synthetic workflow
   - Verify: transcripts linked in §N
-  - Evidence: pending — Claude Code exploratory run in §N "S2 review 1"; Codex run and owner decision on the gated part outstanding
+  - Evidence: pending — Claude Code run against the current skills in §N "S2 Claude Code workflow run"; second agent run and owner decision on the gated part outstanding
 
 ### Stage S3 — Tool decisions and benchmark fixtures
 
@@ -2146,6 +2146,15 @@ Closure record template:
 ```
 
 ### S2 records
+
+#### S2 Claude Code workflow run (2026-10-17)
+- CI: run 39065413771 green on `f3336bb` (Python 3.11 and 3.13), the fix commit.
+- Follow-up in this commit: `test_architectural_programming_skill_workflow` now runs the skill's order (interview start, answer, confirm and build in SITE_APPROVED; `workflow transition INTERVIEWING` only before `program review`, which needs it); `test_generate_concepts_and_critique_skills_workflow` also runs `plan export` + `plan ground` on a stored concept.
+- Agent: `agent:claude-code` (claude-opus-5-5) following the current generate-concepts and critique-plan text on a scratch copy of synthetic-hillside (`example load ... --actor human:example`).
+  - `plan generate <p> --actor agent:claude-code` → `refused: plan generation needs the owner's approved site and program (PROGRAM_APPROVED or later); the project is in SITE_INGESTION. Use --exploratory ...` (exit 1).
+  - `plan generate <p> --exploratory --out <scratch>/preview --actor agent:claude-code` → `EXPLORATORY: nothing was stored`; compact 0 hard/6 soft, split_level 0/4, linear 0/9, two_wing 0/4, split_walkout 0/10; `concept-courtyard (courtyard): not feasible: ... no 6 m long strip of the envelope is 10.2 m deep at 17.1 m from the road edge ...`.
+  - Critique of `concept-split-walkout` citing `sp-bed-child-1`, `sp-bed-child-2`, `lv-down-300`, `sp-bath-ensuite`, `z-day`, `sp-kitchen`, `sp-dining`, `sp-living`, `lv-entry`, `sp-garage`, `pi-study-1`, `lv-down-600`, `sp-entry`, `z-night`, each observation labelled measured / inferred / ai_judgment / not_checked → `plan ground <...>/plan.json critique.md` → `14 cited ID(s), 0 unknown` (exit 0). With `pi-office` injected → `UNKNOWN Unknown entity ID 'pi-office' ...`, `15 cited ID(s), 1 unknown` (exit 1).
+  - Not run: stored generation, `plan revise`, `plan review`; they need the owner to approve synthetic-hillside's site and program gates in their terminal.
 
 #### S2 fixes after review 1 (2026-10-17)
 - Branch: `stage/S2-agent-skills`; base: review 1 on `ccac2a7`

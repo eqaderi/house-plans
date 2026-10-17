@@ -210,20 +210,8 @@ def test_architectural_programming_skill_workflow(tmp_path: Path):
     wf.approve(Gate.SITE, store.latest(ArtifactKind.SITE, "site"), OWNER, "synthetic site verified")
 
 
-    # 1. Transition project to INTERVIEWING and start interview
-    rc = main(
-        [
-            "workflow",
-            "transition",
-            str(proj_dir),
-            "INTERVIEWING",
-            "--reason",
-            "starting interview",
-            "--actor",
-            AGENT_ACTOR,
-        ]
-    )
-    assert rc == 0
+    # 1. Start the interview (works in SITE_APPROVED; no transition needed yet)
+    assert Workflow(store).state is WorkflowState.SITE_APPROVED
     rc = main(["interview", "start", str(proj_dir), "--json", "--actor", AGENT_ACTOR])
     assert rc == 0
 
@@ -306,9 +294,24 @@ def test_architectural_programming_skill_workflow(tmp_path: Path):
     assert (design_dir / "design_brief.yaml").is_file()
     assert (design_dir / "program-review.md").is_file()
 
-    # 6. Request program review
+    # 6. Move to INTERVIEWING (from SITE_APPROVED) and request program review
+    assert Workflow(store).state is WorkflowState.SITE_APPROVED
+    rc = main(
+        [
+            "workflow",
+            "transition",
+            str(proj_dir),
+            "INTERVIEWING",
+            "--reason",
+            "interview",
+            "--actor",
+            AGENT_ACTOR,
+        ]
+    )
+    assert rc == 0
     rc = main(["program", "review", str(proj_dir), "--actor", AGENT_ACTOR])
     assert rc == 0
+    assert Workflow(store).state is WorkflowState.PROGRAM_REVIEW
 
     # 7. Human boundary: agent cannot approve program gate
     rc = main(
@@ -426,6 +429,13 @@ def test_generate_concepts_and_critique_skills_workflow(tmp_path: Path):
     assert rc == 0
     rc = main(["plan", "compare", str(proj_dir)])
     assert rc == 0
+
+    # critique-plan after the gates: ground a critique of the exported stored concept
+    export_dir = tmp_path / "critique-export"
+    assert main(["plan", "export", str(proj_dir), concept_id, "--out", str(export_dir)]) == 0
+    exported = next(export_dir.rglob("plan.json"))
+    critique.write_text("`sp-kitchen` on `lv-entry`.\n", encoding="utf-8")
+    assert main(["plan", "ground", str(exported), str(critique)]) == 0
 
     # 4. Critique grounding check: valid IDs pass, invalid IDs fail
     program = store.get(store.latest(ArtifactKind.SPACE_PROGRAM, "program"))
