@@ -771,7 +771,7 @@ No private coordinates or site data are copied.
 | Demonstration | Inspect, compare and comment on synthetic-hillside concepts, export ops, revise, see the new version |
 | Artifacts | `apps/reviewer/`, export bundle command, op-file schema, CI job, ADR |
 | Review requirements | Reviewer checks five elements against `plan.json`, does the feedback round trip, confirms nothing writes to the store |
-| Evidence | ADR 0018 (`docs/adr/0018-reviewer-architecture.md`); local reviewer app in `apps/reviewer/` (React 19 + TypeScript + Vite); 24 JSON schemas checked clean; 5 E2E Playwright tests passing; 9 Vitest unit tests passing; 7 reviewer pytest tests passing in `tests/test_reviewer_*.py`; CI reviewer job in `.github/workflows/ci.yml` |
+| Evidence | ADR 0018 (`docs/adr/0018-reviewer-architecture.md`); local reviewer app in `apps/reviewer/` (React 19 + TypeScript + Vite); 24 JSON schemas checked clean; 5 E2E Playwright tests passing; 9 Vitest unit tests passing; 7 reviewer pytest tests passing in `tests/test_reviewer_*.py`; CI run 39073591376 (Python 3.11/3.13, Vitest & Playwright) green |
 
 The reviewer is local-first, read-only on the project store, and draws only
 what the canonical model contains: every door, window, stair or terrace on
@@ -2545,7 +2545,7 @@ homeowner approval of any site, program, plan or model.
   - Desktop reviewer app in `apps/reviewer/` with semantic SVG (`data-id`, `data-kind`), room dimensions, floor switcher, gross area schedule, epistemic status badges (`measured`, `inferred`, `simulated`, `ai_judgment`), findings panel, terrain section, synchronized comparison, revision timeline, and feedback export.
   - GateBanner displaying human approval gate CLI commands without any approval buttons (S4-23).
   - Headless browser regression tests with Playwright (5/5 passing) and Vitest (9/9 passing).
-  - CI reviewer job added to `.github/workflows/ci.yml`.
+  - CI reviewer job added to `.github/workflows/ci.yml` (run 39073591376 green across Python 3.11/3.13, Vitest and Playwright).
   - Quality suite clean: 624 pytest tests pass, leak scan clean, schemas check clean, ruff clean, `project verify my-house` intact (13 events, 10 artifact versions). Ready for review.
 
 ## P. Rules for updating the tracker
