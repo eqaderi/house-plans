@@ -23,6 +23,8 @@ class EvaluationContext:
     site: Site | None
     program: SpaceProgram | None
     constraints: ConstraintSet | None
+    #: Whether a human approved this site version (site gate); None means unknown.
+    site_verified: bool | None = None
 
 
 @dataclass
