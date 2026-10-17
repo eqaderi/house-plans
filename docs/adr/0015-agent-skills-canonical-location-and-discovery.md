@@ -53,11 +53,13 @@ drift apart, against the single-source principle of ADR 0005.
 
 - Claude Code and Codex discover the skills through documented, symlink-aware
   locations. Discovery in both was observed (S2 records in the tracker).
-- **Unverified risk**: Gemini CLI and Antigravity document `.agents/skills`
-  but not whether they follow symlinked skill folders. Until discovery is
-  observed in one of them (S2-06), treat their support as unknown. If either
-  ignores symlinks, the fallback is a generated copy guarded by the drift
-  test, decided in a new ADR.
+- Antigravity discovery through the `.agents/skills` symlinks was observed
+  on 2026-10-17 (S2-06): it listed all four skills at
+  `.agents/skills/<name>/SKILL.md`.
+- **Unverified risk**: Gemini CLI documents `.agents/skills` but not whether
+  it follows symlinked skill folders, and it was not run. If it ignores
+  symlinks, the fallback is a generated copy guarded by the drift test,
+  decided in a new ADR.
 - Editing `skills/<name>/SKILL.md` updates every agent at once.
 - Skills never run `workflow approve`, `workflow reopen`, `site confirm`,
   `interview consent` or `program reject`; they stop and hand the command to

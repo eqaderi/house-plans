@@ -118,7 +118,7 @@ to reopen A–D):
 | | |
 |---|---|
 | **Current stage** | S2 Agent skills (`stage/S2-agent-skills`) |
-| **Awaiting review** | none (S2 review 1 CHANGES_REQUESTED; fixes on the branch; waiting for the owner's Antigravity transcripts) |
+| **Awaiting review** | S2 (review 2, by Codex in a fresh session) |
 | **Next eligible stage** | S3 Tool decisions and benchmark fixtures (after S2) |
 | **Path to good floor plans** | S1 (done) → S2 (in progress) → S3 → S4 → S5 → S6 → S7 → S8 → S9 (9 stages) |
 | **Blocked** | H1 site facts (owner or surveyor input); program gate (needs site gate); H3 real design (needs S9 and approvals) |
@@ -551,7 +551,7 @@ limitations are tracked as new tasks in later stages, not by reopening them.
 |---|---|
 | Kind | implementation |
 | Status | IN_PROGRESS |
-| Review | CHANGES_REQUESTED |
+| Review | PENDING |
 | Branch | `stage/S2-agent-skills` |
 | Depends on | S1 |
 | Tasks | S2-01, S2-02, S2-03, S2-04, S2-05, S2-06, S2-07, S2-08, S2-09, S2-10, S2-11, S2-12, S2-13 |
@@ -562,7 +562,7 @@ limitations are tracked as new tasks in later stages, not by reopening them.
 | Demonstration | Two agents each run generate-concepts and critique-plan on synthetic-hillside |
 | Artifacts | `skills/*/SKILL.md`, ADR 0015, sync mechanism, tests |
 | Review requirements | Reviewer repeats discovery and one workflow in an agent the implementer did not use |
-| Evidence | ADR 0015 (accepted by the owner); `tools/sync_skills.py`; 4 canonical skills in `skills/` with provider symlinks in `.claude/skills` and `.agents/skills`; `house-ai plan ground`; `tests/test_skills.py` and `tests/test_skills_workflows.py` (30 tests); discovery observed in Claude Code and Codex (§N "S2 fixes after review 1"); Gemini CLI / Antigravity discovery and the two-agent workflow transcripts still open |
+| Evidence | ADR 0015 (accepted by the owner); `tools/sync_skills.py`; 4 canonical skills in `skills/` with provider symlinks in `.claude/skills` and `.agents/skills`; `house-ai plan ground`; `tests/test_skills.py` and `tests/test_skills_workflows.py` (30 tests); discovery observed in Claude Code, Codex and Antigravity; exploratory generate-concepts + critique-plan + `plan ground` runs by Claude Code and Antigravity (§N "S2 Antigravity run", "S2 Claude Code workflow run"); Gemini CLI not run |
 
 Skills teach agents how to combine existing `house-ai` commands; the CLI
 stays the deterministic interface. No large agent framework, no MCP wrapper
@@ -595,7 +595,7 @@ only where a tool cannot read the canonical location.
 - [ ] **S2-06** Discovery checked in Antigravity or Gemini CLI — `IN_PROGRESS` · P2 · deps: S2-03
   - Accept: discovery shown, or recorded as not possible with the reason
   - Verify: screenshot or transcript in §N
-  - Evidence: pending — the owner will check discovery in Antigravity (§N "S2 owner decisions"); `gemini` not on PATH
+  - Evidence: §N "S2 Antigravity run": Antigravity listed all four project skills at `.agents/skills/<name>/SKILL.md` (owner-pasted transcript); Gemini CLI not run (`gemini` not on PATH)
   - Notes: if neither tool can be run, set DEFERRED with the owner's agreement
 
 #### Site and programming skills
@@ -630,7 +630,7 @@ only where a tool cannot read the canonical location.
 - [ ] **S2-13** Skills used successfully by two agent environments — `IN_PROGRESS` · P1 · deps: S2-12, S2-04, S2-05
   - Accept: transcripts from two agents (expected: Claude Code and Codex) completing the synthetic workflow
   - Verify: transcripts linked in §N
-  - Evidence: pending — Claude Code run in §N "S2 Claude Code workflow run"; second agent: Antigravity, run by the owner (§N "S2 owner decisions"); scope exploratory only
+  - Evidence: §N "S2 Claude Code workflow run" and "S2 Antigravity run" (exploratory scope, owner decision in §N "S2 owner decisions")
 
 ### Stage S3 — Tool decisions and benchmark fixtures
 
@@ -2147,6 +2147,17 @@ Closure record template:
 
 ### S2 records
 
+#### S2 Antigravity run (2026-10-17)
+- Agent: Antigravity (Gemini), run by the owner in the repository; transcripts pasted by the owner into the Claude Code session and summarised here by `agent:claude-code`.
+- Discovery (S2-06): Antigravity listed under "Project-Specific Skills (`house-plans`)": `architectural-programming`, `site-survey-review`, `generate-concepts`, `critique-plan`, each at `file:///.../house-plans/.agents/skills/<name>/SKILL.md` with its SKILL.md description, beside its built-in skills. Antigravity follows the `.agents/skills` symlinks.
+- Workflow (S2-13): Antigravity read AGENT_CONTRACT.md and both SKILL.md files, then:
+  - `house-ai example load --name synthetic-hillside --project-id synthetic-hillside /tmp/s2-ag/synthetic-hillside --actor agent:gemini` → state SITE_INGESTION.
+  - `house-ai plan generate /tmp/s2-ag/synthetic-hillside --exploratory --actor agent:gemini` → compact 0 hard/6 soft, split_level 0/4, linear 0/9, two_wing 0/4, split_walkout 0/10; courtyard infeasible (no envelope strip deep enough behind a garden court).
+  - Critique `/tmp/s2-ag/synthetic-hillside/critique-split-walkout.md` of `concept-split-walkout`: IDs in backticks, each observation labelled measured / inferred / ai_judgment, with an exploratory banner stating no permit, code-compliance or structural status; proposals `--rethink z-night`, `--level pi-study-1=entry`, `--area pi-bath-ensuite=6`, `--level pi-laundry=entry`.
+  - `house-ai plan ground <...>/concept-split-walkout/exploratory/plan.json <...>/critique-split-walkout.md --program <...>/artifacts/space_program/program/v0001.json` → `53 cited ID(s), 0 unknown` (exit 0).
+- Reproduced by `agent:claude-code` on the same files: `plan ground` → `53 cited ID(s), 0 unknown`, exit 0; the scratch project holds no plan artifacts (exploratory stored nothing) and its events carry actor `agent:gemini`.
+- Note: Antigravity did not inject a bad ID; the negative case is covered by the Claude Code run and `test_generate_concepts_and_critique_skills_workflow`.
+
 #### S2 owner decisions (2026-10-17)
 - Asked by `agent:claude-code`; the owner's answers, verbatim (option labels chosen):
   - ADR 0015: "Approve as written (Recommended)". ADR 0015 set to accepted; ISS-14 resolved.
@@ -2386,7 +2397,7 @@ homeowner approval of any site, program, plan or model.
 
 ### Current handoff note
 
-- S2 on `stage/S2-agent-skills`: review 1 CHANGES_REQUESTED; all ten findings fixed (§N "S2 fixes after review 1"). Owner decisions recorded (§N "S2 owner decisions"). Still open before Review returns to `PENDING`: the owner's Antigravity transcripts for S2-06 (skill listing) and S2-13 (exploratory generate-concepts + critique-plan + `plan ground` on synthetic-hillside); record them in §N, then set Review `PENDING`. The next review must be done by Codex (not Gemini or Claude Code) in a fresh session.
+- S2 on `stage/S2-agent-skills`: review 1 CHANGES_REQUESTED; all ten findings fixed (§N "S2 fixes after review 1"). Owner decisions and Antigravity transcripts recorded in §N. Review requested: PENDING. Next owner command: "Review stage S2", run in a fresh Codex session. The next review must be done by Codex (not Gemini or Claude Code) in a fresh session.
 
 ## P. Rules for updating the tracker
 
