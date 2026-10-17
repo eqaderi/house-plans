@@ -31,5 +31,9 @@ jobs:
         run: house-ai schemas check
       - name: Leak scan (no private data in public code/docs)
         run: python tools/leak_scan.py
+      - name: Exclude private projects before running tests
+        run: |
+          git sparse-checkout init --no-cone
+          git sparse-checkout set '/*' '!/projects/'
       - name: Tests (synthetic data only; no private survey, no network)
         run: python -m pytest -q

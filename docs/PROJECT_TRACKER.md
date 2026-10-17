@@ -431,7 +431,7 @@ limitations are tracked as new tasks in later stages, not by reopening them.
 |---|---|
 | Kind | implementation |
 | Status | DONE |
-| Review | APPROVED — by agent:gemini on 2026-10-17; see §N |
+| Review | APPROVED — original Gemini review; Codex follow-up audit and owner-authorized corrective merge recorded in §N |
 | Branch | `stage/S1-safety-cleanup` (merged `fb85bf9`) |
 | Depends on | T0.1 |
 | Tasks | S1-01, S1-02, S1-03, S1-04, S1-05, S1-06, S1-07, S1-08, S1-09, S1-10, S1-11, S1-12, S1-13, S1-14, S1-15, S1-16, S1-17, S1-18, S1-19 |
@@ -2100,7 +2100,7 @@ ingestion pipeline · 0007 site review corrections · 0008 owner interview and
 space program · 0009 personal-first project folders · 0010 Claude adapter
 for the interview · 0011 agent-first interview interface · 0012 site metric
 scope · 0013 solver-backed plan generation · 0014 project tracker and stage
-lifecycle · 0015 agent skills canonical location and discovery.
+lifecycle · 0015 agent skills canonical location and discovery · 0016 event-head anchor integrity.
 
 ## M. Recently completed
 
@@ -2261,6 +2261,46 @@ Closure record template:
 
 ### S1 records
 
+#### S1 follow-up audit — findings and fixes (2026-10-17)
+- Reviewer and fixer: `agent:codex`; audited original S1 implementation `8ed6664` and reviewed head `411b4e6` against parent `09190fa`, then checked current `main` at `7968fb6`. S2 remains closed and its implementation is outside this audit.
+- Authority to merge the follow-up: owner's instruction, "review stage 1, address the findings, fix them all, commit, push. merge. closing stage 1". This is an independent audit of Gemini's implementation; Codex's corrective patch has no second independent agent review. No homeowner project gate is approved by this instruction.
+
+**A) PR Summary**
+- Closed the non-interactive program-rejection bypass and added its missing confirmation phrase.
+- Preserved head-anchor evidence before any new project write; documented legacy behavior in ADR 0016.
+- Rebuilt the private-data scanner around canonical records and isolated tests from private projects.
+
+**B) Change Inventory**
+- CLI and human-gate tests: route rejection through the dedicated human command; test mismatched phrases and recorded rejection reasons.
+- Storage and storage tests: reject writes against mismatched/missing required anchors; test all three write paths and legacy upgrades.
+- Scanner, synthetic scanner tests, safety invariants and CI: derive signatures from every private project, scan tracked text exports, remove private reads from tests, and exclude projects before CI tests.
+
+**C) Risk Assessment**
+- Medium: write refusal after interrupted anchor updates; legacy stores without a marker cannot prove a deleted anchor; numeric signatures are heuristic and do not identify every possible disclosure. See ADR 0016 for recovery and migration boundaries.
+
+**D) Blockers**
+1. S1-03/S1-04: `cmd_transition` allowed `PROGRAM_REVIEW → INTERVIEWING` non-interactively with `human:owner`; `program reject` lacked the required phrase. Fixed by refusing the generic CLI route and requiring `reject program`; regression tests cover refusal without events and successful verbatim rejection.
+2. S1-07/S1-08: a later write replaced a mismatched anchor, concealing truncation of event-only tails. Fixed with locked pre-write checks on events, artifacts and sources, plus a required-anchor event marker. Regression tests preserve every project byte on refusal and exercise malformed/missing anchors and legacy stores.
+3. S1-11: the scanner read nonexistent `x`/`y`/`z` fields instead of `xy`/`z_m`, hard-coded one owner's metrics, omitted source hashes and other projects, skipped SVG/DXF, and silently ignored parsing failures. Fixed using canonical site models, transforms, measured metrics and recursive hashes; failures are redacted and fail the scan. Synthetic tests exercise extraction and end-to-end tracked-file scans, including 12-character hash prefixes and numeric formats.
+4. S1-09/S1-12: scanner and invariant tests called `scan_repo(REPO_ROOT)`, reading private artifacts despite the synthetic-only claim. Replaced with fabricated temporary repositories; CI removes private projects from its checkout before tests.
+
+**E) Strong Suggestions**
+- Addressed: compare numeric tokens rather than substrings, honor explicitly approximate documentation, and scan only tracked files. Dedicated regressions cover each behavior.
+
+**F) Polish**
+- Removed disguised owner-specific literals from scanner tests and documented the head anchor in the store layout.
+
+**G) Proposed Patches / Code Snippets**
+- Applied in this follow-up: `cli/main.py`, `storage/project_store.py`, `tools/leak_scan.py`, relevant tests, CI, and ADR 0016. No project records changed.
+
+**H) Test Plan**
+- Full offline suite, lint, schema drift, tracker consistency, explicit leak scan and read-only homeowner-store verification; branch and main CI on Python 3.11/3.13. Exact results and commit/CI references follow in the completion record.
+
+- Local validation: `pytest -q` **569 passed in 64.37s**; `ruff check src tests examples tools` clean; **22 schemas up to date**; tracker check clean (20 stages, 262 tasks); leak scan clean; `project verify my-house` intact (**13 events, 10 artifact versions**).
+
+**I) Final Merge Checklist**
+- All four audit findings fixed with regressions; no suggestions deferred. Merge follows passing checks and the owner's explicit authorization. Original S1 closure is retained as history; S2 remains DONE.
+
 #### S1 closure
 - Merged: `stage/S1-safety-cleanup` at `411b4e6` into `main` as `fb85bf9` on 2026-10-17
 - Review: `APPROVED` by `agent:gemini` on commit `411b4e6` (review 1)
@@ -2411,7 +2451,7 @@ homeowner approval of any site, program, plan or model.
 
 ### Current handoff note
 
-- S2 closed on `main` (merge `4a7efca`) on the owner's approval; the fixes after review 1 had no independent agent review (§N "S2 review 2"). Next owner command: "Next stage" (S3). Optional: an independent Codex audit of S1 (self-reviewed by `agent:gemini`) and S2.
+- S2 closed on `main` (merge `4a7efca`) on the owner's approval; the fixes after review 1 had no independent agent review (§N "S2 review 2"). Next owner command: "Next stage" (S3). S1 has a Codex follow-up audit (§N); S2 remains closed.
 
 ## P. Rules for updating the tracker
 

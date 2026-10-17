@@ -185,6 +185,60 @@ def test_verify_detects_truncated_event_log_tail(store, site, plan):
     assert any("tail does not match head anchor" in p for p in problems)
 
 
+@pytest.mark.parametrize("operation", ["event", "artifact", "source"])
+def test_writes_cannot_reanchor_a_truncated_log(store, site, tmp_path, operation):
+    store.append_event(EventType.TRANSITION, AGENT, reason="tail to remove")
+    log = store.root / "events.jsonl"
+    log.write_text(log.read_text().splitlines()[0] + "\n")
+    before = {p.relative_to(store.root): p.read_bytes()
+              for p in store.root.rglob("*") if p.is_file()}
+    source = tmp_path / "input.dxf"
+    source.write_text("synthetic source")
+    with pytest.raises(StoreIntegrityError, match="tail does not match head anchor"):
+        if operation == "event":
+            store.append_event(EventType.TRANSITION, AGENT, reason="new event")
+        elif operation == "artifact":
+            store.put(K.SITE, "site", site, AGENT)
+        else:
+            store.add_source(source, AGENT)
+    after = {p.relative_to(store.root): p.read_bytes()
+             for p in store.root.rglob("*") if p.is_file()}
+    assert after == before
+    assert store.verify() == ["event log tail does not match head anchor"]
+
+
+def test_missing_anchor_is_detected_and_cannot_be_recreated_by_a_write(store):
+    (store.root / "head.json").unlink()
+    assert store.verify() == ["required head anchor head.json is missing"]
+    with pytest.raises(StoreIntegrityError, match="head.json is missing"):
+        store.append_event(EventType.TRANSITION, AGENT, reason="must fail")
+
+
+@pytest.mark.parametrize("content", ['[]', '{"seq": true, "hash": 3}', 'not json'])
+def test_invalid_anchor_is_reported_and_blocks_writes(store, content):
+    (store.root / "head.json").write_text(content)
+    assert store.verify() == ["head anchor head.json is invalid"]
+    with pytest.raises(StoreIntegrityError, match="head.json is invalid"):
+        store.append_event(EventType.TRANSITION, AGENT, reason="must fail")
+
+
+def test_legacy_store_is_read_only_until_an_explicit_write_upgrades_anchor(store):
+    from house_ai.storage.hashing import canonical_json, sha256_text
+
+    # Model a pre-anchor store without changing any committed private project.
+    event = store.events()[0].model_dump(mode="json")
+    event["payload"].pop("head_anchor_required")
+    event["hash"] = sha256_text(canonical_json({k: v for k, v in event.items() if k != "hash"}))
+    (store.root / "events.jsonl").write_text(canonical_json(event) + "\n")
+    (store.root / "head.json").unlink()
+    assert store.verify() == []
+    assert not (store.root / "head.json").exists()
+    store.append_event(EventType.TRANSITION, AGENT, reason="explicit legacy write")
+    assert store.verify() == []
+    (store.root / "head.json").unlink()
+    assert store.verify() == ["required head anchor head.json is missing"]
+
+
 def test_event_chain_links_hashes(store, site):
     store.put(K.SITE, "site", site, AGENT)
     first, second = store.events()

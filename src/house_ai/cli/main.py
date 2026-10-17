@@ -365,6 +365,9 @@ def cmd_example_load(args: argparse.Namespace) -> int:
 
 def cmd_transition(args: argparse.Namespace) -> int:
     wf = Workflow(ProjectStore(_dir(args.dir)))
+    if wf.state is WorkflowState.PROGRAM_REVIEW and args.state == "INTERVIEWING":
+        _err("leaving PROGRAM_REVIEW requires 'program reject' in a human terminal")
+        return EXIT_USAGE
     try:
         ev = wf.transition(WorkflowState(args.state), args.actor, args.reason)
     except ApprovalRequiresHuman as exc:
@@ -1095,6 +1098,9 @@ def cmd_program_reject(args: argparse.Namespace) -> int:
             "only a human can reject a program under review."
         )
         return EXIT_USAGE
+    if input('Type "reject program" to confirm: ').strip() != "reject program":
+        _err("confirmation did not match; nothing rejected")
+        return EXIT_FAIL
     InterviewService(ProjectStore(_dir(args.dir))).reject_program(args.actor, args.reason)
     _out("program rejected; back to INTERVIEWING. Your words are recorded in the brief.")
     return EXIT_OK
