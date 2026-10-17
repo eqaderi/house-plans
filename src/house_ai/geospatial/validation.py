@@ -84,10 +84,20 @@ class TerrainReport(StrictModel):
     spots_outside_boundary: list[str]
 
 
+class RoadWidth(StrictModel):
+    """Distance between two road lines that run parallel (within 0.5 m)."""
+
+    a: str
+    b: str
+    min_m: float
+    max_m: float
+
+
 class FrontageReport(StrictModel):
     length_m: float
     segments: list[tuple[str, float]]
     access_points_on_frontage: list[str]
+    road_widths: list[RoadWidth] = Field(default_factory=list)
 
 
 class SiteValidationReport(StrictModel):
@@ -145,6 +155,12 @@ def coordinate_status(site: Site) -> CoordinateStatus:
         grid_to_true_north_deg=local.grid_to_true_north_deg if local else None,
         origin_lon_lat=lonlat,
     )
+
+
+#: TIN triangles steeper than this (percent; 100% = 45°) are reported for checking.
+STEEP_SLOPE_PCT = 100.0
+#: Two road lines whose separation varies less than this (metres) are parallel.
+PARALLEL_TOL_M = 0.5
 
 
 def validate_site(site: Site, site_ref: ArtifactRef | None = None) -> SiteValidationReport:
@@ -230,6 +246,28 @@ def validate_site(site: Site, site_ref: ArtifactRef | None = None) -> SiteValida
                 message="elevations exist but no terrain surface could be built",
             )
         )
+    if surface is not None:
+        names = {(round(s.xy[0], 6), round(s.xy[1], 6)): s.id for s in terrain.spot_elevations}
+        steep = []
+        for (ia, ib, ic), (slope, _) in zip(surface.triangles, slopes, strict=True):
+            if slope > STEEP_SLOPE_PCT:
+                ids = [
+                    names.get((round(v[0], 6), round(v[1], 6)), "contour vertex")
+                    for v in (surface.vertices[ia], surface.vertices[ib], surface.vertices[ic])
+                ]
+                steep.append((slope, ids))
+        if steep:
+            worst = max(steep, key=lambda t: t[0])
+            findings.append(
+                Finding(
+                    code="steep_terrain",
+                    severity=Severity.WARNING,
+                    message=f"{len(steep)} TIN triangle(s) are steeper than "
+                    f"{STEEP_SLOPE_PCT:.0f}% (45°), up to {worst[0]:.0f}% between "
+                    f"{', '.join(worst[1])}: a wall, kerb or embankment, or an elevation "
+                    "error; check these points with the surveyor",
+                )
+            )
     if coverage is not None and coverage < 0.999:
         findings.append(
             Finding(
@@ -260,6 +298,17 @@ def validate_site(site: Site, site_ref: ArtifactRef | None = None) -> SiteValida
             and f.geometry.type == "point"
             and zone.covers(Point(f.geometry.xy))
         ]
+    road_lines = [
+        f for f in site.features if f.kind is SiteFeatureKind.ROAD and f.geometry.type == "polyline"
+    ]
+    widths = []
+    for i, ra in enumerate(road_lines):
+        for rb in road_lines[i + 1 :]:
+            la, lb = ra.geometry.line.to_shapely(), rb.geometry.line.to_shapely()
+            short, long_ = (la, lb) if la.length <= lb.length else (lb, la)
+            ds = [long_.distance(Point(c)) for c in short.coords]
+            if min(ds) > 0 and max(ds) - min(ds) <= PARALLEL_TOL_M:
+                widths.append(RoadWidth(a=ra.id, b=rb.id, min_m=min(ds), max_m=max(ds)))
     if not any(f.kind is SiteFeatureKind.ROAD for f in site.features):
         findings.append(
             Finding(
@@ -309,6 +358,7 @@ def validate_site(site: Site, site_ref: ArtifactRef | None = None) -> SiteValida
             length_m=sum(length for _, length in lengths),
             segments=lengths,
             access_points_on_frontage=access_on,
+            road_widths=widths,
         ),
         feature_counts=dict(sorted(counts.items())),
         findings=findings,
@@ -383,6 +433,10 @@ def report_markdown(report: SiteValidationReport) -> str:
         "",
         f"- Frontage length: {f.length_m:.3f} m in {len(f.segments)} segment(s)",
         f"- Access points on the frontage: {', '.join(f.access_points_on_frontage) or 'none'}",
+        *[
+            f"- Road lines {w.a} and {w.b} run parallel {w.min_m:.3f}–{w.max_m:.3f} m apart"
+            for w in f.road_widths
+        ],
         f"- Features: {report.feature_counts}",
         "",
         "## Findings",

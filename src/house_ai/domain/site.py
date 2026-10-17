@@ -153,6 +153,20 @@ class AmbiguousEntity(StrictModel):
     reason: str = Field(min_length=1)
 
 
+class HeightLabelCheck(StrictModel):
+    """A height label drawn exactly at a surveyed point, compared with the point's z.
+
+    The label never becomes an elevation; it only corroborates (or disputes) the
+    point's own z value. Both values are in drawing units, as written.
+    """
+
+    label_handle: str
+    spot_handle: str
+    label_value: float
+    point_z: float
+    agrees: bool
+
+
 class CadImportProvenance(StrictModel):
     """Record of one CAD import (filled in by Milestone B adapters)."""
 
@@ -182,6 +196,8 @@ class CadImportProvenance(StrictModel):
     zero_elevation_is_valid: bool = False
     boundary_handle: str | None = None
     ambiguous_entities: list[AmbiguousEntity] = Field(default_factory=list)
+    #: Height labels found at surveyed points and whether they agree with the z.
+    height_label_checks: list[HeightLabelCheck] = Field(default_factory=list)
     #: Local origin in GRID metres, if a local frame was created.
     local_origin: Point3 | None = None
     warnings: list[str] = Field(default_factory=list)
@@ -208,6 +224,22 @@ class Site(StrictModel):
     assumptions: list[Assumption] = Field(default_factory=list)
     issues: list[Issue] = Field(default_factory=list)
     provenance: Provenance
+
+    @model_validator(mode="after")
+    def _unique_ids(self) -> Site:
+        ids = (
+            [s.id for s in self.terrain.spot_elevations]
+            + [c.id for c in self.terrain.contours]
+            + [f.id for f in self.features]
+        )
+        dupes = sorted({i for i in ids if ids.count(i) > 1})
+        if dupes:
+            raise ValueError(f"duplicate ids in site: {dupes}")
+        issue_ids = [i.id for i in self.issues]
+        dupes = sorted({i for i in issue_ids if issue_ids.count(i) > 1})
+        if dupes:
+            raise ValueError(f"duplicate issue ids in site: {dupes}")
+        return self
 
     @property
     def has_geometry(self) -> bool:

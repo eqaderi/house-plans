@@ -46,8 +46,14 @@ Every claim says how it is known.
   parser and version, converter and version plus the converted file's
   SHA-256 (DWG), CRS status, EPSG (only if confirmed) and declared EPSG,
   vertical datum status, local origin, warnings, unrecognised layers and
-  entity counts, the layer mapping used, and every `AmbiguousEntity`
-  (handle, layer, entity type, reason) that was left out.
+  entity counts, the layer mapping used, every `AmbiguousEntity`
+  (handle, layer, entity type, reason) that was left out, and every
+  `HeightLabelCheck` (a height label drawn exactly at a surveyed point,
+  its value, the point's z and whether they agree; labels are never used
+  as elevations). Drawing units are the file's own declaration, or the
+  site's confirmed unit when the file declares none or the same one.
+  A `Site` refuses duplicate ids among spot elevations, contours, features
+  and issues.
 
 ## Site and coordinates (`site`)
 

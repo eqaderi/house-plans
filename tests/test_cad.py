@@ -166,8 +166,8 @@ def test_multiline_elevation_label_detection():
 
     assert has_numeric_elevation_label("103.25")
     assert has_numeric_elevation_label("103,25")
-    assert has_numeric_elevation_label("Pt1\n1664.884")
-    assert has_numeric_elevation_label("نقطه مبنا\n1677.462")
+    assert has_numeric_elevation_label("Pt1\n101.250")
+    assert has_numeric_elevation_label("Höhenbezug\n103.500")
     assert not has_numeric_elevation_label("Pt1")
     assert not has_numeric_elevation_label("area   201.07")
     assert not has_numeric_elevation_label("Synthetic Road")

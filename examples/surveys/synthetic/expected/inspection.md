@@ -17,7 +17,7 @@ Read-only inspection. Values are what the files declare; nothing here is confirm
 | Layer | Entities | Types | Mapped role | Suggested role (hint) |
 |---|---|---|---|---|
 | 0 | 0 | {} | unclassified | - |
-| ACCESS | 1 | {'POINT': 1} | access_point | - |
+| ACCESS | 1 | {'POINT': 1} | access_point | access_point (layer name contains 'access') |
 | CONTOURS | 6 | {'LWPOLYLINE': 5, 'POLYLINE': 1} | contour | contour (layer name contains 'contour') |
 | Defpoints | 0 | {} | unclassified | - |
 | EXIST_BUILDING | 1 | {'LWPOLYLINE': 1} | existing_structure | existing_structure (layer name contains 'build') |
@@ -55,8 +55,8 @@ Read-only inspection. Values are what the files declare; nothing here is confirm
 - 46 (LWPOLYLINE, CONTOURS): contour elevation is 0, which may mean 'not set'
 - 47 (POLYLINE, CONTOURS): z varies along the line, so it is not a contour
 - 58 (TEXT, ROAD): text label on a road layer; not interpreted
-- 55 (TEXT, SPOT_HEIGHTS): height label text is not linked to a surveyed point; not used
 - 56 (POINT, SPOT_HEIGHTS): point elevation is 0, which may mean 'not set'
+- 55 (TEXT, SPOT_HEIGHTS): height label text is not linked to a surveyed point; not used
 
 ### 9. Provenance
 - Path: examples/surveys/synthetic/survey.dxf

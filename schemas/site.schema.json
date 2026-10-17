@@ -353,6 +353,13 @@
           "title": "Handle Roles",
           "type": "object"
         },
+        "height_label_checks": {
+          "items": {
+            "$ref": "#/$defs/HeightLabelCheck"
+          },
+          "title": "Height Label Checks",
+          "type": "array"
+        },
         "horizontal_crs_status": {
           "$ref": "#/$defs/ConfirmationStatus"
         },
@@ -545,6 +552,41 @@
       ],
       "title": "Epistemic",
       "type": "string"
+    },
+    "HeightLabelCheck": {
+      "additionalProperties": false,
+      "description": "A height label drawn exactly at a surveyed point, compared with the point's z.\n\nThe label never becomes an elevation; it only corroborates (or disputes) the\npoint's own z value. Both values are in drawing units, as written.",
+      "properties": {
+        "agrees": {
+          "title": "Agrees",
+          "type": "boolean"
+        },
+        "label_handle": {
+          "title": "Label Handle",
+          "type": "string"
+        },
+        "label_value": {
+          "title": "Label Value",
+          "type": "number"
+        },
+        "point_z": {
+          "title": "Point Z",
+          "type": "number"
+        },
+        "spot_handle": {
+          "title": "Spot Handle",
+          "type": "string"
+        }
+      },
+      "required": [
+        "label_handle",
+        "spot_handle",
+        "label_value",
+        "point_z",
+        "agrees"
+      ],
+      "title": "HeightLabelCheck",
+      "type": "object"
     },
     "HorizontalCRS": {
       "additionalProperties": false,

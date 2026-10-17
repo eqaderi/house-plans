@@ -119,14 +119,17 @@ _KEYWORDS: list[tuple[LayerRole, tuple[str, ...]]] = [
                           "cadast", "kataster", "hodud", "marz")),
     (LayerRole.CONTOUR, ("contour", "contr", "isohyps", "hoehenlin", "höhenlin", "cntr")),
     (LayerRole.SPOT_ELEVATION, ("spot", "elev", "height", "level", "hoehe", "höhe", "kote",
-                                "pnt", "point", "ertefa")),
+                                "pnt", "ertefa")),
     (LayerRole.ROAD, ("road", "street", "strasse", "straße", "weg", "kerb", "curb", "khiaban")),
     (LayerRole.EXISTING_STRUCTURE, ("build", "bldg", "house", "gebaeude", "gebäude", "struct",
                                     "sakhteman")),
     (LayerRole.TREE, ("tree", "baum", "vegetat", "derakht")),
     (LayerRole.WATER, ("water", "river", "wasser", "ab")),
     (LayerRole.UTILITY, ("util", "sewer", "power", "elec", "gas", "kanal", "leitung")),
+    (LayerRole.ACCESS_POINT, ("access", "entrance", "zufahrt", "einfahrt")),
     (LayerRole.ANNOTATION, ("text", "dim", "anno", "title", "frame", "label", "beschrift")),
+    # Generic: only when no more specific role matched ("TREE_POINTS" is a tree layer).
+    (LayerRole.SPOT_ELEVATION, ("point",)),
 ]
 
 

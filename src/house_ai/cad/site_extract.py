@@ -17,6 +17,7 @@ as an :class:`~house_ai.domain.site.AmbiguousEntity` with the reason. Rules:
 
 from __future__ import annotations
 
+import hashlib
 import math
 from collections import Counter
 from dataclasses import dataclass, field
@@ -31,6 +32,7 @@ from house_ai.domain.geometry import Point2, Polygon2D, Polyline2D
 from house_ai.domain.site import (
     AmbiguousEntity,
     Contour,
+    HeightLabelCheck,
     PointGeometry,
     PolygonGeometry,
     PolylineGeometry,
@@ -71,6 +73,8 @@ class SiteExtraction:
     spot_elevations: list[SpotElevation] = field(default_factory=list)
     features: list[SiteFeature] = field(default_factory=list)
     ambiguous: list[AmbiguousEntity] = field(default_factory=list)
+    #: Height labels at surveyed points, checked against the point's z.
+    label_checks: list[HeightLabelCheck] = field(default_factory=list)
     #: Layers that hold entities but have no role in the mapping.
     unrecognized_layers: list[str] = field(default_factory=list)
     #: Entity type -> count, for entities not interpreted at all.
@@ -165,7 +169,9 @@ class MappedLayerSiteExtractor:
         """Ids carry the source, because DXF handles restart in every file."""
         raw = self.source_id.removeprefix("src-")
         if len(raw) > 24:
-            tag = f"{raw[:15].rstrip('-_')}-{raw[-8:].lstrip('-_')}".strip("-_")
+            # A readable head plus a digest of the whole id: distinct ids stay distinct.
+            digest = hashlib.sha256(self.source_id.encode()).hexdigest()[:8]
+            tag = f"{raw[:15].rstrip('-_')}-{digest}"
         else:
             tag = raw.rstrip("-_")
         return f"{prefix}-{tag}-{ent.handle.lower()}"
@@ -351,14 +357,9 @@ class MappedLayerSiteExtractor:
         for line in lines:
             self._ambiguous(line, "linework on a spot-elevation layer", out)
         candidates: list[tuple[RawPoint, SpotElevation]] = []
+        labels = [p for p in pts if p.entity_type in ("TEXT", "MTEXT")]
         for p in pts:
             if p.entity_type in ("TEXT", "MTEXT"):
-                reason = (
-                    "height label text is not linked to a surveyed point; not used"
-                    if has_numeric_elevation_label(p.text)
-                    else "text on a spot-elevation layer"
-                )
-                self._ambiguous(p, reason, out)
                 continue
             if p.z is None or self._zero(p.z):
                 self._ambiguous(p, "point elevation is 0, which may mean 'not set'", out)
@@ -372,6 +373,8 @@ class MappedLayerSiteExtractor:
                     ),
                 )
             )
+        disputed = self._check_labels(labels, candidates, transform, out)
+        candidates = [(p, spot) for p, spot in candidates if p.handle not in disputed]
         for i, (p, spot) in enumerate(candidates):
             clash = [
                 (q, other)
@@ -391,6 +394,65 @@ class MappedLayerSiteExtractor:
                     )
             else:
                 out.spot_elevations.append(spot)
+
+    def _check_labels(
+        self,
+        labels: list[RawPoint],
+        candidates: list[tuple[RawPoint, SpotElevation]],
+        transform: SurveyTransform,
+        out: SiteExtraction,
+    ) -> set[str]:
+        """Compare each label drawn exactly at a surveyed point with that point's z.
+
+        A label is linked to a point only when it sits at the same position (no
+        nearest-point guessing). Returns the handles of points whose label disagrees.
+        """
+        disputed: set[str] = set()
+        for label in labels:
+            at = transform.source_to_local_2d(label.xy)
+            point = next(
+                (p for p, spot in candidates if math.dist(spot.xy, at) < SAME_POSITION_M), None
+            )
+            values = numeric_label_values(label.text)
+            if point is None:
+                reason = (
+                    "height label text is not linked to a surveyed point; not used"
+                    if values
+                    else "text on a spot-elevation layer"
+                )
+                self._ambiguous(label, reason, out)
+                continue
+            if not values:
+                self._ambiguous(
+                    label,
+                    f"label at surveyed point {point.handle} has no height; read as a point "
+                    "name, not interpreted",
+                    out,
+                )
+                continue
+            assert point.z is not None
+            match = next((v for v, tol in values if abs(v - point.z) <= tol), None)
+            value = match if match is not None else values[-1][0]
+            out.label_checks.append(
+                HeightLabelCheck(
+                    label_handle=label.handle,
+                    spot_handle=point.handle,
+                    label_value=value,
+                    point_z=point.z,
+                    agrees=match is not None,
+                )
+            )
+            if match is None:
+                disputed.add(point.handle)
+                self._ambiguous(
+                    point, f"its height label {label.handle} says {value} but z is {point.z}", out
+                )
+                self._ambiguous(label, f"disagrees with the z of point {point.handle}", out)
+                out.conflicts.append(
+                    f"height label {self._ref(label)} says {value} but point "
+                    f"{self._ref(point)} has z {point.z}"
+                )
+        return disputed
 
     # -------------------------------------------------------------- features
 
@@ -457,7 +519,7 @@ class MappedLayerSiteExtractor:
 
 
 def has_numeric_elevation_label(text: str | None) -> bool:
-    """Whether ``text`` (or a line in a multi-line label like ``Pt1\\n1664.884``) is a number."""
+    """Whether ``text`` (or a line in a multi-line label like ``Pt1\\n101.250``) is a number."""
     if not text:
         return False
     for line in text.splitlines():
@@ -471,6 +533,25 @@ def has_numeric_elevation_label(text: str | None) -> bool:
         if math.isfinite(val):
             return True
     return False
+
+
+def numeric_label_values(text: str | None) -> list[tuple[float, float]]:
+    """Each line of a label that is a number, with half a unit of its last decimal.
+
+    ``"Pt1\n101.250"`` gives ``[(101.250, 0.0005)]``: the label agrees with any z
+    that rounds to what is written.
+    """
+    out = []
+    for line in (text or "").splitlines():
+        token = line.strip().replace(",", ".")
+        try:
+            val = float(token)
+        except ValueError:
+            continue
+        if math.isfinite(val):
+            decimals = len(token.partition(".")[2]) if "." in token else 0
+            out.append((val, 0.5 * 10.0**-decimals + 1e-9))
+    return out
 
 
 _is_number = has_numeric_elevation_label

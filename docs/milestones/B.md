@@ -1,7 +1,7 @@
 # Milestone B: site ingestion
 
 Date: 2026-10-17. Branch: `milestone-b` (from `main` at the Milestone A
-merge). Not merged and not pushed; both need the owner's approval.
+merge). Pushed to `origin/milestone-b` (commit ec25922 by the Gemini review); not merged into `main`, which needs the owner's approval.
 
 ## What works
 
@@ -131,15 +131,18 @@ confirmation by the synthetic actor `human:example-owner`, as in the tests.
 
 ## Test results
 
-`344 passed` (Python 3.13.3 and Python 3.11, macOS arm64), 0 failed, 0
-skipped. The DWG test ran against ODA File Converter 27.9. Ruff is clean and
-all 20 schemas are up to date; the DWG test skips where ODA is absent.
+`359 passed` on Python 3.13.3 and on Python 3.11.12 (macOS arm64), 0 failed,
+0 skipped, after the corrections below. The DWG test ran against ODA File
+Converter 27.9. `ruff check src tests examples`: all checks passed.
+`house-ai schemas check`: 20 schemas up to date. Before the corrections
+(at ec25922): 344 passed.
 
 | File | Tests |
 |---|---|
 | `test_cad.py` (new) | 23 |
 | `test_geospatial.py` (new) | 32 |
 | `test_site_pipeline.py` (new) | 49 |
+| `test_site_review_fixes.py` (new) | 15 |
 | `test_units_coordinates.py` | 37 |
 | `test_schemas.py` | 32 |
 | `test_workflow.py` | 40 |
@@ -190,12 +193,36 @@ GDAL. QGIS 4.2.3 bundles GDAL 3.13.3, but it has no DWG driver.
   and typed phrase). It stops accidental confirmation by an agent; it is
   not a security boundary.
 
-## Readiness for the real survey
+## Independent verification of ec25922 (Claude Code)
 
-`house-ai site inspect` has been verified against the owner's real survey
-files (`project-data/surveys/`) in read-only mode (original file SHA-256
-hashes verified unchanged before and after). Nothing about the real site is
-approved or assumed.
+Each finding below was reproduced, given a failing test in
+`tests/test_site_review_fixes.py`, then fixed (ADR 0007).
+
+| Severity | Defect (at ec25922) | Fix |
+|---|---|---|
+| major | `site confirm` wrote new `cad_import` versions before the site could fail (e.g. a mistyped `--accept-issue`), leaving a permanent false confirmation record | the site is built first; nothing is written on failure |
+| major | a bare `boundary_handle` / `handle_roles` key matched entities in every file of a multi-file survey (handles restart per file) | bare handles refused for several files; unknown `source_id#` prefixes refused |
+| major | per-file `cad_import` records took the combined unit, so a millimetre file could be recorded as metres | each record states its own file's declaration |
+| major | ids from long, similar source ids collided (17 spots, 9 ids) and the store accepted it | readable head plus SHA-256 digest; `Site` rejects duplicate ids |
+| minor | the `point` keyword hinted `TREE_POINTS` and `UTILITY_POINT` as spot layers | generic keyword checked last; `access` hint added |
+| minor | `site inspect` ignored `source_id#handle` keys | inspection uses the id `source add` would give |
+| minor | prefix typo in `boundary_handle` gave no diagnostic | refused with the list of ingested files |
+| minor | DWG inspection showed the converted DXF's `$ACADVER` | shows the DWG release |
+| privacy | `tests/test_cad.py` and a docstring contained a real benchmark label and real elevations from the owner's survey | replaced with synthetic values; the values remain in the pushed history of ec25922 |
+
+Found on the real survey and added: height labels drawn at a point are
+cross-checked against its z (`HeightLabelCheck`); steep TIN triangles
+(> 100 %) and parallel road-line separation are reported; `site report`
+writes `terrain.svg` and `index.html`.
+
+## The owner's real survey
+
+The wrong file (`final.dwg`) was removed from `project-data/surveys/` and
+the old inspection outputs that included it were deleted and regenerated
+from the two correct files only. The real project store, the proposed
+layer mapping and the review package live in `project-data/` (git-ignored)
+and are not reproduced here. The site is in `SITE_NEEDS_VERIFICATION`; only
+the owner can confirm units, CRS, vertical datum and boundary.
 
 ## Next: Milestone C (program)
 

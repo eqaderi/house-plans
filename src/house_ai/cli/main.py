@@ -33,7 +33,7 @@ from house_ai.domain.provenance import (
     DataClassification,
 )
 from house_ai.domain.registry import SCHEMAS, export_schemas, stale_schemas
-from house_ai.domain.site import Site, site_verification_blockers
+from house_ai.domain.site import CadImportProvenance, Site, site_verification_blockers
 from house_ai.domain.units import LengthUnit
 from house_ai.domain.workflow import Gate, WorkflowState
 from house_ai.geospatial.crs import describe_epsg, utm_candidates
@@ -45,7 +45,9 @@ from house_ai.orchestration.workflow import (
     Workflow,
     WorkflowError,
 )
+from house_ai.render2d.review_html import render_review_html
 from house_ai.render2d.site_svg import render_site_svg
+from house_ai.render2d.terrain_svg import render_terrain_svg
 from house_ai.storage import ProjectStore, StoreError
 from house_ai.storage.hashing import load_document, pretty_json
 from house_ai.storage.importer import import_folder
@@ -437,13 +439,17 @@ def cmd_site_report(args: argparse.Namespace) -> int:
     report = validate_site(site, ref)
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=True)
+    site_svg, terrain_svg = render_site_svg(site, report), render_terrain_svg(site, report)
+    cad_inputs = [r for r in site.provenance.inputs if r.kind is ArtifactKind.CAD_IMPORT]
+    cads = [store.get(r, CadImportProvenance) for r in cad_inputs]
     files = {
         "site.json": pretty_json(site),
         "site-report.json": pretty_json(report),
         "site-report.md": report_markdown(report),
-        "site.svg": render_site_svg(site, report),
+        "site.svg": site_svg,
+        "terrain.svg": terrain_svg,
+        "index.html": render_review_html(site, report, site_svg, terrain_svg, cads),
     }
-    cad_inputs = [r for r in site.provenance.inputs if r.kind is ArtifactKind.CAD_IMPORT]
     if cad_inputs:
         files["cad-import.json"] = pretty_json(store.get(cad_inputs[0]))
     if len(cad_inputs) > 1:

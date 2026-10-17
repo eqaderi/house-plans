@@ -532,10 +532,12 @@ def test_cli_pipeline(tmp_path, capsys):
     names = sorted(f.name for f in out.iterdir())
     assert names == [
         "cad-import.json",
+        "index.html",
         "site-report.json",
         "site-report.md",
         "site.json",
         "site.svg",
+        "terrain.svg",
     ]
     assert main(["project", "verify", p]) == 0
     assert "SITE_NEEDS_VERIFICATION" in capsys.readouterr().out

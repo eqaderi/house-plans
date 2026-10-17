@@ -318,6 +318,7 @@ def _merge(parts: list[tuple[str, SiteExtraction]]) -> SiteExtraction:
         out.spot_elevations += x.spot_elevations
         out.features += x.features
         out.ambiguous += x.ambiguous
+        out.label_checks += x.label_checks
         out.ignored_count += x.ignored_count
         out.conflicts += x.conflicts
         out.warnings += x.warnings
@@ -638,7 +639,7 @@ def _cad_record(
         original_filename=src.doc.original_filename,
         sha256=src.doc.sha256,
         source_format=insp.source_format,
-        drawing_units=frame.source_units,
+        drawing_units=_file_units(insp, src.doc.id, frame.source_units),
         parser=insp.parser,
         parser_version=insp.parser_version,
         converter=insp.converter,
@@ -657,7 +658,43 @@ def _cad_record(
         zero_elevation_is_valid=mapping.zero_elevation_is_valid,
         boundary_handle=mapping.boundary_handle,
         ambiguous_entities=part.ambiguous,
+        height_label_checks=part.label_checks,
     )
+
+
+def _file_units(
+    inspection: CadInspection, source_id: str, site_units: UnitDeclaration
+) -> UnitDeclaration:
+    """The unit of one file: what it declares, or the site's confirmed unit if the
+    file declares none or the same one. A human confirming metres for the site
+    never makes a file that declares millimetres say metres."""
+    own = declared_frame(inspection, source_id)[0].source_units
+    if site_units.confirmed and own.unit in (None, site_units.unit):
+        return site_units
+    return own
+
+
+def _check_mapping_targets(mapping: LayerMapping, source_ids: list[str]) -> None:
+    """Handle overrides must name one ingested file: DXF handles restart in every
+    file, so a bare handle would match an unrelated entity in another file."""
+    keys = list(mapping.handle_roles)
+    if mapping.boundary_handle is not None:
+        keys.append(mapping.boundary_handle)
+    known = {s.lower() for s in source_ids} | {s.lower().removeprefix("src-") for s in source_ids}
+    for key in keys:
+        prefix, sep, _ = key.strip().partition("#")
+        if not sep:
+            if len(source_ids) > 1:
+                raise ValueError(
+                    f"handle {key!r} in the layer mapping does not say which file it is in; "
+                    "with several survey files write it as source_id#handle "
+                    f"(files: {', '.join(source_ids)})"
+                )
+        elif prefix.strip().lower() not in known:
+            raise ValueError(
+                f"handle {key!r} in the layer mapping names {prefix!r}, which is not one of "
+                f"the ingested files ({', '.join(source_ids)})"
+            )
 
 
 def ingest_site(
@@ -676,6 +713,7 @@ def ingest_site(
     ids = [source_ids] if isinstance(source_ids, str) else list(source_ids)
     if not ids or len(set(ids)) != len(ids):
         raise ValueError("give one or more distinct source ids")
+    _check_mapping_targets(mapping, ids)
     sources = [_load(store, sid, mapping) for sid in ids]
     frame, frame_issues = combined_frame(sources)
     interp = interpret([(s.doc.id, s.extraction) for s in sources], mapping, frame)
@@ -796,6 +834,36 @@ def confirm_site(
         rotation = c.local.rotation_deg if c.local else 0.0
     frame = FrameDeclaration(units, elevation, crs, datum, origin, rotation)
     interp = interpret([(s.doc.id, s.extraction) for s in sources], mapping, frame)
+    unchanged = interp.extraction.boundary == site.boundary
+    still_verified = site.boundary_status is Epistemic.VERIFIED_FACT and unchanged
+    previously_accepted_sigs = {
+        (i.id, i.title, i.description)
+        for i in site.issues
+        if i.status is IssueStatus.ACCEPTED
+    }
+    created_at = store.clock()
+
+    def build(inputs: list[ArtifactRef]) -> Site:
+        return assemble_site(
+            interp,
+            site_id=site_id,
+            project_id=store.project_id,
+            name=site.name,
+            classification=_classification(sources),
+            inputs=inputs,
+            actor=actor,
+            created_at=created_at,
+            method="human_site_confirmation",
+            boundary_verified=conf.boundary_verified or still_verified,
+            extra_issues=frame_issues,
+            accept=set(conf.accept_issues),
+            carry_accepted_signatures=previously_accepted_sigs,
+            notes=f"{actor.id} confirmed: " + "; ".join(conf.summary()),
+        )
+
+    # Build the site once before writing anything, so a confirmation that fails
+    # (e.g. an unknown --accept-issue) leaves no cad_import claiming it happened.
+    build([s.doc_ref for s in sources])
     new_cad_refs = [
         store.put(
             ArtifactKind.CAD_IMPORT,
@@ -806,29 +874,7 @@ def confirm_site(
         )
         for s in sources
     ]
-    unchanged = interp.extraction.boundary == site.boundary
-    still_verified = site.boundary_status is Epistemic.VERIFIED_FACT and unchanged
-    previously_accepted_sigs = {
-        (i.id, i.title, i.description)
-        for i in site.issues
-        if i.status is IssueStatus.ACCEPTED
-    }
-    new = assemble_site(
-        interp,
-        site_id=site_id,
-        project_id=store.project_id,
-        name=site.name,
-        classification=_classification(sources),
-        inputs=[*(s.doc_ref for s in sources), *new_cad_refs],
-        actor=actor,
-        created_at=store.clock(),
-        method="human_site_confirmation",
-        boundary_verified=conf.boundary_verified or still_verified,
-        extra_issues=frame_issues,
-        accept=set(conf.accept_issues),
-        carry_accepted_signatures=previously_accepted_sigs,
-        notes=f"{actor.id} confirmed: " + "; ".join(conf.summary()),
-    )
+    new = build([*(s.doc_ref for s in sources), *new_cad_refs])
     return store.put(
         ArtifactKind.SITE,
         site_id,

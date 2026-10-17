@@ -27,6 +27,7 @@ from house_ai.domain.coordinates import LocalCoordinateSystem, SurveyTransform
 from house_ai.domain.site import AmbiguousEntity
 from house_ai.domain.units import METRES_PER_UNIT, LengthUnit, unit_from_insunits
 from house_ai.geospatial.crs import CrsValidationError, describe_epsg
+from house_ai.storage.project_store import default_source_id
 
 #: $INSUNITS codes and what AutoCAD calls them, for the report.
 INSUNITS_NAMES = {
@@ -212,7 +213,9 @@ def _fill(report: FileInspection, ext: CadExtraction, mapping: LayerMapping | No
     _boundary_candidates(report, ext, mapping, suggestions, unit)
     if mapping is not None:
         transform = _source_frame(ext)
-        result = MappedLayerSiteExtractor(mapping, "inspected").extract(ext, transform)
+        # The id `source add` would give this file, so `source_id#handle` keys match.
+        source_id = default_source_id(Path(report.file_name))
+        result = MappedLayerSiteExtractor(mapping, source_id).extract(ext, transform)
         report.ambiguous = result.ambiguous
         report.unmapped_layers = result.unrecognized_layers
         report.warnings += result.warnings + result.conflicts

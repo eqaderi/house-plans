@@ -112,9 +112,13 @@ class OdaDwgAdapter:
         return detect_format(path).format is FileFormat.DWG
 
     def _annotate(self, path: Path, dxf_path: Path, inspection: CadInspection) -> CadInspection:
+        version = detect_format(path).version
+        # $ACADVER of the converted DXF is the converter's output release, not the DWG's.
+        header = {**inspection.header, "$ACADVER": version}
         return replace(
             inspection,
-            source_format=f"dwg {detect_format(path).version}",
+            header=header,
+            source_format=f"dwg {version}",
             converter=self.converter.name,
             converter_version=self.converter.version,
             converted_sha256=hashlib.sha256(dxf_path.read_bytes()).hexdigest(),
