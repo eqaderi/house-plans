@@ -131,8 +131,13 @@ confirmation by the synthetic actor `human:example-owner`, as in the tests.
 
 ## Test results
 
-`359 passed` on Python 3.13.3 and on Python 3.11.12 (macOS arm64), 0 failed,
-0 skipped, after the corrections below. The DWG test ran against ODA File
+`359 passed` on Python 3.13.3 (the locked versions in `requirements-lock.txt`)
+and on Python 3.11.12 (macOS arm64), 0 failed, 0 skipped, after the
+corrections below. The lock pins numpy 2.5.4 and pyproj 3.8.0, which have no
+Python 3.11 builds, so the 3.11 run used numpy 2.4.6 and pyproj 3.7.2; the
+lock does not install on 3.11 although `requires-python` says `>=3.11` (open
+item for the owner: raise the floor or keep a 3.11 lock). The same applies
+to the earlier 3.11 claim at ec25922. The DWG test ran against ODA File
 Converter 27.9. `ruff check src tests examples`: all checks passed.
 `house-ai schemas check`: 20 schemas up to date. Before the corrections
 (at ec25922): 344 passed.
@@ -209,6 +214,20 @@ Each finding below was reproduced, given a failing test in
 | minor | prefix typo in `boundary_handle` gave no diagnostic | refused with the list of ingested files |
 | minor | DWG inspection showed the converted DXF's `$ACADVER` | shows the DWG release |
 | privacy | `tests/test_cad.py` and a docstring contained a real benchmark label and real elevations from the owner's survey | replaced with synthetic values; the values remain in the pushed history of ec25922 |
+
+Open (plausible, not proven defects; left for a later change):
+
+- `has_numeric_elevation_label` does not read a label with a unit or a name
+  on the same line (`1664.0 m`, `Pt1 101.25`), and counts a point number on
+  its own line (`Pt\n12`) as a height. Labels are never used as elevations,
+  so only reasons, counts and the label cross-check are affected.
+- Inspection boundary candidates ignore `handle_roles` / `boundary_handle`
+  and match boundary layer names case-sensitively.
+- In the site SVG, point features of kind utility or other have no colour
+  of their own and no tooltip.
+- `combined_frame` leaves a file whose GEODATA EPSG was rejected out of the
+  "files disagree on CRS" check (that file already has its own blocking
+  issue).
 
 Found on the real survey and added: height labels drawn at a point are
 cross-checked against its z (`HeightLabelCheck`); steep TIN triangles
