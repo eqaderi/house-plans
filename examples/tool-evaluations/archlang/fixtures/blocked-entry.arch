@@ -1,0 +1,17 @@
+plan "Synthetic two room diagnostic" {
+  units mm
+  grid 1
+  height 3000
+  room id=living polygon (0,-0) (4000,-0) (4000,-4000) (0,-4000) label "Living" uses living
+  room id=bedroom polygon (4000,-0) (7000,-0) (7000,-4000) (4000,-4000) label "Bedroom" uses bedroom
+  wall id=south exterior thickness 200 height 3000 { (0,-0) (7000,-0) }
+  wall id=east exterior thickness 200 height 3000 { (7000,-0) (7000,-4000) }
+  wall id=north exterior thickness 200 height 3000 { (7000,-4000) (0,-4000) }
+  wall id=west exterior thickness 200 height 3000 { (0,-4000) (0,-0) }
+  wall id=partition partition thickness 100 height 3000 { (4000,-0) (4000,-4000) }
+  door id=front on south at 2000 width 1000 hinge near start swing into living head 2100
+  door id=beddoor on partition at 2000 width 900 hinge near start swing into bedroom head 2100
+  window id=livingwin on west at 2000 width 1400 sill 900 head 2100
+  window id=bedwin on east at 2000 width 1200 sill 900 head 2100
+  furniture id=blocker sofa at (1200,-1000) size 1600x800 in living
+}

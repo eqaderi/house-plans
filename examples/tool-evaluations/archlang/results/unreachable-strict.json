@@ -1,0 +1,21 @@
+{
+  "ok": false,
+  "strict": true,
+  "diagnostics": [
+    {
+      "code": "W_ROOM_DISCONNECTED",
+      "severity": "warning",
+      "message": "Room \"Bedroom\" has no door or opening \u2014 it can't be entered.",
+      "line": 6,
+      "col": 3,
+      "span": [
+        167,
+        265
+      ],
+      "fix": "Add a `door` on one of the room's walls.",
+      "hints": [
+        "Add a `door` or a cased `opening` on one of its walls."
+      ]
+    }
+  ]
+}

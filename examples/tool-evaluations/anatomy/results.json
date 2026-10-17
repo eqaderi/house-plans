@@ -1,0 +1,34 @@
+{
+  "pin": "e9488296a44211c42701ff71705b7901470ec78f",
+  "licence": "MIT",
+  "method": "measured source/build study",
+  "build": "node examples/dial-indicator/build.mjs --light",
+  "generated_file": "dial-indicator-light.html",
+  "tags": {
+    "html": 1,
+    "head": 1,
+    "meta": 2,
+    "title": 1,
+    "style": 1,
+    "body": 1,
+    "main": 1,
+    "figure": 1,
+    "div": 3,
+    "span": 8,
+    "svg": 3,
+    "path": 342,
+    "g": 50,
+    "circle": 24,
+    "text": 1,
+    "figcaption": 1,
+    "script": 1
+  },
+  "observed_patterns": [
+    "one SKILL.md with task-specific references and executable examples",
+    "geometry kit separated from runtime and pure numeric behaviour",
+    "live readout shares state with geometry/motion",
+    "keyboard and reduced-motion instructions in references/motion.md",
+    "desktop/mobile/zoomed screenshot verification in references/verify.md"
+  ],
+  "decision": "ADAPT patterns; do not install skill or use it as an architecture engine"
+}

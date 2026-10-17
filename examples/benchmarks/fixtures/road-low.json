@@ -1,0 +1,521 @@
+{
+  "schema_version": "0.1.0",
+  "id": "road-low",
+  "description": "road low",
+  "generator": "examples/benchmarks/make_fixtures.py",
+  "ground_truth": "Rectangle 20 x 30 m; z=0+0x+0.5y. Analytical area=600; relief=15.0; gradient magnitude=50.0%.",
+  "site": {
+    "schema_version": "0.1.0",
+    "id": "site",
+    "project_id": "benchmark-road-low",
+    "name": "road-low",
+    "classification": "synthetic",
+    "coordinates": {
+      "source_units": {
+        "unit": "m",
+        "status": "declared_in_source"
+      },
+      "elevation_units": {
+        "unit": "m",
+        "status": "declared_in_source"
+      },
+      "horizontal_crs": {
+        "status": "unknown",
+        "epsg": null,
+        "declared_epsg": null,
+        "name": null
+      },
+      "vertical_datum": {
+        "status": "unknown",
+        "name": null,
+        "epsg": null
+      },
+      "local": {
+        "id": "lcs-site",
+        "name": "Fictional Cartesian metres; north unknown",
+        "origin": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "rotation_deg": 0.0,
+        "grid_to_true_north_deg": null
+      }
+    },
+    "boundary": {
+      "outer": [
+        [
+          0.0,
+          0.0
+        ],
+        [
+          20.0,
+          0.0
+        ],
+        [
+          20.0,
+          30.0
+        ],
+        [
+          0.0,
+          30.0
+        ]
+      ],
+      "holes": []
+    },
+    "boundary_status": "assumption",
+    "boundary_source_ref": null,
+    "buildable_envelope": {
+      "polygon": {
+        "outer": [
+          [
+            2.0,
+            3.0
+          ],
+          [
+            18.0,
+            3.0
+          ],
+          [
+            18.0,
+            27.0
+          ],
+          [
+            2.0,
+            27.0
+          ]
+        ],
+        "holes": []
+      },
+      "status": "assumption",
+      "basis": "Invented benchmark offsets: 2 m sides, 3 m front/rear; not regulation",
+      "max_height_m": null
+    },
+    "terrain": {
+      "status": "surveyed_points",
+      "spot_elevations": [
+        {
+          "id": "spot-sw",
+          "xy": [
+            0.0,
+            0.0
+          ],
+          "z_m": 0.0,
+          "source_ref": "analytical-plane"
+        },
+        {
+          "id": "spot-se",
+          "xy": [
+            20.0,
+            0.0
+          ],
+          "z_m": 0.0,
+          "source_ref": "analytical-plane"
+        },
+        {
+          "id": "spot-ne",
+          "xy": [
+            20.0,
+            30.0
+          ],
+          "z_m": 15.0,
+          "source_ref": "analytical-plane"
+        },
+        {
+          "id": "spot-nw",
+          "xy": [
+            0.0,
+            30.0
+          ],
+          "z_m": 15.0,
+          "source_ref": "analytical-plane"
+        }
+      ],
+      "contours": [],
+      "surface_ref": null,
+      "surface": null
+    },
+    "features": [
+      {
+        "id": "road",
+        "kind": "road",
+        "name": null,
+        "geometry": {
+          "type": "polygon",
+          "polygon": {
+            "outer": [
+              [
+                -2.0,
+                -6.0
+              ],
+              [
+                22.0,
+                -6.0
+              ],
+              [
+                22.0,
+                0.0
+              ],
+              [
+                -2.0,
+                0.0
+              ]
+            ],
+            "holes": []
+          }
+        },
+        "status": "assumption",
+        "source_ref": null,
+        "notes": null
+      },
+      {
+        "id": "access",
+        "kind": "access_point",
+        "name": null,
+        "geometry": {
+          "type": "point",
+          "xy": [
+            10.0,
+            0.0
+          ]
+        },
+        "status": "assumption",
+        "source_ref": null,
+        "notes": null
+      }
+    ],
+    "cad_imports": [],
+    "assumptions": [],
+    "issues": [],
+    "provenance": {
+      "created_at": "2026-10-17T00:00:00Z",
+      "created_by": {
+        "kind": "agent",
+        "id": "codex",
+        "display_name": null,
+        "provider": null,
+        "model": null
+      },
+      "method": "synthetic_benchmark_generation",
+      "tool": null,
+      "tool_version": null,
+      "inputs": [],
+      "notes": "Fictional analytical inputs, not owner facts or approvals."
+    }
+  },
+  "program": {
+    "schema_version": "0.1.0",
+    "id": "program",
+    "project_id": "benchmark-road-low",
+    "brief_ref": null,
+    "items": [
+      {
+        "id": "pi-hall",
+        "name": "Hall",
+        "function": "hall",
+        "quantity": 1,
+        "min_area_m2": 12.0,
+        "target_area_m2": 18.0,
+        "max_area_m2": null,
+        "min_width_m": 1.2,
+        "privacy": "semi_private",
+        "zone_id": "z-circulation",
+        "level_preference": null,
+        "priority": "must",
+        "daylight": "preferred",
+        "accessible": false,
+        "source_fact_ids": [],
+        "notes": null
+      },
+      {
+        "id": "pi-living",
+        "name": "Living",
+        "function": "living",
+        "quantity": 1,
+        "min_area_m2": 24.0,
+        "target_area_m2": 30.0,
+        "max_area_m2": null,
+        "min_width_m": 3.6,
+        "privacy": "public",
+        "zone_id": "z-day",
+        "level_preference": null,
+        "priority": "must",
+        "daylight": "required",
+        "accessible": false,
+        "source_fact_ids": [],
+        "notes": null
+      },
+      {
+        "id": "pi-kitchen",
+        "name": "Kitchen and dining",
+        "function": "kitchen",
+        "quantity": 1,
+        "min_area_m2": 20.0,
+        "target_area_m2": 30.0,
+        "max_area_m2": null,
+        "min_width_m": 3.0,
+        "privacy": "public",
+        "zone_id": "z-day",
+        "level_preference": null,
+        "priority": "must",
+        "daylight": "required",
+        "accessible": false,
+        "source_fact_ids": [],
+        "notes": null
+      },
+      {
+        "id": "pi-bed-parents",
+        "name": "Parents' bedroom",
+        "function": "bedroom",
+        "quantity": 1,
+        "min_area_m2": 12.0,
+        "target_area_m2": 14.0,
+        "max_area_m2": null,
+        "min_width_m": 3.0,
+        "privacy": "private",
+        "zone_id": "z-night",
+        "level_preference": null,
+        "priority": "must",
+        "daylight": "required",
+        "accessible": false,
+        "source_fact_ids": [],
+        "notes": null
+      },
+      {
+        "id": "pi-bed-children",
+        "name": "Children's bedroom",
+        "function": "bedroom",
+        "quantity": 1,
+        "min_area_m2": 14.0,
+        "target_area_m2": 17.5,
+        "max_area_m2": null,
+        "min_width_m": 3.0,
+        "privacy": "private",
+        "zone_id": "z-night",
+        "level_preference": null,
+        "priority": "must",
+        "daylight": "required",
+        "accessible": false,
+        "source_fact_ids": [],
+        "notes": null
+      },
+      {
+        "id": "pi-bath",
+        "name": "Bathroom",
+        "function": "bathroom",
+        "quantity": 1,
+        "min_area_m2": 6.0,
+        "target_area_m2": 10.5,
+        "max_area_m2": null,
+        "min_width_m": 2.0,
+        "privacy": "private",
+        "zone_id": "z-night",
+        "level_preference": null,
+        "priority": "must",
+        "daylight": "preferred",
+        "accessible": false,
+        "source_fact_ids": [],
+        "notes": null
+      }
+    ],
+    "adjacencies": [
+      {
+        "id": "adj-entry",
+        "a": "pi-hall",
+        "b": "exterior",
+        "kind": "connected",
+        "strength": "hard",
+        "weight": null,
+        "rationale": "Front door opens into the hall",
+        "source_fact_ids": []
+      },
+      {
+        "id": "adj-living-kitchen",
+        "a": "pi-living",
+        "b": "pi-kitchen",
+        "kind": "connected",
+        "strength": "hard",
+        "weight": null,
+        "rationale": null,
+        "source_fact_ids": []
+      },
+      {
+        "id": "adj-hall-bath",
+        "a": "pi-hall",
+        "b": "pi-bath",
+        "kind": "connected",
+        "strength": "hard",
+        "weight": null,
+        "rationale": null,
+        "source_fact_ids": []
+      },
+      {
+        "id": "adj-kitchen-beds",
+        "a": "pi-kitchen",
+        "b": "pi-bed-children",
+        "kind": "acoustic_separation",
+        "strength": "soft",
+        "weight": 2.0,
+        "rationale": null,
+        "source_fact_ids": []
+      }
+    ],
+    "zones": [
+      {
+        "id": "z-day",
+        "name": "Day zone",
+        "privacy": "public"
+      },
+      {
+        "id": "z-night",
+        "name": "Night zone",
+        "privacy": "private"
+      },
+      {
+        "id": "z-circulation",
+        "name": "Circulation",
+        "privacy": "semi_private"
+      }
+    ],
+    "target_gross_area_m2": 120.0,
+    "circulation_factor": 0.15,
+    "levels": null,
+    "budget": null,
+    "site_ref": null,
+    "site_verified": false,
+    "provenance": {
+      "created_at": "2026-10-17T00:00:00Z",
+      "created_by": {
+        "kind": "agent",
+        "id": "codex",
+        "display_name": null,
+        "provider": null,
+        "model": null
+      },
+      "method": "synthetic_benchmark_generation",
+      "tool": null,
+      "tool_version": null,
+      "inputs": [],
+      "notes": "Fictional analytical inputs, not owner facts or approvals."
+    }
+  },
+  "cases": [],
+  "expectations": [
+    {
+      "id": "parcel-area",
+      "category": "metric_accuracy",
+      "target": "site",
+      "source": "site",
+      "metric": "parcel_area_m2",
+      "code": null,
+      "subject_ids": [],
+      "value": 600,
+      "status": "measured",
+      "tolerance": 1e-6,
+      "pending_stage": null,
+      "basis": "width*depth"
+    },
+    {
+      "id": "envelope-area",
+      "category": "geometric_feasibility",
+      "target": "site",
+      "source": "site",
+      "metric": "envelope_area_m2",
+      "code": null,
+      "subject_ids": [],
+      "value": 384,
+      "status": "measured",
+      "tolerance": 1e-6,
+      "pending_stage": null,
+      "basis": "(width-4)*(depth-6)"
+    },
+    {
+      "id": "envelope-contained",
+      "category": "geometric_feasibility",
+      "target": "site",
+      "source": "site",
+      "metric": "envelope_inside_parcel",
+      "code": null,
+      "subject_ids": [],
+      "value": true,
+      "status": "measured",
+      "tolerance": 1e-6,
+      "pending_stage": null,
+      "basis": "rectangle inset by positive offsets"
+    },
+    {
+      "id": "relief",
+      "category": "terrain_compatibility",
+      "target": "site",
+      "source": "site",
+      "metric": "survey_relief_m",
+      "code": null,
+      "subject_ids": [],
+      "value": 15.0,
+      "status": "measured",
+      "tolerance": 1e-6,
+      "pending_stage": null,
+      "basis": "abs(dx)*width+abs(dy)*depth, extrema at corners"
+    },
+    {
+      "id": "slope",
+      "category": "terrain_compatibility",
+      "target": "site",
+      "source": "site",
+      "metric": "parcel_mean_slope_pct",
+      "code": null,
+      "subject_ids": [],
+      "value": 50.0,
+      "status": "measured",
+      "tolerance": 1e-6,
+      "pending_stage": null,
+      "basis": "100*sqrt(dx^2+dy^2); every nondegenerate triangle lies on plane"
+    },
+    {
+      "id": "tin-area",
+      "category": "metric_accuracy",
+      "target": "site",
+      "source": "site",
+      "metric": "parcel_tin_area_m2",
+      "code": null,
+      "subject_ids": [],
+      "value": 600,
+      "status": "measured",
+      "tolerance": 1e-6,
+      "pending_stage": null,
+      "basis": "four corner observations cover rectangle exactly"
+    },
+    {
+      "id": "road-corner-level",
+      "category": "terrain_compatibility",
+      "target": "site",
+      "source": "site",
+      "metric": "spot_elevation_m",
+      "code": null,
+      "subject_ids": [
+        "spot-sw"
+      ],
+      "value": 0,
+      "status": "measured",
+      "tolerance": 1e-6,
+      "pending_stage": null,
+      "basis": "plane equation evaluated at road y=0"
+    },
+    {
+      "id": "rear-corner-level",
+      "category": "terrain_compatibility",
+      "target": "site",
+      "source": "site",
+      "metric": "spot_elevation_m",
+      "code": null,
+      "subject_ids": [
+        "spot-nw"
+      ],
+      "value": 15,
+      "status": "measured",
+      "tolerance": 1e-6,
+      "pending_stage": null,
+      "basis": "plane equation evaluated at rear y=30"
+    }
+  ]
+}

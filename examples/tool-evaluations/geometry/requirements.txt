@@ -1,0 +1,6 @@
+# Disposable experiment only; intentionally not project dependencies.
+trimesh==5.1.1
+manifold3d==3.5.4
+numpy==2.4.2
+scipy==1.17.1
+networkx==3.6.1

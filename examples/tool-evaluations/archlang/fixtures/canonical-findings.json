@@ -1,0 +1,15 @@
+{
+  "clean": [],
+  "unreachable": [
+    {
+      "code": "space_unreachable",
+      "severity": "error",
+      "message": "bedroom cannot be reached from outside through doors",
+      "subject_ids": [
+        "bedroom"
+      ]
+    }
+  ],
+  "windowless": [],
+  "blocked-entry": []
+}

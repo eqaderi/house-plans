@@ -1,0 +1,293 @@
+{
+  "ok": true,
+  "plan": "Synthetic two room diagnostic",
+  "caption": "\"Synthetic two room diagnostic\" \u2014 a 2-room floor plan, 28 m\u00b2 total: Living (16 m\u00b2), Bedroom (12 m\u00b2); 2 doors, 2 windows, entrance via front.",
+  "units": "mm",
+  "bbox": {
+    "w": 7000,
+    "h": 4000
+  },
+  "bbox_outer": {
+    "w": 7200,
+    "h": 4200
+  },
+  "rooms": [
+    {
+      "id": "living",
+      "label": "Living",
+      "uses": [
+        "living"
+      ],
+      "room_type": "LivingRoom",
+      "area_m2": 16,
+      "net_area_m2": 14.63,
+      "bbox": {
+        "x": 0,
+        "y": -4000,
+        "w": 4000,
+        "h": 4000
+      },
+      "floor_polygon": [
+        {
+          "x": 0,
+          "y": 0
+        },
+        {
+          "x": 4000,
+          "y": 0
+        },
+        {
+          "x": 4000,
+          "y": -4000
+        },
+        {
+          "x": 0,
+          "y": -4000
+        }
+      ],
+      "adjacent": [
+        "bedroom"
+      ]
+    },
+    {
+      "id": "bedroom",
+      "label": "Bedroom",
+      "uses": [
+        "bedroom"
+      ],
+      "room_type": "MasterRoom",
+      "area_m2": 12,
+      "net_area_m2": 10.83,
+      "bbox": {
+        "x": 4000,
+        "y": -4000,
+        "w": 3000,
+        "h": 4000
+      },
+      "floor_polygon": [
+        {
+          "x": 4000,
+          "y": 0
+        },
+        {
+          "x": 7000,
+          "y": 0
+        },
+        {
+          "x": 7000,
+          "y": -4000
+        },
+        {
+          "x": 4000,
+          "y": -4000
+        }
+      ],
+      "adjacent": [
+        "living"
+      ]
+    }
+  ],
+  "doors": [
+    {
+      "id": "front",
+      "between": [
+        "exterior",
+        "living"
+      ],
+      "width": 1000,
+      "head": 2100
+    },
+    {
+      "id": "beddoor",
+      "between": [
+        "living",
+        "bedroom"
+      ],
+      "width": 900,
+      "head": 2100
+    }
+  ],
+  "windows": [
+    {
+      "id": "livingwin",
+      "room": "living",
+      "width": 1400,
+      "facing": "W",
+      "sill": 900,
+      "head": 2100
+    },
+    {
+      "id": "bedwin",
+      "room": "bedroom",
+      "width": 1200,
+      "facing": "E",
+      "sill": 900,
+      "head": 2100
+    }
+  ],
+  "openings": [],
+  "furniture": [],
+  "heights": {
+    "storey_height": 3000,
+    "elevation": 0,
+    "walls": [
+      {
+        "id": "south",
+        "height": 3000
+      },
+      {
+        "id": "east",
+        "height": 3000
+      },
+      {
+        "id": "north",
+        "height": 3000
+      },
+      {
+        "id": "west",
+        "height": 3000
+      },
+      {
+        "id": "partition",
+        "height": 3000
+      }
+    ]
+  },
+  "access": {
+    "entrances": [
+      "front"
+    ],
+    "hasEntrance": true,
+    "edges": [
+      {
+        "doorId": "front",
+        "kind": "door",
+        "between": [
+          "exterior",
+          "living"
+        ],
+        "nominalWidth": 1000,
+        "estimatedClearWidth": 940,
+        "hostCategory": "exterior",
+        "hostWallId": "south",
+        "exterior": true,
+        "ambiguous": false
+      },
+      {
+        "doorId": "beddoor",
+        "kind": "door",
+        "between": [
+          "living",
+          "bedroom"
+        ],
+        "nominalWidth": 900,
+        "estimatedClearWidth": 840,
+        "hostCategory": "partition",
+        "hostWallId": "partition",
+        "exterior": false,
+        "ambiguous": false
+      }
+    ],
+    "rooms": [
+      {
+        "id": "living",
+        "depthFromEntrance": 1,
+        "reachable": true,
+        "bottleneckClearWidth": 940
+      },
+      {
+        "id": "bedroom",
+        "depthFromEntrance": 2,
+        "reachable": true,
+        "bottleneckClearWidth": 840
+      }
+    ]
+  },
+  "circulation": {
+    "entranceId": "front",
+    "cellSizeMm": 100,
+    "bodyRadiusMm": 300,
+    "rooms": [
+      {
+        "roomId": "living",
+        "walkDistanceMm": 1800,
+        "bottleneckClearWidthMm": 940,
+        "detourRatio": 1
+      },
+      {
+        "roomId": "bedroom",
+        "walkDistanceMm": 5200,
+        "bottleneckClearWidthMm": 840,
+        "detourRatio": 1.35
+      }
+    ],
+    "routes": []
+  },
+  "totals": {
+    "rooms": 2,
+    "doors": 2,
+    "windows": 2,
+    "floor_area_m2": 28,
+    "net_floor_area_m2": 25.46
+  },
+  "input_graph": {
+    "living": [
+      "bedroom"
+    ],
+    "bedroom": [
+      "living"
+    ]
+  },
+  "freedom": {
+    "rooms": {
+      "total": 2,
+      "absolute": 2,
+      "relational": 0,
+      "strip": 0
+    },
+    "openings": {
+      "total": 4,
+      "attached": 4,
+      "absolute": 0
+    },
+    "furniture": {
+      "total": 0,
+      "anchored": 0,
+      "againstWall": 0,
+      "absolute": 0
+    },
+    "elements": [
+      {
+        "id": "living",
+        "kind": "room",
+        "placement": "absolute"
+      },
+      {
+        "id": "bedroom",
+        "kind": "room",
+        "placement": "absolute"
+      },
+      {
+        "id": "front",
+        "kind": "door",
+        "placement": "attached"
+      },
+      {
+        "id": "beddoor",
+        "kind": "door",
+        "placement": "attached"
+      },
+      {
+        "id": "livingwin",
+        "kind": "window",
+        "placement": "attached"
+      },
+      {
+        "id": "bedwin",
+        "kind": "window",
+        "placement": "attached"
+      }
+    ]
+  },
+  "diagnostics": []
+}

@@ -1,0 +1,53 @@
+{
+  "tool_names": [
+    "browser_close",
+    "browser_resize",
+    "browser_console_messages",
+    "browser_handle_dialog",
+    "browser_emulate_media",
+    "browser_evaluate",
+    "browser_file_upload",
+    "browser_drop",
+    "browser_find",
+    "browser_fill_form",
+    "browser_press_key",
+    "browser_type",
+    "browser_navigate",
+    "browser_navigate_back",
+    "browser_network_requests",
+    "browser_network_request",
+    "browser_run_code_unsafe",
+    "browser_take_screenshot",
+    "browser_snapshot",
+    "browser_click",
+    "browser_drag",
+    "browser_hover",
+    "browser_select_option",
+    "browser_tabs",
+    "browser_wait_for"
+  ],
+  "navigate": {
+    "content": [
+      {
+        "type": "text",
+        "text": "### Ran Playwright code\n```js\nawait page.goto('<loopback>/local-reviewer.html');\n```\n### Page\n- Page URL: <loopback>/local-reviewer.html\n- Page Title: Synthetic plan reviewer\n### Snapshot\n- [Snapshot](../../../../../../..<scratch>/artifacts/page-2026-10-17T21-06-47-843Z.yml)"
+      }
+    ]
+  },
+  "restriction": {
+    "content": [
+      {
+        "type": "text",
+        "text": "### Result\n{\"externalFetchSucceeded\":false}\n### Ran Playwright code\n```js\nawait (async page => {\n  await page.context().route('**/*', route =>\n    new URL(route.request().url()).hostname === '127.0.0.1'\n      ? route.continue() : route.abort('internetdisconnected'));\n  await page.reload();\n  return {externalFetchSucceeded: await page.evaluate(() =>\n    fetch('https://example.invalid/probe').then(() => true, () => false))};\n})(page);\n```\n### Page\n- Page URL: <loopback>/local-reviewer.html\n- Page Title: Synthetic plan reviewer\n- Console: 1 errors, 0 warnings\n### Events\n- New console entries: ../../../../../../..<scratch>/artifacts/console-2026-10-17T21-06-47-808Z.log#L1"
+      }
+    ]
+  },
+  "snapshot": {
+    "content": [
+      {
+        "type": "text",
+        "text": "### Page\n- Page URL: <loopback>/local-reviewer.html\n- Page Title: Synthetic plan reviewer\n- Console: 1 errors, 0 warnings\n### Snapshot\n```yaml\n- main [ref=f1e2]:\n  - heading \"Synthetic plan reviewer\" [level=1] [ref=f1e3]\n  - paragraph [ref=f1e4]: Experiment only · LOCAL metres · no private data\n  - img \"Two synthetic spaces, 30 square metres each\" [ref=f1e5]:\n    - generic [ref=f1e8]: Living · 30 m²\n    - generic [ref=f1e9]: Kitchen · 30 m²\n  - paragraph [ref=f1e10]:\n    - button \"Measure area\" [active] [ref=f1e11]\n  - status [ref=f1e12]: \"Total: 60 m²\"\n```"
+      }
+    ]
+  }
+}

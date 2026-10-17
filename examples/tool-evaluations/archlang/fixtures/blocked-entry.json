@@ -1,0 +1,265 @@
+{
+  "schema_version": "0.1.0",
+  "id": "synthetic-archlang",
+  "name": "Synthetic two room diagnostic",
+  "units": "m",
+  "coordinate_system_id": "synthetic-local",
+  "site_ref": null,
+  "program_ref": null,
+  "levels": [
+    {
+      "id": "ground",
+      "name": "Ground",
+      "elevation_m": 0.0,
+      "floor_to_floor_m": 3.0
+    }
+  ],
+  "spaces": [
+    {
+      "id": "living",
+      "name": "Living",
+      "function": "living",
+      "level_id": "ground",
+      "boundary": {
+        "outer": [
+          [
+            0.0,
+            0.0
+          ],
+          [
+            4.0,
+            0.0
+          ],
+          [
+            4.0,
+            4.0
+          ],
+          [
+            0.0,
+            4.0
+          ]
+        ],
+        "holes": []
+      },
+      "program_item_id": null,
+      "zone_id": null,
+      "floor_material_id": null
+    },
+    {
+      "id": "bedroom",
+      "name": "Bedroom",
+      "function": "bedroom",
+      "level_id": "ground",
+      "boundary": {
+        "outer": [
+          [
+            4.0,
+            0.0
+          ],
+          [
+            7.0,
+            0.0
+          ],
+          [
+            7.0,
+            4.0
+          ],
+          [
+            4.0,
+            4.0
+          ]
+        ],
+        "holes": []
+      },
+      "program_item_id": null,
+      "zone_id": null,
+      "floor_material_id": null
+    }
+  ],
+  "walls": [
+    {
+      "id": "south",
+      "level_id": "ground",
+      "start": [
+        0.0,
+        0.0
+      ],
+      "end": [
+        7.0,
+        0.0
+      ],
+      "thickness_m": 0.2,
+      "height_m": 3.0,
+      "base_offset_m": 0.0,
+      "kind": "exterior",
+      "material_id": null,
+      "left_material_id": null,
+      "right_material_id": null
+    },
+    {
+      "id": "east",
+      "level_id": "ground",
+      "start": [
+        7.0,
+        0.0
+      ],
+      "end": [
+        7.0,
+        4.0
+      ],
+      "thickness_m": 0.2,
+      "height_m": 3.0,
+      "base_offset_m": 0.0,
+      "kind": "exterior",
+      "material_id": null,
+      "left_material_id": null,
+      "right_material_id": null
+    },
+    {
+      "id": "north",
+      "level_id": "ground",
+      "start": [
+        7.0,
+        4.0
+      ],
+      "end": [
+        0.0,
+        4.0
+      ],
+      "thickness_m": 0.2,
+      "height_m": 3.0,
+      "base_offset_m": 0.0,
+      "kind": "exterior",
+      "material_id": null,
+      "left_material_id": null,
+      "right_material_id": null
+    },
+    {
+      "id": "west",
+      "level_id": "ground",
+      "start": [
+        0.0,
+        4.0
+      ],
+      "end": [
+        0.0,
+        0.0
+      ],
+      "thickness_m": 0.2,
+      "height_m": 3.0,
+      "base_offset_m": 0.0,
+      "kind": "exterior",
+      "material_id": null,
+      "left_material_id": null,
+      "right_material_id": null
+    },
+    {
+      "id": "partition",
+      "level_id": "ground",
+      "start": [
+        4.0,
+        0.0
+      ],
+      "end": [
+        4.0,
+        4.0
+      ],
+      "thickness_m": 0.1,
+      "height_m": 3.0,
+      "base_offset_m": 0.0,
+      "kind": "interior",
+      "material_id": null,
+      "left_material_id": null,
+      "right_material_id": null
+    }
+  ],
+  "openings": [
+    {
+      "id": "front",
+      "kind": "door",
+      "host_wall_id": "south",
+      "offset_m": 1.5,
+      "width_m": 1.0,
+      "height_m": 2.1,
+      "sill_m": 0.0,
+      "connects": [
+        "exterior",
+        "living"
+      ],
+      "opens_into": "living",
+      "operation": "swing_left",
+      "material_id": null
+    },
+    {
+      "id": "beddoor",
+      "kind": "door",
+      "host_wall_id": "partition",
+      "offset_m": 1.55,
+      "width_m": 0.9,
+      "height_m": 2.1,
+      "sill_m": 0.0,
+      "connects": [
+        "living",
+        "bedroom"
+      ],
+      "opens_into": "bedroom",
+      "operation": "swing_left",
+      "material_id": null
+    },
+    {
+      "id": "livingwin",
+      "kind": "window",
+      "host_wall_id": "west",
+      "offset_m": 1.3,
+      "width_m": 1.4,
+      "height_m": 1.2,
+      "sill_m": 0.9,
+      "connects": [
+        "exterior",
+        "living"
+      ],
+      "opens_into": null,
+      "operation": "fixed",
+      "material_id": null
+    },
+    {
+      "id": "bedwin",
+      "kind": "window",
+      "host_wall_id": "east",
+      "offset_m": 1.4,
+      "width_m": 1.2,
+      "height_m": 1.2,
+      "sill_m": 0.9,
+      "connects": [
+        "bedroom",
+        "exterior"
+      ],
+      "opens_into": null,
+      "operation": "fixed",
+      "material_id": null
+    }
+  ],
+  "slabs": [],
+  "ceilings": [],
+  "stairs": [],
+  "zones": [],
+  "fixtures": [
+    {
+      "id": "blocker",
+      "space_id": "living",
+      "fixture_type": "sofa",
+      "position": [
+        2.0,
+        0.6
+      ],
+      "rotation_deg": 0.0,
+      "width_m": 1.6,
+      "depth_m": 0.8,
+      "material_id": null
+    }
+  ],
+  "relationships": [],
+  "materials": [],
+  "assumptions": [],
+  "issues": []
+}

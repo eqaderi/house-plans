@@ -1,0 +1,62 @@
+{
+  "package": "@chanmeng666/archlang",
+  "version": "1.43.1",
+  "cases": {
+    "clean": {
+      "compile_exit": 0,
+      "lint_exit": 0,
+      "strict_validate_exit": 0,
+      "lint_codes": []
+    },
+    "unreachable": {
+      "compile_exit": 0,
+      "lint_exit": 0,
+      "strict_validate_exit": 2,
+      "lint_codes": [
+        "W_ROOM_DISCONNECTED"
+      ]
+    },
+    "windowless": {
+      "compile_exit": 0,
+      "lint_exit": 0,
+      "strict_validate_exit": 2,
+      "lint_codes": [
+        "W_BEDROOM_NO_WINDOW"
+      ]
+    },
+    "blocked-entry": {
+      "compile_exit": 0,
+      "lint_exit": 0,
+      "strict_validate_exit": 2,
+      "lint_codes": [
+        "W_DOORWAY_BLOCKED",
+        "W_PATH_TOO_NARROW",
+        "W_PATH_TOO_NARROW",
+        "W_SWING_OBSTRUCTED"
+      ]
+    }
+  },
+  "geometry_and_semantics": {
+    "method": "measured",
+    "rooms": 2,
+    "walls": 5,
+    "openings": 4,
+    "max_dimension_or_opening_center_error_m": 1.1102230246251565e-16,
+    "room_polygon_symmetric_difference_m2": 0,
+    "canonical_centerline_floor_area_m2": 28,
+    "archlang_centerline_floor_area_m2": 28,
+    "archlang_derived_net_floor_area_m2": 25.46,
+    "room_ids_labels_functions_and_door_connections_match": true,
+    "archlang_extra_room_classification": {
+      "living": "LivingRoom",
+      "bedroom": "MasterRoom"
+    },
+    "not_compared": [
+      "door handedness convention",
+      "window operation semantics",
+      "physical clear widths",
+      "cardinal orientation",
+      "site/terrain"
+    ]
+  }
+}
