@@ -1,0 +1,761 @@
+schema_version: 0.1.0
+id: brief
+project_id: synthetic-family
+household:
+- id: hh-adult-1
+  role: adult
+  label: Adult 1
+  age_years: null
+  needs: []
+- id: hh-adult-2
+  role: adult
+  label: Adult 2
+  age_years: null
+  needs: []
+- id: hh-child-1
+  role: child
+  label: Child 1
+  age_years: null
+  needs: []
+- id: hh-child-2
+  role: child
+  label: Child 2
+  age_years: null
+  needs: []
+facts:
+- id: ans-q-household-1
+  topic: household
+  key: answer
+  statement: Two adults and two kids, 6 and 9.
+  value: null
+  status: verified_fact
+  priority: null
+  source:
+    kind: owner_answer
+    ref: q-household
+    interview_round: 1
+- id: ans-q-children-rooms-2
+  topic: bedrooms_bathrooms
+  key: answer
+  statement: Each child should have their own room.
+  value: null
+  status: preference
+  priority: null
+  source:
+    kind: owner_answer
+    ref: q-children-rooms
+    interview_round: 2
+- id: ans-q-bedrooms-3
+  topic: bedrooms_bathrooms
+  key: answer
+  statement: Three bedrooms.
+  value: null
+  status: preference
+  priority: null
+  source:
+    kind: owner_answer
+    ref: q-bedrooms
+    interview_round: 3
+- id: ans-q-bathrooms-4
+  topic: bedrooms_bathrooms
+  key: answer
+  statement: Two bathrooms, and yes an en-suite for us.
+  value: null
+  status: preference
+  priority: null
+  source:
+    kind: owner_answer
+    ref: q-bathrooms
+    interview_round: 4
+- id: ans-q-floors-5
+  topic: levels
+  key: answer
+  statement: Two floors.
+  value: null
+  status: preference
+  priority: null
+  source:
+    kind: owner_answer
+    ref: q-floors
+    interview_round: 5
+- id: ans-q-slope-6
+  topic: site_response
+  key: answer
+  statement: Let the house step down the slope, with a garden level.
+  value: null
+  status: preference
+  priority: null
+  source:
+    kind: owner_answer
+    ref: q-slope
+    interview_round: 6
+- id: ans-q-entry-7
+  topic: site_response
+  key: answer
+  statement: Yes, entrance at the road please.
+  value: null
+  status: preference
+  priority: null
+  source:
+    kind: owner_answer
+    ref: q-entry
+    interview_round: 7
+- id: ans-q-living-8
+  topic: lifestyle
+  key: answer
+  statement: One open space for living, dining and kitchen.
+  value: null
+  status: preference
+  priority: null
+  source:
+    kind: owner_answer
+    ref: q-living
+    interview_round: 8
+- id: ans-q-kitchen-9
+  topic: cooking
+  key: answer
+  statement: We cook every day. Smells in the living room are fine with a good hood.
+    No pantry.
+  value: null
+  status: preference
+  priority: null
+  source:
+    kind: owner_answer
+    ref: q-kitchen
+    interview_round: 9
+- id: ans-q-guests-10
+  topic: long_term_guests
+  key: answer
+  statement: Guests rarely stay, the sofa is enough.
+  value: null
+  status: preference
+  priority: null
+  source:
+    kind: owner_answer
+    ref: q-guests
+    interview_round: 10
+- id: ans-q-office-11
+  topic: work_study
+  key: answer
+  statement: One of us works from home and needs quiet for calls.
+  value: null
+  status: preference
+  priority: null
+  source:
+    kind: owner_answer
+    ref: q-office
+    interview_round: 11
+- id: ans-q-parking-12
+  topic: vehicles
+  key: answer
+  statement: One car, a carport is enough. No EV charger.
+  value: null
+  status: preference
+  priority: null
+  source:
+    kind: owner_answer
+    ref: q-parking
+    interview_round: 12
+- id: ans-q-storage-13
+  topic: storage
+  key: answer
+  statement: Yes to a laundry room, and a store room would be nice.
+  value: null
+  status: preference
+  priority: null
+  source:
+    kind: owner_answer
+    ref: q-storage
+    interview_round: 13
+- id: ans-q-outdoor-14
+  topic: outdoor_living
+  key: answer
+  statement: A terrace and a garden.
+  value: null
+  status: preference
+  priority: null
+  source:
+    kind: owner_answer
+    ref: q-outdoor
+    interview_round: 14
+- id: ans-q-accessibility-15
+  topic: accessibility
+  key: answer
+  statement: No, nobody needs that.
+  value: null
+  status: preference
+  priority: null
+  source:
+    kind: owner_answer
+    ref: q-accessibility
+    interview_round: 15
+- id: ans-q-privacy-16
+  topic: privacy
+  key: answer
+  statement: Privacy is very important, and the bedrooms should be away from the living
+    room.
+  value: null
+  status: preference
+  priority: null
+  source:
+    kind: owner_answer
+    ref: q-privacy
+    interview_round: 16
+- id: ans-q-relationships-17
+  topic: room_relationships
+  key: answer
+  statement: Kitchen next to the garden.
+  value: null
+  status: preference
+  priority: null
+  source:
+    kind: owner_answer
+    ref: q-relationships
+    interview_round: 17
+- id: ans-q-light-18
+  topic: daylight
+  key: answer
+  statement: Morning sun in the kitchen. Cross ventilation yes.
+  value: null
+  status: preference
+  priority: null
+  source:
+    kind: owner_answer
+    ref: q-light
+    interview_round: 18
+- id: ans-q-sizes-19
+  topic: room_sizes
+  key: answer
+  statement: Living room about 30 m2.
+  value: null
+  status: preference
+  priority: null
+  source:
+    kind: owner_answer
+    ref: q-sizes
+    interview_round: 19
+- id: ans-q-practices-20
+  topic: cultural_practices
+  key: answer
+  statement: No.
+  value: null
+  status: preference
+  priority: null
+  source:
+    kind: owner_answer
+    ref: q-practices
+    interview_round: 20
+- id: ans-q-style-21
+  topic: materials_style
+  key: answer
+  statement: Modern, with wood and white plaster.
+  value: null
+  status: preference
+  priority: null
+  source:
+    kind: owner_answer
+    ref: q-style
+    interview_round: 21
+- id: ans-q-budget-22
+  topic: budget
+  key: answer
+  statement: About 450k EUR.
+  value: null
+  status: preference
+  priority: null
+  source:
+    kind: owner_answer
+    ref: q-budget
+    interview_round: 22
+- id: ans-q-area-23
+  topic: target_area
+  key: answer
+  statement: Around 180 m2.
+  value: null
+  status: preference
+  priority: null
+  source:
+    kind: owner_answer
+    ref: q-area
+    interview_round: 23
+- id: ans-q-priorities-24
+  topic: priorities
+  key: answer
+  statement: Daylight, a good kitchen, low running costs.
+  value: null
+  status: preference
+  priority: null
+  source:
+    kind: owner_answer
+    ref: q-priorities
+    interview_round: 24
+- id: ans-q-expansion-25
+  topic: future_expansion
+  key: answer
+  statement: Maybe a bedroom later.
+  value: null
+  status: preference
+  priority: null
+  source:
+    kind: owner_answer
+    ref: q-expansion
+    interview_round: 25
+- id: f-accessibility
+  topic: accessibility
+  key: accessibility
+  statement: 'Accessibility: none'
+  value: none
+  status: preference
+  priority: must
+  source:
+    kind: owner_answer
+    ref: confirmed:ans-q-accessibility-15
+    interview_round: 15
+- id: f-adults
+  topic: household
+  key: adults
+  statement: 'Adults: 2'
+  value: 2
+  status: verified_fact
+  priority: null
+  source:
+    kind: owner_answer
+    ref: confirmed:ans-q-household-1
+    interview_round: 1
+- id: f-bathrooms
+  topic: bedrooms_bathrooms
+  key: bathrooms
+  statement: 'Bathrooms: 2'
+  value: 2
+  status: preference
+  priority: null
+  source:
+    kind: owner_answer
+    ref: confirmed:ans-q-bathrooms-4
+    interview_round: 4
+- id: f-bedrooms
+  topic: bedrooms_bathrooms
+  key: bedrooms
+  statement: 'Bedrooms: 3'
+  value: 3
+  status: preference
+  priority: null
+  source:
+    kind: owner_answer
+    ref: confirmed:ans-q-bedrooms-3
+    interview_round: 3
+- id: f-bedrooms_separate
+  topic: privacy
+  key: bedrooms_separate
+  statement: 'Bedrooms kept away from living areas: yes'
+  value: true
+  status: preference
+  priority: null
+  source:
+    kind: owner_answer
+    ref: confirmed:ans-q-privacy-16
+    interview_round: 16
+- id: f-budget
+  topic: budget
+  key: budget
+  statement: 'Building budget: 450000 EUR'
+  value: 450000 EUR
+  status: preference
+  priority: null
+  source:
+    kind: owner_answer
+    ref: confirmed:ans-q-budget-22
+    interview_round: 22
+- id: f-cars
+  topic: vehicles
+  key: cars
+  statement: 'Cars to park: 1'
+  value: 1
+  status: preference
+  priority: null
+  source:
+    kind: owner_answer
+    ref: confirmed:ans-q-parking-12
+    interview_round: 12
+- id: f-children
+  topic: household
+  key: children
+  statement: 'Children: 2'
+  value: 2
+  status: verified_fact
+  priority: null
+  source:
+    kind: owner_answer
+    ref: confirmed:ans-q-household-1
+    interview_round: 1
+- id: f-children_own_rooms
+  topic: bedrooms_bathrooms
+  key: children_own_rooms
+  statement: 'Each child has their own bedroom: yes'
+  value: true
+  status: preference
+  priority: null
+  source:
+    kind: owner_answer
+    ref: confirmed:ans-q-children-rooms-2
+    interview_round: 2
+- id: f-cooking
+  topic: cooking
+  key: cooking
+  statement: 'How much you cook: frequent'
+  value: frequent
+  status: preference
+  priority: null
+  source:
+    kind: owner_answer
+    ref: confirmed:ans-q-kitchen-9
+    interview_round: 9
+- id: f-cross_ventilation
+  topic: natural_ventilation
+  key: cross_ventilation
+  statement: 'Cross-ventilation: yes'
+  value: true
+  status: preference
+  priority: null
+  source:
+    kind: owner_answer
+    ref: confirmed:ans-q-light-18
+    interview_round: 18
+- id: f-elders
+  topic: multigenerational
+  key: elders
+  statement: 'Older relatives living with you: 0'
+  value: 0
+  status: verified_fact
+  priority: null
+  source:
+    kind: owner_answer
+    ref: confirmed:ans-q-household-1
+    interview_round: 1
+- id: f-ensuite
+  topic: bedrooms_bathrooms
+  key: ensuite
+  statement: 'Main bedroom has its own bathroom: yes'
+  value: true
+  status: preference
+  priority: null
+  source:
+    kind: owner_answer
+    ref: confirmed:ans-q-bathrooms-4
+    interview_round: 4
+- id: f-entry_at_road
+  topic: site_response
+  key: entry_at_road
+  statement: 'Entrance and parking at road level: yes'
+  value: true
+  status: preference
+  priority: null
+  source:
+    kind: owner_answer
+    ref: confirmed:ans-q-entry-7
+    interview_round: 7
+- id: f-ev_charging
+  topic: ev_charging
+  key: ev_charging
+  statement: 'EV charging: no'
+  value: false
+  status: preference
+  priority: null
+  source:
+    kind: owner_answer
+    ref: confirmed:ans-q-parking-12
+    interview_round: 12
+- id: f-floors
+  topic: levels
+  key: floors
+  statement: 'Floors: 2'
+  value: 2
+  status: preference
+  priority: null
+  source:
+    kind: owner_answer
+    ref: confirmed:ans-q-floors-5
+    interview_round: 5
+- id: f-future_expansion
+  topic: future_expansion
+  key: future_expansion
+  statement: 'May extend later: yes'
+  value: true
+  status: preference
+  priority: could
+  source:
+    kind: owner_answer
+    ref: confirmed:ans-q-expansion-25
+    interview_round: 25
+- id: f-gathering_space
+  topic: cultural_practices
+  key: gathering_space
+  statement: 'Space for large family gatherings: no'
+  value: false
+  status: preference
+  priority: null
+  source:
+    kind: owner_answer
+    ref: confirmed:ans-q-practices-20
+    interview_round: 20
+- id: f-guest_accommodation
+  topic: long_term_guests
+  key: guest_accommodation
+  statement: 'Guest accommodation: none'
+  value: none
+  status: preference
+  priority: null
+  source:
+    kind: owner_answer
+    ref: confirmed:ans-q-guests-10
+    interview_round: 10
+- id: f-guest_frequency
+  topic: long_term_guests
+  key: guest_frequency
+  statement: 'How often guests stay: rarely'
+  value: rarely
+  status: preference
+  priority: null
+  source:
+    kind: owner_answer
+    ref: confirmed:ans-q-guests-10
+    interview_round: 10
+- id: f-household_size
+  topic: household
+  key: household_size
+  statement: 'People in the household: 4'
+  value: 4
+  status: verified_fact
+  priority: null
+  source:
+    kind: owner_answer
+    ref: confirmed:ans-q-household-1
+    interview_round: 1
+- id: f-kitchen_smell_separate
+  topic: kitchen_type
+  key: kitchen_smell_separate
+  statement: 'Cooking smells kept out of living areas: no'
+  value: false
+  status: preference
+  priority: null
+  source:
+    kind: owner_answer
+    ref: confirmed:ans-q-kitchen-9
+    interview_round: 9
+- id: f-laundry_room
+  topic: laundry
+  key: laundry_room
+  statement: 'Separate laundry room: yes'
+  value: true
+  status: preference
+  priority: should
+  source:
+    kind: owner_answer
+    ref: confirmed:ans-q-storage-13
+    interview_round: 13
+- id: f-light_wishes
+  topic: daylight
+  key: light_wishes
+  statement: 'Daylight wishes: Morning sun in the kitchen. Cross ventilation yes.'
+  value: Morning sun in the kitchen. Cross ventilation yes.
+  status: preference
+  priority: null
+  source:
+    kind: owner_answer
+    ref: confirmed:ans-q-light-18
+    interview_round: 18
+- id: f-office_quiet
+  topic: work_study
+  key: office_quiet
+  statement: 'Workplace must be quiet: yes'
+  value: true
+  status: preference
+  priority: must
+  source:
+    kind: owner_answer
+    ref: confirmed:ans-q-office-11
+    interview_round: 11
+- id: f-open_plan
+  topic: lifestyle
+  key: open_plan
+  statement: 'Open living, dining and kitchen: yes'
+  value: true
+  status: preference
+  priority: null
+  source:
+    kind: owner_answer
+    ref: confirmed:ans-q-living-8
+    interview_round: 8
+- id: f-outdoor
+  topic: outdoor_living
+  key: outdoor
+  statement: 'Outdoor spaces: terrace, garden'
+  value:
+  - terrace
+  - garden
+  status: preference
+  priority: null
+  source:
+    kind: owner_answer
+    ref: confirmed:ans-q-outdoor-14
+    interview_round: 14
+- id: f-pantry
+  topic: kitchen_type
+  key: pantry
+  statement: 'Pantry: no'
+  value: false
+  status: preference
+  priority: null
+  source:
+    kind: owner_answer
+    ref: confirmed:ans-q-kitchen-9
+    interview_round: 9
+- id: f-parking_type
+  topic: vehicles
+  key: parking_type
+  statement: 'Type of parking: carport'
+  value: carport
+  status: preference
+  priority: null
+  source:
+    kind: owner_answer
+    ref: confirmed:ans-q-parking-12
+    interview_round: 12
+- id: f-prayer_room
+  topic: religious_needs
+  key: prayer_room
+  statement: 'Prayer or quiet room: no'
+  value: false
+  status: preference
+  priority: null
+  source:
+    kind: owner_answer
+    ref: confirmed:ans-q-practices-20
+    interview_round: 20
+- id: f-priorities
+  topic: priorities
+  key: priorities
+  statement: 'Top priorities: daylight, good kitchen, low running costs'
+  value:
+  - daylight
+  - good kitchen
+  - low running costs
+  status: preference
+  priority: null
+  source:
+    kind: owner_answer
+    ref: confirmed:ans-q-priorities-24
+    interview_round: 24
+- id: f-privacy
+  topic: privacy
+  key: privacy
+  statement: 'Privacy from street and neighbours: high'
+  value: high
+  status: preference
+  priority: null
+  source:
+    kind: owner_answer
+    ref: confirmed:ans-q-privacy-16
+    interview_round: 16
+- id: f-relationships
+  topic: room_relationships
+  key: relationships
+  statement: 'Rooms next to each other or kept apart: kitchen near garden'
+  value:
+  - kitchen|near|garden
+  status: preference
+  priority: null
+  source:
+    kind: owner_answer
+    ref: confirmed:ans-q-relationships-17
+    interview_round: 17
+- id: f-room_sizes
+  topic: room_sizes
+  key: room_sizes
+  statement: 'Room size wishes: living=30'
+  value:
+  - living=30
+  status: preference
+  priority: null
+  source:
+    kind: owner_answer
+    ref: confirmed:ans-q-sizes-19
+    interview_round: 19
+- id: f-slope_strategy
+  topic: site_response
+  key: slope_strategy
+  statement: 'How the house meets the slope: step down'
+  value: step_down
+  status: preference
+  priority: null
+  source:
+    kind: owner_answer
+    ref: confirmed:ans-q-slope-6
+    interview_round: 6
+- id: f-storage_room
+  topic: storage
+  key: storage_room
+  statement: 'Store room: yes'
+  value: true
+  status: preference
+  priority: should
+  source:
+    kind: owner_answer
+    ref: confirmed:ans-q-storage-13
+    interview_round: 13
+- id: f-style
+  topic: materials_style
+  key: style
+  statement: 'Style and materials: Modern, with wood and white plaster.'
+  value: Modern, with wood and white plaster.
+  status: preference
+  priority: null
+  source:
+    kind: owner_answer
+    ref: confirmed:ans-q-style-21
+    interview_round: 21
+- id: f-target_area
+  topic: target_area
+  key: target_area
+  statement: 'Total floor area in mind: 180.0'
+  value: 180.0
+  status: preference
+  priority: null
+  source:
+    kind: owner_answer
+    ref: confirmed:ans-q-area-23
+    interview_round: 23
+- id: f-workspaces
+  topic: work_study
+  key: workspaces
+  statement: 'Workplaces at home: 1'
+  value: 1
+  status: preference
+  priority: must
+  source:
+    kind: owner_answer
+    ref: confirmed:ans-q-office-11
+    interview_round: 11
+budget:
+  amount: 450000.0
+  currency: EUR
+target_gross_area_m2: 180.0
+contradictions: []
+interview_rounds_completed: 25
+provenance:
+  created_at: '2026-10-17T09:02:01Z'
+  created_by:
+    kind: system
+    id: house-ai-interview
+    display_name: null
+    provider: null
+    model: null
+  method: owner_interview
+  tool: house-ai interview
+  tool_version: null
+  inputs:
+  - kind: interview_session
+    id: interview
+    version: 27
+    sha256: bad2f1dc23bd2aa23e8dabb57895d2a90d1b466bc6c7fa8a281e682c4536f265
+  notes: Derived from the interview session; the owner's words are kept verbatim.

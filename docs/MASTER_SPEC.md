@@ -160,7 +160,26 @@ a private real survey.
 OWNER INTERVIEW / ARCHITECTURAL PROGRAMMING
 ======================================================================
 
-Implement an adaptive interview engine.
+Implement an adaptive interview engine that is directly operable by coding
+agents (Claude Code, Gemini CLI, OpenAI Codex) through documented CLI commands
+and structured data interfaces, WITHOUT requiring a separately billed Anthropic,
+OpenAI, or Gemini API key for the core workflow.
+
+The intended primary architecture is:
+
+HOMEOWNER
+   ↓
+CLAUDE CODE / GEMINI CLI / CODEX
+   ↓
+HOUSE DESIGN TOOLS (`house-ai` CLI & structured interfaces)
+   ↓
+STRUCTURED REQUIREMENTS AND VALIDATION
+   ↓
+FLOOR PLANS
+   ↓
+BLENDER / IFC
+   ↓
+UNREAL ENGINE
 
 It must investigate, as relevant:
 
@@ -213,13 +232,20 @@ It must investigate, as relevant:
 Do not ask 50 questions at once.
 
 Ask a small number of high-information questions per round.
+Use the predefined question bank as a completeness checklist, while allowing
+the coding agent to ask natural, adaptive architectural follow-up questions
+(and understand Persian, English, or mixed-language homeowner conversations)
+without requiring the deterministic parser to understand every natural-language
+expression.
+
 After each round:
 
-1. update the structured brief;
-2. show what was learned;
-3. label assumptions;
-4. detect contradictions;
-5. ask the next most useful questions.
+1. record the homeowner's EXACT original words verbatim;
+2. propose structured slot interpretations (`inference`) and update the brief;
+3. show what was learned and ask the homeowner to confirm or correct it;
+4. label assumptions;
+5. detect contradictions and missing information;
+6. ask the next most useful questions.
 
 The interview output must be data, not just prose.
 
@@ -594,21 +620,32 @@ plugin where appropriate.
 Keep a future adapter path open for Datasmith/IFC.
 
 ======================================================================
-AI PROVIDERS
+AI PROVIDERS AND AGENT-FIRST INTERFACE
 ======================================================================
 
-The domain system must not depend on one model vendor.
+The domain system must not depend on one model vendor, nor require a paid
+API key (`ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, `GEMINI_API_KEY`) for the
+core workflow.
 
-Create a provider-neutral interface.
+The primary AI interfaces are interactive coding agents working directly with
+the homeowner:
 
-Implement adapters only where credentials/environment support them:
+- Claude Code;
+- Google Gemini CLI;
+- OpenAI Codex.
 
-- OpenAI;
-- Anthropic;
-- Google Gemini.
+These agents operate the project through documented `house-ai` CLI commands
+and structured data interfaces (`ProjectStore`, JSON/YAML artifacts, and
+hash-chained event history), while human approval gates (`site`, `program`,
+`plan`, `model`) remain strictly human-only in an interactive terminal.
+
+Create a provider-neutral interface (`ModelProvider`, `DataFlowPolicy`) so
+direct SDK adapters (Anthropic, OpenAI, Google Gemini) remain OPTIONAL where
+credentials/environment support them. Never design the core workflow around a
+paid API key.
 
 The same project files, schemas, workflow states and tools must work
-regardless of provider.
+regardless of which agent or optional provider is used.
 
 Provider-specific context files should be SMALL:
 

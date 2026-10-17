@@ -1,233 +1,206 @@
 # Agent contract
 
-The single set of engineering rules for every coding agent that works on
-this repository: Claude Code (primary developer), OpenAI Codex (independent
-reviewer and debugger) and Google Gemini (reviewer and second developer).
+The single set of engineering and operating rules for every coding agent working
+on this repository: Claude Code, OpenAI Codex, and Google Gemini CLI.
 `AGENTS.md`, `CLAUDE.md` and `GEMINI.md` only load this file
 ([ADR 0005](adr/0005-shared-coding-agent-instructions.md)). Never copy these
 rules into a tool-specific file.
 
-**Coding agents are not product agents.** The roles in `agents/roles.yaml`
-(Site Analyst, Design Architect, ...) are runtime parts of the product,
-described by the spec. This contract governs the tools that write the code.
+## 1. Objectives, agent-first workflow, and sources of truth
 
-## 1. Objectives and sources of truth
+HOUSE DESIGN AI exists first to design the homeowner's own house on their own
+land (`projects/my-house/`), and stays reusable for other projects. It turns a
+survey and an owner interview into a verified site, an approved program, floor
+plans, then Blender and Unreal models, all from one canonical semantic model
+with human approval gates in between. Project facts live in project data, never
+in application code.
 
-HOUSE DESIGN AI exists first to design the owner's own house on their own
-land (`projects/my-house/`), and must stay reusable for other projects. It
-turns a survey and an owner interview into a verified site, an approved
-program, floor plans, then Blender and Unreal models, all from one semantic
-model with human approval in between. Project facts live in project data,
-never in application code.
+**Agent-first architecture (no API key required, [ADR 0011](adr/0011-agent-first-interview-interface.md)):**
+The homeowner works directly with **Claude Code**, **Gemini CLI**, and **OpenAI
+Codex** as the primary AI interfaces:
+`Homeowner → Claude Code / Gemini CLI / Codex → house-ai CLI & ProjectStore → Structured Requirements & Validation → Floor Plans → Blender / IFC → Unreal Engine`.
+No separately billed Anthropic, OpenAI, or Gemini API key is required for the
+core workflow. The SDK adapter in `providers/claude.py` ([ADR 0010](adr/0010-claude-adapter-for-the-interview.md))
+is strictly optional.
 
-Authorities: [MASTER_SPEC.md](MASTER_SPEC.md) for what the product must do
-(wins every conflict), [ARCHITECTURE.md](ARCHITECTURE.md) for layering,
-[DOMAIN_MODEL.md](DOMAIN_MODEL.md) for schemas, [adr/](adr/) for decisions,
-[milestones/](milestones/) for what each milestone delivered.
-
-If this contract and the spec disagree, follow the spec and record the
-conflict in an ADR.
+Authorities: [MASTER_SPEC.md](MASTER_SPEC.md) (wins every conflict),
+[ARCHITECTURE.md](ARCHITECTURE.md), [DOMAIN_MODEL.md](DOMAIN_MODEL.md),
+[adr/](adr/), [milestones/](milestones/).
 
 ## 2. Repository architecture
 
 `src/house_ai/` is layered: `domain` (canonical Pydantic schemas, units,
-geometry, integrity checks) ← `storage` ← `orchestration` (workflow) ←
-`cli`. Pipeline packages (`cad`, `geospatial`, `render2d`, later
-`generation`, `evaluation`, `blender`, `unreal`) depend on `domain` only.
-Dependencies point toward `domain`; `domain` imports nothing above it. No
-AI vendor SDK, CAD backend or game engine may become a dependency of
-`domain`; each sits behind an adapter.
+geometry, integrity checks) ← `storage` ← `orchestration` (workflow, site,
+interview) ← `cli`. Pipeline packages (`cad`, `geospatial`, `interview`,
+`program`, `render2d`, later `constraints`, `generation`, `evaluation`,
+`blender`, `unreal`) depend on `domain` only. No AI vendor SDK, CAD backend or
+game engine may become a dependency of `domain`; each sits behind an adapter.
 
 ## 3. One model, many views
 
-- The canonical semantic house model (`house_ai.domain`) is the only source
-  of truth. Plans, SVGs, IFC, Blender and Unreal output are derived from it.
-- Never treat an image, a render or a prose description as the design. A
-  design change is a new plan version of the canonical model.
-- Never invent coordinates for rooms and trust them. Geometry comes from a
-  solver or a human and is always run through
-  `house_ai.domain.integrity.check_model`.
-- Do not rebuild or fork the domain model; extend it, regenerate the
-  schemas, and update `DOMAIN_MODEL.md`.
+- The canonical semantic house model (`house_ai.domain`) is the only source of
+  truth. Plans, SVGs, IFC, Blender and Unreal output are derived from it.
+- Never treat an image, render or prose as the design. A design change is a new
+  version in `ProjectStore`.
+- Never invent room coordinates and trust them. Geometry comes from a solver or
+  a human and is always checked with `house_ai.domain.integrity.check_model`.
+- Extend the domain model rather than forking it; run `house-ai schemas export`
+  and update `DOMAIN_MODEL.md`.
 
 ## 4. Writing project state
 
-- A project is `projects/<name>/` (ADR 0009). Its record (`project.json`,
-  `events.jsonl`, `source/`, `artifacts/`) changes only through the library
-  or the `house-ai` CLI: artifacts are read-only, the log hash-chained
-  (`project verify`). `surveys/ site/ reviews/ design/` hold inputs and
-  generated documents.
-- Artifacts must validate against their schema (the store refuses
-  invalid content). Nothing is overwritten; a revision is a new version.
-- Identify yourself on state-changing commands: `--actor agent:<tool>`.
-- Owner answers become `BriefFact` entries (`source.kind: owner_answer`),
-  recorded as stated. A plan change request keeps the owner's words
-  verbatim and produces a new plan version plus a `RevisionReport`.
+- A project is `projects/<name>/` ([ADR 0009](adr/0009-personal-first-project-folders.md)).
+  Its record (`project.json`, `events.jsonl`, `source/`, `artifacts/`) changes
+  only through the library or `house-ai` CLI: artifacts are write-once, the log
+  is hash-chained (`project verify`). `surveys/ site/ reviews/ design/` hold
+  inputs and generated exports.
+- Identify yourself on state-changing commands: `--actor agent:<tool>`
+  (`agent:claude-code`, `agent:gemini`, `agent:codex`).
+- Homeowner answers are recorded verbatim (`source.kind: owner_answer`). Every
+  slot value you propose (`--set slot=value`) is recorded as an `inference`
+  (`method: agent:<tool>`) until the homeowner confirms it (`interview confirm`).
 
 ## 5. Private data and providers
 
-- The owner chose to commit `projects/my-house/` to this **private**
-  repository (ADR 0009). Before pushing it, check `gh repo view --json
-  visibility` is `PRIVATE`, else stop and ask; never change visibility.
-  Never copy project data into `examples/`, `tests/` or docs, or modify
-  survey originals. `project-data/` stays git-ignored. Never commit API
-  keys or tokens; providers read keys from the environment.
-- Reading private data into your own context sends it to your model
-  provider. Do not open, print or summarise the owner's surveys, briefs or
-  reports unless the owner has explicitly allowed it in this session.
-  Prepare the command and let the owner run it.
-- In product code every provider call goes through `providers.base.send`,
-  which enforces `DataFlowPolicy`; unlabelled content counts as private.
-- Tests and examples use synthetic data only.
+- The owner committed `projects/my-house/` (`seperated.dwg` and `elevation.dwg`;
+  `final.dwg` is excluded) to this **private** repository
+  ([ADR 0009](adr/0009-personal-first-project-folders.md)). Before pushing,
+  verify `gh repo view --json visibility` is `PRIVATE`; else stop and ask.
+  Never copy real project data into `examples/`, `tests/` or public docs, and
+  never modify survey originals. `project-data/` stays git-ignored. Never
+  commit API keys or `.env` files.
+- Every external provider call goes through `providers.base.send`, which
+  enforces `DataFlowPolicy`. Tests and examples use synthetic data only.
 
 ## 6. Unknowns, assumptions and evidence
 
-- Unknown architectural facts are recorded as unknown (`null` or status
-  `unknown`). Never invent a value to unblock the pipeline.
-- Label statements with their epistemic status: `verified_fact`,
-  `inference`, `assumption`, `preference`, `simulation_result`,
-  `professional_approval`, `unknown`. An agent inference is never recorded
-  as a fact or an owner preference.
-- Evaluator output states how each value was obtained (`measured`,
-  `inferred`, `simulated`, `ai_judgment`, `not_checked`). A metric you did
-  not compute is `not_checked`, with no value.
-- Every derived value keeps its provenance: source document and SHA-256,
-  CAD entity handle and layer, parser and version, actor, input artifact
-  versions. Assumptions go in `assumptions.yaml`, unanswered questions in
-  `open_questions.yaml` (`blocking` if the program must wait for them).
+- Unknown architectural or site facts are recorded as `null` / `unknown`. Never
+  invent a value to unblock the pipeline.
+- Label claims with their epistemic status: `verified_fact`, `inference`,
+  `assumption`, `preference`, `simulation_result`, `professional_approval`,
+  `unknown`. An agent inference is never recorded as a fact or preference until
+  the homeowner confirms it.
+- Evaluator output states how each metric was obtained (`measured`, `inferred`,
+  `simulated`, `ai_judgment`, `not_checked`). Assumptions go in
+  `assumptions.yaml`, unanswered questions in `open_questions.yaml`.
 
-## 7. CAD, units and coordinate systems
+## 7. CAD, units, coordinate systems, and `projects/my-house/`
 
-- DWG and DXF are file formats; UTM is a coordinate system. Inspect a
-  file's real format before choosing a reader.
-- Never infer a CRS, UTM zone, datum or drawing unit from coordinate
-  magnitudes. Only a source file can *declare* them and only a human can
-  *confirm* them. Unconfirmed units, CRS, elevation units or vertical
-  datum put the site in `SITE_NEEDS_VERIFICATION`; work stops there.
-- Raw CAD extraction stays in SOURCE coordinates and units. Conversion to
-  GRID metres and the LOCAL project frame is a separate, reversible,
-  documented step (`domain/coordinates.py`).
-- Ambiguous entities are reported as ambiguous, never silently used or
-  dropped. Missing elevations are never interpolated beyond surveyed data.
+- DWG and DXF are file formats; UTM is a coordinate system. Never infer a CRS,
+  UTM zone, hemisphere, datum or unit from coordinate magnitudes. Only a source
+  file can *declare* them and only a human can *confirm* them (`site confirm`).
+- Raw CAD extraction stays in SOURCE coordinates and units; conversion to GRID
+  metres and LOCAL frame is reversible (`domain/coordinates.py`).
+- **`projects/my-house/` facts:** The owner reported UTM coordinates, elevations
+  in metres above sea level, and a real ~12–12.5 m drop on genuinely steep land.
+  CAD extraction measures ~600 m² parcel area, ~21 m frontage on a ~9 m road,
+  and 27 elevation points (`seperated.dwg` + `elevation.dwg`). **Still
+  unverified:** exact UTM zone, hemisphere, horizontal datum/EPSG, vertical
+  datum, and formal legal boundary verification. Keep `my-house` in
+  `SITE_NEEDS_VERIFICATION` until the owner runs `site confirm` and approves the
+  site gate. Future designs on `my-house` must account for split-level layouts,
+  hillside construction, road-level parking/access, excavation, retaining walls,
+  drainage, and structure without assuming all 600 m² is buildable.
 
 ## 8. Workflow and human approval gates
 
-States: `NEW_PROJECT → SITE_INGESTION ⇄ SITE_NEEDS_VERIFICATION → [site
-gate] SITE_APPROVED → INTERVIEWING ⇄ PROGRAM_REVIEW → [program gate]
-PROGRAM_APPROVED → CONCEPT_GENERATION ⇄ CONCEPT_REVIEW → [plan gate]
-PLAN_APPROVED → BLENDER_BUILD ⇄ BLENDER_REVIEW → [model gate] MODEL_APPROVED
-→ UNREAL_BUILD ⇄ UNREAL_REVIEW`.
+States: `NEW_PROJECT → SITE_INGESTION ⇄ SITE_NEEDS_VERIFICATION → [site gate]
+SITE_APPROVED → INTERVIEWING ⇄ PROGRAM_REVIEW → [program gate] PROGRAM_APPROVED
+→ CONCEPT_GENERATION ⇄ CONCEPT_REVIEW → [plan gate] PLAN_APPROVED →
+BLENDER_BUILD ⇄ BLENDER_REVIEW → [model gate] MODEL_APPROVED → UNREAL_BUILD ⇄
+UNREAL_REVIEW`.
 
-- **You must never approve a gate or confirm site facts.** `workflow
-  approve` and `site confirm` need an interactive terminal and a typed
-  phrase and exit with code 2 otherwise. Do not work around this (no fake
-  TTY, no `--actor human:...` on the owner's behalf). Run
-  `workflow request-approval` and ask the human.
-- Never imply something is approved when it is not. Say which gates are
-  approved, for which artifact version, and by whom.
-- Reopening a gate supersedes it and every later approval; only a human
-  may reopen. If a request needs a gate that is not approved, say so and
-  stop.
+- **Never approve a gate, confirm site facts, grant provider consent, or reject
+  a reviewed program on the homeowner's behalf.** `workflow approve`, `workflow
+  reopen`, `site confirm`, `interview consent`, and `program reject` require a
+  human in an interactive terminal (exit code 2 otherwise). Never bypass this
+  with a fake TTY or `--actor human:...`. Run `workflow request-approval` (or
+  `program review`) and ask the human to run the approval command in their own
+  terminal.
 
-## 9. Professional boundary
+## 9. Agent-operated homeowner interview (Milestone C)
 
-This is design exploration and decision support. Never call output
-permit-ready, construction-ready, structurally certified, code-compliant,
-MEP-engineered or geotechnically verified unless a qualified professional
-supplied that status in the project record. Compliance wording comes from
-`codepack.compliance_statement`; run `codepack.find_prohibited_claims` over
-owner-facing text. See [PROFESSIONAL_HANDOFF.md](PROFESSIONAL_HANDOFF.md).
+1. **Select and inspect the project & site:**
+   `house-ai project list`, `house-ai project status my-house --json`, and
+   `house-ai interview status my-house --json` (shows site measurements,
+   verification blockers, owner statements, checklist coverage, unconfirmed
+   inferences, and open contradictions).
+2. **Start or resume the interview:**
+   `house-ai interview start my-house --json --actor agent:<tool>`. Works while
+   the site is in `SITE_NEEDS_VERIFICATION` (site values are marked unconfirmed).
+3. **Conduct an adaptive conversation (English, Persian, or mixed):**
+   Use the 30 questions in `interview checklist` as a completeness checklist,
+   not a rigid script. Ask natural architectural follow-ups tailored to the
+   owner's answers and the steep site.
+4. **Record exact homeowner words + proposed interpretations (`inference`):**
+   Always pass the homeowner's **exact verbatim words** (Persian, English, or
+   mixed) as `text`, and pass structured slot interpretations via `--set`:
+   - Checklist question/slot or multi-slot free-form answer:
+     `house-ai interview answer my-house "<verbatim words>" [--question <qid|slot>] --set slot=value --actor agent:<tool>`
+   - Adaptive follow-up question outside the 30-question checklist:
+     `house-ai interview answer my-house "<verbatim words>" --question q-followup-road --question-text "<your question>" --topic site --set entry_at_road=true --actor agent:<tool>`
+   - Mark undecided slots with `--unknown <slot>`.
+5. **Confirm, correct, or revise interpretations:**
+   Show interpreted values (`inference`) to the homeowner and ask them to
+   confirm or correct. Once they confirm in chat:
+   `house-ai interview confirm my-house [slots...] --text "<owner's words>" --actor agent:<tool>`.
+   To reject an interpretation or revise an earlier answer (preserving history):
+   `house-ai interview reject my-house --slot <slot> --text "<owner's words>" --actor agent:<tool>`
+   or `house-ai interview revise my-house <qid|slot> "<new words>" --set slot=new_value --actor agent:<tool>`.
+6. **Resolve contradictions:**
+   Explain the trade-off and options from `interview status --json`, then record
+   the owner's choice:
+   `house-ai interview resolve my-house <contradiction-id> "<owner's words>" --option <1..N> [--defer] --actor agent:<tool>`.
+7. **Build, validate, and request human approval of the space program:**
+   `house-ai program build my-house --out projects/my-house/design --actor agent:<tool>`
+   writes `design_brief.yaml`, `space_program.yaml`, `assumptions.yaml`,
+   `open_questions.yaml`, `interview-summary.md`, and `program-review.md` and
+   runs deterministic validation. Once the site gate is approved and no blocking
+   findings or unconfirmed inferences remain, run `house-ai program review my-house --actor agent:<tool>`
+   and ask the human to run `house-ai workflow approve my-house program --id program --approver <name>`
+   in their terminal.
 
-## 10. Coding conventions
+### Practical example (`projects/my-house`)
 
-- Python ≥ 3.11, type hints, `ruff` as configured in `pyproject.toml`
-  (line length 100). Match the style of the surrounding code.
-- Persisted data is a Pydantic `StrictModel` (unknown fields, NaN and
-  infinity rejected). Canonical units are metres and degrees.
-- Deterministic code for anything measurable; AI only where reasoning
-  helps, and its output is validated before it changes state.
-- Smallest change that solves the task. No speculative features,
-  frameworks or configuration. Add a dependency only when needed, in
-  `pyproject.toml` and `requirements-lock.txt`, and say why.
-- External programs (ODA File Converter, Blender, Unreal) sit behind
-  adapters and are optional; the rest of the slice runs without them.
+```bash
+.venv/bin/house-ai project status my-house --json
+.venv/bin/house-ai interview start my-house --json --actor agent:claude-code
 
-## 11. Tests and definition of done
+# Owner: "I want a modern house on my steep land, with parking from the road and a large living room."
+.venv/bin/house-ai interview answer my-house \
+  "I want a modern house on my steep land, with parking from the road and a large living room." \
+  --set "style=modern hillside" --set slope_strategy=step_down --set entry_at_road=true \
+  --set cars=2 --set parking_type=garage --set room_sizes=living=35 \
+  --json --actor agent:claude-code
 
-- Every behaviour change has a test. Bugs get a failing test first.
-- Assert numbers against known ground truth (areas, lengths, transforms,
-  elevations), not only "it ran". No mock success output.
-- Tests run offline, without private data or paid APIs. Tests that need
-  an external program skip cleanly when it is absent.
+# Adaptive hillside follow-up with Persian/English answer:
+.venv/bin/house-ai interview answer my-house \
+  "ورودی اصلی و پارکینگ هم‌سطح جاده باشد و نشیمن یک طبقه پایین‌تر رو به منظره." \
+  --question q-follow-section \
+  --question-text "Should the main living level sit one level below the road-level garage?" \
+  --topic site --set floors=2 --json --actor agent:claude-code
 
-Before saying a change is finished, run and report exactly as printed:
+# After the owner confirms in chat:
+.venv/bin/house-ai interview confirm my-house --text "بله، تایید است." --json --actor agent:claude-code
+.venv/bin/house-ai program build my-house --out projects/my-house/design --actor agent:claude-code
+```
+
+## 10. Professional boundary, conventions, tests, and Git
+
+- Never call output permit-ready, construction-ready, structurally certified,
+  code-compliant, MEP-engineered or geotechnically verified without a recorded
+  professional approval ([PROFESSIONAL_HANDOFF.md](PROFESSIONAL_HANDOFF.md)).
+- Python ≥ 3.11 (3.11 and 3.13), `ruff` line length 100, Pydantic `StrictModel`,
+  canonical units metres/degrees. External tools and vendor SDKs sit behind
+  optional adapters.
+- Every behaviour change or bug fix has a deterministic offline test asserting
+  ground-truth numbers. Record architectural decisions in `docs/adr/NNNN-*.md`.
+- One branch per milestone (`milestone-a`, `milestone-b`, ...). Never rewrite
+  pushed history. Merge into `main` and push only when the owner authorises it.
+- Before saying a task is finished, run and report:
 
 ```bash
 .venv/bin/python -m pytest -q
 .venv/bin/ruff check src tests examples
 .venv/bin/house-ai schemas check
-```
-
-If you changed a schema, run `house-ai schemas export` and commit the
-regenerated files.
-
-## 12. Architectural decisions
-
-Record a decision as `docs/adr/NNNN-short-title.md` (context, decision,
-consequences) when you change layering, add a dependency or external tool,
-change storage or schema semantics, or resolve a spec conflict. Do not
-rewrite accepted ADRs; supersede them with a new one.
-
-## 13. Git workflow
-
-- One branch per milestone (`milestone-a`, `milestone-b`, ...). Never
-  commit directly to `main`.
-- Never rewrite pushed history: no force-push, no rebase or amend of
-  pushed commits. Do not reopen history issues the owner has acknowledged.
-- Merge into `main` and push only when the owner explicitly authorises it.
-- Commit messages: imperative subject, a prefix such as `feat:`, `fix:`,
-  `docs:`, `test:`; the body says why. Never commit `project-data/` or
-  credentials; survey files only under `projects/`.
-
-## 14. Milestones and acceptance
-
-Milestones follow the spec (A domain, B site, C program, D plan, E reviewer,
-F Blender, G Unreal). Work on one milestone at a time and do not start the
-next without the owner's go-ahead. A milestone is accepted when:
-
-1. the spec's items for it work from real, implemented logic;
-2. the definition of done (§11) passes;
-3. `docs/milestones/<X>.md` states what works, exact commands to reproduce
-   it, test results as printed, known limitations and the next milestone;
-4. the owner has approved the merge.
-
-## 15. Handoffs between coding agents
-
-- Start with `git status`, `git log` and the current milestone file. If the
-  tree holds another agent's uncommitted work, stop and ask.
-- Never trust a reported result. Re-run §11 yourself and read the actual
-  diff before building on it.
-- Reviewers report findings as `file:line`, severity, failure scenario.
-  Fix only confirmed defects, each with a test, and leave design changes to
-  the owner.
-- End a session with everything committed on the milestone branch and the
-  milestone file updated (done, open findings, what needs the owner).
-
-## 16. Commands
-
-```bash
-house-ai project status <dir|name> [--json]  # start every project task here
-house-ai project new <name> --actor human:<name> | project list
-house-ai project verify <dir>               # hash chain, artifacts, sources
-house-ai validate <schema> <file> [--site site.yaml]
-house-ai artifact put <dir> <kind> <file> --actor agent:<tool>
-house-ai source add <dir> <file> --actor human:<name>
-house-ai site inspect <file>... [--layers map.yaml]   # read-only
-house-ai site ingest <dir> --source <src-id> --layers map.yaml --actor agent:<tool>
-house-ai site report <dir> [--out <dir>]     # default <dir>/reviews/site-v<N>
-house-ai statement add|list <dir> ...        # owner's words; confirms nothing
-house-ai workflow transition <dir> <STATE> --reason "..." --actor agent:<tool>
-house-ai workflow assess-site <dir> --id site --actor agent:<tool>
-house-ai workflow request-approval <dir> <gate> --id <id> --actor agent:<tool>
-house-ai schemas export | house-ai schemas check
 ```

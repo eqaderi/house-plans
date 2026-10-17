@@ -93,12 +93,32 @@ evidence only: it changes no confirmation status and clears no blocker
 
 - `household`: members with role and age (`null` when not given).
 - `facts`: `BriefFact` items with a topic (45 topics from the spec's
-  interview list), a machine key, a statement, an optional value, an
+  interview list plus `levels`, `room_sizes`, `room_relationships` and
+  `site_response`), a machine key, a statement, an optional value, an
   epistemic status, a MoSCoW priority and a source (owner answer, document,
   agent inference or default). An agent inference cannot be stored as a
   fact or a preference; an owner answer cannot be stored as an inference.
 - `budget`, `target_gross_area_m2`, `contradictions` (each citing at least
-  two facts), `interview_rounds_completed`.
+  two facts, with a plain-language `tradeoff`, the `options` offered and,
+  once resolved, the owner's `resolution` in their words),
+  `interview_rounds_completed`.
+- An interview-derived brief (`provenance.method: owner_interview`) has two
+  kinds of fact (ADR 0008): `ans-<question>-<turn>` holds the owner's words
+  verbatim (`owner_answer`); `f-<slot>` holds what was understood
+  (`agent_inference` / `inference` until the owner confirms it, then
+  `owner_answer` with ref `confirmed:<answer id>` or `resolution:<id>`;
+  `unknown` when the owner does not know).
+
+## Interview session (`interview_session`)
+
+- `InterviewSession`: every `InterviewTurn` (answer, revision,
+  confirmation, rejection, resolution, consent, program rejection) with the
+  question as shown, the owner's words verbatim, what was `understood`
+  (slot, value, method `parser`, `llm:<provider>` or `resolution`), the
+  pending question, and a `SiteContext` (site version, `verified` only when
+  the site gate approved that version, parcel area, relief, slope,
+  frontage). Every turn needs a human actor. The brief is derived from the
+  session; the session is the record of the conversation.
 
 Companion files: `assumptions` (`AssumptionsFile`) and `open_questions`
 (`OpenQuestionsFile`; a `blocking` open question blocks the program gate).
@@ -106,8 +126,10 @@ Companion files: `assumptions` (`AssumptionsFile`) and `open_questions`
 ## Space program (`space_program`)
 
 - `ProgramItem`: function, quantity, min/target/max area (ordered), minimum
-  width, privacy, zone, level preference, priority, daylight need, and the
-  brief facts it derives from.
+  width, privacy, zone, level preference, priority, daylight need, whether
+  it must be step-free (`accessible`), and the brief facts it derives from.
+- `SpaceProgram` also records `levels` (floors wanted, or unknown), `budget`,
+  and the `site_ref` it was checked against with `site_verified`.
 - `AdjacencyRequirement`: `connected`, `adjacent`, `near`, `visual`,
   `separated`, `acoustic_separation`; `hard` (no weight) or `soft` (weight
   required). Endpoints are program items or `exterior`.

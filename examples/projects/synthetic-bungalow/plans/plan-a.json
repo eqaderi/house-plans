@@ -431,7 +431,7 @@
     "program_ref": {
       "id": "program",
       "kind": "space_program",
-      "sha256": "0efb44c81fea91f72653409b96244fb933e74b80a9ca2c337e5d3a4dc6f721dc",
+      "sha256": "7a5025e350ad5ec7b267b530ef95e5d360d6e34bd39cd78526e8919fdc644186",
       "version": 1
     },
     "relationships": [
@@ -918,7 +918,7 @@
       {
         "id": "program",
         "kind": "space_program",
-        "sha256": "0efb44c81fea91f72653409b96244fb933e74b80a9ca2c337e5d3a4dc6f721dc",
+        "sha256": "7a5025e350ad5ec7b267b530ef95e5d360d6e34bd39cd78526e8919fdc644186",
         "version": 1
       }
     ],

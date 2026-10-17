@@ -1,8 +1,8 @@
 # Architecture
 
-Status: Milestone B (site ingestion) on branch `milestone-b`. Sections
-marked *planned* describe interfaces that exist as boundaries but have no
-implementation yet.
+Status: Milestones A, B (site ingestion) and C (agent-first owner interview and
+space program) complete. Sections marked *planned* describe interfaces that
+exist as boundaries for Milestone D and later.
 
 ## Principles
 
@@ -19,18 +19,23 @@ implementation yet.
    versions by content hash.
 4. **Unknown stays unknown.** Missing facts are modelled explicitly instead
    of being filled with plausible defaults.
-5. **Vendor-neutral.** No AI vendor SDK, CAD backend or game engine is a
-   dependency of the domain. Each sits behind an adapter boundary.
+5. **Agent-first and vendor-neutral.** The primary AI interfaces are coding
+   agents (Claude Code, Gemini CLI, OpenAI Codex) operating `house-ai` via
+   documented CLI commands and structured interfaces without requiring a paid
+   API key ([ADR 0011](adr/0011-agent-first-interview-interface.md)). Direct
+   SDK adapters ([ADR 0010](adr/0010-claude-adapter-for-the-interview.md)) are
+   optional, and no AI vendor SDK, CAD backend or game engine is a dependency
+   of the domain.
 
 ## Layers
 
 ```
             ┌─────────────────────────────────────────────────────────┐
-  agents    │ agents/roles.yaml (runtime roles), providers/ (A)        │
+  agents    │ Claude Code / Gemini CLI / Codex + agents/roles.yaml    │
             └───────────────┬─────────────────────────────────────────┘
                             │ schema-valid writes only
             ┌───────────────▼─────────────────────────────────────────┐
-  interface │ cli/ (A)              apps/reviewer/ (planned, E)        │
+  interface │ cli/ (A, B, C)        apps/reviewer/ (planned, E)       │
             └───────────────┬─────────────────────────────────────────┘
             ┌───────────────▼─────────────────────────────────────────┐
   workflow  │ orchestration/workflow.py: states, guards, gates (A)     │
@@ -57,13 +62,14 @@ the orchestration layer.
 |---|---|---|
 | `house_ai.domain` | A | Pydantic models for every canonical schema, units, geometry, coordinate frames, integrity checks, compliance language, schema registry |
 | `house_ai.storage` | A | `ProjectStore` (write-once artifacts, immutable sources, hash-chained event log), canonical hashing, folder importer |
-| `house_ai.orchestration` | A, B | Workflow state machine, transition guards, approval gates, reopen; site ingestion, human site confirmation, read-only survey inspection |
-| `house_ai.cli` | A | `house-ai` command, a thin layer over the library |
-| `house_ai.providers` | A (interface) | `ModelProvider` protocol, `DataFlowPolicy`, `send()` |
+| `house_ai.orchestration` | A, B, C | Workflow state machine, transition guards, approval gates, reopen; site ingestion, human site confirmation, read-only survey inspection; agent-first interview service (store, workflow, site context, checklist, structured slot interpretations), optional LLM assist through `providers.base.send` |
+| `house_ai.cli` | A, B, C | `house-ai` command, a thin layer over the library with `--json` and `--set` for coding agents |
+| `house_ai.providers` | A, C | `ModelProvider` protocol, `DataFlowPolicy`, `send()`; `ScriptedProvider` for tests; optional `ClaudeProvider` (`providers/claude.py`, ADR 0010) |
 | `house_ai.cad` | B | `CadAdapter` / `CadSiteExtractor` protocols; format detection from bytes; ezdxf DXF adapter; DWG via ODA File Converter; layer roles from a human mapping; raw SOURCE-frame extraction and site interpretation with explicit ambiguity |
 | `house_ai.geospatial` | B | CRS lookup and validation (pyproj/PROJ), UTM candidates, grid-to-true-north, Delaunay TIN, parcel measurements and frontage, site validation report |
-| `house_ai.render2d` | B (site), D (plans) | Site plan SVG from the canonical site; plan SVG planned |
-| `house_ai.interview`, `house_ai.program` | C | Adaptive interview, brief → program (planned) |
+| `house_ai.render2d` | B (site), D (plans) | Site plan SVG, terrain slope SVG and the static site review page from the canonical site; plan SVG planned |
+| `house_ai.interview` | C | Question bank (completeness checklist) with conditions and follow-ups, deterministic answer parsers, slot types, contradiction rules with options, session fold and planner, brief builder, summary (pure, domain only) |
+| `house_ai.program` | C | Brief → space program, adjacencies, zones, assumptions (including steep-hillside engineering assumptions) and open questions; program validation (missing information, unconfirmed interpretations, conflicts, sizes, totals, site fit); review sheet |
 | `house_ai.constraints`, `house_ai.generation`, `house_ai.evaluation` | D | Constraint compilation, `PlanGenerator` and `Evaluator` protocols (planned) |
 | `house_ai.blender` | F | Deterministic canonical-plan → Blender scripts (planned) |
 | `house_ai.unreal` | G | FBX + `scene_manifest.json` → Unreal importer (planned) |

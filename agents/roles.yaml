@@ -22,7 +22,7 @@ roles:
     name: Architectural Programmer
     purpose: Runs the adaptive interview and turns answers into the brief, program, assumptions and open questions.
     invoke_when: Interviewing or revising the program.
-    may_write: [design_brief, space_program, assumptions, open_questions, constraint_set]
+    may_write: [interview_session, design_brief, space_program, assumptions, open_questions, constraint_set]
     may_transition: true
     milestone: C
   - id: design-architect

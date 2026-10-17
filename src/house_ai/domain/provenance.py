@@ -63,6 +63,7 @@ class ArtifactKind(StrEnum):
     EVALUATION_REPORT = "evaluation_report"
     REVISION_REPORT = "revision_report"
     BUILD_RECORD = "build_record"
+    INTERVIEW_SESSION = "interview_session"
     OWNER_STATEMENTS = "owner_statements"
 
 
