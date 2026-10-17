@@ -14,5 +14,5 @@ rules:
     title: Minimum bedroom area (invented)
     summary: Bedrooms at least 9 m² (synthetic value).
     citation: synthetic-codepack §1
-    parameters: {min_area_m2: 9.0}
+    parameters: {function: bedroom, min_area_m2: 9.0}
 verification_status: unverified

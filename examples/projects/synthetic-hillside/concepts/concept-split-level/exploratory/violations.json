@@ -1,0 +1,53 @@
+{
+  "compliance": "not checked",
+  "hard": [],
+  "plan": null,
+  "soft": [
+    {
+      "code": "soft_adjacency_unmet",
+      "constraint_id": "c-adj-12-laundry-kitchen",
+      "evaluator": "AdjacencyEvaluator",
+      "id": "v-001-soft-adjacency-unmet",
+      "message": "adj-12-laundry-kitchen: pi-laundry near pi-kitchen is not met",
+      "status": "measured",
+      "strength": "soft",
+      "subject_ids": [
+        "adj-12-laundry-kitchen",
+        "sp-laundry",
+        "sp-kitchen"
+      ]
+    },
+    {
+      "code": "elevated_floor_support_unresolved",
+      "constraint_id": null,
+      "evaluator": "SiteEvaluator",
+      "id": "v-002-elevated-floor-support-unresolved",
+      "message": "About 649.4 m³ lies between terrain and the lowest floors, up to 6.00 m high. This is underfloor void, not specified engineered fill; supports, lateral stability, foundations and drainage are unresolved. Compare embedded, walk-out and stepped alternatives without assuming that less excavation is preferable",
+      "status": "inferred",
+      "strength": "soft",
+      "subject_ids": []
+    },
+    {
+      "code": "exterior_access_level_unresolved",
+      "constraint_id": null,
+      "evaluator": "SiteEvaluator",
+      "id": "v-003-exterior-access-level-unresolved",
+      "message": "d-garage-garage-ext floor differs from existing ground by +0.43 m; an approach, ramp, steps or excavated terrace has not been designed (0.3 m is a conceptual review trigger, not an accessibility rule)",
+      "status": "inferred",
+      "strength": "soft",
+      "subject_ids": [
+        "d-garage-garage-ext"
+      ]
+    },
+    {
+      "code": "height_limit_exceeded",
+      "constraint_id": null,
+      "evaluator": "SiteEvaluator",
+      "id": "v-004-height-limit-exceeded",
+      "message": "about 12.0 m above the lowest ground under the house; the envelope allows 10 m (assumption)",
+      "status": "inferred",
+      "strength": "soft",
+      "subject_ids": []
+    }
+  ]
+}

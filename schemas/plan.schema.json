@@ -386,6 +386,91 @@
       "title": "Fixture",
       "type": "object"
     },
+    "GenerationRecord": {
+      "additionalProperties": false,
+      "description": "How a generated plan was produced, so it can be reproduced and revised.",
+      "properties": {
+        "deterministic_time_limit": {
+          "exclusiveMinimum": 0,
+          "title": "Deterministic Time Limit",
+          "type": "number"
+        },
+        "generator": {
+          "title": "Generator",
+          "type": "string"
+        },
+        "generator_version": {
+          "title": "Generator Version",
+          "type": "string"
+        },
+        "objective": {
+          "title": "Objective",
+          "type": "number"
+        },
+        "parameters": {
+          "additionalProperties": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "integer"
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "boolean"
+              }
+            ]
+          },
+          "title": "Parameters",
+          "type": "object"
+        },
+        "placements": {
+          "items": {
+            "$ref": "#/$defs/RoomPlacement"
+          },
+          "title": "Placements",
+          "type": "array"
+        },
+        "revision_ops": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Revision Ops",
+          "type": "array"
+        },
+        "seed": {
+          "title": "Seed",
+          "type": "integer"
+        },
+        "solver": {
+          "title": "Solver",
+          "type": "string"
+        },
+        "solver_status": {
+          "title": "Solver Status",
+          "type": "string"
+        },
+        "solver_version": {
+          "title": "Solver Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "generator",
+        "generator_version",
+        "solver",
+        "solver_version",
+        "solver_status",
+        "objective",
+        "seed",
+        "deterministic_time_limit"
+      ],
+      "title": "GenerationRecord",
+      "type": "object"
+    },
     "HouseModel": {
       "additionalProperties": false,
       "properties": {
@@ -1047,6 +1132,46 @@
       "title": "RelationshipKind",
       "type": "string"
     },
+    "RoomPlacement": {
+      "additionalProperties": false,
+      "description": "Where the solver put one space in the strategy's massing (bar, row, order).",
+      "properties": {
+        "bar_id": {
+          "maxLength": 64,
+          "minLength": 1,
+          "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+          "title": "Bar Id",
+          "type": "string"
+        },
+        "row_id": {
+          "maxLength": 64,
+          "minLength": 1,
+          "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+          "title": "Row Id",
+          "type": "string"
+        },
+        "space_id": {
+          "maxLength": 64,
+          "minLength": 1,
+          "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+          "title": "Space Id",
+          "type": "string"
+        },
+        "start_m": {
+          "minimum": 0,
+          "title": "Start M",
+          "type": "number"
+        }
+      },
+      "required": [
+        "space_id",
+        "bar_id",
+        "row_id",
+        "start_m"
+      ],
+      "title": "RoomPlacement",
+      "type": "object"
+    },
     "Severity": {
       "enum": [
         "blocking",
@@ -1585,6 +1710,17 @@
       "anyOf": [
         {
           "$ref": "#/$defs/ChangeRequest"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "generation": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/GenerationRecord"
         },
         {
           "type": "null"

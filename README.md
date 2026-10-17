@@ -6,8 +6,8 @@ land ([`projects/my-house/`](projects/my-house/README.md)); other projects get
 their own folder (ADR 0009). Its outputs are structured semantic geometry, not
 pictures. The full specification is [docs/MASTER_SPEC.md](docs/MASTER_SPEC.md).
 
-**Current state: Milestones A, B, and C complete (next: Milestone D — floor-plan
-generation, see [docs/MILESTONE_D_HANDOFF.md](docs/MILESTONE_D_HANDOFF.md)).**
+**Current state: Milestones A, B, C and D complete (branch `milestone-d`, not yet
+merged; next: Milestone E, the reviewer).**
 Milestone A ([report](docs/milestones/A.md)) delivered canonical schemas,
 project storage with provenance and the workflow with human approval gates.
 Milestone B ([report](docs/milestones/B.md)) turns a DXF or DWG survey into
@@ -17,8 +17,15 @@ boundary and terrain, a validation report, site and terrain SVGs and a
 review page. Milestone C ([report](docs/milestones/C.md)) adds an
 **agent-first** conversational owner interview ([ADR 0011](docs/adr/0011-agent-first-interview-interface.md))
 that becomes a design brief and a validated space program for the floor-plan
-solver, with owner confirmation and the program approval gate. Plan generation,
-Blender and Unreal come in later milestones.
+solver, with owner confirmation and the program approval gate. Milestone D
+([report](docs/milestones/D.md), [ADR 0013](docs/adr/0013-solver-backed-plan-generation.md))
+generates several structurally different floor-plan concepts from the approved
+program with a constraint solver (OR-Tools CP-SAT), with level elevations taken
+from a steep site's surveyed terrain: a walk-out concept that digs in behind
+retaining walls, and stepped, linear and two-wing concepts that sit over the
+falling ground (their void beneath is reported, not used). It evaluates them with
+six evaluators, renders dimensioned SVG plans and versions every revision behind
+the human plan gate. Blender and Unreal come in later milestones.
 
 ## Setup
 
@@ -112,6 +119,23 @@ Then continue through the program and plan gates:
 .venv/bin/house-ai workflow approve project-data/demo plan --id plan-a --approver <your-name>
 ```
 
+Generate plan concepts on the synthetic steep hillside (Milestone D). The
+exploratory preview stores nothing and needs no approval; the gated run works
+only after the human approved the site and program gates
+([worked examples](docs/AGENT_WORKFLOWS.md)):
+
+```bash
+.venv/bin/house-ai example load project-data/hill --name synthetic-hillside --project-id synthetic-hillside --actor human:<you>
+.venv/bin/house-ai plan generate project-data/hill --exploratory --out project-data/hill-preview --actor human:<you>
+# after `workflow approve ... site` and `... program` by you, in your terminal:
+.venv/bin/house-ai plan generate project-data/hill --actor human:<you>      # -> CONCEPT_REVIEW
+.venv/bin/house-ai plan revise project-data/hill concept-split-level "Bigger kitchen" --area pi-kitchen=16 --actor human:<you>
+.venv/bin/house-ai plan review project-data/hill concept-split-level --actor human:<you>
+```
+
+A committed preview of these concepts is in
+[examples/projects/synthetic-hillside/concepts/](examples/projects/synthetic-hillside/concepts/comparison.md).
+
 Run the site pipeline on the synthetic survey (Milestone B):
 
 ```bash
@@ -145,7 +169,7 @@ Validate any file against its schema:
 |---|---|
 | `docs/` | Spec, [architecture](docs/ARCHITECTURE.md), [domain model](docs/DOMAIN_MODEL.md), [agent contract](docs/AGENT_CONTRACT.md), [professional handoff](docs/PROFESSIONAL_HANDOFF.md), [ADRs](docs/adr/), milestone reports |
 | `schemas/` | Generated JSON Schemas (do not edit; run `house-ai schemas export`) |
-| `src/house_ai/` | The Python package (`domain`, `storage`, `orchestration`, `cli`, and boundaries for later milestones) |
+| `src/house_ai/` | The Python package (`domain`, `storage`, `orchestration`, `cli`, site and interview pipelines, `constraints`, `generation`, `evaluation`, `render2d`, and boundaries for later milestones) |
 | `agents/roles.yaml` | Agent role definitions |
 | `examples/` | Synthetic example projects |
 | `tests/` | Automated tests (synthetic data only) |

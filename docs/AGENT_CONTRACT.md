@@ -160,30 +160,24 @@ UNREAL_REVIEW`.
    and ask the human to run `house-ai workflow approve my-house program --id program --approver <name>`
    in their terminal.
 
-### Practical example (`projects/my-house`)
+Worked command examples: [AGENT_WORKFLOWS.md](AGENT_WORKFLOWS.md).
 
-```bash
-.venv/bin/house-ai project status my-house --json
-.venv/bin/house-ai interview start my-house --json --actor agent:claude-code
+## 9b. Plan concepts (Milestone D, [ADR 0013](adr/0013-solver-backed-plan-generation.md))
 
-# Owner: "I want a modern house on my steep land, with parking from the road and a large living room."
-.venv/bin/house-ai interview answer my-house \
-  "I want a modern house on my steep land, with parking from the road and a large living room." \
-  --set "style=modern hillside" --set slope_strategy=step_down --set entry_at_road=true \
-  --set cars=2 --set parking_type=garage --set room_sizes=living=35 \
-  --json --actor agent:claude-code
-
-# Adaptive hillside follow-up with Persian/English answer:
-.venv/bin/house-ai interview answer my-house \
-  "ورودی اصلی و پارکینگ هم‌سطح جاده باشد و نشیمن یک طبقه پایین‌تر رو به منظره." \
-  --question q-follow-section \
-  --question-text "Should the main living level sit one level below the road-level garage?" \
-  --topic site --set floors=2 --json --actor agent:claude-code
-
-# After the owner confirms in chat:
-.venv/bin/house-ai interview confirm my-house --text "بله، تایید است." --json --actor agent:claude-code
-.venv/bin/house-ai program build my-house --out projects/my-house/design --actor agent:claude-code
-```
+- Only after the human approved site and program:
+  `house-ai plan generate <p> --actor agent:<tool>` (CP-SAT; all strategies,
+  or `--strategy`). It stores plans, evaluations and constraints and writes
+  `design/concepts/` (plan.json/svg, metrics, violations, assumptions,
+  explanation, comparison.md). Never edit plan geometry by hand.
+- Before approval only `--exploratory` (stores nothing); never call its
+  output validated.
+- Revisions: owner's words verbatim plus explicit ops:
+  `house-ai plan revise <p> <option> "<words>" --area pi-kitchen=16 --separate a,b
+  --level x=entry --rethink z-night --actor agent:<tool>`.
+- `house-ai plan review <p> <option> --actor agent:<tool>`; the human approves
+  with `workflow approve <p> plan --id <option> --version <n> --approver <name>`.
+- Report metrics with their status and infeasible strategies with reasons;
+  never present one concept as "the answer".
 
 ## 10. Professional boundary, conventions, tests, and Git
 

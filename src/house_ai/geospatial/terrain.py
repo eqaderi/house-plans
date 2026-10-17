@@ -18,6 +18,7 @@ from shapely.geometry import Polygon as ShapelyPolygon
 
 from house_ai.domain.geometry import Point2, Point3, Polygon2D
 from house_ai.domain.site import Contour, SpotElevation, Terrain, TinSurface
+from house_ai.domain.terrain import elevation_at  # noqa: F401  (re-exported)
 
 from .base import build_terrain
 
@@ -100,22 +101,6 @@ class DelaunayTerrainBuilder:
         self, spot_elevations: list[SpotElevation], contours: list[Contour]
     ) -> Terrain:
         return terrain_from_survey(spot_elevations, contours)[0]
-
-
-def elevation_at(surface: TinSurface, xy: Point2) -> float | None:
-    """Linear interpolation on the TIN; None outside the surveyed hull."""
-    x, y = xy
-    for ia, ib, ic in surface.triangles:
-        a, b, c = surface.vertices[ia], surface.vertices[ib], surface.vertices[ic]
-        det = _cross(a, b, c)
-        if det == 0:
-            continue
-        w_b = ((x - a[0]) * (c[1] - a[1]) - (y - a[1]) * (c[0] - a[0])) / det
-        w_c = ((b[0] - a[0]) * (y - a[1]) - (b[1] - a[1]) * (x - a[0])) / det
-        w_a = 1.0 - w_b - w_c
-        if min(w_a, w_b, w_c) >= -1e-9:
-            return w_a * a[2] + w_b * b[2] + w_c * c[2]
-    return None
 
 
 def triangle_slope_pct(a: Point3, b: Point3, c: Point3) -> float:

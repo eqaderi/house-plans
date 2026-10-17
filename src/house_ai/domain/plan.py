@@ -46,6 +46,36 @@ class ChangeRequest(StrictModel):
         return self
 
 
+class RoomPlacement(StrictModel):
+    """Where the solver put one space in the strategy's massing (bar, row, order)."""
+
+    space_id: Id
+    bar_id: Id
+    row_id: Id
+    #: Distance from the bar start to the space's near edge, metres.
+    start_m: float = Field(ge=0)
+
+
+class GenerationRecord(StrictModel):
+    """How a generated plan was produced, so it can be reproduced and revised."""
+
+    generator: str
+    generator_version: str
+    solver: str
+    solver_version: str
+    #: e.g. "OPTIMAL" or "FEASIBLE" (CP-SAT status name).
+    solver_status: str
+    objective: float
+    seed: int
+    #: Solver budget in CP-SAT deterministic time units (not wall-clock seconds).
+    deterministic_time_limit: float = Field(gt=0)
+    #: Strategy parameters actually used (row depths, corridor width, levels, ...).
+    parameters: dict[str, float | int | str | bool] = Field(default_factory=dict)
+    placements: list[RoomPlacement] = Field(default_factory=list)
+    #: Structured revision operations applied by the agent, verbatim (e.g. "area:pi-kitchen=18").
+    revision_ops: list[str] = Field(default_factory=list)
+
+
 class PlanVersion(StrictModel):
     """One immutable version of a plan option. Stored under artifact id = option_id."""
 
@@ -58,6 +88,8 @@ class PlanVersion(StrictModel):
     change_request: ChangeRequest | None = None
     provenance: Provenance
     model: HouseModel
+    #: Solver record for generated plans; None for hand-authored plans.
+    generation: GenerationRecord | None = None
 
     @model_validator(mode="after")
     def _parent_is_plan(self) -> PlanVersion:

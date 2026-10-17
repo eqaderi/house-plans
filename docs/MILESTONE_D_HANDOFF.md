@@ -220,8 +220,9 @@ Per [`docs/MASTER_SPEC.md`](MASTER_SPEC.md) (sections `CONSTRAINT ARCHITECTURE`,
 ## 6. How Milestone D Should Account for a Steep Hillside Parcel
 
 Because the primary project (`projects/my-house/`) sits on a steep parcel
-(~600 m², ~12.4 m vertical drop, ~65% mean slope, ~21 m road frontage on the
-north), Milestone D's level/section model, solver, and `SiteEvaluator` must
+(see the audited values in section 2: ~600 m², ~12.5 m relief inside the parcel,
+~41 % mean slope over the parcel's TIN, 21 m frontage on the drawing-west side;
+geographic north unknown), Milestone D's level/section model, solver, and `SiteEvaluator` must
 support hillside realities (without hardcoding `my-house` numbers into general
 algorithms):
 

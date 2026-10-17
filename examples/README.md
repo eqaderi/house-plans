@@ -12,6 +12,20 @@ data.
   with `.venv/bin/python examples/projects/synthetic-bungalow/build_plan.py`
   (the tests run `build_plan.py --check`).
 
+  `expected/plan-a.svg` is the byte-exact plan SVG golden file (regenerate
+  with `HOUSE_AI_UPDATE_GOLDEN=1 .venv/bin/python -m pytest tests/test_plan_svg.py`).
+
+- `projects/synthetic-hillside/`: a fictional steep parcel (about 36 % fall
+  away from a road, rotated 12 degrees against the local axes, assumed
+  synthetic setbacks) for Milestone D. `make_fixture.py` writes `site.yaml`
+  and a `design_brief.yaml`, then builds `space_program.yaml`,
+  `assumptions.yaml` and `open_questions.yaml` with the real Milestone C
+  program builder (the tests run it with `--check`). `concepts/` is an
+  exploratory preview made with `house-ai plan generate <project>
+  --exploratory --out examples/projects/synthetic-hillside/concepts` on
+  macOS arm64 (solver output can differ slightly between platforms; it is
+  illustrative and not compared by the tests).
+
 - `surveys/synthetic/`: a fictional survey DXF (`survey.dxf`, made by
   `make_survey.py`, ground truth in its docstring), the layer mapping
   `layers.yaml`, and `expected/`: the inspection report and, before and

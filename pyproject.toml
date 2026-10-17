@@ -18,6 +18,8 @@ dependencies = [
   # Milestone B: DXF reading, and CRS/datum lookups and transforms (bundles PROJ).
   "ezdxf>=1.4,<2",
   "pyproj>=3.7,<4",
+  # Milestone D: CP-SAT constraint solver for floor-plan layout (ADR 0013).
+  "ortools>=9.12,<10",
 ]
 
 [project.optional-dependencies]

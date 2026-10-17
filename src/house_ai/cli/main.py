@@ -21,6 +21,7 @@ from pydantic import ValidationError
 
 from house_ai.cad.dwg_oda import DwgConversionError
 from house_ai.cad.layers import load_layer_mapping
+from house_ai.cli import plan_cmds
 from house_ai.domain.integrity import FindingSeverity, check_model
 from house_ai.domain.model import HouseModel
 from house_ai.domain.plan import PlanVersion
@@ -1313,6 +1314,8 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--reason", required=True, help="what is wrong, in the owner's words")
     actor_arg(s)
     s.set_defaults(func=cmd_program_reject)
+
+    plan_cmds.register(sub, actor_arg)
 
     wf = sub.add_parser("workflow").add_subparsers(dest="sub", required=True)
     s = wf.add_parser("transition")

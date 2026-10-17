@@ -1,8 +1,9 @@
 # Architecture
 
-Status: Milestones A, B (site ingestion) and C (agent-first owner interview and
-space program) complete. Sections marked *planned* describe interfaces that
-exist as boundaries for Milestone D and later.
+Status: Milestones A, B (site ingestion), C (agent-first owner interview and
+space program) and D (solver-backed plan concepts, evaluation and revisions)
+complete. Sections marked *planned* describe interfaces that exist as
+boundaries for Milestone E and later.
 
 ## Principles
 
@@ -35,7 +36,7 @@ exist as boundaries for Milestone D and later.
             └───────────────┬─────────────────────────────────────────┘
                             │ schema-valid writes only
             ┌───────────────▼─────────────────────────────────────────┐
-  interface │ cli/ (A, B, C)        apps/reviewer/ (planned, E)       │
+  interface │ cli/ (A-D)            apps/reviewer/ (planned, E)       │
             └───────────────┬─────────────────────────────────────────┘
             ┌───────────────▼─────────────────────────────────────────┐
   workflow  │ orchestration/workflow.py: states, guards, gates (A)     │
@@ -62,15 +63,17 @@ the orchestration layer.
 |---|---|---|
 | `house_ai.domain` | A | Pydantic models for every canonical schema, units, geometry, coordinate frames, integrity checks, compliance language, schema registry |
 | `house_ai.storage` | A | `ProjectStore` (write-once artifacts, immutable sources, hash-chained event log), canonical hashing, folder importer |
-| `house_ai.orchestration` | A, B, C | Workflow state machine, transition guards, approval gates, reopen; site ingestion, human site confirmation, read-only survey inspection; agent-first interview service (store, workflow, site context, checklist, structured slot interpretations), optional LLM assist through `providers.base.send` |
-| `house_ai.cli` | A, B, C | `house-ai` command, a thin layer over the library with `--json` and `--set` for coding agents |
+| `house_ai.orchestration` | A-D | Workflow state machine, transition guards, approval gates, reopen; site ingestion, human site confirmation, read-only survey inspection; agent-first interview service (store, workflow, site context, checklist, structured slot interpretations), optional LLM assist through `providers.base.send`; plan service (`plans.py`: gated or exploratory generation, evaluation, revisions, exports, plan review request) |
+| `house_ai.cli` | A-D | `house-ai` command, a thin layer over the library with `--json` and `--set` for coding agents; `plan` commands in `cli/plan_cmds.py` |
 | `house_ai.providers` | A, C | `ModelProvider` protocol, `DataFlowPolicy`, `send()`; `ScriptedProvider` for tests; optional `ClaudeProvider` (`providers/claude.py`, ADR 0010) |
 | `house_ai.cad` | B | `CadAdapter` / `CadSiteExtractor` protocols; format detection from bytes; ezdxf DXF adapter; DWG via ODA File Converter; layer roles from a human mapping; raw SOURCE-frame extraction and site interpretation with explicit ambiguity |
 | `house_ai.geospatial` | B | CRS lookup and validation (pyproj/PROJ), UTM candidates, grid-to-true-north, Delaunay TIN, parcel measurements and frontage, site validation report |
-| `house_ai.render2d` | B (site), D (plans) | Site plan SVG, terrain slope SVG and the static site review page from the canonical site; plan SVG planned |
+| `house_ai.render2d` | B (site), D (plans) | Site plan SVG, terrain slope SVG and the static site review page from the canonical site; dimensioned plan SVG per level with a terrain section (`plan_svg.py`) |
 | `house_ai.interview` | C | Question bank (completeness checklist) with conditions and follow-ups, deterministic answer parsers, slot types, contradiction rules with options, session fold and planner, brief builder, summary (pure, domain only) |
 | `house_ai.program` | C | Brief → space program, adjacencies, zones, assumptions (including steep-hillside engineering assumptions) and open questions; program validation (missing information, unconfirmed interpretations, conflicts, sizes, totals, site fit); review sheet |
-| `house_ai.constraints`, `house_ai.generation`, `house_ai.evaluation` | D | Constraint compilation, `PlanGenerator` and `Evaluator` protocols (planned) |
+| `house_ai.constraints` | D | Program + brief + site + CodePack → HARD/SOFT `ConstraintSet`; CodePack rules it cannot express are reported as not checked |
+| `house_ai.generation` | D | Design frame and envelope fitting, program → rooms and hard-connected clusters, five massing strategies, OR-Tools CP-SAT layout, canonical model assembly (walls derived from space edges, openings, stairs, slabs), `CpSatPlanGenerator` ([ADR 0013](adr/0013-solver-backed-plan-generation.md)) |
+| `house_ai.evaluation` | D | Geometry, Program, Adjacency, Circulation, Privacy and Site evaluators; evaluation report, plain-language explanation, comparison and revision diff |
 | `house_ai.blender` | F | Deterministic canonical-plan → Blender scripts (planned) |
 | `house_ai.unreal` | G | FBX + `scene_manifest.json` → Unreal importer (planned) |
 | `house_ai.bim` | later | IFC mapping via IfcOpenShell (planned) |
@@ -198,14 +201,32 @@ all. Errors block the plan gate; nothing stores a "passed" flag.
 - every space inside the site's buildable envelope (or boundary, with a
   warning), in the same local coordinate system as the site
 
+## Plan generation (Milestone D)
+
+`house-ai plan generate` compiles constraints from the approved program,
+brief, site and any CodePack, then runs each strategy: a massing of
+double-loaded bars (rows either side of a corridor) whose cross positions,
+row depths and level elevations come from the strategy, the envelope and the
+surveyed terrain; CP-SAT then decides each bar's position and length and each
+room cluster's row, order and widths on a 10 cm grid. The result is assembled
+into a canonical `HouseModel`: walls are derived from space edges so every
+wall segment has one space (or the outside) per side, exterior faces against
+the ground become retaining walls without windows, and stairs join levels.
+`check_model` runs on every candidate; one with errors is kept and reported
+as invalid, never dropped. Six evaluators then measure it. Plans, evaluation
+reports, constraint sets and revision reports are stored as new immutable
+versions; the workflow moves PROGRAM_APPROVED → CONCEPT_GENERATION →
+CONCEPT_REVIEW and the plan gate stays human-only. Details and limits:
+[ADR 0013](adr/0013-solver-backed-plan-generation.md), [Milestone D](milestones/D.md).
+
 ## Boundaries kept open
 
 | Boundary | Interface | Milestone |
 |---|---|---|
 | CAD ingestion | `cad.base.CadAdapter`, `cad.dwg_oda.adapter_for` (ezdxf, ODA) | B |
 | Terrain | `geospatial.base.TerrainBuilder` (`DelaunayTerrainBuilder`) | B |
-| Plan generation | `generation.base.PlanGenerator` | D |
-| Evaluation | `evaluation.base.Evaluator` + `EvaluationReport` schema | D |
+| Plan generation | `generation.base.PlanGenerator` (`CpSatPlanGenerator`) | D |
+| Evaluation | `evaluation.base.Evaluator` + `EvaluationReport` schema; future evaluators reported as not run | D, later |
 | AI providers | `providers.base.ModelProvider`, `DataFlowPolicy` | C |
 | Blender / Unreal builds | `domain.build.BuildRecord` (input plan pinned) | F, G |
 | Code rules | `domain.codepack.CodePack`, `ComplianceStatement` | D |
