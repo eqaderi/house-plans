@@ -1,7 +1,8 @@
 # Architecture
 
-Status: Milestone A (domain foundation). Sections marked *planned* describe
-interfaces that exist as boundaries but have no implementation yet.
+Status: Milestone B (site ingestion) on branch `milestone-b`. Sections
+marked *planned* describe interfaces that exist as boundaries but have no
+implementation yet.
 
 ## Principles
 
@@ -56,13 +57,14 @@ the orchestration layer.
 |---|---|---|
 | `house_ai.domain` | A | Pydantic models for every canonical schema, units, geometry, coordinate frames, integrity checks, compliance language, schema registry |
 | `house_ai.storage` | A | `ProjectStore` (write-once artifacts, immutable sources, hash-chained event log), canonical hashing, folder importer |
-| `house_ai.orchestration` | A | Workflow state machine, transition guards, approval gates, reopen |
+| `house_ai.orchestration` | A, B | Workflow state machine, transition guards, approval gates, reopen; site ingestion, human site confirmation, read-only survey inspection |
 | `house_ai.cli` | A | `house-ai` command, a thin layer over the library |
 | `house_ai.providers` | A (interface) | `ModelProvider` protocol, `DataFlowPolicy`, `send()` |
-| `house_ai.cad` | B | `CadAdapter` protocol (`inspect_cad`, `extract_cad`); ezdxf / GDAL adapters planned |
-| `house_ai.geospatial` | B | CRS confirmation, local frame creation, terrain (planned) |
+| `house_ai.cad` | B | `CadAdapter` / `CadSiteExtractor` protocols; format detection from bytes; ezdxf DXF adapter; DWG via ODA File Converter; layer roles from a human mapping; raw SOURCE-frame extraction and site interpretation with explicit ambiguity |
+| `house_ai.geospatial` | B | CRS lookup and validation (pyproj/PROJ), UTM candidates, grid-to-true-north, Delaunay TIN, parcel measurements and frontage, site validation report |
+| `house_ai.render2d` | B (site), D (plans) | Site plan SVG from the canonical site; plan SVG planned |
 | `house_ai.interview`, `house_ai.program` | C | Adaptive interview, brief → program (planned) |
-| `house_ai.constraints`, `house_ai.generation`, `house_ai.evaluation`, `house_ai.render2d` | D | Constraint compilation, `PlanGenerator` and `Evaluator` protocols, SVG rendering (planned) |
+| `house_ai.constraints`, `house_ai.generation`, `house_ai.evaluation` | D | Constraint compilation, `PlanGenerator` and `Evaluator` protocols (planned) |
 | `house_ai.blender` | F | Deterministic canonical-plan → Blender scripts (planned) |
 | `house_ai.unreal` | G | FBX + `scene_manifest.json` → Unreal importer (planned) |
 | `house_ai.bim` | later | IFC mapping via IfcOpenShell (planned) |
@@ -136,9 +138,9 @@ from the approved plan.
 2. requires the gate's review state;
 3. loads the exact artifact version and re-verifies its hash;
 4. re-runs the gate's checks on that artifact:
-   - *site*: `site_verification_blockers` (units, CRS and vertical datum
-     confirmed by a human, local frame present, boundary verified, no
-     blocking issues);
+   - *site*: `site_verification_blockers` (units, elevation units, CRS and
+     vertical datum confirmed by a human, local frame present, boundary
+     verified, no open blocking issues);
    - *program*: site approved, no blocking open questions, no unresolved
      contradictions in the cited brief;
    - *plan*: site and program approved, the plan pins exactly those
@@ -155,6 +157,24 @@ a typed confirmation phrase. This stops an agent in a non-interactive shell
 from crossing a gate by accident. It is not a security boundary: any local
 process can call the library or edit files. The event log makes such edits
 visible but cannot prevent them.
+
+## Site ingestion (Milestone B)
+
+```
+survey file ──source add──▶ source/ (immutable, SHA-256)
+   │ site inspect (read-only, no project)          ▲ re-read on confirm
+   ▼                                               │
+detect format ─▶ CAD adapter (ezdxf | ODA→ezdxf) ─▶ raw entities, SOURCE frame
+   ─▶ declared_frame ($INSUNITS, GEODATA EPSG; nothing inferred)
+   ─▶ layer mapping (human) ─▶ SurveyTransform SOURCE→GRID→LOCAL
+   ─▶ boundary · contours · spots · features · ambiguous entities
+   ─▶ TIN, frontage, issues ─▶ cad_import + site artifacts
+   ─▶ workflow assess-site ─▶ SITE_NEEDS_VERIFICATION
+   ─▶ site confirm (human, TTY) ─▶ new site version ─▶ site gate (human)
+site report ─▶ validation report (JSON/Markdown) + site SVG, derived on demand
+```
+
+Details: [ADR 0006](adr/0006-site-ingestion-pipeline.md).
 
 ## Integrity checks
 
@@ -176,7 +196,8 @@ all. Errors block the plan gate; nothing stores a "passed" flag.
 
 | Boundary | Interface | Milestone |
 |---|---|---|
-| CAD ingestion | `cad.base.CadAdapter` | B |
+| CAD ingestion | `cad.base.CadAdapter`, `cad.dwg_oda.adapter_for` (ezdxf, ODA) | B |
+| Terrain | `geospatial.base.TerrainBuilder` (`DelaunayTerrainBuilder`) | B |
 | Plan generation | `generation.base.PlanGenerator` | D |
 | Evaluation | `evaluation.base.Evaluator` + `EvaluationReport` schema | D |
 | AI providers | `providers.base.ModelProvider`, `DataFlowPolicy` | C |
@@ -200,4 +221,9 @@ variants of the golden plan, store immutability and tamper detection,
 serialisation round trips, every workflow gate and guard, the CLI including
 the non-interactive approval refusal, the provider data-flow policy and the
 agent roster. The golden synthetic project lives in
-`examples/projects/synthetic-bungalow/`.
+`examples/projects/synthetic-bungalow/`. Milestone B adds CAD parsing,
+format detection, coordinate transforms and CRS lookups, terrain, parcel
+measurements, ambiguous and malformed input, provenance, the human site
+confirmation, the CLI, a DWG round trip through ODA (skipped without it),
+and snapshot checks of the committed example outputs, all against the
+synthetic survey in `examples/surveys/synthetic/` with known ground truth.

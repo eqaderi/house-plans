@@ -41,26 +41,37 @@ Every claim says how it is known.
 - `SourceDocument`: an original input preserved byte-for-byte, with its
   SHA-256 and a data classification (`private` by default, `synthetic`,
   `public`).
-- `CadImportProvenance`: what a CAD import must record: file name, SHA-256,
-  drawing units and their status, parser and version, CRS status and EPSG
-  (only if confirmed), vertical datum status, local origin, warnings,
-  unrecognised layers and entity counts. Filled in by Milestone B.
+- `CadImportProvenance` (artifact kind `cad_import`, id `cad-<source id>`):
+  file name, SHA-256, detected format, drawing units and their status,
+  parser and version, converter and version plus the converted file's
+  SHA-256 (DWG), CRS status, EPSG (only if confirmed) and declared EPSG,
+  vertical datum status, local origin, warnings, unrecognised layers and
+  entity counts, the layer mapping used, and every `AmbiguousEntity`
+  (handle, layer, entity type, reason) that was left out.
 
 ## Site and coordinates (`site`)
 
-- `SiteCoordinates`: `source_units` (`UnitDeclaration`), `horizontal_crs`
-  (`HorizontalCRS`: `epsg` only when confirmed, otherwise `declared_epsg`),
-  `vertical_datum`, and `local` (`LocalCoordinateSystem`: GRID origin,
-  rotation of local x from grid east, grid-to-true-north angle which stays
-  unknown until computed from a confirmed CRS).
-- `boundary` and `boundary_status`; `buildable_envelope` with a mandatory
-  `basis` saying where it came from.
-- `Terrain`: status, spot elevations and contours in the local frame.
-- `SiteFeature`: roads, easements, structures, utilities, trees, water and
-  access points, each with point, polyline or polygon geometry.
+- `SiteCoordinates`: `source_units` and `elevation_units`
+  (`UnitDeclaration`), `horizontal_crs` (`HorizontalCRS`: `epsg` only when
+  confirmed, otherwise `declared_epsg`), `vertical_datum`, and `local`
+  (`LocalCoordinateSystem`: GRID origin, rotation of local x from grid east,
+  grid-to-true-north angle, computed with PROJ only from a confirmed CRS).
+- `SurveyTransform`: the reversible SOURCE → GRID → LOCAL chain
+  (horizontal and vertical unit scale, then the rigid local transform).
+- `boundary`, `boundary_status` (`inference` when taken from a CAD layer,
+  `verified_fact` only after a human confirms it) and
+  `boundary_source_ref` (source id, entity handle and layer);
+  `buildable_envelope` with a mandatory `basis` saying where it came from.
+- `Terrain`: status, spot elevations and contours in the local frame, each
+  with a `source_ref`, and an optional `TinSurface` (Delaunay triangles over
+  surveyed vertices only; nothing is extrapolated outside their hull).
+- `SiteFeature`: roads, easements, structures, utilities, trees, water,
+  access points and `frontage` (boundary pieces within 0.5 m of a road,
+  always an `inference`), each with point, polyline or polygon geometry.
 - `site_verification_blockers(site)` lists every reason the site cannot be
-  approved yet. Units, CRS and vertical datum must be confirmed by a human
-  (or confirmed local-only); declared-in-source is not enough.
+  approved yet. Units, elevation units (when there are elevations), CRS
+  and vertical datum must be confirmed by a human (or confirmed
+  local-only); declared-in-source is not enough.
 
 ## Brief (`design_brief`)
 

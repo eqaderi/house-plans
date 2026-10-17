@@ -118,8 +118,8 @@ PLAN_APPROVED → BLENDER_BUILD ⇄ BLENDER_REVIEW → [model gate] MODEL_APPROV
 
 - Start every project task with `house-ai project status <dir>`.
 - **You must never approve a gate or confirm site facts.** `workflow
-  approve` needs an interactive terminal and a typed phrase and exits
-  with code 2 otherwise. Do not work around this (no fake
+  approve` and `site confirm` need an interactive terminal and a typed
+  phrase and exit with code 2 otherwise. Do not work around this (no fake
   TTY, no `--actor human:...` on the owner's behalf). Run
   `workflow request-approval` and ask the human.
 - Never imply something is approved when it is not. Say which gates are
@@ -220,6 +220,9 @@ house-ai project verify <dir>               # hash chain, artifacts, sources
 house-ai validate <schema> <file> [--site site.yaml]
 house-ai artifact put <dir> <kind> <file> --actor agent:<tool>
 house-ai source add <dir> <file> --actor human:<name>
+house-ai site inspect <file>... [--layers map.yaml]   # read-only
+house-ai site ingest <dir> --source <src-id> --layers map.yaml --actor agent:<tool>
+house-ai site report <dir> --id site --out <dir>
 house-ai workflow transition <dir> <STATE> --reason "..." --actor agent:<tool>
 house-ai workflow assess-site <dir> --id site --actor agent:<tool>
 house-ai workflow request-approval <dir> <gate> --id <id> --actor agent:<tool>
