@@ -25,7 +25,8 @@ is strictly optional.
 
 Authorities: [MASTER_SPEC.md](MASTER_SPEC.md) (wins every conflict),
 [ARCHITECTURE.md](ARCHITECTURE.md), [DOMAIN_MODEL.md](DOMAIN_MODEL.md),
-[adr/](adr/), [milestones/](milestones/).
+[adr/](adr/), [milestones/](milestones/) (history). Roadmap, stage status and
+the stage protocol: [PROJECT_TRACKER.md](PROJECT_TRACKER.md).
 
 ## 2. Repository architecture
 
@@ -122,9 +123,7 @@ UNREAL_REVIEW`.
 
 1. **Select and inspect the project & site:**
    `house-ai project list`, `house-ai project status my-house --json`, and
-   `house-ai interview status my-house --json` (shows site measurements,
-   verification blockers, owner statements, checklist coverage, unconfirmed
-   inferences, and open contradictions).
+   `house-ai interview status my-house --json`.
 2. **Start or resume the interview:**
    `house-ai interview start my-house --json --actor agent:<tool>`. Works while
    the site is in `SITE_NEEDS_VERIFICATION` (site values are marked unconfirmed).
@@ -189,12 +188,16 @@ Worked command examples: [AGENT_WORKFLOWS.md](AGENT_WORKFLOWS.md).
   optional adapters.
 - Every behaviour change or bug fix has a deterministic offline test asserting
   ground-truth numbers. Record architectural decisions in `docs/adr/NNNN-*.md`.
-- One branch per milestone (`milestone-a`, `milestone-b`, ...). Never rewrite
-  pushed history. Merge into `main` and push only when the owner authorises it.
+- Owner commands "Project status", "Next stage", "Review stage <ID>" and
+  "Close stage <ID>" follow the tracker protocol (§O): one stage per branch
+  `stage/<ID>-<slug>`, stop for independent review, no DONE without evidence.
+  Merge into `main` only on "Close stage" after an APPROVED review, or when
+  the owner authorises it. Never rewrite pushed history.
 - Before saying a task is finished, run and report:
 
 ```bash
 .venv/bin/python -m pytest -q
 .venv/bin/ruff check src tests examples
 .venv/bin/house-ai schemas check
+.venv/bin/python tools/check_tracker.py
 ```
