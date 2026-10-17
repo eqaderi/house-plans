@@ -1,0 +1,638 @@
+{
+  "$defs": {
+    "Actor": {
+      "additionalProperties": false,
+      "properties": {
+        "display_name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Display Name"
+        },
+        "id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "$ref": "#/$defs/ActorKind"
+        },
+        "model": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Model"
+        },
+        "provider": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Provider"
+        }
+      },
+      "required": [
+        "kind",
+        "id"
+      ],
+      "title": "Actor",
+      "type": "object"
+    },
+    "ActorKind": {
+      "enum": [
+        "human",
+        "agent",
+        "system"
+      ],
+      "title": "ActorKind",
+      "type": "string"
+    },
+    "AdjacencyRule": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "adjacency",
+          "default": "adjacency",
+          "title": "Kind",
+          "type": "string"
+        },
+        "requirement_id": {
+          "maxLength": 64,
+          "minLength": 1,
+          "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+          "title": "Requirement Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "requirement_id"
+      ],
+      "title": "AdjacencyRule",
+      "type": "object"
+    },
+    "ArtifactKind": {
+      "description": "Kinds of versioned artifacts kept in a project store.",
+      "enum": [
+        "source_document",
+        "cad_import",
+        "site",
+        "design_brief",
+        "space_program",
+        "assumptions",
+        "open_questions",
+        "constraint_set",
+        "codepack",
+        "plan",
+        "evaluation_report",
+        "revision_report",
+        "build_record"
+      ],
+      "title": "ArtifactKind",
+      "type": "string"
+    },
+    "ArtifactRef": {
+      "additionalProperties": false,
+      "description": "Pointer to one immutable version of an artifact, pinned by content hash.",
+      "properties": {
+        "id": {
+          "maxLength": 64,
+          "minLength": 1,
+          "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "$ref": "#/$defs/ArtifactKind"
+        },
+        "sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Sha256",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "kind",
+        "id",
+        "version",
+        "sha256"
+      ],
+      "title": "ArtifactRef",
+      "type": "object"
+    },
+    "CodeRuleRef": {
+      "additionalProperties": false,
+      "properties": {
+        "codepack_id": {
+          "maxLength": 64,
+          "minLength": 1,
+          "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+          "title": "Codepack Id",
+          "type": "string"
+        },
+        "rule_id": {
+          "maxLength": 64,
+          "minLength": 1,
+          "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+          "title": "Rule Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "codepack_id",
+        "rule_id"
+      ],
+      "title": "CodeRuleRef",
+      "type": "object"
+    },
+    "Constraint": {
+      "additionalProperties": false,
+      "properties": {
+        "code_rule": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/CodeRuleRef"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "id": {
+          "maxLength": 64,
+          "minLength": 1,
+          "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "rationale": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Rationale"
+        },
+        "rule": {
+          "discriminator": {
+            "mapping": {
+              "adjacency": "#/$defs/AdjacencyRule",
+              "doors_connect_valid_spaces": "#/$defs/DoorsConnectValidSpacesRule",
+              "min_area": "#/$defs/MinAreaRule",
+              "min_dimension": "#/$defs/MinDimensionRule",
+              "no_overlap": "#/$defs/NoOverlapRule",
+              "objective": "#/$defs/ObjectiveRule",
+              "openings_on_walls": "#/$defs/OpeningsOnWallsRule",
+              "traversable": "#/$defs/TraversableRule",
+              "valid_geometry": "#/$defs/ValidGeometryRule",
+              "within_envelope": "#/$defs/WithinEnvelopeRule"
+            },
+            "propertyName": "kind"
+          },
+          "oneOf": [
+            {
+              "$ref": "#/$defs/NoOverlapRule"
+            },
+            {
+              "$ref": "#/$defs/WithinEnvelopeRule"
+            },
+            {
+              "$ref": "#/$defs/ValidGeometryRule"
+            },
+            {
+              "$ref": "#/$defs/OpeningsOnWallsRule"
+            },
+            {
+              "$ref": "#/$defs/DoorsConnectValidSpacesRule"
+            },
+            {
+              "$ref": "#/$defs/TraversableRule"
+            },
+            {
+              "$ref": "#/$defs/MinAreaRule"
+            },
+            {
+              "$ref": "#/$defs/MinDimensionRule"
+            },
+            {
+              "$ref": "#/$defs/AdjacencyRule"
+            },
+            {
+              "$ref": "#/$defs/ObjectiveRule"
+            }
+          ],
+          "title": "Rule"
+        },
+        "source": {
+          "$ref": "#/$defs/ConstraintSource"
+        },
+        "strength": {
+          "$ref": "#/$defs/Strength"
+        },
+        "weight": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Weight"
+        }
+      },
+      "required": [
+        "id",
+        "strength",
+        "rule",
+        "source"
+      ],
+      "title": "Constraint",
+      "type": "object"
+    },
+    "ConstraintSource": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "$ref": "#/$defs/ConstraintSourceKind"
+        },
+        "ref": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Ref"
+        }
+      },
+      "required": [
+        "kind"
+      ],
+      "title": "ConstraintSource",
+      "type": "object"
+    },
+    "ConstraintSourceKind": {
+      "enum": [
+        "program",
+        "brief",
+        "site",
+        "codepack",
+        "user",
+        "system"
+      ],
+      "title": "ConstraintSourceKind",
+      "type": "string"
+    },
+    "DoorsConnectValidSpacesRule": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "doors_connect_valid_spaces",
+          "default": "doors_connect_valid_spaces",
+          "title": "Kind",
+          "type": "string"
+        }
+      },
+      "title": "DoorsConnectValidSpacesRule",
+      "type": "object"
+    },
+    "MinAreaRule": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "min_area",
+          "default": "min_area",
+          "title": "Kind",
+          "type": "string"
+        },
+        "min_area_m2": {
+          "exclusiveMinimum": 0,
+          "title": "Min Area M2",
+          "type": "number"
+        },
+        "program_item_id": {
+          "maxLength": 64,
+          "minLength": 1,
+          "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+          "title": "Program Item Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "program_item_id",
+        "min_area_m2"
+      ],
+      "title": "MinAreaRule",
+      "type": "object"
+    },
+    "MinDimensionRule": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "min_dimension",
+          "default": "min_dimension",
+          "title": "Kind",
+          "type": "string"
+        },
+        "min_width_m": {
+          "exclusiveMinimum": 0,
+          "title": "Min Width M",
+          "type": "number"
+        },
+        "program_item_id": {
+          "maxLength": 64,
+          "minLength": 1,
+          "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+          "title": "Program Item Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "program_item_id",
+        "min_width_m"
+      ],
+      "title": "MinDimensionRule",
+      "type": "object"
+    },
+    "NoOverlapRule": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "no_overlap",
+          "default": "no_overlap",
+          "title": "Kind",
+          "type": "string"
+        }
+      },
+      "title": "NoOverlapRule",
+      "type": "object"
+    },
+    "ObjectiveRule": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "objective",
+          "default": "objective",
+          "title": "Kind",
+          "type": "string"
+        },
+        "objective": {
+          "$ref": "#/$defs/SoftObjective"
+        }
+      },
+      "required": [
+        "objective"
+      ],
+      "title": "ObjectiveRule",
+      "type": "object"
+    },
+    "OpeningsOnWallsRule": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "openings_on_walls",
+          "default": "openings_on_walls",
+          "title": "Kind",
+          "type": "string"
+        }
+      },
+      "title": "OpeningsOnWallsRule",
+      "type": "object"
+    },
+    "Provenance": {
+      "additionalProperties": false,
+      "properties": {
+        "created_at": {
+          "format": "date-time",
+          "title": "Created At",
+          "type": "string"
+        },
+        "created_by": {
+          "$ref": "#/$defs/Actor"
+        },
+        "inputs": {
+          "items": {
+            "$ref": "#/$defs/ArtifactRef"
+          },
+          "title": "Inputs",
+          "type": "array"
+        },
+        "method": {
+          "minLength": 1,
+          "title": "Method",
+          "type": "string"
+        },
+        "notes": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Notes"
+        },
+        "tool": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Tool"
+        },
+        "tool_version": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Tool Version"
+        }
+      },
+      "required": [
+        "created_at",
+        "created_by",
+        "method"
+      ],
+      "title": "Provenance",
+      "type": "object"
+    },
+    "SoftObjective": {
+      "enum": [
+        "adjacency_quality",
+        "circulation_efficiency",
+        "privacy",
+        "acoustic_zoning",
+        "daylight_opportunity",
+        "orientation",
+        "views",
+        "cross_ventilation",
+        "indoor_outdoor",
+        "kitchen_functionality",
+        "furniture_usability",
+        "storage",
+        "consolidated_wet_zones",
+        "structural_regularity",
+        "envelope_simplicity",
+        "adaptability",
+        "construction_complexity",
+        "cost_proxy",
+        "site_response",
+        "landscape_quality",
+        "cultural_fit"
+      ],
+      "title": "SoftObjective",
+      "type": "string"
+    },
+    "Strength": {
+      "enum": [
+        "hard",
+        "soft"
+      ],
+      "title": "Strength",
+      "type": "string"
+    },
+    "TraversableRule": {
+      "additionalProperties": false,
+      "description": "Every listed target is reachable from ``origin`` through passable openings.",
+      "properties": {
+        "kind": {
+          "const": "traversable",
+          "default": "traversable",
+          "title": "Kind",
+          "type": "string"
+        },
+        "origin": {
+          "default": "exterior",
+          "maxLength": 64,
+          "minLength": 1,
+          "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+          "title": "Origin",
+          "type": "string"
+        },
+        "targets": {
+          "items": {
+            "maxLength": 64,
+            "minLength": 1,
+            "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+            "type": "string"
+          },
+          "title": "Targets",
+          "type": "array"
+        }
+      },
+      "title": "TraversableRule",
+      "type": "object"
+    },
+    "ValidGeometryRule": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "valid_geometry",
+          "default": "valid_geometry",
+          "title": "Kind",
+          "type": "string"
+        }
+      },
+      "title": "ValidGeometryRule",
+      "type": "object"
+    },
+    "WithinEnvelopeRule": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "within_envelope",
+          "default": "within_envelope",
+          "title": "Kind",
+          "type": "string"
+        }
+      },
+      "title": "WithinEnvelopeRule",
+      "type": "object"
+    }
+  },
+  "$id": "https://house-ai.local/schemas/constraint_set.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "constraints": {
+      "items": {
+        "$ref": "#/$defs/Constraint"
+      },
+      "title": "Constraints",
+      "type": "array"
+    },
+    "id": {
+      "maxLength": 64,
+      "minLength": 1,
+      "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+      "title": "Id",
+      "type": "string"
+    },
+    "project_id": {
+      "maxLength": 64,
+      "minLength": 1,
+      "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+      "title": "Project Id",
+      "type": "string"
+    },
+    "provenance": {
+      "$ref": "#/$defs/Provenance"
+    },
+    "schema_version": {
+      "default": "0.1.0",
+      "title": "Schema Version",
+      "type": "string"
+    }
+  },
+  "required": [
+    "id",
+    "project_id",
+    "provenance"
+  ],
+  "title": "ConstraintSet",
+  "type": "object"
+}

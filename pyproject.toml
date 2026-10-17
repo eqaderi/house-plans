@@ -1,0 +1,41 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "house-ai"
+version = "0.1.0"
+description = "HOUSE DESIGN AI: a canonical semantic house model with explicit human approval gates"
+readme = "README.md"
+requires-python = ">=3.11"
+# Compatible bounds for installation; exact schema-generation versions are
+# pinned in requirements-lock.txt. After bumping pydantic, re-run
+# `house-ai schemas export`.
+dependencies = [
+  "pydantic>=2.10,<3",
+  "PyYAML>=6.0,<7",
+  "shapely>=2.0,<3",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.0",
+  "ruff>=0.9",
+]
+
+[project.scripts]
+house-ai = "house_ai.cli.main:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]

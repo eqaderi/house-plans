@@ -1,0 +1,17 @@
+schema_version: "0.1.0"
+project_id: synthetic-bungalow
+assumptions:
+  - id: as-setback
+    statement: A 4 m setback applies on every side of the plot.
+    basis: No zoning document exists for the synthetic site.
+    affects: [site]
+    confirm_with: local planning authority
+  - id: as-wall-thickness
+    statement: External walls 300 mm, internal walls 150 mm.
+    basis: Typical masonry dimensions; no structural input yet.
+    affects: [plan-a]
+    confirm_with: structural engineer
+provenance:
+  created_at: "2026-10-17T09:12:00Z"
+  created_by: {kind: human, id: example-author}
+  method: hand_authored

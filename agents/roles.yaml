@@ -1,0 +1,84 @@
+# Agent roles (MASTER_SPEC "Agent roles"). Validated by house_ai.domain.agents.AgentRoster.
+# These are runtime roles of the product, not the coding agents (Claude Code, Codex,
+# Gemini) that build this repository; those follow docs/AGENT_CONTRACT.md.
+# No role can approve a gate: `may_approve` is fixed to false by the schema.
+# The orchestrator invokes the smallest useful set of roles for each action.
+roles:
+  - id: orchestrator
+    name: Orchestrator
+    purpose: Reads project status, decides which single role (if any) a request needs, requests transitions and approvals.
+    invoke_when: Every user request; it routes and never designs.
+    may_write: []
+    may_transition: true
+    milestone: A
+  - id: site-analyst
+    name: Site Analyst
+    purpose: Runs CAD ingestion, reports units/CRS/datum status and site blockers; never guesses a CRS.
+    invoke_when: A survey is added or a site question is asked.
+    may_write: [source_document, cad_import, site, assumptions]
+    may_transition: true
+    milestone: B
+  - id: architectural-programmer
+    name: Architectural Programmer
+    purpose: Runs the adaptive interview and turns answers into the brief, program, assumptions and open questions.
+    invoke_when: Interviewing or revising the program.
+    may_write: [design_brief, space_program, assumptions, open_questions, constraint_set]
+    may_transition: true
+    milestone: C
+  - id: design-architect
+    name: Design Architect
+    purpose: Proposes topologies and strategies for the solver and writes plan versions through it.
+    invoke_when: Generating or revising concepts.
+    may_write: [plan, revision_report]
+    may_transition: true
+    milestone: D
+  - id: planning-critic
+    name: Planning Critic
+    purpose: Critiques layout quality; findings are ai_judgment and never override measured checks.
+    invoke_when: A concept is ready for review and the user asks for critique.
+    may_write: [evaluation_report]
+    milestone: D
+  - id: building-science-critic
+    name: Building Science Critic
+    purpose: Daylight, ventilation and comfort critique; simulated results only from real simulators.
+    invoke_when: The user asks about comfort, daylight or energy.
+    may_write: [evaluation_report]
+    milestone: D
+  - id: code-critic
+    name: Code Critic
+    purpose: Checks a plan against a loaded CodePack; says "not checked" without one.
+    invoke_when: A verified CodePack is loaded and the user asks about regulations.
+    may_write: [evaluation_report]
+    milestone: D
+  - id: structural-concept-critic
+    name: Structural Concept Critic
+    purpose: Conceptual structural regularity remarks; never structural certification.
+    invoke_when: The user asks about structure or spans.
+    may_write: [evaluation_report]
+    milestone: D
+  - id: mep-concept-critic
+    name: MEP Concept Critic
+    purpose: Conceptual wet-zone and services remarks; never MEP engineering.
+    invoke_when: The user asks about plumbing, services or shafts.
+    may_write: [evaluation_report]
+    milestone: D
+  - id: cost-constructability-critic
+    name: Cost/Constructability Critic
+    purpose: Cost proxies and construction complexity; labelled as proxies.
+    invoke_when: The user asks about cost or buildability.
+    may_write: [evaluation_report]
+    milestone: D
+  - id: blender-agent
+    name: Blender Agent
+    purpose: Runs the deterministic Blender generator from the approved plan, validates and renders it.
+    invoke_when: The plan gate is approved and a model build is requested.
+    may_write: [build_record]
+    may_transition: true
+    milestone: F
+  - id: unreal-agent
+    name: Unreal Agent
+    purpose: Exports FBX + scene manifest from the approved model and drives the Unreal importer.
+    invoke_when: The model gate is approved.
+    may_write: [build_record]
+    may_transition: true
+    milestone: G

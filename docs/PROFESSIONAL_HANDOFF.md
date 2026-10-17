@@ -1,0 +1,51 @@
+# Professional handoff
+
+HOUSE DESIGN AI produces design-exploration material with AI assistance.
+This page tells architects, engineers and authorities what they are looking
+at and what has not been done.
+
+## What the output is
+
+- A canonical, structured house model (levels, spaces, walls, openings,
+  slabs, stairs, fixtures) in metres, in a local frame tied to the site's
+  coordinate reference system, with stable ids and full version history.
+- A record of who decided what: the owner's brief and program, every plan
+  version and change request, the evaluations run, and the owner's
+  approvals, all in an append-only, hash-chained event log.
+- For every claim, how it is known: verified fact, inference, assumption,
+  preference, simulation result or professional approval. For every
+  metric, whether it was measured, inferred, simulated, judged by AI or not
+  checked.
+
+## What it is not
+
+Unless a qualified professional or an authority has recorded otherwise in
+the project, the output is not:
+
+- permit-ready or construction-ready;
+- structurally designed or certified;
+- checked for code compliance (only "not checked" or "conceptual
+  best-practice check only" can appear without a verified code pack);
+- MEP-engineered;
+- geotechnically verified.
+
+The owner's approvals in this system mean the owner chose this direction.
+They are not professional approvals.
+
+## What to check first
+
+1. **Site truth.** The survey's units, CRS and vertical datum were confirmed
+   by the owner, not by a surveyor. Check them against the original file
+   preserved under `source/` (its SHA-256 is recorded).
+2. **Assumptions.** Read `assumptions` and each plan's `assumptions`. Items
+   such as setbacks and wall thicknesses are placeholders until a
+   professional confirms them.
+3. **Open questions and issues.** Unresolved items are listed, not hidden.
+4. **Areas.** In this version, room areas are measured to wall centerlines.
+
+## Exporting for review
+
+Milestone A provides the structured project record (`house-ai project
+status --json`, the artifacts under `artifacts/`, and the JSON Schemas in
+`schemas/`). Drawings (SVG), IFC, Blender and Unreal exports arrive in
+later milestones and will each record the plan version they were made from.

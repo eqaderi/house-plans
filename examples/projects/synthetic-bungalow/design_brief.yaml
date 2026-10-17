@@ -1,0 +1,58 @@
+# SYNTHETIC BRIEF for a fictional household.
+schema_version: "0.1.0"
+id: brief
+project_id: synthetic-bungalow
+household:
+  - {id: hh-adult-1, role: adult, label: Parent 1, age_years: 41}
+  - {id: hh-adult-2, role: adult, label: Parent 2, age_years: 39}
+  - {id: hh-child-1, role: child, label: Child 1, age_years: 9}
+  - {id: hh-child-2, role: child, label: Child 2}   # age not given: UNKNOWN
+facts:
+  - id: f-single-storey
+    topic: accessibility
+    key: single_storey
+    statement: Everything on one level; a grandparent visits for weeks at a time.
+    value: true
+    status: preference
+    priority: must
+    source: {kind: owner_answer, ref: q-levels, interview_round: 1}
+  - id: f-open-kitchen
+    topic: kitchen_type
+    key: kitchen_layout
+    statement: Kitchen open to the living room, but cooking smells should not reach bedrooms.
+    value: open_to_living
+    status: preference
+    priority: should
+    source: {kind: owner_answer, ref: q-kitchen, interview_round: 1}
+  - id: f-bedrooms
+    topic: bedrooms_bathrooms
+    key: bedroom_count
+    statement: Two bedrooms now; the children share one.
+    value: 2
+    status: verified_fact
+    priority: must
+    source: {kind: owner_answer, ref: q-rooms, interview_round: 1}
+  - id: f-quiet-bedrooms
+    topic: noise
+    key: bedrooms_away_from_road
+    statement: Bedrooms should face away from the road.
+    value: true
+    status: preference
+    priority: should
+    source: {kind: owner_answer, ref: q-noise, interview_round: 2}
+  - id: f-guest-sleep-living
+    topic: long_term_guests
+    key: guest_sleeping
+    statement: Visiting grandparent can sleep in the living room for now (inferred from budget answers).
+    value: living_room_sofa_bed
+    status: inference
+    source: {kind: agent_inference, ref: round-2-summary, interview_round: 2}
+budget: {amount: 280000, currency: EUR}
+target_gross_area_m2: 120
+contradictions: []
+interview_rounds_completed: 2
+provenance:
+  created_at: "2026-10-17T09:05:00Z"
+  created_by: {kind: human, id: example-author}
+  method: hand_authored
+  notes: Synthetic stand-in for the output of two interview rounds.

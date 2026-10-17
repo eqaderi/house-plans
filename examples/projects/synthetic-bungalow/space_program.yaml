@@ -1,0 +1,25 @@
+schema_version: "0.1.0"
+id: program
+project_id: synthetic-bungalow
+items:
+  - {id: pi-hall, name: Hall, function: hall, min_area_m2: 12, target_area_m2: 18, min_width_m: 1.2, privacy: semi_private, zone_id: z-circulation}
+  - {id: pi-living, name: Living, function: living, min_area_m2: 24, target_area_m2: 30, min_width_m: 3.6, privacy: public, zone_id: z-day, daylight: required, source_fact_ids: [f-open-kitchen]}
+  - {id: pi-kitchen, name: Kitchen and dining, function: kitchen, min_area_m2: 20, target_area_m2: 30, min_width_m: 3.0, privacy: public, zone_id: z-day, daylight: required, source_fact_ids: [f-open-kitchen]}
+  - {id: pi-bed-parents, name: Parents' bedroom, function: bedroom, min_area_m2: 12, target_area_m2: 14, min_width_m: 3.0, privacy: private, zone_id: z-night, daylight: required, source_fact_ids: [f-bedrooms, f-quiet-bedrooms]}
+  - {id: pi-bed-children, name: Children's bedroom, function: bedroom, min_area_m2: 14, target_area_m2: 17.5, min_width_m: 3.0, privacy: private, zone_id: z-night, daylight: required, source_fact_ids: [f-bedrooms, f-quiet-bedrooms]}
+  - {id: pi-bath, name: Bathroom, function: bathroom, min_area_m2: 6, target_area_m2: 10.5, min_width_m: 2.0, privacy: private, zone_id: z-night, daylight: preferred}
+zones:
+  - {id: z-day, name: Day zone, privacy: public}
+  - {id: z-night, name: Night zone, privacy: private}
+  - {id: z-circulation, name: Circulation, privacy: semi_private}
+adjacencies:
+  - {id: adj-entry, a: pi-hall, b: exterior, kind: connected, strength: hard, rationale: Front door opens into the hall}
+  - {id: adj-living-kitchen, a: pi-living, b: pi-kitchen, kind: connected, strength: hard, source_fact_ids: [f-open-kitchen]}
+  - {id: adj-hall-bath, a: pi-hall, b: pi-bath, kind: connected, strength: hard}
+  - {id: adj-kitchen-beds, a: pi-kitchen, b: pi-bed-children, kind: acoustic_separation, strength: soft, weight: 2.0, source_fact_ids: [f-open-kitchen]}
+target_gross_area_m2: 120
+circulation_factor: 0.15
+provenance:
+  created_at: "2026-10-17T09:10:00Z"
+  created_by: {kind: human, id: example-author}
+  method: hand_authored

@@ -1,0 +1,191 @@
+{
+  "$defs": {
+    "Actor": {
+      "additionalProperties": false,
+      "properties": {
+        "display_name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Display Name"
+        },
+        "id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "$ref": "#/$defs/ActorKind"
+        },
+        "model": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Model"
+        },
+        "provider": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Provider"
+        }
+      },
+      "required": [
+        "kind",
+        "id"
+      ],
+      "title": "Actor",
+      "type": "object"
+    },
+    "ActorKind": {
+      "enum": [
+        "human",
+        "agent",
+        "system"
+      ],
+      "title": "ActorKind",
+      "type": "string"
+    },
+    "EventType": {
+      "enum": [
+        "project_created",
+        "source_added",
+        "artifact_written",
+        "transition",
+        "approval_requested",
+        "approval_granted",
+        "gate_reopened"
+      ],
+      "title": "EventType",
+      "type": "string"
+    },
+    "WorkflowState": {
+      "enum": [
+        "NEW_PROJECT",
+        "SITE_INGESTION",
+        "SITE_NEEDS_VERIFICATION",
+        "SITE_APPROVED",
+        "INTERVIEWING",
+        "PROGRAM_REVIEW",
+        "PROGRAM_APPROVED",
+        "CONCEPT_GENERATION",
+        "CONCEPT_REVIEW",
+        "PLAN_APPROVED",
+        "BLENDER_BUILD",
+        "BLENDER_REVIEW",
+        "MODEL_APPROVED",
+        "UNREAL_BUILD",
+        "UNREAL_REVIEW"
+      ],
+      "title": "WorkflowState",
+      "type": "string"
+    }
+  },
+  "$id": "https://house-ai.local/schemas/workflow_event.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "One line of events.jsonl. ``hash`` chains each event to the previous one.",
+  "properties": {
+    "actor": {
+      "$ref": "#/$defs/Actor"
+    },
+    "at": {
+      "format": "date-time",
+      "title": "At",
+      "type": "string"
+    },
+    "from_state": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/WorkflowState"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "hash": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Hash",
+      "type": "string"
+    },
+    "payload": {
+      "additionalProperties": true,
+      "title": "Payload",
+      "type": "object"
+    },
+    "prev_hash": {
+      "anyOf": [
+        {
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Prev Hash"
+    },
+    "reason": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Reason"
+    },
+    "seq": {
+      "minimum": 1,
+      "title": "Seq",
+      "type": "integer"
+    },
+    "to_state": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/WorkflowState"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "type": {
+      "$ref": "#/$defs/EventType"
+    }
+  },
+  "required": [
+    "seq",
+    "at",
+    "actor",
+    "type",
+    "hash"
+  ],
+  "title": "WorkflowEvent",
+  "type": "object"
+}

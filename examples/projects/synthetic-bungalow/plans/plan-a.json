@@ -1,0 +1,932 @@
+{
+  "change_request": null,
+  "label": "Option A: compact bar, bedrooms north",
+  "model": {
+    "assumptions": [
+      {
+        "affects": [
+          "sp-living",
+          "sp-kitchen"
+        ],
+        "basis": "Milestone A convention",
+        "confirm_with": null,
+        "id": "as-plan-centerlines",
+        "made_by": null,
+        "statement": "Room areas are measured to wall centerlines.",
+        "status": "assumption"
+      }
+    ],
+    "ceilings": [
+      {
+        "height_m": 2.7,
+        "id": "ceil-living",
+        "material_id": "m-plaster",
+        "space_id": "sp-living"
+      },
+      {
+        "height_m": 2.7,
+        "id": "ceil-kitchen",
+        "material_id": "m-plaster",
+        "space_id": "sp-kitchen"
+      },
+      {
+        "height_m": 2.7,
+        "id": "ceil-hall",
+        "material_id": "m-plaster",
+        "space_id": "sp-hall"
+      },
+      {
+        "height_m": 2.7,
+        "id": "ceil-bed-parents",
+        "material_id": "m-plaster",
+        "space_id": "sp-bed-parents"
+      },
+      {
+        "height_m": 2.7,
+        "id": "ceil-bath",
+        "material_id": "m-plaster",
+        "space_id": "sp-bath"
+      },
+      {
+        "height_m": 2.7,
+        "id": "ceil-bed-children",
+        "material_id": "m-plaster",
+        "space_id": "sp-bed-children"
+      }
+    ],
+    "coordinate_system_id": "lcs-site",
+    "fixtures": [
+      {
+        "depth_m": 0.65,
+        "fixture_type": "wc",
+        "id": "fx-wc",
+        "material_id": null,
+        "position": [
+          14.6,
+          21.4
+        ],
+        "rotation_deg": 180.0,
+        "space_id": "sp-bath",
+        "width_m": 0.4
+      },
+      {
+        "depth_m": 0.45,
+        "fixture_type": "basin",
+        "id": "fx-basin",
+        "material_id": null,
+        "position": [
+          15.6,
+          21.6
+        ],
+        "rotation_deg": 180.0,
+        "space_id": "sp-bath",
+        "width_m": 0.6
+      },
+      {
+        "depth_m": 0.9,
+        "fixture_type": "shower",
+        "id": "fx-shower",
+        "material_id": null,
+        "position": [
+          16.4,
+          19.6
+        ],
+        "rotation_deg": 0.0,
+        "space_id": "sp-bath",
+        "width_m": 0.9
+      },
+      {
+        "depth_m": 0.6,
+        "fixture_type": "kitchen_sink",
+        "id": "fx-kitchen-sink",
+        "material_id": null,
+        "position": [
+          21.4,
+          14.5
+        ],
+        "rotation_deg": 90.0,
+        "space_id": "sp-kitchen",
+        "width_m": 0.8
+      },
+      {
+        "depth_m": 2.0,
+        "fixture_type": "bed_double",
+        "id": "fx-bed-parents",
+        "material_id": null,
+        "position": [
+          12.0,
+          20.7
+        ],
+        "rotation_deg": 0.0,
+        "space_id": "sp-bed-parents",
+        "width_m": 1.6
+      }
+    ],
+    "id": "house-a",
+    "issues": [
+      {
+        "description": null,
+        "id": "iss-guest",
+        "raised_by": null,
+        "severity": "warning",
+        "status": "open",
+        "subject_ids": [
+          "sp-living"
+        ],
+        "title": "No guest room; visiting grandparent sleeps in the living room"
+      }
+    ],
+    "levels": [
+      {
+        "elevation_m": 0.6,
+        "floor_to_floor_m": 3.1,
+        "id": "l0",
+        "name": "Ground floor"
+      }
+    ],
+    "materials": [
+      {
+        "base_color_hex": "#EDE8DF",
+        "category": "wall",
+        "id": "m-render",
+        "library": null,
+        "metallic": null,
+        "name": "Exterior render, off-white",
+        "roughness": null,
+        "texture_scale_m": null,
+        "uri": null
+      },
+      {
+        "base_color_hex": "#F4F4F2",
+        "category": "wall",
+        "id": "m-plaster",
+        "library": null,
+        "metallic": null,
+        "name": "Interior plaster, white",
+        "roughness": null,
+        "texture_scale_m": null,
+        "uri": null
+      },
+      {
+        "base_color_hex": "#B98E5A",
+        "category": "floor",
+        "id": "m-oak",
+        "library": null,
+        "metallic": null,
+        "name": "Oak floorboards",
+        "roughness": null,
+        "texture_scale_m": null,
+        "uri": null
+      },
+      {
+        "base_color_hex": "#9A9A96",
+        "category": "floor",
+        "id": "m-concrete",
+        "library": null,
+        "metallic": null,
+        "name": "Concrete",
+        "roughness": null,
+        "texture_scale_m": null,
+        "uri": null
+      },
+      {
+        "base_color_hex": null,
+        "category": "glazing",
+        "id": "m-glass",
+        "library": null,
+        "metallic": null,
+        "name": "Clear double glazing",
+        "roughness": null,
+        "texture_scale_m": null,
+        "uri": null
+      }
+    ],
+    "name": "Synthetic bungalow, option A",
+    "openings": [
+      {
+        "connects": [
+          "exterior",
+          "sp-hall"
+        ],
+        "height_m": 2.1,
+        "host_wall_id": "w-ext-w",
+        "id": "d-front",
+        "kind": "door",
+        "material_id": null,
+        "offset_m": 3.8,
+        "opens_into": null,
+        "operation": "swing_left",
+        "sill_m": 0.0,
+        "width_m": 1.0
+      },
+      {
+        "connects": [
+          "sp-hall",
+          "sp-living"
+        ],
+        "height_m": 2.1,
+        "host_wall_id": "w-hall-s",
+        "id": "d-hall-living",
+        "kind": "door",
+        "material_id": null,
+        "offset_m": 2.0,
+        "opens_into": null,
+        "operation": "swing_left",
+        "sill_m": 0.0,
+        "width_m": 0.9
+      },
+      {
+        "connects": [
+          "sp-hall",
+          "sp-kitchen"
+        ],
+        "height_m": 2.1,
+        "host_wall_id": "w-hall-s",
+        "id": "d-hall-kitchen",
+        "kind": "door",
+        "material_id": null,
+        "offset_m": 7.0,
+        "opens_into": null,
+        "operation": "swing_left",
+        "sill_m": 0.0,
+        "width_m": 0.9
+      },
+      {
+        "connects": [
+          "sp-hall",
+          "sp-bed-parents"
+        ],
+        "height_m": 2.1,
+        "host_wall_id": "w-hall-n",
+        "id": "d-hall-bed-parents",
+        "kind": "door",
+        "material_id": null,
+        "offset_m": 1.5,
+        "opens_into": null,
+        "operation": "swing_left",
+        "sill_m": 0.0,
+        "width_m": 0.9
+      },
+      {
+        "connects": [
+          "sp-hall",
+          "sp-bath"
+        ],
+        "height_m": 2.1,
+        "host_wall_id": "w-hall-n",
+        "id": "d-hall-bath",
+        "kind": "door",
+        "material_id": null,
+        "offset_m": 4.8,
+        "opens_into": null,
+        "operation": "swing_left",
+        "sill_m": 0.0,
+        "width_m": 0.8
+      },
+      {
+        "connects": [
+          "sp-hall",
+          "sp-bed-children"
+        ],
+        "height_m": 2.1,
+        "host_wall_id": "w-hall-n",
+        "id": "d-hall-bed-children",
+        "kind": "door",
+        "material_id": null,
+        "offset_m": 8.5,
+        "opens_into": null,
+        "operation": "swing_left",
+        "sill_m": 0.0,
+        "width_m": 0.9
+      },
+      {
+        "connects": [
+          "sp-living",
+          "sp-kitchen"
+        ],
+        "height_m": 2.1,
+        "host_wall_id": "w-living-kitchen",
+        "id": "o-living-kitchen",
+        "kind": "opening",
+        "material_id": null,
+        "offset_m": 1.5,
+        "opens_into": null,
+        "operation": "none",
+        "sill_m": 0.0,
+        "width_m": 1.6
+      },
+      {
+        "connects": [
+          "sp-living",
+          "exterior"
+        ],
+        "height_m": 2.1,
+        "host_wall_id": "w-ext-s",
+        "id": "win-living-s",
+        "kind": "window",
+        "material_id": "m-glass",
+        "offset_m": 2.0,
+        "opens_into": null,
+        "operation": "tilt_turn",
+        "sill_m": 0.0,
+        "width_m": 2.0
+      },
+      {
+        "connects": [
+          "sp-living",
+          "exterior"
+        ],
+        "height_m": 1.2,
+        "host_wall_id": "w-ext-w",
+        "id": "win-living-w",
+        "kind": "window",
+        "material_id": "m-glass",
+        "offset_m": 6.5,
+        "opens_into": null,
+        "operation": "tilt_turn",
+        "sill_m": 0.9,
+        "width_m": 1.5
+      },
+      {
+        "connects": [
+          "sp-kitchen",
+          "exterior"
+        ],
+        "height_m": 1.2,
+        "host_wall_id": "w-ext-s",
+        "id": "win-kitchen-s",
+        "kind": "window",
+        "material_id": "m-glass",
+        "offset_m": 8.0,
+        "opens_into": null,
+        "operation": "tilt_turn",
+        "sill_m": 0.9,
+        "width_m": 1.5
+      },
+      {
+        "connects": [
+          "sp-kitchen",
+          "exterior"
+        ],
+        "height_m": 1.2,
+        "host_wall_id": "w-ext-e",
+        "id": "win-kitchen-e",
+        "kind": "window",
+        "material_id": "m-glass",
+        "offset_m": 1.5,
+        "opens_into": null,
+        "operation": "tilt_turn",
+        "sill_m": 0.9,
+        "width_m": 1.2
+      },
+      {
+        "connects": [
+          "sp-bed-parents",
+          "exterior"
+        ],
+        "height_m": 1.2,
+        "host_wall_id": "w-ext-n",
+        "id": "win-bed-parents-n",
+        "kind": "window",
+        "material_id": "m-glass",
+        "offset_m": 9.0,
+        "opens_into": null,
+        "operation": "tilt_turn",
+        "sill_m": 0.9,
+        "width_m": 1.5
+      },
+      {
+        "connects": [
+          "sp-bath",
+          "exterior"
+        ],
+        "height_m": 0.6,
+        "host_wall_id": "w-ext-n",
+        "id": "win-bath-n",
+        "kind": "window",
+        "material_id": "m-glass",
+        "offset_m": 5.4,
+        "opens_into": null,
+        "operation": "tilt_turn",
+        "sill_m": 1.5,
+        "width_m": 0.6
+      },
+      {
+        "connects": [
+          "sp-bed-children",
+          "exterior"
+        ],
+        "height_m": 1.2,
+        "host_wall_id": "w-ext-n",
+        "id": "win-bed-children-n",
+        "kind": "window",
+        "material_id": "m-glass",
+        "offset_m": 1.5,
+        "opens_into": null,
+        "operation": "tilt_turn",
+        "sill_m": 0.9,
+        "width_m": 1.5
+      }
+    ],
+    "program_ref": {
+      "id": "program",
+      "kind": "space_program",
+      "sha256": "0efb44c81fea91f72653409b96244fb933e74b80a9ca2c337e5d3a4dc6f721dc",
+      "version": 1
+    },
+    "relationships": [
+      {
+        "a": "sp-living",
+        "b": "sp-kitchen",
+        "id": "rel-living-kitchen",
+        "kind": "connected",
+        "requirement_id": "adj-living-kitchen"
+      }
+    ],
+    "schema_version": "0.1.0",
+    "site_ref": {
+      "id": "site",
+      "kind": "site",
+      "sha256": "83987195d8dce8b58cdbd52edb1c64548c020ee6dd2d5e87599a3756945ce611",
+      "version": 1
+    },
+    "slabs": [
+      {
+        "boundary": {
+          "holes": [],
+          "outer": [
+            [
+              10.0,
+              12.0
+            ],
+            [
+              22.0,
+              12.0
+            ],
+            [
+              22.0,
+              22.0
+            ],
+            [
+              10.0,
+              22.0
+            ]
+          ]
+        },
+        "id": "slab-l0",
+        "kind": "floor",
+        "level_id": "l0",
+        "material_id": "m-concrete",
+        "thickness_m": 0.25,
+        "top_offset_m": 0.0
+      },
+      {
+        "boundary": {
+          "holes": [],
+          "outer": [
+            [
+              9.5,
+              11.5
+            ],
+            [
+              22.5,
+              11.5
+            ],
+            [
+              22.5,
+              22.5
+            ],
+            [
+              9.5,
+              22.5
+            ]
+          ]
+        },
+        "id": "slab-roof",
+        "kind": "roof",
+        "level_id": "l0",
+        "material_id": "m-concrete",
+        "thickness_m": 0.3,
+        "top_offset_m": 3.1
+      }
+    ],
+    "spaces": [
+      {
+        "boundary": {
+          "holes": [],
+          "outer": [
+            [
+              10.0,
+              12.0
+            ],
+            [
+              16.0,
+              12.0
+            ],
+            [
+              16.0,
+              17.0
+            ],
+            [
+              10.0,
+              17.0
+            ]
+          ]
+        },
+        "floor_material_id": "m-oak",
+        "function": "living",
+        "id": "sp-living",
+        "level_id": "l0",
+        "name": "Living",
+        "program_item_id": "pi-living",
+        "zone_id": "z-day"
+      },
+      {
+        "boundary": {
+          "holes": [],
+          "outer": [
+            [
+              16.0,
+              12.0
+            ],
+            [
+              22.0,
+              12.0
+            ],
+            [
+              22.0,
+              17.0
+            ],
+            [
+              16.0,
+              17.0
+            ]
+          ]
+        },
+        "floor_material_id": "m-oak",
+        "function": "kitchen",
+        "id": "sp-kitchen",
+        "level_id": "l0",
+        "name": "Kitchen and dining",
+        "program_item_id": "pi-kitchen",
+        "zone_id": "z-day"
+      },
+      {
+        "boundary": {
+          "holes": [],
+          "outer": [
+            [
+              10.0,
+              17.0
+            ],
+            [
+              22.0,
+              17.0
+            ],
+            [
+              22.0,
+              18.5
+            ],
+            [
+              10.0,
+              18.5
+            ]
+          ]
+        },
+        "floor_material_id": "m-oak",
+        "function": "hall",
+        "id": "sp-hall",
+        "level_id": "l0",
+        "name": "Hall",
+        "program_item_id": "pi-hall",
+        "zone_id": "z-circulation"
+      },
+      {
+        "boundary": {
+          "holes": [],
+          "outer": [
+            [
+              10.0,
+              18.5
+            ],
+            [
+              14.0,
+              18.5
+            ],
+            [
+              14.0,
+              22.0
+            ],
+            [
+              10.0,
+              22.0
+            ]
+          ]
+        },
+        "floor_material_id": "m-oak",
+        "function": "bedroom",
+        "id": "sp-bed-parents",
+        "level_id": "l0",
+        "name": "Parents' bedroom",
+        "program_item_id": "pi-bed-parents",
+        "zone_id": "z-night"
+      },
+      {
+        "boundary": {
+          "holes": [],
+          "outer": [
+            [
+              14.0,
+              18.5
+            ],
+            [
+              17.0,
+              18.5
+            ],
+            [
+              17.0,
+              22.0
+            ],
+            [
+              14.0,
+              22.0
+            ]
+          ]
+        },
+        "floor_material_id": "m-oak",
+        "function": "bathroom",
+        "id": "sp-bath",
+        "level_id": "l0",
+        "name": "Bathroom",
+        "program_item_id": "pi-bath",
+        "zone_id": "z-night"
+      },
+      {
+        "boundary": {
+          "holes": [],
+          "outer": [
+            [
+              17.0,
+              18.5
+            ],
+            [
+              22.0,
+              18.5
+            ],
+            [
+              22.0,
+              22.0
+            ],
+            [
+              17.0,
+              22.0
+            ]
+          ]
+        },
+        "floor_material_id": "m-oak",
+        "function": "bedroom",
+        "id": "sp-bed-children",
+        "level_id": "l0",
+        "name": "Children's bedroom",
+        "program_item_id": "pi-bed-children",
+        "zone_id": "z-night"
+      }
+    ],
+    "stairs": [],
+    "units": "m",
+    "walls": [
+      {
+        "base_offset_m": 0.0,
+        "end": [
+          22.0,
+          12.0
+        ],
+        "height_m": 2.8,
+        "id": "w-ext-s",
+        "kind": "exterior",
+        "left_material_id": null,
+        "level_id": "l0",
+        "material_id": "m-render",
+        "right_material_id": null,
+        "start": [
+          10.0,
+          12.0
+        ],
+        "thickness_m": 0.3
+      },
+      {
+        "base_offset_m": 0.0,
+        "end": [
+          22.0,
+          22.0
+        ],
+        "height_m": 2.8,
+        "id": "w-ext-e",
+        "kind": "exterior",
+        "left_material_id": null,
+        "level_id": "l0",
+        "material_id": "m-render",
+        "right_material_id": null,
+        "start": [
+          22.0,
+          12.0
+        ],
+        "thickness_m": 0.3
+      },
+      {
+        "base_offset_m": 0.0,
+        "end": [
+          10.0,
+          22.0
+        ],
+        "height_m": 2.8,
+        "id": "w-ext-n",
+        "kind": "exterior",
+        "left_material_id": null,
+        "level_id": "l0",
+        "material_id": "m-render",
+        "right_material_id": null,
+        "start": [
+          22.0,
+          22.0
+        ],
+        "thickness_m": 0.3
+      },
+      {
+        "base_offset_m": 0.0,
+        "end": [
+          10.0,
+          12.0
+        ],
+        "height_m": 2.8,
+        "id": "w-ext-w",
+        "kind": "exterior",
+        "left_material_id": null,
+        "level_id": "l0",
+        "material_id": "m-render",
+        "right_material_id": null,
+        "start": [
+          10.0,
+          22.0
+        ],
+        "thickness_m": 0.3
+      },
+      {
+        "base_offset_m": 0.0,
+        "end": [
+          16.0,
+          17.0
+        ],
+        "height_m": 2.8,
+        "id": "w-living-kitchen",
+        "kind": "interior",
+        "left_material_id": null,
+        "level_id": "l0",
+        "material_id": "m-plaster",
+        "right_material_id": null,
+        "start": [
+          16.0,
+          12.0
+        ],
+        "thickness_m": 0.15
+      },
+      {
+        "base_offset_m": 0.0,
+        "end": [
+          22.0,
+          17.0
+        ],
+        "height_m": 2.8,
+        "id": "w-hall-s",
+        "kind": "interior",
+        "left_material_id": null,
+        "level_id": "l0",
+        "material_id": "m-plaster",
+        "right_material_id": null,
+        "start": [
+          10.0,
+          17.0
+        ],
+        "thickness_m": 0.15
+      },
+      {
+        "base_offset_m": 0.0,
+        "end": [
+          22.0,
+          18.5
+        ],
+        "height_m": 2.8,
+        "id": "w-hall-n",
+        "kind": "interior",
+        "left_material_id": null,
+        "level_id": "l0",
+        "material_id": "m-plaster",
+        "right_material_id": null,
+        "start": [
+          10.0,
+          18.5
+        ],
+        "thickness_m": 0.15
+      },
+      {
+        "base_offset_m": 0.0,
+        "end": [
+          14.0,
+          22.0
+        ],
+        "height_m": 2.8,
+        "id": "w-bed-bath",
+        "kind": "interior",
+        "left_material_id": null,
+        "level_id": "l0",
+        "material_id": "m-plaster",
+        "right_material_id": null,
+        "start": [
+          14.0,
+          18.5
+        ],
+        "thickness_m": 0.15
+      },
+      {
+        "base_offset_m": 0.0,
+        "end": [
+          17.0,
+          22.0
+        ],
+        "height_m": 2.8,
+        "id": "w-bath-bed",
+        "kind": "interior",
+        "left_material_id": null,
+        "level_id": "l0",
+        "material_id": "m-plaster",
+        "right_material_id": null,
+        "start": [
+          17.0,
+          18.5
+        ],
+        "thickness_m": 0.15
+      }
+    ],
+    "zones": [
+      {
+        "id": "z-day",
+        "name": "Day zone",
+        "privacy": "public",
+        "space_ids": [
+          "sp-living",
+          "sp-kitchen"
+        ]
+      },
+      {
+        "id": "z-night",
+        "name": "Night zone",
+        "privacy": "private",
+        "space_ids": [
+          "sp-bed-parents",
+          "sp-bath",
+          "sp-bed-children"
+        ]
+      },
+      {
+        "id": "z-circulation",
+        "name": "Circulation",
+        "privacy": "semi_private",
+        "space_ids": [
+          "sp-hall"
+        ]
+      }
+    ]
+  },
+  "option_id": "plan-a",
+  "parent": null,
+  "provenance": {
+    "created_at": "2026-10-17T09:30:00Z",
+    "created_by": {
+      "display_name": null,
+      "id": "example-author",
+      "kind": "human",
+      "model": null,
+      "provider": null
+    },
+    "inputs": [
+      {
+        "id": "site",
+        "kind": "site",
+        "sha256": "83987195d8dce8b58cdbd52edb1c64548c020ee6dd2d5e87599a3756945ce611",
+        "version": 1
+      },
+      {
+        "id": "program",
+        "kind": "space_program",
+        "sha256": "0efb44c81fea91f72653409b96244fb933e74b80a9ca2c337e5d3a4dc6f721dc",
+        "version": 1
+      }
+    ],
+    "method": "hand_authored",
+    "notes": "Golden synthetic plan for Milestone A tests; not generated by a solver.",
+    "tool": null,
+    "tool_version": null
+  },
+  "schema_version": "0.1.0",
+  "strategy": "hand_authored"
+}

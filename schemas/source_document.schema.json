@@ -1,0 +1,145 @@
+{
+  "$defs": {
+    "Actor": {
+      "additionalProperties": false,
+      "properties": {
+        "display_name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Display Name"
+        },
+        "id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "$ref": "#/$defs/ActorKind"
+        },
+        "model": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Model"
+        },
+        "provider": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Provider"
+        }
+      },
+      "required": [
+        "kind",
+        "id"
+      ],
+      "title": "Actor",
+      "type": "object"
+    },
+    "ActorKind": {
+      "enum": [
+        "human",
+        "agent",
+        "system"
+      ],
+      "title": "ActorKind",
+      "type": "string"
+    },
+    "DataClassification": {
+      "enum": [
+        "private",
+        "synthetic",
+        "public"
+      ],
+      "title": "DataClassification",
+      "type": "string"
+    }
+  },
+  "$id": "https://house-ai.local/schemas/source_document.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "An original input file, preserved byte-for-byte under source/.",
+  "properties": {
+    "classification": {
+      "$ref": "#/$defs/DataClassification"
+    },
+    "id": {
+      "maxLength": 64,
+      "minLength": 1,
+      "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+      "title": "Id",
+      "type": "string"
+    },
+    "imported_at": {
+      "format": "date-time",
+      "title": "Imported At",
+      "type": "string"
+    },
+    "imported_by": {
+      "$ref": "#/$defs/Actor"
+    },
+    "media_type": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Media Type"
+    },
+    "original_filename": {
+      "minLength": 1,
+      "title": "Original Filename",
+      "type": "string"
+    },
+    "sha256": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Sha256",
+      "type": "string"
+    },
+    "size_bytes": {
+      "minimum": 0,
+      "title": "Size Bytes",
+      "type": "integer"
+    },
+    "stored_path": {
+      "title": "Stored Path",
+      "type": "string"
+    }
+  },
+  "required": [
+    "id",
+    "original_filename",
+    "sha256",
+    "size_bytes",
+    "stored_path",
+    "classification",
+    "imported_at",
+    "imported_by"
+  ],
+  "title": "SourceDocument",
+  "type": "object"
+}

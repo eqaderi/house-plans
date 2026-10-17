@@ -1,0 +1,57 @@
+# SYNTHETIC SITE. Coordinates, CRS and elevations are fictional and exist only
+# so the pipeline can be tested without a private survey.
+schema_version: "0.1.0"
+id: site
+project_id: synthetic-bungalow
+name: Synthetic level-ish corner plot
+classification: synthetic
+coordinates:
+  source_units: {unit: m, status: user_confirmed}
+  horizontal_crs:
+    status: user_confirmed
+    epsg: 32632
+    name: WGS 84 / UTM zone 32N (synthetic coordinates)
+  vertical_datum:
+    status: local_only_confirmed
+    name: synthetic benchmark BM1 (elevation 100.00)
+  local:
+    id: lcs-site
+    name: Plot frame, origin at the south-west boundary corner
+    origin: [500000.0, 5400000.0, 100.0]
+    rotation_deg: 0.0
+boundary:
+  outer: [[0, 0], [32, 0], [32, 34], [0, 34]]
+boundary_status: verified_fact
+buildable_envelope:
+  polygon:
+    outer: [[4, 4], [28, 4], [28, 30], [4, 30]]
+  status: assumption
+  basis: 4 m setback on all sides assumed for the synthetic example; not a zoning rule
+  max_height_m: 9.0
+terrain:
+  status: surveyed_points
+  spot_elevations:
+    - {id: spot-sw, xy: [0, 0], z_m: 0.0}
+    - {id: spot-se, xy: [32, 0], z_m: 0.2}
+    - {id: spot-ne, xy: [32, 34], z_m: 1.1}
+    - {id: spot-nw, xy: [0, 34], z_m: 0.9}
+    - {id: spot-mid, xy: [16, 17], z_m: 0.5}
+features:
+  - id: road-south
+    kind: road
+    name: Synthetic access road
+    geometry:
+      type: polygon
+      polygon: {outer: [[-5, -8], [37, -8], [37, 0], [-5, 0]]}
+  - id: tree-ne
+    kind: tree
+    name: Existing walnut tree (synthetic)
+    geometry: {type: point, xy: [27, 31.5]}
+  - id: access-south
+    kind: access_point
+    geometry: {type: point, xy: [16, 0]}
+provenance:
+  created_at: "2026-10-17T09:00:00Z"
+  created_by: {kind: human, id: example-author}
+  method: hand_authored
+  notes: Synthetic fixture for Milestone A tests.

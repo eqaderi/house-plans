@@ -1,0 +1,18 @@
+schema_version: "0.1.0"
+id: constraints
+project_id: synthetic-bungalow
+constraints:
+  - {id: c-valid-geometry, strength: hard, rule: {kind: valid_geometry}, source: {kind: system}}
+  - {id: c-no-overlap, strength: hard, rule: {kind: no_overlap}, source: {kind: system}}
+  - {id: c-envelope, strength: hard, rule: {kind: within_envelope}, source: {kind: site, ref: site}}
+  - {id: c-openings, strength: hard, rule: {kind: openings_on_walls}, source: {kind: system}}
+  - {id: c-doors, strength: hard, rule: {kind: doors_connect_valid_spaces}, source: {kind: system}}
+  - {id: c-reach-all, strength: hard, rule: {kind: traversable, origin: exterior}, source: {kind: system}}
+  - {id: c-living-area, strength: hard, rule: {kind: min_area, program_item_id: pi-living, min_area_m2: 24}, source: {kind: program, ref: pi-living}}
+  - {id: c-adj-living-kitchen, strength: hard, rule: {kind: adjacency, requirement_id: adj-living-kitchen}, source: {kind: program, ref: adj-living-kitchen}}
+  - {id: c-quiet-bedrooms, strength: soft, weight: 2.0, rule: {kind: objective, objective: acoustic_zoning}, source: {kind: brief, ref: f-quiet-bedrooms}}
+  - {id: c-daylight, strength: soft, weight: 1.0, rule: {kind: objective, objective: daylight_opportunity}, source: {kind: brief}}
+provenance:
+  created_at: "2026-10-17T09:15:00Z"
+  created_by: {kind: human, id: example-author}
+  method: hand_authored

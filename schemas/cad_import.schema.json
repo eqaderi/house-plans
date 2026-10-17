@@ -1,0 +1,170 @@
+{
+  "$defs": {
+    "ConfirmationStatus": {
+      "description": "Status of a fact that must come from a source document or a human.\n\nUsed for drawing units, horizontal CRS and vertical datum. Nothing in the\nsystem may move a value to USER_CONFIRMED on its own; only a human can.",
+      "enum": [
+        "unknown",
+        "declared_in_source",
+        "user_confirmed",
+        "local_only_confirmed"
+      ],
+      "title": "ConfirmationStatus",
+      "type": "string"
+    },
+    "LengthUnit": {
+      "enum": [
+        "mm",
+        "cm",
+        "dm",
+        "m",
+        "km",
+        "in",
+        "ft",
+        "us_survey_ft",
+        "yd",
+        "mi"
+      ],
+      "title": "LengthUnit",
+      "type": "string"
+    },
+    "UnitDeclaration": {
+      "additionalProperties": false,
+      "description": "The length unit of a source drawing and how we know it.",
+      "properties": {
+        "status": {
+          "$ref": "#/$defs/ConfirmationStatus",
+          "default": "unknown"
+        },
+        "unit": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/LengthUnit"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "title": "UnitDeclaration",
+      "type": "object"
+    }
+  },
+  "$id": "https://house-ai.local/schemas/cad_import.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Record of one CAD import (filled in by Milestone B adapters).",
+  "properties": {
+    "drawing_units": {
+      "$ref": "#/$defs/UnitDeclaration"
+    },
+    "epsg": {
+      "anyOf": [
+        {
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Epsg"
+    },
+    "horizontal_crs_status": {
+      "$ref": "#/$defs/ConfirmationStatus"
+    },
+    "local_origin": {
+      "anyOf": [
+        {
+          "maxItems": 3,
+          "minItems": 3,
+          "prefixItems": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            }
+          ],
+          "type": "array"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Local Origin"
+    },
+    "original_filename": {
+      "title": "Original Filename",
+      "type": "string"
+    },
+    "parser": {
+      "title": "Parser",
+      "type": "string"
+    },
+    "parser_version": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Parser Version"
+    },
+    "sha256": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Sha256",
+      "type": "string"
+    },
+    "source_document_id": {
+      "maxLength": 64,
+      "minLength": 1,
+      "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+      "title": "Source Document Id",
+      "type": "string"
+    },
+    "unrecognized_entities": {
+      "additionalProperties": {
+        "type": "integer"
+      },
+      "title": "Unrecognized Entities",
+      "type": "object"
+    },
+    "unrecognized_layers": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Unrecognized Layers",
+      "type": "array"
+    },
+    "vertical_datum_status": {
+      "$ref": "#/$defs/ConfirmationStatus"
+    },
+    "warnings": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Warnings",
+      "type": "array"
+    }
+  },
+  "required": [
+    "source_document_id",
+    "original_filename",
+    "sha256",
+    "drawing_units",
+    "parser",
+    "horizontal_crs_status",
+    "vertical_datum_status"
+  ],
+  "title": "CadImportProvenance",
+  "type": "object"
+}

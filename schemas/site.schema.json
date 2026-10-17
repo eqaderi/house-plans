@@ -1,0 +1,1238 @@
+{
+  "$defs": {
+    "Actor": {
+      "additionalProperties": false,
+      "properties": {
+        "display_name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Display Name"
+        },
+        "id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "$ref": "#/$defs/ActorKind"
+        },
+        "model": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Model"
+        },
+        "provider": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Provider"
+        }
+      },
+      "required": [
+        "kind",
+        "id"
+      ],
+      "title": "Actor",
+      "type": "object"
+    },
+    "ActorKind": {
+      "enum": [
+        "human",
+        "agent",
+        "system"
+      ],
+      "title": "ActorKind",
+      "type": "string"
+    },
+    "ArtifactKind": {
+      "description": "Kinds of versioned artifacts kept in a project store.",
+      "enum": [
+        "source_document",
+        "cad_import",
+        "site",
+        "design_brief",
+        "space_program",
+        "assumptions",
+        "open_questions",
+        "constraint_set",
+        "codepack",
+        "plan",
+        "evaluation_report",
+        "revision_report",
+        "build_record"
+      ],
+      "title": "ArtifactKind",
+      "type": "string"
+    },
+    "ArtifactRef": {
+      "additionalProperties": false,
+      "description": "Pointer to one immutable version of an artifact, pinned by content hash.",
+      "properties": {
+        "id": {
+          "maxLength": 64,
+          "minLength": 1,
+          "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "$ref": "#/$defs/ArtifactKind"
+        },
+        "sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Sha256",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "kind",
+        "id",
+        "version",
+        "sha256"
+      ],
+      "title": "ArtifactRef",
+      "type": "object"
+    },
+    "Assumption": {
+      "additionalProperties": false,
+      "properties": {
+        "affects": {
+          "items": {
+            "maxLength": 64,
+            "minLength": 1,
+            "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+            "type": "string"
+          },
+          "title": "Affects",
+          "type": "array"
+        },
+        "basis": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Basis"
+        },
+        "confirm_with": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Confirm With"
+        },
+        "id": {
+          "maxLength": 64,
+          "minLength": 1,
+          "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "made_by": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Actor"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "statement": {
+          "minLength": 1,
+          "title": "Statement",
+          "type": "string"
+        },
+        "status": {
+          "$ref": "#/$defs/Epistemic",
+          "default": "assumption"
+        }
+      },
+      "required": [
+        "id",
+        "statement"
+      ],
+      "title": "Assumption",
+      "type": "object"
+    },
+    "BuildableEnvelope": {
+      "additionalProperties": false,
+      "description": "Where the building may stand. Its source must be stated.",
+      "properties": {
+        "basis": {
+          "minLength": 1,
+          "title": "Basis",
+          "type": "string"
+        },
+        "max_height_m": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Max Height M"
+        },
+        "polygon": {
+          "$ref": "#/$defs/Polygon2D"
+        },
+        "status": {
+          "$ref": "#/$defs/Epistemic"
+        }
+      },
+      "required": [
+        "polygon",
+        "status",
+        "basis"
+      ],
+      "title": "BuildableEnvelope",
+      "type": "object"
+    },
+    "CadImportProvenance": {
+      "additionalProperties": false,
+      "description": "Record of one CAD import (filled in by Milestone B adapters).",
+      "properties": {
+        "drawing_units": {
+          "$ref": "#/$defs/UnitDeclaration"
+        },
+        "epsg": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Epsg"
+        },
+        "horizontal_crs_status": {
+          "$ref": "#/$defs/ConfirmationStatus"
+        },
+        "local_origin": {
+          "anyOf": [
+            {
+              "maxItems": 3,
+              "minItems": 3,
+              "prefixItems": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                }
+              ],
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Local Origin"
+        },
+        "original_filename": {
+          "title": "Original Filename",
+          "type": "string"
+        },
+        "parser": {
+          "title": "Parser",
+          "type": "string"
+        },
+        "parser_version": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Parser Version"
+        },
+        "sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Sha256",
+          "type": "string"
+        },
+        "source_document_id": {
+          "maxLength": 64,
+          "minLength": 1,
+          "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+          "title": "Source Document Id",
+          "type": "string"
+        },
+        "unrecognized_entities": {
+          "additionalProperties": {
+            "type": "integer"
+          },
+          "title": "Unrecognized Entities",
+          "type": "object"
+        },
+        "unrecognized_layers": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Unrecognized Layers",
+          "type": "array"
+        },
+        "vertical_datum_status": {
+          "$ref": "#/$defs/ConfirmationStatus"
+        },
+        "warnings": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Warnings",
+          "type": "array"
+        }
+      },
+      "required": [
+        "source_document_id",
+        "original_filename",
+        "sha256",
+        "drawing_units",
+        "parser",
+        "horizontal_crs_status",
+        "vertical_datum_status"
+      ],
+      "title": "CadImportProvenance",
+      "type": "object"
+    },
+    "ConfirmationStatus": {
+      "description": "Status of a fact that must come from a source document or a human.\n\nUsed for drawing units, horizontal CRS and vertical datum. Nothing in the\nsystem may move a value to USER_CONFIRMED on its own; only a human can.",
+      "enum": [
+        "unknown",
+        "declared_in_source",
+        "user_confirmed",
+        "local_only_confirmed"
+      ],
+      "title": "ConfirmationStatus",
+      "type": "string"
+    },
+    "Contour": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "maxLength": 64,
+          "minLength": 1,
+          "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "line": {
+          "$ref": "#/$defs/Polyline2D"
+        },
+        "source_ref": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Source Ref"
+        },
+        "z_m": {
+          "title": "Z M",
+          "type": "number"
+        }
+      },
+      "required": [
+        "id",
+        "z_m",
+        "line"
+      ],
+      "title": "Contour",
+      "type": "object"
+    },
+    "DataClassification": {
+      "enum": [
+        "private",
+        "synthetic",
+        "public"
+      ],
+      "title": "DataClassification",
+      "type": "string"
+    },
+    "Epistemic": {
+      "description": "Epistemic status of a statement about the project.",
+      "enum": [
+        "verified_fact",
+        "inference",
+        "assumption",
+        "preference",
+        "simulation_result",
+        "professional_approval",
+        "unknown"
+      ],
+      "title": "Epistemic",
+      "type": "string"
+    },
+    "HorizontalCRS": {
+      "additionalProperties": false,
+      "properties": {
+        "declared_epsg": {
+          "anyOf": [
+            {
+              "maximum": 999999,
+              "minimum": 1024,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Declared Epsg"
+        },
+        "epsg": {
+          "anyOf": [
+            {
+              "maximum": 999999,
+              "minimum": 1024,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Epsg"
+        },
+        "name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Name"
+        },
+        "status": {
+          "$ref": "#/$defs/ConfirmationStatus",
+          "default": "unknown"
+        }
+      },
+      "title": "HorizontalCRS",
+      "type": "object"
+    },
+    "Issue": {
+      "additionalProperties": false,
+      "description": "An unresolved problem attached to a site, program or plan.",
+      "properties": {
+        "description": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Description"
+        },
+        "id": {
+          "maxLength": 64,
+          "minLength": 1,
+          "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "raised_by": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Actor"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "severity": {
+          "$ref": "#/$defs/Severity"
+        },
+        "status": {
+          "$ref": "#/$defs/IssueStatus",
+          "default": "open"
+        },
+        "subject_ids": {
+          "items": {
+            "maxLength": 64,
+            "minLength": 1,
+            "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+            "type": "string"
+          },
+          "title": "Subject Ids",
+          "type": "array"
+        },
+        "title": {
+          "minLength": 1,
+          "title": "Title",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "title",
+        "severity"
+      ],
+      "title": "Issue",
+      "type": "object"
+    },
+    "IssueStatus": {
+      "enum": [
+        "open",
+        "resolved",
+        "accepted"
+      ],
+      "title": "IssueStatus",
+      "type": "string"
+    },
+    "LengthUnit": {
+      "enum": [
+        "mm",
+        "cm",
+        "dm",
+        "m",
+        "km",
+        "in",
+        "ft",
+        "us_survey_ft",
+        "yd",
+        "mi"
+      ],
+      "title": "LengthUnit",
+      "type": "string"
+    },
+    "LocalCoordinateSystem": {
+      "additionalProperties": false,
+      "description": "Rigid transform between GRID metres and the LOCAL project frame.",
+      "properties": {
+        "grid_to_true_north_deg": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Grid To True North Deg"
+        },
+        "id": {
+          "maxLength": 64,
+          "minLength": 1,
+          "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Name"
+        },
+        "origin": {
+          "maxItems": 3,
+          "minItems": 3,
+          "prefixItems": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            }
+          ],
+          "title": "Origin",
+          "type": "array"
+        },
+        "rotation_deg": {
+          "default": 0.0,
+          "title": "Rotation Deg",
+          "type": "number"
+        }
+      },
+      "required": [
+        "id",
+        "origin"
+      ],
+      "title": "LocalCoordinateSystem",
+      "type": "object"
+    },
+    "PointGeometry": {
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "const": "point",
+          "default": "point",
+          "title": "Type",
+          "type": "string"
+        },
+        "xy": {
+          "maxItems": 2,
+          "minItems": 2,
+          "prefixItems": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            }
+          ],
+          "title": "Xy",
+          "type": "array"
+        }
+      },
+      "required": [
+        "xy"
+      ],
+      "title": "PointGeometry",
+      "type": "object"
+    },
+    "Polygon2D": {
+      "additionalProperties": false,
+      "description": "A simple polygon, optionally with holes. Rings are not closed explicitly.",
+      "properties": {
+        "holes": {
+          "items": {
+            "items": {
+              "maxItems": 2,
+              "minItems": 2,
+              "prefixItems": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                }
+              ],
+              "type": "array"
+            },
+            "minItems": 3,
+            "type": "array"
+          },
+          "title": "Holes",
+          "type": "array"
+        },
+        "outer": {
+          "items": {
+            "maxItems": 2,
+            "minItems": 2,
+            "prefixItems": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "type": "array"
+          },
+          "minItems": 3,
+          "title": "Outer",
+          "type": "array"
+        }
+      },
+      "required": [
+        "outer"
+      ],
+      "title": "Polygon2D",
+      "type": "object"
+    },
+    "PolygonGeometry": {
+      "additionalProperties": false,
+      "properties": {
+        "polygon": {
+          "$ref": "#/$defs/Polygon2D"
+        },
+        "type": {
+          "const": "polygon",
+          "default": "polygon",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "polygon"
+      ],
+      "title": "PolygonGeometry",
+      "type": "object"
+    },
+    "Polyline2D": {
+      "additionalProperties": false,
+      "properties": {
+        "closed": {
+          "default": false,
+          "title": "Closed",
+          "type": "boolean"
+        },
+        "points": {
+          "items": {
+            "maxItems": 2,
+            "minItems": 2,
+            "prefixItems": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "type": "array"
+          },
+          "minItems": 2,
+          "title": "Points",
+          "type": "array"
+        }
+      },
+      "required": [
+        "points"
+      ],
+      "title": "Polyline2D",
+      "type": "object"
+    },
+    "PolylineGeometry": {
+      "additionalProperties": false,
+      "properties": {
+        "line": {
+          "$ref": "#/$defs/Polyline2D"
+        },
+        "type": {
+          "const": "polyline",
+          "default": "polyline",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "line"
+      ],
+      "title": "PolylineGeometry",
+      "type": "object"
+    },
+    "Provenance": {
+      "additionalProperties": false,
+      "properties": {
+        "created_at": {
+          "format": "date-time",
+          "title": "Created At",
+          "type": "string"
+        },
+        "created_by": {
+          "$ref": "#/$defs/Actor"
+        },
+        "inputs": {
+          "items": {
+            "$ref": "#/$defs/ArtifactRef"
+          },
+          "title": "Inputs",
+          "type": "array"
+        },
+        "method": {
+          "minLength": 1,
+          "title": "Method",
+          "type": "string"
+        },
+        "notes": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Notes"
+        },
+        "tool": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Tool"
+        },
+        "tool_version": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Tool Version"
+        }
+      },
+      "required": [
+        "created_at",
+        "created_by",
+        "method"
+      ],
+      "title": "Provenance",
+      "type": "object"
+    },
+    "Severity": {
+      "enum": [
+        "blocking",
+        "warning",
+        "info"
+      ],
+      "title": "Severity",
+      "type": "string"
+    },
+    "SiteCoordinates": {
+      "additionalProperties": false,
+      "properties": {
+        "horizontal_crs": {
+          "$ref": "#/$defs/HorizontalCRS"
+        },
+        "local": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/LocalCoordinateSystem"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "source_units": {
+          "$ref": "#/$defs/UnitDeclaration"
+        },
+        "vertical_datum": {
+          "$ref": "#/$defs/VerticalDatum"
+        }
+      },
+      "title": "SiteCoordinates",
+      "type": "object"
+    },
+    "SiteFeature": {
+      "additionalProperties": false,
+      "properties": {
+        "geometry": {
+          "discriminator": {
+            "mapping": {
+              "point": "#/$defs/PointGeometry",
+              "polygon": "#/$defs/PolygonGeometry",
+              "polyline": "#/$defs/PolylineGeometry"
+            },
+            "propertyName": "type"
+          },
+          "oneOf": [
+            {
+              "$ref": "#/$defs/PointGeometry"
+            },
+            {
+              "$ref": "#/$defs/PolylineGeometry"
+            },
+            {
+              "$ref": "#/$defs/PolygonGeometry"
+            }
+          ],
+          "title": "Geometry"
+        },
+        "id": {
+          "maxLength": 64,
+          "minLength": 1,
+          "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "$ref": "#/$defs/SiteFeatureKind"
+        },
+        "name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Name"
+        },
+        "notes": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Notes"
+        },
+        "source_ref": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Source Ref"
+        },
+        "status": {
+          "$ref": "#/$defs/Epistemic",
+          "default": "verified_fact"
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "geometry"
+      ],
+      "title": "SiteFeature",
+      "type": "object"
+    },
+    "SiteFeatureKind": {
+      "enum": [
+        "road",
+        "easement",
+        "existing_structure",
+        "utility",
+        "tree",
+        "water",
+        "access_point",
+        "other"
+      ],
+      "title": "SiteFeatureKind",
+      "type": "string"
+    },
+    "SpotElevation": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "maxLength": 64,
+          "minLength": 1,
+          "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "source_ref": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Source Ref"
+        },
+        "xy": {
+          "maxItems": 2,
+          "minItems": 2,
+          "prefixItems": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            }
+          ],
+          "title": "Xy",
+          "type": "array"
+        },
+        "z_m": {
+          "title": "Z M",
+          "type": "number"
+        }
+      },
+      "required": [
+        "id",
+        "xy",
+        "z_m"
+      ],
+      "title": "SpotElevation",
+      "type": "object"
+    },
+    "Terrain": {
+      "additionalProperties": false,
+      "properties": {
+        "contours": {
+          "items": {
+            "$ref": "#/$defs/Contour"
+          },
+          "title": "Contours",
+          "type": "array"
+        },
+        "spot_elevations": {
+          "items": {
+            "$ref": "#/$defs/SpotElevation"
+          },
+          "title": "Spot Elevations",
+          "type": "array"
+        },
+        "status": {
+          "$ref": "#/$defs/TerrainStatus",
+          "default": "unknown"
+        },
+        "surface_ref": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Surface Ref"
+        }
+      },
+      "title": "Terrain",
+      "type": "object"
+    },
+    "TerrainStatus": {
+      "enum": [
+        "unknown",
+        "surveyed_points",
+        "surface_built",
+        "assumed_flat"
+      ],
+      "title": "TerrainStatus",
+      "type": "string"
+    },
+    "UnitDeclaration": {
+      "additionalProperties": false,
+      "description": "The length unit of a source drawing and how we know it.",
+      "properties": {
+        "status": {
+          "$ref": "#/$defs/ConfirmationStatus",
+          "default": "unknown"
+        },
+        "unit": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/LengthUnit"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "title": "UnitDeclaration",
+      "type": "object"
+    },
+    "VerticalDatum": {
+      "additionalProperties": false,
+      "properties": {
+        "epsg": {
+          "anyOf": [
+            {
+              "maximum": 999999,
+              "minimum": 1024,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Epsg"
+        },
+        "name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Name"
+        },
+        "status": {
+          "$ref": "#/$defs/ConfirmationStatus",
+          "default": "unknown"
+        }
+      },
+      "title": "VerticalDatum",
+      "type": "object"
+    }
+  },
+  "$id": "https://house-ai.local/schemas/site.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "assumptions": {
+      "items": {
+        "$ref": "#/$defs/Assumption"
+      },
+      "title": "Assumptions",
+      "type": "array"
+    },
+    "boundary": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Polygon2D"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "boundary_status": {
+      "$ref": "#/$defs/Epistemic",
+      "default": "unknown"
+    },
+    "buildable_envelope": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/BuildableEnvelope"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "cad_imports": {
+      "items": {
+        "$ref": "#/$defs/CadImportProvenance"
+      },
+      "title": "Cad Imports",
+      "type": "array"
+    },
+    "classification": {
+      "$ref": "#/$defs/DataClassification"
+    },
+    "coordinates": {
+      "$ref": "#/$defs/SiteCoordinates"
+    },
+    "features": {
+      "items": {
+        "$ref": "#/$defs/SiteFeature"
+      },
+      "title": "Features",
+      "type": "array"
+    },
+    "id": {
+      "maxLength": 64,
+      "minLength": 1,
+      "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+      "title": "Id",
+      "type": "string"
+    },
+    "issues": {
+      "items": {
+        "$ref": "#/$defs/Issue"
+      },
+      "title": "Issues",
+      "type": "array"
+    },
+    "name": {
+      "title": "Name",
+      "type": "string"
+    },
+    "project_id": {
+      "maxLength": 64,
+      "minLength": 1,
+      "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+      "title": "Project Id",
+      "type": "string"
+    },
+    "provenance": {
+      "$ref": "#/$defs/Provenance"
+    },
+    "schema_version": {
+      "default": "0.1.0",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "terrain": {
+      "$ref": "#/$defs/Terrain"
+    }
+  },
+  "required": [
+    "id",
+    "project_id",
+    "name",
+    "classification",
+    "provenance"
+  ],
+  "title": "Site",
+  "type": "object"
+}
