@@ -117,13 +117,13 @@ to reopen A–D):
 
 | | |
 |---|---|
-| **Current stage** | S1 Safety and cleanup (in progress on branch `stage/S1-safety-cleanup`) |
-| **Awaiting review** | S1 Safety and cleanup |
-| **Next eligible stage** | S2 Agent skills (after S1 closure) |
-| **Path to good floor plans** | S1 → S2 → S3 → S4 → S5 → S6 → S7 → S8 → S9 (9 stages) |
+| **Current stage** | none |
+| **Awaiting review** | none |
+| **Next eligible stage** | S2 Agent skills |
+| **Path to good floor plans** | S1 (done) → S2 → S3 → S4 → S5 → S6 → S7 → S8 → S9 (9 stages) |
 | **Blocked** | H1 site facts (owner or surveyor input); program gate (needs site gate); H3 real design (needs S9 and approvals) |
-| **Human parallel tracks** | H1 site verification with the owner any time; H2 interview after S1-09 |
-| **`main` health** | T0.1 merged; 497 tests pass locally; CI green on `788bcdc` (run 39055068527) |
+| **Human parallel tracks** | H1 site verification with the owner any time; H2 interview any time (S1-09 closed) |
+| **`main` health** | S1 merged; 521 tests pass locally; CI green on `fb85bf9` (run 39060143660) |
 | **Homeowner gates on `my-house`** | site: not approved (5 blockers) · program: none · plan: none · model: none |
 
 Counts come from `python tools/check_tracker.py --summary`, never from a
@@ -429,9 +429,9 @@ limitations are tracked as new tasks in later stages, not by reopening them.
 | Field | Value |
 |---|---|
 | Kind | implementation |
-| Status | IN_PROGRESS |
+| Status | DONE |
 | Review | APPROVED — by agent:gemini on 2026-10-17; see §N |
-| Branch | `stage/S1-safety-cleanup` |
+| Branch | `stage/S1-safety-cleanup` (merged `fb85bf9`) |
 | Depends on | T0.1 |
 | Tasks | S1-01, S1-02, S1-03, S1-04, S1-05, S1-06, S1-07, S1-08, S1-09, S1-10, S1-11, S1-12, S1-13, S1-14, S1-15, S1-16, S1-17, S1-18, S1-19 |
 | Objective | Human-only gates enforced everywhere, tests and CI on synthetic data only, docs that match reality |
@@ -441,94 +441,108 @@ limitations are tracked as new tasks in later stages, not by reopening them.
 | Demonstration | Transcript of each human-only command refusing non-interactively; `pytest -q` passing with `projects/my-house` moved away |
 | Artifacts | `cli/main.py`, `orchestration/`, `storage/project_store.py`, tests, `tools/` leak scan, `.github/workflows/ci.yml`, edited docs |
 | Review requirements | Reviewer runs refused commands non-interactively (exit 2, no new events), greps tests for private values, checks edited docs against §C |
-| Evidence | implementation on `stage/S1-safety-cleanup`; full test suite passes (521 passed) with `projects/` absent; `tools/leak_scan.py` clean |
+| Evidence | merge `fb85bf9` into main; CI run 39060143660 success; branch CI runs 39058523612 and 39059344417 green; 521 tests pass locally; leak scan clean |
 
 #### Human-authorization and approval-gate hardening
 
-- [ ] **S1-01** `workflow reopen` requires an interactive terminal and a typed confirmation phrase — `IN_PROGRESS` · P0 · deps: none
+- [x] **S1-01** `workflow reopen` requires an interactive terminal and a typed confirmation phrase — `DONE` · P0 · deps: none
   - Accept: non-TTY run exits 2 and appends nothing, even with `--actor human:owner`; agent actor exits 2 (today: exit 1); phrase like `reopen <gate> <id>`
   - Verify: new subprocess test in `tests/test_cli.py`; event count unchanged after refusal
-  - Evidence: `src/house_ai/cli/main.py:421-447`; `tests/test_human_gates.py::test_workflow_reopen_requires_interactive_terminal_and_typed_phrase`
-- [ ] **S1-02** Refuse agent-looking ids for `--approver` and `--confirmer` — `IN_PROGRESS` · P0 · deps: none
+  - Evidence: `src/house_ai/cli/main.py:440-474`; `tests/test_human_gates.py::test_workflow_reopen_requires_interactive_terminal_and_typed_phrase`
+  - Notes: closed with merge `fb85bf9`
+- [x] **S1-02** Refuse agent-looking ids for `--approver` and `--confirmer` — `DONE` · P0 · deps: none
   - Accept: ids starting `agent:` or `system:` (or equal to a known tool name) rejected before any write
   - Verify: tests for `workflow approve` and `site confirm` with `--approver agent:gemini`
-  - Evidence: `src/house_ai/constants/actors.py`; `src/house_ai/domain/provenance.py:32-38`; `src/house_ai/cli/main.py:408,504`; `tests/test_human_gates.py`
-- [ ] **S1-03** Close the `program reject` bypass through `workflow transition PROGRAM_REVIEW→INTERVIEWING` — `IN_PROGRESS` · P1 · deps: none
+  - Evidence: `src/house_ai/constants/actors.py`; `src/house_ai/domain/provenance.py:32-38`; `src/house_ai/cli/main.py:408,521`; `tests/test_human_gates.py`
+  - Notes: closed with merge `fb85bf9`
+- [x] **S1-03** Close the `program reject` bypass through `workflow transition PROGRAM_REVIEW→INTERVIEWING` — `DONE` · P1 · deps: none
   - Accept: leaving PROGRAM_REVIEW back to INTERVIEWING requires the same human path as `program reject`, or the transition is removed
   - Verify: test that an agent-actor transition is refused
-  - Evidence: `src/house_ai/orchestration/workflow.py:59-67`; `tests/test_human_gates.py::test_workflow_transition_program_review_to_interviewing_requires_human`
-- [ ] **S1-04** CLI regression tests for all five human-only commands — `IN_PROGRESS` · P0 · deps: S1-01, S1-02
+  - Evidence: `src/house_ai/orchestration/workflow.py:192-198`; `tests/test_human_gates.py::test_workflow_transition_program_review_to_interviewing_requires_human`
+  - Notes: closed with merge `fb85bf9`
+- [x] **S1-04** CLI regression tests for all five human-only commands — `DONE` · P0 · deps: S1-01, S1-02
   - Accept: for approve, reopen, site confirm, interview consent, program reject: non-TTY exit 2, wrong phrase refused, agent actor refused, nothing written
   - Verify: `pytest -q tests/test_cli.py tests/test_human_gates.py`
   - Evidence: `tests/test_human_gates.py` (12 tests covering all five human-only commands)
-- [ ] **S1-05** Owner decision on agent-recorded `interview confirm` provenance strength — `IN_PROGRESS` · P1 · deps: none
+  - Notes: closed with merge `fb85bf9`
+- [x] **S1-05** Owner decision on agent-recorded `interview confirm` provenance strength — `DONE` · P1 · deps: none
   - Accept: owner chooses: keep agent-recorded confirmation (ADR 0011) with owner words, or require a human-terminal confirm before the program gate; decision recorded in §L and implemented
   - Verify: decision entry in §L; test matching the decision
   - Evidence: DEC-09 in §L; agent-recorded confirmation with verbatim owner words preserved per ADR 0011; human terminal required at program approval
-  - Notes: needs the homeowner's choice; not a defect until decided
-- [ ] **S1-06** Guard or flag artifact writes after a gate approval — `IN_PROGRESS` · P1 · deps: none
+  - Notes: closed with merge `fb85bf9` (DEC-09 in §L)
+- [x] **S1-06** Guard or flag artifact writes after a gate approval — `DONE` · P1 · deps: none
   - Accept: writing a new site or program version after approval either refuses or marks the gate stale in `project status`
   - Verify: test writing program v2 after approval
-  - Evidence: `src/house_ai/cli/main.py:284-307` (`_status_dict` flags stale gate approvals); `tests/test_human_gates.py::test_stale_gate_flagged_on_artifact_mutation_after_approval`
-- [ ] **S1-07** Detect truncation of the event-log tail — `IN_PROGRESS` · P1 · deps: none
+  - Evidence: `src/house_ai/cli/main.py:200-225` (`_status_dict` flags stale gate approvals); `tests/test_human_gates.py::test_stale_gate_flagged_on_artifact_mutation_after_approval`
+  - Notes: closed with merge `fb85bf9`
+- [x] **S1-07** Detect truncation of the event-log tail — `DONE` · P1 · deps: none
   - Accept: `project verify` fails when the last N events are removed (head anchor in `project.json` or equivalent)
   - Verify: new test removing the last event
-  - Evidence: `src/house_ai/storage/project_store.py:270-285,475-485` (`head.json` anchor); `tests/test_storage.py::test_verify_detects_truncated_event_log_tail`
-- [ ] **S1-08** Re-verify consent, source immutability, hash chain and schema drift invariants — `IN_PROGRESS` · P2 · deps: S1-07
+  - Evidence: `src/house_ai/storage/project_store.py:226-235,447-463` (`head.json` anchor); `tests/test_storage.py::test_verify_detects_truncated_event_log_tail`
+  - Notes: closed with merge `fb85bf9`
+- [x] **S1-08** Re-verify consent, source immutability, hash chain and schema drift invariants — `DONE` · P2 · deps: S1-07
   - Accept: one test module lists each invariant with the test that covers it; any gap gets a test
   - Verify: `pytest -q`; reviewer reads the invariant list
   - Evidence: `tests/test_safety_invariants.py` (8 tests documenting and verifying INV-CONSENT through INV-PRIVATE-DATA-ISOLATION)
+  - Notes: closed with merge `fb85bf9`
 
 #### Private-data isolation in tests, CI and docs
 
-- [ ] **S1-09** Replace the real-project interview test with a synthetic project — `IN_PROGRESS` · P0 · deps: none
+- [x] **S1-09** Replace the real-project interview test with a synthetic project — `DONE` · P0 · deps: none
   - Accept: `tests/test_interview.py::test_agent_inspects_real_my_house_project_without_modifying_it` (lines 1024-1047) reads a synthetic project; the same read-only guarantees are asserted
   - Verify: test passes with `projects/my-house` absent; CI green
   - Evidence: `tests/test_interview.py:1024-1048` (`test_agent_inspects_synthetic_project_without_modifying_it`); full suite passes with `projects/` moved away
-  - Notes: blocks H2-01
-- [ ] **S1-10** Remove real site values from tests — `IN_PROGRESS` · P0 · deps: none
+  - Notes: closed with merge `fb85bf9`; unblocks H2-01
+- [x] **S1-10** Remove real site values from tests — `DONE` · P0 · deps: none
   - Accept: no real area, relief, slope, frontage or spot elevation in `tests/` (today `test_interview.py:983-986`, `test_site_review_fixes.py:529-533`, `test_plan_generation.py:71`)
   - Verify: leak scan S1-11 passes
   - Evidence: `tests/test_interview.py:983-987`, `tests/test_site_review_fixes.py:529-535`, `tests/test_plan_generation.py:71` replaced with synthetic values; verified by `tools/leak_scan.py`
-- [ ] **S1-11** Local leak scan comparing tracked public files with private project values — `IN_PROGRESS` · P1 · deps: S1-10
+  - Notes: closed with merge `fb85bf9`
+- [x] **S1-11** Local leak scan comparing tracked public files with private project values — `DONE` · P1 · deps: S1-10
   - Accept: `tools/` script reports any `projects/*` coordinate, elevation or hash appearing in `tests/`, `examples/`, `docs/` without printing the values
   - Verify: seeded leak is detected in a synthetic test
   - Evidence: `tools/leak_scan.py`; `tests/test_leak_scan.py` (3 tests); scanner passes clean with 0 leaks
-- [ ] **S1-12** Make the CI synthetic-only claim true — `IN_PROGRESS` · P1 · deps: S1-09
+  - Notes: closed with merge `fb85bf9`
+- [x] **S1-12** Make the CI synthetic-only claim true — `DONE` · P1 · deps: S1-09
   - Accept: either CI excludes `projects/` (sparse checkout) or the step name changes; tests never need `projects/my-house`
   - Verify: CI run on the stage branch
   - Evidence: `.github/workflows/ci.yml` adds `tools/leak_scan.py` step; all 521 tests pass without `projects/`
-- [ ] **S1-13** Owner decision on real values in docs and handoffs — `IN_PROGRESS` · P2 · deps: none
+  - Notes: closed with merge `fb85bf9`
+- [x] **S1-13** Owner decision on real values in docs and handoffs — `DONE` · P2 · deps: none
   - Accept: owner decides whether approximate site figures may stay in AGENT_CONTRACT §7 and milestone reports; precise values and hashes move to `projects/my-house/` only
   - Verify: decision in §L; leak scan configured accordingly
   - Evidence: DEC-10 in §L; approximate rounded figures permitted in contract §7 and milestone reports; exact coordinates, spot elevations and hashes confined to `projects/my-house/`
-  - Notes: needs the homeowner's choice
-- [ ] **S1-14** README current state and next steps point to the tracker — `IN_PROGRESS` · P1 · deps: none
+  - Notes: closed with merge `fb85bf9` (DEC-10 in §L)
+- [x] **S1-14** README current state and next steps point to the tracker — `DONE` · P1 · deps: none
   - Accept: README no longer says "branch milestone-d, not yet merged; next: Milestone E"
   - Verify: reviewer reads README.md lines 9-10
   - Evidence: `README.md:9-16` updated with milestones A–D merged and link to `PROJECT_TRACKER.md`
+  - Notes: closed with merge `fb85bf9`
 - [ ] **S1-15** PRODUCT_SPEC milestone table matches the baseline — `DEFERRED` · P1 · deps: none
   - Accept: D shown done; E–G link to tracker stages; order change noted with DEC-01
   - Verify: reviewer reads PRODUCT_SPEC "Milestones"
   - Evidence: superseded; `docs/PRODUCT_SPEC.md` removed in T0.1-08
   - Notes: superseded: PRODUCT_SPEC.md removed by T0.1-08
-- [ ] **S1-16** Annotate stale statements in milestones/C.md and D.md — `IN_PROGRESS` · P2 · deps: none
+- [x] **S1-16** Annotate stale statements in milestones/C.md and D.md — `DONE` · P2 · deps: none
   - Accept: D.md "Not merged", "five structural strategies", "combining split-level with walk-out is next" and C.md retracted slope/relief figures carry a dated correction note, history otherwise preserved
   - Verify: reviewer reads the notes
   - Evidence: `docs/milestones/C.md` annotated with post-Milestone C note on retracted slope figure; `docs/milestones/D.md` annotated with merge commit and six strategies
-- [ ] **S1-17** ARCHITECTURE package map: six strategies and current stages — `IN_PROGRESS` · P2 · deps: none
+  - Notes: closed with merge `fb85bf9`
+- [x] **S1-17** ARCHITECTURE package map: six strategies and current stages — `DONE` · P2 · deps: none
   - Accept: "five massing strategies" corrected; planned items reference tracker stages
   - Verify: reviewer reads ARCHITECTURE "Package map"
   - Evidence: `docs/ARCHITECTURE.md:3-6,39,75-79` package map updated to six massing strategies and references tracker stages S1–S9
+  - Notes: closed with merge `fb85bf9`
 - [ ] **S1-18** Retire MILESTONE_D_HANDOFF.md as a competing roadmap — `DEFERRED` · P1 · deps: S1-13
   - Accept: file removed or reduced to a pointer to the tracker and milestones/D.md, per the owner's S1-13 decision; no inbound links break
   - Verify: link check; `grep -r MILESTONE_D_HANDOFF`
   - Evidence: superseded; `docs/MILESTONE_D_HANDOFF.md` removed in T0.1-08
   - Notes: superseded: the owner asked for removal on 2026-10-17; done in T0.1-08
-- [ ] **S1-19** skills/ and apps/reviewer/ READMEs point to their tracker stages — `IN_PROGRESS` · P3 · deps: none
+- [x] **S1-19** skills/ and apps/reviewer/ READMEs point to their tracker stages — `DONE` · P3 · deps: none
   - Accept: READMEs name T1.x and E1.x as the plan
   - Verify: reviewer reads both files
   - Evidence: `skills/README.md` references Stage S2; `apps/reviewer/README.md` references Stage S4
+  - Notes: closed with merge `fb85bf9`
 
 ### Stage S2 — Agent skills
 
@@ -2091,6 +2105,7 @@ lifecycle.
 
 | Date | What | Evidence |
 |---|---|---|
+| 2026-10-17 | Stage S1 closed: human-only gate hardening, event log head anchor, private data isolation in tests/CI, leak scan, docs reconciliation | merge `fb85bf9` |
 | 2026-10-17 | Stage T0.1 closed: tracker, stage protocol, tracker check; two superseded docs removed | merge `7a41629` |
 | 2026-10-17 | Milestone D merged | `a9b68fe`; CI 39046442142 |
 | 2026-10-17 | Survey evidence correction (PR #1) | `b636164`; CI 39035256427 |
@@ -2130,6 +2145,12 @@ Closure record template:
 ```
 
 ### S1 records
+
+#### S1 closure
+- Merged: `stage/S1-safety-cleanup` at `411b4e6` into `main` as `fb85bf9` on 2026-10-17
+- Review: `APPROVED` by `agent:gemini` on commit `411b4e6` (review 1)
+- CI on main: run 39060143660, success
+- Closed by: `agent:gemini` on the owner's "Close stage S1"
 
 #### S1 review 1 — APPROVED
 - Reviewed commit: 411b4e6a671cfabdfaf464bde61f99081c4e6a42
@@ -2275,9 +2296,8 @@ homeowner approval of any site, program, plan or model.
 
 ### Current handoff note
 
-- T0.1 closed on `main` (merge `7a41629`); the owner waived its independent
-  review. Next owner command: "Next stage", which starts S1 on
-  `stage/S1-safety-cleanup`.
+- S1 closed on `main` (merge `fb85bf9`). Next owner command: "Next stage",
+  which starts S2 on `stage/S2-agent-skills`.
 
 ## P. Rules for updating the tracker
 
