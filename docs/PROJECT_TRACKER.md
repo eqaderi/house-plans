@@ -2750,7 +2750,10 @@ Closure record template:
 ### T0.1 records
 
 - Implementation complete on `stage/T0.1-project-tracker` (2026-10-17,
-  `agent:claude-code`). Review requested: **PENDING**. No review yet.
+  `agent:claude-code`). Implementation commit `ba225c0`; CI run 39054074663
+  (workflow_dispatch) green on Python 3.11 and 3.13. This record was added
+  in a follow-up commit; the reviewer checks CI for the branch head.
+  Review requested: **PENDING**. No review yet.
 
 ## O. Session protocol and handoff
 
