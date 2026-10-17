@@ -87,3 +87,33 @@ def new_store(tmp_path: Path, clock: FakeClock) -> Callable[..., ProjectStore]:
 @pytest.fixture
 def store(new_store: Callable[..., ProjectStore]) -> ProjectStore:
     return new_store()
+
+
+# ------------------------------------------------------------ Milestone B survey
+
+SURVEY_DIR = REPO / "examples" / "surveys" / "synthetic"
+SURVEY_DXF = SURVEY_DIR / "survey.dxf"
+SURVEY_LAYERS = SURVEY_DIR / "layers.yaml"
+
+
+def survey_module():
+    """The synthetic survey generator (ground truth constants and build_survey)."""
+    import runpy
+
+    return runpy.run_path(str(SURVEY_DIR / "make_survey.py"))
+
+
+@pytest.fixture(scope="session")
+def survey():
+    return survey_module()
+
+
+@pytest.fixture
+def make_survey(tmp_path: Path, survey):
+    """Write a variant of the synthetic survey and return its path."""
+    counter = iter(range(1000))
+
+    def make(**options) -> Path:
+        return survey["build_survey"](tmp_path / f"survey-{next(counter)}.dxf", **options)
+
+    return make

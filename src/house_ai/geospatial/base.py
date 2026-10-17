@@ -13,7 +13,9 @@ from house_ai.domain.coordinates import HorizontalCRS, LocalCoordinateSystem
 from house_ai.domain.epistemics import ConfirmationStatus
 from house_ai.domain.geometry import Point3
 from house_ai.domain.provenance import Actor, ActorKind
-from house_ai.domain.site import Contour, SpotElevation, Terrain, TerrainStatus
+from house_ai.domain.site import Contour, SpotElevation, Terrain, TerrainStatus, TinSurface
+
+from .crs import describe_epsg, require_projected_metric
 
 
 def set_coordinate_reference_system(
@@ -27,10 +29,16 @@ def set_coordinate_reference_system(
     """Record or confirm the horizontal CRS of a site.
 
     Only a human actor may set ``USER_CONFIRMED`` or ``LOCAL_ONLY_CONFIRMED``.
+    A confirmed code must exist in the PROJ database and be a projected,
+    metre-based CRS; its official name is filled in when none is given.
     """
     if status in (ConfirmationStatus.USER_CONFIRMED, ConfirmationStatus.LOCAL_ONLY_CONFIRMED):
         if actor.kind is not ActorKind.HUMAN:
             raise ValueError("only a human can confirm the coordinate reference system")
+    if status is ConfirmationStatus.USER_CONFIRMED and epsg is not None:
+        name = name or require_projected_metric(epsg).name
+    elif declared_epsg is not None and name is None:
+        name = describe_epsg(declared_epsg).name
     return HorizontalCRS(status=status, epsg=epsg, declared_epsg=declared_epsg, name=name)
 
 
@@ -57,9 +65,10 @@ def build_terrain(
     contours: list[Contour],
     *,
     surface_ref: str | None = None,
+    surface: TinSurface | None = None,
 ) -> Terrain:
     """Assemble local-frame elevation data into a canonical Terrain record."""
-    if surface_ref is not None:
+    if surface_ref is not None or surface is not None:
         status = TerrainStatus.SURFACE_BUILT
     elif spot_elevations or contours:
         status = TerrainStatus.SURVEYED_POINTS
@@ -70,6 +79,7 @@ def build_terrain(
         spot_elevations=spot_elevations,
         contours=contours,
         surface_ref=surface_ref,
+        surface=surface,
     )
 
 

@@ -11,7 +11,7 @@ from __future__ import annotations
 from enum import StrEnum
 from typing import Annotated, Literal
 
-from pydantic import Field
+from pydantic import Field, model_validator
 
 from .base import SCHEMA_VERSION, Id, Sha256, StrictModel
 from .coordinates import SiteCoordinates
@@ -50,6 +50,8 @@ class SiteFeatureKind(StrEnum):
     TREE = "tree"
     WATER = "water"
     ACCESS_POINT = "access_point"
+    #: Boundary edge that adjoins a road; derived geometrically, so an inference.
+    FRONTAGE = "frontage"
     OTHER = "other"
 
 
@@ -89,12 +91,43 @@ class TerrainStatus(StrEnum):
     ASSUMED_FLAT = "assumed_flat"
 
 
+class TinSurface(StrictModel):
+    """Triangulated terrain built only from surveyed points (LOCAL metres).
+
+    It covers the convex hull of the survey data and nothing more: elevations
+    outside it are unknown, never extrapolated.
+    """
+
+    method: Literal["delaunay_tin"] = "delaunay_tin"
+    vertices: list[Point3] = Field(min_length=3)
+    #: Vertex index triples, counter-clockwise.
+    triangles: list[tuple[int, int, int]] = Field(min_length=1)
+    #: Ids of the spot elevations and contours the vertices came from.
+    source_ids: list[str] = Field(default_factory=list)
+
+    @model_validator(mode="after")
+    def _indices_valid(self) -> TinSurface:
+        n = len(self.vertices)
+        for tri in self.triangles:
+            if len(set(tri)) != 3 or not all(0 <= i < n for i in tri):
+                raise ValueError(f"invalid triangle {tri} for {n} vertices")
+        return self
+
+
 class Terrain(StrictModel):
     status: TerrainStatus = TerrainStatus.UNKNOWN
     spot_elevations: list[SpotElevation] = Field(default_factory=list)
     contours: list[Contour] = Field(default_factory=list)
     #: Reference to a derived surface artifact (Milestone B), if any.
     surface_ref: str | None = None
+    surface: TinSurface | None = None
+
+    @model_validator(mode="after")
+    def _surface_matches_status(self) -> Terrain:
+        has_surface = self.surface is not None or self.surface_ref is not None
+        if self.status is TerrainStatus.SURFACE_BUILT and not has_surface:
+            raise ValueError("terrain status 'surface_built' needs a surface")
+        return self
 
 
 class BuildableEnvelope(StrictModel):
@@ -107,18 +140,46 @@ class BuildableEnvelope(StrictModel):
     max_height_m: float | None = Field(default=None, gt=0)
 
 
+class AmbiguousEntity(StrictModel):
+    """A CAD entity that could not be interpreted with confidence, and why.
+
+    Ambiguous entities are reported and left out of the site model; they are
+    never silently used or dropped.
+    """
+
+    handle: str
+    layer: str
+    entity_type: str
+    reason: str = Field(min_length=1)
+
+
 class CadImportProvenance(StrictModel):
     """Record of one CAD import (filled in by Milestone B adapters)."""
 
     source_document_id: Id
     original_filename: str
     sha256: Sha256
+    #: Detected file format and version, e.g. "dxf AC1032", "dwg AC1032".
+    source_format: str | None = None
     drawing_units: UnitDeclaration
     parser: str
     parser_version: str | None = None
+    #: External converter used before parsing (e.g. DWG -> DXF), if any.
+    converter: str | None = None
+    converter_version: str | None = None
+    #: SHA-256 of the converted file the parser actually read.
+    converted_sha256: Sha256 | None = None
     horizontal_crs_status: ConfirmationStatus
     epsg: int | None = None
+    #: EPSG code the file declares (e.g. in a DXF GEODATA object), unconfirmed.
+    declared_epsg: int | None = None
     vertical_datum_status: ConfirmationStatus
+    #: Layer -> role mapping used for the import, as supplied by the user.
+    layer_roles: dict[str, str] = Field(default_factory=dict)
+    #: Mapping options used for the import (see house_ai.cad.layers.LayerMapping).
+    zero_elevation_is_valid: bool = False
+    boundary_handle: str | None = None
+    ambiguous_entities: list[AmbiguousEntity] = Field(default_factory=list)
     #: Local origin in GRID metres, if a local frame was created.
     local_origin: Point3 | None = None
     warnings: list[str] = Field(default_factory=list)
@@ -136,6 +197,8 @@ class Site(StrictModel):
     coordinates: SiteCoordinates = Field(default_factory=SiteCoordinates)
     boundary: Polygon2D | None = None
     boundary_status: Epistemic = Epistemic.UNKNOWN
+    #: Where the boundary came from, e.g. "src-survey#1A3 (layer BOUNDARY)".
+    boundary_source_ref: str | None = None
     buildable_envelope: BuildableEnvelope | None = None
     terrain: Terrain = Field(default_factory=Terrain)
     features: list[SiteFeature] = Field(default_factory=list)
@@ -182,6 +245,13 @@ def site_verification_blockers(site: Site) -> list[str]:
             f"horizontal CRS is {crs.status.value}{detail}; a human must confirm the EPSG code "
             "or confirm the survey is local-only"
         )
+    has_elevations = bool(site.terrain.spot_elevations or site.terrain.contours)
+    if has_elevations and not coords.elevation_units.confirmed:
+        blockers.append(
+            f"elevation units are {coords.elevation_units.status.value}"
+            + (f" ({coords.elevation_units.unit.value})" if coords.elevation_units.unit else "")
+            + "; a human must confirm them"
+        )
     if not coords.vertical_datum.resolved:
         blockers.append(
             f"vertical datum is {coords.vertical_datum.status.value}; a human must confirm it "
@@ -197,4 +267,3 @@ def site_verification_blockers(site: Site) -> list[str]:
         if issue.severity is Severity.BLOCKING and issue.status is IssueStatus.OPEN:
             blockers.append(f"blocking issue {issue.id}: {issue.title}")
     return blockers
-

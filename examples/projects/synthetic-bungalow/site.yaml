@@ -7,6 +7,7 @@ name: Synthetic level-ish corner plot
 classification: synthetic
 coordinates:
   source_units: {unit: m, status: user_confirmed}
+  elevation_units: {unit: m, status: user_confirmed}
   horizontal_crs:
     status: user_confirmed
     epsg: 32632

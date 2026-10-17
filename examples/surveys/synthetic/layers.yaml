@@ -1,0 +1,15 @@
+# Layer mapping for the SYNTHETIC survey (human-authored; roles are never guessed).
+# Roles: boundary, contour, spot_elevation, road, easement, existing_structure,
+# utility, tree, water, access_point, other_feature, annotation, ignore.
+layers:
+  PARCEL_BOUNDARY: boundary
+  CONTOURS: contour
+  SPOT_HEIGHTS: spot_elevation
+  ROAD: road
+  EXIST_BUILDING: existing_structure
+  TREES: tree
+  ACCESS: access_point
+  TEXT_ANNO: annotation
+# MISC_XREF is deliberately left unmapped.
+zero_elevation_is_valid: false
+boundary_handle: null

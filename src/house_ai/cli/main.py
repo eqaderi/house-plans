@@ -19,6 +19,8 @@ from pathlib import Path
 
 from pydantic import ValidationError
 
+from house_ai.cad.dwg_oda import DwgConversionError
+from house_ai.cad.layers import load_layer_mapping
 from house_ai.domain.integrity import FindingSeverity, check_model
 from house_ai.domain.model import HouseModel
 from house_ai.domain.plan import PlanVersion
@@ -31,15 +33,21 @@ from house_ai.domain.provenance import (
     DataClassification,
 )
 from house_ai.domain.registry import SCHEMAS, export_schemas, stale_schemas
-from house_ai.domain.site import Site
+from house_ai.domain.site import Site, site_verification_blockers
+from house_ai.domain.units import LengthUnit
 from house_ai.domain.workflow import Gate, WorkflowState
+from house_ai.geospatial.crs import describe_epsg, utm_candidates
+from house_ai.geospatial.validation import report_markdown, validate_site
+from house_ai.orchestration.site_ingestion import SiteConfirmation, confirm_site, ingest_site
+from house_ai.orchestration.survey_inspection import inspect_files, inspection_markdown
 from house_ai.orchestration.workflow import (
     GATES,
     Workflow,
     WorkflowError,
 )
+from house_ai.render2d.site_svg import render_site_svg
 from house_ai.storage import ProjectStore, StoreError
-from house_ai.storage.hashing import load_document
+from house_ai.storage.hashing import load_document, pretty_json
 from house_ai.storage.importer import import_folder
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
@@ -337,6 +345,130 @@ def cmd_reopen(args: argparse.Namespace) -> int:
     return EXIT_OK
 
 
+# ------------------------------------------------------------------------ site
+
+
+def cmd_site_inspect(args: argparse.Namespace) -> int:
+    mapping = load_layer_mapping(Path(args.layers)) if args.layers else None
+    report = inspect_files([Path(f) for f in args.files], mapping)
+    text = inspection_markdown(report)
+    if args.out:
+        out = Path(args.out)
+        out.mkdir(parents=True, exist_ok=True)
+        (out / "inspection.md").write_text(text, encoding="utf-8")
+        (out / "inspection.json").write_text(pretty_json(report), encoding="utf-8")
+        _out(f"wrote {out / 'inspection.md'} and {out / 'inspection.json'}")
+    elif args.json:
+        _out(pretty_json(report))
+    else:
+        _out(text)
+    return EXIT_OK if all(f.readable for f in report.files) else EXIT_FAIL
+
+
+def cmd_site_ingest(args: argparse.Namespace) -> int:
+    store = ProjectStore(Path(args.dir))
+    result = ingest_site(
+        store, args.source, load_layer_mapping(Path(args.layers)), args.actor, site_id=args.site_id
+    )
+    for ref in (result.cad_ref, result.site_ref):
+        _out(f"stored {ref.kind.value}/{ref.id} v{ref.version} sha256 {ref.sha256}")
+    for b in result.blockers:
+        _out(f"BLOCKER {b}")
+    if result.blockers:
+        _out(
+            "next: house-ai workflow assess-site "
+            f"{args.dir} --id {args.site_id} --actor <you>   # records SITE_NEEDS_VERIFICATION"
+        )
+    return EXIT_OK
+
+
+def cmd_site_confirm(args: argparse.Namespace) -> int:
+    if not sys.stdin.isatty():
+        _err(
+            "site confirmation needs an interactive terminal and a typed confirmation from a "
+            "human. Agents must not confirm units, CRS, datum or boundary; ask the human to run "
+            "this command themselves."
+        )
+        return EXIT_USAGE
+    conf = SiteConfirmation(
+        units=LengthUnit(args.units) if args.units else None,
+        elevation_units=LengthUnit(args.elevation_units) if args.elevation_units else None,
+        epsg=args.epsg,
+        local_only=args.local_only,
+        vertical_datum=args.vertical_datum,
+        vertical_epsg=args.vertical_epsg,
+        vertical_local=args.vertical_local,
+        boundary_verified=args.boundary_verified,
+        origin=tuple(args.origin) if args.origin else None,
+        rotation_deg=args.rotation,
+        accept_issues=args.accept_issue,
+    )
+    if not conf.summary():
+        _err("nothing to confirm; pass at least one of the confirmation options")
+        return EXIT_USAGE
+    store = ProjectStore(Path(args.dir))
+    _out(f"You ({args.confirmer}) are confirming for site {args.id}:")
+    for item in conf.summary():
+        _out(f"  - {item}")
+    _out("This is recorded permanently in the project event log under your name.")
+    phrase = f"confirm site {args.id}"
+    typed = input(f'Type "{phrase}" to confirm: ').strip()
+    if typed != phrase:
+        _err("confirmation did not match; nothing confirmed")
+        return EXIT_FAIL
+    ref = confirm_site(store, args.id, Actor(kind=ActorKind.HUMAN, id=args.confirmer), conf)
+    site = store.get(ref, Site)
+    _out(f"stored site/{ref.id} v{ref.version} sha256 {ref.sha256}")
+    lonlat = validate_site(site).coordinates.origin_lon_lat
+    if lonlat:
+        _out(
+            f"the local origin is at lon {lonlat[0]:.6f}, lat {lonlat[1]:.6f}: check that this "
+            "is your property (a wrong UTM zone moves it by 6° of longitude)"
+        )
+    for b in site_verification_blockers(site):
+        _out(f"BLOCKER {b}")
+    return EXIT_OK
+
+
+def cmd_site_report(args: argparse.Namespace) -> int:
+    store = ProjectStore(Path(args.dir))
+    ref = _ref(store, ArtifactKind.SITE, args.id, args.version)
+    site = store.get(ref, Site)
+    report = validate_site(site, ref)
+    out = Path(args.out)
+    out.mkdir(parents=True, exist_ok=True)
+    files = {
+        "site.json": pretty_json(site),
+        "site-report.json": pretty_json(report),
+        "site-report.md": report_markdown(report),
+        "site.svg": render_site_svg(site, report),
+    }
+    for r in site.provenance.inputs:
+        if r.kind is ArtifactKind.CAD_IMPORT:
+            files["cad-import.json"] = pretty_json(store.get(r))
+    for name, text in files.items():
+        (out / name).write_text(text, encoding="utf-8")
+        _out(f"wrote {out / name}")
+    for b in report.blockers:
+        _out(f"BLOCKER {b}")
+    return EXIT_OK
+
+
+def cmd_crs_describe(args: argparse.Namespace) -> int:
+    info = describe_epsg(args.epsg)
+    for key, value in info.__dict__.items():
+        _out(f"{key:12} {value}")
+    return EXIT_OK
+
+
+def cmd_crs_utm(args: argparse.Namespace) -> int:
+    _out(f"EPSG CRSs for UTM zone {args.zone}{args.hemisphere.upper()} (pick by datum; ")
+    _out("the zone number alone does not decide it):")
+    for info in utm_candidates(args.zone, args.hemisphere):
+        _out(f"  EPSG:{info.epsg:<6} {info.name}")
+    return EXIT_OK
+
+
 # ---------------------------------------------------------------------- parser
 
 
@@ -425,6 +557,56 @@ def build_parser() -> argparse.ArgumentParser:
     actor_arg(s)
     s.set_defaults(func=cmd_example_load)
 
+    site = sub.add_parser("site", help="survey inspection, ingestion and confirmation")
+    site = site.add_subparsers(dest="sub", required=True)
+    s = site.add_parser("inspect", help="read-only report on survey files (no project needed)")
+    s.add_argument("files", nargs="+")
+    s.add_argument("--layers", help="layer mapping file (YAML/JSON)")
+    s.add_argument("--json", action="store_true")
+    s.add_argument("--out", help="write inspection.md/.json here instead of printing")
+    s.set_defaults(func=cmd_site_inspect)
+    s = site.add_parser("ingest", help="extract a stored survey into cad_import + site")
+    s.add_argument("dir")
+    s.add_argument("--source", required=True, help="source document id (from `source add`)")
+    s.add_argument("--layers", required=True, help="layer mapping file (YAML/JSON)")
+    s.add_argument("--site-id", default="site")
+    actor_arg(s)
+    s.set_defaults(func=cmd_site_ingest)
+    s = site.add_parser("confirm", help="human confirmation of units, CRS, datum, boundary")
+    s.add_argument("dir")
+    s.add_argument("--id", default="site")
+    s.add_argument("--confirmer", required=True, help="the human's name or id")
+    s.add_argument("--units", choices=[u.value for u in LengthUnit])
+    s.add_argument("--elevation-units", choices=[u.value for u in LengthUnit])
+    crs = s.add_mutually_exclusive_group()
+    crs.add_argument("--epsg", type=int, help="horizontal CRS EPSG code")
+    crs.add_argument("--local-only", action="store_true", help="no georeference")
+    s.add_argument("--vertical-datum", help="vertical datum or benchmark name")
+    vd = s.add_mutually_exclusive_group()
+    vd.add_argument("--vertical-epsg", type=int)
+    vd.add_argument("--vertical-local", action="store_true", help="relative to a local benchmark")
+    s.add_argument("--boundary-verified", action="store_true")
+    s.add_argument("--origin", type=float, nargs=3, metavar=("E", "N", "Z"))
+    s.add_argument("--rotation", type=float, help="local x from grid east, degrees CCW")
+    s.add_argument("--accept-issue", action="append", default=[])
+    s.set_defaults(func=cmd_site_confirm)
+    s = site.add_parser("report", help="validation report, site SVG and provenance")
+    s.add_argument("dir")
+    s.add_argument("--id", default="site")
+    s.add_argument("--version", type=int)
+    s.add_argument("--out", required=True)
+    s.set_defaults(func=cmd_site_report)
+
+    crs_p = sub.add_parser("crs", help="look up coordinate reference systems (PROJ)")
+    crs_p = crs_p.add_subparsers(dest="sub", required=True)
+    s = crs_p.add_parser("describe")
+    s.add_argument("epsg", type=int)
+    s.set_defaults(func=cmd_crs_describe)
+    s = crs_p.add_parser("utm-candidates")
+    s.add_argument("zone", type=int)
+    s.add_argument("hemisphere", choices=["N", "S", "n", "s"])
+    s.set_defaults(func=cmd_crs_utm)
+
     wf = sub.add_parser("workflow").add_subparsers(dest="sub", required=True)
     s = wf.add_parser("transition")
     s.add_argument("dir")
@@ -464,7 +646,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     try:
         return args.func(args)
-    except (StoreError, WorkflowError, ValidationError, ValueError) as exc:
+    except (StoreError, WorkflowError, ValidationError, ValueError, DwgConversionError) as exc:
         _err(f"error: {exc}")
         return EXIT_FAIL
 
