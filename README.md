@@ -20,8 +20,10 @@ that becomes a design brief and a validated space program for the floor-plan
 solver, with owner confirmation and the program approval gate. Milestone D
 ([report](docs/milestones/D.md), [ADR 0013](docs/adr/0013-solver-backed-plan-generation.md))
 generates several structurally different floor-plan concepts from the approved
-program with a constraint solver (OR-Tools CP-SAT), including split-level and
-walk-out concepts that follow a steep site's surveyed terrain, evaluates them with
+program with a constraint solver (OR-Tools CP-SAT), with level elevations taken
+from a steep site's surveyed terrain: a walk-out concept that digs in behind
+retaining walls, and stepped, linear and two-wing concepts that sit over the
+falling ground (their void beneath is reported, not used). It evaluates them with
 six evaluators, renders dimensioned SVG plans and versions every revision behind
 the human plan gate. Blender and Unreal come in later milestones.
 
