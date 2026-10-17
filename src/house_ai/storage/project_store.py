@@ -66,6 +66,11 @@ def _slug(text: str) -> str:
     return (slug or "file")[:48].rstrip("-")
 
 
+def default_source_id(path: Path) -> str:
+    """The id ``add_source`` gives a file unless it is taken or one is chosen."""
+    return f"src-{_slug(Path(path).stem)}"
+
+
 def _write_once(path: Path, text: str) -> None:
     """Atomically create ``path`` with ``text``; refuse if it already exists."""
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -250,7 +255,7 @@ class ProjectStore:
             os.chmod(target, READ_ONLY)
             if file_sha256(target) != digest:
                 raise StoreIntegrityError(f"copy of {path} does not match the original")
-            default_id = f"src-{_slug(path.stem)}"
+            default_id = default_source_id(path)
             if source_id is not None:
                 resolved_id = source_id
             elif default_id not in existing_ids:

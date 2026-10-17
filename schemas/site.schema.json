@@ -65,6 +65,37 @@
       "title": "ActorKind",
       "type": "string"
     },
+    "AmbiguousEntity": {
+      "additionalProperties": false,
+      "description": "A CAD entity that could not be interpreted with confidence, and why.\n\nAmbiguous entities are reported and left out of the site model; they are\nnever silently used or dropped.",
+      "properties": {
+        "entity_type": {
+          "title": "Entity Type",
+          "type": "string"
+        },
+        "handle": {
+          "title": "Handle",
+          "type": "string"
+        },
+        "layer": {
+          "title": "Layer",
+          "type": "string"
+        },
+        "reason": {
+          "minLength": 1,
+          "title": "Reason",
+          "type": "string"
+        }
+      },
+      "required": [
+        "handle",
+        "layer",
+        "entity_type",
+        "reason"
+      ],
+      "title": "AmbiguousEntity",
+      "type": "object"
+    },
     "ArtifactKind": {
       "description": "Kinds of versioned artifacts kept in a project store.",
       "enum": [
@@ -80,7 +111,8 @@
         "plan",
         "evaluation_report",
         "revision_report",
-        "build_record"
+        "build_record",
+        "owner_statements"
       ],
       "title": "ArtifactKind",
       "type": "string"
@@ -232,6 +264,74 @@
       "additionalProperties": false,
       "description": "Record of one CAD import (filled in by Milestone B adapters).",
       "properties": {
+        "ambiguous_entities": {
+          "items": {
+            "$ref": "#/$defs/AmbiguousEntity"
+          },
+          "title": "Ambiguous Entities",
+          "type": "array"
+        },
+        "boundary_handle": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Boundary Handle"
+        },
+        "converted_sha256": {
+          "anyOf": [
+            {
+              "pattern": "^[0-9a-f]{64}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Converted Sha256"
+        },
+        "converter": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Converter"
+        },
+        "converter_version": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Converter Version"
+        },
+        "declared_epsg": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Declared Epsg"
+        },
         "drawing_units": {
           "$ref": "#/$defs/UnitDeclaration"
         },
@@ -247,8 +347,29 @@
           "default": null,
           "title": "Epsg"
         },
+        "handle_roles": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "title": "Handle Roles",
+          "type": "object"
+        },
+        "height_label_checks": {
+          "items": {
+            "$ref": "#/$defs/HeightLabelCheck"
+          },
+          "title": "Height Label Checks",
+          "type": "array"
+        },
         "horizontal_crs_status": {
           "$ref": "#/$defs/ConfirmationStatus"
+        },
+        "layer_roles": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "title": "Layer Roles",
+          "type": "object"
         },
         "local_origin": {
           "anyOf": [
@@ -307,6 +428,18 @@
           "title": "Source Document Id",
           "type": "string"
         },
+        "source_format": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Source Format"
+        },
         "unrecognized_entities": {
           "additionalProperties": {
             "type": "integer"
@@ -330,6 +463,11 @@
           },
           "title": "Warnings",
           "type": "array"
+        },
+        "zero_elevation_is_valid": {
+          "default": false,
+          "title": "Zero Elevation Is Valid",
+          "type": "boolean"
         }
       },
       "required": [
@@ -415,6 +553,41 @@
       ],
       "title": "Epistemic",
       "type": "string"
+    },
+    "HeightLabelCheck": {
+      "additionalProperties": false,
+      "description": "A height label drawn exactly at a surveyed point, compared with the point's z.\n\nThe label never becomes an elevation; it only corroborates (or disputes) the\npoint's own z value. Both values are in drawing units, as written.",
+      "properties": {
+        "agrees": {
+          "title": "Agrees",
+          "type": "boolean"
+        },
+        "label_handle": {
+          "title": "Label Handle",
+          "type": "string"
+        },
+        "label_value": {
+          "title": "Label Value",
+          "type": "number"
+        },
+        "point_z": {
+          "title": "Point Z",
+          "type": "number"
+        },
+        "spot_handle": {
+          "title": "Spot Handle",
+          "type": "string"
+        }
+      },
+      "required": [
+        "label_handle",
+        "spot_handle",
+        "label_value",
+        "point_z",
+        "agrees"
+      ],
+      "title": "HeightLabelCheck",
+      "type": "object"
     },
     "HorizontalCRS": {
       "additionalProperties": false,
@@ -853,6 +1026,9 @@
     "SiteCoordinates": {
       "additionalProperties": false,
       "properties": {
+        "elevation_units": {
+          "$ref": "#/$defs/UnitDeclaration"
+        },
         "horizontal_crs": {
           "$ref": "#/$defs/HorizontalCRS"
         },
@@ -970,6 +1146,7 @@
         "tree",
         "water",
         "access_point",
+        "frontage",
         "other"
       ],
       "title": "SiteFeatureKind",
@@ -1045,6 +1222,17 @@
           "$ref": "#/$defs/TerrainStatus",
           "default": "unknown"
         },
+        "surface": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/TinSurface"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
         "surface_ref": {
           "anyOf": [
             {
@@ -1070,6 +1258,73 @@
       ],
       "title": "TerrainStatus",
       "type": "string"
+    },
+    "TinSurface": {
+      "additionalProperties": false,
+      "description": "Triangulated terrain built only from surveyed points (LOCAL metres).\n\nIt covers the convex hull of the survey data and nothing more: elevations\noutside it are unknown, never extrapolated.",
+      "properties": {
+        "method": {
+          "const": "delaunay_tin",
+          "default": "delaunay_tin",
+          "title": "Method",
+          "type": "string"
+        },
+        "source_ids": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Source Ids",
+          "type": "array"
+        },
+        "triangles": {
+          "items": {
+            "maxItems": 3,
+            "minItems": 3,
+            "prefixItems": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "integer"
+              },
+              {
+                "type": "integer"
+              }
+            ],
+            "type": "array"
+          },
+          "minItems": 1,
+          "title": "Triangles",
+          "type": "array"
+        },
+        "vertices": {
+          "items": {
+            "maxItems": 3,
+            "minItems": 3,
+            "prefixItems": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "type": "array"
+          },
+          "minItems": 3,
+          "title": "Vertices",
+          "type": "array"
+        }
+      },
+      "required": [
+        "vertices",
+        "triangles"
+      ],
+      "title": "TinSurface",
+      "type": "object"
     },
     "UnitDeclaration": {
       "additionalProperties": false,
@@ -1153,6 +1408,18 @@
         }
       ],
       "default": null
+    },
+    "boundary_source_ref": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Boundary Source Ref"
     },
     "boundary_status": {
       "$ref": "#/$defs/Epistemic",

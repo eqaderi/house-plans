@@ -1,14 +1,19 @@
 # HOUSE DESIGN AI
 
 A model-provider-neutral system for exploring the design of a real house on
-a real surveyed site. Its outputs are structured semantic geometry, not
+a real surveyed site. Its first purpose is the owner's own house on their own
+land ([`projects/my-house/`](projects/my-house/README.md)); other projects get
+their own folder (ADR 0009). Its outputs are structured semantic geometry, not
 pictures. The full specification is [docs/MASTER_SPEC.md](docs/MASTER_SPEC.md).
 
-**Current state: Milestone A (domain foundation).** Canonical schemas,
-project storage with provenance, the workflow state machine with human
-approval gates, and tests. CAD import, interview, plan generation, Blender
-and Unreal come in later milestones. See
-[docs/milestones/A.md](docs/milestones/A.md).
+**Current state: Milestone B (site ingestion), on branch `milestone-b`.**
+Milestone A ([report](docs/milestones/A.md)) delivered canonical schemas,
+project storage with provenance and the workflow with human approval gates.
+Milestone B ([report](docs/milestones/B.md)) turns a DXF or DWG survey into
+a validated site model: read-only inspection, raw CAD extraction, unit and
+CRS verification by a human, a reversible survey-to-local transform,
+boundary and terrain, a validation report and a site SVG. Interview, plan
+generation, Blender and Unreal come in later milestones.
 
 ## Setup
 
@@ -21,7 +26,9 @@ python3.13 -m venv .venv
 # .venv/bin/pip install -r requirements-lock.txt -e . --no-deps
 ```
 
-No paid AI API, CAD software, Blender or Unreal is needed for Milestone A.
+No paid AI API, Blender or Unreal is needed. DXF needs nothing extra;
+DWG needs the free ODA File Converter (optional; its test is skipped
+without it).
 
 ## Run the tests
 
@@ -62,6 +69,26 @@ Then continue through the program and plan gates:
 .venv/bin/house-ai workflow approve project-data/demo plan --id plan-a --approver <your-name>
 ```
 
+Run the site pipeline on the synthetic survey (Milestone B):
+
+```bash
+S=examples/surveys/synthetic
+.venv/bin/house-ai site inspect $S/survey.dxf --layers $S/layers.yaml        # read-only
+.venv/bin/house-ai project init project-data/site-demo --id site-demo --name "Synthetic survey" --classification synthetic --actor human:<you>
+.venv/bin/house-ai source add project-data/site-demo $S/survey.dxf --classification synthetic --actor human:<you>
+.venv/bin/house-ai workflow transition project-data/site-demo SITE_INGESTION --reason "survey received" --actor human:<you>
+.venv/bin/house-ai site ingest project-data/site-demo --source src-survey --layers $S/layers.yaml --actor human:<you>
+.venv/bin/house-ai workflow assess-site project-data/site-demo --id site --actor human:<you>   # -> SITE_NEEDS_VERIFICATION
+.venv/bin/house-ai site confirm project-data/site-demo --confirmer <you> --units m --elevation-units m \
+    --epsg 25832 --vertical-datum DHHN2016 --vertical-epsg 7837 --boundary-verified   # interactive
+.venv/bin/house-ai site report project-data/site-demo --id site --out project-data/site-demo-report
+```
+
+Your own project: `.venv/bin/house-ai project status my-house`, then
+[projects/my-house/reviews/CONFIRM-SITE.md](projects/my-house/reviews/CONFIRM-SITE.md).
+A new project: `.venv/bin/house-ai project new <name> --actor human:<you>`
+([projects/README.md](projects/README.md)).
+
 Validate any file against its schema:
 
 ```bash
@@ -79,7 +106,8 @@ Validate any file against its schema:
 | `agents/roles.yaml` | Agent role definitions |
 | `examples/` | Synthetic example projects |
 | `tests/` | Automated tests (synthetic data only) |
-| `project-data/` | Private project stores, git-ignored |
+| `projects/` | One folder per house project; `my-house/` is the owner's own (committed, private repository) |
+| `project-data/` | Private scratch space, git-ignored |
 | `apps/reviewer/`, `skills/` | Placeholders for later milestones |
 
 AI agents: start with [AGENTS.md](AGENTS.md), [CLAUDE.md](CLAUDE.md) or

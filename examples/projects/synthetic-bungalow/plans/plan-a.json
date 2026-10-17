@@ -447,7 +447,7 @@
     "site_ref": {
       "id": "site",
       "kind": "site",
-      "sha256": "83987195d8dce8b58cdbd52edb1c64548c020ee6dd2d5e87599a3756945ce611",
+      "sha256": "415c90736f23fd577deb42968548b4939824764aef59818c757f84fc88356219",
       "version": 1
     },
     "slabs": [
@@ -912,7 +912,7 @@
       {
         "id": "site",
         "kind": "site",
-        "sha256": "83987195d8dce8b58cdbd52edb1c64548c020ee6dd2d5e87599a3756945ce611",
+        "sha256": "415c90736f23fd577deb42968548b4939824764aef59818c757f84fc88356219",
         "version": 1
       },
       {

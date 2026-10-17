@@ -12,7 +12,15 @@ data.
   with `.venv/bin/python examples/projects/synthetic-bungalow/build_plan.py`
   (the tests run `build_plan.py --check`).
 
-Load it into a project store:
+- `surveys/synthetic/`: a fictional survey DXF (`survey.dxf`, made by
+  `make_survey.py`, ground truth in its docstring), the layer mapping
+  `layers.yaml`, and `expected/`: the inspection report and, before and
+  after a scripted synthetic confirmation, the validation report and the
+  site SVG. Regenerate with
+  `.venv/bin/python examples/surveys/synthetic/make_expected.py` (the tests
+  run it with `--check`).
+
+Load the bungalow into a project store:
 
 ```bash
 .venv/bin/house-ai example load project-data/demo --actor agent:cli

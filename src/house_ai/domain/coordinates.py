@@ -116,7 +116,51 @@ class LocalCoordinateSystem(StrictModel):
 
 class SiteCoordinates(StrictModel):
     source_units: UnitDeclaration = Field(default_factory=UnitDeclaration)
+    #: Unit of source elevations (z values). DXF uses the drawing unit for z,
+    #: but surveys sometimes mix units, so it is declared and confirmed separately.
+    elevation_units: UnitDeclaration = Field(default_factory=UnitDeclaration)
     horizontal_crs: HorizontalCRS = Field(default_factory=HorizontalCRS)
     vertical_datum: VerticalDatum = Field(default_factory=VerticalDatum)
     #: None until a local frame has been created for the site.
     local: LocalCoordinateSystem | None = None
+
+
+class SurveyTransform:
+    """The reversible chain SOURCE -> GRID -> LOCAL for one survey.
+
+    SOURCE -> GRID multiplies horizontal coordinates by ``horizontal_m``
+    (metres per drawing unit) and elevations by ``vertical_m``; there is no
+    offset or rotation, so GRID easting/northing are the source numbers in
+    metres. GRID -> LOCAL is the rigid transform of ``local``. Every step is
+    exactly invertible, and LOCAL keeps coordinates small (origin near the
+    site) so later Blender/Unreal stages do not lose float precision.
+    """
+
+    def __init__(self, horizontal_m: float, vertical_m: float, local: LocalCoordinateSystem):
+        if horizontal_m <= 0 or vertical_m <= 0:
+            raise ValueError("unit scale factors must be positive")
+        self.horizontal_m = horizontal_m
+        self.vertical_m = vertical_m
+        self.local = local
+
+    def source_to_grid(self, point: Point3) -> Point3:
+        h, v = self.horizontal_m, self.vertical_m
+        return (point[0] * h, point[1] * h, point[2] * v)
+
+    def grid_to_source(self, point: Point3) -> Point3:
+        h, v = self.horizontal_m, self.vertical_m
+        return (point[0] / h, point[1] / h, point[2] / v)
+
+    def source_to_local(self, point: Point3) -> Point3:
+        return self.local.grid_to_local(self.source_to_grid(point))
+
+    def local_to_source(self, point: Point3) -> Point3:
+        return self.grid_to_source(self.local.local_to_grid(point))
+
+    def source_to_local_2d(self, point: Point2) -> Point2:
+        x, y = point[0] * self.horizontal_m, point[1] * self.horizontal_m
+        return self.local.grid_to_local_2d((x, y))
+
+    def local_to_source_2d(self, point: Point2) -> Point2:
+        e, n, _ = self.local.local_to_grid((point[0], point[1], 0.0))
+        return (e / self.horizontal_m, n / self.horizontal_m)

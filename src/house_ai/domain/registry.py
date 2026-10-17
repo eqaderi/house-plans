@@ -22,7 +22,7 @@ from .model import HouseModel
 from .plan import ChangeRequest, PlanVersion, RevisionReport
 from .program import SpaceProgram
 from .provenance import ArtifactKind, SourceDocument
-from .records import AssumptionsFile, OpenQuestionsFile
+from .records import AssumptionsFile, OpenQuestionsFile, OwnerStatementsFile
 from .site import CadImportProvenance, Site
 from .workflow import Approval, ProjectManifest, WorkflowEvent
 
@@ -40,6 +40,7 @@ ARTIFACT_MODELS: dict[ArtifactKind, type[BaseModel]] = {
     ArtifactKind.EVALUATION_REPORT: EvaluationReport,
     ArtifactKind.REVISION_REPORT: RevisionReport,
     ArtifactKind.BUILD_RECORD: BuildRecord,
+    ArtifactKind.OWNER_STATEMENTS: OwnerStatementsFile,
 }
 
 SCHEMAS: dict[str, type[BaseModel]] = {

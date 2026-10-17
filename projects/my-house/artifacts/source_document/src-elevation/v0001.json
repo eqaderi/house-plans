@@ -1,0 +1,17 @@
+{
+  "classification": "private",
+  "id": "src-elevation",
+  "imported_at": "2026-10-17T08:43:09.779441Z",
+  "imported_by": {
+    "display_name": null,
+    "id": "claude-code",
+    "kind": "agent",
+    "model": null,
+    "provider": null
+  },
+  "media_type": null,
+  "original_filename": "elevation.dwg",
+  "sha256": "9689880c47d9d0780089c5d4077f9396f5c29a2feeb298fafb86840bbae02f02",
+  "size_bytes": 30048,
+  "stored_path": "source/9689880c47d9-elevation.dwg"
+}

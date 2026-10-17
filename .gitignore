@@ -9,7 +9,14 @@ build/
 dist/
 out/
 
-# Private project data: owner surveys, briefs and project stores.
+# Credentials: API keys come from the environment, never from the repository.
+.env
+.env.*
+*.key
+*.pem
+secrets/
+
+# Owner material outside a project folder stays private and untracked.
 project-data/*
 !project-data/README.md
 sources/
@@ -21,3 +28,14 @@ derived/
 !tests/fixtures/**/*.dxf
 !examples/**/*.dxf
 
+# Project folders (ADR 0009): the owner authorised committing their survey
+# originals and the store's byte-identical copies. Store locks and partial
+# writes are local only; converted DXF files stay ignored (rule above).
+!projects/*/surveys/*.dwg
+!projects/*/surveys/*.DWG
+!projects/*/source/*.dwg
+projects/*/surveys/final.dwg
+projects/*/surveys/FINAL.DWG
+projects/*/source/*final.dwg
+projects/*/.lock
+.tmp-*

@@ -19,6 +19,8 @@ from pathlib import Path
 
 from pydantic import ValidationError
 
+from house_ai.cad.dwg_oda import DwgConversionError
+from house_ai.cad.layers import load_layer_mapping
 from house_ai.domain.integrity import FindingSeverity, check_model
 from house_ai.domain.model import HouseModel
 from house_ai.domain.plan import PlanVersion
@@ -31,16 +33,26 @@ from house_ai.domain.provenance import (
     DataClassification,
 )
 from house_ai.domain.registry import SCHEMAS, export_schemas, stale_schemas
-from house_ai.domain.site import Site
+from house_ai.domain.site import CadImportProvenance, Site, site_verification_blockers
+from house_ai.domain.units import LengthUnit
 from house_ai.domain.workflow import Gate, WorkflowState
+from house_ai.geospatial.crs import describe_epsg, utm_candidates
+from house_ai.geospatial.validation import report_markdown, validate_site
+from house_ai.orchestration.site_ingestion import SiteConfirmation, confirm_site, ingest_site
+from house_ai.orchestration.statements import owner_statements, record_owner_statement
+from house_ai.orchestration.survey_inspection import inspect_files, inspection_markdown
 from house_ai.orchestration.workflow import (
     GATES,
     Workflow,
     WorkflowError,
 )
+from house_ai.render2d.review_html import render_review_html
+from house_ai.render2d.site_svg import render_site_svg
+from house_ai.render2d.terrain_svg import render_terrain_svg
 from house_ai.storage import ProjectStore, StoreError
-from house_ai.storage.hashing import load_document
+from house_ai.storage.hashing import load_document, pretty_json
 from house_ai.storage.importer import import_folder
+from house_ai.storage.projects import create_project, list_projects, resolve_project_dir
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 EXIT_OK, EXIT_FAIL, EXIT_USAGE = 0, 1, 2
@@ -52,6 +64,11 @@ def _out(text: str = "") -> None:
 
 def _err(text: str) -> None:
     print(text, file=sys.stderr)
+
+
+def _dir(text: str) -> Path:
+    """A project folder given as a path or as a name under projects/."""
+    return resolve_project_dir(text)
 
 
 def _actor(text: str) -> Actor:
@@ -132,6 +149,24 @@ def cmd_project_init(args: argparse.Namespace) -> int:
     return EXIT_OK
 
 
+def cmd_project_new(args: argparse.Namespace) -> int:
+    store = create_project(args.name, title=args.title or args.name, actor=args.actor,
+                           classification=DataClassification(args.classification))  # fmt: skip
+    _out(f"created project {store.project_id} at {store.root} (state NEW_PROJECT)")
+    _out(f"next: copy the survey into {store.root}/surveys/ and follow {store.root}/README.md")
+    return EXIT_OK
+
+
+def cmd_project_list(args: argparse.Namespace) -> int:
+    roots = list_projects()
+    for root in roots:
+        store = ProjectStore(root)
+        _out(f"{store.project_id:20} {Workflow(store).state.value:24} {root}")
+    if not roots:
+        _out("no projects under projects/; create one with `house-ai project new <name>`")
+    return EXIT_OK
+
+
 def _status_dict(store: ProjectStore) -> dict:
     wf = Workflow(store)
     status = wf.status()
@@ -155,7 +190,7 @@ def _status_dict(store: ProjectStore) -> dict:
 
 
 def cmd_project_status(args: argparse.Namespace) -> int:
-    store = ProjectStore(Path(args.dir))
+    store = ProjectStore(_dir(args.dir))
     info = _status_dict(store)
     if args.json:
         _out(json.dumps(info, indent=2, sort_keys=True))
@@ -178,7 +213,7 @@ def cmd_project_status(args: argparse.Namespace) -> int:
 
 
 def cmd_project_verify(args: argparse.Namespace) -> int:
-    store = ProjectStore(Path(args.dir))
+    store = ProjectStore(_dir(args.dir))
     problems = store.verify()
     try:
         Workflow(store).status()
@@ -196,7 +231,7 @@ def cmd_project_verify(args: argparse.Namespace) -> int:
 
 
 def cmd_source_add(args: argparse.Namespace) -> int:
-    store = ProjectStore(Path(args.dir))
+    store = ProjectStore(_dir(args.dir))
     doc = store.add_source(
         Path(args.file), args.actor, classification=DataClassification(args.classification)
     )
@@ -205,7 +240,7 @@ def cmd_source_add(args: argparse.Namespace) -> int:
 
 
 def cmd_artifact_put(args: argparse.Namespace) -> int:
-    store = ProjectStore(Path(args.dir))
+    store = ProjectStore(_dir(args.dir))
     kind = ArtifactKind(args.kind)
     data = load_document(Path(args.file))
     artifact_id = args.id or data.get("option_id") or data.get("id")
@@ -222,7 +257,7 @@ def cmd_artifact_put(args: argparse.Namespace) -> int:
 
 
 def cmd_artifact_list(args: argparse.Namespace) -> int:
-    store = ProjectStore(Path(args.dir))
+    store = ProjectStore(_dir(args.dir))
     kind = ArtifactKind(args.kind) if args.kind else None
     for ref in store.refs(kind):
         _out(f"{ref.kind.value}/{ref.id} v{ref.version} {ref.sha256}")
@@ -230,7 +265,7 @@ def cmd_artifact_list(args: argparse.Namespace) -> int:
 
 
 def cmd_artifact_check(args: argparse.Namespace) -> int:
-    store = ProjectStore(Path(args.dir))
+    store = ProjectStore(_dir(args.dir))
     plan = store.get(_ref(store, ArtifactKind.PLAN, args.id, args.version), PlanVersion)
     site = store.get(plan.model.site_ref, Site) if plan.model.site_ref else None
     program = store.get(plan.model.program_ref, SpaceProgram) if plan.model.program_ref else None
@@ -270,14 +305,14 @@ def cmd_example_load(args: argparse.Namespace) -> int:
 
 
 def cmd_transition(args: argparse.Namespace) -> int:
-    wf = Workflow(ProjectStore(Path(args.dir)))
+    wf = Workflow(ProjectStore(_dir(args.dir)))
     ev = wf.transition(WorkflowState(args.state), args.actor, args.reason)
     _out(f"{ev.from_state.value} -> {ev.to_state.value}")  # type: ignore[union-attr]
     return EXIT_OK
 
 
 def cmd_assess_site(args: argparse.Namespace) -> int:
-    store = ProjectStore(Path(args.dir))
+    store = ProjectStore(_dir(args.dir))
     wf = Workflow(store)
     blockers = wf.assess_site(_ref(store, ArtifactKind.SITE, args.id, args.version), args.actor)
     for b in blockers:
@@ -287,7 +322,7 @@ def cmd_assess_site(args: argparse.Namespace) -> int:
 
 
 def cmd_request_approval(args: argparse.Namespace) -> int:
-    store = ProjectStore(Path(args.dir))
+    store = ProjectStore(_dir(args.dir))
     gate = Gate(args.gate)
     ref = _ref(store, GATES[gate].artifact_kind, args.id, args.version)
     ev = Workflow(store).request_approval(gate, ref, args.actor)
@@ -304,7 +339,7 @@ def cmd_approve(args: argparse.Namespace) -> int:
             "Agents must not approve gates; ask the human to run this command themselves."
         )
         return EXIT_USAGE
-    store = ProjectStore(Path(args.dir))
+    store = ProjectStore(_dir(args.dir))
     wf = Workflow(store)
     gate = Gate(args.gate)
     ref = _ref(store, GATES[gate].artifact_kind, args.id, args.version)
@@ -331,9 +366,159 @@ def cmd_approve(args: argparse.Namespace) -> int:
 
 
 def cmd_reopen(args: argparse.Namespace) -> int:
-    wf = Workflow(ProjectStore(Path(args.dir)))
+    wf = Workflow(ProjectStore(_dir(args.dir)))
     ev = wf.reopen(Gate(args.gate), args.actor, args.reason)
     _out(f"reopened {args.gate}: {ev.from_state.value} -> {ev.to_state.value}")  # type: ignore[union-attr]
+    return EXIT_OK
+
+
+# ------------------------------------------------------------------------ site
+
+
+def cmd_site_inspect(args: argparse.Namespace) -> int:
+    mapping = load_layer_mapping(Path(args.layers)) if args.layers else None
+    report = inspect_files([Path(f) for f in args.files], mapping)
+    text = inspection_markdown(report)
+    if args.out:
+        out = Path(args.out)
+        out.mkdir(parents=True, exist_ok=True)
+        (out / "inspection.md").write_text(text, encoding="utf-8")
+        (out / "inspection.json").write_text(pretty_json(report), encoding="utf-8")
+        _out(f"wrote {out / 'inspection.md'} and {out / 'inspection.json'}")
+    elif args.json:
+        _out(pretty_json(report))
+    else:
+        _out(text)
+    return EXIT_OK if all(f.readable for f in report.files) else EXIT_FAIL
+
+
+def cmd_site_ingest(args: argparse.Namespace) -> int:
+    store = ProjectStore(_dir(args.dir))
+    result = ingest_site(
+        store, args.source, load_layer_mapping(Path(args.layers)), args.actor, site_id=args.site_id
+    )
+    for ref in (*result.cad_refs, result.site_ref):
+        _out(f"stored {ref.kind.value}/{ref.id} v{ref.version} sha256 {ref.sha256}")
+    for b in result.blockers:
+        _out(f"BLOCKER {b}")
+    if result.blockers:
+        _out(
+            "next: house-ai workflow assess-site "
+            f"{args.dir} --id {args.site_id} --actor <you>   # records SITE_NEEDS_VERIFICATION"
+        )
+    return EXIT_OK
+
+
+def cmd_site_confirm(args: argparse.Namespace) -> int:
+    if not sys.stdin.isatty():
+        _err(
+            "site confirmation needs an interactive terminal and a typed confirmation from a "
+            "human. Agents must not confirm units, CRS, datum or boundary; ask the human to run "
+            "this command themselves."
+        )
+        return EXIT_USAGE
+    conf = SiteConfirmation(
+        units=LengthUnit(args.units) if args.units else None,
+        elevation_units=LengthUnit(args.elevation_units) if args.elevation_units else None,
+        epsg=args.epsg,
+        local_only=args.local_only,
+        vertical_datum=args.vertical_datum,
+        vertical_epsg=args.vertical_epsg,
+        vertical_local=args.vertical_local,
+        boundary_verified=args.boundary_verified,
+        origin=tuple(args.origin) if args.origin else None,
+        rotation_deg=args.rotation,
+        accept_issues=args.accept_issue,
+    )
+    if not conf.summary():
+        _err("nothing to confirm; pass at least one of the confirmation options")
+        return EXIT_USAGE
+    store = ProjectStore(_dir(args.dir))
+    _out(f"You ({args.confirmer}) are confirming for site {args.id}:")
+    for item in conf.summary():
+        _out(f"  - {item}")
+    _out("This is recorded permanently in the project event log under your name.")
+    phrase = f"confirm site {args.id}"
+    typed = input(f'Type "{phrase}" to confirm: ').strip()
+    if typed != phrase:
+        _err("confirmation did not match; nothing confirmed")
+        return EXIT_FAIL
+    ref = confirm_site(store, args.id, Actor(kind=ActorKind.HUMAN, id=args.confirmer), conf)
+    site = store.get(ref, Site)
+    _out(f"stored site/{ref.id} v{ref.version} sha256 {ref.sha256}")
+    lonlat = validate_site(site).coordinates.origin_lon_lat
+    if lonlat:
+        _out(
+            f"the local origin is at lon {lonlat[0]:.6f}, lat {lonlat[1]:.6f}: check that this "
+            "is your property (a wrong UTM zone moves it by 6° of longitude)"
+        )
+    for b in site_verification_blockers(site):
+        _out(f"BLOCKER {b}")
+    return EXIT_OK
+
+
+def cmd_site_report(args: argparse.Namespace) -> int:
+    store = ProjectStore(_dir(args.dir))
+    ref = _ref(store, ArtifactKind.SITE, args.id, args.version)
+    site = store.get(ref, Site)
+    report = validate_site(site, ref)
+    statements = owner_statements(store)
+    out = Path(args.out) if args.out else store.root / "reviews" / f"{ref.id}-v{ref.version}"
+    out.mkdir(parents=True, exist_ok=True)
+    site_svg, terrain_svg = render_site_svg(site, report), render_terrain_svg(site, report)
+    cad_inputs = [r for r in site.provenance.inputs if r.kind is ArtifactKind.CAD_IMPORT]
+    cads = [store.get(r, CadImportProvenance) for r in cad_inputs]
+    files = {
+        "site.json": pretty_json(site),
+        "site-report.json": pretty_json(report),
+        "site-report.md": report_markdown(report, statements),
+        "site.svg": site_svg,
+        "terrain.svg": terrain_svg,
+        "index.html": render_review_html(site, report, site_svg, terrain_svg, cads, statements),
+    }
+    if cad_inputs:
+        files["cad-import.json"] = pretty_json(store.get(cad_inputs[0]))
+    if len(cad_inputs) > 1:
+        for r in cad_inputs:
+            files[f"{r.id}.json"] = pretty_json(store.get(r))
+    for name, text in files.items():
+        (out / name).write_text(text, encoding="utf-8")
+        _out(f"wrote {out / name}")
+    for b in report.blockers:
+        _out(f"BLOCKER {b}")
+    return EXIT_OK
+
+
+def cmd_statement_add(args: argparse.Namespace) -> int:
+    store = ProjectStore(_dir(args.dir))
+    ref = record_owner_statement(store, subject=args.subject, words=args.words,
+                                 stated_by=args.stated_by, channel=args.channel,
+                                 actor=args.actor, pending_confirmation=args.pending)  # fmt: skip
+    _out(f"stored {ref.kind.value}/{ref.id} v{ref.version}: recorded, not confirmed")
+    return EXIT_OK
+
+
+def cmd_statement_list(args: argparse.Namespace) -> int:
+    for st in owner_statements(ProjectStore(_dir(args.dir))):
+        _out(f"{st.id} [{st.subject}] {st.stated_by}: \"{st.words}\" ({st.channel}; "
+             f"recorded by {st.recorded_by.kind.value}:{st.recorded_by.id})")  # fmt: skip
+        if st.pending_confirmation:
+            _out(f"    not yet formal: {st.pending_confirmation}")
+    return EXIT_OK
+
+
+def cmd_crs_describe(args: argparse.Namespace) -> int:
+    info = describe_epsg(args.epsg)
+    for key, value in info.__dict__.items():
+        _out(f"{key:12} {value}")
+    return EXIT_OK
+
+
+def cmd_crs_utm(args: argparse.Namespace) -> int:
+    _out(f"EPSG CRSs for UTM zone {args.zone}{args.hemisphere.upper()} (pick by datum; ")
+    _out("the zone number alone does not decide it):")
+    for info in utm_candidates(args.zone, args.hemisphere):
+        _out(f"  EPSG:{info.epsg:<6} {info.name}")
     return EXIT_OK
 
 
@@ -379,8 +564,18 @@ def build_parser() -> argparse.ArgumentParser:
     )
     actor_arg(s)
     s.set_defaults(func=cmd_project_init)
+    s = proj.add_parser("new", help="create projects/<name>/ with its working folders")
+    s.add_argument("name", help="folder and project id, lowercase, e.g. my-house")
+    s.add_argument("--title", help="a readable name; defaults to the folder name")
+    s.add_argument(
+        "--classification", default="private", choices=[c.value for c in DataClassification]
+    )
+    actor_arg(s)
+    s.set_defaults(func=cmd_project_new)
+    s = proj.add_parser("list", help="the projects under projects/")
+    s.set_defaults(func=cmd_project_list)
     s = proj.add_parser("status")
-    s.add_argument("dir")
+    s.add_argument("dir", help="project folder, or a project name under projects/")
     s.add_argument("--json", action="store_true")
     s.set_defaults(func=cmd_project_status)
     s = proj.add_parser("verify")
@@ -425,6 +620,76 @@ def build_parser() -> argparse.ArgumentParser:
     actor_arg(s)
     s.set_defaults(func=cmd_example_load)
 
+    site = sub.add_parser("site", help="survey inspection, ingestion and confirmation")
+    site = site.add_subparsers(dest="sub", required=True)
+    s = site.add_parser("inspect", help="read-only report on survey files (no project needed)")
+    s.add_argument("files", nargs="+")
+    s.add_argument("--layers", help="layer mapping file (YAML/JSON)")
+    s.add_argument("--json", action="store_true")
+    s.add_argument("--out", help="write inspection.md/.json here instead of printing")
+    s.set_defaults(func=cmd_site_inspect)
+    s = site.add_parser("ingest", help="extract a stored survey into cad_import + site")
+    s.add_argument("dir")
+    s.add_argument(
+        "--source",
+        required=True,
+        action="append",
+        help="source document id (from `source add`); repeat for a survey in several files",
+    )
+    s.add_argument("--layers", required=True, help="layer mapping file (YAML/JSON)")
+    s.add_argument("--site-id", default="site")
+    actor_arg(s)
+    s.set_defaults(func=cmd_site_ingest)
+    s = site.add_parser("confirm", help="human confirmation of units, CRS, datum, boundary")
+    s.add_argument("dir")
+    s.add_argument("--id", default="site")
+    s.add_argument("--confirmer", required=True, help="the human's name or id")
+    s.add_argument("--units", choices=[u.value for u in LengthUnit])
+    s.add_argument("--elevation-units", choices=[u.value for u in LengthUnit])
+    crs = s.add_mutually_exclusive_group()
+    crs.add_argument("--epsg", type=int, help="horizontal CRS EPSG code")
+    crs.add_argument("--local-only", action="store_true", help="no georeference")
+    s.add_argument("--vertical-datum", help="vertical datum or benchmark name")
+    vd = s.add_mutually_exclusive_group()
+    vd.add_argument("--vertical-epsg", type=int)
+    vd.add_argument("--vertical-local", action="store_true", help="relative to a local benchmark")
+    s.add_argument("--boundary-verified", action="store_true")
+    s.add_argument("--origin", type=float, nargs=3, metavar=("E", "N", "Z"))
+    s.add_argument("--rotation", type=float, help="local x from grid east, degrees CCW")
+    s.add_argument("--accept-issue", action="append", default=[])
+    s.set_defaults(func=cmd_site_confirm)
+    s = site.add_parser("report", help="validation report, site SVG and provenance")
+    s.add_argument("dir")
+    s.add_argument("--id", default="site")
+    s.add_argument("--version", type=int)
+    s.add_argument("--out", help="default: <project>/reviews/<site id>-v<version>")
+    s.set_defaults(func=cmd_site_report)
+
+    st = sub.add_parser("statement", help="the owner's own statements, recorded verbatim")
+    st = st.add_subparsers(dest="sub", required=True)
+    s = st.add_parser("add", help="record what the owner said; confirms nothing")
+    s.add_argument("dir")
+    s.add_argument("--subject", required=True, help="e.g. horizontal_crs, elevation_units, relief")
+    s.add_argument("--words", required=True, help="the owner's words, verbatim")
+    s.add_argument("--stated-by", default="owner")
+    s.add_argument("--channel", required=True, help="how it reached you, e.g. 'chat, 2026-10-17'")
+    s.add_argument("--pending", help="what would make it formal, e.g. a site confirm command")
+    actor_arg(s)
+    s.set_defaults(func=cmd_statement_add)
+    s = st.add_parser("list")
+    s.add_argument("dir")
+    s.set_defaults(func=cmd_statement_list)
+
+    crs_p = sub.add_parser("crs", help="look up coordinate reference systems (PROJ)")
+    crs_p = crs_p.add_subparsers(dest="sub", required=True)
+    s = crs_p.add_parser("describe")
+    s.add_argument("epsg", type=int)
+    s.set_defaults(func=cmd_crs_describe)
+    s = crs_p.add_parser("utm-candidates")
+    s.add_argument("zone", type=int)
+    s.add_argument("hemisphere", choices=["N", "S", "n", "s"])
+    s.set_defaults(func=cmd_crs_utm)
+
     wf = sub.add_parser("workflow").add_subparsers(dest="sub", required=True)
     s = wf.add_parser("transition")
     s.add_argument("dir")
@@ -464,7 +729,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     try:
         return args.func(args)
-    except (StoreError, WorkflowError, ValidationError, ValueError) as exc:
+    except (StoreError, WorkflowError, ValidationError, ValueError, DwgConversionError) as exc:
         _err(f"error: {exc}")
         return EXIT_FAIL
 

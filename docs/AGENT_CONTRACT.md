@@ -3,9 +3,8 @@
 The single set of engineering rules for every coding agent that works on
 this repository: Claude Code (primary developer), OpenAI Codex (independent
 reviewer and debugger) and Google Gemini (reviewer and second developer).
-`AGENTS.md`, `CLAUDE.md` and `GEMINI.md` only load this file and add
-tool-specific details; how each tool loads it is recorded in
-[ADR 0005](adr/0005-shared-coding-agent-instructions.md). Never copy these
+`AGENTS.md`, `CLAUDE.md` and `GEMINI.md` only load this file
+([ADR 0005](adr/0005-shared-coding-agent-instructions.md)). Never copy these
 rules into a tool-specific file.
 
 **Coding agents are not product agents.** The roles in `agents/roles.yaml`
@@ -14,18 +13,17 @@ described by the spec. This contract governs the tools that write the code.
 
 ## 1. Objectives and sources of truth
 
-HOUSE DESIGN AI turns a real survey and an owner interview into a verified
-site, an approved program, alternative floor plans, and then Blender and
-Unreal models, all derived from one semantic model with human approval in
-between.
+HOUSE DESIGN AI exists first to design the owner's own house on their own
+land (`projects/my-house/`), and must stay reusable for other projects. It
+turns a survey and an owner interview into a verified site, an approved
+program, floor plans, then Blender and Unreal models, all from one semantic
+model with human approval in between. Project facts live in project data,
+never in application code.
 
-| Question | Authority |
-|---|---|
-| What the product must do | [MASTER_SPEC.md](MASTER_SPEC.md) (wins every conflict) |
-| How the code is layered | [ARCHITECTURE.md](ARCHITECTURE.md) |
-| What the schemas mean | [DOMAIN_MODEL.md](DOMAIN_MODEL.md) |
-| Why a decision was made | [adr/](adr/) |
-| What each milestone delivered | [milestones/](milestones/) |
+Authorities: [MASTER_SPEC.md](MASTER_SPEC.md) for what the product must do
+(wins every conflict), [ARCHITECTURE.md](ARCHITECTURE.md) for layering,
+[DOMAIN_MODEL.md](DOMAIN_MODEL.md) for schemas, [adr/](adr/) for decisions,
+[milestones/](milestones/) for what each milestone delivered.
 
 If this contract and the spec disagree, follow the spec and record the
 conflict in an ADR.
@@ -54,12 +52,13 @@ AI vendor SDK, CAD backend or game engine may become a dependency of
 
 ## 4. Writing project state
 
-- Every change to project state goes through the library or the `house-ai`
-  CLI. Never edit files in a project directory by hand: artifacts are
-  read-only and the event log is hash-chained (`house-ai project verify`).
-- Every artifact must validate against its schema; the store refuses
-  invalid content. Nothing is overwritten: a revision is a new version
-  that names its parent.
+- A project is `projects/<name>/` (ADR 0009). Its record (`project.json`,
+  `events.jsonl`, `source/`, `artifacts/`) changes only through the library
+  or the `house-ai` CLI: artifacts are read-only, the log hash-chained
+  (`project verify`). `surveys/ site/ reviews/ design/` hold inputs and
+  generated documents.
+- Artifacts must validate against their schema (the store refuses
+  invalid content). Nothing is overwritten; a revision is a new version.
 - Identify yourself on state-changing commands: `--actor agent:<tool>`.
 - Owner answers become `BriefFact` entries (`source.kind: owner_answer`),
   recorded as stated. A plan change request keeps the owner's words
@@ -67,9 +66,12 @@ AI vendor SDK, CAD backend or game engine may become a dependency of
 
 ## 5. Private data and providers
 
-- `project-data/` holds owner material and is git-ignored. Never commit
-  it or copy it into `examples/`, `tests/` or docs. Real survey inputs live
-  there; the originals are never modified.
+- The owner chose to commit `projects/my-house/` to this **private**
+  repository (ADR 0009). Before pushing it, check `gh repo view --json
+  visibility` is `PRIVATE`, else stop and ask; never change visibility.
+  Never copy project data into `examples/`, `tests/` or docs, or modify
+  survey originals. `project-data/` stays git-ignored. Never commit API
+  keys or tokens; providers read keys from the environment.
 - Reading private data into your own context sends it to your model
   provider. Do not open, print or summarise the owner's surveys, briefs or
   reports unless the owner has explicitly allowed it in this session.
@@ -116,10 +118,9 @@ PROGRAM_APPROVED → CONCEPT_GENERATION ⇄ CONCEPT_REVIEW → [plan gate]
 PLAN_APPROVED → BLENDER_BUILD ⇄ BLENDER_REVIEW → [model gate] MODEL_APPROVED
 → UNREAL_BUILD ⇄ UNREAL_REVIEW`.
 
-- Start every project task with `house-ai project status <dir>`.
 - **You must never approve a gate or confirm site facts.** `workflow
-  approve` needs an interactive terminal and a typed phrase and exits
-  with code 2 otherwise. Do not work around this (no fake
+  approve` and `site confirm` need an interactive terminal and a typed
+  phrase and exit with code 2 otherwise. Do not work around this (no fake
   TTY, no `--actor human:...` on the owner's behalf). Run
   `workflow request-approval` and ask the human.
 - Never imply something is approved when it is not. Say which gates are
@@ -185,8 +186,8 @@ rewrite accepted ADRs; supersede them with a new one.
   pushed commits. Do not reopen history issues the owner has acknowledged.
 - Merge into `main` and push only when the owner explicitly authorises it.
 - Commit messages: imperative subject, a prefix such as `feat:`, `fix:`,
-  `docs:`, `test:`; the body says why. Never commit `project-data/`, real
-  survey files or credentials.
+  `docs:`, `test:`; the body says why. Never commit `project-data/` or
+  credentials; survey files only under `projects/`.
 
 ## 14. Milestones and acceptance
 
@@ -215,11 +216,16 @@ next without the owner's go-ahead. A milestone is accepted when:
 ## 16. Commands
 
 ```bash
-house-ai project status <dir> [--json]      # always first
+house-ai project status <dir|name> [--json]  # start every project task here
+house-ai project new <name> --actor human:<name> | project list
 house-ai project verify <dir>               # hash chain, artifacts, sources
 house-ai validate <schema> <file> [--site site.yaml]
 house-ai artifact put <dir> <kind> <file> --actor agent:<tool>
 house-ai source add <dir> <file> --actor human:<name>
+house-ai site inspect <file>... [--layers map.yaml]   # read-only
+house-ai site ingest <dir> --source <src-id> --layers map.yaml --actor agent:<tool>
+house-ai site report <dir> [--out <dir>]     # default <dir>/reviews/site-v<N>
+house-ai statement add|list <dir> ...        # owner's words; confirms nothing
 house-ai workflow transition <dir> <STATE> --reason "..." --actor agent:<tool>
 house-ai workflow assess-site <dir> --id site --actor agent:<tool>
 house-ai workflow request-approval <dir> <gate> --id <id> --actor agent:<tool>
