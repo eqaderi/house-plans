@@ -1,0 +1,35 @@
+{
+  "compliance": "not checked",
+  "hard": [],
+  "plan": null,
+  "soft": [
+    {
+      "code": "soft_adjacency_unmet",
+      "constraint_id": "c-adj-10-study-1-entry",
+      "evaluator": "AdjacencyEvaluator",
+      "id": "v-001-soft-adjacency-unmet",
+      "message": "adj-10-study-1-entry: pi-study-1 near pi-entry is not met",
+      "status": "measured",
+      "strength": "soft",
+      "subject_ids": [
+        "adj-10-study-1-entry",
+        "sp-study-1",
+        "sp-entry"
+      ]
+    },
+    {
+      "code": "soft_adjacency_unmet",
+      "constraint_id": "c-adj-12-laundry-kitchen",
+      "evaluator": "AdjacencyEvaluator",
+      "id": "v-002-soft-adjacency-unmet",
+      "message": "adj-12-laundry-kitchen: pi-laundry near pi-kitchen is not met",
+      "status": "measured",
+      "strength": "soft",
+      "subject_ids": [
+        "adj-12-laundry-kitchen",
+        "sp-laundry",
+        "sp-kitchen"
+      ]
+    }
+  ]
+}

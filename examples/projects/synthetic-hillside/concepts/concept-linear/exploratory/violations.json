@@ -1,0 +1,56 @@
+{
+  "compliance": "not checked",
+  "hard": [],
+  "plan": null,
+  "soft": [
+    {
+      "code": "program_item_missing",
+      "constraint_id": null,
+      "evaluator": "ProgramEvaluator",
+      "id": "v-001-program-item-missing",
+      "message": "Stair (pi-stair): 0 of 1 placed; not needed in a one-level concept",
+      "status": "measured",
+      "strength": "soft",
+      "subject_ids": [
+        "pi-stair"
+      ]
+    },
+    {
+      "code": "level_count_differs",
+      "constraint_id": null,
+      "evaluator": "ProgramEvaluator",
+      "id": "v-002-level-count-differs",
+      "message": "the program asks for 2 storey(s); this concept has 1 floor level(s)",
+      "status": "measured",
+      "strength": "soft",
+      "subject_ids": []
+    },
+    {
+      "code": "soft_adjacency_unmet",
+      "constraint_id": "c-adj-12-laundry-kitchen",
+      "evaluator": "AdjacencyEvaluator",
+      "id": "v-003-soft-adjacency-unmet",
+      "message": "adj-12-laundry-kitchen: pi-laundry near pi-kitchen is not met",
+      "status": "measured",
+      "strength": "soft",
+      "subject_ids": [
+        "adj-12-laundry-kitchen",
+        "sp-laundry",
+        "sp-kitchen"
+      ]
+    },
+    {
+      "code": "soft_adjacency_unmet",
+      "constraint_id": "c-adj-14-stair-entry",
+      "evaluator": "AdjacencyEvaluator",
+      "id": "v-004-soft-adjacency-unmet",
+      "message": "adj-14-stair-entry: pi-stair near pi-entry is not met",
+      "status": "measured",
+      "strength": "soft",
+      "subject_ids": [
+        "adj-14-stair-entry",
+        "sp-entry"
+      ]
+    }
+  ]
+}

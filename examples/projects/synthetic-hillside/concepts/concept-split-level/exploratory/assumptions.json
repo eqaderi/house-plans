@@ -1,0 +1,243 @@
+{
+  "note": "Plan assumptions come from the generator; program assumptions from the interview. Nothing here is a verified fact unless its status says so.",
+  "plan": [
+    {
+      "affects": [],
+      "basis": "canonical model convention (DOMAIN_MODEL.md)",
+      "confirm_with": null,
+      "id": "asm-gen-centerlines",
+      "made_by": {
+        "display_name": null,
+        "id": "house-ai-plan-generator",
+        "kind": "system",
+        "model": null,
+        "provider": null
+      },
+      "statement": "Room areas are measured to wall centerlines; net floor areas are smaller.",
+      "status": "assumption"
+    },
+    {
+      "affects": [
+        "lv-down-300",
+        "lv-entry"
+      ],
+      "basis": "typical values for a first layout, not a regulation",
+      "confirm_with": "architect",
+      "id": "asm-gen-levels",
+      "made_by": {
+        "display_name": null,
+        "id": "house-ai-plan-generator",
+        "kind": "system",
+        "model": null,
+        "provider": null
+      },
+      "statement": "Floor-to-floor height 3 m; split levels step in half storeys of 1.5 m; walls 2.8 m high.",
+      "status": "assumption"
+    },
+    {
+      "affects": [],
+      "basis": "typical thicknesses for a first layout",
+      "confirm_with": "structural engineer",
+      "id": "asm-gen-walls",
+      "made_by": {
+        "display_name": null,
+        "id": "house-ai-plan-generator",
+        "kind": "system",
+        "model": null,
+        "provider": null
+      },
+      "statement": "Exterior and retaining walls 0.3 m, partitions 0.15 m thick; no structural design has been done.",
+      "status": "assumption"
+    },
+    {
+      "affects": [],
+      "basis": "generator design frame",
+      "confirm_with": null,
+      "id": "asm-gen-frame",
+      "made_by": {
+        "display_name": null,
+        "id": "house-ai-plan-generator",
+        "kind": "system",
+        "model": null,
+        "provider": null
+      },
+      "statement": "Plan grid: u axis along the parcel edge nearest road road-uphill.",
+      "status": "assumption"
+    },
+    {
+      "affects": [
+        "lv-down-300",
+        "lv-entry"
+      ],
+      "basis": "massing strategy",
+      "confirm_with": null,
+      "id": "asm-gen-note-1",
+      "made_by": {
+        "display_name": null,
+        "id": "house-ai-plan-generator",
+        "kind": "system",
+        "model": null,
+        "provider": null
+      },
+      "statement": "Entry level set at the mean surveyed ground along the road-side face (11.70 m local), interpolated from the survey TIN (inferred).",
+      "status": "assumption"
+    },
+    {
+      "affects": [
+        "lv-down-300",
+        "lv-entry"
+      ],
+      "basis": "massing strategy",
+      "confirm_with": null,
+      "id": "asm-gen-note-2",
+      "made_by": {
+        "display_name": null,
+        "id": "house-ai-plan-generator",
+        "kind": "system",
+        "model": null,
+        "provider": null
+      },
+      "statement": "Levels step by multiples of a half storey (1.5 m) chosen from the surveyed ground under each bar.",
+      "status": "assumption"
+    },
+    {
+      "affects": [
+        "st-0"
+      ],
+      "basis": "typical stair proportions",
+      "confirm_with": "architect",
+      "id": "asm-gen-stairs",
+      "made_by": {
+        "display_name": null,
+        "id": "house-ai-plan-generator",
+        "kind": "system",
+        "model": null,
+        "provider": null
+      },
+      "statement": "Stair risers at most 0.18 m with 0.28 m goings; typical comfortable geometry, not checked against any code.",
+      "status": "assumption"
+    },
+    {
+      "affects": [],
+      "basis": "typical car length plus clearance; not in the program",
+      "confirm_with": "owner",
+      "id": "asm-gen-garage-depth",
+      "made_by": {
+        "display_name": null,
+        "id": "house-ai-plan-generator",
+        "kind": "system",
+        "model": null,
+        "provider": null
+      },
+      "statement": "A garage needs at least 5.4 m depth for a car.",
+      "status": "assumption"
+    },
+    {
+      "affects": [],
+      "basis": "site envelope, status assumption",
+      "confirm_with": "local planning authority",
+      "id": "asm-gen-envelope",
+      "made_by": {
+        "display_name": null,
+        "id": "house-ai-plan-generator",
+        "kind": "system",
+        "model": null,
+        "provider": null
+      },
+      "statement": "The plan is kept inside the buildable envelope (synthetic setbacks (3 m road side, 2 m sides, 3 m rear) invented for the example; not a zoning rule).",
+      "status": "assumption"
+    },
+    {
+      "affects": [
+        "lv-down-300",
+        "lv-entry"
+      ],
+      "basis": "survey TIN",
+      "confirm_with": "surveyor",
+      "id": "asm-gen-terrain",
+      "made_by": {
+        "display_name": null,
+        "id": "house-ai-plan-generator",
+        "kind": "system",
+        "model": null,
+        "provider": null
+      },
+      "statement": "Level elevations, earth contact and retaining walls are inferred by linear interpolation of the surveyed points; ground between survey points is not verified.",
+      "status": "inference"
+    }
+  ],
+  "plan_issues": [],
+  "program": [
+    {
+      "affects": [
+        "pi-entry",
+        "pi-living",
+        "pi-kitchen",
+        "pi-dining",
+        "pi-bed-main",
+        "pi-bed-child-1",
+        "pi-bed-child-2",
+        "pi-bath-ensuite",
+        "pi-bath-1",
+        "pi-study-1",
+        "pi-garage",
+        "pi-laundry",
+        "pi-mechanical",
+        "pi-stair",
+        "pi-terrace"
+      ],
+      "basis": "house-ai typical-size table (program.builder.TYPICAL)",
+      "confirm_with": "owner",
+      "id": "asm-typical-sizes",
+      "made_by": null,
+      "statement": "Rooms without a size from you use typical sizes for a first layout: Entrance hall 6 m², Living room 25 m², Kitchen 12 m², Dining 14 m², Main bedroom 15 m², Child's bedroom 1 11 m², Child's bedroom 2 11 m², En-suite bathroom 5 m², Bathroom 1 6 m², Study 1 9 m², Garage 36 m², Laundry 6 m², Plant / technical room 4 m², Stair 10 m², Terrace 16 m². These are not building-code minimums; no local rules are loaded.",
+      "status": "assumption"
+    },
+    {
+      "affects": [
+        "program"
+      ],
+      "basis": "Typical share for a compact house; checked again in Milestone D.",
+      "confirm_with": "architect",
+      "id": "asm-circulation",
+      "made_by": null,
+      "statement": "Halls, walls and structure add 20% to the room areas.",
+      "status": "assumption"
+    },
+    {
+      "affects": [
+        "pi-entry",
+        "pi-mechanical"
+      ],
+      "basis": "Every house needs a way in and room for heating, water and electrics.",
+      "confirm_with": "owner",
+      "id": "asm-entry-and-plant",
+      "made_by": null,
+      "statement": "The house has an entrance hall and a small plant / technical room.",
+      "status": "assumption"
+    },
+    {
+      "affects": [
+        "program"
+      ],
+      "basis": "Site gate not approved for this site version.",
+      "confirm_with": "owner",
+      "id": "asm-site-unverified",
+      "made_by": null,
+      "statement": "Site values used here (parcel area, slope, frontage) come from the survey but you have not confirmed the site yet.",
+      "status": "unknown"
+    },
+    {
+      "affects": [
+        "program"
+      ],
+      "basis": "Surveyed site relief and slope indicate steep hillside construction.",
+      "confirm_with": "engineer",
+      "id": "asm-hillside-engineering",
+      "made_by": null,
+      "statement": "Steep hillside terrain requires split-level or stepped massing, road-level access coordination, excavation, retaining walls, slope drainage, and structural engineering review; the full parcel area cannot be assumed buildable.",
+      "status": "assumption"
+    }
+  ],
+  "site_verified": false
+}

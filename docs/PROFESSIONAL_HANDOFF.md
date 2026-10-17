@@ -47,5 +47,13 @@ They are not professional approvals.
 
 Milestone A provides the structured project record (`house-ai project
 status --json`, the artifacts under `artifacts/`, and the JSON Schemas in
-`schemas/`). Drawings (SVG), IFC, Blender and Unreal exports arrive in
-later milestones and will each record the plan version they were made from.
+`schemas/`). Milestone D adds, per plan concept and version, `plan.json`
+(the canonical model), a dimensioned `plan.svg` with a schematic terrain
+section, `metrics.json`, `violations.json`, `assumptions.json` and
+`explanation.md`, plus `comparison.md` across concepts (`house-ai plan
+export`). They are solver-generated explorations: stair geometry, wall
+thicknesses, floor-to-floor heights, garage depth and retaining walls are
+typical placeholders, and cut, fill and retained-earth figures are
+interpolated from survey points, not geotechnical findings. IFC, Blender and
+Unreal exports arrive in later milestones and will each record the plan
+version they were made from.

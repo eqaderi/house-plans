@@ -181,8 +181,16 @@ parcel value; it is unknown without a covered parcel. These are derived metrics,
 not additional terrain geometry. See [ADR 0012](adr/0012-site-metric-scope.md).
 
 - `PlanVersion` (artifact kind `plan`, artifact id = `option_id`): label,
-  strategy, parent version, the `ChangeRequest` that produced it, provenance
-  and the `HouseModel`. The store assigns version numbers.
+  strategy, parent version, the `ChangeRequest` that produced it, provenance,
+  the `HouseModel` and, for generated plans, a `GenerationRecord`. The store
+  assigns version numbers.
+- `GenerationRecord` (Milestone D, optional; `null` for hand-authored plans):
+  generator and solver names and versions, solver status and objective,
+  seed, deterministic-time budget, the strategy parameters used (row depths,
+  corridor width, level elevations, bar positions), one `RoomPlacement`
+  (space, bar, row, start) per placed space, and the structured revision
+  operations an agent applied (e.g. `area:pi-kitchen=16`). It lets a revision
+  stay close to its parent and lets anyone reproduce the run.
 - `ChangeRequest`: the owner's words verbatim, a kind (`modify`,
   `alternatives`, `restart_from_program`, `combine`, `other`) and the base
   plan versions. `combine` needs at least two.
@@ -192,6 +200,15 @@ not additional terrain geometry. See [ADR 0012](adr/0012-site-metric-scope.md).
 - `EvaluationReport`: evaluator runs (ran, not run with a reason, failed),
   `MetricClaim`s (a not-checked metric has no value; a checked one must have
   one), `Violation`s with strength and status, and a compliance statement.
+
+Generated plans use these conventions (see [ADR 0013](adr/0013-solver-backed-plan-generation.md)):
+level ids `lv-entry`, `lv-down-<cm>`, `lv-up-<cm>` relative to the entry
+level; space ids `sp-<item>` from program item ids (`-<n>` for quantities),
+`sp-corridor-<bar>`, `sp-stair-<link><a|b>`, `sp-link-…`, `sp-gallery-…` and
+`sp-flex-<row>` (flexible space not in the program); wall kinds `exterior`,
+`interior` (also between split levels) and `retaining`. Terrain queries
+(`domain.terrain`: `elevation_at`, `site_surface`) never extrapolate outside
+the surveyed hull.
 
 ## Workflow records
 
