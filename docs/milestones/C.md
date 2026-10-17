@@ -1,7 +1,7 @@
 # Milestone C: owner interview and space program
 
 Date: 2026-10-17. Branch: `milestone-c`, created from `milestone-b` at
-commit 011c8c8. `milestone-b` is **not merged into `main`** yet, so
+commit 011c8c8; `milestone-b` (0a22f8a) is merged into it. `milestone-b` is **not merged into `main`** yet, so
 `milestone-c` contains all of Milestone B and must be merged after it (or
 together with it). Nothing is pushed or merged; both need the owner's
 approval. Design: [ADR 0008](../adr/0008-owner-interview-and-space-program.md).
@@ -151,11 +151,12 @@ checked by a test.
 
 ## Test results
 
-`387 passed` on Python 3.13.3 and on Python 3.11.12 (macOS arm64), 0 failed,
-0 skipped. `ruff check src tests examples`: all checks passed.
+`390 passed` on Python 3.13.3 (locked versions) and on Python 3.11.12
+(macOS arm64; numpy 2.4.6 and pyproj 3.7.2, because the lock's numpy 2.5.4
+and pyproj 3.8.0 have no 3.11 builds), 0 failed, 0 skipped. `ruff check src tests examples`: all checks passed.
 `house-ai schemas check`: 21 schemas up to date (new: `interview_session`).
 
-`tests/test_interview.py` (27 tests) covers:
+`tests/test_interview.py` (30 tests) covers:
 
 - a normal interview;
 - one question at a time and no repeats;
@@ -175,6 +176,8 @@ checked by a test.
 - LLM consent, validation and garbage handling;
 - parsers producing only valid slot values;
 - the CLI, including the interactive loop and export;
+- confirming only what the owner was shown, and reading an option number
+  only at the start of a reply (found in review, fixed with tests);
 - committed example outputs.
 
 ## Known limitations
@@ -195,6 +198,13 @@ checked by a test.
 - A carport counts in the floor-area totals like a garage.
 - One interview session per project (`interview`); several household members
   answering separately is not modelled.
+- Models gained defaulted fields (`ProgramItem.accessible`,
+  `SpaceProgram.levels` / `budget` / `site_ref` / `site_verified`,
+  `Contradiction.tradeoff` / `options`). An artifact of those kinds stored
+  with older code no longer matches its hash when read, and must be
+  regenerated (the golden bungalow plan was regenerated). The owner's real
+  project holds no such artifact (`project verify` is intact).
+- The lock file does not install on Python 3.11 (see test results).
 
 ## The owner's real project
 
