@@ -2132,8 +2132,9 @@ Closure record template:
 ### S1 records
 
 #### S1 implementation complete (2026-10-17)
-- Branch: `stage/S1-safety-cleanup`
+- Branch: `stage/S1-safety-cleanup` (commit `8ed6664`)
 - Implementer: `agent:gemini`
+- CI: branch run 39058523612 green on Python 3.11 and 3.13
 - Changes:
   - Hardened human-only approval gates (`workflow approve`, `workflow reopen`, `site confirm`, `interview consent`, `program reject`): non-TTY exits 2, typed confirmation phrase required for `workflow reopen`, rejection of agent-looking/system IDs for `--approver` and `--confirmer`, and human-only guard on `PROGRAM_REVIEW → INTERVIEWING`.
   - Artifact staleness flagging in `_status_dict()` and CLI `project status` when later artifact versions exist after approval.
