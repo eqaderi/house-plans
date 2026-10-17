@@ -123,7 +123,7 @@ to reopen A–D):
 | **Path to good floor plans** | S1 (done) → S2 (done) → S3 → S4 → S5 → S6 → S7 → S8 → S9 (9 stages) |
 | **Blocked** | H1 site facts (owner or surveyor input); program gate (needs site gate); H3 real design (needs S9 and approvals) |
 | **Human parallel tracks** | H1 site verification with the owner any time; H2 interview any time (S1-09 closed) |
-| **`main` health** | S2 merged; 551 tests pass locally; CI green on `4a7efca` (run 39067911557) |
+| **`main` health** | S1 follow-up and S2 merged; 569 tests pass locally; CI green on `f4e7727` (run 39068704538) |
 | **Homeowner gates on `my-house`** | site: not approved (5 blockers) · program: none · plan: none · model: none |
 
 
@@ -432,7 +432,7 @@ limitations are tracked as new tasks in later stages, not by reopening them.
 | Kind | implementation |
 | Status | DONE |
 | Review | APPROVED — original Gemini review; Codex follow-up audit and owner-authorized corrective merge recorded in §N |
-| Branch | `stage/S1-safety-cleanup` (merged `fb85bf9`) |
+| Branch | `stage/S1-safety-cleanup` (original merge `fb85bf9`; audit follow-up `f4e7727`) |
 | Depends on | T0.1 |
 | Tasks | S1-01, S1-02, S1-03, S1-04, S1-05, S1-06, S1-07, S1-08, S1-09, S1-10, S1-11, S1-12, S1-13, S1-14, S1-15, S1-16, S1-17, S1-18, S1-19 |
 | Objective | Human-only gates enforced everywhere, tests and CI on synthetic data only, docs that match reality |
@@ -442,14 +442,14 @@ limitations are tracked as new tasks in later stages, not by reopening them.
 | Demonstration | Transcript of each human-only command refusing non-interactively; `pytest -q` passing with `projects/my-house` moved away |
 | Artifacts | `cli/main.py`, `orchestration/`, `storage/project_store.py`, tests, `tools/` leak scan, `.github/workflows/ci.yml`, edited docs |
 | Review requirements | Reviewer runs refused commands non-interactively (exit 2, no new events), greps tests for private values, checks edited docs against §C |
-| Evidence | merge `fb85bf9` into main; CI run 39060143660 success; branch CI runs 39058523612 and 39059344417 green; 521 tests pass locally; leak scan clean |
+| Evidence | original merge `fb85bf9`; follow-up merge `f4e7727`; branch CI 39068446008 and main CI 39068704538 green (Python 3.11/3.13); 569 tests pass locally; leak scan clean; all four Codex audit findings fixed (§N) |
 
 #### Human-authorization and approval-gate hardening
 
 - [x] **S1-01** `workflow reopen` requires an interactive terminal and a typed confirmation phrase — `DONE` · P0 · deps: none
   - Accept: non-TTY run exits 2 and appends nothing, even with `--actor human:owner`; agent actor exits 2 (today: exit 1); phrase like `reopen <gate> <id>`
   - Verify: new subprocess test in `tests/test_cli.py`; event count unchanged after refusal
-  - Evidence: `src/house_ai/cli/main.py:440-474`; `tests/test_human_gates.py::test_workflow_reopen_requires_interactive_terminal_and_typed_phrase`
+  - Evidence: `src/house_ai/cli/main.py:440-474`; `tests/test_human_gates.py::test_reopen_refuses_wrong_phrase_and_succeeds_with_correct_phrase`
   - Notes: closed with merge `fb85bf9`
 - [x] **S1-02** Refuse agent-looking ids for `--approver` and `--confirmer` — `DONE` · P0 · deps: none
   - Accept: ids starting `agent:` or `system:` (or equal to a known tool name) rejected before any write
@@ -459,12 +459,12 @@ limitations are tracked as new tasks in later stages, not by reopening them.
 - [x] **S1-03** Close the `program reject` bypass through `workflow transition PROGRAM_REVIEW→INTERVIEWING` — `DONE` · P1 · deps: none
   - Accept: leaving PROGRAM_REVIEW back to INTERVIEWING requires the same human path as `program reject`, or the transition is removed
   - Verify: test that an agent-actor transition is refused
-  - Evidence: `src/house_ai/orchestration/workflow.py:192-198`; `tests/test_human_gates.py::test_workflow_transition_program_review_to_interviewing_requires_human`
+  - Evidence: `src/house_ai/orchestration/workflow.py:192-198`; `tests/test_human_gates.py::test_workflow_transition_program_review_to_interviewing_refuses_bypass`
   - Notes: closed with merge `fb85bf9`
 - [x] **S1-04** CLI regression tests for all five human-only commands — `DONE` · P0 · deps: S1-01, S1-02
   - Accept: for approve, reopen, site confirm, interview consent, program reject: non-TTY exit 2, wrong phrase refused, agent actor refused, nothing written
   - Verify: `pytest -q tests/test_cli.py tests/test_human_gates.py`
-  - Evidence: `tests/test_human_gates.py` (12 tests covering all five human-only commands)
+  - Evidence: `tests/test_human_gates.py` (17 cases covering all five human-only commands and the generic transition bypass)
   - Notes: closed with merge `fb85bf9`
 - [x] **S1-05** Owner decision on agent-recorded `interview confirm` provenance strength — `DONE` · P1 · deps: none
   - Accept: owner chooses: keep agent-recorded confirmation (ADR 0011) with owner words, or require a human-terminal confirm before the program gate; decision recorded in §L and implemented
@@ -474,7 +474,7 @@ limitations are tracked as new tasks in later stages, not by reopening them.
 - [x] **S1-06** Guard or flag artifact writes after a gate approval — `DONE` · P1 · deps: none
   - Accept: writing a new site or program version after approval either refuses or marks the gate stale in `project status`
   - Verify: test writing program v2 after approval
-  - Evidence: `src/house_ai/cli/main.py:200-225` (`_status_dict` flags stale gate approvals); `tests/test_human_gates.py::test_stale_gate_flagged_on_artifact_mutation_after_approval`
+  - Evidence: `src/house_ai/cli/main.py:200-225` (`_status_dict` flags stale gate approvals); `tests/test_human_gates.py::test_program_v2_after_approval_marks_gate_stale`
   - Notes: closed with merge `fb85bf9`
 - [x] **S1-07** Detect truncation of the event-log tail — `DONE` · P1 · deps: none
   - Accept: `project verify` fails when the last N events are removed (head anchor in `project.json` or equivalent)
@@ -502,12 +502,12 @@ limitations are tracked as new tasks in later stages, not by reopening them.
 - [x] **S1-11** Local leak scan comparing tracked public files with private project values — `DONE` · P1 · deps: S1-10
   - Accept: `tools/` script reports any `projects/*` coordinate, elevation or hash appearing in `tests/`, `examples/`, `docs/` without printing the values
   - Verify: seeded leak is detected in a synthetic test
-  - Evidence: `tools/leak_scan.py`; `tests/test_leak_scan.py` (3 tests); scanner passes clean with 0 leaks
+  - Evidence: `tools/leak_scan.py`; `tests/test_leak_scan.py` (8 synthetic-only tests); scanner passes clean with 0 leaks
   - Notes: closed with merge `fb85bf9`
 - [x] **S1-12** Make the CI synthetic-only claim true — `DONE` · P1 · deps: S1-09
   - Accept: either CI excludes `projects/` (sparse checkout) or the step name changes; tests never need `projects/my-house`
   - Verify: CI run on the stage branch
-  - Evidence: `.github/workflows/ci.yml` adds `tools/leak_scan.py` step; all 521 tests pass without `projects/`
+  - Evidence: `.github/workflows/ci.yml` runs the leak scan, then excludes `projects/` with sparse checkout before the 569-test suite (CI 39068704538)
   - Notes: closed with merge `fb85bf9`
 - [x] **S1-13** Owner decision on real values in docs and handoffs — `DONE` · P2 · deps: none
   - Accept: owner decides whether approximate site figures may stay in AGENT_CONTRACT §7 and milestone reports; precise values and hashes move to `projects/my-house/` only
@@ -2056,10 +2056,10 @@ changed), **decision** (owner must choose), **risk**.
 |---|---|---|---|---|---|
 | ISS-01 | `workflow reopen` has no terminal or typed-phrase check; non-TTY with `--actor human:owner` succeeds; agent actor exits 1 not 2 | defect | `cli/main.py:406-410`, `orchestration/workflow.py:404-408` | Resolved in S1: same gate as `approve` (TTY, human actor, confirmation phrase) | S1-01 |
 | ISS-02 | `--approver` / `--confirmer` accept any string, e.g. `agent:gemini`, recorded as human | defect | `cli/main.py:397,484`; `domain/provenance.py:20` | Resolved in S1: refuse agent/system ids via `is_disallowed_human_id()` | S1-02 |
-| ISS-03 | `program reject` (human-only) can be bypassed by `workflow transition … INTERVIEWING` by any actor | defect | `orchestration/workflow.py:55` | Resolved in S1: `Workflow.transition` requires human actor for PROGRAM_REVIEW→INTERVIEWING | S1-03 |
+| ISS-03 | `program reject` (human-only) can be bypassed by `workflow transition … INTERVIEWING` by any actor | defect | `orchestration/workflow.py:55` | Resolved in S1 follow-up: CLI refuses the generic transition; dedicated `program reject` requires a human terminal and typed phrase; library retains its human-actor guard | S1-03 |
 | ISS-04 | `interview confirm` accepts `agent:` actors; agent-recorded confirmations count toward the program gate | decision | `orchestration/interview.py:899-916`; by design per ADR 0011 and AGENT_CONTRACT §9 step 5 | Decided in DEC-09: keep agent-recorded confirmation with owner words per ADR 0011; human required at program approval | S1-05 |
 | ISS-05 | Artifacts can be written after a gate approval with no guard; staleness surfaces only downstream | defect | `cli/main.py:280-296`, `interview.py:941` | Resolved in S1: `_status_dict` and CLI status flag stale approvals when later artifact versions exist | S1-06 |
-| ISS-06 | Event log has no head anchor; removing the last events passes `project verify` | defect | `storage/project_store.py:410-460` | Resolved in S1: `head.json` anchor in `ProjectStore` detects truncation of event log tail | S1-07 |
+| ISS-06 | Event log has no head anchor; removing the last events passes `project verify` | defect | `storage/project_store.py:410-460` | Resolved in S1 follow-up: validate `head.json` before every write; new-event marker detects missing required anchors; legacy limits in ADR 0016 | S1-07 |
 | ISS-07 | A test reads the real `projects/my-house` in CI; the CI step says "synthetic data only"; the test asserts `not_started` and will fail when the real interview starts | defect | `tests/test_interview.py:1024-1047`; `.github/workflows/ci.yml:32` | Resolved in S1: test uses synthetic project; CI leak-scan step added; tests pass with `projects/` absent | S1-09, S1-12 |
 | ISS-08 | Real site values hard-coded in tests, including the retracted slope and an older relief value | defect | `tests/test_interview.py:983-986`, `test_site_review_fixes.py:529-533`, `test_plan_generation.py:71` | Resolved in S1: tests use synthetic values; verified by `tools/leak_scan.py` | S1-10 |
 | ISS-09 | Precise private survey values and hash prefixes in docs | decision | `milestones/B.md:243-248`, `milestones/C.md:93-94,250-251`; approximate values in AGENT_CONTRACT §7 | Decided in DEC-10: rounded approximate figures in contract §7 and milestone reports; exact coordinates and hashes confined to `projects/my-house/` | S1-13 |
@@ -2106,6 +2106,7 @@ lifecycle · 0015 agent skills canonical location and discovery · 0016 event-he
 
 | Date | What | Evidence |
 |---|---|---|
+| 2026-10-17 | Stage S1 audit follow-up closed: four findings fixed, 569 tests, branch/main CI green | merge `f4e7727` |
 | 2026-10-17 | Stage S2 closed: four canonical agent skills with `.claude/skills` and `.agents/skills` symlinks (ADR 0015), `house-ai plan ground`, skill drift/command tests; discovery in Claude Code, Codex and Antigravity | merge `4a7efca` |
 | 2026-10-17 | Stage S1 closed: human-only gate hardening, event log head anchor, private data isolation in tests/CI, leak scan, docs reconciliation | merge `fb85bf9` |
 | 2026-10-17 | Stage T0.1 closed: tracker, stage protocol, tracker check; two superseded docs removed | merge `7a41629` |
@@ -2260,6 +2261,13 @@ Closure record template:
 - Status: Stage S2 implementation complete; review requested: **PENDING**.
 
 ### S1 records
+
+#### S1 follow-up closure (2026-10-17)
+- Merged: `stage/S1-safety-cleanup`, implementation `055a4cc` plus verification-only tracker commit `dba6f07`, into `main` as **`f4e7727`**.
+- CI on main: **39068704538**, success on Python **3.11 and 3.13**; tests ran with private projects excluded. Branch CI: **39068446008**, success.
+- Main checks: **569 passed in 61.90s**; lint clean; 22 schemas up to date; tracker clean; leak scan clean; homeowner store intact (13 events, 10 artifact versions).
+- Closed by: `agent:codex` on the owner's explicit review/fix/commit/push/merge/close instruction. Four audit findings fixed. No second independent review of Codex's corrections; original Gemini work was independently audited by Codex, as disclosed in the verification record.
+- S1 remains **DONE**. S2 remains **DONE** and was not reopened. Next eligible stage remains S3. Private project records and all homeowner gate approvals are unchanged.
 
 #### S1 follow-up verification — APPROVED for authorized closure
 - Reviewed implementation: `055a4ccc59ff481a59b6db3f4a58d633d9ef626a`.
@@ -2459,7 +2467,7 @@ homeowner approval of any site, program, plan or model.
 
 ### Current handoff note
 
-- S2 closed on `main` (merge `4a7efca`) on the owner's approval; the fixes after review 1 had no independent agent review (§N "S2 review 2"). Next owner command: "Next stage" (S3). S1 has a Codex follow-up audit (§N); S2 remains closed.
+- S1 audit follow-up closed on `main` (merge `f4e7727`, CI 39068704538 green); four findings fixed. S2 remains closed (merge `4a7efca`). Next owner command: "Next stage" (S3). Review independence and the owner-authorized correction merge are recorded in §N.
 
 ## P. Rules for updating the tracker
 
