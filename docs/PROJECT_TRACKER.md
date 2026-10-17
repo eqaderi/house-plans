@@ -638,7 +638,7 @@ only where a tool cannot read the canonical location.
 |---|---|
 | Kind | implementation |
 | Status | IN_PROGRESS |
-| Review | PENDING |
+| Review | APPROVED |
 | Branch | `stage/S3-tools-benchmarks` |
 | Depends on | S1 |
 | Tasks | S3-01, S3-02, S3-03, S3-04, S3-05, S3-06, S3-07, S3-08, S3-09, S3-10, S3-11, S3-12, S3-13, S3-14, S3-15, S3-16, S3-17, S3-18, S3-19, S3-20 |
@@ -2167,6 +2167,31 @@ Closure record template:
 ```
 
 ### S3 records
+
+#### S3 review 1 — APPROVED
+- Reviewed commit: c67add228775f0a7b489d81d4590303b68fc334d
+- Reviewer: agent:gemini, Gemini 3.8 Flash (implementer was agent:codex and agent:gemini)
+- Date: 2026-10-17
+- Checks run:
+  - CI: branch run 39070331639 on c67add2 green (Python 3.11 and 3.13); prior run 39070040446 on 2e8e120 green.
+  - Pytest: `.venv/bin/python -m pytest -q` -> 611 passed in 64.25s (including 41 benchmark unit and regression tests in `tests/test_benchmarks.py`).
+  - Linter: `.venv/bin/ruff check src tests examples tools` -> clean.
+  - Schemas: `.venv/bin/house-ai schemas check` -> 23 schemas up to date (including `schemas/benchmark_fixture.schema.json`).
+  - Tracker checks: `.venv/bin/python tools/check_tracker.py` and `--summary` -> clean (stages: 20, reviews: 20, tasks: 262, tools: 16).
+  - Provenance & store: `.venv/bin/house-ai project verify my-house` -> intact: 13 events, 10 artifact versions.
+  - Leak scan: `.venv/bin/python tools/leak_scan.py` -> clean (no private coordinates, hashes, or site metrics leaked).
+  - Fixture generator check: `.venv/bin/python examples/benchmarks/make_fixtures.py --check` -> 17 synthetic fixtures current; standalone generation produces byte-for-byte identical files.
+  - Benchmark demonstration: `.venv/bin/python -m house_ai.benchmarks.runner examples/benchmarks/fixtures` -> 86 PASS, 0 FAIL, 9 NOT_CHECKED across 10 categories; verified `--require-complete` exits 1 on future probes.
+  - Experiment rerun: Reran geometry evaluation in disposable Python 3.13 venv (`examples/tool-evaluations/geometry/experiment.py`), asserting planar slope, wedge, pyramid, stepped pad, touching cubes (0.0 m³), disjoint empty, and open TIN rejection (`Error.NotManifold`). All matched analytical values to 1e-7 tolerance.
+  - License check at source: Playwright Apache-2.0 (npm registry), Trimesh MIT (PyPI metadata), Manifold3d Apache-2.0 (PyPI metadata), ArchLang MIT (npm registry), Anatomy MIT (GitHub raw LICENSE).
+- Artifacts and screenshots inspected:
+  - Screenshots: `examples/tool-evaluations/playwright/results/cli.png`, `mcp.png`, `test.png`.
+  - SVGs: `examples/tool-evaluations/archlang/results/clean.svg`, `blocked-entry.svg`, `unreachable.svg`, `windowless.svg`.
+  - Research and ADR: `docs/adr/0017-synthetic-benchmark-contract.md`, `docs/research/s3-tool-evaluations.md`, `docs/research/s3-archlang.md`, `examples/tool-evaluations/intake-template.md`, `schemas/benchmark_fixture.schema.json`.
+  - Fixtures: 17 synthetic fixtures in `examples/benchmarks/fixtures/*.json`.
+- Findings: none
+- Tracker accuracy: yes; all 20 tasks (S3-01 through S3-20) documented `IN_PROGRESS` with concrete evidence citations, register rows in §G updated with recorded decisions, no untracked dependencies or scope creep.
+- Verdict: APPROVED
 
 #### S3 implementation complete (2026-10-17)
 - Branch: `stage/S3-tools-benchmarks` (commit `2e8e120`)
