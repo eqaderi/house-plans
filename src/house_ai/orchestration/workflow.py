@@ -268,7 +268,12 @@ class Workflow:
         for q_ref in self.store.latest_of_kind(ArtifactKind.OPEN_QUESTIONS):
             for q in self.store.get(q_ref, OpenQuestionsFile).blocking_open():
                 reasons.append(f"blocking open question {q.id}: {q.question}")
-        brief_refs = [program.brief_ref] if program.brief_ref else []
+        # The cited brief, or every stored brief's latest version if none is cited.
+        brief_refs = (
+            [program.brief_ref]
+            if program.brief_ref
+            else self.store.latest_of_kind(ArtifactKind.DESIGN_BRIEF)
+        )
         for b_ref in brief_refs:
             try:
                 brief = self.store.get(b_ref, DesignBrief)

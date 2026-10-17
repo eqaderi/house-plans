@@ -228,3 +228,14 @@ def test_import_folder_loads_the_golden_example(store, example_dir):
     assert plan.model.site_ref == site_ref
     assert plan.model.program_ref == store.latest(K.SPACE_PROGRAM, "program")
     assert store.verify() == []
+
+
+def test_a_crash_orphan_does_not_block_the_artifact_id(store, site):
+    """A version file written just before a crash, with no event, is skipped and reported."""
+    orphan = store.root / "artifacts" / "site" / "site" / "v0001.json"
+    orphan.parent.mkdir(parents=True)
+    orphan.write_text("{}")
+    ref = store.put(K.SITE, "site", site, AGENT)
+    assert ref.version == 2
+    assert store.get(ref) == site
+    assert any("v0001.json is not registered" in p for p in store.verify())

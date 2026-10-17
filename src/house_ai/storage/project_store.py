@@ -308,7 +308,13 @@ class ProjectStore:
             existing = self.refs(kind, artifact_id)
             if existing and existing[-1].sha256 == digest:
                 return existing[-1]
-            version = (existing[-1].version + 1) if existing else 1
+            version = (
+                max(
+                    existing[-1].version if existing else 0,
+                    self._highest_version_on_disk(kind, artifact_id),
+                )
+                + 1
+            )
             ref = ArtifactRef(kind=kind, id=artifact_id, version=version, sha256=digest)
             path = self._artifact_path(kind, artifact_id, version)
             _write_once(path, pretty_json(model))
@@ -324,6 +330,16 @@ class ProjectStore:
                 },
             )
         return ref
+
+    def _highest_version_on_disk(self, kind: ArtifactKind, artifact_id: str) -> int:
+        """Highest vNNNN file present, registered or not.
+
+        A crash between writing a version file and appending its event leaves an
+        unregistered file. Skipping past it keeps the id usable; verify() reports it.
+        """
+        folder = self.root / "artifacts" / kind.value / artifact_id
+        numbers = [int(p.stem[1:]) for p in folder.glob("v[0-9][0-9][0-9][0-9].json")]
+        return max(numbers, default=0)
 
     def _check_identity(self, kind: ArtifactKind, artifact_id: str, model: BaseModel) -> None:
         own_id = getattr(model, "option_id", None) or getattr(model, "id", None)

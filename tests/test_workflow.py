@@ -410,3 +410,14 @@ def test_revision_concept_loop_is_allowed(project):
     project.wf.transition(S.CONCEPT_GENERATION, HUMAN, "I hate this option; start again")
     project.wf.transition(S.CONCEPT_REVIEW, AGENT, "new options ready")
     assert project.wf.status().approvals.keys() == {Gate.SITE, Gate.PROGRAM}
+
+
+def test_contradiction_in_an_uncited_brief_still_blocks_the_program(project):
+    brief = example_doc("design_brief.yaml")
+    brief["contradictions"] = [
+        {"id": "ct-2", "statement": "Budget vs area", "fact_ids": ["f-bedrooms", "f-single-storey"]}
+    ]
+    project.store.put(K.DESIGN_BRIEF, "brief", brief, AGENT)
+    project.to_program_review()
+    with pytest.raises(GateBlocked, match="ct-2"):
+        project.wf.approve(Gate.PROGRAM, project.program, HUMAN, "approve")

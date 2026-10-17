@@ -27,7 +27,7 @@ No paid AI API, CAD software, Blender or Unreal is needed for Milestone A.
 
 ```bash
 .venv/bin/python -m pytest -q          # full suite
-.venv/bin/ruff check src tests         # lint
+.venv/bin/ruff check src tests examples  # lint
 .venv/bin/house-ai schemas check       # committed JSON Schemas match the code
 ```
 

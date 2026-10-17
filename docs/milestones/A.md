@@ -37,7 +37,9 @@ Date: 2026-10-17. Branch: `milestone-a`.
   explicit human consent.
 - **Agent entry points**: `docs/AGENT_CONTRACT.md` plus small `AGENTS.md`,
   `CLAUDE.md`, `GEMINI.md`; `agents/roles.yaml` with the 12 spec roles.
-- **Golden synthetic project**: `examples/projects/synthetic-bungalow/`.
+- **Golden synthetic project**: `examples/projects/synthetic-bungalow/`,
+  with `build_plan.py` regenerating the golden plan and a test that it is
+  current.
 
 ## Commands
 
@@ -45,7 +47,7 @@ Date: 2026-10-17. Branch: `milestone-a`.
 python3.13 -m venv .venv
 .venv/bin/pip install -e '.[dev]'
 .venv/bin/python -m pytest -q
-.venv/bin/ruff check src tests
+.venv/bin/ruff check src tests examples
 .venv/bin/house-ai schemas check
 
 # demonstration
@@ -58,7 +60,7 @@ python3.13 -m venv .venv
 
 ## Test results
 
-`208 passed` (Python 3.13.3, macOS), 0 failed, 0 skipped.
+`211 passed` (Python 3.13.3, macOS), 0 failed, 0 skipped.
 
 | File | Tests |
 |---|---|
@@ -67,13 +69,16 @@ python3.13 -m venv .venv
 | `test_geometry.py` | 10 |
 | `test_integrity.py` | 21 |
 | `test_domain_rules.py` | 33 |
-| `test_storage.py` | 21 |
-| `test_workflow.py` | 36 |
+| `test_storage.py` | 22 |
+| `test_workflow.py` | 37 |
 | `test_cli.py` | 14 |
 | `test_providers_agents.py` | 7 |
+| `test_golden.py` | 1 |
 
-Python 3.11 is declared as supported and is in the CI matrix but was not
-run locally.
+Python 3.11 is declared as supported and is in the CI matrix. The tests
+were not run on 3.11 locally; `pip download --python-version 3.11` confirmed
+that binary wheels of the pinned pydantic, shapely and PyYAML exist for
+macOS arm64 and manylinux x86_64.
 
 ## Known limitations
 
@@ -90,6 +95,16 @@ run locally.
 - `RevisionReport` exists as a schema; computing it from two plan versions
   is Milestone D work.
 - The store uses POSIX `flock` and hard links; Windows is not supported.
+- A crash between writing an artifact file and appending its event leaves
+  an unregistered version file. The next write skips past it and
+  `project verify` reports it, but nothing cleans it up automatically.
+- The program gate checks the brief the program cites, or every stored
+  brief if it cites none. Program items' `source_fact_ids` are not yet
+  resolved against the brief.
+- Git history before commit `bf50e60` (the previous house-plans toolchain)
+  contains survey-derived files (`derived/survey/*.dxf`,
+  `derived/site/d7.yaml`). The new `.gitignore` does not remove them from
+  history; whether to rewrite history is the owner's decision.
 - Reads replay the whole event log; fine for expected project sizes.
 - Artifacts can be written in any workflow state; the gates, not write
   permissions, control what counts as approved.

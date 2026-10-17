@@ -133,7 +133,7 @@ Before you say a change is finished:
 
 ```bash
 .venv/bin/python -m pytest -q
-.venv/bin/ruff check src tests
+.venv/bin/ruff check src tests examples
 .venv/bin/house-ai schemas check
 ```
 
