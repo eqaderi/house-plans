@@ -13,6 +13,7 @@ from pathlib import Path
 from pydantic import BaseModel
 
 from .agents import AgentRoster
+from .benchmark import BenchmarkFixture
 from .brief import DesignBrief
 from .build import BuildRecord, SceneManifest
 from .codepack import CodePack
@@ -54,6 +55,7 @@ SCHEMAS: dict[str, type[BaseModel]] = {
     "workflow_event": WorkflowEvent,
     "project_manifest": ProjectManifest,
     "agent_roster": AgentRoster,
+    "benchmark_fixture": BenchmarkFixture,
 }
 
 

@@ -1,0 +1,117 @@
+{
+  "trimesh": {
+    "version": "5.1.1",
+    "source": "https://pypi.org/pypi/trimesh/5.1.1/json",
+    "licence_expression": null,
+    "files": [
+      {
+        "filename": "trimesh-5.1.1-py3-none-any.whl",
+        "sha256": "c5be85a3e31e9ff749f9b0aecc204e37a2cf7cca4e92cd066bb5f3d3c1127765",
+        "requires_python": ">=3.10"
+      }
+    ]
+  },
+  "manifold3d": {
+    "version": "3.5.4",
+    "source": "https://pypi.org/pypi/manifold3d/3.5.4/json",
+    "licence_expression": null,
+    "files": [
+      {
+        "filename": "manifold3d-3.5.4-cp311-cp311-macosx_11_0_arm64.whl",
+        "sha256": "6b9eedfdd50868b553e5bd5c83b6d99f8d2d70007cba3bf849ae90722a57ecfc",
+        "requires_python": ">=3.9"
+      },
+      {
+        "filename": "manifold3d-3.5.4-cp313-cp313-macosx_11_0_arm64.whl",
+        "sha256": "ed0736f472c3362b8084867f10a724a9a483927bdb7cbfceb564acc52a7f4273",
+        "requires_python": ">=3.9"
+      }
+    ]
+  },
+  "numpy": {
+    "version": "2.4.2",
+    "source": "https://pypi.org/pypi/numpy/2.4.2/json",
+    "licence_expression": "BSD-3-Clause AND 0BSD AND MIT AND Zlib AND CC0-1.0",
+    "files": [
+      {
+        "filename": "numpy-2.4.2-cp311-cp311-macosx_11_0_arm64.whl",
+        "sha256": "7edc794af8b36ca37ef5fcb5e0d128c7e0595c7b96a2318d1badb6fcd8ee86b1",
+        "requires_python": ">=3.11"
+      },
+      {
+        "filename": "numpy-2.4.2-cp311-cp311-macosx_14_0_arm64.whl",
+        "sha256": "6e9f61981ace1360e42737e2bae58b27bf28a1b27e781721047d84bd754d32e7",
+        "requires_python": ">=3.11"
+      },
+      {
+        "filename": "numpy-2.4.2-cp313-cp313-macosx_11_0_arm64.whl",
+        "sha256": "bd3a7a9f5847d2fb8c2c6d1c862fa109c31a9abeca1a3c2bd5a64572955b2979",
+        "requires_python": ">=3.11"
+      },
+      {
+        "filename": "numpy-2.4.2-cp313-cp313-macosx_14_0_arm64.whl",
+        "sha256": "8e4549f8a3c6d13d55041925e912bfd834285ef1dd64d6bc7d542583355e2e98",
+        "requires_python": ">=3.11"
+      },
+      {
+        "filename": "numpy-2.4.2-cp313-cp313t-macosx_11_0_arm64.whl",
+        "sha256": "5633c0da313330fd20c484c78cdd3f9b175b55e1a766c4a174230c6b70ad8262",
+        "requires_python": ">=3.11"
+      },
+      {
+        "filename": "numpy-2.4.2-cp313-cp313t-macosx_14_0_arm64.whl",
+        "sha256": "d9f64d786b3b1dd742c946c42d15b07497ed14af1a1f3ce840cce27daa0ce913",
+        "requires_python": ">=3.11"
+      }
+    ]
+  },
+  "scipy": {
+    "version": "1.17.1",
+    "source": "https://pypi.org/pypi/scipy/1.17.1/json",
+    "licence_expression": null,
+    "files": [
+      {
+        "filename": "scipy-1.17.1-cp311-cp311-macosx_12_0_arm64.whl",
+        "sha256": "e18f12c6b0bc5a592ed23d3f7b891f68fd7f8241d69b7883769eb5d5dfb52696",
+        "requires_python": ">=3.11"
+      },
+      {
+        "filename": "scipy-1.17.1-cp311-cp311-macosx_14_0_arm64.whl",
+        "sha256": "a3472cfbca0a54177d0faa68f697d8ba4c80bbdc19908c3465556d9f7efce9ee",
+        "requires_python": ">=3.11"
+      },
+      {
+        "filename": "scipy-1.17.1-cp313-cp313-macosx_12_0_arm64.whl",
+        "sha256": "6fac755ca3d2c3edcb22f479fceaa241704111414831ddd3bc6056e18516892f",
+        "requires_python": ">=3.11"
+      },
+      {
+        "filename": "scipy-1.17.1-cp313-cp313-macosx_14_0_arm64.whl",
+        "sha256": "7ff200bf9d24f2e4d5dc6ee8c3ac64d739d3a89e2326ba68aaf6c4a2b838fd7d",
+        "requires_python": ">=3.11"
+      },
+      {
+        "filename": "scipy-1.17.1-cp313-cp313t-macosx_12_0_arm64.whl",
+        "sha256": "010f4333c96c9bb1a4516269e33cb5917b08ef2166d5556ca2fd9f082a9e6ea0",
+        "requires_python": ">=3.11"
+      },
+      {
+        "filename": "scipy-1.17.1-cp313-cp313t-macosx_14_0_arm64.whl",
+        "sha256": "2ceb2d3e01c5f1d83c4189737a42d9cb2fc38a6eeed225e7515eef71ad301dce",
+        "requires_python": ">=3.11"
+      }
+    ]
+  },
+  "networkx": {
+    "version": "3.6.1",
+    "source": "https://pypi.org/pypi/networkx/3.6.1/json",
+    "licence_expression": "BSD-3-Clause",
+    "files": [
+      {
+        "filename": "networkx-3.6.1-py3-none-any.whl",
+        "sha256": "d47fbf302e7d9cbbb9e2555a0d267983d2aa476bac30e90dfbe5669bd57f3762",
+        "requires_python": "!=3.14.1,>=3.11"
+      }
+    ]
+  }
+}

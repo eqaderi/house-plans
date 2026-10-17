@@ -1,0 +1,77 @@
+{
+  "ok": false,
+  "strict": true,
+  "diagnostics": [
+    {
+      "code": "W_SWING_OBSTRUCTED",
+      "severity": "warning",
+      "message": "Door swing is obstructed \u2014 the swing needs 1000 mm of clear radius but \"sofa\" is 200 mm from the hinge (800 mm short).",
+      "line": 12,
+      "col": 3,
+      "span": [
+        649,
+        735
+      ],
+      "fix": "Hang the leaf on the other jamb (`hinge left|right`) \u2014 a machine-applicable fix when the flipped swing is proved clear; or open it the other way (`swing in|out`), move the door along its wall, move the obstruction (`archlang repair`), narrow the leaf to the width the warning quotes (never below the minimum passable width \u2014 that relocates the problem into `W_DOOR_CLEARANCE`), hang no swinging leaf at all (a `sliding`, `pocket` or `barn` door sweeps nothing, so this rule cannot apply to it), or make it a leafless `opening`.",
+      "hints": [
+        "Hang the leaf on the other jamb \u2014 `hinge right`.",
+        "Open it to the other side of the wall \u2014 `swing in`.",
+        "Move the door along its wall (`on <wall> at <pos>`), or the obstruction \u2014 `archlang repair` computes the smallest clearing shift.",
+        "Narrowing the door is not a fix here \u2014 the leaf would have to drop to 199 mm, under the 760 mm minimum passable width.",
+        "Or hang no swinging leaf at all \u2014 a `sliding`, `pocket` or `barn` door sweeps nothing, so this warning cannot apply to it (`door pocket on <wall> at <pos> width <mm>`).",
+        "If no leaf is wanted here, make it a leafless `opening` instead."
+      ]
+    },
+    {
+      "code": "W_DOORWAY_BLOCKED",
+      "severity": "warning",
+      "message": "Doorway is blocked \u2014 the approach needs 300 mm clear on each side but \"sofa\" leaves 200 mm (100 mm short).",
+      "line": 12,
+      "col": 3,
+      "span": [
+        649,
+        735
+      ],
+      "fix": "Move the obstruction clear of the opening by the shortfall the warning quotes (`archlang repair` computes the smallest clearing shift), shrink it by that much on the axis facing the door, or move the door along its wall so its landing misses it.",
+      "hints": [
+        "Move \"sofa\" 100 mm clear of the opening \u2014 `archlang repair` computes the smallest clearing shift.",
+        "Or shrink it by 100 mm on the axis facing the door, so it stops 300 mm short of the opening.",
+        "Or move the door along its wall (`on <wall> at <pos>`) so its landing misses \"sofa\"."
+      ]
+    },
+    {
+      "code": "W_PATH_TOO_NARROW",
+      "severity": "warning",
+      "message": "The walk from the entrance to \"Living\" is blocked: furniture and its clearances leave no gap at all (0 mm against the 700 mm minimum).",
+      "line": 5,
+      "col": 3,
+      "span": [
+        75,
+        164
+      ],
+      "fix": "When doors set the limit, the message names the door or opening the walk squeezes through at that width by the rooms it joins (doors in series, or two tied ways in, are all named) and the hints name each by id with a `width` for it; widening every named one was re-measured to clear the minimum before it is quoted (a door loses a leaf-and-stop allowance from its nominal width; a leafless `opening` keeps all of it). When no door is named, widening doors alone was not enough or the pinch is furniture or a shaft: move the furniture pinching the route, or add a second way in so the pinch is avoidable. One bottleneck is reported once: a room or route whose pinch is a door already named is not reported again. There is no machine-applicable fix: widening a door rewrites a number you chose.",
+      "hints": [
+        "Widen the tightest door/opening on the way to at least 700 mm.",
+        "Or move the furniture pinching the route so 700 mm of clear width survives.",
+        "Or add a second way in (another door or a leafless `opening`) so the pinch is avoidable."
+      ]
+    },
+    {
+      "code": "W_PATH_TOO_NARROW",
+      "severity": "warning",
+      "message": "The walk from the entrance to \"Bedroom\" is blocked: furniture and its clearances leave no gap at all (0 mm against the 700 mm minimum).",
+      "line": 6,
+      "col": 3,
+      "span": [
+        167,
+        265
+      ],
+      "fix": "When doors set the limit, the message names the door or opening the walk squeezes through at that width by the rooms it joins (doors in series, or two tied ways in, are all named) and the hints name each by id with a `width` for it; widening every named one was re-measured to clear the minimum before it is quoted (a door loses a leaf-and-stop allowance from its nominal width; a leafless `opening` keeps all of it). When no door is named, widening doors alone was not enough or the pinch is furniture or a shaft: move the furniture pinching the route, or add a second way in so the pinch is avoidable. One bottleneck is reported once: a room or route whose pinch is a door already named is not reported again. There is no machine-applicable fix: widening a door rewrites a number you chose.",
+      "hints": [
+        "Widen the tightest door/opening on the way to at least 700 mm.",
+        "Or move the furniture pinching the route so 700 mm of clear width survives.",
+        "Or add a second way in (another door or a leafless `opening`) so the pinch is avoidable."
+      ]
+    }
+  ]
+}

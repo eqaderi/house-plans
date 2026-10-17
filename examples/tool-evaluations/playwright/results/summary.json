@@ -1,0 +1,23 @@
+{
+  "system": "Darwin",
+  "architecture": "arm64",
+  "network_policy": "Browser route aborts all requests except 127.0.0.1; no OS sandbox",
+  "packages": {
+    "@playwright/cli": "0.1.22",
+    "@playwright/test": "1.64.1",
+    "@playwright/mcp": "0.0.83"
+  },
+  "cli": {
+    "measurement": "Total: 60 m²",
+    "external_fetch_succeeded": false
+  },
+  "mcp": {
+    "measurement": "Total: 60 m²",
+    "external_fetch_succeeded": false,
+    "available_tools": 25
+  },
+  "test": {
+    "passed": 1,
+    "external_fetch_succeeded": false
+  }
+}

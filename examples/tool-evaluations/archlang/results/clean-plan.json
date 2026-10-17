@@ -1,0 +1,267 @@
+{
+  "version": 1,
+  "plan": "Synthetic two room diagnostic",
+  "units": "mm",
+  "grid": 1,
+  "storey_height": 3000,
+  "room_count": 2,
+  "total_area": 28,
+  "room_types": [
+    "LivingRoom",
+    "MasterRoom"
+  ],
+  "rooms": [
+    {
+      "id": "living",
+      "label": "Living",
+      "room_type": "LivingRoom",
+      "uses": [
+        "living"
+      ],
+      "x": 0,
+      "y": -4000,
+      "width": 4000,
+      "height": 4000,
+      "polygon": [
+        {
+          "x": 0,
+          "y": 0
+        },
+        {
+          "x": 4000,
+          "y": 0
+        },
+        {
+          "x": 4000,
+          "y": -4000
+        },
+        {
+          "x": 0,
+          "y": -4000
+        }
+      ],
+      "area": 16,
+      "floor_polygon": [
+        {
+          "x": 0,
+          "y": 0
+        },
+        {
+          "x": 4000,
+          "y": 0
+        },
+        {
+          "x": 4000,
+          "y": -4000
+        },
+        {
+          "x": 0,
+          "y": -4000
+        }
+      ]
+    },
+    {
+      "id": "bedroom",
+      "label": "Bedroom",
+      "room_type": "MasterRoom",
+      "uses": [
+        "bedroom"
+      ],
+      "x": 4000,
+      "y": -4000,
+      "width": 3000,
+      "height": 4000,
+      "polygon": [
+        {
+          "x": 4000,
+          "y": 0
+        },
+        {
+          "x": 7000,
+          "y": 0
+        },
+        {
+          "x": 7000,
+          "y": -4000
+        },
+        {
+          "x": 4000,
+          "y": -4000
+        }
+      ],
+      "area": 12,
+      "floor_polygon": [
+        {
+          "x": 4000,
+          "y": 0
+        },
+        {
+          "x": 7000,
+          "y": 0
+        },
+        {
+          "x": 7000,
+          "y": -4000
+        },
+        {
+          "x": 4000,
+          "y": -4000
+        }
+      ]
+    }
+  ],
+  "walls": [
+    {
+      "id": "south",
+      "category": "exterior",
+      "points": [
+        {
+          "x": 0,
+          "y": 0
+        },
+        {
+          "x": 7000,
+          "y": 0
+        }
+      ],
+      "thickness": 200,
+      "height": 3000,
+      "closed": false
+    },
+    {
+      "id": "east",
+      "category": "exterior",
+      "points": [
+        {
+          "x": 7000,
+          "y": 0
+        },
+        {
+          "x": 7000,
+          "y": -4000
+        }
+      ],
+      "thickness": 200,
+      "height": 3000,
+      "closed": false
+    },
+    {
+      "id": "north",
+      "category": "exterior",
+      "points": [
+        {
+          "x": 7000,
+          "y": -4000
+        },
+        {
+          "x": 0,
+          "y": -4000
+        }
+      ],
+      "thickness": 200,
+      "height": 3000,
+      "closed": false
+    },
+    {
+      "id": "west",
+      "category": "exterior",
+      "points": [
+        {
+          "x": 0,
+          "y": -4000
+        },
+        {
+          "x": 0,
+          "y": 0
+        }
+      ],
+      "thickness": 200,
+      "height": 3000,
+      "closed": false
+    },
+    {
+      "id": "partition",
+      "category": "partition",
+      "points": [
+        {
+          "x": 4000,
+          "y": 0
+        },
+        {
+          "x": 4000,
+          "y": -4000
+        }
+      ],
+      "thickness": 100,
+      "height": 3000,
+      "closed": false
+    }
+  ],
+  "openings": [
+    {
+      "kind": "door",
+      "id": "front",
+      "x": 2000,
+      "y": 0,
+      "width": 1000,
+      "wall": "exterior",
+      "hinge": "left",
+      "swing": "out",
+      "head": 2100
+    },
+    {
+      "kind": "door",
+      "id": "beddoor",
+      "x": 4000,
+      "y": -2000,
+      "width": 900,
+      "wall": "partition",
+      "hinge": "left",
+      "swing": "in",
+      "head": 2100
+    },
+    {
+      "kind": "window",
+      "id": "livingwin",
+      "x": 0,
+      "y": -2000,
+      "width": 1400,
+      "wall": "exterior",
+      "sill": 900,
+      "head": 2100
+    },
+    {
+      "kind": "window",
+      "id": "bedwin",
+      "x": 7000,
+      "y": -2000,
+      "width": 1200,
+      "wall": "exterior",
+      "sill": 900,
+      "head": 2100
+    }
+  ],
+  "furniture": [],
+  "edges": [
+    {
+      "from": "exterior",
+      "to": "living",
+      "via": "door",
+      "type": "front"
+    },
+    {
+      "from": "living",
+      "to": "bedroom",
+      "via": "door",
+      "type": "interior"
+    }
+  ],
+  "input_graph": {
+    "living": [
+      "bedroom"
+    ],
+    "bedroom": [
+      "living"
+    ]
+  }
+}

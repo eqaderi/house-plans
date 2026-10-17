@@ -1,0 +1,16 @@
+<!doctype html>
+<html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width">
+<link rel="icon" href="data:,">
+<title>Synthetic plan reviewer</title>
+<style>
+body { font: 18px system-ui; margin: 40px; background: #f6f3ec; color: #203832; }
+main { max-width: 800px; } svg { background: white; border: 2px solid #203832; width: 100%; }
+button { padding: 12px; font: inherit; } rect { stroke: #203832; stroke-width: 3; fill: #dce9df; }
+text { fill: #203832; font: 18px system-ui; }
+</style>
+<main><h1>Synthetic plan reviewer</h1><p>Experiment only · LOCAL metres · no private data</p>
+<svg viewBox="0 0 600 320" role="img" aria-label="Two synthetic spaces, 30 square metres each">
+<rect x="20" y="20" width="270" height="280"/><rect x="290" y="20" width="290" height="280"/>
+<text x="55" y="140">Living · 30 m²</text><text x="335" y="140">Kitchen · 30 m²</text>
+</svg><p><button id="measure" onclick="document.querySelector('output').value='Total: 60 m²'">Measure area</button></p>
+<output aria-live="polite">Select a measurement</output></main></html>

@@ -1,0 +1,105 @@
+{
+  "python": "3.11.12",
+  "system": "Darwin",
+  "architecture": "arm64",
+  "method": "simulation_result",
+  "packages": {
+    "numpy": "2.4.2",
+    "trimesh": "5.1.1",
+    "manifold3d": "3.5.4"
+  },
+  "absolute_tolerance": 1e-07,
+  "results": [
+    {
+      "fixture": "planar_slope",
+      "watertight": true,
+      "expected": {
+        "trimesh_volume_m3": 180,
+        "trimesh_cut_m3": 15,
+        "trimesh_void_m3": 15,
+        "trimesh_section_m2": 30,
+        "manifold_volume_m3": 180,
+        "manifold_cut_m3": 15,
+        "manifold_void_m3": 15,
+        "manifold_section_m2": 30
+      },
+      "trimesh_volume_m3": 180.0,
+      "trimesh_cut_m3": 15.0,
+      "trimesh_void_m3": 15.0,
+      "trimesh_section_m2": 30.0,
+      "manifold_volume_m3": 180.0,
+      "manifold_cut_m3": 15.0,
+      "manifold_void_m3": 15.0,
+      "manifold_section_m2": 30.0
+    },
+    {
+      "fixture": "wedge",
+      "watertight": true,
+      "expected": {
+        "trimesh_volume_m3": 180,
+        "trimesh_cut_m3": 30,
+        "trimesh_void_m3": 30,
+        "trimesh_section_m2": 30,
+        "manifold_volume_m3": 180,
+        "manifold_cut_m3": 30,
+        "manifold_void_m3": 30,
+        "manifold_section_m2": 30
+      },
+      "trimesh_volume_m3": 180.0,
+      "trimesh_cut_m3": 30.0,
+      "trimesh_void_m3": 30.0,
+      "trimesh_section_m2": 30.0,
+      "manifold_volume_m3": 180.0,
+      "manifold_cut_m3": 30.0,
+      "manifold_void_m3": 30.0,
+      "manifold_section_m2": 30.0
+    },
+    {
+      "fixture": "pyramid",
+      "watertight": true,
+      "expected": {
+        "trimesh_volume_m3": 140,
+        "trimesh_cut_m3": 10,
+        "trimesh_void_m3": 50,
+        "trimesh_section_m2": 15,
+        "manifold_volume_m3": 140,
+        "manifold_cut_m3": 10,
+        "manifold_void_m3": 50,
+        "manifold_section_m2": 15
+      },
+      "trimesh_volume_m3": 140.0,
+      "trimesh_cut_m3": 10.0,
+      "trimesh_void_m3": 50.0,
+      "trimesh_section_m2": 15.0,
+      "manifold_volume_m3": 140.0,
+      "manifold_cut_m3": 10.0,
+      "manifold_void_m3": 50.0,
+      "manifold_section_m2": 15.0
+    },
+    {
+      "fixture": "stepped_pad",
+      "watertight": true,
+      "expected": {
+        "trimesh_volume_m3": 180,
+        "trimesh_cut_m3": 30,
+        "trimesh_void_m3": 30,
+        "trimesh_section_m2": 30,
+        "manifold_volume_m3": 180,
+        "manifold_cut_m3": 30,
+        "manifold_void_m3": 30,
+        "manifold_section_m2": 30
+      },
+      "trimesh_volume_m3": 180.0,
+      "trimesh_cut_m3": 30.0,
+      "trimesh_void_m3": 30.0,
+      "trimesh_section_m2": 30.0,
+      "manifold_volume_m3": 180.0,
+      "manifold_cut_m3": 30.0,
+      "manifold_void_m3": 30.0,
+      "manifold_section_m2": 30.0
+    }
+  ],
+  "touching_intersection_m3": 0.0,
+  "disjoint_intersection_empty": true,
+  "open_tin_status": "Error.NotManifold"
+}
