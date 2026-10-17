@@ -1,6 +1,6 @@
 # ADR 0015: Canonical agent skills layout and tool-specific discovery
 
-Status: proposed (Stage S2, 2026-10-17; awaiting the owner's approval, S2-01)
+Status: accepted (approved by the owner 2026-10-17, Stage S2, S2-01)
 
 ## Context
 
