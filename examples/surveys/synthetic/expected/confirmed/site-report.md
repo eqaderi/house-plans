@@ -32,7 +32,8 @@ Derived from the canonical site model. This report approves nothing.
 - Status: surface_built; spots: 8; contours: 4 (levels [101.0, 102.0, 103.0, 104.0], interval 1.000 m)
 - Elevation range: 100.000 m to 105.000 m (local)
 - TIN: 20 vertices, 27 triangles; parcel coverage 100.0%
-- Slope: max 11.18%, area-weighted mean 11.18%
+- Slope (whole survey TIN): max 11.18%, horizontal-area-weighted mean 11.18%
+- Slope (parcel intersection): horizontal-area-weighted mean 11.18% over 1400.000 m² of surveyed parcel surface
 
 ## Access and frontage
 

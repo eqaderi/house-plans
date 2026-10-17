@@ -1,0 +1,187 @@
+{
+  "ambiguous_entities": [],
+  "boundary_handle": "src-seperated#D7",
+  "converted_sha256": "2d1fd07a772b7158f853450a3b121056e9220690d5a8c74791dc298f5051c481",
+  "converter": "ODA File Converter",
+  "converter_version": "27.9.0.0",
+  "declared_epsg": null,
+  "drawing_units": {
+    "status": "declared_in_source",
+    "unit": "m"
+  },
+  "epsg": null,
+  "handle_roles": {
+    "src-seperated#BC": "road",
+    "src-seperated#C5": "road"
+  },
+  "height_label_checks": [
+    {
+      "agrees": true,
+      "label_handle": "6A",
+      "label_value": 1664.884,
+      "point_z": 1664.884,
+      "spot_handle": "69"
+    },
+    {
+      "agrees": true,
+      "label_handle": "6C",
+      "label_value": 1665.529,
+      "point_z": 1665.529,
+      "spot_handle": "6B"
+    },
+    {
+      "agrees": true,
+      "label_handle": "6E",
+      "label_value": 1665.697,
+      "point_z": 1665.697,
+      "spot_handle": "6D"
+    },
+    {
+      "agrees": true,
+      "label_handle": "70",
+      "label_value": 1665.648,
+      "point_z": 1665.648,
+      "spot_handle": "6F"
+    },
+    {
+      "agrees": true,
+      "label_handle": "72",
+      "label_value": 1669.394,
+      "point_z": 1669.394,
+      "spot_handle": "71"
+    },
+    {
+      "agrees": true,
+      "label_handle": "74",
+      "label_value": 1669.654,
+      "point_z": 1669.654,
+      "spot_handle": "73"
+    },
+    {
+      "agrees": true,
+      "label_handle": "76",
+      "label_value": 1669.49,
+      "point_z": 1669.49,
+      "spot_handle": "75"
+    },
+    {
+      "agrees": true,
+      "label_handle": "78",
+      "label_value": 1667.925,
+      "point_z": 1667.925,
+      "spot_handle": "77"
+    },
+    {
+      "agrees": true,
+      "label_handle": "7A",
+      "label_value": 1669.952,
+      "point_z": 1669.952,
+      "spot_handle": "79"
+    },
+    {
+      "agrees": true,
+      "label_handle": "7C",
+      "label_value": 1673.05,
+      "point_z": 1673.05,
+      "spot_handle": "7B"
+    },
+    {
+      "agrees": true,
+      "label_handle": "7E",
+      "label_value": 1672.913,
+      "point_z": 1672.913,
+      "spot_handle": "7D"
+    },
+    {
+      "agrees": true,
+      "label_handle": "80",
+      "label_value": 1672.744,
+      "point_z": 1672.744,
+      "spot_handle": "7F"
+    },
+    {
+      "agrees": true,
+      "label_handle": "82",
+      "label_value": 1674.738,
+      "point_z": 1674.738,
+      "spot_handle": "81"
+    },
+    {
+      "agrees": true,
+      "label_handle": "84",
+      "label_value": 1674.855,
+      "point_z": 1674.855,
+      "spot_handle": "83"
+    },
+    {
+      "agrees": true,
+      "label_handle": "86",
+      "label_value": 1674.239,
+      "point_z": 1674.239,
+      "spot_handle": "85"
+    },
+    {
+      "agrees": true,
+      "label_handle": "88",
+      "label_value": 1677.438,
+      "point_z": 1677.438,
+      "spot_handle": "87"
+    },
+    {
+      "agrees": true,
+      "label_handle": "8A",
+      "label_value": 1677.805,
+      "point_z": 1677.805,
+      "spot_handle": "89"
+    },
+    {
+      "agrees": true,
+      "label_handle": "8C",
+      "label_value": 1674.675,
+      "point_z": 1674.675,
+      "spot_handle": "8B"
+    },
+    {
+      "agrees": true,
+      "label_handle": "8E",
+      "label_value": 1677.613,
+      "point_z": 1677.613,
+      "spot_handle": "8D"
+    },
+    {
+      "agrees": true,
+      "label_handle": "90",
+      "label_value": 1677.632,
+      "point_z": 1677.632,
+      "spot_handle": "8F"
+    },
+    {
+      "agrees": true,
+      "label_handle": "92",
+      "label_value": 1677.462,
+      "point_z": 1677.462,
+      "spot_handle": "91"
+    }
+  ],
+  "horizontal_crs_status": "unknown",
+  "layer_roles": {
+    "0": "spot_elevation",
+    "Defpoints": "ignore"
+  },
+  "local_origin": [
+    623809.1666028872,
+    3870456.032537977,
+    0.0
+  ],
+  "original_filename": "elevation.dwg",
+  "parser": "ezdxf",
+  "parser_version": "1.4.5",
+  "sha256": "9689880c47d9d0780089c5d4077f9396f5c29a2feeb298fafb86840bbae02f02",
+  "source_document_id": "src-elevation",
+  "source_format": "dwg AC1021",
+  "unrecognized_entities": {},
+  "unrecognized_layers": [],
+  "vertical_datum_status": "unknown",
+  "warnings": [],
+  "zero_elevation_is_valid": false
+}

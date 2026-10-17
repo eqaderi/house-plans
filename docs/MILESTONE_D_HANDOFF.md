@@ -60,22 +60,29 @@ and merged into `main`:
 
 - Location: `projects/my-house/` (committed to this private GitHub repository
   per explicit homeowner authorization).
-- Workflow state: `SITE_NEEDS_VERIFICATION` (12 events, 8 artifact versions;
+- Workflow state: `SITE_NEEDS_VERIFICATION` (13 events, 10 artifact versions;
   `house-ai project verify my-house` is intact).
 - Stored survey sources:
-  - `surveys/seperated.dwg` (`src-seperated`, SHA-256 `49398f845469...`): parcel
+  - `surveys/seperated.dwg` (`src-seperated`, SHA-256 `27624ba14003...`): parcel
     boundary, ~9 m road, and 6 elevation points.
-  - `surveys/elevation.dwg` (`src-elevation`, SHA-256 `ef10bf9eb20d...`): 21
+  - `surveys/elevation.dwg` (`src-elevation`, SHA-256 `9689880c47d9...`): 21
     interior/edge elevation points.
   - (`final.dwg` was the wrong survey and is permanently excluded via
     `.gitignore`.)
 - Extracted site measurements (`site/v1`, unconfirmed survey values):
-  - Parcel area: **599.95 m²** (~600 m², 4 vertices, perimeter ~101.21 m)
-  - Road frontage: **21.029 m** along the northern edge on a ~9 m road
-  - Surveyed elevation points: **27 points** from **1652.941 m** to
-    **1665.378 m**
-  - Vertical relief: **12.437 m** (~12–12.5 m drop across ~29 m horizontal
-    depth; mean slope **65.2%**)
+  - Parcel candidate `src-seperated#D7`: **600.004 m²**, 4 vertices,
+    perimeter **107.140 m**.
+  - Frontage: **21.000 m**, on the lower-X (drawing-west) side beside
+    road candidates `BC` and `C5`, **9.000 m** apart. Geographic north is unknown.
+  - Surveyed elevation points: **27 points**, coordinate Z **1664.884–1680.071 m**
+    (all-survey relief **15.187 m**, including points outside the parcel).
+  - Inside-parcel spot range: **1664.884–1677.438 m**, relief **12.554 m**.
+    The TIN clipped to the parcel has interpolated relief **12.712 m**.
+  - Mean slope: **38.87% over the whole survey TIN**; **40.68% over its parcel
+    intersection**, each weighted by horizontal area. These are preliminary
+    calculations, not verified ground truth between survey points.
+  - The earlier hashes, elevations, northern-road claim and 65.2% value in this
+    handoff were unsupported. See the [source audit](../projects/my-house/reviews/survey-audit/REPORT.md).
 - Confirmed by the homeowner (recorded in `owner_statements` `v1`–`v4`):
   1. Coordinates are UTM (`stmt-001`).
   2. Elevations are in metres above sea level (`stmt-002`).

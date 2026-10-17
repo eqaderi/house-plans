@@ -165,8 +165,10 @@ def _legend(
         ("interpolated from the TIN, not surveyed.", COLOURS["contour"], None),
         (f"Spot heights: {t.spot_count}; z {_fmt(t.z_min_m, 2)} to {_fmt(t.z_max_m, 2)} m",
          COLOURS["spot"], None),
-        (f"Mean slope {_fmt(t.mean_slope_pct, 1)} %, max {_fmt(t.max_slope_pct, 1)} %", "#000",
+        (f"Whole TIN mean {_fmt(t.mean_slope_pct, 1)} %, max {_fmt(t.max_slope_pct, 1)} %", "#000",
          None),
+        (f"Parcel mean {_fmt(t.parcel_mean_slope_pct, 1)} % (horizontal area weighted)",
+         "#000", None),
         ("Outside the triangles: elevation unknown.", COLOURS["muted"], None),
         (f"Vertical datum: {report.coordinates.vertical_datum}", COLOURS["muted"], None),
     ]

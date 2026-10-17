@@ -1,0 +1,76 @@
+{
+  "ambiguous_entities": [
+    {
+      "entity_type": "MTEXT",
+      "handle": "6A",
+      "layer": "0",
+      "reason": "label at surveyed point 69 has no height; read as a point name, not interpreted"
+    },
+    {
+      "entity_type": "MTEXT",
+      "handle": "6C",
+      "layer": "0",
+      "reason": "label at surveyed point 6B has no height; read as a point name, not interpreted"
+    },
+    {
+      "entity_type": "MTEXT",
+      "handle": "6E",
+      "layer": "0",
+      "reason": "label at surveyed point 6D has no height; read as a point name, not interpreted"
+    },
+    {
+      "entity_type": "MTEXT",
+      "handle": "70",
+      "layer": "0",
+      "reason": "label at surveyed point 6F has no height; read as a point name, not interpreted"
+    },
+    {
+      "entity_type": "MTEXT",
+      "handle": "72",
+      "layer": "0",
+      "reason": "label at surveyed point 71 has no height; read as a point name, not interpreted"
+    },
+    {
+      "entity_type": "MTEXT",
+      "handle": "74",
+      "layer": "0",
+      "reason": "label at surveyed point 73 has no height; read as a point name, not interpreted"
+    }
+  ],
+  "boundary_handle": "src-seperated#D7",
+  "converted_sha256": "e8abe6a02b0a062644905f9c282c51f80832705243cf04b706298cfd8992fccd",
+  "converter": "ODA File Converter",
+  "converter_version": "27.9.0.0",
+  "declared_epsg": null,
+  "drawing_units": {
+    "status": "declared_in_source",
+    "unit": "m"
+  },
+  "epsg": null,
+  "handle_roles": {
+    "src-seperated#BC": "road",
+    "src-seperated#C5": "road"
+  },
+  "height_label_checks": [],
+  "horizontal_crs_status": "unknown",
+  "layer_roles": {
+    "0": "spot_elevation",
+    "Defpoints": "ignore"
+  },
+  "local_origin": [
+    623809.1666028872,
+    3870456.032537977,
+    0.0
+  ],
+  "original_filename": "seperated.dwg",
+  "parser": "ezdxf",
+  "parser_version": "1.4.5",
+  "sha256": "27624ba14003e3d898143a9d86985d50d3d7098db0a45b94ae2dd999571519ed",
+  "source_document_id": "src-seperated",
+  "source_format": "dwg AC1032",
+  "unrecognized_entities": {},
+  "unrecognized_layers": [],
+  "vertical_datum_status": "unknown",
+  "warnings": [],
+  "zero_elevation_is_valid": false
+}

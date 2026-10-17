@@ -17,6 +17,11 @@ each file once). `final.dwg` was the wrong survey and is not part of the project
 State: `SITE_NEEDS_VERIFICATION`. Nothing is approved. Start with
 [`reviews/CONFIRM-SITE.md`](reviews/CONFIRM-SITE.md).
 
+The [2026-10-17 source audit](reviews/survey-audit/REPORT.md) replays the original
+DWGs and corrects unsupported handoff measurements. Its [review page](reviews/survey-audit/site-v1/index.html)
+labels whole-survey and parcel slope statistics separately. Original site v1,
+events, owner statements and DWGs remain intact.
+
 The homeowner interview can run now — before the site is confirmed (site values
 are shown as unconfirmed) — directly through **Claude Code**, **Gemini CLI**, or
 **OpenAI Codex** with **no API key required**

@@ -245,10 +245,17 @@ def render_review_html(
                 else ""
             )
             + (
-                f"<li>Slope: area-weighted mean {t.mean_slope_pct:.1f} %, steepest triangle "
+                f"<li>Slope (whole survey TIN): horizontal-area-weighted mean "
+                f"{t.mean_slope_pct:.1f} %, steepest triangle "
                 f"{t.max_slope_pct:.1f} % {_tag(CALCULATED)}</li>"
                 if t.mean_slope_pct is not None and t.max_slope_pct is not None
                 else ""
+            )
+            + (
+                f"<li>Slope (parcel intersection): horizontal-area-weighted mean "
+                f"{t.parcel_mean_slope_pct:.1f} % over {t.parcel_tin_area_m2:.3f} m² "
+                f"{_tag(CALCULATED)}</li>"
+                if t.parcel_mean_slope_pct is not None else ""
             )
             + f"<li>Spot elevations outside the parcel: {len(t.spots_outside_boundary)}</li>"
             "</ul><p>Preliminary: linear between survey points, so it misses anything between "
@@ -274,7 +281,7 @@ def render_review_html(
             )
             parts.append(_table(
                 ["Vertices", "Slope", "Area", "Min angle", "Steepest edge", "Distance", "Δz",
-                 "Edge rise", "Sources", "In parcel", "Traits"],
+                 "Edge rise", "Sources", "Centroid in parcel", "Traits"],
                 rows,
             ))  # fmt: skip
     else:

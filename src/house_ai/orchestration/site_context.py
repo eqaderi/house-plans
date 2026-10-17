@@ -35,7 +35,7 @@ def site_context_for(site: Site, ref: ArtifactRef, approval: Approval | None) ->
         verified=approval is not None and approval.artifact.model_dump() == ref.model_dump(),
         parcel_area_m2=r(report.boundary.area_m2),
         relief_m=r(relief),
-        mean_slope_pct=r(report.terrain.mean_slope_pct, 2),
+        mean_slope_pct=r(report.terrain.parcel_mean_slope_pct, 2),
         frontage_m=r(report.frontage.length_m) or None,
     )
 
