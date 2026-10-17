@@ -1,6 +1,9 @@
-# ADR 0010: A Claude adapter for the AI-assisted interview
+# ADR 0010: An optional Claude adapter for the AI-assisted interview
 
-Status: accepted (Milestone C, 2026-10-17)
+Status: accepted (Milestone C, 2026-10-17); see also
+[ADR 0011](0011-agent-first-interview-interface.md) (the primary workflow is
+agent-first via Claude Code, Gemini CLI and OpenAI Codex without requiring an
+API key; this SDK adapter is strictly optional).
 
 ## Context
 

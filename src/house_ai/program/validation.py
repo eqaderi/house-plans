@@ -251,6 +251,24 @@ def validate_program(
                 f"The ground falls about {site.relief_m:.1f} m{label}. How each floor meets the "
                 "ground is decided first in Milestone D (section before rooms).",
             ))  # fmt: skip
+        slope_fact = by_key.get("slope_strategy")
+        if (
+            slope_fact is not None
+            and slope_fact.value in ("platform", "flat")
+            and ((site.relief_m or 0.0) >= 8.0 or (site.mean_slope_pct or 0.0) >= 20.0)
+        ):
+            add(ProgramFinding(
+                "steep_site_flat_pad", Severity.WARNING,
+                f"A single flat pad on a steep hillside ({site.relief_m or 0:.1f} m relief, "
+                f"{site.mean_slope_pct or 0:.1f}% mean slope){label} requires deep excavation, "
+                "high retaining walls, and heavy drainage/structural works.",
+                [slope_fact.id],
+                [
+                    "Step the house down the slope (split-level)",
+                    "Use a lower garden / walk-out level",
+                    "Keep a flat pad with engineered retaining walls",
+                ],
+            ))  # fmt: skip
     return out
 
 

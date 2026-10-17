@@ -105,6 +105,22 @@ def _confirmed(state: State, slot: str) -> Any:
     return st.value if st and st.status == "confirmed" else None
 
 
+def _topic_for_turn(qid: str, turn_slots: list[str]) -> tuple[BriefTopic, bool]:
+    base_id, _, slot = qid.partition("#")
+    if slot and slot in SLOTS:
+        return SLOTS[slot].topic, SLOTS[slot].is_fact
+    base = QUESTION_BY_ID.get(base_id)
+    if base is not None:
+        return base.topic, all(SLOTS[s].is_fact for s in base.slots)
+    valid_slots = [s for s in turn_slots if s in SLOTS]
+    if valid_slots:
+        return SLOTS[valid_slots[0]].topic, all(SLOTS[s].is_fact for s in valid_slots)
+    for topic in BriefTopic:
+        if topic.value in base_id.lower():
+            return topic, False
+    return BriefTopic.OTHER, False
+
+
 def build_brief(
     session: InterviewSession,
     *,
@@ -114,17 +130,14 @@ def build_brief(
     state = fold(session)
     facts: list[BriefFact] = []
     for qid, turn in state.answers.items():
-        base = QUESTION_BY_ID[qid.partition("#")[0]]
-        slot = qid.partition("#")[2]
+        topic, is_fact = _topic_for_turn(qid, [u.slot for u in turn.understood])
         facts.append(
             BriefFact(
                 id=answer_fact_id(turn),
-                topic=SLOTS[slot].topic if slot else base.topic,
+                topic=topic,
                 key="answer",
                 statement=turn.text or "",
-                status=Epistemic.VERIFIED_FACT
-                if all(SLOTS[s].is_fact for s in ((slot,) if slot else base.slots))
-                else Epistemic.PREFERENCE,
+                status=Epistemic.VERIFIED_FACT if is_fact else Epistemic.PREFERENCE,
                 source=FactSource(
                     kind=FactSourceKind.OWNER_ANSWER, ref=qid, interview_round=turn.seq
                 ),

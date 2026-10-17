@@ -33,16 +33,19 @@ floor plan, and the Blender model before Unreal production.
   jurisdiction and edition.
 - Private survey and owner data stay local unless the owner explicitly
   allows a specific provider.
-- Works with any AI provider; the domain has no vendor dependency.
+- **Agent-first, no API key required:** the homeowner works directly with
+  coding agents (Claude Code, Gemini CLI, OpenAI Codex) operating `house-ai`
+  via CLI and structured data interfaces; direct vendor SDK adapters are
+  strictly optional, and the domain has no vendor dependency.
 
 ## Milestones
 
 | | Scope | Status |
 |---|---|---|
 | A | Repository, canonical schemas, project storage, provenance, workflow state machine, tests | done, see [milestones/A.md](milestones/A.md) |
-| B | Synthetic DXF, CAD inspection, layers, units, CRS confirmation, boundary, terrain, site SVG | next |
-| C | Interview engine, brief, program, adjacency graph, program approval | |
-| D | Constraint model, 3+ alternative plans, SVG, evaluators, plan versioning | |
+| B | Synthetic DXF, CAD inspection, layers, units, CRS confirmation, boundary, terrain, site SVG | done, see [milestones/B.md](milestones/B.md) |
+| C | Agent-first interview engine, brief, program, adjacency graph, program approval | done, see [milestones/C.md](milestones/C.md) |
+| D | Constraint model, 3+ alternative plans, SVG, evaluators, plan versioning | next |
 | E | Web reviewer: options, metrics, version comparison, change requests | |
 | F | Deterministic Blender generator, renders, geometry validation | |
 | G | FBX, scene manifest, Unreal importer, first-person walkthrough | |

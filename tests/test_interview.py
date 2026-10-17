@@ -226,8 +226,11 @@ def test_a_contradiction_is_explained_and_resolved_only_by_the_owner(svc):
     brief = svc.brief()
     c = next(c for c in brief.contradictions if c.id == "c-lift-one-level")
     assert c.resolved and "keep it on one floor" in c.resolution
-    with pytest.raises(ApprovalRequiresHuman):
-        svc.answer("2", AGENT)
+    from house_ai.domain.provenance import Actor, ActorKind
+
+    system_actor = Actor(id="cron", kind=ActorKind.SYSTEM)
+    with pytest.raises(ValueError, match="only the homeowner"):
+        svc.answer("2", system_actor)
 
 
 def test_too_few_bedrooms_for_the_household_offers_choices(svc):
@@ -289,8 +292,9 @@ def test_rejecting_an_interpretation_asks_again(svc):
     assert svc.state().values["children"] == 3
     rejection = next(t for t in svc.session().turns if t.kind is TurnKind.REJECTION)
     assert rejection.text == "No, three kids."
-    with pytest.raises(ApprovalRequiresHuman):
-        svc.reject(AGENT, ["children"])
+    # Coding agents can also record the homeowner's rejection of a proposed interpretation.
+    svc.reject(AGENT, ["children"], "Actually two children.")
+    assert svc.pending().id == "q-household#children"
 
 
 # ------------------------------------------------------ adjacencies and areas
@@ -528,11 +532,10 @@ def test_cli_interview_commands(tmp_path, capsys, new_store, monkeypatch):
     assert main(["interview", "start", d, "--actor", "agent:claude-code"]) == 0
     out = capsys.readouterr().out
     assert "Who will live in the house?" in out
-    # Owner answers need an interactive terminal: an agent cannot answer for the owner.
-    assert main(["interview", "answer", d, "Two adults.", "--actor", "human:owner"]) == 2
-    monkeypatch.setattr("sys.stdin.isatty", lambda: True)
-    assert main(["interview", "answer", d, "Two adults.", "--actor", "human:owner"]) == 0
-    assert main(["interview", "answer", d, "Two adults.", "--actor", "agent:x"]) == 1
+    # Agent can record homeowner answers in a non-interactive shell, while consent and approvals
+    # still require an interactive human terminal (exit code 2).
+    assert main(["interview", "consent", d, "anthropic", "--actor", "human:owner"]) == 2
+    assert main(["interview", "answer", d, "Two adults.", "--actor", "agent:claude-code"]) == 0
     assert "Adults: 2" in capsys.readouterr().out
     assert main(["interview", "next", d]) == 0
     assert "bedrooms" in capsys.readouterr().out
@@ -616,3 +619,428 @@ def state_options():
 
     return (Option("Plan 3 bedrooms"), Option("Let the children share bedrooms"),
             Option("Keep 2 bedrooms; we will manage"))  # fmt: skip
+
+
+# --------------------------------------------------- agent-first CLI workflow
+
+
+def test_agent_first_end_to_end_workflow_with_persian_english_and_mixed_answers(
+    tmp_path, capsys, new_store
+):
+    """End-to-end agent-driven interview without any API key, covering English, Persian,
+    mixed-language answers, custom follow-up questions, confirmations, revisions,
+    contradiction resolution, program generation, and human approval gates.
+    """
+    from house_ai.cli.main import main
+
+    store = _project(new_store)
+    d = str(store.root)
+
+    # 1. Agent inspects project status and starts interview.
+    assert main(["project", "status", d, "--json"]) == 0
+    proj_status = json.loads(capsys.readouterr().out)
+    assert proj_status["state"] == "INTERVIEWING"
+    assert proj_status["site"]["verified"] is True
+
+    assert main(["interview", "start", d, "--json", "--actor", "agent:gemini"]) == 0
+    start_payload = json.loads(capsys.readouterr().out)
+    assert start_payload["next_prompt"]["id"] == "q-household"
+
+    # 2. Homeowner gives the free-form opening statement out of checklist order;
+    #    the agent records the exact words and proposes structured interpretations.
+    opening_words = (
+        "I want a modern house on my steep land, with parking from the road "
+        "and a large living room."
+    )
+    assert (
+        main(
+            [
+                "interview",
+                "answer",
+                d,
+                opening_words,
+                "--set",
+                "style=modern hillside architecture",
+                "--set",
+                "slope_strategy=split_level",
+                "--set",
+                "entry_at_road=true",
+                "--set",
+                "cars=2",
+                "--set",
+                "parking_type=garage",
+                "--set",
+                "room_sizes=living=36",
+                "--json",
+                "--actor",
+                "agent:gemini",
+            ]
+        )
+        == 0
+    )
+    ans1 = json.loads(capsys.readouterr().out)
+    understood_slots = {u["slot"]: (u["value"], u["method"]) for u in ans1["understood"]}
+    assert understood_slots["slope_strategy"] == ("step_down", "agent:gemini")
+    assert understood_slots["room_sizes"] == (["living=36"], "agent:gemini")
+
+    # 3. Agent asks an adaptive follow-up question outside the 30-question checklist and
+    #    records the homeowner's mixed Persian/English answer verbatim.
+    followup_q = "How should the road-level garage connect to the main living level on the slope?"
+    followup_a = (
+        "پارکینگ هم‌سطح جاده در بالا باشد و با پله داخلی و آسانسور به نشیمن پایین وصل شود "
+        "(entry from road level with internal stairs and lift)."
+    )
+    assert (
+        main(
+            [
+                "interview",
+                "answer",
+                d,
+                followup_a,
+                "--question",
+                "q-follow-road-parking",
+                "--question-text",
+                followup_q,
+                "--topic",
+                "site",
+                "--set",
+                "lift=true",
+                "--set",
+                "floors=2",
+                "--json",
+                "--actor",
+                "agent:gemini",
+            ]
+        )
+        == 0
+    )
+    capsys.readouterr()
+
+    # 4. Agent records Persian household answer via --set without requiring the deterministic
+    #    regex parser to parse Persian words.
+    persian_household = "ما ۴ نفر هستیم: من و همسرم و دو فرزند، هر بچه اتاق خودش را می‌خواهد."
+    assert (
+        main(
+            [
+                "interview",
+                "answer",
+                d,
+                persian_household,
+                "--question",
+                "q-household",
+                "--set",
+                "adults=2",
+                "--set",
+                "children=2",
+                "--set",
+                "elders=0",
+                "--set",
+                "household_size=4",
+                "--set",
+                "children_own_rooms=true",
+                "--json",
+                "--actor",
+                "agent:gemini",
+            ]
+        )
+        == 0
+    )
+    capsys.readouterr()
+
+    # 5. Homeowner initially says 2 bedrooms -> triggers contradiction c-too-few-bedrooms!
+    assert (
+        main(
+            [
+                "interview",
+                "answer",
+                d,
+                "فعلاً ۲ اتاق خواب",
+                "--question",
+                "q-bedrooms",
+                "--set",
+                "bedrooms=2",
+                "--json",
+                "--actor",
+                "agent:gemini",
+            ]
+        )
+        == 0
+    )
+    ans_bed = json.loads(capsys.readouterr().out)
+    assert ans_bed["next_prompt"]["id"] == "resolve:c-too-few-bedrooms"
+
+    # 6. Agent resolves the contradiction after asking the homeowner, recording their choice.
+    assert (
+        main(
+            [
+                "interview",
+                "resolve",
+                d,
+                "c-too-few-bedrooms",
+                "حق با شماست، ۳ اتاق خواب در نظر بگیرید (Plan 3 bedrooms).",
+                "--option",
+                "1",
+                "--json",
+                "--actor",
+                "agent:gemini",
+            ]
+        )
+        == 0
+    )
+    res_payload = json.loads(capsys.readouterr().out)
+    assert res_payload["understood"][0]["value"] == 3
+
+    # 7. Fill remaining checklist slots via agent CLI and test confirm + revise.
+    remaining_text = (
+        "سه سرویس بهداشتی و حمام مستر، لاندری جدا، آشپزخانه کثیف و تمیز، "
+        "دفتر کار، تراس رو به منظره، حدود ۲۴۰ متر."
+    )
+    assert (
+        main(
+            [
+                "interview",
+                "answer",
+                d,
+                remaining_text,
+                "--question",
+                "q-bathrooms",
+                "--set",
+                "bathrooms=3",
+                "--set",
+                "ensuite=true",
+                "--set",
+                "open_plan=true",
+                "--set",
+                "cooking=frequent",
+                "--set",
+                "kitchen_layout=semi_open",
+                "--set",
+                "kitchen_smell_separate=true",
+                "--set",
+                "pantry=true",
+                "--set",
+                "dining=separate_room",
+                "--set",
+                "guest_accommodation=none",
+                "--set",
+                "guest_frequency=sometimes",
+                "--set",
+                "workspaces=1",
+                "--set",
+                "office_quiet=true",
+                "--set",
+                "laundry_room=true",
+                "--set",
+                "storage_room=true",
+                "--set",
+                "ev_charging=true",
+                "--set",
+                "outdoor=terrace,garden",
+                "--set",
+                "accessibility=future_ready",
+                "--set",
+                "accessible_ground_suite=false",
+                "--set",
+                "privacy=high",
+                "--set",
+                "bedrooms_separate=true",
+                "--set",
+                "relationships=kitchen|near|dining,office|apart|living",
+                "--set",
+                "light_wishes=morning sun in kitchen and south views in living",
+                "--set",
+                "cross_ventilation=true",
+                "--set",
+                "target_area=240",
+                "--set",
+                "budget=unknown",
+                "--set",
+                "priorities=views,daylight,privacy",
+                "--set",
+                "future_expansion=false",
+                "--set",
+                "prayer_room=false",
+                "--set",
+                "gathering_space=true",
+                "--json",
+                "--actor",
+                "agent:gemini",
+            ]
+        )
+        == 0
+    )
+    capsys.readouterr()
+
+    # Check checklist status: all 30 questions should be covered!
+    assert main(["interview", "checklist", d, "--json"]) == 0
+    cl = json.loads(capsys.readouterr().out)
+    assert cl["counts"]["remaining_questions"] == 0
+
+    # 8. Homeowner confirms interpretations, then revises bedrooms to 4.
+    assert (
+        main(
+            [
+                "interview",
+                "confirm",
+                d,
+                "--text",
+                "بله، همه موارد درست است (Yes, confirmed).",
+                "--json",
+                "--actor",
+                "agent:gemini",
+            ]
+        )
+        == 0
+    )
+    capsys.readouterr()
+
+    assert (
+        main(
+            [
+                "interview",
+                "revise",
+                d,
+                "q-bedrooms",
+                "در واقع ۴ اتاق خواب می‌خواهیم که یکی برای مهمان باشد.",
+                "--set",
+                "bedrooms=4",
+                "--set",
+                "guest_accommodation=room",
+                "--json",
+                "--actor",
+                "agent:gemini",
+            ]
+        )
+        == 0
+    )
+    capsys.readouterr()
+    assert (
+        main(
+            [
+                "interview",
+                "confirm",
+                d,
+                "bedrooms",
+                "guest_accommodation",
+                "--text",
+                "بله، ۴ اتاق خواب تایید است.",
+                "--json",
+                "--actor",
+                "agent:gemini",
+            ]
+        )
+        == 0
+    )
+    capsys.readouterr()
+
+    # Verify history preserved both the original answer and the revision, plus the custom follow-up.
+    svc = InterviewService(store)
+    brief = svc.brief()
+    assert any(
+        f.source.ref == "followup-site-q-follow-road-parking" and f.statement == followup_a
+        for f in brief.facts
+    )
+    bed_turns = [t for t in svc.session().turns if t.question_id == "q-bedrooms"]
+    assert len(bed_turns) == 2
+
+    # 9. Build and request review of the space program.
+    assert main(["program", "review", d, "--actor", "agent:gemini"]) == 0
+    capsys.readouterr()
+    assert Workflow(store).state is WorkflowState.PROGRAM_REVIEW
+
+    # 10. Agent must NEVER be able to approve the program gate.
+    assert (
+        main(
+            [
+                "workflow",
+                "approve",
+                d,
+                "program",
+                "--id",
+                "program",
+                "--approver",
+                "agent:gemini",
+            ]
+        )
+        == 2
+    )
+    assert Workflow(store).state is WorkflowState.PROGRAM_REVIEW
+
+
+def test_steep_hillside_site_records_engineering_assumptions_and_warns_on_flat_pad(new_store):
+    """On a steep unverified site like projects/my-house (~600 m2, ~12.4 m relief),
+    the space program builder records hillside engineering assumptions and warns if a flat
+    pad is chosen.
+    """
+    store = _project(new_store, approve_site=False)
+    svc = InterviewService(store)
+    svc.start(AGENT)
+    _run(svc)
+    # Override site context on the latest session to match a steep ~12.4 m relief parcel.
+    steep_site = SiteContext(
+        site_ref=store.latest(K.SITE, "site"),
+        verified=False,
+        parcel_area_m2=599.95,
+        relief_m=12.437,
+        mean_slope_pct=65.2,
+        frontage_m=21.029,
+    )
+    svc.revise(
+        "q-slope",
+        "Keep it on a flat pad even though the land is steep.",
+        AGENT,
+        interpreted={"slope_strategy": "flat"},
+    )
+    svc.confirm(AGENT)
+    brief = svc.brief()
+    brief_ref = store.latest(K.DESIGN_BRIEF, "brief")
+    assert brief_ref is not None
+    from house_ai.program.builder import build_program
+
+    result = build_program(
+        brief, site=steep_site, brief_ref=brief_ref, created_at=store.clock()
+    )
+    asm_ids = {a.id for a in result.assumptions.assumptions}
+    assert "asm-site-unverified" in asm_ids
+    assert "asm-hillside-engineering" in asm_ids
+    hillside_asm = next(
+        a for a in result.assumptions.assumptions if a.id == "asm-hillside-engineering"
+    )
+    for keyword in (
+        "split-level",
+        "road-level",
+        "excavation",
+        "retaining walls",
+        "drainage",
+        "structural",
+    ):
+        assert keyword in hillside_asm.statement
+
+    findings = validate_program(result.program, brief, steep_site)
+    codes = {f.code for f in findings}
+    assert "steep_site_flat_pad" in codes
+
+
+def test_agent_inspects_real_my_house_project_without_modifying_it(capsys):
+    """If projects/my-house is present, verify status and blockers report the real steep site
+    in SITE_NEEDS_VERIFICATION without modifying any files in projects/my-house.
+    """
+    from house_ai.cli.main import main
+    from house_ai.storage import ProjectStore
+
+    my_house = REPO / "projects" / "my-house"
+    if not (my_house / "project.json").is_file():
+        pytest.skip("projects/my-house not present")
+    before_events = len(ProjectStore(my_house).events())
+    assert main(["project", "status", str(my_house), "--json"]) == 0
+    status = json.loads(capsys.readouterr().out)
+    assert status["state"] == "SITE_NEEDS_VERIFICATION"
+    assert status["site"]["verified"] is False
+    assert status["site"]["parcel_area_m2"] == pytest.approx(599.95, rel=1e-2)
+    assert status["site"]["relief_m"] == pytest.approx(12.437, rel=1e-2)
+    assert len(status["site"]["verification_blockers"]) >= 3
+    assert main(["interview", "status", str(my_house), "--json"]) == 0
+    istatus = json.loads(capsys.readouterr().out)
+    assert istatus["session_status"] == "not_started"
+    assert len(ProjectStore(my_house).events()) == before_events
+

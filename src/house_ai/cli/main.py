@@ -181,6 +181,21 @@ def _status_dict(store: ProjectStore) -> dict:
     for kind in ArtifactKind:
         for ref in store.latest_of_kind(kind):
             latest.setdefault(kind.value, []).append(ref.model_dump(mode="json"))
+    svc = InterviewService(store)
+    site_ctx = svc.site()
+    site_info = None
+    if site_ctx is not None and site_ctx.site_ref is not None:
+        site_info = {
+            "site_ref": site_ctx.site_ref.model_dump(mode="json"),
+            "verified": site_ctx.verified,
+            "parcel_area_m2": site_ctx.parcel_area_m2,
+            "relief_m": site_ctx.relief_m,
+            "mean_slope_pct": site_ctx.mean_slope_pct,
+            "frontage_m": site_ctx.frontage_m,
+            "verification_blockers": svc.site_blockers(),
+        }
+    iv_exists = svc.exists()
+    iv_state = svc.state() if iv_exists else None
     return {
         "project": store.manifest().model_dump(mode="json"),
         "state": status.state.value,
@@ -192,6 +207,14 @@ def _status_dict(store: ProjectStore) -> dict:
             g.value: r.model_dump(mode="json") for g, r in status.pending_requests.items()
         },
         "latest_artifacts": latest,
+        "site": site_info,
+        "owner_statements_count": len(owner_statements(store)),
+        "interview": {
+            "exists": iv_exists,
+            "status": svc.session().status.value if iv_exists else "not_started",
+            "turn_count": len(svc.session().turns) if iv_exists else 0,
+            "unconfirmed_slots": len(iv_state.unconfirmed()) if iv_state else 0,
+        },
     }
 
 
@@ -211,6 +234,14 @@ def cmd_project_status(args: argparse.Namespace) -> int:
         _out(
             f"approved  {gate}: {art['kind']}/{art['id']} v{art['version']} "
             f"by {appr['approved_by']['id']}"
+        )
+    if info["site"] is not None:
+        s_info = info["site"]
+        v_tag = "verified" if s_info["verified"] else "needs verification"
+        _out(
+            f"site      {v_tag}; area={s_info['parcel_area_m2']} m², "
+            f"relief={s_info['relief_m']} m, slope={s_info['mean_slope_pct']}%, "
+            f"frontage={s_info['frontage_m']} m, blockers={len(s_info['verification_blockers'])}"
         )
     for kind, refs in sorted(info["latest_artifacts"].items()):
         for r in refs:
@@ -532,18 +563,79 @@ def cmd_crs_utm(args: argparse.Namespace) -> int:
 
 
 def _owner_terminal(what: str) -> bool:
-    """Owner words and decisions need an interactive terminal (like gate approval)."""
+    """Direct human-only terminal actions (consent, interactive run, program reject)."""
     if sys.stdin.isatty():
         return True
     _err(
-        f"{what} records the owner's own words or decisions, so it needs an interactive "
-        "terminal. An agent must not answer or decide for the owner; ask the owner to run "
-        "this command (or `house-ai interview run`) themselves."
+        f"{what} requires an interactive terminal run by the homeowner."
     )
     return False
 
 
-def _show_turn(result, *, prompt: bool = True) -> None:
+def _parse_set_args(
+    set_items: list[str] | None,
+    unknown_slots: list[str] | None,
+    interpret_json: str | None,
+) -> dict | None:
+    if not set_items and not unknown_slots and not interpret_json:
+        return None
+    out: dict = {}
+    if interpret_json:
+        try:
+            loaded = json.loads(interpret_json)
+        except json.JSONDecodeError as exc:
+            raise ValueError(f"--interpret-json must be valid JSON: {exc}") from exc
+        if not isinstance(loaded, dict):
+            raise ValueError("--interpret-json must be a JSON object mapping slot -> value")
+        out.update(loaded)
+    for item in set_items or ():
+        if "=" not in item:
+            raise ValueError(f"--set expects slot=value, got {item!r}")
+        slot, raw = item.split("=", 1)
+        out[slot.strip()] = raw.strip()
+    for slot in unknown_slots or ():
+        out[slot.strip()] = None
+    return out
+
+
+def _turn_dict(result) -> dict:
+    return {
+        "session_ref": result.session_ref.model_dump(mode="json"),
+        "brief_ref": result.brief_ref.model_dump(mode="json"),
+        "understood": [
+            {
+                "slot": u.slot,
+                "label": SLOTS[u.slot].label,
+                "value": u.value,
+                "display": describe(u.value),
+                "method": u.method,
+                "status": "unknown" if u.value is None else "inference",
+            }
+            for u in result.understood
+        ],
+        "asked_again": result.asked_again,
+        "notes": list(result.notes),
+        "contradictions": [
+            {
+                "id": f.id,
+                "statement": f.statement,
+                "tradeoff": f.tradeoff,
+                "options": [o.label for o in f.options],
+            }
+            for f in result.contradictions
+        ],
+        "next_prompt": (
+            {"id": result.prompt.id, "kind": result.prompt.kind, "text": result.prompt.text}
+            if result.prompt is not None
+            else None
+        ),
+    }
+
+
+def _show_turn(result, *, prompt: bool = True, as_json: bool = False) -> None:
+    if as_json:
+        _out(json.dumps(_turn_dict(result), indent=2, ensure_ascii=False))
+        return
     text = result.message()
     if text:
         _out(text)
@@ -560,57 +652,171 @@ def _show_turn(result, *, prompt: bool = True) -> None:
 
 
 def cmd_interview_start(args: argparse.Namespace) -> int:
-    _show_turn(InterviewService(ProjectStore(_dir(args.dir))).start(args.actor))
+    res = InterviewService(ProjectStore(_dir(args.dir))).start(args.actor)
+    _show_turn(res, as_json=getattr(args, "json", False))
     return EXIT_OK
 
 
 def cmd_interview_next(args: argparse.Namespace) -> int:
-    prompt = InterviewService(ProjectStore(_dir(args.dir))).pending()
+    svc = InterviewService(ProjectStore(_dir(args.dir)))
+    prompt = svc.pending()
+    if getattr(args, "json", False):
+        payload = (
+            {"id": prompt.id, "kind": prompt.kind, "text": prompt.text}
+            if prompt is not None
+            else None
+        )
+        _out(json.dumps({"next_prompt": payload}, indent=2, ensure_ascii=False))
+        return EXIT_OK
     _out(f"[{prompt.id}] {prompt.text}" if prompt else "No question pending.")
     return EXIT_OK
 
 
+def cmd_interview_checklist(args: argparse.Namespace) -> int:
+    svc = InterviewService(ProjectStore(_dir(args.dir)))
+    info = svc.checklist()
+    if getattr(args, "json", False):
+        _out(json.dumps(info, indent=2, ensure_ascii=False))
+        return EXIT_OK
+    _out(
+        f"project: {info['project_id']}  workflow: {info['workflow_state']}  "
+        f"interview: {info['session_status']} ({info['turn_count']} turns)"
+    )
+    site = info["site"]
+    if site["site_ref"] is not None:
+        v_str = "verified" if site["verified"] else "SITE_NEEDS_VERIFICATION"
+        _out(
+            f"site: {v_str} | area={site['parcel_area_m2']} m² | "
+            f"relief={site['relief_m']} m | mean_slope={site['mean_slope_pct']}% | "
+            f"frontage={site['frontage_m']} m"
+        )
+        for b in site["verification_blockers"]:
+            _out(f"  site blocker: {b}")
+        for hc in site["hillside_considerations"]:
+            _out(f"  hillside note: {hc}")
+    if info["owner_statements"]:
+        _out(f"owner statements ({len(info['owner_statements'])}):")
+        for st in info["owner_statements"]:
+            _out(f'  - [{st["subject"]}] "{st["words"]}"')
+    c = info["counts"]
+    _out(
+        f"checklist: {c['covered_questions']}/{c['applicable_questions']} applicable covered | "
+        f"confirmed slots={c['confirmed_slots']} | "
+        f"unconfirmed (inference)={c['unconfirmed_slots']} | "
+        f"open contradictions={c['open_contradictions']}"
+    )
+    if info["missing_required_slots"]:
+        _out("missing required slots: " + ", ".join(info["missing_required_slots"]))
+    if info["unconfirmed"]:
+        _out("unconfirmed interpretations (ask owner to confirm or correct):")
+        for u in info["unconfirmed"]:
+            _out(f"  - {u['slot']} ({u['label']}): {u['display']} [{u['method']}]")
+    if info["contradictions"]:
+        _out("open contradictions:")
+        for cf in info["contradictions"]:
+            _out(f"  - {cf['id']}: {cf['statement']} ({cf['tradeoff']})")
+            for opt in cf["options"]:
+                _out(f"      {opt['option']}. {opt['label']}")
+    for item in info["checklist"]:
+        if not item["applicable"]:
+            continue
+        mark = "x" if item["covered"] else " "
+        slot_summary = ", ".join(
+            f"{s['slot']}={s['display']} ({s['status']})"
+            for s in item["slots"]
+            if s["status"] != "unanswered"
+        )
+        suffix = f" -> {slot_summary}" if slot_summary else ""
+        _out(f"  [{mark}] {item['id']} ({item['topic']}): {item['question']}{suffix}")
+    for ct in info["custom_turns"]:
+        _out(f'  [+] {ct["question_id"]}: "{ct["text"]}"')
+    if info["suggested_next"]:
+        nxt = info["suggested_next"]
+        _out(f"suggested next: [{nxt['id']}] {nxt['text']}")
+    return EXIT_OK
+
+
 def cmd_interview_answer(args: argparse.Namespace) -> int:
-    if not _owner_terminal("interview answer"):
-        return EXIT_USAGE
-    _show_turn(InterviewService(ProjectStore(_dir(args.dir))).answer(args.text, args.actor))
+    svc = InterviewService(ProjectStore(_dir(args.dir)))
+    interpreted = _parse_set_args(args.set, args.unknown, args.interpret_json)
+    res = svc.answer(
+        args.text,
+        args.actor,
+        question_id=args.question,
+        question_text=args.question_text,
+        topic=args.topic,
+        interpreted=interpreted,
+        option=args.option,
+    )
+    _show_turn(res, as_json=args.json)
     return EXIT_OK
 
 
 def cmd_interview_revise(args: argparse.Namespace) -> int:
-    if not _owner_terminal("interview revise"):
-        return EXIT_USAGE
     svc = InterviewService(ProjectStore(_dir(args.dir)))
-    _show_turn(svc.revise(args.question, args.text, args.actor))
+    interpreted = _parse_set_args(args.set, args.unknown, args.interpret_json)
+    res = svc.revise(
+        args.question,
+        args.text,
+        args.actor,
+        question_text=args.question_text,
+        interpreted=interpreted,
+    )
+    _show_turn(res, as_json=args.json)
     return EXIT_OK
 
 
 def cmd_interview_confirm(args: argparse.Namespace) -> int:
-    if not _owner_terminal("interview confirm"):
-        return EXIT_USAGE
     svc = InterviewService(ProjectStore(_dir(args.dir)))
     pending = svc.state().unconfirmed()
-    chosen = args.slot or pending
+    explicit_slots = [*(getattr(args, "slots", None) or []), *(args.slot or [])]
+    chosen = explicit_slots or pending
     if not chosen:
-        _out("Nothing waits for confirmation.")
+        if args.json:
+            _out(json.dumps({"confirmed": []}, indent=2))
+        else:
+            _out("Nothing waits for confirmation.")
         return EXIT_OK
-    _out("You are confirming that I understood these correctly:")
     state = svc.state()
-    for s in chosen:
-        if s in state.slots:
-            _out(f"  - {SLOTS[s].label}: {describe(state.slots[s].value)}")
-    if input('Type "yes" to confirm: ').strip().lower() != "yes":
-        _err("nothing confirmed")
-        return EXIT_FAIL
-    _out(f"confirmed {len(svc.confirm(args.actor, args.slot or None))} item(s)")
+    if (
+        args.actor.kind is ActorKind.HUMAN
+        and sys.stdin.isatty()
+        and not args.yes
+        and not args.text
+        and not args.json
+    ):
+        _out("You are confirming that I understood these correctly:")
+        for s in chosen:
+            if s in state.slots:
+                _out(f"  - {SLOTS[s].label}: {describe(state.slots[s].value)}")
+        if input('Type "yes" to confirm: ').strip().lower() != "yes":
+            _err("nothing confirmed")
+            return EXIT_FAIL
+    confirmed = svc.confirm(args.actor, explicit_slots or None, text=args.text)
+    if args.json:
+        _out(json.dumps({"confirmed": confirmed}, indent=2, ensure_ascii=False))
+    else:
+        _out(f"confirmed {len(confirmed)} item(s): {', '.join(confirmed)}")
     return EXIT_OK
 
 
 def cmd_interview_reject(args: argparse.Namespace) -> int:
-    if not _owner_terminal("interview reject"):
-        return EXIT_USAGE
     svc = InterviewService(ProjectStore(_dir(args.dir)))
-    _show_turn(svc.reject(args.actor, args.slot, args.text))
+    res = svc.reject(args.actor, args.slot, args.text)
+    _show_turn(res, as_json=args.json)
+    return EXIT_OK
+
+
+def cmd_interview_resolve(args: argparse.Namespace) -> int:
+    svc = InterviewService(ProjectStore(_dir(args.dir)))
+    res = svc.resolve(
+        args.contradiction,
+        args.text,
+        args.actor,
+        option=args.option,
+        defer=args.defer,
+    )
+    _show_turn(res, as_json=args.json)
     return EXIT_OK
 
 
@@ -757,11 +963,34 @@ def _show_findings(findings) -> None:
 def cmd_program_build(args: argparse.Namespace) -> int:
     svc = InterviewService(ProjectStore(_dir(args.dir)))
     build = svc.build_program(args.actor)
+    if args.out:
+        _export(svc, build, Path(args.out))
+    if getattr(args, "json", False):
+        _out(
+            json.dumps(
+                {
+                    "program_ref": build.program_ref.model_dump(mode="json"),
+                    "assumptions_ref": build.assumptions_ref.model_dump(mode="json"),
+                    "open_questions_ref": build.open_questions_ref.model_dump(mode="json"),
+                    "findings": [
+                        {
+                            "code": f.code,
+                            "severity": f.severity.value,
+                            "message": f.message,
+                            "refs": list(f.refs),
+                            "options": list(f.options),
+                        }
+                        for f in build.findings
+                    ],
+                },
+                indent=2,
+                ensure_ascii=False,
+            )
+        )
+        return EXIT_OK
     for ref in (build.program_ref, build.assumptions_ref, build.open_questions_ref):
         _out(f"stored {ref.kind.value}/{ref.id} v{ref.version}")
     _show_findings(build.findings)
-    if args.out:
-        _export(svc, build, Path(args.out))
     return EXIT_OK
 
 
@@ -961,33 +1190,94 @@ def build_parser() -> argparse.ArgumentParser:
     iv = iv.add_subparsers(dest="sub", required=True)
     s = iv.add_parser("start", help="start or resume the interview; shows the next question")
     s.add_argument("dir")
+    s.add_argument("--json", action="store_true")
     actor_arg(s)
     s.set_defaults(func=cmd_interview_start)
     s = iv.add_parser("next", help="show the pending question")
     s.add_argument("dir")
+    s.add_argument("--json", action="store_true")
     s.set_defaults(func=cmd_interview_next)
-    s = iv.add_parser("answer", help="the owner answers the pending question (terminal only)")
+    for sub_name in ("checklist", "status"):
+        s = iv.add_parser(
+            sub_name,
+            help="inspect interview status, site context, checklist coverage and contradictions",
+        )
+        s.add_argument("dir")
+        s.add_argument("--json", action="store_true")
+        s.set_defaults(func=cmd_interview_checklist)
+    s = iv.add_parser(
+        "answer",
+        help="record the owner's verbatim answer and optional structured slot interpretations",
+    )
     s.add_argument("dir")
-    s.add_argument("text")
+    s.add_argument("text", help="the homeowner's exact original words")
+    s.add_argument("--question", help="question id, slot name, or custom follow-up id")
+    s.add_argument("--question-text", help="exact wording of an adaptive follow-up question")
+    s.add_argument("--topic", help="topic for an adaptive follow-up (e.g. site_response, views)")
+    s.add_argument(
+        "--set",
+        action="append",
+        default=[],
+        metavar="SLOT=VALUE",
+        help="structured interpretation proposed by the agent (repeatable)",
+    )
+    s.add_argument(
+        "--unknown",
+        action="append",
+        default=[],
+        metavar="SLOT",
+        help="mark a slot as unknown / undecided (repeatable)",
+    )
+    s.add_argument("--interpret-json", help="JSON object mapping slot -> value")
+    s.add_argument("--option", type=int, help="1-based option index when resolving a contradiction")
+    s.add_argument("--json", action="store_true")
     actor_arg(s)
     s.set_defaults(func=cmd_interview_answer)
-    s = iv.add_parser("revise", help="the owner changes an earlier answer (terminal only)")
+    s = iv.add_parser(
+        "revise",
+        help="record the owner's revision to an earlier answer without losing history",
+    )
     s.add_argument("dir")
-    s.add_argument("question", help="question id, e.g. q-bedrooms")
-    s.add_argument("text")
+    s.add_argument("question", help="question id (e.g. q-bedrooms), slot name, or custom id")
+    s.add_argument("text", help="the homeowner's exact new words")
+    s.add_argument("--question-text", help="exact wording of the question asked")
+    s.add_argument(
+        "--set",
+        action="append",
+        default=[],
+        metavar="SLOT=VALUE",
+        help="structured interpretation proposed by the agent (repeatable)",
+    )
+    s.add_argument("--unknown", action="append", default=[], metavar="SLOT")
+    s.add_argument("--interpret-json", help="JSON object mapping slot -> value")
+    s.add_argument("--json", action="store_true")
     actor_arg(s)
     s.set_defaults(func=cmd_interview_revise)
-    s = iv.add_parser("confirm", help="the owner confirms what was understood (terminal only)")
+    s = iv.add_parser("confirm", help="record the owner's confirmation of interpreted slot values")
     s.add_argument("dir")
+    s.add_argument("slots", nargs="*", help="optional slot names to confirm (default: all pending)")
     s.add_argument("--slot", action="append", default=[])
+    s.add_argument("--text", help="the homeowner's confirmation words")
+    s.add_argument("--yes", action="store_true", help="skip interactive prompt")
+    s.add_argument("--json", action="store_true")
     actor_arg(s)
     s.set_defaults(func=cmd_interview_confirm)
-    s = iv.add_parser("reject", help="the owner says an interpretation is wrong (terminal only)")
+    s = iv.add_parser("reject", help="record the owner's rejection of an interpreted slot value")
     s.add_argument("dir")
     s.add_argument("--slot", action="append", required=True)
     s.add_argument("--text", help="what is wrong, in the owner's words")
+    s.add_argument("--json", action="store_true")
     actor_arg(s)
     s.set_defaults(func=cmd_interview_reject)
+    s = iv.add_parser("resolve", help="record the owner's resolution of an open contradiction")
+    s.add_argument("dir")
+    s.add_argument("contradiction", help="contradiction id, e.g. c-too-few-bedrooms")
+    s.add_argument("text", help="the homeowner's exact resolution words")
+    s.add_argument("--option", type=int, help="1-based option index chosen by the homeowner")
+    s.add_argument("--defer", action="store_true", help="defer deciding on this contradiction")
+    s.add_argument("--json", action="store_true")
+    actor_arg(s)
+    s.set_defaults(func=cmd_interview_resolve)
     s = iv.add_parser("consent", help="the owner allows an AI provider (terminal only)")
     s.add_argument("dir")
     s.add_argument("provider")
@@ -1010,6 +1300,7 @@ def build_parser() -> argparse.ArgumentParser:
     s = pr.add_parser("build", help="derive, store and check the space program")
     s.add_argument("dir")
     s.add_argument("--out", help="also write design_brief.yaml, space_program.yaml, ...")
+    s.add_argument("--json", action="store_true")
     actor_arg(s)
     s.set_defaults(func=cmd_program_build)
     s = pr.add_parser("review", help="build the program and ask the owner to review it")

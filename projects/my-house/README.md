@@ -17,7 +17,11 @@ each file once). `final.dwg` was the wrong survey and is not part of the project
 State: `SITE_NEEDS_VERIFICATION`. Nothing is approved. Start with
 [`reviews/CONFIRM-SITE.md`](reviews/CONFIRM-SITE.md).
 
-The interview can start now, before the site is confirmed (site values are shown
-as unconfirmed): `.venv/bin/house-ai interview run my-house --owner <you>`, or with
-Claude wording the questions: add `--ai anthropic` (needs an Anthropic API key, see
-the repository README).
+The homeowner interview can run now — before the site is confirmed (site values
+are shown as unconfirmed) — directly through **Claude Code**, **Gemini CLI**, or
+**OpenAI Codex** with **no API key required**
+(`house-ai interview start my-house --actor agent:<tool>`,
+`house-ai interview status my-house --json`,
+`house-ai interview answer my-house "<verbatim words>" --set ... --actor agent:<tool>`),
+or interactively in your terminal with `.venv/bin/house-ai interview run my-house --owner <you>`
+(optional `--ai anthropic` if an Anthropic API key is configured).

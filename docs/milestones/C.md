@@ -89,46 +89,52 @@ against known answers.
 
   Findings never change the program; infeasible requests come with options.
   Blocking findings also block the program gate (`Workflow._check_program_gate`).
-- **Review and approval:**
-  - `program review` builds the program, moves INTERVIEWING → PROGRAM_REVIEW
+- **Steep hillside site awareness:** on steep parcels (`relief_m >= 8.0` or
+  `mean_slope_pct >= 20.0`, such as `projects/my-house` with ~12.4 m drop and
+  ~65.2% mean slope), `build_program` records the explicit assumption
+  `asm-hillside-engineering` covering split-level massing, hillside construction,
+  road-level access/parking, excavation, retaining walls, slope drainage,
+  structural engineering, and not assuming the full parcel area is buildable.
+  Selecting a single flat platform (`slope_strategy=platform`) on a steep site
+  emits the `steep_site_flat_pad` warning.
+- **Agent-first interview interface ([ADR 0011](../adr/0011-agent-first-interview-interface.md) — no API key required):**
+  - Coding agents (**Claude Code**, **Gemini CLI**, **OpenAI Codex**) are the
+    primary AI interfaces and operate the entire interview and program workflow
+    via `house-ai` CLI commands with `--actor agent:<tool>` and `--json`.
+  - `interview status <dir> [--json]` / `interview checklist <dir> [--json]`
+    returns the 30-question completeness checklist, site measurements,
+    verification blockers, steep-hillside considerations, owner statements,
+    unconfirmed interpretations, and open contradictions.
+  - `interview answer` and `interview revise` accept `--question <qid|slot|custom-id>`,
+    `--question-text "<text>"`, `--topic <topic>`, `--set SLOT=VALUE`
+    (repeatable), `--unknown SLOT`, `--interpret-json`, and `--option N`, so
+    agents can record verbatim answers in **Persian, English, or mixed
+    language**, propose validated slot interpretations (`inference`,
+    `method: agent:<id>`), answer questions out of checklist order, and ask
+    adaptive architectural follow-up questions outside the 30 predefined
+    questions.
+  - `interview confirm`, `interview reject`, and `interview resolve` allow
+    coding agents to record the homeowner's confirmations, corrections, and
+    contradiction choices.
+- **Review and human-only approval gates:**
+  - `program review` builds the program, moves `INTERVIEWING → PROGRAM_REVIEW`
     and requests approval.
-  - The owner approves with the existing `workflow approve <dir> program`
-    (interactive terminal, typed phrase).
-  - Or the owner rejects with `program reject --reason "<their words>"`. This
-    moves back to INTERVIEWING with their words in the event log and in the
-    brief.
+  - `workflow approve`, `workflow reopen`, `site confirm`, `interview consent`,
+    and `program reject` remain strictly **human-only** in an interactive
+    terminal (exit code 2 otherwise). No agent can ever approve a site,
+    program, plan, or model gate on the homeowner's behalf.
   - After approval, answers are locked until a human reopens the gate.
-- **Human-only actions:** answering, revising, confirming, rejecting,
-  consenting and rejecting the program need a human actor in the library.
-  The CLI also needs an interactive terminal, so an agent cannot answer for
-  the owner. `Workflow.approve` still rejects non-human actors.
 - **Unapproved site:** the interview runs before the site gate. Site values
   (parcel area, relief, frontage) are shown as "from the survey; you have not
   confirmed the site yet". The program records `site_verified: false` and the
   assumption `asm-site-unverified`. `program review` refuses with an
   explanation until the site is approved.
-- **AI providers:** `orchestration/interview_llm.py` lets an LLM propose slot
-  values for an answer the parser could not read, and rephrase questions.
-  Every call goes through `providers.base.send`, which needs the owner's
-  consent (`interview consent`, recorded in the session) for private data.
-  Output is validated against strict slot types (`interview/slot_types.py`);
-  invalid values or non-JSON replies are dropped. What is kept is still an
-  inference until confirmed. `providers/scripted.py` is the deterministic
-  test provider.
-- **Real AI interview** (ADR 0010): `interview run <project> --owner <name>
-  --ai anthropic [--model <id>]` uses Claude (`providers/claude.py`, the
-  official `anthropic` SDK, default `claude-opus-5-5`) to word each planned
-  question as an architect would, using the project's site values, the owner's
-  statements and the answers so far, and to read free answers the parser
-  cannot. The owner types `allow anthropic` once (a consent turn). Structured
-  output is schema-constrained and validated again; every value read is an
-  inference until the owner confirms it. The code, not the AI, adds "Anything said here about your
-  site comes from the survey; you have not confirmed the site yet" to every
-  AI-worded question while the site gate is open. Each answer turn keeps the wording shown and
-  the provider and model. Provider errors (no key, refused key, rate limit,
-  outage, network, refusal, cut-off reply) fall back to the built-in question
-  or parser with a note; the key never appears in output. Without the SDK or a
-  key the interview runs exactly as before.
+- **Optional Anthropic SDK adapter ([ADR 0010](../adr/0010-claude-adapter-for-the-interview.md)):**
+  `interview run <project> --owner <name> --ai anthropic [--model <id>]` remains
+  available as an optional extra (`pip install -e '.[ai]'`) when an
+  `ANTHROPIC_API_KEY` is configured and the owner grants consent
+  (`interview consent`). Without an API key or SDK, the primary agent-first CLI
+  and built-in deterministic interview run with zero external API dependencies.
 - **Files** (`program build --out <dir>`): `design_brief.yaml`,
   `space_program.yaml`, `assumptions.yaml`, `open_questions.yaml`,
   `interview-summary.md` and `program-review.md`, a review sheet in plain
@@ -143,17 +149,24 @@ against known answers.
 .venv/bin/house-ai schemas check
 
 # the synthetic family, end to end (writes examples/interviews/synthetic-family/expected/)
-.venv/bin/python examples/interviews/synthetic-family/run_example.py
+.venv/bin/python examples/interviews/synthetic-family/run_example.py --check
 
-# an interview on any project (the owner runs this in their own terminal)
-.venv/bin/house-ai interview run <dir> --owner <name>     # :summary, :revise <id>, :quit
-# with Claude (needs: pip install -e '.[ai]' and ANTHROPIC_API_KEY in that terminal)
-.venv/bin/house-ai interview run my-house --owner <name> --ai anthropic
+# primary agent-first interview workflow (Claude Code, Gemini CLI, Codex — no API key needed)
+.venv/bin/house-ai project status my-house --json
+.venv/bin/house-ai interview status my-house --json
+.venv/bin/house-ai interview start <dir> --json --actor agent:claude-code
+.venv/bin/house-ai interview answer <dir> "<verbatim homeowner words>" \
+    --set slope_strategy=step_down --set entry_at_road=true --json --actor agent:claude-code
+.venv/bin/house-ai interview confirm <dir> --text "<owner confirmation>" --json --actor agent:claude-code
+.venv/bin/house-ai interview resolve <dir> <contradiction-id> "<owner choice>" --option 1 --json --actor agent:claude-code
 .venv/bin/house-ai interview summary <dir>
-.venv/bin/house-ai program build <dir> --actor agent:<tool> --out <dir>-program
-.venv/bin/house-ai program review <dir> --actor agent:<tool>    # needs the approved site
+.venv/bin/house-ai program build <dir> --actor agent:claude-code --out <dir>-program
+.venv/bin/house-ai program review <dir> --actor agent:claude-code    # needs the approved site
+
+# human-only interactive terminal commands
 .venv/bin/house-ai workflow approve <dir> program --id program --approver <name>
 .venv/bin/house-ai program reject <dir> --reason "<what is wrong>" --actor human:<name>
+.venv/bin/house-ai interview run <dir> --owner <name> [--ai anthropic]
 ```
 
 ## Results on the synthetic family (`examples/interviews/synthetic-family/`)
@@ -168,27 +181,13 @@ checked by a test.
 
 ## Test results
 
-`412 passed` on Python 3.13.3 (locked versions, with the `[ai]` extra), 0
-failed, 0 skipped, after merging the latest `milestone-b` and adding the
-Claude adapter (2026-10-17). `ruff check src tests examples`: all checks
-passed. `house-ai schemas check`: 22 schemas up to date (new:
-`interview_session`, `owner_statements`). Before that: `390 passed` on Python
-3.13.3 and on Python 3.11.12 (numpy 2.4.6 and pyproj 3.7.2 there, because the
-lock's numpy 2.5.4 and pyproj 3.8.0 have no 3.11 builds).
+`419 passed` on Python 3.13.3 and `418 passed, 1 skipped` on Python 3.11.12
+(without the optional `anthropic` SDK installed in the 3.11 venv).
+`ruff check src tests examples`: all checks passed.
+`house-ai schemas check`: 22 schemas up to date (`interview_session`,
+`owner_statements`, plus the 20 Milestone A/B schemas).
 
-Without the `[ai]` extra (as in CI, which installs `.[dev]`): `411 passed, 1
-skipped` (the SDK error-mapping test needs the SDK).
-
-`tests/test_ai_interview.py` (14 tests, fake Anthropic client and scripted
-provider; no network, no key) covers the request (model, structured-output
-schema, server-side fallback, attachments), refusals and cut-off replies,
-SDK errors mapped without leaking the key, AI wording kept with provider and
-model, the deterministic unconfirmed-site label, no request without consent,
-fallback on transient and fatal errors, AI reading of an unreadable answer,
-contradiction choices never reworded, and the CLI consent and no-credentials
-paths.
-
-`tests/test_interview.py` (30 tests) covers:
+`tests/test_interview.py` (33 tests) covers:
 
 - a normal interview;
 - one question at a time and no repeats;
@@ -209,51 +208,54 @@ paths.
 - parsers producing only valid slot values;
 - the CLI, including the interactive loop and export;
 - confirming only what the owner was shown, and reading an option number
-  only at the start of a reply (found in review, fixed with tests);
+  only at the start of a reply;
+- **agent-first end-to-end CLI workflow** (`test_agent_first_end_to_end_workflow_with_persian_english_and_mixed_answers`):
+  project/site inspection, out-of-order multi-slot opening statement, adaptive
+  custom follow-up question, Persian and mixed-language homeowner answers via
+  `--set`, contradiction resolution via `interview resolve`, confirmation via
+  `interview confirm`, revision preserving turn history, program build/review,
+  and human-only gate enforcement;
+- **steep hillside engineering assumptions & flat-pad warning**
+  (`test_steep_hillside_site_records_engineering_assumptions_and_warns_on_flat_pad`);
+- **read-only inspection of `projects/my-house`**
+  (`test_agent_inspects_real_my_house_project_without_modifying_it`);
 - committed example outputs.
 
 ## Known limitations
 
-- The deterministic parser reads common English phrasings only. Unusual
-  answers are asked again and then recorded as unknown unless the owner runs
-  with `--ai anthropic`. Every reading needs the owner's confirmation.
-- The Claude adapter is tested with a fake client only: no live API call has
-  been made (no key in this environment). The first real run is the owner's.
-- The AI words the planner's questions and reads answers; it does not invent
-  new questions (AI follow-up questions are not implemented). Only Anthropic
-  has an adapter; OpenAI and Gemini would be further adapters.
-- AI wording is requested again when an interview resumes, so the resumed
-  question may read differently; what was shown with each answer is kept.
+- The built-in regex parser reads common English phrasings only; when a coding
+  agent (Claude Code, Gemini CLI, Codex) conducts the interview in Persian,
+  English, or mixed language, the agent passes structured slot values via
+  `--set` (`method: agent:<id>`), and every reading still requires the
+  homeowner's confirmation before the program gate can be approved.
+- The optional Claude SDK adapter (`providers/claude.py`) is tested with a fake
+  client only: no live API call has been made (and no API key is required for
+  the core workflow).
 - Typical room sizes are a small fixed table, not a jurisdiction's rules;
   areas are not checked against any building code ("not checked").
 - Cost is not estimated: the budget is recorded and reported as not checked.
 - The program does not decide levels against the ground on a sloping site.
-  It records the owner's slope preference; the section comes first in
-  Milestone D.
+  It records the owner's slope preference and hillside engineering assumptions;
+  the building section and floor plans come in Milestone D.
 - A carport counts in the floor-area totals like a garage.
 - One interview session per project (`interview`); several household members
   answering separately is not modelled.
-- Models gained defaulted fields (`ProgramItem.accessible`,
-  `SpaceProgram.levels` / `budget` / `site_ref` / `site_verified`,
-  `Contradiction.tradeoff` / `options`). An artifact of those kinds stored
-  with older code no longer matches its hash when read, and must be
-  regenerated (the golden bungalow plan was regenerated). The owner's real
-  project holds no such artifact (`project verify` is intact).
-- The lock file does not install on Python 3.11 (see test results).
 
 ## The owner's real project
 
-`projects/my-house` (ADR 0009) is in `SITE_NEEDS_VERIFICATION`; nothing in
-it is approved. The interview can run on it now (`house-ai interview run
-my-house --owner <name> [--ai anthropic]`); it has not been started. The AI
-receives the site values marked "NOT yet confirmed by the owner" and the
-owner's recorded statements (UTM, metres above sea level, the 12–12.5 m drop,
-the steep land). Program review waits for the site gate. No answers were
-recorded by an agent; a start on a scratch copy of the project confirmed the
-first question and the context.
+`projects/my-house` (ADR 0009) remains in `SITE_NEEDS_VERIFICATION`; nothing in
+it is approved (`house-ai project verify my-house` is intact: 12 events, 8
+artifact versions). Confirmed by the homeowner: UTM coordinates, elevations in
+metres above sea level, and a genuine ~12–12.5 m drop on steep land (~600 m²
+parcel, ~21 m road frontage on a ~9 m road, 27 elevation points from
+`seperated.dwg` and `elevation.dwg`). Still unverified: exact UTM zone,
+hemisphere, horizontal datum/EPSG, vertical datum, and formal legal parcel
+boundary. The homeowner interview can run now with Claude Code, Gemini CLI, or
+Codex while `my-house` stays in `SITE_NEEDS_VERIFICATION`; `program review` and
+the `program` gate wait for the `site` gate.
 
 ## Next: Milestone D (plan)
 
-Not started. Formal constraint model and solver, 3+ alternative plans,
-plan SVG, evaluators and plan versioning, starting from the approved
-program and the approved site.
+See [docs/MILESTONE_D_HANDOFF.md](../MILESTONE_D_HANDOFF.md). Formal constraint
+model and solver, 3+ alternative floor-plan concepts, plan SVG, evaluators and
+plan versioning, starting from an approved program and an approved site.

@@ -6,43 +6,62 @@ land ([`projects/my-house/`](projects/my-house/README.md)); other projects get
 their own folder (ADR 0009). Its outputs are structured semantic geometry, not
 pictures. The full specification is [docs/MASTER_SPEC.md](docs/MASTER_SPEC.md).
 
-**Current state: Milestone C (owner interview and space program), on branch
-`milestone-c`, built on `milestone-b` (not yet merged into `main`).**
+**Current state: Milestones A, B, and C complete (next: Milestone D — floor-plan
+generation, see [docs/MILESTONE_D_HANDOFF.md](docs/MILESTONE_D_HANDOFF.md)).**
 Milestone A ([report](docs/milestones/A.md)) delivered canonical schemas,
 project storage with provenance and the workflow with human approval gates.
 Milestone B ([report](docs/milestones/B.md)) turns a DXF or DWG survey into
 a validated site model: read-only inspection, raw CAD extraction, unit and
 CRS verification by a human, a reversible survey-to-local transform,
 boundary and terrain, a validation report, site and terrain SVGs and a
-review page. Milestone C ([report](docs/milestones/C.md)) adds a
-conversational owner interview that becomes a design brief and a validated
-space program for the floor-plan solver, with owner confirmation and the
-program approval gate. Plan generation, Blender and Unreal come in later
-milestones.
+review page. Milestone C ([report](docs/milestones/C.md)) adds an
+**agent-first** conversational owner interview ([ADR 0011](docs/adr/0011-agent-first-interview-interface.md))
+that becomes a design brief and a validated space program for the floor-plan
+solver, with owner confirmation and the program approval gate. Plan generation,
+Blender and Unreal come in later milestones.
 
 ## Setup
 
-Requires Python 3.11 or newer (developed and tested on 3.13).
+Requires Python 3.11 or newer (developed and tested on 3.11 and 3.13).
 
 ```bash
 python3.13 -m venv .venv
 .venv/bin/pip install -e '.[dev]'
-# or, for the exact tested versions:
+# or, for the exact tested versions on Python 3.13:
 # .venv/bin/pip install -r requirements-lock.txt -e . --no-deps
 ```
 
-No paid AI API, Blender or Unreal is needed. DXF needs nothing extra;
-DWG needs the free ODA File Converter (optional; its test is skipped
-without it).
+No paid AI API key, Blender or Unreal is needed for the core workflow. DXF
+needs nothing extra; DWG needs the free ODA File Converter (optional; its test
+is skipped without it).
 
-### Optional: the AI-assisted interview (Claude)
+### Primary workflow: Agent-operated interview (Claude Code, Gemini CLI, Codex — no API key required)
 
-`interview run ... --ai anthropic` lets Claude word the questions for your site
-and read free answers (ADR 0010). It needs an **Anthropic API key**, which is
-separate from any chat subscription: a Claude Team/Pro plan, ChatGPT Plus or
-Google AI Pro does not give this program API access. Create a key in the
-Claude Console ([platform.claude.com](https://platform.claude.com); API usage is
-billed there, separately from subscriptions), then in your own terminal:
+Talk directly with **Claude Code**, **Gemini CLI**, or **OpenAI Codex** in
+English, Persian, or mixed language. The coding agent inspects the project and
+site, conducts an adaptive architectural interview (using the 30-question bank
+as a completeness checklist plus intelligent follow-up questions), records your
+exact words verbatim, proposes structured slot interpretations (`--set`), asks
+you to confirm or correct them, resolves contradictions, and builds/validates
+the space program — while human approval gates remain strictly yours in your
+own terminal:
+
+```bash
+.venv/bin/house-ai project status my-house --json
+.venv/bin/house-ai interview status my-house --json
+.venv/bin/house-ai interview start my-house --json --actor agent:claude-code
+.venv/bin/house-ai interview answer my-house "<owner's exact words>" \
+    --set slope_strategy=step_down --set entry_at_road=true --actor agent:claude-code
+.venv/bin/house-ai interview confirm my-house --text "<owner's confirmation>" --actor agent:claude-code
+.venv/bin/house-ai program build my-house --out projects/my-house/design --actor agent:claude-code
+```
+
+### Optional: direct Anthropic SDK adapter (`--ai anthropic`)
+
+If you prefer running the standalone terminal loop with the Anthropic SDK
+rewording questions ([ADR 0010](docs/adr/0010-claude-adapter-for-the-interview.md)),
+that adapter remains available as an optional extra and requires an
+`ANTHROPIC_API_KEY` in your environment:
 
 ```bash
 .venv/bin/pip install -e '.[ai]'
@@ -51,7 +70,8 @@ export ANTHROPIC_API_KEY=...        # never put it in a file in this repository
 ```
 
 It asks you to type `allow anthropic` before your answers or site details are
-sent. Without a key the interview runs with the built-in questions.
+sent. Without a key, the agent-operated CLI and the built-in interview run with
+zero external API dependencies.
 
 ## Run the tests
 

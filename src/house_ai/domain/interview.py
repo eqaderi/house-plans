@@ -40,7 +40,7 @@ class Understood(StrictModel):
     slot: str = Field(pattern=r"^[a-z][a-z0-9_]*$")
     #: None means the owner said it is unknown or undecided.
     value: FactValue = None
-    #: "parser" (deterministic) or "llm:<provider>".
+    #: "parser" (deterministic), "agent:<id>" (coding agent), or "llm:<provider>".
     method: str = "parser"
 
 
@@ -68,9 +68,16 @@ class InterviewTurn(StrictModel):
 
     @model_validator(mode="after")
     def _owner_turns_are_human(self) -> InterviewTurn:
-        if self.actor.kind is not ActorKind.HUMAN:
+        if self.actor.kind is ActorKind.SYSTEM:
             raise ValueError(
-                f"{self.kind.value} turns record the owner's words or decisions; "
+                f"{self.kind.value} turns record only the homeowner's decisions; "
+                f"system actor {self.actor.id!r} cannot make them"
+            )
+        if self.kind in (TurnKind.CONSENT, TurnKind.PROGRAM_REJECTION) and (
+            self.actor.kind is not ActorKind.HUMAN
+        ):
+            raise ValueError(
+                f"{self.kind.value} turns record the owner's direct decision; "
                 f"{self.actor.kind.value} {self.actor.id!r} cannot make them"
             )
         if self.kind in (TurnKind.ANSWER, TurnKind.REVISION) and not (

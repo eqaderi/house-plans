@@ -1,6 +1,10 @@
 # ADR 0008: Owner interview, interpretations and the space program
 
-Status: accepted (Milestone C, 2026-10-17)
+Status: accepted (Milestone C, 2026-10-17); §6 superseded by
+[ADR 0011](0011-agent-first-interview-interface.md) so coding agents (Claude
+Code, Gemini CLI, Codex) can record homeowner answers, revisions, confirmations
+and contradiction resolutions via the CLI while approval gates remain
+human-only.
 
 ## Context
 

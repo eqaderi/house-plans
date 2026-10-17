@@ -5,7 +5,7 @@ from __future__ import annotations
 from house_ai.domain.interview import InterviewSession, SiteContext
 
 from .brief_builder import describe
-from .questions import SLOTS
+from .questions import QUESTION_BY_ID, SLOTS
 from .state import fold, next_prompt, open_contradictions, resolved_contradictions
 
 _LABEL = {
@@ -38,6 +38,17 @@ def summary_markdown(session: InterviewSession, site: SiteContext | None = None)
         )
     for topic in sorted(by_topic):
         lines += [f"## {topic.capitalize()}", "", *sorted(by_topic[topic]), ""]
+    custom_notes = [
+        turn
+        for qid, turn in state.answers.items()
+        if qid.partition("#")[0] not in QUESTION_BY_ID and turn.text
+    ]
+    if custom_notes:
+        lines += ["## Additional notes", ""]
+        for turn in custom_notes:
+            prefix = f"{turn.question_text} — " if turn.question_text else ""
+            lines.append(f'- {prefix}"{turn.text}"')
+        lines.append("")
     pending = state.unconfirmed()
     if pending:
         lines += [

@@ -587,6 +587,21 @@ def build_program(
                 confirm_with="owner",
             )
         )
+    if site is not None and ((site.relief_m or 0.0) >= 8.0 or (site.mean_slope_pct or 0.0) >= 20.0):
+        assumptions.append(
+            Assumption(
+                id="asm-hillside-engineering",
+                statement=(
+                    "Steep hillside terrain requires split-level or stepped massing, road-level "
+                    "access coordination, excavation, retaining walls, slope drainage, and "
+                    "structural engineering review; the full parcel area cannot be assumed "
+                    "buildable."
+                ),
+                basis="Surveyed site relief and slope indicate steep hillside construction.",
+                affects=[program_id],
+                confirm_with="engineer",
+            )
+        )
     questions = _open_questions(b.f, open_prompts, site)
     return ProgramResult(
         program=program,
