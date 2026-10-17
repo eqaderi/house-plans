@@ -117,13 +117,13 @@ to reopen A–D):
 
 | | |
 |---|---|
-| **Current stage** | S3 Tool decisions and benchmark fixtures |
-| **Awaiting review** | S3 Tool decisions and benchmark fixtures |
-| **Next eligible stage** | S3 (review pending) |
-| **Path to good floor plans** | S1 (done) → S2 (done) → S3 → S4 → S5 → S6 → S7 → S8 → S9 (9 stages) |
+| **Current stage** | none |
+| **Awaiting review** | none |
+| **Next eligible stage** | S4 Plan viewer |
+| **Path to good floor plans** | S1 (done) → S2 (done) → S3 (done) → S4 → S5 → S6 → S7 → S8 → S9 (9 stages) |
 | **Blocked** | H1 site facts (owner or surveyor input); program gate (needs site gate); H3 real design (needs S9 and approvals) |
 | **Human parallel tracks** | H1 site verification with the owner any time; H2 interview any time (S1-09 closed) |
-| **`main` health** | S1 follow-up and S2 merged; 569 tests pass locally; CI green on `f4e7727` (run 39068704538) |
+| **`main` health** | S3 merged; 611 tests pass locally; CI green on `efcf8f9` (run 39071050614) |
 | **Homeowner gates on `my-house`** | site: not approved (5 blockers) · program: none · plan: none · model: none |
 
 
@@ -637,7 +637,7 @@ only where a tool cannot read the canonical location.
 | Field | Value |
 |---|---|
 | Kind | implementation |
-| Status | IN_PROGRESS |
+| Status | DONE |
 | Review | APPROVED |
 | Branch | `stage/S3-tools-benchmarks` |
 | Depends on | S1 |
@@ -649,7 +649,7 @@ only where a tool cannot read the canonical location.
 | Demonstration | Runner table over all fixtures; experiment summaries in §G |
 | Artifacts | Register updates, `examples/benchmarks/fixtures/`, `examples/tool-evaluations/`, `docs/research/`, `docs/adr/0017-synthetic-benchmark-contract.md` |
 | Review requirements | Reviewer reruns one experiment, checks licences at the source, confirms fixtures are generated, not copied |
-| Evidence | Runner 86 PASS / 0 FAIL / 9 NOT_CHECKED; 41 benchmark unit/fixture tests in `tests/test_benchmarks.py`; ADR 0017; evaluations in `docs/research/s3-tool-evaluations.md` and `docs/research/s3-archlang.md` |
+| Evidence | merge `efcf8f9`; CI run 39071050614; Runner 86 PASS / 0 FAIL / 9 NOT_CHECKED; 41 benchmark unit/fixture tests in `tests/test_benchmarks.py`; ADR 0017; evaluations in `docs/research/s3-tool-evaluations.md` and `docs/research/s3-archlang.md` |
 
 Each candidate has a row and a detail block in the
 [tool register](#g-tool-and-skill-evaluation-register). An evaluation task
@@ -664,92 +664,92 @@ No private coordinates or site data are copied.
 
 #### Near-term tool evaluations
 
-- [ ] **S3-01** Evaluate Playwright CLI and its agent skill (TOOL-PLAYWRIGHT) — `IN_PROGRESS` · P1 · deps: none
+- [x] **S3-01** Evaluate Playwright CLI and its agent skill (TOOL-PLAYWRIGHT) — `DONE` · P1 · deps: none
   - Accept: CLI vs MCP vs Playwright Test compared for agent inspection and CI tests; macOS arm64 and offline verified; decision
   - Verify: register row; screenshot of a local static page taken by an agent through the chosen route
   - Evidence: `examples/tool-evaluations/playwright/results/summary.json`, `cli.png`, `mcp.png`, `test.png`; `docs/research/s3-tool-evaluations.md` §1; decision ADOPT (@playwright/test), ADAPT (@playwright/cli)
-- [ ] **S3-02** Evaluate Trimesh (TOOL-TRIMESH) — `IN_PROGRESS` · P1 · deps: none
+- [x] **S3-02** Evaluate Trimesh (TOOL-TRIMESH) — `DONE` · P1 · deps: none
   - Accept: TIN-to-mesh, volume and section accuracy on S8-01 analytical fixtures; licence and wheels for Python 3.11/3.13 arm64
   - Verify: register row; experiment numbers vs analytical values
   - Evidence: `examples/tool-evaluations/geometry/results-py311.json`, `results-py313.json`, `wheels.json`; `docs/research/s3-tool-evaluations.md` §2; 4 analytical fixtures match to 1e-7 tolerance; decision ADAPT
-- [ ] **S3-03** Evaluate Manifold / manifold3d (TOOL-MANIFOLD) — `IN_PROGRESS` · P1 · deps: none
+- [x] **S3-03** Evaluate Manifold / manifold3d (TOOL-MANIFOLD) — `DONE` · P1 · deps: none
   - Accept: robust boolean volumes on the same fixtures; comparison with Trimesh
   - Verify: register row
   - Evidence: `examples/tool-evaluations/geometry/results-py313.json`, `wheels.json`; `docs/research/s3-tool-evaluations.md` §3; touching cubes 0.0 m³ volume, disjoint empty, open TIN rejected; decision ADOPT
-- [ ] **S3-04** Evaluate ArchLang as an independent diagnostic (TOOL-ARCHLANG) — `IN_PROGRESS` · P2 · deps: none
+- [x] **S3-04** Evaluate ArchLang as an independent diagnostic (TOOL-ARCHLANG) — `DONE` · P2 · deps: none
   - Accept: export a synthetic HouseModel to ArchLang, compare geometry and semantics, run its lint on clean and seeded-defect plans, decide integrate, adapt checks or reject; never replace HouseModel without explicit approval
   - Verify: register row with seeded-defect results
   - Evidence: `docs/research/s3-archlang.md`, `examples/tool-evaluations/archlang/results/summary.json`; seeded unreachable/windowless/blocked door defects detected; decision ADAPT
-- [ ] **S3-05** Study Anatomy for SVG interaction and skill packaging patterns (TOOL-ANATOMY) — `IN_PROGRESS` · P3 · deps: none
+- [x] **S3-05** Study Anatomy for SVG interaction and skill packaging patterns (TOOL-ANATOMY) — `DONE` · P3 · deps: none
   - Accept: list of patterns borrowed or rejected for E1/T1; not treated as an architecture engine
   - Verify: register row
   - Evidence: `examples/tool-evaluations/anatomy/results.json`, `study.py`, `docs/research/s3-tool-evaluations.md` §5; pin e948829; 5 patterns identified; decision ADAPT
-- [ ] **S3-06** Intake process for further candidates (TOOL-OTHER) — `IN_PROGRESS` · P3 · deps: none
+- [x] **S3-06** Intake process for further candidates (TOOL-OTHER) — `DONE` · P3 · deps: none
   - Accept: new candidates get a register row with the same fields before any install
   - Verify: register has the template row
   - Evidence: `examples/tool-evaluations/intake-template.md`, `docs/research/s3-tool-evaluations.md` §6, register §G; decision ADOPT
 
 #### Benchmark harness and synthetic steep reference fixture
 
-- [ ] **S3-07** Benchmark fixture format and runner — `IN_PROGRESS` · P1 · deps: none
+- [x] **S3-07** Benchmark fixture format and runner — `DONE` · P1 · deps: none
   - Accept: each fixture declares site, program, expected findings and categories; runner prints a per-category table
   - Verify: harness tests
   - Evidence: `src/house_ai/domain/benchmark.py`, `src/house_ai/benchmarks/runner.py`, `tests/test_benchmarks.py::test_runner_table_all_categories_and_incomplete_gate`
-- [ ] **S3-08** Synthetic steep reference fixture (~600 m² parcel, ~12.5 m relief, ~40 % area-weighted slope) — `IN_PROGRESS` · P1 · deps: S3-07
+- [x] **S3-08** Synthetic steep reference fixture (~600 m² parcel, ~12.5 m relief, ~40 % area-weighted slope) — `DONE` · P1 · deps: S3-07
   - Accept: generated by script with a fictional CRS-free frame; measured area, relief and slope within 5 % of targets; no private coordinates
   - Verify: fixture `--check`; leak scan (S1-11)
   - Evidence: `examples/benchmarks/fixtures/steep-reference.json`, `tests/test_benchmarks.py::test_steep_reference_analytical_ground_truth_and_local_frame`; area 600 m², relief 12.5 m, slope 40.0%
-- [ ] **S3-09** Acceptance categories and expected-finding schema — `IN_PROGRESS` · P1 · deps: S3-07
+- [x] **S3-09** Acceptance categories and expected-finding schema — `DONE` · P1 · deps: S3-07
   - Accept: categories: geometric feasibility, practical usability, circulation, privacy, terrain compatibility, spatial/topological diversity, metric accuracy, unknowns, visual consistency, versioned revisions
   - Verify: schema test
   - Evidence: `schemas/benchmark_fixture.schema.json`, `src/house_ai/domain/benchmark.py`, `tests/test_benchmarks.py::test_expected_finding_schema_rejects_ambiguous_or_untrustworthy_data`
 
 #### Terrain and parcel scenarios
 
-- [ ] **S3-10** Flat simple parcel and narrow-deep parcel — `IN_PROGRESS` · P1 · deps: none
+- [x] **S3-10** Flat simple parcel and narrow-deep parcel — `DONE` · P1 · deps: none
   - Accept: two fixtures with known areas and envelopes
   - Verify: fixture tests
   - Evidence: `examples/benchmarks/fixtures/flat-simple.json` (20x30m), `narrow-deep.json` (10x60m), `tests/test_benchmarks.py::test_every_current_observation_matches_declared_expectations`
-- [ ] **S3-11** Steep road-high and steep road-low parcels — `IN_PROGRESS` · P1 · deps: none
+- [x] **S3-11** Steep road-high and steep road-low parcels — `DONE` · P1 · deps: none
   - Accept: ground rising and falling away from the road
   - Verify: fixture tests
   - Evidence: `examples/benchmarks/fixtures/road-high.json` (15m front, 0m rear), `road-low.json` (0m front, 15m rear), `tests/test_benchmarks.py::test_opposite_road_elevation_scenarios`
-- [ ] **S3-12** Cross-slope and diagonal-slope terrain — `IN_PROGRESS` · P1 · deps: none
+- [x] **S3-12** Cross-slope and diagonal-slope terrain — `DONE` · P1 · deps: none
   - Accept: slope perpendicular and diagonal to the frontage
   - Verify: fixture tests
   - Evidence: `examples/benchmarks/fixtures/cross-slope.json` (z=0.4x, 40%), `diagonal-slope.json` (z=12+0.3x-0.4y, 50%), `tests/test_benchmarks.py::test_slope_directions_and_concave_envelope`
-- [ ] **S3-13** Concave parcel — `IN_PROGRESS` · P2 · deps: none
+- [x] **S3-13** Concave parcel — `DONE` · P2 · deps: none
   - Accept: non-convex boundary with a known buildable envelope
   - Verify: fixture tests
   - Evidence: `examples/benchmarks/fixtures/concave.json`, `tests/test_benchmarks.py::test_slope_directions_and_concave_envelope`; 576 m² boundary, 318 m² envelope
-- [ ] **S3-14** Terrain breaklines and noisy or sliver TIN triangles — `IN_PROGRESS` · P2 · deps: none
+- [x] **S3-14** Terrain breaklines and noisy or sliver TIN triangles — `DONE` · P2 · deps: none
   - Accept: survey with a retaining-wall breakline and near-duplicate points
   - Verify: fixture tests
   - Evidence: `examples/benchmarks/fixtures/breakline-noise.json` (builder refuses conflicting duplicates), `sliver-tin.json` (min triangle area 0.001 m²), `tests/test_benchmarks.py::test_conflicting_near_duplicates_refuse_surface_and_breakline_intent_retained`
-- [ ] **S3-15** Unknown north — `IN_PROGRESS` · P1 · deps: none
+- [x] **S3-15** Unknown north — `DONE` · P1 · deps: none
   - Accept: unconfirmed CRS; every orientation-dependent metric must come out `not_checked`
   - Verify: fixture tests
   - Evidence: `examples/benchmarks/fixtures/unknown-north.json`, `tests/test_benchmarks.py::test_unknown_north_all_implemented_orientation_claims_have_no_value`; 5 orientation claims null with not_checked status
 
 #### Household scenarios
 
-- [ ] **S3-16** Family privacy scenario — `IN_PROGRESS` · P1 · deps: none
+- [x] **S3-16** Family privacy scenario — `DONE` · P1 · deps: none
   - Accept: strong guest/family separation requested
   - Verify: fixture tests
   - Evidence: `examples/benchmarks/fixtures/family-privacy.json`, `tests/test_benchmarks.py::test_every_current_observation_matches_declared_expectations`
-- [ ] **S3-17** Accessible multigenerational household — `IN_PROGRESS` · P1 · deps: none
+- [x] **S3-17** Accessible multigenerational household — `DONE` · P1 · deps: none
   - Accept: step-free bedroom and bathroom for an older resident
   - Verify: fixture tests
   - Evidence: `examples/benchmarks/fixtures/multigenerational.json`, `tests/test_benchmarks.py::test_seeded_bath_disconnect_reports_one_real_failure_and_clean_case_is_reachable`
-- [ ] **S3-18** Garage and heavy-cooking scenario — `IN_PROGRESS` · P1 · deps: none
+- [x] **S3-18** Garage and heavy-cooking scenario — `DONE` · P1 · deps: none
   - Accept: two vehicles, separate heavy-cooking kitchen, garage-to-kitchen route
   - Verify: fixture tests
   - Evidence: `examples/benchmarks/fixtures/heavy-cooking.json`, `tests/test_benchmarks.py::test_every_current_observation_matches_declared_expectations`
-- [ ] **S3-19** Large-terrace hillside — `IN_PROGRESS` · P2 · deps: none
+- [x] **S3-19** Large-terrace hillside — `DONE` · P2 · deps: none
   - Accept: large terrace connected to living spaces on a steep site
   - Verify: fixture tests
   - Evidence: `examples/benchmarks/fixtures/large-terrace.json`, `tests/test_benchmarks.py::test_every_current_observation_matches_declared_expectations`
-- [ ] **S3-20** Preference-based comparisons — `IN_PROGRESS` · P2 · deps: none
+- [x] **S3-20** Preference-based comparisons — `DONE` · P2 · deps: none
   - Accept: same site, two households with opposite priorities; comparison shows different trade-offs without a single score
   - Verify: runner output
   - Evidence: `examples/benchmarks/fixtures/social-cooking.json`, `quiet-cooking.json`, `tests/test_benchmarks.py::test_preferences_reverse_on_same_candidates_and_preserve_area_tradeoff`
@@ -2125,6 +2125,7 @@ lifecycle · 0015 agent skills canonical location and discovery · 0016 event-he
 
 | Date | What | Evidence |
 |---|---|---|
+| 2026-10-17 | Stage S3 closed: tool decisions recorded (ADAPT trimesh/archlang/anatomy, ADOPT playwright/manifold/intake gate); synthetic benchmark contract (ADR 0017), 17 fixtures, runner reporting across 10 categories, 611 tests pass | merge `efcf8f9` |
 | 2026-10-17 | Stage S1 audit follow-up closed: four findings fixed, 569 tests, branch/main CI green | merge `f4e7727` |
 | 2026-10-17 | Stage S2 closed: four canonical agent skills with `.claude/skills` and `.agents/skills` symlinks (ADR 0015), `house-ai plan ground`, skill drift/command tests; discovery in Claude Code, Codex and Antigravity | merge `4a7efca` |
 | 2026-10-17 | Stage S1 closed: human-only gate hardening, event log head anchor, private data isolation in tests/CI, leak scan, docs reconciliation | merge `fb85bf9` |
@@ -2167,6 +2168,11 @@ Closure record template:
 ```
 
 ### S3 records
+
+#### S3 closure
+- Merged: `stage/S3-tools-benchmarks` at `c67add2` (reviewed commit; branch head `a44d131` adds only the review 1 tracker record) into `main` as `efcf8f9` on 2026-10-17
+- CI on main: run 39071050614, success on Python 3.11 and 3.13
+- Closed by: agent:gemini on the owner's "Close stage S3"
 
 #### S3 review 1 — APPROVED
 - Reviewed commit: c67add228775f0a7b489d81d4590303b68fc334d
@@ -2530,7 +2536,7 @@ homeowner approval of any site, program, plan or model.
 
 ### Current handoff note
 
-- S3 implementation complete on `stage/S3-tools-benchmarks`. Benchmark suite runs 86 PASS, 0 FAIL, 9 NOT_CHECKED across 10 categories; 611 tests pass in pytest; leak scan clean; tool evaluations completed with no project dependencies added. Stage S3 review requested (PENDING). Next owner command: "Review stage S3".
+- Stage S3 closed on `main` (merge `efcf8f9`, CI 39071050614 green); tool decisions recorded, synthetic benchmark contract (ADR 0017), 17 fixtures, and runner (86 PASS, 0 FAIL, 9 NOT_CHECKED across 10 categories) integrated; 611 tests pass locally. Next owner command: "Next stage" (S4).
 
 ## P. Rules for updating the tracker
 
