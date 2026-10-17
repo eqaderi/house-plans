@@ -13,6 +13,7 @@ from __future__ import annotations
 import math
 from dataclasses import dataclass, field
 
+from shapely.geometry import Polygon as ShapelyPolygon
 from shapely.geometry import box
 from shapely.ops import unary_union
 
@@ -511,9 +512,13 @@ class _Builder:
         prefer: tuple[int, int] | None = None,
         material: str | None = None,
         prefix: str = "d",
+        host: WallSeg | None = None,
+        require_direction: bool = False,
     ) -> Opening | None:
-        walls = self._walls_between(level, a, b)
+        walls = [host] if host is not None else self._walls_between(level, a, b)
         if prefer is not None:
+            if require_direction:
+                walls = [w for w in walls if w.outward() == prefer]
             walls.sort(key=lambda w: (w.outward() != prefer, -w.length, w.id))
         else:
             walls.sort(key=lambda w: (-w.length, w.id))
@@ -646,7 +651,7 @@ class _Builder:
                 for room in cl.members:
                     if room.function is S.GARAGE:
                         bays = max(1, round(pu.widths[0] / 30))
-                        self.place(
+                        made = self.place(
                             lv,
                             room.space_id,
                             None,
@@ -656,9 +661,17 @@ class _Builder:
                             operation=Operation.SLIDING,
                             height_m=2.2,
                             prefer=road,
+                            require_direction=True,
                             material="m-door",
                             prefix="d-garage",
                         )
+                        if made is None:
+                            self._issue(
+                                f"iss-garage-access-{_short(room.space_id)}",
+                                "No vehicle opening fits on the garage's road-facing wall",
+                                Severity.BLOCKING,
+                                [room.space_id],
+                            )
             else:
                 sid = f"sp-{u.kind}-{u.link_index}{u.side}"
                 self.door(lv, sid, corr, 1.2, kind=OpeningKind.OPENING, min_width_m=0.8, prefix="o")
@@ -716,6 +729,7 @@ class _Builder:
                     operation=Operation.TILT_TURN,
                     material="m-glass",
                     prefix="win",
+                    host=seg,
                 )
 
     # ---------------------------------------------------------------- stairs
@@ -759,7 +773,7 @@ class _Builder:
                     self._issue(
                         f"iss-stair-run-{i}",
                         f"Stair {i} run is shorter than {run:.2f} m for a {abs(rise):.2f} m rise",
-                        Severity.WARNING,
+                        Severity.BLOCKING,
                         [],
                     )
                 s0, s1 = (ref.u0, ref.u1) if a.axis == "u" else (ref.v0, ref.v1)
@@ -886,8 +900,40 @@ class _Builder:
         for lv in self.levels:
             above = [polys[o.id] for o in self.levels if o.elevation_m > lv.elevation_m]
             roof = polys[lv.id].difference(unary_union(above)) if above else polys[lv.id]
+            floor = polys[lv.id]
+            for stair in self.stairs:
+                if stair.to_level_id != lv.id:
+                    continue
+                # Canonical floor slabs must leave a real opening over the flight.
+                # Retain a landing on the corridor side of a stacked U stair.
+                flight = ShapelyPolygon(
+                    [
+                        tuple(v * 10 for v in self.frame.to_design(xy))
+                        for xy in stair.footprint.outer
+                    ]
+                )
+                if stair.kind is StairKind.U_SHAPED:
+                    top = self.space(stair.top_space_id)
+                    row = self.m.bar_of_row(top.row_id).row(top.row_id.rsplit("-", 1)[-1])
+                    r = top.rect
+                    landing = math.ceil(stair.width_m * 10)
+                    bar = self.m.bar(top.bar_id)
+                    if bar.axis == "u":
+                        region = (
+                            box(r.u0, r.v1 - landing, r.u1, r.v1)
+                            if row.side == "front"
+                            else box(r.u0, r.v0, r.u1, r.v0 + landing)
+                        )
+                    else:
+                        region = (
+                            box(r.u1 - landing, r.v0, r.u1, r.v1)
+                            if row.side == "front"
+                            else box(r.u0, r.v0, r.u0 + landing, r.v1)
+                        )
+                    flight = flight.difference(region)
+                floor = floor.difference(flight)
             for kind, geom, offset in (
-                (SlabKind.FLOOR, polys[lv.id], 0.0),
+                (SlabKind.FLOOR, floor, 0.0),
                 (SlabKind.ROOF, roof, FLOOR_TO_FLOOR_M),
             ):
                 parts = [g for g in getattr(geom, "geoms", [geom]) if g.area >= 50]

@@ -27,6 +27,20 @@ from dataclasses import dataclass, field
 
 from shapely.geometry import Polygon as ShapelyPolygon
 
+from house_ai.constants.strategies import (
+    STRATEGY_COMPACT,
+    STRATEGY_COURTYARD,
+    STRATEGY_LINEAR,
+    STRATEGY_SPLIT_LEVEL,
+    STRATEGY_SPLIT_WALKOUT,
+    STRATEGY_TWO_WING,
+)
+from house_ai.constants.strategies import (
+    STRATEGY_LABELS as STRATEGY_LABELS,
+)
+from house_ai.constants.strategies import (
+    STRATEGY_ORDER as STRATEGY_ORDER,
+)
 from house_ai.domain.program import Privacy, SpaceFunction, SpaceProgram
 
 from .frame import ENVELOPE_MARGIN_M, DesignFrame, Ground, best_interval_dm, from_dm
@@ -41,15 +55,6 @@ MIN_BAR_LENGTH_DM = 60
 #: A bar face with ground more than this above its floor is against the earth.
 BURIED_FACE_M = 1.0
 COURTYARD_GAPS_DM = (50, 40)
-
-STRATEGY_LABELS = {
-    "linear": "Linear bar along the contours",
-    "compact": "Compact stacked house",
-    "split_level": "Split-level, stepping with the slope",
-    "two_wing": "Two wings (L): day wing on the road, night wing into the site",
-    "courtyard": "Two pavilions around a garden court",
-}
-STRATEGY_ORDER = ["compact", "split_level", "linear", "two_wing", "courtyard"]
 
 
 class Infeasible(Exception):
@@ -276,11 +281,12 @@ def _levels_note(m: Massing) -> None:
 
 def build_massing(strategy: str, ctx: MassingContext, depths: tuple[int, int]) -> Massing:
     builder = {
-        "linear": _linear,
-        "compact": _compact,
-        "split_level": _split_level,
-        "two_wing": _two_wing,
-        "courtyard": _courtyard,
+        STRATEGY_LINEAR: _linear,
+        STRATEGY_COMPACT: _compact,
+        STRATEGY_SPLIT_LEVEL: _split_level,
+        STRATEGY_SPLIT_WALKOUT: _split_walkout,
+        STRATEGY_TWO_WING: _two_wing,
+        STRATEGY_COURTYARD: _courtyard,
     }.get(strategy)
     if builder is None:
         raise Infeasible(f"unknown strategy {strategy!r}; known: {', '.join(STRATEGY_ORDER)}")
@@ -384,6 +390,52 @@ def _split_level(ctx: MassingContext, depths: tuple[int, int]) -> Massing:
         "surveyed ground under each bar."
     )
     return Massing("split_level", bars, links, ctx.corridor_dm, entry, 15, notes=notes)
+
+
+def _split_walkout(ctx: MassingContext, depths: tuple[int, int]) -> Massing:
+    """Reuse the road footprint below the entry, then step toward the garden.
+
+    This is an alternative to compare, not a preference for excavation. Extra
+    floor area, stairs and buried rooms remain visible in the evaluation.
+    """
+    m = _split_level(ctx, depths)
+    a, rear = m.bars[:2]
+    front_ground = _face_ground(ctx, a, "front")
+    back_ground = _face_ground(ctx, a, "back")
+    if front_ground is None or back_ground is None or front_ground - back_ground < HALF_STOREY_M:
+        raise Infeasible("the hybrid walk-out needs surveyed ground falling away from the road")
+    lower = Bar(
+        "b-walkout",
+        "u",
+        a.cross0_dm,
+        _rows("b-walkout", a.row("front").depth_dm, ctx.corridor_dm, a.row("back").depth_dm),
+        a.start_lo_dm,
+        a.start_hi_dm,
+        elevation_m=round(a.elevation_m - FLOOR_TO_FLOOR_M, 3),
+        groups=NIGHT_GROUPS | {"service"},
+    )
+    a.groups = frozenset({"entry", "garage", "service"})
+    rear.groups = frozenset({"day", "night", "guest", "service"})
+    g = _bar_ground(ctx, rear)
+    rear.elevation_m = round(
+        lower.elevation_m + _step(None if g is None else g - lower.elevation_m), 3
+    )
+    m.strategy = "split_walkout"
+    m.bars = [a, lower, rear]
+    m.links = [
+        Link("stacked", a.id, lower.id, f"{a.id}-front", f"{lower.id}-front"),
+        Link("row", lower.id, rear.id, f"{lower.id}-back", f"{rear.id}-front"),
+    ]
+    m.notes = [
+        m.notes[0],
+        "A full floor below the road-level entry reuses its footprint; the downhill wing "
+        "steps from that floor toward its own surveyed ground, rather than inheriting the "
+        "entry bar's terrain offset. The walk-out is a massing intent: exterior doors, "
+        "terraces, waterproofing, drainage and structural support still need design. "
+        "There is no excavation-depth limit or preference for minimizing excavation.",
+    ]
+    m.params["hybrid_walkout"] = True
+    return m
 
 
 def _two_wing(ctx: MassingContext, depths: tuple[int, int]) -> Massing:

@@ -15,6 +15,14 @@ from datetime import datetime
 
 import ortools
 
+from house_ai.constants.strategies import (
+    STRATEGY_COMPACT,
+    STRATEGY_COURTYARD,
+    STRATEGY_LINEAR,
+    STRATEGY_SPLIT_LEVEL,
+    STRATEGY_SPLIT_WALKOUT,
+    STRATEGY_TWO_WING,
+)
 from house_ai.domain.constraints import ConstraintSet, ObjectiveRule
 from house_ai.domain.integrity import IntegrityFinding, check_model, errors
 from house_ai.domain.plan import (
@@ -41,16 +49,17 @@ from .rooms import ProgramRooms, expand_program
 from .solver import SolveFailed, SolverOptions, solve
 
 GENERATOR = "house-ai-cpsat-bars"
-GENERATOR_VERSION = "0.1.0"
+GENERATOR_VERSION = "0.2.0"
 GENERATOR_ACTOR = Actor(kind=ActorKind.SYSTEM, id="house-ai-plan-generator")
 
 #: Row-depth patterns (front, back) in decimetres tried for each strategy.
 DEPTH_PATTERNS: dict[str, list[tuple[int, int]]] = {
-    "linear": [(42, 42), (48, 42)],
-    "compact": [(54, 48), (48, 48)],
-    "split_level": [(48, 42), (54, 48)],
-    "two_wing": [(48, 42), (42, 42)],
-    "courtyard": [(48, 42), (42, 42)],
+    STRATEGY_LINEAR: [(42, 42), (48, 42)],
+    STRATEGY_COMPACT: [(54, 48), (48, 48)],
+    STRATEGY_SPLIT_LEVEL: [(48, 42), (54, 48)],
+    STRATEGY_SPLIT_WALKOUT: [(48, 42), (54, 48)],
+    STRATEGY_TWO_WING: [(48, 42), (42, 42)],
+    STRATEGY_COURTYARD: [(48, 42), (42, 42)],
 }
 
 

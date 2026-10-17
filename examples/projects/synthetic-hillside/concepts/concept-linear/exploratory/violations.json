@@ -4,10 +4,36 @@
   "plan": null,
   "soft": [
     {
+      "code": "elongated_room",
+      "constraint_id": null,
+      "evaluator": "ProgramEvaluator",
+      "id": "v-001-elongated-room",
+      "message": "sp-bath-ensuite has a 3.4:1 aspect ratio; check furniture and clear usable dimensions (3:1 is a conceptual review trigger, not a code limit)",
+      "status": "measured",
+      "strength": "soft",
+      "subject_ids": [
+        "sp-bath-ensuite",
+        "pi-bath-ensuite"
+      ]
+    },
+    {
+      "code": "elongated_room",
+      "constraint_id": null,
+      "evaluator": "ProgramEvaluator",
+      "id": "v-002-elongated-room",
+      "message": "sp-bath-1 has a 3.0:1 aspect ratio; check furniture and clear usable dimensions (3:1 is a conceptual review trigger, not a code limit)",
+      "status": "measured",
+      "strength": "soft",
+      "subject_ids": [
+        "sp-bath-1",
+        "pi-bath-1"
+      ]
+    },
+    {
       "code": "program_item_missing",
       "constraint_id": null,
       "evaluator": "ProgramEvaluator",
-      "id": "v-001-program-item-missing",
+      "id": "v-003-program-item-missing",
       "message": "Stair (pi-stair): 0 of 1 placed; not needed in a one-level concept",
       "status": "measured",
       "strength": "soft",
@@ -19,7 +45,7 @@
       "code": "level_count_differs",
       "constraint_id": null,
       "evaluator": "ProgramEvaluator",
-      "id": "v-002-level-count-differs",
+      "id": "v-004-level-count-differs",
       "message": "the program asks for 2 storey(s); this concept has 1 floor level(s)",
       "status": "measured",
       "strength": "soft",
@@ -29,7 +55,7 @@
       "code": "soft_adjacency_unmet",
       "constraint_id": "c-adj-12-laundry-kitchen",
       "evaluator": "AdjacencyEvaluator",
-      "id": "v-003-soft-adjacency-unmet",
+      "id": "v-005-soft-adjacency-unmet",
       "message": "adj-12-laundry-kitchen: pi-laundry near pi-kitchen is not met",
       "status": "measured",
       "strength": "soft",
@@ -43,13 +69,47 @@
       "code": "soft_adjacency_unmet",
       "constraint_id": "c-adj-14-stair-entry",
       "evaluator": "AdjacencyEvaluator",
-      "id": "v-004-soft-adjacency-unmet",
+      "id": "v-006-soft-adjacency-unmet",
       "message": "adj-14-stair-entry: pi-stair near pi-entry is not met",
       "status": "measured",
       "strength": "soft",
       "subject_ids": [
         "adj-14-stair-entry",
         "sp-entry"
+      ]
+    },
+    {
+      "code": "elevated_floor_support_unresolved",
+      "constraint_id": null,
+      "evaluator": "SiteEvaluator",
+      "id": "v-007-elevated-floor-support-unresolved",
+      "message": "About 484.7 m³ lies between terrain and the lowest floors, up to 4.99 m high. This is underfloor void, not specified engineered fill; supports, lateral stability, foundations and drainage are unresolved. Compare embedded, walk-out and stepped alternatives without assuming that less excavation is preferable",
+      "status": "inferred",
+      "strength": "soft",
+      "subject_ids": []
+    },
+    {
+      "code": "exterior_access_level_unresolved",
+      "constraint_id": null,
+      "evaluator": "SiteEvaluator",
+      "id": "v-008-exterior-access-level-unresolved",
+      "message": "d-front-entry-ext floor differs from existing ground by +0.53 m; an approach, ramp, steps or excavated terrace has not been designed (0.3 m is a conceptual review trigger, not an accessibility rule)",
+      "status": "inferred",
+      "strength": "soft",
+      "subject_ids": [
+        "d-front-entry-ext"
+      ]
+    },
+    {
+      "code": "exterior_access_level_unresolved",
+      "constraint_id": null,
+      "evaluator": "SiteEvaluator",
+      "id": "v-009-exterior-access-level-unresolved",
+      "message": "d-garage-garage-ext floor differs from existing ground by +0.37 m; an approach, ramp, steps or excavated terrace has not been designed (0.3 m is a conceptual review trigger, not an accessibility rule)",
+      "status": "inferred",
+      "strength": "soft",
+      "subject_ids": [
+        "d-garage-garage-ext"
       ]
     }
   ]

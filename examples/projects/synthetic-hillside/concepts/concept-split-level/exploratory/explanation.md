@@ -6,7 +6,7 @@
 
 ## Strategy
 
-Parallel bars stepping with the slope in half-storey increments chosen from the surveyed ground, joined by short stairs. It follows the terrain instead of cutting a single pad, and separates the zones by level.
+Parallel bars stepping with the slope in half-storey increments chosen from the surveyed ground, joined by stairs. Road-level bars can still stand above the slope; stepping alone does not establish a close terrain fit or usable outdoor access.
 
 ## Levels
 
@@ -48,20 +48,23 @@ Status in brackets when a value is not measured exactly.
 - Hard adjacencies met: 5
 - Soft adjacency score (0-1): 0.91
 - Level preferences met: 9
-- Longest walk from the front door: 30.97 m (inferred)
+- Longest walk from the front door: 34.60 m (inferred)
 - Routes to shared rooms through private rooms: 0
 - Walls between private and public rooms: 0
 - Footprint compactness (1 = circle): 0.25
 - Excavation below floors: 0.00 m³ (inferred)
-- Fill / void under floors: 649.37 m³ (inferred)
+- Underfloor void (fill/support unspecified): 649.37 m³ (inferred)
+- Maximum floor height over terrain: 6.00 m (inferred)
 - Deepest cut: 0.00 m (inferred)
 - Retaining wall length: 0 m
 - Retained earth face: 0.00 m² (inferred)
 - Closest approach to the envelope edge: 0.10 m
 
-## Violations (0 hard, 2 soft)
+## Violations (0 hard, 4 soft)
 
 - **soft** `soft_adjacency_unmet`: adj-12-laundry-kitchen: pi-laundry near pi-kitchen is not met
+- **soft** `elevated_floor_support_unresolved`: About 649.4 m³ lies between terrain and the lowest floors, up to 6.00 m high. This is underfloor void, not specified engineered fill; supports, lateral stability, foundations and drainage are unresolved. Compare embedded, walk-out and stepped alternatives without assuming that less excavation is preferable
+- **soft** `exterior_access_level_unresolved`: d-garage-garage-ext floor differs from existing ground by +0.43 m; an approach, ramp, steps or excavated terrace has not been designed (0.3 m is a conceptual review trigger, not an accessibility rule)
 - **soft** `height_limit_exceeded`: about 12.0 m above the lowest ground under the house; the envelope allows 10 m (assumption)
 
 Not evaluated (no evaluator yet): DaylightEvaluator, SolarEvaluator, AccessibilityEvaluator, LifeSafetyEvaluator, StructuralConceptEvaluator, MEPConceptEvaluator, CostEvaluator, EnergyEvaluator, CulturalFitEvaluator.
@@ -81,6 +84,6 @@ Not evaluated (no evaluator yet): DaylightEvaluator, SolarEvaluator, Accessibili
 
 ## How it was produced
 
-- Generator `house-ai-cpsat-bars` 0.1.0, solver ortools-cp-sat 9.15.6755: OPTIMAL, objective 15068, seed 0, deterministic-time budget 4.
+- Generator `house-ai-cpsat-bars` 0.2.0, solver ortools-cp-sat 9.15.6755: OPTIMAL, objective 15068, seed 0, deterministic-time budget 4.
 - Parameters: b0_length_m=12.4, b0_start_m=0.1, b1_length_m=7.2, b1_start_m=0.1, back_row_depth_m=4.2, corridor_width_m=1.2, front_row_depth_m=4.8, level_elevations_m=8.70, 11.70, levels=2, strategy=split_level.
 - Inputs: site/site v1 (c2d20667c325), space_program/program v1 (9bed3e94e948)

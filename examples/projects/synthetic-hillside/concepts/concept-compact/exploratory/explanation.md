@@ -48,21 +48,26 @@ Status in brackets when a value is not measured exactly.
 - Hard adjacencies met: 5
 - Soft adjacency score (0-1): 0.83
 - Level preferences met: 9
-- Longest walk from the front door: 19.90 m (inferred)
+- Longest walk from the front door: 33.58 m (inferred)
 - Routes to shared rooms through private rooms: 0
 - Walls between private and public rooms: 1
 - Footprint compactness (1 = circle): 0.37
 - Excavation below floors: 104.13 m³ (inferred)
-- Fill / void under floors: 39.54 m³ (inferred)
+- Underfloor void (fill/support unspecified): 39.54 m³ (inferred)
+- Maximum floor height over terrain: 1.99 m (inferred)
 - Deepest cut: 2.73 m (inferred)
 - Retaining wall length: 22.00 m
 - Retained earth face: 44.38 m² (inferred)
 - Closest approach to the envelope edge: 0.10 m
 
-## Violations (0 hard, 2 soft)
+## Violations (0 hard, 6 soft)
 
+- **soft** `elongated_room`: sp-bath-ensuite has a 3.4:1 aspect ratio; check furniture and clear usable dimensions (3:1 is a conceptual review trigger, not a code limit)
+- **soft** `required_daylight_no_exterior_window`: sp-study-1 requests daylight but has no exterior window; borrowed light and actual illumination are not checked
 - **soft** `soft_adjacency_unmet`: adj-10-study-1-entry: pi-study-1 near pi-entry is not met
 - **soft** `soft_adjacency_unmet`: adj-12-laundry-kitchen: pi-laundry near pi-kitchen is not met
+- **soft** `elevated_floor_support_unresolved`: About 39.5 m³ lies between terrain and the lowest floors, up to 1.99 m high. This is underfloor void, not specified engineered fill; supports, lateral stability, foundations and drainage are unresolved. Compare embedded, walk-out and stepped alternatives without assuming that less excavation is preferable
+- **soft** `exterior_access_level_unresolved`: d-garage-garage-ext floor differs from existing ground by +0.34 m; an approach, ramp, steps or excavated terrace has not been designed (0.3 m is a conceptual review trigger, not an accessibility rule)
 
 Not evaluated (no evaluator yet): DaylightEvaluator, SolarEvaluator, AccessibilityEvaluator, LifeSafetyEvaluator, StructuralConceptEvaluator, MEPConceptEvaluator, CostEvaluator, EnergyEvaluator, CulturalFitEvaluator.
 
@@ -85,6 +90,6 @@ Not evaluated (no evaluator yet): DaylightEvaluator, SolarEvaluator, Accessibili
 
 ## How it was produced
 
-- Generator `house-ai-cpsat-bars` 0.1.0, solver ortools-cp-sat 9.15.6755: OPTIMAL, objective 22168, seed 0, deterministic-time budget 4.
+- Generator `house-ai-cpsat-bars` 0.2.0, solver ortools-cp-sat 9.15.6755: OPTIMAL, objective 22168, seed 0, deterministic-time budget 4.
 - Parameters: b0_length_m=10.0, b0_start_m=0.1, b1_length_m=10.0, b1_start_m=0.1, back_row_depth_m=4.8, corridor_width_m=1.2, front_row_depth_m=5.4, level_elevations_m=8.70, 11.70, levels=2, strategy=compact.
 - Inputs: site/site v1 (c2d20667c325), space_program/program v1 (9bed3e94e948)

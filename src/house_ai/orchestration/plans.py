@@ -168,13 +168,14 @@ class PlanService:
         return inp
 
     def _store_constraints(self, cs: ConstraintSet, actor: Actor, reason: str) -> ArtifactRef:
-        """Store the compiled set, reusing the latest version when the rules are unchanged."""
+        """Reuse a compilation only when its rules and pinned inputs are unchanged."""
         latest = self.store.latest(ArtifactKind.CONSTRAINT_SET, cs.id)
         if latest is not None:
             stored = self.store.get(latest, ConstraintSet)
             if (
                 stored.model_dump(mode="json")["constraints"]
                 == cs.model_dump(mode="json")["constraints"]
+                and stored.provenance.inputs == cs.provenance.inputs
             ):
                 return latest
         return self.store.put(ArtifactKind.CONSTRAINT_SET, cs.id, cs, actor, reason=reason)
@@ -361,7 +362,7 @@ class PlanService:
             raise PlanWorkflowError(f"{option_id} has no version {version}")
         base = self.store.get(base_ref, PlanVersion)
         inp = self.inputs(exploratory=False)
-        strategy, solver_opts = self._apply_ops(base, inp.program, ops, kind)
+        strategy, solver_opts, effective_ops = self._apply_ops(base, inp.program, ops, kind)
         constraints, _, _ = self._constraints(inp, actor)
         cr_n = sum(1 for r in refs) + 1
         cr = ChangeRequest(
@@ -385,7 +386,7 @@ class PlanService:
             solver=solver_opts,
             parent=base_ref,
             change_request=cr,
-            revision_ops=ops,
+            revision_ops=effective_ops,
             option_id=option_id,
         )
         cand = CpSatPlanGenerator().candidates(req)[0]
@@ -453,7 +454,7 @@ class PlanService:
 
     def _apply_ops(
         self, base: PlanVersion, program: SpaceProgram, ops: list[str], kind: ChangeRequestKind
-    ) -> tuple[str, SolverOptions]:
+    ) -> tuple[str, SolverOptions, list[str]]:
         rooms = expand_program(program)
         by_item: dict[str, list[str]] = {}
         for r in rooms.rooms:
@@ -469,6 +470,56 @@ class PlanService:
                 f"unknown room {name!r}; use a program item id (pi-...) or a space id (sp-...)"
             )
 
+        # Area, level and relationship requests describe continuing design intent.
+        # Rethink and strategy are instructions for one solve; the resulting strategy
+        # is already recorded on the parent. Keep original operation strings where
+        # possible, resolving aliases so later requests override the same rooms.
+        inherited = (
+            [
+                op
+                for op in base.generation.revision_ops
+                if op.partition(":")[0] not in {"rethink", "strategy"}
+            ]
+            if kind is ChangeRequestKind.MODIFY and base.generation is not None
+            else []
+        )
+        effective: dict[tuple[str, ...], tuple[int, str]] = {}
+        groups: list[tuple[str, list[tuple[str, ...]]]] = []
+        transient = []
+        for op in [*inherited, *ops]:
+            verb, _, arg = op.partition(":")
+            keys: list[tuple[str, ...]] = []
+            if verb in {"area", "level"}:
+                name, _, _ = arg.partition("=")
+                keys = [(verb, sid) for sid in resolve(name)]
+            elif verb in {"separate", "adjacent", "near"}:
+                a, _, b = arg.partition(",")
+                keys = sorted(
+                    {("relation", *sorted((sa, sb))) for sa in resolve(a) for sb in resolve(b)}
+                )
+            else:
+                transient.append(op)
+                continue
+            index = len(groups)
+            groups.append((op, keys))
+            for key in keys:
+                effective[key] = (index, op)
+        ops = []
+        for index, (op, keys) in enumerate(groups):
+            retained = [key for key in keys if effective[key][0] == index]
+            if retained == keys:
+                ops.append(op)
+            else:
+                # A quantity item may be overridden for only one of its rooms.
+                # Retain the other rooms explicitly instead of resurrecting the
+                # superseded request through the item's broader alias.
+                verb, _, arg = op.partition(":")
+                for key in retained:
+                    if key[0] == "relation":
+                        ops.append(f"{verb}:{key[1]},{key[2]}")
+                    else:
+                        ops.append(f"{verb}:{key[1]}={arg.partition('=')[2]}")
+        ops += transient
         strategy = base.strategy or ""
         opts = SolverOptions()
         rethink: set[str] = set()
@@ -531,7 +582,7 @@ class PlanService:
             for key, value in base.generation.parameters.items():
                 if key.endswith("_start_m") and isinstance(value, int | float) and not rethink:
                     opts.bar_hints[key.removesuffix("_start_m")] = to_dm(float(value))
-        return strategy, opts
+        return strategy, opts, ops
 
     def _report_for(self, ref: ArtifactRef) -> EvaluationReport | None:
         found = None
@@ -562,6 +613,20 @@ class PlanService:
         return ref, self.wf.request_approval(Gate.PLAN, ref, actor)
 
     # ----------------------------------------------------------------- export
+
+    def inputs_for_plan(self, plan: PlanVersion) -> Inputs | None:
+        """Load the immutable site/program the plan names, including for old versions."""
+        site_ref, program_ref = plan.model.site_ref, plan.model.program_ref
+        if site_ref is None or program_ref is None:
+            return None
+        approval = self.wf.status().approvals.get(Gate.SITE)
+        return Inputs(
+            site=self.store.get(site_ref, Site),
+            site_ref=site_ref,
+            program=self.store.get(program_ref, SpaceProgram),
+            program_ref=program_ref,
+            site_verified=approval is not None and approval.artifact == site_ref,
+        )
 
     def export(
         self,
@@ -603,17 +668,20 @@ class PlanService:
                 encoding="utf-8",
             )
         program_assumptions = []
-        for a_ref in self.store.latest_of_kind(ArtifactKind.ASSUMPTIONS):
-            program_assumptions += [
-                a.model_dump(mode="json")
-                for a in self.store.get(a_ref, AssumptionsFile).assumptions
-            ]
-        site_unverified = inp is not None and not inp.site_verified
+        # Program build companions share its provenance. Newer companions may
+        # describe a different interview, so never substitute the latest file.
+        if program is not None:
+            for a_ref in self.store.refs(ArtifactKind.ASSUMPTIONS):
+                companion = self.store.get(a_ref, AssumptionsFile)
+                if companion.provenance == program.provenance:
+                    program_assumptions += [
+                        a.model_dump(mode="json") for a in companion.assumptions
+                    ]
         assumptions = {
             "plan": [a.model_dump(mode="json") for a in plan.model.assumptions],
             "plan_issues": [i.model_dump(mode="json") for i in plan.model.issues],
             "program": program_assumptions,
-            "site_verified": not site_unverified,
+            "site_verified": inp.site_verified if inp is not None else None,
             "note": "Plan assumptions come from the generator; program assumptions from the "
             "interview. Nothing here is a verified fact unless its status says so.",
         }

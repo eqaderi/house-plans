@@ -16,6 +16,18 @@ from collections.abc import Callable
 from shapely.geometry import LineString, Point
 from shapely.ops import unary_union
 
+from house_ai.constants.evaluations import (
+    METRIC_EXCAVATION_VOLUME,
+    METRIC_EXTERIOR_DOOR_GROUND_DELTA,
+    METRIC_FILL_VOLUME,
+    METRIC_MAX_CUT,
+    METRIC_MAX_FILL,
+    VIOLATION_ELEVATED_FLOOR_SUPPORT,
+    VIOLATION_ELONGATED_ROOM,
+    VIOLATION_EXTERIOR_ACCESS_LEVEL,
+    VIOLATION_REQUIRED_DAYLIGHT_NO_WINDOW,
+    VIOLATION_TERRAIN_COVERAGE_INCOMPLETE,
+)
 from house_ai.domain.base import EXTERIOR
 from house_ai.domain.constraints import MinAreaRule, MinDimensionRule
 from house_ai.domain.epistemics import ClaimStatus, Epistemic
@@ -24,6 +36,7 @@ from house_ai.domain.integrity import FindingSeverity, check_model, circulation_
 from house_ai.domain.model import HouseModel, OpeningKind, Space, WallKind
 from house_ai.domain.program import (
     AdjacencyKind,
+    DaylightNeed,
     Privacy,
     SpaceFunction,
     Strength,
@@ -307,6 +320,51 @@ class ProgramEvaluator:
                     unit="m2",
                     subjects=[sp.id, item.id],
                 )
+                # Opening opportunity is measurable now; illumination, borrowed light,
+                # orientation and obstruction still need a daylight study.
+                windows = [
+                    o
+                    for o in model.openings
+                    if o.kind is OpeningKind.WINDOW
+                    and sp.id in o.connects
+                    and EXTERIOR in o.connects
+                    and model.wall(o.host_wall_id).kind is WallKind.EXTERIOR
+                ]
+                if item.daylight is DaylightNeed.REQUIRED:
+                    out.metric(
+                        "required_daylight_exterior_windows",
+                        len(windows),
+                        "exterior_window_count_only",
+                        subjects=[sp.id, item.id],
+                    )
+                    if not windows:
+                        out.violation(
+                            VIOLATION_REQUIRED_DAYLIGHT_NO_WINDOW,
+                            Strength.SOFT,
+                            f"{sp.id} requests daylight but has no exterior window; borrowed "
+                            "light and actual illumination are not checked",
+                            [sp.id, item.id],
+                        )
+                if item.function not in CIRCULATION | {S.STORAGE, S.GARAGE, S.MECHANICAL}:
+                    poly = sp.boundary.to_shapely().minimum_rotated_rectangle
+                    pts = list(poly.exterior.coords)
+                    sides = [math.dist(pts[0], pts[1]), math.dist(pts[1], pts[2])]
+                    ratio = max(sides) / min(sides)
+                    out.metric(
+                        "room_aspect_ratio",
+                        ratio,
+                        "rotated_rectangle_sides",
+                        subjects=[sp.id, item.id],
+                    )
+                    if ratio > 3 + 1e-6:
+                        out.violation(
+                            VIOLATION_ELONGATED_ROOM,
+                            Strength.SOFT,
+                            f"{sp.id} has a {ratio:.1f}:1 aspect ratio; check furniture and "
+                            "clear usable dimensions (3:1 is a conceptual review trigger, "
+                            "not a code limit)",
+                            [sp.id, item.id],
+                        )
                 if item.target_area_m2:
                     out.metric(
                         "room_area_vs_target_pct",
@@ -504,20 +562,30 @@ class AdjacencyEvaluator:
 # ------------------------------------------------------------------ circulation
 
 
-def _door_midpoints(model: HouseModel) -> list[tuple[str, str, tuple[float, float]]]:
-    out = []
-    for o in model.openings:
-        if not o.is_passable:
-            continue
-        w = model.wall(o.host_wall_id)
-        t = o.offset_m + o.width_m / 2
-        d = w.length_m
-        p = (
-            w.start[0] + (w.end[0] - w.start[0]) * t / d,
-            w.start[1] + (w.end[1] - w.start[1]) * t / d,
-        )
-        out.append((o.connects[0], o.connects[1], p))
-    return out
+def _pedestrian_entrances(model: HouseModel) -> tuple[set[str], str]:
+    """Identify route origins without treating vehicle access as a front door."""
+    candidates = [
+        o
+        for o in model.openings
+        if o.is_passable
+        and EXTERIOR in o.connects
+        and model.space(next(s for s in o.connects if s != EXTERIOR)).function is not S.GARAGE
+    ]
+    front = [o for o in candidates if o.id.startswith("d-front")]
+    if front:
+        return {o.id for o in front}, "front_door_identifier"
+    entry = [
+        o
+        for o in candidates
+        if any(s.function is S.ENTRY and s.id in o.connects for s in model.spaces)
+    ]
+    if entry:
+        return {o.id for o in entry}, "inferred_from_entry_space"
+    # Hand-authored models may not identify an entrance. Use one deterministic
+    # pedestrian door, and expose the assumption instead of rooting every exit.
+    if candidates:
+        return {min(candidates, key=lambda o: o.id).id}, "assumed_first_pedestrian_door"
+    return set(), "no_pedestrian_entrance"
 
 
 class CirculationEvaluator:
@@ -527,6 +595,16 @@ class CirculationEvaluator:
     def evaluate(self, ctx: EvaluationContext) -> EvaluatorResult:
         out, model = _Out(self.name), ctx.model
         graph = circulation_graph(model)
+        entrances, entrance_basis = _pedestrian_entrances(model)
+        for neighbours in graph.values():
+            neighbours.discard(EXTERIOR)
+        graph[EXTERIOR] = set()
+        for opening in model.openings:
+            if opening.id in entrances:
+                room = next(s for s in opening.connects if s != EXTERIOR)
+                graph[EXTERIOR].add(room)
+                graph.setdefault(room, set()).add(EXTERIOR)
+        out.metric("entrance_route_basis", entrance_basis, "opening_metadata", INF)
         hops = _hops(graph, EXTERIOR)
         unreachable = [s.id for s in model.spaces if s.id not in hops]
         out.metric("unreachable_spaces", len(unreachable), "graph_analysis", subjects=unreachable)
@@ -600,28 +678,50 @@ class CirculationEvaluator:
 
     @staticmethod
     def _walk(model: HouseModel) -> dict[str, float]:
-        """Straight-line walking distance via door midpoints and stair centres, from outside."""
-        nodes: dict[str, list[tuple[float, float]]] = {}
-        for a, b, p in _door_midpoints(model):
-            for sid in (a, b):
-                nodes.setdefault(sid, []).append(p)
-        edges: dict[tuple[float, float], list[tuple[tuple[float, float], float]]] = {}
+        """Approximate interior routes from pedestrian entrances, preserving each space.
+
+        A portal has a node on each side, joined only by its opening. In
+        particular, coincident coordinates on stacked floors are not connected.
+        Exterior exits are never linked to each other through an outside shortcut.
+        """
+        entrances, _ = _pedestrian_entrances(model)
+        nodes: dict[str, list[tuple[str, float, float]]] = {}
+        edges: dict[tuple[str, float, float], list[tuple[tuple[str, float, float], float]]] = {}
+        starts = []
 
         def link(p, q, d):
             edges.setdefault(p, []).append((q, d))
             edges.setdefault(q, []).append((p, d))
 
+        for o in model.openings:
+            if not o.is_passable:
+                continue
+            w = model.wall(o.host_wall_id)
+            t = (o.offset_m + o.width_m / 2) / w.length_m
+            xy = (
+                w.start[0] + (w.end[0] - w.start[0]) * t,
+                w.start[1] + (w.end[1] - w.start[1]) * t,
+            )
+            sides = [(sid, *xy) for sid in o.connects if sid != EXTERIOR]
+            for p in sides:
+                nodes.setdefault(p[0], []).append(p)
+            if len(sides) == 2:
+                link(*sides, 0.0)
+            elif o.id in entrances:
+                starts.extend(sides)
+        for st in model.stairs:
+            c = st.footprint.to_shapely().centroid
+            run = max(1, (st.riser_count or 2) - 1) * (st.tread_depth_m or 0.28)
+            ends = []
+            for sid in (st.bottom_space_id, st.top_space_id):
+                p = (sid, c.x, c.y)
+                nodes.setdefault(sid, []).append(p)
+                ends.append(p)
+            link(*ends, run)
         for pts in nodes.values():
             for i, p in enumerate(pts):
                 for q in pts[i + 1 :]:
-                    link(p, q, math.dist(p, q))
-        for st in model.stairs:
-            c = st.footprint.to_shapely().centroid
-            run = (st.riser_count or 2) * (st.tread_depth_m or 0.28)
-            for sid in (st.bottom_space_id, st.top_space_id):
-                for p in nodes.get(sid, []):
-                    link(p, (c.x, c.y), math.dist(p, (c.x, c.y)) + run / 2)
-        starts = nodes.get(EXTERIOR, [])
+                    link(p, q, math.dist(p[1:], q[1:]))
         dist = {p: 0.0 for p in starts}
         frontier = sorted((0.0, p) for p in starts)
         import heapq
@@ -637,10 +737,10 @@ class CirculationEvaluator:
                     heapq.heappush(frontier, (d + w, q))
         out: dict[str, float] = {}
         for s in model.spaces:
-            ds = [dist[p] for p in nodes.get(s.id, []) if p in dist]
+            c = s.boundary.to_shapely().representative_point()
+            ds = [dist[p] + math.dist(p[1:], (c.x, c.y)) for p in nodes.get(s.id, []) if p in dist]
             if ds:
-                c = s.boundary.to_shapely().representative_point()
-                out[s.id] = min(ds) + min(math.dist(p, (c.x, c.y)) for p in nodes[s.id])
+                out[s.id] = min(ds)
         return out
 
 
@@ -822,7 +922,10 @@ class SiteEvaluator:
             ("d-front", "entrance_to_road_m"),
             ("d-garage", "garage_door_to_road_m"),
         ):
-            door = next((o for o in model.openings if o.id.startswith(prefix)), None)
+            door = next(
+                (o for o in model.openings if o.id.startswith(prefix) and EXTERIOR in o.connects),
+                None,
+            )
             if door is None:
                 continue
             w = model.wall(door.host_wall_id)
@@ -888,10 +991,61 @@ class SiteEvaluator:
         cov = 100.0 * known / total if total else 0.0
         out.metric("terrain_coverage_pct", cov, "tin_hull_sampling", unit="%")
         status = INF if known else NC
-        out.metric("excavation_volume_m3", cut_v, tin, status, unit="m3")
-        out.metric("fill_volume_m3", fill_v, tin, status, unit="m3")
-        out.metric("max_cut_m", max_cut, tin, status, unit="m")
-        out.metric("max_fill_m", max_fill, tin, status, unit="m")
+        out.metric(METRIC_EXCAVATION_VOLUME, cut_v, tin, status, unit="m3")
+        out.metric(METRIC_FILL_VOLUME, fill_v, tin, status, unit="m3")
+        out.metric(METRIC_MAX_CUT, max_cut, tin, status, unit="m")
+        out.metric(METRIC_MAX_FILL, max_fill, tin, status, unit="m")
+        if known < total:
+            out.violation(
+                VIOLATION_TERRAIN_COVERAGE_INCOMPLETE,
+                Strength.SOFT,
+                f"Survey TIN covers {cov:.1f}% of floor samples; cut/void quantities cover "
+                "only known samples and cannot represent the whole building",
+                [],
+                INF,
+            )
+        if known and max_fill > 0.6:
+            out.violation(
+                VIOLATION_ELEVATED_FLOOR_SUPPORT,
+                Strength.SOFT,
+                f"About {fill_v:.1f} m³ lies between terrain and the lowest floors, up to "
+                f"{max_fill:.2f} m high. This is underfloor void, not specified engineered "
+                "fill; supports, lateral stability, foundations and drainage are unresolved. "
+                "Compare embedded, walk-out and stepped alternatives without assuming "
+                "that less excavation is preferable",
+                [],
+                INF,
+            )
+        # Door distance to a road alone does not establish usable outdoor access.
+        for door in model.openings:
+            if door.kind is not OpeningKind.DOOR or EXTERIOR not in door.connects:
+                continue
+            wall = model.wall(door.host_wall_id)
+            t = (door.offset_m + door.width_m / 2) / wall.length_m
+            xy = (
+                wall.start[0] + t * (wall.end[0] - wall.start[0]),
+                wall.start[1] + t * (wall.end[1] - wall.start[1]),
+            )
+            ground = z_of(xy)
+            delta = model.level(wall.level_id).elevation_m - ground if ground is not None else None
+            out.metric(
+                METRIC_EXTERIOR_DOOR_GROUND_DELTA,
+                delta,
+                "tin_at_door_midpoint",
+                INF if ground is not None else NC,
+                unit="m",
+                subjects=[door.id],
+            )
+            if delta is not None and abs(delta) > 0.3:
+                out.violation(
+                    VIOLATION_EXTERIOR_ACCESS_LEVEL,
+                    Strength.SOFT,
+                    f"{door.id} floor differs from existing ground by {delta:+.2f} m; "
+                    "an approach, ramp, steps or excavated terrace has not been designed "
+                    "(0.3 m is a conceptual review trigger, not an accessibility rule)",
+                    [door.id],
+                    INF,
+                )
         if ground_seen:
             span = max(math.dist(a, b) for a in _vertices(foot) for b in _vertices(foot))
             out.metric(

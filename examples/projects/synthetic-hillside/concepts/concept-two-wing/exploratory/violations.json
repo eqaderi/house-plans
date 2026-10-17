@@ -18,10 +18,32 @@
       ]
     },
     {
+      "code": "elevated_floor_support_unresolved",
+      "constraint_id": null,
+      "evaluator": "SiteEvaluator",
+      "id": "v-002-elevated-floor-support-unresolved",
+      "message": "About 552.4 m³ lies between terrain and the lowest floors, up to 5.16 m high. This is underfloor void, not specified engineered fill; supports, lateral stability, foundations and drainage are unresolved. Compare embedded, walk-out and stepped alternatives without assuming that less excavation is preferable",
+      "status": "inferred",
+      "strength": "soft",
+      "subject_ids": []
+    },
+    {
+      "code": "exterior_access_level_unresolved",
+      "constraint_id": null,
+      "evaluator": "SiteEvaluator",
+      "id": "v-003-exterior-access-level-unresolved",
+      "message": "d-garage-garage-ext floor differs from existing ground by +0.30 m; an approach, ramp, steps or excavated terrace has not been designed (0.3 m is a conceptual review trigger, not an accessibility rule)",
+      "status": "inferred",
+      "strength": "soft",
+      "subject_ids": [
+        "d-garage-garage-ext"
+      ]
+    },
+    {
       "code": "height_limit_exceeded",
       "constraint_id": null,
       "evaluator": "SiteEvaluator",
-      "id": "v-002-height-limit-exceeded",
+      "id": "v-004-height-limit-exceeded",
       "message": "about 11.2 m above the lowest ground under the house; the envelope allows 10 m (assumption)",
       "status": "inferred",
       "strength": "soft",

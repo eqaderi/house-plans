@@ -210,10 +210,7 @@ def cmd_plan_export(args: argparse.Namespace) -> int:
         _out(f"no plan {args.option}")
         return EXIT_FAIL
     plan = store.get(ref, PlanVersion)
-    try:
-        inp = svc.inputs(exploratory=True)
-    except PlanWorkflowError:
-        inp = None
+    inp = svc.inputs_for_plan(plan)
     folder = svc.export(plan, ref, svc._report_for(ref), inp, Path(args.out))
     _out(f"wrote {folder}")
     return EXIT_OK

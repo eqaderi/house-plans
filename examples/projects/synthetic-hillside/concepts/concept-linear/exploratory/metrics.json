@@ -242,6 +242,32 @@
     {
       "evaluator": "ProgramEvaluator",
       "evaluator_version": "0.1.0",
+      "method": "exterior_window_count_only",
+      "metric": "required_daylight_exterior_windows",
+      "status": "measured",
+      "subject_ids": [
+        "sp-living",
+        "pi-living"
+      ],
+      "unit": null,
+      "value": 1
+    },
+    {
+      "evaluator": "ProgramEvaluator",
+      "evaluator_version": "0.1.0",
+      "method": "rotated_rectangle_sides",
+      "metric": "room_aspect_ratio",
+      "status": "measured",
+      "subject_ids": [
+        "sp-living",
+        "pi-living"
+      ],
+      "unit": null,
+      "value": 1.174
+    },
+    {
+      "evaluator": "ProgramEvaluator",
+      "evaluator_version": "0.1.0",
       "method": "polygon_area_centerline",
       "metric": "room_area_vs_target_pct",
       "status": "measured",
@@ -264,6 +290,32 @@
       ],
       "unit": "m2",
       "value": 11.28
+    },
+    {
+      "evaluator": "ProgramEvaluator",
+      "evaluator_version": "0.1.0",
+      "method": "exterior_window_count_only",
+      "metric": "required_daylight_exterior_windows",
+      "status": "measured",
+      "subject_ids": [
+        "sp-kitchen",
+        "pi-kitchen"
+      ],
+      "unit": null,
+      "value": 1
+    },
+    {
+      "evaluator": "ProgramEvaluator",
+      "evaluator_version": "0.1.0",
+      "method": "rotated_rectangle_sides",
+      "metric": "room_aspect_ratio",
+      "status": "measured",
+      "subject_ids": [
+        "sp-kitchen",
+        "pi-kitchen"
+      ],
+      "unit": null,
+      "value": 1.958
     },
     {
       "evaluator": "ProgramEvaluator",
@@ -294,6 +346,19 @@
     {
       "evaluator": "ProgramEvaluator",
       "evaluator_version": "0.1.0",
+      "method": "rotated_rectangle_sides",
+      "metric": "room_aspect_ratio",
+      "status": "measured",
+      "subject_ids": [
+        "sp-dining",
+        "pi-dining"
+      ],
+      "unit": null,
+      "value": 1.567
+    },
+    {
+      "evaluator": "ProgramEvaluator",
+      "evaluator_version": "0.1.0",
       "method": "polygon_area_centerline",
       "metric": "room_area_vs_target_pct",
       "status": "measured",
@@ -316,6 +381,32 @@
       ],
       "unit": "m2",
       "value": 16.2
+    },
+    {
+      "evaluator": "ProgramEvaluator",
+      "evaluator_version": "0.1.0",
+      "method": "exterior_window_count_only",
+      "metric": "required_daylight_exterior_windows",
+      "status": "measured",
+      "subject_ids": [
+        "sp-bed-main",
+        "pi-bed-main"
+      ],
+      "unit": null,
+      "value": 1
+    },
+    {
+      "evaluator": "ProgramEvaluator",
+      "evaluator_version": "0.1.0",
+      "method": "rotated_rectangle_sides",
+      "metric": "room_aspect_ratio",
+      "status": "measured",
+      "subject_ids": [
+        "sp-bed-main",
+        "pi-bed-main"
+      ],
+      "unit": null,
+      "value": 1.8
     },
     {
       "evaluator": "ProgramEvaluator",
@@ -346,6 +437,32 @@
     {
       "evaluator": "ProgramEvaluator",
       "evaluator_version": "0.1.0",
+      "method": "exterior_window_count_only",
+      "metric": "required_daylight_exterior_windows",
+      "status": "measured",
+      "subject_ids": [
+        "sp-bed-child-1",
+        "pi-bed-child-1"
+      ],
+      "unit": null,
+      "value": 1
+    },
+    {
+      "evaluator": "ProgramEvaluator",
+      "evaluator_version": "0.1.0",
+      "method": "rotated_rectangle_sides",
+      "metric": "room_aspect_ratio",
+      "status": "measured",
+      "subject_ids": [
+        "sp-bed-child-1",
+        "pi-bed-child-1"
+      ],
+      "unit": null,
+      "value": 2.0
+    },
+    {
+      "evaluator": "ProgramEvaluator",
+      "evaluator_version": "0.1.0",
       "method": "polygon_area_centerline",
       "metric": "room_area_vs_target_pct",
       "status": "measured",
@@ -368,6 +485,32 @@
       ],
       "unit": "m2",
       "value": 14.58
+    },
+    {
+      "evaluator": "ProgramEvaluator",
+      "evaluator_version": "0.1.0",
+      "method": "exterior_window_count_only",
+      "metric": "required_daylight_exterior_windows",
+      "status": "measured",
+      "subject_ids": [
+        "sp-bed-child-2",
+        "pi-bed-child-2"
+      ],
+      "unit": null,
+      "value": 1
+    },
+    {
+      "evaluator": "ProgramEvaluator",
+      "evaluator_version": "0.1.0",
+      "method": "rotated_rectangle_sides",
+      "metric": "room_aspect_ratio",
+      "status": "measured",
+      "subject_ids": [
+        "sp-bed-child-2",
+        "pi-bed-child-2"
+      ],
+      "unit": null,
+      "value": 2.0
     },
     {
       "evaluator": "ProgramEvaluator",
@@ -398,6 +541,19 @@
     {
       "evaluator": "ProgramEvaluator",
       "evaluator_version": "0.1.0",
+      "method": "rotated_rectangle_sides",
+      "metric": "room_aspect_ratio",
+      "status": "measured",
+      "subject_ids": [
+        "sp-bath-ensuite",
+        "pi-bath-ensuite"
+      ],
+      "unit": null,
+      "value": 3.375
+    },
+    {
+      "evaluator": "ProgramEvaluator",
+      "evaluator_version": "0.1.0",
       "method": "polygon_area_centerline",
       "metric": "room_area_vs_target_pct",
       "status": "measured",
@@ -424,6 +580,19 @@
     {
       "evaluator": "ProgramEvaluator",
       "evaluator_version": "0.1.0",
+      "method": "rotated_rectangle_sides",
+      "metric": "room_aspect_ratio",
+      "status": "measured",
+      "subject_ids": [
+        "sp-bath-1",
+        "pi-bath-1"
+      ],
+      "unit": null,
+      "value": 3.0
+    },
+    {
+      "evaluator": "ProgramEvaluator",
+      "evaluator_version": "0.1.0",
       "method": "polygon_area_centerline",
       "metric": "room_area_vs_target_pct",
       "status": "measured",
@@ -446,6 +615,32 @@
       ],
       "unit": "m2",
       "value": 12.96
+    },
+    {
+      "evaluator": "ProgramEvaluator",
+      "evaluator_version": "0.1.0",
+      "method": "exterior_window_count_only",
+      "metric": "required_daylight_exterior_windows",
+      "status": "measured",
+      "subject_ids": [
+        "sp-study-1",
+        "pi-study-1"
+      ],
+      "unit": null,
+      "value": 1
+    },
+    {
+      "evaluator": "ProgramEvaluator",
+      "evaluator_version": "0.1.0",
+      "method": "rotated_rectangle_sides",
+      "metric": "room_aspect_ratio",
+      "status": "measured",
+      "subject_ids": [
+        "sp-study-1",
+        "pi-study-1"
+      ],
+      "unit": null,
+      "value": 2.25
     },
     {
       "evaluator": "ProgramEvaluator",
@@ -498,6 +693,19 @@
       ],
       "unit": "m2",
       "value": 9.72
+    },
+    {
+      "evaluator": "ProgramEvaluator",
+      "evaluator_version": "0.1.0",
+      "method": "rotated_rectangle_sides",
+      "metric": "room_aspect_ratio",
+      "status": "measured",
+      "subject_ids": [
+        "sp-laundry",
+        "pi-laundry"
+      ],
+      "unit": null,
+      "value": 3.0
     },
     {
       "evaluator": "ProgramEvaluator",
@@ -826,6 +1034,16 @@
     {
       "evaluator": "CirculationEvaluator",
       "evaluator_version": "0.1.0",
+      "method": "opening_metadata",
+      "metric": "entrance_route_basis",
+      "status": "inferred",
+      "subject_ids": [],
+      "unit": null,
+      "value": "front_door_identifier"
+    },
+    {
+      "evaluator": "CirculationEvaluator",
+      "evaluator_version": "0.1.0",
       "method": "graph_analysis",
       "metric": "unreachable_spaces",
       "status": "measured",
@@ -871,7 +1089,7 @@
       "status": "measured",
       "subject_ids": [],
       "unit": "doors",
-      "value": 1.857
+      "value": 2.0
     },
     {
       "evaluator": "CirculationEvaluator",
@@ -901,7 +1119,7 @@
       "status": "inferred",
       "subject_ids": [],
       "unit": "m",
-      "value": 19.951
+      "value": 24.792
     },
     {
       "evaluator": "CirculationEvaluator",
@@ -1027,10 +1245,10 @@
       "metric": "garage_door_to_road_m",
       "status": "measured",
       "subject_ids": [
-        "d-garage-corridor-b0"
+        "d-garage-garage-ext"
       ],
       "unit": "m",
-      "value": 8.5
+      "value": 3.1
     },
     {
       "evaluator": "SiteEvaluator",
@@ -1081,6 +1299,30 @@
       "subject_ids": [],
       "unit": "m",
       "value": 4.987
+    },
+    {
+      "evaluator": "SiteEvaluator",
+      "evaluator_version": "0.1.0",
+      "method": "tin_at_door_midpoint",
+      "metric": "exterior_door_ground_delta_m",
+      "status": "inferred",
+      "subject_ids": [
+        "d-front-entry-ext"
+      ],
+      "unit": "m",
+      "value": 0.532
+    },
+    {
+      "evaluator": "SiteEvaluator",
+      "evaluator_version": "0.1.0",
+      "method": "tin_at_door_midpoint",
+      "metric": "exterior_door_ground_delta_m",
+      "status": "inferred",
+      "subject_ids": [
+        "d-garage-garage-ext"
+      ],
+      "unit": "m",
+      "value": 0.37
     },
     {
       "evaluator": "SiteEvaluator",
@@ -1146,11 +1388,11 @@
   "plan_ref": {
     "id": "concept-linear",
     "kind": "plan",
-    "sha256": "aad9248ccef0cdc6e86535a9d451de034f64e5a68e7af6ceddc4c79265bce72d",
+    "sha256": "179c1f5fa57fba4b0bd9c632ee346b57f1fb3b7c3528c34b118fb26aeb985f9e",
     "version": 1
   },
   "provenance": {
-    "created_at": "2026-10-17T13:58:08.444794Z",
+    "created_at": "2026-10-17T15:35:27.100134Z",
     "created_by": {
       "display_name": null,
       "id": "house-ai-evaluation",
@@ -1162,7 +1404,7 @@
       {
         "id": "concept-linear",
         "kind": "plan",
-        "sha256": "aad9248ccef0cdc6e86535a9d451de034f64e5a68e7af6ceddc4c79265bce72d",
+        "sha256": "179c1f5fa57fba4b0bd9c632ee346b57f1fb3b7c3528c34b118fb26aeb985f9e",
         "version": 1
       },
       {
@@ -1186,10 +1428,36 @@
   "schema_version": "0.1.0",
   "violations": [
     {
+      "code": "elongated_room",
+      "constraint_id": null,
+      "evaluator": "ProgramEvaluator",
+      "id": "v-001-elongated-room",
+      "message": "sp-bath-ensuite has a 3.4:1 aspect ratio; check furniture and clear usable dimensions (3:1 is a conceptual review trigger, not a code limit)",
+      "status": "measured",
+      "strength": "soft",
+      "subject_ids": [
+        "sp-bath-ensuite",
+        "pi-bath-ensuite"
+      ]
+    },
+    {
+      "code": "elongated_room",
+      "constraint_id": null,
+      "evaluator": "ProgramEvaluator",
+      "id": "v-002-elongated-room",
+      "message": "sp-bath-1 has a 3.0:1 aspect ratio; check furniture and clear usable dimensions (3:1 is a conceptual review trigger, not a code limit)",
+      "status": "measured",
+      "strength": "soft",
+      "subject_ids": [
+        "sp-bath-1",
+        "pi-bath-1"
+      ]
+    },
+    {
       "code": "program_item_missing",
       "constraint_id": null,
       "evaluator": "ProgramEvaluator",
-      "id": "v-001-program-item-missing",
+      "id": "v-003-program-item-missing",
       "message": "Stair (pi-stair): 0 of 1 placed; not needed in a one-level concept",
       "status": "measured",
       "strength": "soft",
@@ -1201,7 +1469,7 @@
       "code": "level_count_differs",
       "constraint_id": null,
       "evaluator": "ProgramEvaluator",
-      "id": "v-002-level-count-differs",
+      "id": "v-004-level-count-differs",
       "message": "the program asks for 2 storey(s); this concept has 1 floor level(s)",
       "status": "measured",
       "strength": "soft",
@@ -1211,7 +1479,7 @@
       "code": "soft_adjacency_unmet",
       "constraint_id": "c-adj-12-laundry-kitchen",
       "evaluator": "AdjacencyEvaluator",
-      "id": "v-003-soft-adjacency-unmet",
+      "id": "v-005-soft-adjacency-unmet",
       "message": "adj-12-laundry-kitchen: pi-laundry near pi-kitchen is not met",
       "status": "measured",
       "strength": "soft",
@@ -1225,13 +1493,47 @@
       "code": "soft_adjacency_unmet",
       "constraint_id": "c-adj-14-stair-entry",
       "evaluator": "AdjacencyEvaluator",
-      "id": "v-004-soft-adjacency-unmet",
+      "id": "v-006-soft-adjacency-unmet",
       "message": "adj-14-stair-entry: pi-stair near pi-entry is not met",
       "status": "measured",
       "strength": "soft",
       "subject_ids": [
         "adj-14-stair-entry",
         "sp-entry"
+      ]
+    },
+    {
+      "code": "elevated_floor_support_unresolved",
+      "constraint_id": null,
+      "evaluator": "SiteEvaluator",
+      "id": "v-007-elevated-floor-support-unresolved",
+      "message": "About 484.7 m³ lies between terrain and the lowest floors, up to 4.99 m high. This is underfloor void, not specified engineered fill; supports, lateral stability, foundations and drainage are unresolved. Compare embedded, walk-out and stepped alternatives without assuming that less excavation is preferable",
+      "status": "inferred",
+      "strength": "soft",
+      "subject_ids": []
+    },
+    {
+      "code": "exterior_access_level_unresolved",
+      "constraint_id": null,
+      "evaluator": "SiteEvaluator",
+      "id": "v-008-exterior-access-level-unresolved",
+      "message": "d-front-entry-ext floor differs from existing ground by +0.53 m; an approach, ramp, steps or excavated terrace has not been designed (0.3 m is a conceptual review trigger, not an accessibility rule)",
+      "status": "inferred",
+      "strength": "soft",
+      "subject_ids": [
+        "d-front-entry-ext"
+      ]
+    },
+    {
+      "code": "exterior_access_level_unresolved",
+      "constraint_id": null,
+      "evaluator": "SiteEvaluator",
+      "id": "v-009-exterior-access-level-unresolved",
+      "message": "d-garage-garage-ext floor differs from existing ground by +0.37 m; an approach, ramp, steps or excavated terrace has not been designed (0.3 m is a conceptual review trigger, not an accessibility rule)",
+      "status": "inferred",
+      "strength": "soft",
+      "subject_ids": [
+        "d-garage-garage-ext"
       ]
     }
   ]

@@ -285,3 +285,94 @@ def test_explanations_and_comparison_make_no_professional_claims(hillside_report
     for text in texts:
         assert find_prohibited_claims(text) == []
         assert "not checked" in text or "no permit" in text or "None is reviewed" in text
+
+
+def _route_model(*, stacked=False, garage=False):
+    """Two simple rectangles, with exact horizontal route distances."""
+    from house_ai.domain.model import HouseModel
+
+    second_level = "l1" if stacked else "l0"
+    second_bounds = [[0, 0], [4, 0], [4, 2], [0, 2]] if stacked else [
+        [4, 0], [14, 0], [14, 2], [4, 2]
+    ]
+    doc = {
+        "id": "route-model", "name": "Synthetic route", "coordinate_system_id": "local",
+        "levels": [{"id": "l0", "name": "Entry", "elevation_m": 0}],
+        "spaces": [
+            {"id": "entry", "name": "Entry", "function": "entry", "level_id": "l0",
+             "boundary": {"outer": [[0, 0], [4, 0], [4, 2], [0, 2]]}},
+            {"id": "other", "name": "Other", "function": "garage" if garage else "living",
+             "level_id": second_level, "boundary": {"outer": second_bounds}},
+        ],
+        "walls": [], "openings": [],
+    }
+    if stacked:
+        doc["levels"].append({"id": "l1", "name": "Upper", "elevation_m": 2})
+        doc["stairs"] = [{
+            "id": "stairs", "kind": "straight", "from_level_id": "l0", "to_level_id": "l1",
+            "bottom_space_id": "entry", "top_space_id": "other", "width_m": 1,
+            "riser_count": 11, "tread_depth_m": 0.28,
+            "footprint": {"outer": [[2.5, 0.5], [3.5, 0.5], [3.5, 1.5], [2.5, 1.5]]},
+        }]
+    portals = [
+        ("d-front", "l0", 0, "entry", "exterior"),
+        ("d-garage" if garage else "d-rear", second_level,
+         0 if stacked else 14, "other", "exterior"),
+    ]
+    if not stacked:
+        portals.append(("d-internal", "l0", 4, "entry", "other"))
+    for ident, level, x, a, b in portals:
+        doc["walls"].append({
+            "id": "w-" + ident, "level_id": level, "start": [x, 0], "end": [x, 2],
+            "thickness_m": 0.2, "height_m": 2.8, "kind": "exterior",
+        })
+        doc["openings"].append({
+            "id": ident, "host_wall_id": "w-" + ident, "kind": "door",
+            "offset_m": 0.5, "width_m": 1, "height_m": 2.1, "connects": [a, b],
+        })
+    return HouseModel.model_validate(doc)
+
+
+def test_walking_routes_preserve_stacked_levels_and_include_the_stair_run():
+    from house_ai.evaluation.evaluators import CirculationEvaluator
+
+    distances = CirculationEvaluator._walk(_route_model(stacked=True))
+    assert distances["entry"] == pytest.approx(2)
+    # 3 m from entrance to stair centre + 10 treads x 0.28 m + 1 m to room centre.
+    assert distances["other"] == pytest.approx(6.8)
+
+
+@pytest.mark.parametrize("garage", [False, True])
+def test_routes_start_at_front_door_without_external_or_vehicle_shortcuts(garage):
+    from house_ai.evaluation.base import EvaluationContext
+    from house_ai.evaluation.evaluators import CirculationEvaluator
+
+    model = _route_model(garage=garage)
+    assert CirculationEvaluator._walk(model)["other"] == pytest.approx(9)
+    result = CirculationEvaluator().evaluate(EvaluationContext(model, None, None, None))
+    assert _metric(result, "max_depth_from_entrance").value == 1
+    assert _metric(result, "entrance_route_basis").value == "front_door_identifier"
+
+
+def test_hand_authored_entrance_fallback_is_explicit_and_excludes_garage():
+    from house_ai.evaluation.base import EvaluationContext
+    from house_ai.evaluation.evaluators import CirculationEvaluator
+
+    model = _route_model(garage=True)
+    model.openings[0] = model.openings[0].model_copy(update={"id": "pedestrian-door"})
+    result = CirculationEvaluator().evaluate(EvaluationContext(model, None, None, None))
+    assert _metric(result, "entrance_route_basis").value == "inferred_from_entry_space"
+    assert CirculationEvaluator._walk(model)["other"] == pytest.approx(9)
+
+
+def test_unlabelled_pedestrian_fallback_is_reported_as_an_assumption():
+    from house_ai.domain.program import SpaceFunction
+    from house_ai.evaluation.base import EvaluationContext
+    from house_ai.evaluation.evaluators import CirculationEvaluator
+
+    model = _route_model(garage=True)
+    model.openings[0] = model.openings[0].model_copy(update={"id": "pedestrian-door"})
+    model.spaces[0] = model.spaces[0].model_copy(update={"function": SpaceFunction.HALL})
+    result = CirculationEvaluator().evaluate(EvaluationContext(model, None, None, None))
+    assert _metric(result, "entrance_route_basis").value == "assumed_first_pedestrian_door"
+    assert CirculationEvaluator._walk(model)["other"] == pytest.approx(9)

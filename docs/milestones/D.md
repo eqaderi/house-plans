@@ -84,31 +84,32 @@ Synthetic steep hillside (`examples/projects/synthetic-hillside/`, about
 
 ```bash
 .venv/bin/house-ai example load /tmp/hill --name synthetic-hillside --project-id synthetic-hillside --actor human:example
-.venv/bin/house-ai plan generate /tmp/hill --exploratory --out /tmp/hill-preview --actor agent:claude-code
+.venv/bin/house-ai plan generate /tmp/hill --exploratory --out /tmp/hill-preview --actor agent:gemini
 ```
 
 Result (committed in `examples/projects/synthetic-hillside/concepts/`):
-four concepts with no hard violations and 2 to 4 soft violations each;
+five concepts with no hard violations and 4 to 10 soft violations each;
 `courtyard` is reported infeasible (the 24 m deep envelope cannot hold two
 pavilions and a court).
 
-| | compact | split_level | linear | two_wing |
-|---|---|---|---|---|
-| Floor levels | 2 | 2 | 1 | 2 |
-| Gross area (centreline) | 240 m² | 222 m² | 210 m² | 202 m² |
-| Excavation (inferred) | 104 m³ | 0 | 0 | 0 |
-| Fill / void under floors (inferred) | 40 m³ | 649 m³ | 485 m³ | 552 m³ |
-| Retaining walls | 22 m | 0 | 0 | 0 |
-| Longest walk from the door (inferred) | 19.9 m | 31.0 m | 20.0 m | 27.8 m |
+| | compact | split_level | linear | two_wing | split_walkout |
+|---|---|---|---|---|---|
+| Floor levels | 2 | 2 | 1 | 2 | 3 |
+| Gross area (centreline) | 240 m² | 222 m² | 210 m² | 202 m² | 289 m² |
+| Excavation (inferred) | 104 m³ | 0 | 0 | 0 | 110 m³ |
+| Fill / void under floors (inferred) | 40 m³ | 649 m³ | 485 m³ | 552 m³ | 99 m³ |
+| Retaining walls | 22 m | 0 | 0 | 0 | 23 m |
+| Longest walk from the door (inferred) | 33.6 m | 34.6 m | 24.8 m | 31.4 m | 46.7 m |
 
-The trade-off is visible rather than scored: the compact walk-out digs in and
-needs retaining walls; the stepped and linear concepts sit over the slope.
+The trade-off is visible rather than scored: the compact and hybrid walk-out
+dig in and need retaining walls, but cut underfloor void to 40–99 m³; the
+stepped and linear concepts sit over the slope with 485–649 m³ of void.
 The full gated flow (approvals by a human, then `plan generate`, `plan
 revise`, `plan review`) is exercised by `tests/test_plan_workflow.py`.
 
-On the synthetic flat bungalow all strategies except `split_level` (refused:
-"a split level is not warranted") produce valid concepts, and the unverified
-synthetic CodePack yields "conceptual best-practice check only".
+On the synthetic flat bungalow all strategies except `split_level` and `split_walkout` (refused:
+"a split level is not warranted" / "needs surveyed ground falling away") produce valid concepts,
+and the unverified synthetic CodePack yields "conceptual best-practice check only".
 
 ## `projects/my-house`
 
@@ -121,7 +122,7 @@ and exploratory) and writes nothing. Next steps for the owner are in
 ## Tests
 
 ```bash
-.venv/bin/python -m pytest -q          # 465 passed (Python 3.13); 464 passed, 1 skipped on 3.11
+.venv/bin/python -m pytest -q          # 483 passed (Python 3.13 and 3.11)
 .venv/bin/ruff check src tests examples # all checks passed
 .venv/bin/house-ai schemas check        # 22 schemas up to date
 .venv/bin/house-ai project verify my-house  # intact: 13 events, 10 artifact versions
@@ -134,7 +135,10 @@ hard/soft split, brief objectives, CodePack handling, ground-truth metrics of
 the hand-authored plan, claim status, no professional claims),
 `test_plan_workflow.py` (store, gates, refusal without writes, exploratory,
 revisions, human-only plan gate, CLI), `test_plan_svg.py` (byte-exact golden
-of plan-a, north arrow rules, fixture currency).
+of plan-a, north arrow rules, fixture currency), `test_plan_provenance_revisions.py`
+(revision intent across modify/restart cycles, pinned inputs),
+`test_plan_architectural_review.py` (hybrid walk-out metrics, stair slab openings,
+distinct window facades, road-facing garage access, blocking plan issues).
 
 ## Known limitations
 

@@ -24,6 +24,7 @@ from .base import EPS_M, EXTERIOR, StrictModel
 from .geometry import left_normal, unit_direction
 from .model import HouseModel, Opening, Wall
 from .program import AdjacencyKind, SpaceProgram, Strength
+from .records import IssueStatus, Severity
 from .site import Site
 
 #: Overlap area below this is treated as touching along an edge.
@@ -89,6 +90,11 @@ def check_model(
     program: SpaceProgram | None = None,
 ) -> list[IntegrityFinding]:
     findings = _check_ids(model)
+    findings += [
+        _err("blocking_plan_issue", issue.title, issue.id, *issue.subject_ids)
+        for issue in model.issues
+        if issue.severity is Severity.BLOCKING and issue.status is IssueStatus.OPEN
+    ]
     ref_findings = _check_references(model, program)
     findings += ref_findings
     if ref_findings:
