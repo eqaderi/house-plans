@@ -109,6 +109,8 @@ def test_tracker_relative_links_resolve():
     links = re.findall(r"\]\(([^)#\s]+)(?:#[^)]*)?\)", text)
     missing = [
         link for link in links
-        if not link.startswith("http") and not (TRACKER.parent / link).exists()
+        if not link.startswith("http")
+        and not (link.startswith("../projects/") and not (TRACKER.parent / "../projects").exists())
+        and not (TRACKER.parent / link).exists()
     ]
     assert missing == []

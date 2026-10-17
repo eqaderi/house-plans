@@ -522,15 +522,15 @@ def test_review_page_labels_how_each_value_is_known(tmp_path, capsys):
 def test_elevation_labels_with_inline_units_point_names_and_point_id_lines():
     from house_ai.cad.site_extract import has_numeric_elevation_label, numeric_label_values
 
-    assert has_numeric_elevation_label("1664.0 m")
-    assert numeric_label_values("1664.0 m")[0][0] == pytest.approx(1664.0)
+    assert has_numeric_elevation_label("245.0 m")
+    assert numeric_label_values("245.0 m")[0][0] == pytest.approx(245.0)
     assert has_numeric_elevation_label("Pt1 101.25")
     assert numeric_label_values("Pt1 101.25")[0][0] == pytest.approx(101.25)
-    assert has_numeric_elevation_label("EL=1665.378 m")
-    assert numeric_label_values("EL=1665.378 m")[0][0] == pytest.approx(1665.378)
+    assert has_numeric_elevation_label("EL=246.378 m")
+    assert numeric_label_values("EL=246.378 m")[0][0] == pytest.approx(246.378)
     assert not has_numeric_elevation_label("Pt\n12")
     assert numeric_label_values("Pt\n12") == []
-    assert numeric_label_values("Pt\n12\n1664.884")[0][0] == pytest.approx(1664.884)
+    assert numeric_label_values("Pt\n12\n245.884")[0][0] == pytest.approx(245.884)
 
 
 def test_inspection_boundary_candidates_honor_handle_roles_and_case_insensitive_layers(tmp_path):

@@ -6,8 +6,7 @@ land ([`projects/my-house/`](projects/my-house/README.md)); other projects get
 their own folder (ADR 0009). Its outputs are structured semantic geometry, not
 pictures. The full specification is [docs/MASTER_SPEC.md](docs/MASTER_SPEC.md).
 
-**Current state: Milestones A, B, C and D complete (branch `milestone-d`, not yet
-merged; next: Milestone E, the reviewer).**
+**Current state: Milestones A–D merged into `main`; active development proceeds under the stage lifecycle in [docs/PROJECT_TRACKER.md](docs/PROJECT_TRACKER.md).**
 Milestone A ([report](docs/milestones/A.md)) delivered canonical schemas,
 project storage with provenance and the workflow with human approval gates.
 Milestone B ([report](docs/milestones/B.md)) turns a DXF or DWG survey into

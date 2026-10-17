@@ -174,6 +174,17 @@ def test_verify_detects_a_deleted_event(store, site, plan):
     assert any("does not chain" in p for p in problems)
 
 
+def test_verify_detects_truncated_event_log_tail(store, site, plan):
+    store.put(K.SITE, "site", site, AGENT)
+    store.put(K.PLAN, "plan-a", plan, AGENT)
+    log = store.root / "events.jsonl"
+    lines = log.read_text().splitlines()
+    del lines[-1]
+    log.write_text("\n".join(lines) + "\n")
+    problems = store.verify()
+    assert any("tail does not match head anchor" in p for p in problems)
+
+
 def test_event_chain_links_hashes(store, site):
     store.put(K.SITE, "site", site, AGENT)
     first, second = store.events()

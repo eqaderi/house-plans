@@ -6,7 +6,19 @@ from enum import StrEnum
 
 from pydantic import Field, model_validator
 
+from house_ai.constants.actors import DISALLOWED_HUMAN_PREFIXES, KNOWN_AGENT_TOOL_NAMES
+
 from .base import Id, Sha256, StrictModel, UtcDatetime
+
+
+def is_disallowed_human_id(ident: str) -> bool:
+    """True if the identifier resembles an agent or system actor."""
+    normalized = ident.strip().lower()
+    if any(normalized.startswith(prefix) for prefix in DISALLOWED_HUMAN_PREFIXES):
+        return True
+    if normalized in KNOWN_AGENT_TOOL_NAMES:
+        return True
+    return False
 
 
 class ActorKind(StrEnum):
@@ -24,9 +36,13 @@ class Actor(StrictModel):
     model: str | None = None
 
     @model_validator(mode="after")
-    def _provider_only_for_agents(self) -> Actor:
+    def _validate_actor(self) -> Actor:
         if self.kind is not ActorKind.AGENT and (self.provider or self.model):
             raise ValueError("provider/model may only be set on agent actors")
+        if self.kind is ActorKind.HUMAN and is_disallowed_human_id(self.id):
+            raise ValueError(
+                f"disallowed human actor id {self.id!r}: resembles an agent or system tool"
+            )
         return self
 
     @classmethod

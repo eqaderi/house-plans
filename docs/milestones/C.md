@@ -1,5 +1,10 @@
 # Milestone C: owner interview and space program
 
+> [!NOTE] Post-Milestone C Update (2026-10-17)
+> Milestone C was merged into `main` at `2ecb587`.
+> The ~65.2% mean slope and ~12.4 m drop figures mentioned in § "Steep hillside site awareness" below were retracted by the subsequent survey audit (`projects/my-house/reviews/survey-audit/REPORT.md`, PR #1 / `b636164`), which established the horizontal-area-weighted mean slope as ~38.9% over the full survey TIN (~40.7% over the parcel intersection) and total relief as ~15.2 m across the 27 elevation points.
+> Active development proceeds under [PROJECT_TRACKER.md](../PROJECT_TRACKER.md).
+
 Date: 2026-10-17. Branch: `milestone-c`, created from `milestone-b` at
 commit 011c8c8; the latest `milestone-b` (07cdfdd, with the project folders of
 ADR 0009) is merged into it. Neither branch is merged into `main`; `milestone-c`

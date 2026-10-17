@@ -17,6 +17,7 @@ a new version.
 from __future__ import annotations
 
 import fcntl
+import json
 import os
 import re
 import shutil
@@ -219,7 +220,23 @@ class ProjectStore:
             fh.write(canonical_json(event) + "\n")
             fh.flush()
             os.fsync(fh.fileno())
+        self._write_head_anchor(event)
         return event
+
+    def _write_head_anchor(self, event: WorkflowEvent) -> None:
+        head_path = self.root / "head.json"
+        payload = {"seq": event.seq, "hash": event.hash}
+        fd, tmp = tempfile.mkstemp(dir=self.root, prefix=".head-")
+        try:
+            with os.fdopen(fd, "w", encoding="utf-8") as fh:
+                fh.write(canonical_json(payload) + "\n")
+                fh.flush()
+                os.fsync(fh.fileno())
+            os.replace(tmp, head_path)
+        except Exception:
+            if os.path.exists(tmp):
+                os.unlink(tmp)
+            raise
 
     # ---------------------------------------------------------------- sources
 
@@ -426,6 +443,23 @@ class ProjectStore:
             prev_hash = event.hash
         if not events or events[0].type is not EventType.PROJECT_CREATED:
             problems.append("event log does not start with project_created")
+
+        head_file = self.root / "head.json"
+        if head_file.is_file():
+            try:
+                head_data = json.loads(head_file.read_text(encoding="utf-8"))
+                exp_hash = head_data.get("hash")
+                exp_seq = head_data.get("seq")
+                last = events[-1] if events else None
+                if not last or last.hash != exp_hash or last.seq != exp_seq:
+                    last_h = last.hash[:12] if last else "none"
+                    exp_h = exp_hash[:12] if exp_hash else "none"
+                    problems.append(
+                        f"event log tail does not match head anchor: expected seq {exp_seq} "
+                        f"({exp_h}), found seq {last.seq if last else 0} ({last_h})"
+                    )
+            except Exception as exc:
+                problems.append(f"head anchor head.json is invalid: {exc}")
 
         registered: set[Path] = set()
         for ref in self.refs():

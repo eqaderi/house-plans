@@ -68,7 +68,7 @@ def test_fixture_is_synthetic_and_not_the_real_project():
     site, _ = _load(HILLSIDE)
     assert site.classification.value == "synthetic"
     assert site.project_id == "synthetic-hillside"
-    assert abs(site.boundary.area_m2 - 600.004) > 50  # not the owner's parcel
+    assert site.boundary.area_m2 == pytest.approx(737.5, rel=1e-2)
     text = (HILLSIDE / "site.yaml").read_text(encoding="utf-8")
     assert "my-house" not in text and "seperated" not in text
 
