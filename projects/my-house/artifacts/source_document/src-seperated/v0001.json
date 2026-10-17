@@ -1,0 +1,17 @@
+{
+  "classification": "private",
+  "id": "src-seperated",
+  "imported_at": "2026-10-17T08:43:09.256611Z",
+  "imported_by": {
+    "display_name": null,
+    "id": "claude-code",
+    "kind": "agent",
+    "model": null,
+    "provider": null
+  },
+  "media_type": null,
+  "original_filename": "seperated.dwg",
+  "sha256": "27624ba14003e3d898143a9d86985d50d3d7098db0a45b94ae2dd999571519ed",
+  "size_bytes": 17602,
+  "stored_path": "source/27624ba14003-seperated.dwg"
+}

@@ -71,7 +71,8 @@
         "evaluation_report",
         "revision_report",
         "build_record",
-        "interview_session"
+        "interview_session",
+        "owner_statements"
       ],
       "title": "ArtifactKind",
       "type": "string"

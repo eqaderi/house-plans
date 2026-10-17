@@ -151,12 +151,19 @@ def _tracked_files() -> list[str]:
     return out.splitlines()
 
 
-def test_no_private_survey_files_are_tracked():
-    """Survey files may sit in git-ignored project-data/, but must never be committed."""
+def test_survey_files_are_tracked_only_inside_a_project_folder():
+    """Owner surveys are committed only in projects/<name>/ (ADR 0009); project-data/ stays
+    private, and no lock, partial write or credential file is ever tracked."""
+    import re
+
     tracked = _tracked_files()
-    cad = [f for f in tracked if f.lower().endswith((".dwg", ".dxf"))]
-    assert [f for f in cad if f.lower().endswith(".dwg")] == []
-    assert [f for f in cad if not f.startswith(("tests/fixtures/", "examples/"))] == []
+    in_project = re.compile(r"^projects/[a-z0-9][a-z0-9-]*/(surveys|source)/[^/]+\.dwg$", re.I)
+    dwg = [f for f in tracked if f.lower().endswith(".dwg")]
+    assert [f for f in dwg if not in_project.match(f)] == []
+    dxf = [f for f in tracked if f.lower().endswith(".dxf")]
+    assert [f for f in dxf if not f.startswith(("tests/fixtures/", "examples/"))] == []
     assert [f for f in tracked if f.startswith(("sources/", "derived/"))] == []
     assert [f for f in tracked if f.startswith("project-data/")] == ["project-data/README.md"]
+    names = [f.rsplit("/", 1)[-1] for f in tracked]
+    assert [n for n in names if n in {".lock", ".env"} or n.startswith((".tmp-", ".env."))] == []
 

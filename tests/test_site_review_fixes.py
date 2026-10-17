@@ -16,7 +16,7 @@ from house_ai.domain.provenance import ArtifactKind as K
 from house_ai.domain.provenance import DataClassification
 from house_ai.domain.site import CadImportProvenance, Site, SpotElevation
 from house_ai.domain.units import LengthUnit
-from house_ai.geospatial.validation import validate_site
+from house_ai.geospatial.validation import report_markdown, validate_site
 from house_ai.orchestration.site_ingestion import SiteConfirmation, confirm_site, ingest_site
 from house_ai.orchestration.survey_inspection import inspect_file
 
@@ -284,6 +284,68 @@ def test_implausibly_steep_tin_triangles_are_reported(tmp_path, new_store):
     assert len(steep) == 1 and steep[0].severity.value == "warning"
     assert "spot-steep-" in steep[0].message
     assert report.terrain.max_slope_pct > 100
+
+
+def test_each_steep_triangle_is_listed_with_its_measurements(tmp_path, new_store):
+    path = _labelled_spots(
+        tmp_path / "steep.dxf",
+        [
+            ((2, 2, 100.0), "A\\P100.000"),
+            ((28, 2, 100.5), "B\\P100.500"),
+            ((15, 18, 101.0), "C\\P101.000"),
+            ((15.5, 18, 103.0), "D\\P103.000"),
+        ],
+    )
+    store = new_store("steep")
+    sid = _add(store, path)
+    mapping = LayerMapping(
+        layers={"0": LayerRole.SPOT_ELEVATION}, boundary_handle=f"{sid}#{_first_polyline(path)}"
+    )
+    site = store.get(ingest_site(store, sid, mapping, AGENT).site_ref, Site)
+    by_xy = {tuple(round(v, 6) for v in s.xy): s.id for s in site.terrain.spot_elevations}
+    origin = site.coordinates.local.origin
+    ids = {
+        k: by_xy[(round(x - origin[0], 6), round(y - origin[1], 6))]
+        for k, (x, y) in {"A": (2, 2), "B": (28, 2), "C": (15, 18), "D": (15.5, 18)}.items()
+    }
+    report = validate_site(site)
+    steep = report.terrain.steep_triangles
+    # Whichever diagonal Delaunay picks, exactly one triangle holds C and D (2 m over
+    # 0.5 m). By hand: plane A-C-D has gradient sqrt(32² + 25.5²) / 8 = 511.5 %, plane
+    # B-C-D sqrt(32² + 26.25²) / 8 = 517.4 %; A-B-C and A-B-D are under 20 %.
+    assert len(steep) == 1
+    t = steep[0]
+    third = ({ids["A"], ids["B"]} & set(t.vertices)).pop()
+    expected = 511.5 if third == ids["A"] else 517.4
+    assert t.slope_pct == pytest.approx(expected, abs=0.1)
+    assert t.pair == (ids["D"], ids["C"])
+    assert t.pair_distance_m == pytest.approx(0.5)
+    assert t.pair_dz_m == pytest.approx(2.0)
+    assert t.sources == [sid]
+    assert t.edge_rise_pct == pytest.approx(400.0)
+    assert {"sliver", "close pair", "on survey edge"} <= set(t.traits)
+    assert "mixes sources" not in t.traits and "no steep edge" not in t.traits
+    assert report.terrain.tin_triangles == 2  # nothing removed or smoothed
+    assert "steep triangles" in report_markdown(report).lower()
+
+
+def test_a_thin_triangle_can_be_steep_although_none_of_its_edges_is(tmp_path, new_store):
+    # Edges rise 1 m over 15 m (6.7 %) at most, but across its 0.2 m width the plane
+    # through the three points rises 1 m: 500 %. The shape, not a surveyed pair, makes it steep.
+    path = _labelled_spots(
+        tmp_path / "sliver.dxf",
+        [((0, 5, 100.0), "A"), ((30, 5, 100.0), "B"), ((15, 5.2, 101.0), "C")],
+    )
+    store = new_store("sliver")
+    sid = _add(store, path)
+    mapping = LayerMapping(
+        layers={"0": LayerRole.SPOT_ELEVATION}, boundary_handle=f"{sid}#{_first_polyline(path)}"
+    )
+    site = store.get(ingest_site(store, sid, mapping, AGENT).site_ref, Site)
+    (t,) = validate_site(site).terrain.steep_triangles
+    assert t.slope_pct == pytest.approx(500.0)
+    assert t.edge_rise_pct == pytest.approx(100 / 15.0013, rel=1e-3)
+    assert {"sliver", "no steep edge"} <= set(t.traits) and "close pair" not in t.traits
 
 
 # ------------------------------------------------------------ review package

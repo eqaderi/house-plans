@@ -79,6 +79,16 @@ Every claim says how it is known.
   and vertical datum must be confirmed by a human (or confirmed
   local-only); declared-in-source is not enough.
 
+## Owner statements (`owner_statements`)
+
+`OwnerStatementsFile` (id `owner-statements`, one new version per statement):
+`OwnerStatement` items with a `subject` (e.g. `horizontal_crs`, `relief`), the
+owner's `words` verbatim, `stated_by`, the `channel` it arrived through,
+`recorded_by` (an agent may record), `recorded_at` and an optional
+`pending_confirmation` (the step that would make it formal). A statement is
+evidence only: it changes no confirmation status and clears no blocker
+(ADR 0009).
+
 ## Brief (`design_brief`)
 
 - `household`: members with role and age (`null` when not given).

@@ -1,0 +1,15 @@
+{
+  "classification": "private",
+  "created_at": "2026-10-17T08:43:08.759796Z",
+  "created_by": {
+    "display_name": null,
+    "id": "claude-code",
+    "kind": "agent",
+    "model": null,
+    "provider": null
+  },
+  "description": null,
+  "id": "my-house",
+  "name": "Owner's house (600 m² parcel survey)",
+  "schema_version": "0.1.0"
+}

@@ -64,6 +64,7 @@ class ArtifactKind(StrEnum):
     REVISION_REPORT = "revision_report"
     BUILD_RECORD = "build_record"
     INTERVIEW_SESSION = "interview_session"
+    OWNER_STATEMENTS = "owner_statements"
 
 
 class ArtifactRef(StrictModel):
