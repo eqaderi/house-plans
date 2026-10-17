@@ -86,9 +86,14 @@ def explanation_markdown(
     if banner:
         lines += [f"> **{banner}**", ""]
     lines += [
-        "> Design exploration produced by a constraint solver from the program. Nobody qualified "
-        "has reviewed it; it has no permit, code or engineering status. Compliance: "
-        f"{report.compliance.label}.",
+        "> Design exploration "
+        + (
+            "produced by a constraint solver from the program. "
+            if plan.generation
+            else "drawn by hand. "
+        )
+        + "Nobody qualified has reviewed it; it has no permit, code or engineering status. "
+        f"Compliance: {report.compliance.label}.",
         "",
         "## Strategy",
         "",
