@@ -1,7 +1,8 @@
 # Milestone B: site ingestion
 
 Date: 2026-10-17. Branch: `milestone-b` (from `main` at the Milestone A
-merge). Pushed to `origin/milestone-b` (commit ec25922 by the Gemini review); not merged into `main`, which needs the owner's approval.
+merge). Pushed to `origin/milestone-b` with the owner's authorisation (latest push
+2026-10-17, including `projects/my-house`); not merged into `main`, which needs the owner's approval.
 
 ## What works
 
