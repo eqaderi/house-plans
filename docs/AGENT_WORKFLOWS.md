@@ -42,6 +42,15 @@ not approve anything; a preview needs no approval because it stores nothing:
   --actor agent:claude-code
 ```
 
+A critique cites elements by ID in backticks (`sp-kitchen`, `lv-entry`,
+`z-night`, `pi-bed-main`); `plan ground` fails (exit 1) on any ID the plan or
+program does not contain:
+
+```bash
+.venv/bin/house-ai plan ground /tmp/hill-preview/concept-split-walkout/exploratory/plan.json \
+  critique.md
+```
+
 After the human has approved the site and program gates in their own
 terminal, the gated run stores everything and moves to CONCEPT_REVIEW:
 

@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import sys
 from collections.abc import Callable
 from pathlib import Path
 
@@ -216,6 +217,26 @@ def cmd_plan_export(args: argparse.Namespace) -> int:
     return EXIT_OK
 
 
+def cmd_plan_ground(args: argparse.Namespace) -> int:
+    from house_ai.evaluation.grounding import (
+        collect_canonical_ids,
+        extract_entity_ids_from_text,
+        validate_critique_grounding,
+    )
+    from house_ai.storage.hashing import load_document
+
+    valid = collect_canonical_ids(load_document(Path(args.plan)))
+    if args.program:
+        valid |= collect_canonical_ids(load_document(Path(args.program)))
+    text = sys.stdin.read() if args.critique == "-" else Path(args.critique).read_text("utf-8")
+    cited = extract_entity_ids_from_text(text)
+    errors = validate_critique_grounding(cited, valid)
+    for err in errors:
+        _out(f"UNKNOWN {err}")
+    _out(f"{len(cited)} cited ID(s), {len(errors)} unknown")
+    return EXIT_FAIL if errors else EXIT_OK
+
+
 def cmd_plan_review(args: argparse.Namespace) -> int:
     svc = PlanService(ProjectStore(resolve_project_dir(args.dir)))
     try:
@@ -305,6 +326,14 @@ def register(sub, actor_arg: Callable[[argparse.ArgumentParser], None]) -> None:
     s.add_argument("--version", type=int)
     s.add_argument("--out", required=True)
     s.set_defaults(func=cmd_plan_export)
+
+    s = pl.add_parser(
+        "ground", help="check that every `id` a critique cites exists in the plan (and program)"
+    )
+    s.add_argument("plan", help="plan.json from `plan export` or `plan generate --exploratory`")
+    s.add_argument("critique", help="critique Markdown file, or - for stdin")
+    s.add_argument("--program", help="space_program.yaml/json, to also accept unplaced items")
+    s.set_defaults(func=cmd_plan_ground)
 
     s = pl.add_parser("review", help="ask the owner to review a concept at the plan gate")
     s.add_argument("dir")
