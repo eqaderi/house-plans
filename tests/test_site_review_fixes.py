@@ -263,6 +263,77 @@ def _first_polyline(path: Path) -> str:
 # ------------------------------------------------------------ steep terrain
 
 
+def test_slope_report_distinguishes_survey_hull_from_clipped_parcel(site):
+    from house_ai.domain.geometry import Polygon2D
+    from house_ai.domain.site import Terrain, TinSurface
+
+    # Two planes: 10% over 1 m² and 100% over 4 m². Only 0.75 m² of the
+    # first triangle intersects the parcel. No private survey data is used.
+    surface = TinSurface(
+        vertices=[(0, 0, 0), (2, 0, 0.2), (0, 1, 0),
+                  (10, 0, 0), (14, 0, 4), (10, 2, 0)],
+        triangles=[(0, 1, 2), (3, 4, 5)],
+    )
+    site = site.model_copy(update={
+        "boundary": Polygon2D(outer=[(0, 0), (1, 0), (1, 1), (0, 1)]),
+        "terrain": Terrain(surface=surface),
+    })
+    report = validate_site(site)
+    assert report.terrain.mean_slope_pct == pytest.approx(82.0)
+    assert report.terrain.parcel_mean_slope_pct == pytest.approx(10.0)
+    assert report.terrain.parcel_tin_area_m2 == pytest.approx(0.75)
+    assert "whole survey TIN" in report_markdown(report)
+    assert "parcel intersection" in report_markdown(report)
+    from house_ai.domain.provenance import ArtifactRef
+    from house_ai.orchestration.site_context import site_context_for
+
+    ref = ArtifactRef(kind=K.SITE, id="site", version=1, sha256="0" * 64)
+    assert site_context_for(site, ref, None).mean_slope_pct == pytest.approx(10.0)
+    # Unknown or uncovered boundary cannot silently substitute the whole survey.
+    no_boundary = site.model_copy(update={"boundary": None})
+    assert validate_site(no_boundary).terrain.parcel_mean_slope_pct is None
+    assert site_context_for(no_boundary, ref, None).mean_slope_pct is None
+    outside = site.model_copy(update={
+        "boundary": Polygon2D(outer=[(20, 0), (21, 0), (21, 1), (20, 1)]),
+    })
+    assert validate_site(outside).terrain.parcel_mean_slope_pct is None
+    assert validate_site(outside).terrain.parcel_tin_area_m2 == 0
+
+
+def test_source_audit_replays_synthetic_entities_without_writing_store(tmp_path, new_store):
+    import runpy
+    import shutil
+
+    from .conftest import REPO
+
+    path = _labelled_spots(tmp_path / "audit.dxf", [
+        ((2, 2, 100.0), "A\\P100.000"),
+        ((28, 2, 100.0), "B\\P100.000"),
+        ((15, 18, 108.0), "C\\P108.000"),
+    ])
+    store = new_store("audit-synthetic")
+    sid = _add(store, path)
+    mapping = LayerMapping(
+        layers={"0": LayerRole.SPOT_ELEVATION}, boundary_handle=f"{sid}#{_first_polyline(path)}"
+    )
+    ingest_site(store, sid, mapping, AGENT)
+    (store.root / "site").mkdir()
+    (store.root / "site/layers.yaml").write_text(mapping.model_dump_json())
+    (store.root / "surveys").mkdir()
+    shutil.copyfile(path, store.root / "surveys" / path.name)
+    events_before = (store.root / "events.jsonl").read_bytes()
+    audit = runpy.run_path(str(REPO / "tools/audit_site.py"))["audit"]
+    first = audit(store.root)
+    assert first["semantic_sha256"] == audit(store.root)["semantic_sha256"]
+    assert len(first["points"]) == 3
+    assert len(first["sources"][0]["label_checks"]) == 3
+    assert first["fresh_geometry_matches_stored"]
+    assert first["metrics"]["all_spot_relief_m"] == pytest.approx(8.0)
+    assert first["metrics"]["arithmetic_triangle_mean_pct"] == pytest.approx(50.0)
+    assert (store.root / "events.jsonl").read_bytes() == events_before
+    assert store.verify() == []
+
+
 def test_implausibly_steep_tin_triangles_are_reported(tmp_path, new_store):
     path = _labelled_spots(
         tmp_path / "steep.dxf",

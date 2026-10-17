@@ -1,0 +1,3441 @@
+{
+  "store_verified": true,
+  "fresh_geometry_matches_stored": true,
+  "sources": [
+    {
+      "id": "src-elevation",
+      "filename": "elevation.dwg",
+      "sha256": "9689880c47d9d0780089c5d4077f9396f5c29a2feeb298fafb86840bbae02f02",
+      "inspection": {
+        "parser": "ezdxf",
+        "parser_version": "1.4.5",
+        "declared_insunits": 6,
+        "layers": {
+          "0": 42,
+          "Defpoints": 0
+        },
+        "entity_counts": {
+          "MTEXT": 21,
+          "POINT": 21
+        },
+        "extents": [
+          623803.322,
+          3870456.072,
+          623841.289,
+          3870496.094
+        ],
+        "warnings": [],
+        "source_format": "dwg AC1021",
+        "layer_entity_types": {
+          "0": {
+            "MTEXT": 21,
+            "POINT": 21
+          },
+          "Defpoints": {}
+        },
+        "header": {
+          "$ACADVER": "AC1021",
+          "$INSUNITS": 6,
+          "$MEASUREMENT": 0,
+          "$LUNITS": 2,
+          "$AUNITS": 0,
+          "$ANGBASE": 0.0,
+          "$ANGDIR": 0
+        },
+        "geodata": null,
+        "declared_epsg": null,
+        "converter": "ODA File Converter",
+        "converter_version": "27.9.0.0",
+        "converted_sha256": "cafa413dc536a1fd8713e9b33bb3f063e9118a3e12f7de540ad949327dd0ccd7"
+      },
+      "raw_entities": {
+        "points_and_labels": [
+          {
+            "xy": [
+              623841.289,
+              3870489.527
+            ],
+            "z": 1664.884,
+            "layer": "0",
+            "text": null,
+            "handle": "69",
+            "entity_type": "POINT",
+            "block_name": null
+          },
+          {
+            "xy": [
+              623841.289,
+              3870489.527
+            ],
+            "z": 1664.884,
+            "layer": "0",
+            "text": "Pt1\n1664.884",
+            "handle": "6A",
+            "entity_type": "MTEXT",
+            "block_name": null
+          },
+          {
+            "xy": [
+              623840.348,
+              3870481.945000001
+            ],
+            "z": 1665.529,
+            "layer": "0",
+            "text": null,
+            "handle": "6B",
+            "entity_type": "POINT",
+            "block_name": null
+          },
+          {
+            "xy": [
+              623840.348,
+              3870481.945000001
+            ],
+            "z": 1665.529,
+            "layer": "0",
+            "text": "Pt2\n1665.529",
+            "handle": "6C",
+            "entity_type": "MTEXT",
+            "block_name": null
+          },
+          {
+            "xy": [
+              623839.596,
+              3870472.363
+            ],
+            "z": 1665.697,
+            "layer": "0",
+            "text": null,
+            "handle": "6D",
+            "entity_type": "POINT",
+            "block_name": null
+          },
+          {
+            "xy": [
+              623839.596,
+              3870472.363
+            ],
+            "z": 1665.697,
+            "layer": "0",
+            "text": "Pt3\n1665.697",
+            "handle": "6E",
+            "entity_type": "MTEXT",
+            "block_name": null
+          },
+          {
+            "xy": [
+              623839.196,
+              3870468.875
+            ],
+            "z": 1665.648,
+            "layer": "0",
+            "text": null,
+            "handle": "6F",
+            "entity_type": "POINT",
+            "block_name": null
+          },
+          {
+            "xy": [
+              623839.196,
+              3870468.875
+            ],
+            "z": 1665.648,
+            "layer": "0",
+            "text": "Pt4\n1665.648",
+            "handle": "70",
+            "entity_type": "MTEXT",
+            "block_name": null
+          },
+          {
+            "xy": [
+              623828.852,
+              3870464.416
+            ],
+            "z": 1669.394,
+            "layer": "0",
+            "text": null,
+            "handle": "71",
+            "entity_type": "POINT",
+            "block_name": null
+          },
+          {
+            "xy": [
+              623828.852,
+              3870464.416
+            ],
+            "z": 1669.394,
+            "layer": "0",
+            "text": "Pt5\n1669.394",
+            "handle": "72",
+            "entity_type": "MTEXT",
+            "block_name": null
+          },
+          {
+            "xy": [
+              623828.612,
+              3870471.424
+            ],
+            "z": 1669.654,
+            "layer": "0",
+            "text": null,
+            "handle": "73",
+            "entity_type": "POINT",
+            "block_name": null
+          },
+          {
+            "xy": [
+              623828.612,
+              3870471.424
+            ],
+            "z": 1669.654,
+            "layer": "0",
+            "text": "Pt6\n1669.654",
+            "handle": "74",
+            "entity_type": "MTEXT",
+            "block_name": null
+          },
+          {
+            "xy": [
+              623828.781,
+              3870479.167
+            ],
+            "z": 1669.49,
+            "layer": "0",
+            "text": null,
+            "handle": "75",
+            "entity_type": "POINT",
+            "block_name": null
+          },
+          {
+            "xy": [
+              623828.781,
+              3870479.167
+            ],
+            "z": 1669.49,
+            "layer": "0",
+            "text": "Pt7\n1669.490",
+            "handle": "76",
+            "entity_type": "MTEXT",
+            "block_name": null
+          },
+          {
+            "xy": [
+              623833.2880000001,
+              3870476.481
+            ],
+            "z": 1667.925,
+            "layer": "0",
+            "text": null,
+            "handle": "77",
+            "entity_type": "POINT",
+            "block_name": null
+          },
+          {
+            "xy": [
+              623833.2880000001,
+              3870476.481
+            ],
+            "z": 1667.925,
+            "layer": "0",
+            "text": "Pt8\n1667.925",
+            "handle": "78",
+            "entity_type": "MTEXT",
+            "block_name": null
+          },
+          {
+            "xy": [
+              623827.247,
+              3870483.456
+            ],
+            "z": 1669.952,
+            "layer": "0",
+            "text": null,
+            "handle": "79",
+            "entity_type": "POINT",
+            "block_name": null
+          },
+          {
+            "xy": [
+              623827.247,
+              3870483.456
+            ],
+            "z": 1669.952,
+            "layer": "0",
+            "text": "Pt9\n1669.952",
+            "handle": "7A",
+            "entity_type": "MTEXT",
+            "block_name": null
+          },
+          {
+            "xy": [
+              623819.453,
+              3870480.061
+            ],
+            "z": 1673.05,
+            "layer": "0",
+            "text": null,
+            "handle": "7B",
+            "entity_type": "POINT",
+            "block_name": null
+          },
+          {
+            "xy": [
+              623819.453,
+              3870480.061
+            ],
+            "z": 1673.05,
+            "layer": "0",
+            "text": "Pt10\n1673.050",
+            "handle": "7C",
+            "entity_type": "MTEXT",
+            "block_name": null
+          },
+          {
+            "xy": [
+              623820.022,
+              3870469.456
+            ],
+            "z": 1672.913,
+            "layer": "0",
+            "text": null,
+            "handle": "7D",
+            "entity_type": "POINT",
+            "block_name": null
+          },
+          {
+            "xy": [
+              623820.022,
+              3870469.456
+            ],
+            "z": 1672.913,
+            "layer": "0",
+            "text": "Pt11\n1672.913",
+            "handle": "7E",
+            "entity_type": "MTEXT",
+            "block_name": null
+          },
+          {
+            "xy": [
+              623819.61,
+              3870460.84
+            ],
+            "z": 1672.744,
+            "layer": "0",
+            "text": null,
+            "handle": "7F",
+            "entity_type": "POINT",
+            "block_name": null
+          },
+          {
+            "xy": [
+              623819.61,
+              3870460.84
+            ],
+            "z": 1672.744,
+            "layer": "0",
+            "text": "Pt12\n1672.744",
+            "handle": "80",
+            "entity_type": "MTEXT",
+            "block_name": null
+          },
+          {
+            "xy": [
+              623814.378,
+              3870458.778
+            ],
+            "z": 1674.738,
+            "layer": "0",
+            "text": null,
+            "handle": "81",
+            "entity_type": "POINT",
+            "block_name": null
+          },
+          {
+            "xy": [
+              623814.378,
+              3870458.778
+            ],
+            "z": 1674.738,
+            "layer": "0",
+            "text": "Pt13\n1674.738",
+            "handle": "82",
+            "entity_type": "MTEXT",
+            "block_name": null
+          },
+          {
+            "xy": [
+              623814.877,
+              3870468.884
+            ],
+            "z": 1674.855,
+            "layer": "0",
+            "text": null,
+            "handle": "83",
+            "entity_type": "POINT",
+            "block_name": null
+          },
+          {
+            "xy": [
+              623814.877,
+              3870468.884
+            ],
+            "z": 1674.855,
+            "layer": "0",
+            "text": "Pt14\n1674.855",
+            "handle": "84",
+            "entity_type": "MTEXT",
+            "block_name": null
+          },
+          {
+            "xy": [
+              623816.43,
+              3870478.715
+            ],
+            "z": 1674.239,
+            "layer": "0",
+            "text": null,
+            "handle": "85",
+            "entity_type": "POINT",
+            "block_name": null
+          },
+          {
+            "xy": [
+              623816.43,
+              3870478.715
+            ],
+            "z": 1674.239,
+            "layer": "0",
+            "text": "Pt15\n1674.239",
+            "handle": "86",
+            "entity_type": "MTEXT",
+            "block_name": null
+          },
+          {
+            "xy": [
+              623811.345,
+              3870476.817000001
+            ],
+            "z": 1677.438,
+            "layer": "0",
+            "text": null,
+            "handle": "87",
+            "entity_type": "POINT",
+            "block_name": null
+          },
+          {
+            "xy": [
+              623811.345,
+              3870476.817000001
+            ],
+            "z": 1677.438,
+            "layer": "0",
+            "text": "Pt16\n1677.438",
+            "handle": "88",
+            "entity_type": "MTEXT",
+            "block_name": null
+          },
+          {
+            "xy": [
+              623809.801,
+              3870470.583
+            ],
+            "z": 1677.805,
+            "layer": "0",
+            "text": null,
+            "handle": "89",
+            "entity_type": "POINT",
+            "block_name": null
+          },
+          {
+            "xy": [
+              623809.801,
+              3870470.583
+            ],
+            "z": 1677.805,
+            "layer": "0",
+            "text": "Pt17\n1677.805",
+            "handle": "8A",
+            "entity_type": "MTEXT",
+            "block_name": null
+          },
+          {
+            "xy": [
+              623814.808,
+              3870463.271
+            ],
+            "z": 1674.675,
+            "layer": "0",
+            "text": null,
+            "handle": "8B",
+            "entity_type": "POINT",
+            "block_name": null
+          },
+          {
+            "xy": [
+              623814.808,
+              3870463.271
+            ],
+            "z": 1674.675,
+            "layer": "0",
+            "text": "Pt18\n1674.675",
+            "handle": "8C",
+            "entity_type": "MTEXT",
+            "block_name": null
+          },
+          {
+            "xy": [
+              623809.115,
+              3870456.072
+            ],
+            "z": 1677.613,
+            "layer": "0",
+            "text": null,
+            "handle": "8D",
+            "entity_type": "POINT",
+            "block_name": null
+          },
+          {
+            "xy": [
+              623809.115,
+              3870456.072
+            ],
+            "z": 1677.613,
+            "layer": "0",
+            "text": "Pt19\n1677.613",
+            "handle": "8E",
+            "entity_type": "MTEXT",
+            "block_name": null
+          },
+          {
+            "xy": [
+              623809.87,
+              3870465.113
+            ],
+            "z": 1677.632,
+            "layer": "0",
+            "text": null,
+            "handle": "8F",
+            "entity_type": "POINT",
+            "block_name": null
+          },
+          {
+            "xy": [
+              623809.87,
+              3870465.113
+            ],
+            "z": 1677.632,
+            "layer": "0",
+            "text": "Pt20\n1677.632",
+            "handle": "90",
+            "entity_type": "MTEXT",
+            "block_name": null
+          },
+          {
+            "xy": [
+              623803.322,
+              3870496.094
+            ],
+            "z": 1677.462,
+            "layer": "0",
+            "text": null,
+            "handle": "91",
+            "entity_type": "POINT",
+            "block_name": null
+          },
+          {
+            "xy": [
+              623803.322,
+              3870496.094
+            ],
+            "z": 1677.462,
+            "layer": "0",
+            "text": "نقطه مبنا\n1677.462",
+            "handle": "92",
+            "entity_type": "MTEXT",
+            "block_name": null
+          }
+        ],
+        "polylines": []
+      },
+      "label_checks": [
+        {
+          "label_handle": "6A",
+          "spot_handle": "69",
+          "label_value": 1664.884,
+          "point_z": 1664.884,
+          "agrees": true
+        },
+        {
+          "label_handle": "6C",
+          "spot_handle": "6B",
+          "label_value": 1665.529,
+          "point_z": 1665.529,
+          "agrees": true
+        },
+        {
+          "label_handle": "6E",
+          "spot_handle": "6D",
+          "label_value": 1665.697,
+          "point_z": 1665.697,
+          "agrees": true
+        },
+        {
+          "label_handle": "70",
+          "spot_handle": "6F",
+          "label_value": 1665.648,
+          "point_z": 1665.648,
+          "agrees": true
+        },
+        {
+          "label_handle": "72",
+          "spot_handle": "71",
+          "label_value": 1669.394,
+          "point_z": 1669.394,
+          "agrees": true
+        },
+        {
+          "label_handle": "74",
+          "spot_handle": "73",
+          "label_value": 1669.654,
+          "point_z": 1669.654,
+          "agrees": true
+        },
+        {
+          "label_handle": "76",
+          "spot_handle": "75",
+          "label_value": 1669.49,
+          "point_z": 1669.49,
+          "agrees": true
+        },
+        {
+          "label_handle": "78",
+          "spot_handle": "77",
+          "label_value": 1667.925,
+          "point_z": 1667.925,
+          "agrees": true
+        },
+        {
+          "label_handle": "7A",
+          "spot_handle": "79",
+          "label_value": 1669.952,
+          "point_z": 1669.952,
+          "agrees": true
+        },
+        {
+          "label_handle": "7C",
+          "spot_handle": "7B",
+          "label_value": 1673.05,
+          "point_z": 1673.05,
+          "agrees": true
+        },
+        {
+          "label_handle": "7E",
+          "spot_handle": "7D",
+          "label_value": 1672.913,
+          "point_z": 1672.913,
+          "agrees": true
+        },
+        {
+          "label_handle": "80",
+          "spot_handle": "7F",
+          "label_value": 1672.744,
+          "point_z": 1672.744,
+          "agrees": true
+        },
+        {
+          "label_handle": "82",
+          "spot_handle": "81",
+          "label_value": 1674.738,
+          "point_z": 1674.738,
+          "agrees": true
+        },
+        {
+          "label_handle": "84",
+          "spot_handle": "83",
+          "label_value": 1674.855,
+          "point_z": 1674.855,
+          "agrees": true
+        },
+        {
+          "label_handle": "86",
+          "spot_handle": "85",
+          "label_value": 1674.239,
+          "point_z": 1674.239,
+          "agrees": true
+        },
+        {
+          "label_handle": "88",
+          "spot_handle": "87",
+          "label_value": 1677.438,
+          "point_z": 1677.438,
+          "agrees": true
+        },
+        {
+          "label_handle": "8A",
+          "spot_handle": "89",
+          "label_value": 1677.805,
+          "point_z": 1677.805,
+          "agrees": true
+        },
+        {
+          "label_handle": "8C",
+          "spot_handle": "8B",
+          "label_value": 1674.675,
+          "point_z": 1674.675,
+          "agrees": true
+        },
+        {
+          "label_handle": "8E",
+          "spot_handle": "8D",
+          "label_value": 1677.613,
+          "point_z": 1677.613,
+          "agrees": true
+        },
+        {
+          "label_handle": "90",
+          "spot_handle": "8F",
+          "label_value": 1677.632,
+          "point_z": 1677.632,
+          "agrees": true
+        },
+        {
+          "label_handle": "92",
+          "spot_handle": "91",
+          "label_value": 1677.462,
+          "point_z": 1677.462,
+          "agrees": true
+        }
+      ]
+    },
+    {
+      "id": "src-seperated",
+      "filename": "seperated.dwg",
+      "sha256": "27624ba14003e3d898143a9d86985d50d3d7098db0a45b94ae2dd999571519ed",
+      "inspection": {
+        "parser": "ezdxf",
+        "parser_version": "1.4.5",
+        "declared_insunits": 6,
+        "layers": {
+          "0": 15,
+          "Defpoints": 0
+        },
+        "entity_counts": {
+          "LWPOLYLINE": 3,
+          "MTEXT": 6,
+          "POINT": 6
+        },
+        "extents": [
+          623799.692,
+          3870450.842897095,
+          623842.615,
+          3870490.101000001
+        ],
+        "warnings": [],
+        "source_format": "dwg AC1032",
+        "layer_entity_types": {
+          "0": {
+            "LWPOLYLINE": 3,
+            "MTEXT": 6,
+            "POINT": 6
+          },
+          "Defpoints": {}
+        },
+        "header": {
+          "$ACADVER": "AC1032",
+          "$INSUNITS": 6,
+          "$MEASUREMENT": 0,
+          "$LUNITS": 2,
+          "$AUNITS": 0,
+          "$ANGBASE": 0.0,
+          "$ANGDIR": 0
+        },
+        "geodata": null,
+        "declared_epsg": null,
+        "converter": "ODA File Converter",
+        "converter_version": "27.9.0.0",
+        "converted_sha256": "b8724e8553a584e69b57f667cacdcf94a5fe36010abaab421c2cbee9dc9add1a"
+      },
+      "raw_entities": {
+        "points_and_labels": [
+          {
+            "xy": [
+              623802.968,
+              3870483.552
+            ],
+            "z": 1678.998,
+            "layer": "0",
+            "text": null,
+            "handle": "69",
+            "entity_type": "POINT",
+            "block_name": null
+          },
+          {
+            "xy": [
+              623802.968,
+              3870483.552
+            ],
+            "z": 1678.998,
+            "layer": "0",
+            "text": "Pt1",
+            "handle": "6A",
+            "entity_type": "MTEXT",
+            "block_name": null
+          },
+          {
+            "xy": [
+              623800.747,
+              3870462.586
+            ],
+            "z": 1679.674,
+            "layer": "0",
+            "text": null,
+            "handle": "6B",
+            "entity_type": "POINT",
+            "block_name": null
+          },
+          {
+            "xy": [
+              623800.747,
+              3870462.586
+            ],
+            "z": 1679.674,
+            "layer": "0",
+            "text": "Pt2",
+            "handle": "6C",
+            "entity_type": "MTEXT",
+            "block_name": null
+          },
+          {
+            "xy": [
+              623799.692,
+              3870451.712000001
+            ],
+            "z": 1680.071,
+            "layer": "0",
+            "text": null,
+            "handle": "6D",
+            "entity_type": "POINT",
+            "block_name": null
+          },
+          {
+            "xy": [
+              623799.692,
+              3870451.712000001
+            ],
+            "z": 1680.071,
+            "layer": "0",
+            "text": "Pt3",
+            "handle": "6E",
+            "entity_type": "MTEXT",
+            "block_name": null
+          },
+          {
+            "xy": [
+              623807.567,
+              3870451.173
+            ],
+            "z": 1679.131,
+            "layer": "0",
+            "text": null,
+            "handle": "6F",
+            "entity_type": "POINT",
+            "block_name": null
+          },
+          {
+            "xy": [
+              623807.567,
+              3870451.173
+            ],
+            "z": 1679.131,
+            "layer": "0",
+            "text": "Pt4",
+            "handle": "70",
+            "entity_type": "MTEXT",
+            "block_name": null
+          },
+          {
+            "xy": [
+              623810.639,
+              3870476.965
+            ],
+            "z": 1678.33,
+            "layer": "0",
+            "text": null,
+            "handle": "71",
+            "entity_type": "POINT",
+            "block_name": null
+          },
+          {
+            "xy": [
+              623810.639,
+              3870476.965
+            ],
+            "z": 1678.33,
+            "layer": "0",
+            "text": "Pt5",
+            "handle": "72",
+            "entity_type": "MTEXT",
+            "block_name": null
+          },
+          {
+            "xy": [
+              623842.615,
+              3870490.101000001
+            ],
+            "z": 1665.378,
+            "layer": "0",
+            "text": null,
+            "handle": "73",
+            "entity_type": "POINT",
+            "block_name": null
+          },
+          {
+            "xy": [
+              623842.615,
+              3870490.101000001
+            ],
+            "z": 1665.378,
+            "layer": "0",
+            "text": "Pt6",
+            "handle": "74",
+            "entity_type": "MTEXT",
+            "block_name": null
+          }
+        ],
+        "polylines": [
+          {
+            "points": [
+              [
+                623802.968,
+                3870483.552
+              ],
+              [
+                623800.747,
+                3870462.586
+              ],
+              [
+                623799.692,
+                3870451.712000001
+              ]
+            ],
+            "closed": false,
+            "elevation": 1678.998,
+            "layer": "0",
+            "handle": "BC",
+            "entity_type": "LWPOLYLINE",
+            "zs": [],
+            "has_arcs": false
+          },
+          {
+            "points": [
+              [
+                623811.9179225817,
+                3870482.603904128
+              ],
+              [
+                623809.7011047062,
+                3870461.677382932
+              ],
+              [
+                623808.6499383867,
+                3870450.842897095
+              ]
+            ],
+            "closed": false,
+            "elevation": 1678.998,
+            "layer": "0",
+            "handle": "C5",
+            "entity_type": "LWPOLYLINE",
+            "zs": [],
+            "has_arcs": false
+          },
+          {
+            "points": [
+              [
+                623811.3168207556,
+                3870476.922166087
+              ],
+              [
+                623841.3392242874,
+                3870489.549920684
+              ],
+              [
+                623839.1890064189,
+                3870468.660292574
+              ],
+              [
+                623809.1666028872,
+                3870456.032537977
+              ],
+              [
+                623811.3168207556,
+                3870476.922166087
+              ]
+            ],
+            "closed": false,
+            "elevation": 1678.998,
+            "layer": "0",
+            "handle": "D7",
+            "entity_type": "LWPOLYLINE",
+            "zs": [],
+            "has_arcs": false
+          }
+        ]
+      },
+      "label_checks": []
+    }
+  ],
+  "triangles": [
+    {
+      "indices": [
+        1,
+        6,
+        7
+      ],
+      "sources": [
+        "src-elevation#6B (layer 0)",
+        "src-elevation#75 (layer 0)",
+        "src-elevation#77 (layer 0)"
+      ],
+      "slope_pct": 34.38657197722028,
+      "horizontal_area_m2": 21.794704001765957,
+      "parcel_intersection_m2": 21.794704001765957,
+      "edges": [
+        {
+          "run_m": 11.895914130838957,
+          "abs_dz_m": 3.9610000000000127
+        },
+        {
+          "run_m": 5.246679426034857,
+          "abs_dz_m": 1.5650000000000546
+        },
+        {
+          "run_m": 8.927423817148586,
+          "abs_dz_m": 2.395999999999958
+        }
+      ]
+    },
+    {
+      "indices": [
+        1,
+        7,
+        2
+      ],
+      "sources": [
+        "src-elevation#6B (layer 0)",
+        "src-elevation#77 (layer 0)",
+        "src-elevation#6D (layer 0)"
+      ],
+      "slope_pct": 34.701166504793996,
+      "horizontal_area_m2": 31.769996004068688,
+      "parcel_intersection_m2": 31.756520372277684,
+      "edges": [
+        {
+          "run_m": 8.927423817148586,
+          "abs_dz_m": 2.395999999999958
+        },
+        {
+          "run_m": 7.5331791430684945,
+          "abs_dz_m": 2.2280000000000655
+        },
+        {
+          "run_m": 9.611463365457205,
+          "abs_dz_m": 0.16799999999989268
+        }
+      ]
+    },
+    {
+      "indices": [
+        3,
+        2,
+        7
+      ],
+      "sources": [
+        "src-elevation#6F (layer 0)",
+        "src-elevation#6D (layer 0)",
+        "src-elevation#77 (layer 0)"
+      ],
+      "slope_pct": 32.406837276761564,
+      "horizontal_area_m2": 11.824751999700652,
+      "parcel_intersection_m2": 11.79607037650598,
+      "edges": [
+        {
+          "run_m": 3.5108608629922906,
+          "abs_dz_m": 0.04899999999997817
+        },
+        {
+          "run_m": 7.5331791430684945,
+          "abs_dz_m": 2.2280000000000655
+        },
+        {
+          "run_m": 9.630976066914132,
+          "abs_dz_m": 2.2770000000000437
+        }
+      ]
+    },
+    {
+      "indices": [
+        3,
+        4,
+        24
+      ],
+      "sources": [
+        "src-elevation#6F (layer 0)",
+        "src-elevation#71 (layer 0)",
+        "src-seperated#6F (layer 0)"
+      ],
+      "slope_pct": 52.00156701731792,
+      "horizontal_area_m2": 21.037888503890017,
+      "parcel_intersection_m2": 1.4962694879193796,
+      "edges": [
+        {
+          "run_m": 11.264147415541656,
+          "abs_dz_m": 3.7460000000000946
+        },
+        {
+          "run_m": 25.068471712552455,
+          "abs_dz_m": 9.73700000000008
+        },
+        {
+          "run_m": 36.24575071644957,
+          "abs_dz_m": 13.483000000000175
+        }
+      ]
+    },
+    {
+      "indices": [
+        3,
+        5,
+        4
+      ],
+      "sources": [
+        "src-elevation#6F (layer 0)",
+        "src-elevation#73 (layer 0)",
+        "src-elevation#71 (layer 0)"
+      ],
+      "slope_pct": 37.34281700016321,
+      "horizontal_area_m2": 36.78045599965554,
+      "parcel_intersection_m2": 36.78045599965554,
+      "edges": [
+        {
+          "run_m": 10.886618253675428,
+          "abs_dz_m": 4.0060000000000855
+        },
+        {
+          "run_m": 7.0121083847010395,
+          "abs_dz_m": 0.2599999999999909
+        },
+        {
+          "run_m": 11.264147415541656,
+          "abs_dz_m": 3.7460000000000946
+        }
+      ]
+    },
+    {
+      "indices": [
+        3,
+        7,
+        5
+      ],
+      "sources": [
+        "src-elevation#6F (layer 0)",
+        "src-elevation#77 (layer 0)",
+        "src-elevation#73 (layer 0)"
+      ],
+      "slope_pct": 37.696274709063864,
+      "horizontal_area_m2": 32.72120600062767,
+      "parcel_intersection_m2": 32.72120600062767,
+      "edges": [
+        {
+          "run_m": 9.630976066914132,
+          "abs_dz_m": 2.2770000000000437
+        },
+        {
+          "run_m": 6.887541288528229,
+          "abs_dz_m": 1.7290000000000418
+        },
+        {
+          "run_m": 10.886618253675428,
+          "abs_dz_m": 4.0060000000000855
+        }
+      ]
+    },
+    {
+      "indices": [
+        4,
+        10,
+        11
+      ],
+      "sources": [
+        "src-elevation#71 (layer 0)",
+        "src-elevation#7D (layer 0)",
+        "src-elevation#7F (layer 0)"
+      ],
+      "slope_pct": 37.891577358720966,
+      "horizontal_area_m2": 39.07787999941398,
+      "parcel_intersection_m2": 39.07787999941397,
+      "edges": [
+        {
+          "run_m": 10.16712840456643,
+          "abs_dz_m": 3.5190000000000055
+        },
+        {
+          "run_m": 8.625844886077022,
+          "abs_dz_m": 0.1690000000000964
+        },
+        {
+          "run_m": 9.909709380296498,
+          "abs_dz_m": 3.349999999999909
+        }
+      ]
+    },
+    {
+      "indices": [
+        5,
+        10,
+        4
+      ],
+      "sources": [
+        "src-elevation#73 (layer 0)",
+        "src-elevation#7D (layer 0)",
+        "src-elevation#71 (layer 0)"
+      ],
+      "slope_pct": 38.56173477892278,
+      "horizontal_area_m2": 30.335519999549742,
+      "parcel_intersection_m2": 30.335519999549746,
+      "edges": [
+        {
+          "run_m": 8.812554907675127,
+          "abs_dz_m": 3.2590000000000146
+        },
+        {
+          "run_m": 10.16712840456643,
+          "abs_dz_m": 3.5190000000000055
+        },
+        {
+          "run_m": 7.0121083847010395,
+          "abs_dz_m": 0.2599999999999909
+        }
+      ]
+    },
+    {
+      "indices": [
+        7,
+        6,
+        5
+      ],
+      "sources": [
+        "src-elevation#77 (layer 0)",
+        "src-elevation#75 (layer 0)",
+        "src-elevation#73 (layer 0)"
+      ],
+      "slope_pct": 35.549320872266684,
+      "horizontal_area_m2": 17.675817499870615,
+      "parcel_intersection_m2": 17.675817499870615,
+      "edges": [
+        {
+          "run_m": 5.246679426034857,
+          "abs_dz_m": 1.5650000000000546
+        },
+        {
+          "run_m": 7.744844091177827,
+          "abs_dz_m": 0.16399999999998727
+        },
+        {
+          "run_m": 6.887541288528229,
+          "abs_dz_m": 1.7290000000000418
+        }
+      ]
+    },
+    {
+      "indices": [
+        8,
+        1,
+        0
+      ],
+      "sources": [
+        "src-elevation#79 (layer 0)",
+        "src-elevation#6B (layer 0)",
+        "src-elevation#69 (layer 0)"
+      ],
+      "slope_pct": 34.51505823366319,
+      "horizontal_area_m2": 50.376816489834354,
+      "parcel_intersection_m2": 50.376816489834354,
+      "edges": [
+        {
+          "run_m": 13.18784751186609,
+          "abs_dz_m": 4.423000000000002
+        },
+        {
+          "run_m": 7.6401704809408555,
+          "abs_dz_m": 0.6449999999999818
+        },
+        {
+          "run_m": 15.29819613550563,
+          "abs_dz_m": 5.067999999999984
+        }
+      ]
+    },
+    {
+      "indices": [
+        8,
+        6,
+        1
+      ],
+      "sources": [
+        "src-elevation#79 (layer 0)",
+        "src-elevation#75 (layer 0)",
+        "src-elevation#6B (layer 0)"
+      ],
+      "slope_pct": 33.94476408034326,
+      "horizontal_area_m2": 26.936157500350703,
+      "parcel_intersection_m2": 26.936157500350703,
+      "edges": [
+        {
+          "run_m": 4.5550715690170875,
+          "abs_dz_m": 0.4619999999999891
+        },
+        {
+          "run_m": 11.895914130838957,
+          "abs_dz_m": 3.9610000000000127
+        },
+        {
+          "run_m": 13.18784751186609,
+          "abs_dz_m": 4.423000000000002
+        }
+      ]
+    },
+    {
+      "indices": [
+        9,
+        5,
+        6
+      ],
+      "sources": [
+        "src-elevation#7B (layer 0)",
+        "src-elevation#73 (layer 0)",
+        "src-elevation#75 (layer 0)"
+      ],
+      "slope_pct": 38.30903791158926,
+      "horizontal_area_m2": 36.18889499893752,
+      "parcel_intersection_m2": 36.18889499893751,
+      "edges": [
+        {
+          "run_m": 12.589084557724158,
+          "abs_dz_m": 3.395999999999958
+        },
+        {
+          "run_m": 7.744844091177827,
+          "abs_dz_m": 0.16399999999998727
+        },
+        {
+          "run_m": 9.370742766728291,
+          "abs_dz_m": 3.5599999999999454
+        }
+      ]
+    },
+    {
+      "indices": [
+        9,
+        6,
+        8
+      ],
+      "sources": [
+        "src-elevation#7B (layer 0)",
+        "src-elevation#75 (layer 0)",
+        "src-elevation#79 (layer 0)"
+      ],
+      "slope_pct": 38.565638651386806,
+      "horizontal_area_m2": 19.318197999126255,
+      "parcel_intersection_m2": 19.318197999126255,
+      "edges": [
+        {
+          "run_m": 9.370742766728291,
+          "abs_dz_m": 3.5599999999999454
+        },
+        {
+          "run_m": 4.5550715690170875,
+          "abs_dz_m": 0.4619999999999891
+        },
+        {
+          "run_m": 8.501321132440388,
+          "abs_dz_m": 3.0979999999999563
+        }
+      ]
+    },
+    {
+      "indices": [
+        9,
+        10,
+        5
+      ],
+      "sources": [
+        "src-elevation#7B (layer 0)",
+        "src-elevation#7D (layer 0)",
+        "src-elevation#73 (layer 0)"
+      ],
+      "slope_pct": 37.77828126194239,
+      "horizontal_area_m2": 46.108371001862096,
+      "parcel_intersection_m2": 46.10837100186209,
+      "edges": [
+        {
+          "run_m": 10.620253575574443,
+          "abs_dz_m": 0.1369999999999436
+        },
+        {
+          "run_m": 8.812554907675127,
+          "abs_dz_m": 3.2590000000000146
+        },
+        {
+          "run_m": 12.589084557724158,
+          "abs_dz_m": 3.395999999999958
+        }
+      ]
+    },
+    {
+      "indices": [
+        11,
+        10,
+        17
+      ],
+      "sources": [
+        "src-elevation#7F (layer 0)",
+        "src-elevation#7D (layer 0)",
+        "src-elevation#8B (layer 0)"
+      ],
+      "slope_pct": 38.479800679487674,
+      "horizontal_area_m2": 21.187802000002378,
+      "parcel_intersection_m2": 21.187802000002378,
+      "edges": [
+        {
+          "run_m": 8.625844886077022,
+          "abs_dz_m": 0.1690000000000964
+        },
+        {
+          "run_m": 8.089500664151636,
+          "abs_dz_m": 1.7619999999999436
+        },
+        {
+          "run_m": 5.382282508550949,
+          "abs_dz_m": 1.93100000000004
+        }
+      ]
+    },
+    {
+      "indices": [
+        11,
+        17,
+        12
+      ],
+      "sources": [
+        "src-elevation#7F (layer 0)",
+        "src-elevation#8B (layer 0)",
+        "src-elevation#81 (layer 0)"
+      ],
+      "slope_pct": 39.10087523304859,
+      "horizontal_area_m2": 11.310358000647808,
+      "parcel_intersection_m2": 11.310358000647808,
+      "edges": [
+        {
+          "run_m": 5.382282508550949,
+          "abs_dz_m": 1.93100000000004
+        },
+        {
+          "run_m": 4.51352955038369,
+          "abs_dz_m": 0.06300000000010186
+        },
+        {
+          "run_m": 5.623670331664451,
+          "abs_dz_m": 1.9940000000001419
+        }
+      ]
+    },
+    {
+      "indices": [
+        12,
+        17,
+        19
+      ],
+      "sources": [
+        "src-elevation#81 (layer 0)",
+        "src-elevation#8B (layer 0)",
+        "src-elevation#8F (layer 0)"
+      ],
+      "slope_pct": 58.473005481790054,
+      "horizontal_area_m2": 11.489247000417123,
+      "parcel_intersection_m2": 11.466020597009098,
+      "edges": [
+        {
+          "run_m": 4.51352955038369,
+          "abs_dz_m": 0.06300000000010186
+        },
+        {
+          "run_m": 5.270370764813699,
+          "abs_dz_m": 2.9570000000001073
+        },
+        {
+          "run_m": 7.775235623426798,
+          "abs_dz_m": 2.8940000000000055
+        }
+      ]
+    },
+    {
+      "indices": [
+        12,
+        19,
+        18
+      ],
+      "sources": [
+        "src-elevation#81 (layer 0)",
+        "src-elevation#8F (layer 0)",
+        "src-elevation#8D (layer 0)"
+      ],
+      "slope_pct": 57.407165923950465,
+      "horizontal_area_m2": 22.769876499543447,
+      "parcel_intersection_m2": 21.506435928126006,
+      "edges": [
+        {
+          "run_m": 7.775235623426798,
+          "abs_dz_m": 2.8940000000000055
+        },
+        {
+          "run_m": 9.072469674527682,
+          "abs_dz_m": 0.019000000000005457
+        },
+        {
+          "run_m": 5.9179054570973575,
+          "abs_dz_m": 2.875
+        }
+      ]
+    },
+    {
+      "indices": [
+        13,
+        17,
+        10
+      ],
+      "sources": [
+        "src-elevation#83 (layer 0)",
+        "src-elevation#8B (layer 0)",
+        "src-elevation#7D (layer 0)"
+      ],
+      "slope_pct": 38.33071385452007,
+      "horizontal_area_m2": 14.41970849978942,
+      "parcel_intersection_m2": 14.419708499789419,
+      "edges": [
+        {
+          "run_m": 5.613424088631776,
+          "abs_dz_m": 0.18000000000006366
+        },
+        {
+          "run_m": 8.089500664151636,
+          "abs_dz_m": 1.7619999999999436
+        },
+        {
+          "run_m": 5.176698658396314,
+          "abs_dz_m": 1.9420000000000073
+        }
+      ]
+    },
+    {
+      "indices": [
+        14,
+        10,
+        9
+      ],
+      "sources": [
+        "src-elevation#85 (layer 0)",
+        "src-elevation#7D (layer 0)",
+        "src-elevation#7B (layer 0)"
+      ],
+      "slope_pct": 38.98406605700158,
+      "horizontal_area_m2": 16.412394500412276,
+      "parcel_intersection_m2": 16.412394500412272,
+      "edges": [
+        {
+          "run_m": 9.93134155092154,
+          "abs_dz_m": 1.3260000000000218
+        },
+        {
+          "run_m": 10.620253575574443,
+          "abs_dz_m": 0.1369999999999436
+        },
+        {
+          "run_m": 3.3091154408027608,
+          "abs_dz_m": 1.1890000000000782
+        }
+      ]
+    },
+    {
+      "indices": [
+        14,
+        13,
+        10
+      ],
+      "sources": [
+        "src-elevation#85 (layer 0)",
+        "src-elevation#83 (layer 0)",
+        "src-elevation#7D (layer 0)"
+      ],
+      "slope_pct": 37.7123285373883,
+      "horizontal_area_m2": 24.8460894997234,
+      "parcel_intersection_m2": 24.8460894997234,
+      "edges": [
+        {
+          "run_m": 9.952907615152347,
+          "abs_dz_m": 0.6159999999999854
+        },
+        {
+          "run_m": 5.176698658396314,
+          "abs_dz_m": 1.9420000000000073
+        },
+        {
+          "run_m": 9.93134155092154,
+          "abs_dz_m": 1.3260000000000218
+        }
+      ]
+    },
+    {
+      "indices": [
+        14,
+        15,
+        13
+      ],
+      "sources": [
+        "src-elevation#85 (layer 0)",
+        "src-elevation#87 (layer 0)",
+        "src-elevation#83 (layer 0)"
+      ],
+      "slope_pct": 64.48518646869992,
+      "horizontal_area_m2": 23.521520500792462,
+      "parcel_intersection_m2": 23.521520500792466,
+      "edges": [
+        {
+          "run_m": 5.427672521041761,
+          "abs_dz_m": 3.199000000000069
+        },
+        {
+          "run_m": 8.683749939852937,
+          "abs_dz_m": 2.5830000000000837
+        },
+        {
+          "run_m": 9.952907615152347,
+          "abs_dz_m": 0.6159999999999854
+        }
+      ]
+    },
+    {
+      "indices": [
+        14,
+        25,
+        15
+      ],
+      "sources": [
+        "src-elevation#85 (layer 0)",
+        "src-seperated#71 (layer 0)",
+        "src-elevation#87 (layer 0)"
+      ],
+      "slope_pct": 150.20847561471376,
+      "horizontal_area_m2": 1.0462839960956334,
+      "parcel_intersection_m2": 0.6702111133114754,
+      "edges": [
+        {
+          "run_m": 6.049643047402183,
+          "abs_dz_m": 4.0909999999998945
+        },
+        {
+          "run_m": 0.7213459638811429,
+          "abs_dz_m": 0.8919999999998254
+        },
+        {
+          "run_m": 5.427672521041761,
+          "abs_dz_m": 3.199000000000069
+        }
+      ]
+    },
+    {
+      "indices": [
+        16,
+        13,
+        15
+      ],
+      "sources": [
+        "src-elevation#89 (layer 0)",
+        "src-elevation#83 (layer 0)",
+        "src-elevation#87 (layer 0)"
+      ],
+      "slope_pct": 56.04056482605366,
+      "horizontal_area_m2": 17.133520002814027,
+      "parcel_intersection_m2": 14.438307227467398,
+      "edges": [
+        {
+          "run_m": 5.35279151472252,
+          "abs_dz_m": 2.9500000000000455
+        },
+        {
+          "run_m": 8.683749939852937,
+          "abs_dz_m": 2.5830000000000837
+        },
+        {
+          "run_m": 6.422358757787596,
+          "abs_dz_m": 0.3669999999999618
+        }
+      ]
+    },
+    {
+      "indices": [
+        16,
+        15,
+        25
+      ],
+      "sources": [
+        "src-elevation#89 (layer 0)",
+        "src-elevation#87 (layer 0)",
+        "src-seperated#71 (layer 0)"
+      ],
+      "slope_pct": 123.66400227010098,
+      "horizontal_area_m2": 2.3148579993622915,
+      "parcel_intersection_m2": 0.005411418510567194,
+      "edges": [
+        {
+          "run_m": 6.422358757787596,
+          "abs_dz_m": 0.3669999999999618
+        },
+        {
+          "run_m": 0.7213459638811429,
+          "abs_dz_m": 0.8919999999998254
+        },
+        {
+          "run_m": 6.436782425777295,
+          "abs_dz_m": 0.5249999999998636
+        }
+      ]
+    },
+    {
+      "indices": [
+        19,
+        13,
+        16
+      ],
+      "sources": [
+        "src-elevation#8F (layer 0)",
+        "src-elevation#83 (layer 0)",
+        "src-elevation#89 (layer 0)"
+      ],
+      "slope_pct": 57.35188327687938,
+      "horizontal_area_m2": 13.824244500506758,
+      "parcel_intersection_m2": 10.972950190602216,
+      "edges": [
+        {
+          "run_m": 6.268212664006291,
+          "abs_dz_m": 2.7770000000000437
+        },
+        {
+          "run_m": 5.35279151472252,
+          "abs_dz_m": 2.9500000000000455
+        },
+        {
+          "run_m": 5.470435174850713,
+          "abs_dz_m": 0.17300000000000182
+        }
+      ]
+    },
+    {
+      "indices": [
+        19,
+        17,
+        13
+      ],
+      "sources": [
+        "src-elevation#8F (layer 0)",
+        "src-elevation#8B (layer 0)",
+        "src-elevation#83 (layer 0)"
+      ],
+      "slope_pct": 58.55013414813066,
+      "horizontal_area_m2": 13.922045999652156,
+      "parcel_intersection_m2": 13.890603544206732,
+      "edges": [
+        {
+          "run_m": 5.270370764813699,
+          "abs_dz_m": 2.9570000000001073
+        },
+        {
+          "run_m": 5.613424088631776,
+          "abs_dz_m": 0.18000000000006366
+        },
+        {
+          "run_m": 6.268212664006291,
+          "abs_dz_m": 2.7770000000000437
+        }
+      ]
+    },
+    {
+      "indices": [
+        20,
+        0,
+        26
+      ],
+      "sources": [
+        "src-elevation#91 (layer 0)",
+        "src-elevation#69 (layer 0)",
+        "src-seperated#73 (layer 0)"
+      ],
+      "slope_pct": 116.9029823814977,
+      "horizontal_area_m2": 15.25045002711181,
+      "parcel_intersection_m2": 7.735886413586489e-05,
+      "edges": [
+        {
+          "run_m": 38.53074847442585,
+          "abs_dz_m": 12.577999999999975
+        },
+        {
+          "run_m": 1.4449055338089987,
+          "abs_dz_m": 0.4939999999999145
+        },
+        {
+          "run_m": 39.74740114752253,
+          "abs_dz_m": 12.08400000000006
+        }
+      ]
+    },
+    {
+      "indices": [
+        20,
+        8,
+        0
+      ],
+      "sources": [
+        "src-elevation#91 (layer 0)",
+        "src-elevation#79 (layer 0)",
+        "src-elevation#69 (layer 0)"
+      ],
+      "slope_pct": 34.32622591280844,
+      "horizontal_area_m2": 161.35573550172666,
+      "parcel_intersection_m2": 1.196753562470373,
+      "edges": [
+        {
+          "run_m": 27.057802368326907,
+          "abs_dz_m": 7.509999999999991
+        },
+        {
+          "run_m": 15.29819613550563,
+          "abs_dz_m": 5.067999999999984
+        },
+        {
+          "run_m": 38.53074847442585,
+          "abs_dz_m": 12.577999999999975
+        }
+      ]
+    },
+    {
+      "indices": [
+        20,
+        9,
+        8
+      ],
+      "sources": [
+        "src-elevation#91 (layer 0)",
+        "src-elevation#7B (layer 0)",
+        "src-elevation#79 (layer 0)"
+      ],
+      "slope_pct": 37.00155422167813,
+      "horizontal_area_m2": 89.86297349554371,
+      "parcel_intersection_m2": 1.7670474184902532,
+      "edges": [
+        {
+          "run_m": 22.74348807883683,
+          "abs_dz_m": 4.412000000000035
+        },
+        {
+          "run_m": 8.501321132440388,
+          "abs_dz_m": 3.0979999999999563
+        },
+        {
+          "run_m": 27.057802368326907,
+          "abs_dz_m": 7.509999999999991
+        }
+      ]
+    },
+    {
+      "indices": [
+        20,
+        14,
+        9
+      ],
+      "sources": [
+        "src-elevation#91 (layer 0)",
+        "src-elevation#85 (layer 0)",
+        "src-elevation#7B (layer 0)"
+      ],
+      "slope_pct": 36.58489942013497,
+      "horizontal_area_m2": 35.09004250208619,
+      "parcel_intersection_m2": 0.977392642226488,
+      "edges": [
+        {
+          "run_m": 21.76807995682667,
+          "abs_dz_m": 3.2229999999999563
+        },
+        {
+          "run_m": 3.3091154408027608,
+          "abs_dz_m": 1.1890000000000782
+        },
+        {
+          "run_m": 22.74348807883683,
+          "abs_dz_m": 4.412000000000035
+        }
+      ]
+    },
+    {
+      "indices": [
+        20,
+        21,
+        14
+      ],
+      "sources": [
+        "src-elevation#91 (layer 0)",
+        "src-seperated#69 (layer 0)",
+        "src-elevation#85 (layer 0)"
+      ],
+      "slope_pct": 40.897973417352574,
+      "horizontal_area_m2": 85.27635099985814,
+      "parcel_intersection_m2": 0.04542784561943386,
+      "edges": [
+        {
+          "run_m": 12.546994859228747,
+          "abs_dz_m": 1.5360000000000582
+        },
+        {
+          "run_m": 14.304615094589776,
+          "abs_dz_m": 4.7590000000000146
+        },
+        {
+          "run_m": 21.76807995682667,
+          "abs_dz_m": 3.2229999999999563
+        }
+      ]
+    },
+    {
+      "indices": [
+        20,
+        22,
+        21
+      ],
+      "sources": [
+        "src-elevation#91 (layer 0)",
+        "src-seperated#6B (layer 0)",
+        "src-seperated#69 (layer 0)"
+      ],
+      "slope_pct": 117.14163042441959,
+      "horizontal_area_m2": 10.216908999481106,
+      "parcel_intersection_m2": 0.0,
+      "edges": [
+        {
+          "run_m": 33.60679528004147,
+          "abs_dz_m": 2.211999999999989
+        },
+        {
+          "run_m": 21.08331086430003,
+          "abs_dz_m": 0.6759999999999309
+        },
+        {
+          "run_m": 12.546994859228747,
+          "abs_dz_m": 1.5360000000000582
+        }
+      ]
+    },
+    {
+      "indices": [
+        20,
+        23,
+        22
+      ],
+      "sources": [
+        "src-elevation#91 (layer 0)",
+        "src-seperated#6D (layer 0)",
+        "src-seperated#6B (layer 0)"
+      ],
+      "slope_pct": 147.34319645537104,
+      "horizontal_area_m2": 3.6751949998929163,
+      "parcel_intersection_m2": 0.0,
+      "edges": [
+        {
+          "run_m": 44.53020125594775,
+          "abs_dz_m": 2.6089999999999236
+        },
+        {
+          "run_m": 10.925058396916844,
+          "abs_dz_m": 0.3969999999999345
+        },
+        {
+          "run_m": 33.60679528004147,
+          "abs_dz_m": 2.211999999999989
+        }
+      ]
+    },
+    {
+      "indices": [
+        21,
+        16,
+        25
+      ],
+      "sources": [
+        "src-seperated#69 (layer 0)",
+        "src-elevation#89 (layer 0)",
+        "src-seperated#71 (layer 0)"
+      ],
+      "slope_pct": 8.548976158755645,
+      "horizontal_area_m2": 27.23811399904144,
+      "parcel_intersection_m2": 0.0,
+      "edges": [
+        {
+          "run_m": 14.658951190342593,
+          "abs_dz_m": 1.1929999999999836
+        },
+        {
+          "run_m": 6.436782425777295,
+          "abs_dz_m": 0.5249999999998636
+        },
+        {
+          "run_m": 10.111024181724305,
+          "abs_dz_m": 0.66800000000012
+        }
+      ]
+    },
+    {
+      "indices": [
+        21,
+        25,
+        14
+      ],
+      "sources": [
+        "src-seperated#69 (layer 0)",
+        "src-seperated#71 (layer 0)",
+        "src-elevation#85 (layer 0)"
+      ],
+      "slope_pct": 76.28282537207873,
+      "horizontal_area_m2": 25.784783501096847,
+      "parcel_intersection_m2": 0.4585392578476331,
+      "edges": [
+        {
+          "run_m": 10.111024181724305,
+          "abs_dz_m": 0.66800000000012
+        },
+        {
+          "run_m": 6.049643047402183,
+          "abs_dz_m": 4.0909999999998945
+        },
+        {
+          "run_m": 14.304615094589776,
+          "abs_dz_m": 4.7590000000000146
+        }
+      ]
+    },
+    {
+      "indices": [
+        22,
+        16,
+        21
+      ],
+      "sources": [
+        "src-seperated#6B (layer 0)",
+        "src-elevation#89 (layer 0)",
+        "src-seperated#69 (layer 0)"
+      ],
+      "slope_pct": 19.66517314265599,
+      "horizontal_area_m2": 86.03241350005727,
+      "parcel_intersection_m2": 0.0,
+      "edges": [
+        {
+          "run_m": 12.080021730098435,
+          "abs_dz_m": 1.8689999999999145
+        },
+        {
+          "run_m": 14.658951190342593,
+          "abs_dz_m": 1.1929999999999836
+        },
+        {
+          "run_m": 21.08331086430003,
+          "abs_dz_m": 0.6759999999999309
+        }
+      ]
+    },
+    {
+      "indices": [
+        22,
+        18,
+        19
+      ],
+      "sources": [
+        "src-seperated#6B (layer 0)",
+        "src-elevation#8D (layer 0)",
+        "src-elevation#8F (layer 0)"
+      ],
+      "slope_pct": 23.07098389659469,
+      "horizontal_area_m2": 40.28657899897164,
+      "parcel_intersection_m2": 0.0,
+      "edges": [
+        {
+          "run_m": 10.604509418159981,
+          "abs_dz_m": 2.060999999999922
+        },
+        {
+          "run_m": 9.072469674527682,
+          "abs_dz_m": 0.019000000000005457
+        },
+        {
+          "run_m": 9.466512451754529,
+          "abs_dz_m": 2.0419999999999163
+        }
+      ]
+    },
+    {
+      "indices": [
+        22,
+        19,
+        16
+      ],
+      "sources": [
+        "src-seperated#6B (layer 0)",
+        "src-elevation#8F (layer 0)",
+        "src-elevation#89 (layer 0)"
+      ],
+      "slope_pct": 23.355099987606476,
+      "horizontal_area_m2": 25.038586501007583,
+      "parcel_intersection_m2": 0.0,
+      "edges": [
+        {
+          "run_m": 9.466512451754529,
+          "abs_dz_m": 2.0419999999999163
+        },
+        {
+          "run_m": 5.470435174850713,
+          "abs_dz_m": 0.17300000000000182
+        },
+        {
+          "run_m": 12.080021730098435,
+          "abs_dz_m": 1.8689999999999145
+        }
+      ]
+    },
+    {
+      "indices": [
+        23,
+        18,
+        22
+      ],
+      "sources": [
+        "src-seperated#6D (layer 0)",
+        "src-elevation#8D (layer 0)",
+        "src-seperated#6B (layer 0)"
+      ],
+      "slope_pct": 25.569382772175835,
+      "horizontal_area_m2": 48.93295099527867,
+      "parcel_intersection_m2": 0.0,
+      "edges": [
+        {
+          "run_m": 10.382799670119288,
+          "abs_dz_m": 2.4579999999998563
+        },
+        {
+          "run_m": 10.604509418159981,
+          "abs_dz_m": 2.060999999999922
+        },
+        {
+          "run_m": 10.925058396916844,
+          "abs_dz_m": 0.3969999999999345
+        }
+      ]
+    },
+    {
+      "indices": [
+        24,
+        4,
+        11
+      ],
+      "sources": [
+        "src-seperated#6F (layer 0)",
+        "src-elevation#71 (layer 0)",
+        "src-elevation#7F (layer 0)"
+      ],
+      "slope_pct": 45.33873257644084,
+      "horizontal_area_m2": 23.13832299737298,
+      "parcel_intersection_m2": 2.594223522972107,
+      "edges": [
+        {
+          "run_m": 25.068471712552455,
+          "abs_dz_m": 9.73700000000008
+        },
+        {
+          "run_m": 9.909709380296498,
+          "abs_dz_m": 3.349999999999909
+        },
+        {
+          "run_m": 15.442951077976538,
+          "abs_dz_m": 6.387000000000171
+        }
+      ]
+    },
+    {
+      "indices": [
+        24,
+        11,
+        12
+      ],
+      "sources": [
+        "src-seperated#6F (layer 0)",
+        "src-elevation#7F (layer 0)",
+        "src-elevation#81 (layer 0)"
+      ],
+      "slope_pct": 43.54860647916488,
+      "horizontal_area_m2": 12.872539000091543,
+      "parcel_intersection_m2": 2.5280711016932287,
+      "edges": [
+        {
+          "run_m": 15.442951077976538,
+          "abs_dz_m": 6.387000000000171
+        },
+        {
+          "run_m": 5.623670331664451,
+          "abs_dz_m": 1.9940000000001419
+        },
+        {
+          "run_m": 10.209101135728801,
+          "abs_dz_m": 4.393000000000029
+        }
+      ]
+    },
+    {
+      "indices": [
+        24,
+        12,
+        18
+      ],
+      "sources": [
+        "src-seperated#6F (layer 0)",
+        "src-elevation#81 (layer 0)",
+        "src-elevation#8D (layer 0)"
+      ],
+      "slope_pct": 49.02121815097656,
+      "horizontal_area_m2": 10.797274500877073,
+      "parcel_intersection_m2": 1.3938622834005523,
+      "edges": [
+        {
+          "run_m": 10.209101135728801,
+          "abs_dz_m": 4.393000000000029
+        },
+        {
+          "run_m": 5.9179054570973575,
+          "abs_dz_m": 2.875
+        },
+        {
+          "run_m": 5.137752913667033,
+          "abs_dz_m": 1.518000000000029
+        }
+      ]
+    },
+    {
+      "indices": [
+        24,
+        18,
+        23
+      ],
+      "sources": [
+        "src-seperated#6F (layer 0)",
+        "src-elevation#8D (layer 0)",
+        "src-seperated#6D (layer 0)"
+      ],
+      "slope_pct": 29.981950705050963,
+      "horizontal_area_m2": 19.706998501791606,
+      "parcel_intersection_m2": 0.0,
+      "edges": [
+        {
+          "run_m": 5.137752913667033,
+          "abs_dz_m": 1.518000000000029
+        },
+        {
+          "run_m": 10.382799670119288,
+          "abs_dz_m": 2.4579999999998563
+        },
+        {
+          "run_m": 7.893424225351721,
+          "abs_dz_m": 0.9399999999998272
+        }
+      ]
+    },
+    {
+      "indices": [
+        26,
+        0,
+        1
+      ],
+      "sources": [
+        "src-seperated#73 (layer 0)",
+        "src-elevation#69 (layer 0)",
+        "src-elevation#6B (layer 0)"
+      ],
+      "slope_pct": 45.432558837396144,
+      "horizontal_area_m2": 4.756798998369951,
+      "parcel_intersection_m2": 0.8480319635521889,
+      "edges": [
+        {
+          "run_m": 1.4449055338089987,
+          "abs_dz_m": 0.4939999999999145
+        },
+        {
+          "run_m": 7.6401704809408555,
+          "abs_dz_m": 0.6449999999999818
+        },
+        {
+          "run_m": 8.465200824510768,
+          "abs_dz_m": 0.1510000000000673
+        }
+      ]
+    },
+    {
+      "indices": [
+        26,
+        1,
+        2
+      ],
+      "sources": [
+        "src-seperated#73 (layer 0)",
+        "src-elevation#6B (layer 0)",
+        "src-elevation#6D (layer 0)"
+      ],
+      "slope_pct": 1.7838338145955814,
+      "horizontal_area_m2": 7.794541001578761,
+      "parcel_intersection_m2": 1.0124676339335705,
+      "edges": [
+        {
+          "run_m": 8.465200824510768,
+          "abs_dz_m": 0.1510000000000673
+        },
+        {
+          "run_m": 9.611463365457205,
+          "abs_dz_m": 0.16799999999989268
+        },
+        {
+          "run_m": 17.993082144137638,
+          "abs_dz_m": 0.31899999999996
+        }
+      ]
+    },
+    {
+      "indices": [
+        26,
+        2,
+        3
+      ],
+      "sources": [
+        "src-seperated#73 (layer 0)",
+        "src-elevation#6D (layer 0)",
+        "src-elevation#6F (layer 0)"
+      ],
+      "slope_pct": 58.24901586206625,
+      "horizontal_area_m2": 1.7175359993271648,
+      "parcel_intersection_m2": 0.00775156111669411,
+      "edges": [
+        {
+          "run_m": 17.993082144137638,
+          "abs_dz_m": 0.31899999999996
+        },
+        {
+          "run_m": 3.5108608629922906,
+          "abs_dz_m": 0.04899999999997817
+        },
+        {
+          "run_m": 21.49959620668282,
+          "abs_dz_m": 0.2699999999999818
+        }
+      ]
+    }
+  ],
+  "points": [
+    {
+      "source_ref": "src-elevation#69",
+      "raw_xyz": [
+        623841.289,
+        3870489.527,
+        1664.884
+      ],
+      "labels": [
+        {
+          "xy": [
+            623841.289,
+            3870489.527
+          ],
+          "z": 1664.884,
+          "layer": "0",
+          "text": "Pt1\n1664.884",
+          "handle": "6A",
+          "entity_type": "MTEXT",
+          "block_name": null
+        }
+      ],
+      "local_xyz_m": [
+        32.122397112776525,
+        33.494462022557855,
+        1664.884
+      ],
+      "inside_parcel": true
+    },
+    {
+      "source_ref": "src-elevation#6B",
+      "raw_xyz": [
+        623840.348,
+        3870481.945000001,
+        1665.529
+      ],
+      "labels": [
+        {
+          "xy": [
+            623840.348,
+            3870481.945000001
+          ],
+          "z": 1665.529,
+          "layer": "0",
+          "text": "Pt2\n1665.529",
+          "handle": "6C",
+          "entity_type": "MTEXT",
+          "block_name": null
+        }
+      ],
+      "local_xyz_m": [
+        31.181397112784907,
+        25.91246202401817,
+        1665.529
+      ],
+      "inside_parcel": true
+    },
+    {
+      "source_ref": "src-elevation#6D",
+      "raw_xyz": [
+        623839.596,
+        3870472.363,
+        1665.697
+      ],
+      "labels": [
+        {
+          "xy": [
+            623839.596,
+            3870472.363
+          ],
+          "z": 1665.697,
+          "layer": "0",
+          "text": "Pt3\n1665.697",
+          "handle": "6E",
+          "entity_type": "MTEXT",
+          "block_name": null
+        }
+      ],
+      "local_xyz_m": [
+        30.429397112806328,
+        16.330462022684515,
+        1665.697
+      ],
+      "inside_parcel": false
+    },
+    {
+      "source_ref": "src-elevation#6F",
+      "raw_xyz": [
+        623839.196,
+        3870468.875,
+        1665.648
+      ],
+      "labels": [
+        {
+          "xy": [
+            623839.196,
+            3870468.875
+          ],
+          "z": 1665.648,
+          "layer": "0",
+          "text": "Pt4\n1665.648",
+          "handle": "70",
+          "entity_type": "MTEXT",
+          "block_name": null
+        }
+      ],
+      "local_xyz_m": [
+        30.029397112783045,
+        12.842462022788823,
+        1665.648
+      ],
+      "inside_parcel": true
+    },
+    {
+      "source_ref": "src-elevation#71",
+      "raw_xyz": [
+        623828.852,
+        3870464.416,
+        1669.394
+      ],
+      "labels": [
+        {
+          "xy": [
+            623828.852,
+            3870464.416
+          ],
+          "z": 1669.394,
+          "layer": "0",
+          "text": "Pt5\n1669.394",
+          "handle": "72",
+          "entity_type": "MTEXT",
+          "block_name": null
+        }
+      ],
+      "local_xyz_m": [
+        19.685397112742066,
+        8.383462022989988,
+        1669.394
+      ],
+      "inside_parcel": true
+    },
+    {
+      "source_ref": "src-elevation#73",
+      "raw_xyz": [
+        623828.612,
+        3870471.424,
+        1669.654
+      ],
+      "labels": [
+        {
+          "xy": [
+            623828.612,
+            3870471.424
+          ],
+          "z": 1669.654,
+          "layer": "0",
+          "text": "Pt6\n1669.654",
+          "handle": "74",
+          "entity_type": "MTEXT",
+          "block_name": null
+        }
+      ],
+      "local_xyz_m": [
+        19.44539711275138,
+        15.391462022904307,
+        1669.654
+      ],
+      "inside_parcel": true
+    },
+    {
+      "source_ref": "src-elevation#75",
+      "raw_xyz": [
+        623828.781,
+        3870479.167,
+        1669.49
+      ],
+      "labels": [
+        {
+          "xy": [
+            623828.781,
+            3870479.167
+          ],
+          "z": 1669.49,
+          "layer": "0",
+          "text": "Pt7\n1669.490",
+          "handle": "76",
+          "entity_type": "MTEXT",
+          "block_name": null
+        }
+      ],
+      "local_xyz_m": [
+        19.61439711274579,
+        23.13446202268824,
+        1669.49
+      ],
+      "inside_parcel": true
+    },
+    {
+      "source_ref": "src-elevation#77",
+      "raw_xyz": [
+        623833.2880000001,
+        3870476.481,
+        1667.925
+      ],
+      "labels": [
+        {
+          "xy": [
+            623833.2880000001,
+            3870476.481
+          ],
+          "z": 1667.925,
+          "layer": "0",
+          "text": "Pt8\n1667.925",
+          "handle": "78",
+          "entity_type": "MTEXT",
+          "block_name": null
+        }
+      ],
+      "local_xyz_m": [
+        24.121397112845443,
+        20.44846202293411,
+        1667.925
+      ],
+      "inside_parcel": true
+    },
+    {
+      "source_ref": "src-elevation#79",
+      "raw_xyz": [
+        623827.247,
+        3870483.456,
+        1669.952
+      ],
+      "labels": [
+        {
+          "xy": [
+            623827.247,
+            3870483.456
+          ],
+          "z": 1669.952,
+          "layer": "0",
+          "text": "Pt9\n1669.952",
+          "handle": "7A",
+          "entity_type": "MTEXT",
+          "block_name": null
+        }
+      ],
+      "local_xyz_m": [
+        18.080397112760693,
+        27.42346202256158,
+        1669.952
+      ],
+      "inside_parcel": true
+    },
+    {
+      "source_ref": "src-elevation#7B",
+      "raw_xyz": [
+        623819.453,
+        3870480.061,
+        1673.05
+      ],
+      "labels": [
+        {
+          "xy": [
+            623819.453,
+            3870480.061
+          ],
+          "z": 1673.05,
+          "layer": "0",
+          "text": "Pt10\n1673.050",
+          "handle": "7C",
+          "entity_type": "MTEXT",
+          "block_name": null
+        }
+      ],
+      "local_xyz_m": [
+        10.28639711276628,
+        24.028462023008615,
+        1673.05
+      ],
+      "inside_parcel": true
+    },
+    {
+      "source_ref": "src-elevation#7D",
+      "raw_xyz": [
+        623820.022,
+        3870469.456,
+        1672.913
+      ],
+      "labels": [
+        {
+          "xy": [
+            623820.022,
+            3870469.456
+          ],
+          "z": 1672.913,
+          "layer": "0",
+          "text": "Pt11\n1672.913",
+          "handle": "7E",
+          "entity_type": "MTEXT",
+          "block_name": null
+        }
+      ],
+      "local_xyz_m": [
+        10.855397112783976,
+        13.42346202256158,
+        1672.913
+      ],
+      "inside_parcel": true
+    },
+    {
+      "source_ref": "src-elevation#7F",
+      "raw_xyz": [
+        623819.61,
+        3870460.84,
+        1672.744
+      ],
+      "labels": [
+        {
+          "xy": [
+            623819.61,
+            3870460.84
+          ],
+          "z": 1672.744,
+          "layer": "0",
+          "text": "Pt12\n1672.744",
+          "handle": "80",
+          "entity_type": "MTEXT",
+          "block_name": null
+        }
+      ],
+      "local_xyz_m": [
+        10.4433971127728,
+        4.807462022639811,
+        1672.744
+      ],
+      "inside_parcel": true
+    },
+    {
+      "source_ref": "src-elevation#81",
+      "raw_xyz": [
+        623814.378,
+        3870458.778,
+        1674.738
+      ],
+      "labels": [
+        {
+          "xy": [
+            623814.378,
+            3870458.778
+          ],
+          "z": 1674.738,
+          "layer": "0",
+          "text": "Pt13\n1674.738",
+          "handle": "82",
+          "entity_type": "MTEXT",
+          "block_name": null
+        }
+      ],
+      "local_xyz_m": [
+        5.211397112812847,
+        2.7454620227217674,
+        1674.738
+      ],
+      "inside_parcel": true
+    },
+    {
+      "source_ref": "src-elevation#83",
+      "raw_xyz": [
+        623814.877,
+        3870468.884,
+        1674.855
+      ],
+      "labels": [
+        {
+          "xy": [
+            623814.877,
+            3870468.884
+          ],
+          "z": 1674.855,
+          "layer": "0",
+          "text": "Pt14\n1674.855",
+          "handle": "84",
+          "entity_type": "MTEXT",
+          "block_name": null
+        }
+      ],
+      "local_xyz_m": [
+        5.7103971127653494,
+        12.851462022867054,
+        1674.855
+      ],
+      "inside_parcel": true
+    },
+    {
+      "source_ref": "src-elevation#85",
+      "raw_xyz": [
+        623816.43,
+        3870478.715,
+        1674.239
+      ],
+      "labels": [
+        {
+          "xy": [
+            623816.43,
+            3870478.715
+          ],
+          "z": 1674.239,
+          "layer": "0",
+          "text": "Pt15\n1674.239",
+          "handle": "86",
+          "entity_type": "MTEXT",
+          "block_name": null
+        }
+      ],
+      "local_xyz_m": [
+        7.263397112837993,
+        22.68246202263981,
+        1674.239
+      ],
+      "inside_parcel": true
+    },
+    {
+      "source_ref": "src-elevation#87",
+      "raw_xyz": [
+        623811.345,
+        3870476.817000001,
+        1677.438
+      ],
+      "labels": [
+        {
+          "xy": [
+            623811.345,
+            3870476.817000001
+          ],
+          "z": 1677.438,
+          "layer": "0",
+          "text": "Pt16\n1677.438",
+          "handle": "88",
+          "entity_type": "MTEXT",
+          "block_name": null
+        }
+      ],
+      "local_xyz_m": [
+        2.17839711275883,
+        20.78446202399209,
+        1677.438
+      ],
+      "inside_parcel": true
+    },
+    {
+      "source_ref": "src-elevation#89",
+      "raw_xyz": [
+        623809.801,
+        3870470.583,
+        1677.805
+      ],
+      "labels": [
+        {
+          "xy": [
+            623809.801,
+            3870470.583
+          ],
+          "z": 1677.805,
+          "layer": "0",
+          "text": "Pt17\n1677.805",
+          "handle": "8A",
+          "entity_type": "MTEXT",
+          "block_name": null
+        }
+      ],
+      "local_xyz_m": [
+        0.6343971127644181,
+        14.550462022889405,
+        1677.805
+      ],
+      "inside_parcel": false
+    },
+    {
+      "source_ref": "src-elevation#8B",
+      "raw_xyz": [
+        623814.808,
+        3870463.271,
+        1674.675
+      ],
+      "labels": [
+        {
+          "xy": [
+            623814.808,
+            3870463.271
+          ],
+          "z": 1674.675,
+          "layer": "0",
+          "text": "Pt18\n1674.675",
+          "handle": "8C",
+          "entity_type": "MTEXT",
+          "block_name": null
+        }
+      ],
+      "local_xyz_m": [
+        5.641397112747654,
+        7.238462022971362,
+        1674.675
+      ],
+      "inside_parcel": true
+    },
+    {
+      "source_ref": "src-elevation#8D",
+      "raw_xyz": [
+        623809.115,
+        3870456.072,
+        1677.613
+      ],
+      "labels": [
+        {
+          "xy": [
+            623809.115,
+            3870456.072
+          ],
+          "z": 1677.613,
+          "layer": "0",
+          "text": "Pt19\n1677.613",
+          "handle": "8E",
+          "entity_type": "MTEXT",
+          "block_name": null
+        }
+      ],
+      "local_xyz_m": [
+        -0.05160288722254336,
+        0.039462022949010134,
+        1677.613
+      ],
+      "inside_parcel": false
+    },
+    {
+      "source_ref": "src-elevation#8F",
+      "raw_xyz": [
+        623809.87,
+        3870465.113,
+        1677.632
+      ],
+      "labels": [
+        {
+          "xy": [
+            623809.87,
+            3870465.113
+          ],
+          "z": 1677.632,
+          "layer": "0",
+          "text": "Pt20\n1677.632",
+          "handle": "90",
+          "entity_type": "MTEXT",
+          "block_name": null
+        }
+      ],
+      "local_xyz_m": [
+        0.7033971127821133,
+        9.080462022684515,
+        1677.632
+      ],
+      "inside_parcel": false
+    },
+    {
+      "source_ref": "src-elevation#91",
+      "raw_xyz": [
+        623803.322,
+        3870496.094,
+        1677.462
+      ],
+      "labels": [
+        {
+          "xy": [
+            623803.322,
+            3870496.094
+          ],
+          "z": 1677.462,
+          "layer": "0",
+          "text": "نقطه مبنا\n1677.462",
+          "handle": "92",
+          "entity_type": "MTEXT",
+          "block_name": null
+        }
+      ],
+      "local_xyz_m": [
+        -5.844602887169458,
+        40.0614620228298,
+        1677.462
+      ],
+      "inside_parcel": false
+    },
+    {
+      "source_ref": "src-seperated#69",
+      "raw_xyz": [
+        623802.968,
+        3870483.552,
+        1678.998
+      ],
+      "labels": [
+        {
+          "xy": [
+            623802.968,
+            3870483.552
+          ],
+          "z": 1678.998,
+          "layer": "0",
+          "text": "Pt1",
+          "handle": "6A",
+          "entity_type": "MTEXT",
+          "block_name": null
+        }
+      ],
+      "local_xyz_m": [
+        -6.198602887219749,
+        27.519462022930384,
+        1678.998
+      ],
+      "inside_parcel": false
+    },
+    {
+      "source_ref": "src-seperated#6B",
+      "raw_xyz": [
+        623800.747,
+        3870462.586,
+        1679.674
+      ],
+      "labels": [
+        {
+          "xy": [
+            623800.747,
+            3870462.586
+          ],
+          "z": 1679.674,
+          "layer": "0",
+          "text": "Pt2",
+          "handle": "6C",
+          "entity_type": "MTEXT",
+          "block_name": null
+        }
+      ],
+      "local_xyz_m": [
+        -8.419602887239307,
+        6.5534620229154825,
+        1679.674
+      ],
+      "inside_parcel": false
+    },
+    {
+      "source_ref": "src-seperated#6D",
+      "raw_xyz": [
+        623799.692,
+        3870451.712000001,
+        1680.071
+      ],
+      "labels": [
+        {
+          "xy": [
+            623799.692,
+            3870451.712000001
+          ],
+          "z": 1680.071,
+          "layer": "0",
+          "text": "Pt3",
+          "handle": "6E",
+          "entity_type": "MTEXT",
+          "block_name": null
+        }
+      ],
+      "local_xyz_m": [
+        -9.474602887174115,
+        -4.320537975989282,
+        1680.071
+      ],
+      "inside_parcel": false
+    },
+    {
+      "source_ref": "src-seperated#6F",
+      "raw_xyz": [
+        623807.567,
+        3870451.173,
+        1679.131
+      ],
+      "labels": [
+        {
+          "xy": [
+            623807.567,
+            3870451.173
+          ],
+          "z": 1679.131,
+          "layer": "0",
+          "text": "Pt4",
+          "handle": "70",
+          "entity_type": "MTEXT",
+          "block_name": null
+        }
+      ],
+      "local_xyz_m": [
+        -1.5996028871741146,
+        -4.859537977259606,
+        1679.131
+      ],
+      "inside_parcel": false
+    },
+    {
+      "source_ref": "src-seperated#71",
+      "raw_xyz": [
+        623810.639,
+        3870476.965,
+        1678.33
+      ],
+      "labels": [
+        {
+          "xy": [
+            623810.639,
+            3870476.965
+          ],
+          "z": 1678.33,
+          "layer": "0",
+          "text": "Pt5",
+          "handle": "72",
+          "entity_type": "MTEXT",
+          "block_name": null
+        }
+      ],
+      "local_xyz_m": [
+        1.4723971127532423,
+        20.93246202263981,
+        1678.33
+      ],
+      "inside_parcel": false
+    },
+    {
+      "source_ref": "src-seperated#73",
+      "raw_xyz": [
+        623842.615,
+        3870490.101000001,
+        1665.378
+      ],
+      "labels": [
+        {
+          "xy": [
+            623842.615,
+            3870490.101000001
+          ],
+          "z": 1665.378,
+          "layer": "0",
+          "text": "Pt6",
+          "handle": "74",
+          "entity_type": "MTEXT",
+          "block_name": null
+        }
+      ],
+      "local_xyz_m": [
+        33.44839711277746,
+        34.06846202397719,
+        1665.378
+      ],
+      "inside_parcel": false
+    }
+  ],
+  "metrics": {
+    "report": {
+      "site_id": "site",
+      "site_ref": null,
+      "coordinates": {
+        "drawing_units": "m (declared_in_source)",
+        "elevation_units": "m (declared_in_source)",
+        "horizontal_crs": "unknown",
+        "vertical_datum": "unknown",
+        "local_frame": "lcs-site",
+        "local_origin_grid": [
+          623809.1666028872,
+          3870456.032537977,
+          0.0
+        ],
+        "local_rotation_deg": 0.0,
+        "grid_north": "unconfirmed: the CRS is not confirmed, so grid north is not established",
+        "grid_to_true_north_deg": null,
+        "origin_lon_lat": null
+      },
+      "boundary": {
+        "present": true,
+        "status": "inference",
+        "source_ref": "src-seperated#D7 (layer 0)",
+        "area_m2": 600.0044211737725,
+        "perimeter_m": 107.13999997363831,
+        "vertex_count": 4,
+        "oriented_extent_m": [
+          42.65117304018077,
+          18.421996351802747
+        ],
+        "edges": [
+          {
+            "index": 0,
+            "start": [
+              2.150217868387699,
+              20.889628109987825
+            ],
+            "end": [
+              0.0,
+              0.0
+            ],
+            "length_m": 20.99999998702684,
+            "bearing_local_deg": 185.87689044279014,
+            "bearing_grid_deg": null,
+            "bearing_true_deg": null
+          },
+          {
+            "index": 1,
+            "start": [
+              0.0,
+              0.0
+            ],
+            "end": [
+              30.022403531707823,
+              12.627754596993327
+            ],
+            "length_m": 32.56999999973271,
+            "bearing_local_deg": 67.18784010276215,
+            "bearing_grid_deg": null,
+            "bearing_true_deg": null
+          },
+          {
+            "index": 2,
+            "start": [
+              30.022403531707823,
+              12.627754596993327
+            ],
+            "end": [
+              32.17262140021194,
+              33.51738270698115
+            ],
+            "length_m": 20.99999998703876,
+            "bearing_local_deg": 5.876890443106109,
+            "bearing_grid_deg": null,
+            "bearing_true_deg": null
+          },
+          {
+            "index": 3,
+            "start": [
+              32.17262140021194,
+              33.51738270698115
+            ],
+            "end": [
+              2.150217868387699,
+              20.889628109987825
+            ],
+            "length_m": 32.569999999840014,
+            "bearing_local_deg": 247.18784010284156,
+            "bearing_grid_deg": null,
+            "bearing_true_deg": null
+          }
+        ]
+      },
+      "terrain": {
+        "status": "surface_built",
+        "spot_count": 27,
+        "contour_count": 0,
+        "contour_levels_m": [],
+        "contour_interval_m": null,
+        "z_min_m": 1664.884,
+        "z_max_m": 1680.071,
+        "tin_vertices": 27,
+        "tin_triangles": 47,
+        "parcel_coverage": 0.9997265348929161,
+        "max_slope_pct": 150.20847561471376,
+        "mean_slope_pct": 38.86764327997583,
+        "parcel_mean_slope_pct": 40.68025649885379,
+        "parcel_tin_area_m2": 599.8403409004853,
+        "spots_outside_boundary": [
+          "spot-elevation-6d",
+          "spot-elevation-89",
+          "spot-elevation-8d",
+          "spot-elevation-8f",
+          "spot-elevation-91",
+          "spot-seperated-69",
+          "spot-seperated-6b",
+          "spot-seperated-6d",
+          "spot-seperated-6f",
+          "spot-seperated-71",
+          "spot-seperated-73"
+        ],
+        "steep_triangles": [
+          {
+            "vertices": [
+              "spot-elevation-85",
+              "spot-seperated-71",
+              "spot-elevation-87"
+            ],
+            "slope_pct": 150.20847561471376,
+            "area_m2": 1.0462839960956334,
+            "min_angle_deg": 3.6538711973741815,
+            "pair": [
+              "spot-seperated-71",
+              "spot-elevation-87"
+            ],
+            "pair_distance_m": 0.7213459638811429,
+            "pair_dz_m": 0.8919999999998254,
+            "edge_rise_pct": 123.65772384730516,
+            "sources": [
+              "src-elevation",
+              "src-seperated"
+            ],
+            "inside_parcel": true,
+            "traits": [
+              "sliver",
+              "close pair",
+              "mixes sources"
+            ]
+          },
+          {
+            "vertices": [
+              "spot-elevation-91",
+              "spot-seperated-6d",
+              "spot-seperated-6b"
+            ],
+            "slope_pct": 147.34319645537104,
+            "area_m2": 3.6751949998929163,
+            "min_angle_deg": 0.28141873264736794,
+            "pair": [
+              "spot-seperated-6b",
+              "spot-elevation-91"
+            ],
+            "pair_distance_m": 33.60679528004147,
+            "pair_dz_m": 2.211999999999989,
+            "edge_rise_pct": 6.582002186068781,
+            "sources": [
+              "src-elevation",
+              "src-seperated"
+            ],
+            "inside_parcel": false,
+            "traits": [
+              "sliver",
+              "no steep edge",
+              "on survey edge",
+              "mixes sources",
+              "outside parcel"
+            ]
+          },
+          {
+            "vertices": [
+              "spot-elevation-89",
+              "spot-elevation-87",
+              "spot-seperated-71"
+            ],
+            "slope_pct": 123.66400227010098,
+            "area_m2": 2.3148579993622915,
+            "min_angle_deg": 6.430217276045718,
+            "pair": [
+              "spot-seperated-71",
+              "spot-elevation-87"
+            ],
+            "pair_distance_m": 0.7213459638811429,
+            "pair_dz_m": 0.8919999999998254,
+            "edge_rise_pct": 123.65772384730516,
+            "sources": [
+              "src-elevation",
+              "src-seperated"
+            ],
+            "inside_parcel": false,
+            "traits": [
+              "sliver",
+              "close pair",
+              "mixes sources",
+              "outside parcel"
+            ]
+          },
+          {
+            "vertices": [
+              "spot-elevation-91",
+              "spot-seperated-6b",
+              "spot-seperated-69"
+            ],
+            "slope_pct": 117.14163042441959,
+            "area_m2": 10.216908999481106,
+            "min_angle_deg": 1.6525950951238448,
+            "pair": [
+              "spot-seperated-69",
+              "spot-elevation-91"
+            ],
+            "pair_distance_m": 12.546994859228747,
+            "pair_dz_m": 1.5360000000000582,
+            "edge_rise_pct": 12.241975207874397,
+            "sources": [
+              "src-elevation",
+              "src-seperated"
+            ],
+            "inside_parcel": false,
+            "traits": [
+              "sliver",
+              "no steep edge",
+              "mixes sources",
+              "outside parcel"
+            ]
+          },
+          {
+            "vertices": [
+              "spot-elevation-91",
+              "spot-elevation-69",
+              "spot-seperated-73"
+            ],
+            "slope_pct": 116.9029823814977,
+            "area_m2": 15.25045002711181,
+            "min_angle_deg": 1.1411633570476796,
+            "pair": [
+              "spot-seperated-73",
+              "spot-elevation-69"
+            ],
+            "pair_distance_m": 1.4449055338089987,
+            "pair_dz_m": 0.4939999999999145,
+            "edge_rise_pct": 34.18908630640044,
+            "sources": [
+              "src-elevation",
+              "src-seperated"
+            ],
+            "inside_parcel": false,
+            "traits": [
+              "sliver",
+              "no steep edge",
+              "on survey edge",
+              "close pair",
+              "mixes sources",
+              "outside parcel"
+            ]
+          }
+        ]
+      },
+      "frontage": {
+        "length_m": 20.99999998702684,
+        "segments": [
+          [
+            "frontage-e0",
+            20.99999998702684
+          ]
+        ],
+        "access_points_on_frontage": [],
+        "road_widths": [
+          {
+            "a": "road-seperated-bc",
+            "b": "road-seperated-c5",
+            "min_m": 8.999999999972372,
+            "max_m": 9.000000000114298
+          }
+        ]
+      },
+      "feature_counts": {
+        "frontage": 1,
+        "road": 2
+      },
+      "findings": [
+        {
+          "code": "steep_terrain",
+          "severity": "warning",
+          "message": "5 TIN triangle(s) are steeper than 100% (45°), up to 150% between spot-elevation-85, spot-seperated-71, spot-elevation-87: a wall, kerb or embankment, or an elevation error; check these points with the surveyor (each one is listed under steep triangles)"
+        },
+        {
+          "code": "spots_outside_parcel",
+          "severity": "info",
+          "message": "11 spot elevation(s) lie outside the parcel boundary"
+        }
+      ],
+      "blockers": [
+        "drawing units are declared_in_source (m); a human must confirm them",
+        "horizontal CRS is unknown; a human must confirm the EPSG code or confirm the survey is local-only",
+        "elevation units are declared_in_source (m); a human must confirm them",
+        "vertical datum is unknown; a human must confirm it or confirm elevations are relative to a local benchmark",
+        "parcel boundary status is inference, not verified"
+      ],
+      "open_issues": [
+        "[warning] iss-ambiguous-entities: 6 ambiguous CAD entities were left out"
+      ]
+    },
+    "arithmetic_triangle_mean_pct": 49.41458872329239,
+    "tin_horizontal_area_m2": 1350.969702018976,
+    "all_spot_relief_m": 15.186999999999898,
+    "parcel_interpolated_z_range_m": [
+      1664.884,
+      1677.5956256098023
+    ],
+    "parcel_interpolated_relief_m": 12.71162560980224,
+    "local_origin_grid_m": [
+      623809.1666028872,
+      3870456.032537977,
+      0.0
+    ],
+    "rotation_deg": 0.0,
+    "horizontal_scale_m_per_source_unit": 1.0,
+    "vertical_scale_m_per_source_unit": 1.0
+  },
+  "semantic_sha256": "f9e0f86038733a86adab2813b56b48472068a41947b6ffa2d3a2c99a8de38e6a"
+}

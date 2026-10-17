@@ -173,6 +173,13 @@ Circulation is not stored. It is derived from passable openings and stairs
 
 ## Plans, revisions and evaluations
 
+Site reports retain `mean_slope_pct` as the horizontal-area-weighted mean over
+the complete survey TIN. `parcel_mean_slope_pct` uses each triangle's exact
+intersection area with the parcel, over `parcel_tin_area_m2` only, without
+extrapolation. `SiteContext.mean_slope_pct` (interview/program context) uses this
+parcel value; it is unknown without a covered parcel. These are derived metrics,
+not additional terrain geometry. See [ADR 0012](adr/0012-site-metric-scope.md).
+
 - `PlanVersion` (artifact kind `plan`, artifact id = `option_id`): label,
   strategy, parent version, the `ChangeRequest` that produced it, provenance
   and the `HouseModel`. The store assigns version numbers.

@@ -11,7 +11,7 @@ import math
 from collections.abc import Sequence
 
 from pydantic import Field
-from shapely.geometry import Point
+from shapely.geometry import Point, Polygon
 from shapely.ops import unary_union
 
 from house_ai.domain.base import StrictModel
@@ -90,6 +90,7 @@ class SteepTriangle(StrictModel):
     edge_rise_pct: float
     #: Source documents of the vertices (from their source references).
     sources: list[str]
+    #: Centroid classification only; a triangle can straddle the boundary.
     inside_parcel: bool | None
     traits: list[str]
 
@@ -108,6 +109,10 @@ class TerrainReport(StrictModel):
     parcel_coverage: float | None
     max_slope_pct: float | None
     mean_slope_pct: float | None
+    #: Horizontal-area-weighted mean over the TIN intersected with the parcel.
+    #: No extrapolation over any uncovered parcel area; None without intersection.
+    parcel_mean_slope_pct: float | None = None
+    parcel_tin_area_m2: float | None = None
     spots_outside_boundary: list[str]
     #: Every triangle steeper than STEEP_SLOPE_PCT, steepest first.
     steep_triangles: list[SteepTriangle] = Field(default_factory=list)
@@ -306,11 +311,18 @@ def validate_site(site: Site, site_ref: ArtifactRef | None = None) -> SiteValida
     zs = [s.z_m for s in terrain.spot_elevations] + [c.z_m for c in terrain.contours]
     surface = terrain.surface
     slopes: list[tuple[float, float]] = []
+    parcel_slopes: list[tuple[float, float]] = []
+    parcel_shape = site.boundary.to_shapely() if site.boundary is not None else None
     if surface is not None:
         for ia, ib, ic in surface.triangles:
             a, b, c = surface.vertices[ia], surface.vertices[ib], surface.vertices[ic]
             area = abs((b[0] - a[0]) * (c[1] - a[1]) - (b[1] - a[1]) * (c[0] - a[0])) / 2
-            slopes.append((triangle_slope_pct(a, b, c), area))
+            slope = triangle_slope_pct(a, b, c)
+            slopes.append((slope, area))
+            if parcel_shape is not None and math.isfinite(slope):
+                clipped_area = Polygon([p[:2] for p in (a, b, c)]).intersection(parcel_shape).area
+                if clipped_area > 0:
+                    parcel_slopes.append((slope, clipped_area))
     finite = [(s, w) for s, w in slopes if math.isfinite(s)]
     outside = []
     if site.boundary is not None:
@@ -335,6 +347,13 @@ def validate_site(site: Site, site_ref: ArtifactRef | None = None) -> SiteValida
         max_slope_pct=max(s for s, _ in finite) if finite else None,
         mean_slope_pct=(
             sum(s * w for s, w in finite) / sum(w for _, w in finite) if finite else None
+        ),
+        parcel_mean_slope_pct=(
+            sum(s * w for s, w in parcel_slopes) / sum(w for _, w in parcel_slopes)
+            if parcel_slopes else None
+        ),
+        parcel_tin_area_m2=(
+            sum(w for _, w in parcel_slopes) if parcel_shape is not None and surface else None
         ),
         spots_outside_boundary=outside,
         steep_triangles=steep_triangles(site),
@@ -536,8 +555,12 @@ def report_markdown(
         f"- Elevation range: {_fmt(t.z_min_m, ' m')} to {_fmt(t.z_max_m, ' m')} (local)",
         f"- TIN: {t.tin_vertices} vertices, {t.tin_triangles} triangles; parcel coverage "
         + ("unknown" if t.parcel_coverage is None else f"{t.parcel_coverage * 100:.1f}%"),
-        f"- Slope: max {_fmt(t.max_slope_pct, '%', 2)}, area-weighted mean "
+        f"- Slope (whole survey TIN): max {_fmt(t.max_slope_pct, '%', 2)}, "
+        "horizontal-area-weighted mean "
         f"{_fmt(t.mean_slope_pct, '%', 2)}",
+        f"- Slope (parcel intersection): horizontal-area-weighted mean "
+        f"{_fmt(t.parcel_mean_slope_pct, '%', 2)} over "
+        f"{_fmt(t.parcel_tin_area_m2, ' m²', 3)} of surveyed parcel surface",
     ]
     if t.steep_triangles:
         lines += [
@@ -548,7 +571,7 @@ def report_markdown(
             "Nothing is smoothed or removed.",
             "",
             "| Vertices | Slope | Area | Min angle | Steepest edge | Distance | Δz | Edge rise "
-            "| Sources | In parcel | Traits |",
+            "| Sources | Centroid in parcel | Traits |",
             "|---|---|---|---|---|---|---|---|---|---|---|",
         ]
         lines += [

@@ -1,7 +1,9 @@
 # Your site: what the survey tells us, what you told us, and what is still open
 
 Project: `projects/my-house` (state `SITE_NEEDS_VERIFICATION`, nothing approved).
-Review page: `projects/my-house/reviews/site-v1/index.html` (open it in a browser).
+Current audited review: [survey-audit/site-v1/index.html](survey-audit/site-v1/index.html).
+The original `site-v1/` export is retained as history. See the
+[source audit](survey-audit/REPORT.md) for the entity ledger and metric definitions.
 Sources: `surveys/seperated.dwg` (sha256 27624ba1…) and `surveys/elevation.dwg`
 (sha256 9689880c…). The wrong file `final.dwg` was withdrawn and is not used.
 
@@ -29,7 +31,7 @@ until you confirm with the command below.
 | Area / perimeter | 600.00 m² / 107.140 m (a parallelogram) | calculated |
 | Road | two parallel lines `BC` and `C5`, 9.000 m apart, along the parcel's 21.000 m west edge (drawing frame) | measured lines; "road" is an interpretation |
 | Elevation points | 27 points: 21 in elevation.dwg, 6 in seperated.dwg; z 1664.884 to 1680.071 m | measured |
-| Terrain | falls about 12.5 m across the parcel; area-weighted mean slope about 39 % | calculated (preliminary) |
+| Terrain | inside-parcel spots span 12.554 m; clipped TIN relief is 12.712 m; horizontal-area-weighted mean slope 40.68 % inside the parcel, 38.87 % over the whole survey TIN | calculated (preliminary) |
 | North | no georeference in the files, so north is **not established** | unknown |
 
 ## The five triangles steeper than 100 % (investigated, nothing smoothed)
@@ -51,8 +53,10 @@ the review page (section 5) and in `site-report.md`. What the measurements show:
   *Reading (inference):* an artefact of triangulating nearly collinear points from
   the two files, not evidence of steeper ground. They stay in the model as surveyed.
 
-None of this changes the overall picture you confirmed: the land is steep (about
-39 % on average across the parcel), with a 12–12.5 m drop.
+The owner's statement remains that the land is steep with about 12–12.5 m relief.
+Independently calculated survey metrics are 40.68 % mean slope inside the parcel
+and 12.554 m between its surveyed interior spots. Those measurements and the
+12.712 m interpolated parcel relief do not replace or modify the owner's words.
 
 ## What only you (or your surveyor) can still confirm
 

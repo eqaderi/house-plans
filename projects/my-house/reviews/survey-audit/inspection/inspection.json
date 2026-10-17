@@ -1,0 +1,197 @@
+{
+  "files": [
+    {
+      "ambiguous": [],
+      "boundary_candidate_basis": "no boundary layer identified: the largest closed polylines in the drawing",
+      "boundary_candidates": [
+        {
+          "area_m2_if_declared_unit": 600.0044211737725,
+          "area_source_units2": 600.0044211737725,
+          "handle": "D7",
+          "has_arcs": false,
+          "layer": "0",
+          "perimeter_source_units": 107.13999997363833,
+          "vertices": 4
+        }
+      ],
+      "converted_sha256": "8bb53e323311fd12668aa1381a02fb440cb97fa58a3f56851cd11409e4f7f61d",
+      "converter": "ODA File Converter",
+      "converter_version": "27.9.0.0",
+      "crs_status": "unknown: the file declares no coordinate reference system",
+      "declared_crs_name": null,
+      "declared_epsg": null,
+      "detected_format": "dwg AC1032",
+      "drawing_units_status": "declared in source as m; needs your confirmation",
+      "elevations": [
+        {
+          "constant_z_lines": 3,
+          "layer": "0",
+          "numeric_labels": 0,
+          "points_at_zero": 0,
+          "points_with_z": 6,
+          "varying_z_lines": 0,
+          "z_max": 1680.071,
+          "z_min": 1665.378,
+          "zero_z_lines": 0
+        }
+      ],
+      "entity_counts": {
+        "LWPOLYLINE": 3,
+        "MTEXT": 6,
+        "POINT": 6
+      },
+      "extents_source_units": [
+        623799.692,
+        3870450.842897095,
+        623842.615,
+        3870490.101000001
+      ],
+      "file_name": "seperated.dwg",
+      "format_evidence": "file starts with 'AC1032'",
+      "geodata": null,
+      "header": {
+        "$ACADVER": "AC1032",
+        "$ANGBASE": 0.0,
+        "$ANGDIR": 0,
+        "$AUNITS": 0,
+        "$INSUNITS": 6,
+        "$LUNITS": 2,
+        "$MEASUREMENT": 0
+      },
+      "insunits_code": 6,
+      "insunits_meaning": "metres",
+      "layers": [
+        {
+          "entity_count": 15,
+          "entity_types": {
+            "LWPOLYLINE": 3,
+            "MTEXT": 6,
+            "POINT": 6
+          },
+          "mapped_role": null,
+          "name": "0",
+          "suggested_role": null,
+          "suggestion_basis": null
+        },
+        {
+          "entity_count": 0,
+          "entity_types": {},
+          "mapped_role": null,
+          "name": "Defpoints",
+          "suggested_role": null,
+          "suggestion_basis": null
+        }
+      ],
+      "needs_confirmation": [
+        "Confirm the drawing unit: the file declares m.",
+        "Confirm the elevation unit (DXF z values use the drawing unit unless the surveyor says otherwise).",
+        "State the horizontal CRS as an EPSG code (for UTM: zone, hemisphere and datum, e.g. ETRS89 / UTM 32N = EPSG:25832), or confirm the survey is local-only.",
+        "State the vertical datum of the elevations (e.g. a national height system) or the local benchmark they are relative to.",
+        "Write a layer mapping (layer -> role); suggested roles in this report are hints from layer names only.",
+        "Confirm that polyline D7 on layer '0' is the legal parcel boundary."
+      ],
+      "parser": "ezdxf",
+      "parser_version": "1.4.5",
+      "path": "projects/my-house/surveys/seperated.dwg",
+      "read_error": null,
+      "readable": true,
+      "sha256": "27624ba14003e3d898143a9d86985d50d3d7098db0a45b94ae2dd999571519ed",
+      "size_bytes": 17602,
+      "unchanged_after_inspection": true,
+      "unmapped_layers": [],
+      "unsupported_entities": {},
+      "warnings": []
+    },
+    {
+      "ambiguous": [],
+      "boundary_candidate_basis": "no boundary layer identified: the largest closed polylines in the drawing",
+      "boundary_candidates": [],
+      "converted_sha256": "92f927e9c73289ae7c6d00b347200f033ceaa865faa8d0e60803fa17745ce5fb",
+      "converter": "ODA File Converter",
+      "converter_version": "27.9.0.0",
+      "crs_status": "unknown: the file declares no coordinate reference system",
+      "declared_crs_name": null,
+      "declared_epsg": null,
+      "detected_format": "dwg AC1021",
+      "drawing_units_status": "declared in source as m; needs your confirmation",
+      "elevations": [
+        {
+          "constant_z_lines": 0,
+          "layer": "0",
+          "numeric_labels": 21,
+          "points_at_zero": 0,
+          "points_with_z": 21,
+          "varying_z_lines": 0,
+          "z_max": 1677.805,
+          "z_min": 1664.884,
+          "zero_z_lines": 0
+        }
+      ],
+      "entity_counts": {
+        "MTEXT": 21,
+        "POINT": 21
+      },
+      "extents_source_units": [
+        623803.322,
+        3870456.072,
+        623841.289,
+        3870496.094
+      ],
+      "file_name": "elevation.dwg",
+      "format_evidence": "file starts with 'AC1021'",
+      "geodata": null,
+      "header": {
+        "$ACADVER": "AC1021",
+        "$ANGBASE": 0.0,
+        "$ANGDIR": 0,
+        "$AUNITS": 0,
+        "$INSUNITS": 6,
+        "$LUNITS": 2,
+        "$MEASUREMENT": 0
+      },
+      "insunits_code": 6,
+      "insunits_meaning": "metres",
+      "layers": [
+        {
+          "entity_count": 42,
+          "entity_types": {
+            "MTEXT": 21,
+            "POINT": 21
+          },
+          "mapped_role": null,
+          "name": "0",
+          "suggested_role": null,
+          "suggestion_basis": null
+        },
+        {
+          "entity_count": 0,
+          "entity_types": {},
+          "mapped_role": null,
+          "name": "Defpoints",
+          "suggested_role": null,
+          "suggestion_basis": null
+        }
+      ],
+      "needs_confirmation": [
+        "Confirm the drawing unit: the file declares m.",
+        "Confirm the elevation unit (DXF z values use the drawing unit unless the surveyor says otherwise).",
+        "State the horizontal CRS as an EPSG code (for UTM: zone, hemisphere and datum, e.g. ETRS89 / UTM 32N = EPSG:25832), or confirm the survey is local-only.",
+        "State the vertical datum of the elevations (e.g. a national height system) or the local benchmark they are relative to.",
+        "Write a layer mapping (layer -> role); suggested roles in this report are hints from layer names only.",
+        "Identify the parcel boundary: 0 candidate closed polylines were found."
+      ],
+      "parser": "ezdxf",
+      "parser_version": "1.4.5",
+      "path": "projects/my-house/surveys/elevation.dwg",
+      "read_error": null,
+      "readable": true,
+      "sha256": "9689880c47d9d0780089c5d4077f9396f5c29a2feeb298fafb86840bbae02f02",
+      "size_bytes": 30048,
+      "unchanged_after_inspection": true,
+      "unmapped_layers": [],
+      "unsupported_entities": {},
+      "warnings": []
+    }
+  ],
+  "note": "Read-only inspection. Values are what the files declare; nothing here is confirmed, and coordinate magnitudes are not evidence of a CRS or unit."
+}

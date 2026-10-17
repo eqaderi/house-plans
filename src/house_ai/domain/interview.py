@@ -100,6 +100,7 @@ class SiteContext(StrictModel):
     parcel_area_m2: float | None = Field(default=None, gt=0)
     #: Elevation difference across the parcel's surveyed points, metres.
     relief_m: float | None = Field(default=None, ge=0)
+    #: Horizontal-area-weighted TIN slope inside the parcel, without extrapolation.
     mean_slope_pct: float | None = Field(default=None, ge=0)
     frontage_m: float | None = Field(default=None, ge=0)
 
