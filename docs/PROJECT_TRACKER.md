@@ -551,7 +551,7 @@ limitations are tracked as new tasks in later stages, not by reopening them.
 |---|---|
 | Kind | implementation |
 | Status | IN_PROGRESS |
-| Review | PENDING |
+| Review | CHANGES_REQUESTED |
 | Branch | `stage/S2-agent-skills` |
 | Depends on | S1 |
 | Tasks | S2-01, S2-02, S2-03, S2-04, S2-05, S2-06, S2-07, S2-08, S2-09, S2-10, S2-11, S2-12, S2-13 |
@@ -2146,6 +2146,31 @@ Closure record template:
 ```
 
 ### S2 records
+
+#### S2 review 1 — CHANGES_REQUESTED
+- Reviewed commit: ccac2a770bd4e2b7de2141c92be070e06bf3dba0
+- Reviewer: agent:claude-code, claude-opus-5-5 (implementer was agent:gemini)
+- Date: 2026-10-17
+- Checks run: `.venv/bin/python -m pytest -q` (535 passed in 59.42s); `.venv/bin/ruff check src tests examples tools` (clean); `.venv/bin/house-ai schemas check` (22 schemas up to date); `.venv/bin/python tools/check_tracker.py --summary` (clean); `.venv/bin/house-ai project verify my-house` (intact: 13 events, 10 artifact versions); `.venv/bin/python tools/leak_scan.py` (clean); CI run 39063281768 green on `4aeebb9` (Python 3.11/3.13); CI run 39063686061 (workflow_dispatch by reviewer) green on head `ccac2a7` (Python 3.11/3.13); `gh repo view` visibility PRIVATE
+- Reviewer-verified discovery (repeated by an agent the implementer did not use):
+  - Claude Code: a fresh Claude Code session (claude-opus-5-5) in this repository lists `architectural-programming`, `critique-plan`, `generate-concepts` and `site-survey-review` among its available skills, with their SKILL.md descriptions.
+  - Codex: `codex debug prompt-input "list skills"` (codex-cli 0.146.0) lists all four, resolved to canonical paths, e.g. `- generate-concepts: Generate solver-backed residential floor-plan concepts using CP-SAT across six massing strategies, ... (file: .../house-plans/skills/generate-concepts/SKILL.md)`.
+  - Gemini CLI / Antigravity: not verified (`gemini` not on PATH).
+- Reviewer workflow run (Claude Code, synthetic-hillside in a scratch directory, following generate-concepts and critique-plan): `example load`, `plan strategies` (6), `plan generate --exploratory` stored nothing and produced 5 concepts with 0 hard violations plus `concept-courtyard` infeasible with a stated geometric reason; gated `plan generate` refused at SITE_INGESTION with a pointer to `--exploratory`. Gated generation, `plan export` and `plan revise` were not run, because they need human site and program approvals which the reviewer does not fake.
+- Artifacts and screenshots inspected: `git diff main...HEAD` in full; `skills/*/SKILL.md`; `skills/README.md`; `docs/adr/0015-agent-skills-canonical-location-and-discovery.md`; `docs/adr/0005-*.md`; `src/house_ai/constants/skills.py`; `src/house_ai/evaluation/grounding.py`; `tools/sync_skills.py`; `tests/test_skills.py`; `tests/test_skills_workflows.py`; `.claude/skills/*` and `.agents/skills/*` symlinks; exploratory `plan.json`, `metrics.json` and `comparison.md`; `house-ai <group> <cmd> --help` for every command named in the skills
+- Findings:
+  1. HIGH, tracker accuracy: task evidence cites tests that do not exist. S2-02 cites `tests/test_skills.py::test_skills_have_required_sections` (the real test is `test_skill_structure_and_frontmatter`). S2-11 cites `tests/test_skills.py::test_grounding_validation`, but no such test exists and the grounding assertions live in `tests/test_skills_workflows.py::test_generate_concepts_and_critique_skills_workflow`. S2-07, S2-08, S2-10 and S2-12 cite `test_site_survey_review_workflow`, `test_architectural_programming_workflow` and `test_concept_generation_and_critique_workflow`, but the real names are `test_site_survey_review_skill_workflow`, `test_architectural_programming_skill_workflow` and `test_generate_concepts_and_critique_skills_workflow`.
+  2. HIGH, missing evidence: the evidence for S2-04, S2-05, S2-06 and S2-13 says the result is "recorded in §N", but the S2 implementation record holds only assertions: no `/skills` output, no `codex debug prompt-input` excerpt, no Antigravity screenshot or transcript, and no transcripts of two agents completing the synthetic workflow. The S2-13 acceptance and the stage Demonstration are therefore unevidenced. The S2-06 claim ("mounted in active conversation environment") cannot be checked. The reviewer's own discovery evidence above covers Claude Code and Codex discovery only.
+  3. HIGH, provenance: all four canonical skills hardcode `--actor agent:gemini` (24 occurrences: `skills/architectural-programming/SKILL.md` 10, `skills/generate-concepts/SKILL.md` 7, `skills/site-survey-review/SKILL.md` 4, `skills/critique-plan/SKILL.md` 3). Claude Code or Codex following a skill literally would record its actions as Gemini, which violates AGENT_CONTRACT §4. Use `--actor agent:<tool>` and say which value each tool passes.
+  4. HIGH, grounding: `skills/critique-plan/SKILL.md` (Required validations) gives `level-entry` and `level-lower` as canonical level IDs, but generated plans use `lv-entry`, `lv-down-300` and `lv-down-600`. Run against a real exploratory plan, `validate_critique_grounding(["level-entry"], model)` rejects the skill's own example. `src/house_ai/evaluation/grounding.py` `extract_entity_ids_from_text` matches `pi|z|level|sp|w|op` only, so real `lv-*` and `adj-*` IDs in a critique are silently skipped; the extractor is also untested. The validator is not reachable by an agent: no CLI command or skill step calls it, and only one test imports it. The skill should tell the agent how to run the grounding check. Example IDs should exist in synthetic-hillside, which has no `pi-office`.
+  5. MEDIUM, ADR and approval: `docs/adr/0015-agent-skills-canonical-location-and-discovery.md` says `Status: accepted` and §K ISS-14 is marked resolved, but S2-01 Verify requires the owner's approval and none is recorded. The ADR cites no vendor documentation (S2-01 Accept: "verified against current vendor docs"; Verify: "reviewer checks the cited docs"). Its Gemini CLI and Antigravity paths are unsourced. ADR 0005 line 30 still forbids `.claude/` and `.agents/` skills directories and has no pointer to ADR 0015. Set ADR 0015 to `proposed` until the owner approves, cite the docs, and annotate ADR 0005.
+  6. MEDIUM, wrong command: `skills/site-survey-review/SKILL.md` step 2 passes `site ingest --source <source-path>`, but `--source` takes the source document id printed by `source add` (see `house-ai site ingest --help`). The workflow test calls `store.add_source()` in Python instead of `source add`, so the documented sequence was never exercised. The skill also never runs `workflow request-approval <p> site --id site` before handing over to the human (AGENT_CONTRACT §8). It does not say how or where the CONFIRM-SITE sheet is produced (S2-07 Accept: "owner questions, CONFIRM-SITE sheet").
+  7. LOW, incomplete scope: `skills/architectural-programming/SKILL.md` has no guidance on asking "a few high-information questions per round" and no concrete hillside questions (S2-08 Accept). It also omits `interview checklist`, `--unknown` and `resolve --defer`.
+  8. LOW, unrunnable step: critique-plan step 1 depends on `plan export <concept-id>`, which needs a stored concept, and so needs human site and program approval. The skill does not cover critiquing `--exploratory` output, which is the only critique an agent can run unaided before the gates.
+  9. LOW, doc accuracy: `skills/README.md` says "All skills reference docs/AGENT_CONTRACT.md", but none of the four SKILL.md files do.
+  10. LOW, destructive sync: `tools/sync_skills.py` without `--check` runs `shutil.rmtree` on any non-canonical entry in `.claude/skills` or `.agents/skills`, which deletes a developer's local skills without warning. Warn and skip unless `--prune` is passed.
+- Tracker accuracy: no. Statuses are correct (all tasks IN_PROGRESS, stage IN_PROGRESS), but see findings 1, 2 and 5 for wrong or missing evidence and the premature ISS-14 resolution.
+- Verdict: CHANGES_REQUESTED
 
 #### S2 implementation complete (2026-10-17)
 - Branch: `stage/S2-agent-skills` (commit `4aeebb9`)
