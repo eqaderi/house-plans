@@ -265,3 +265,27 @@ def test_no_road_means_no_frontage():
     assert derive_frontage(PARCEL, []) == []
     far = _road([(-10, -30), (50, -30), (50, -20), (-10, -20)])
     assert derive_frontage(PARCEL, [far]) == []
+
+
+def test_tin_piecewise_linear_interpolation_on_non_planar_terrain():
+    # A ridge along x = 10: flat from x=0..10 at z=100, then rising to z=104 at x=20.
+    spots = [
+        SpotElevation(id="s0", xy=(0.0, 0.0), z_m=100.0),
+        SpotElevation(id="s1", xy=(0.0, 10.0), z_m=100.0),
+        SpotElevation(id="s2", xy=(10.0, 0.0), z_m=100.0),
+        SpotElevation(id="s3", xy=(10.0, 10.0), z_m=100.0),
+        SpotElevation(id="s4", xy=(20.0, 0.0), z_m=104.0),
+        SpotElevation(id="s5", xy=(20.0, 10.0), z_m=104.0),
+    ]
+    tin = build_tin(spots, [])
+    assert tin.conflicts == [] and tin.surface is not None
+    # Left half [0, 10] x [0, 10] has slope 0% and z = 100.0.
+    assert elevation_at(tin.surface, (5.0, 5.0)) == pytest.approx(100.0, abs=1e-9)
+    # Right half [10, 20] x [0, 10] rises linearly with x: z(x) = 100 + 0.4 * (x - 10).
+    assert elevation_at(tin.surface, (15.0, 5.0)) == pytest.approx(102.0, abs=1e-9)
+    assert elevation_at(tin.surface, (17.5, 2.5)) == pytest.approx(103.0, abs=1e-9)
+    slopes = sorted(
+        round(triangle_slope_pct(*(tin.surface.vertices[i] for i in tri)), 2)
+        for tri in tin.surface.triangles
+    )
+    assert slopes == [0.0, 0.0, 40.0, 40.0]

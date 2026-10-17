@@ -124,7 +124,7 @@ class MappedLayerSiteExtractor:
         unrecognized: Counter[str] = Counter()
         unrecognized_layers: set[str] = set()
         for ent in [*extraction.points, *extraction.polylines]:
-            role = self.mapping.role_of(ent.layer)
+            role = self.mapping.role_of_entity(self.source_id, ent.handle, ent.layer)
             if role is None:
                 unrecognized_layers.add(ent.layer)
                 unrecognized[f"{ent.entity_type} on unmapped layer"] += 1
@@ -133,6 +133,12 @@ class MappedLayerSiteExtractor:
             else:
                 pts, lines = by_role.setdefault(role, ([], []))
                 (pts if isinstance(ent, RawPoint) else lines).append(ent)
+        if (
+            self.mapping.boundary_handle is not None
+            and not self.mapping.boundary_handle_targets_other_source(self.source_id)
+            and LayerRole.BOUNDARY not in by_role
+        ):
+            by_role[LayerRole.BOUNDARY] = ([], [])
         out.unrecognized_layers = sorted(unrecognized_layers)
         out.unrecognized_entities.update(sorted(unrecognized.items()))
 
@@ -157,7 +163,11 @@ class MappedLayerSiteExtractor:
 
     def _id(self, prefix: str, ent: RawPoint | RawPolyline) -> str:
         """Ids carry the source, because DXF handles restart in every file."""
-        tag = self.source_id.removeprefix("src-")[:24].rstrip("-_")
+        raw = self.source_id.removeprefix("src-")
+        if len(raw) > 24:
+            tag = f"{raw[:15].rstrip('-_')}-{raw[-8:].lstrip('-_')}".strip("-_")
+        else:
+            tag = raw.rstrip("-_")
         return f"{prefix}-{tag}-{ent.handle.lower()}"
 
     def _ref(self, ent: RawPoint | RawPolyline) -> str:
@@ -201,13 +211,22 @@ class MappedLayerSiteExtractor:
         open_lines = [line for line in lines if self._ring(line) is None]
         out.boundary_candidates = [line.handle for line, _ in rings]
         wanted = self.mapping.boundary_handle
+        other_source = self.mapping.boundary_handle_targets_other_source(self.source_id)
         chosen: tuple[RawPolyline, list[Point2]] | None = None
         if wanted is not None:
-            chosen = next(((ln, r) for ln, r in rings if ln.handle == wanted), None)
-            if chosen is None:
-                out.conflicts.append(
-                    f"boundary_handle {wanted!r} is not a closed polyline on a boundary layer"
+            if not other_source:
+                chosen = next(
+                    (
+                        (ln, r)
+                        for ln, r in rings
+                        if self.mapping.matches_boundary_handle(self.source_id, ln.handle)
+                    ),
+                    None,
                 )
+                if chosen is None:
+                    out.conflicts.append(
+                        f"boundary_handle {wanted!r} is not a closed polyline on a boundary layer"
+                    )
         elif len(rings) == 1:
             chosen = rings[0]
         elif len(rings) > 1:
@@ -219,7 +238,7 @@ class MappedLayerSiteExtractor:
                     out,
                 )
         for line, _ in rings:
-            if chosen is not None and line is not chosen[0]:
+            if (chosen is not None and line is not chosen[0]) or other_source:
                 self._ambiguous(line, "closed polyline on a boundary layer, not chosen", out)
 
         if chosen is not None:
@@ -233,9 +252,22 @@ class MappedLayerSiteExtractor:
                 self._ambiguous(ln, "open linework on a boundary layer, not part of it", out)
             return
 
+        if wanted is not None:
+            for ln in open_lines:
+                self._ambiguous(ln, "open linework on a boundary layer, not part of it", out)
+            return
+
         if not rings and open_lines:
-            segments = [LineString(self._local_xy(ln.points, transform)) for ln in open_lines]
-            polygons = list(polygonize(segments))
+            valid_open: list[tuple[RawPolyline, LineString]] = []
+            for ln in open_lines:
+                local_pts = self._local_xy(ln.points, transform)
+                if len(local_pts) < 2 or LineString(local_pts).length <= CLOSE_TOL:
+                    self._ambiguous(ln, "degenerate open linework on a boundary layer", out)
+                else:
+                    valid_open.append((ln, LineString(local_pts)))
+            if not valid_open:
+                return
+            polygons = list(polygonize([seg for _, seg in valid_open]))
             if len(polygons) == 1:
                 poly = polygons[0]
                 try:
@@ -243,17 +275,24 @@ class MappedLayerSiteExtractor:
                 except ValidationError as exc:
                     out.warnings.append(f"assembled boundary is invalid: {_first_error(exc)}")
                 else:
-                    handles = ",".join(ln.handle for ln in open_lines)
+                    ring_buf = poly.exterior.buffer(1e-5)
+                    used = [ln for ln, seg in valid_open if ring_buf.covers(seg)]
+                    unused = [ln for ln, seg in valid_open if not ring_buf.covers(seg)]
+                    for ln in unused:
+                        self._ambiguous(
+                            ln, "open linework on a boundary layer, not part of it", out
+                        )
+                    handles = ",".join(ln.handle for ln in used)
                     out.boundary_source_ref = (
-                        f"{self.source_id}#{handles} (assembled from {len(open_lines)} "
+                        f"{self.source_id}#{handles} (assembled from {len(used)} "
                         "open segments)"
                     )
                     out.warnings.append(
-                        f"the boundary was assembled from {len(open_lines)} open segments; "
+                        f"the boundary was assembled from {len(used)} open segments; "
                         "check it against the survey"
                     )
                     return
-            for ln in open_lines:
+            for ln, _ in valid_open:
                 self._ambiguous(
                     ln,
                     f"open linework on a boundary layer forms {len(polygons)} polygons, not one",
@@ -280,12 +319,22 @@ class MappedLayerSiteExtractor:
                 continue
             ring = self._ring(line)
             verts = ring if ring is not None else line.points
+            if len(verts) < 2:
+                self._ambiguous(line, "invalid contour geometry: fewer than 2 vertices", out)
+                continue
             local = [transform.source_to_local((x, y, line.elevation)) for x, y in verts]
+            try:
+                contour_line = Polyline2D(
+                    points=[(x, y) for x, y, _ in local], closed=ring is not None
+                )
+            except ValidationError as exc:
+                self._ambiguous(line, f"invalid contour geometry: {_first_error(exc)}", out)
+                continue
             out.contours.append(
                 Contour(
                     id=self._id("ctr", line),
                     z_m=local[0][2],
-                    line=Polyline2D(points=[(x, y) for x, y, _ in local], closed=ring is not None),
+                    line=contour_line,
                     source_ref=self._ref(line),
                 )
             )
@@ -306,7 +355,7 @@ class MappedLayerSiteExtractor:
             if p.entity_type in ("TEXT", "MTEXT"):
                 reason = (
                     "height label text is not linked to a surveyed point; not used"
-                    if _is_number(p.text)
+                    if has_numeric_elevation_label(p.text)
                     else "text on a spot-elevation layer"
                 )
                 self._ambiguous(p, reason, out)
@@ -354,9 +403,21 @@ class MappedLayerSiteExtractor:
         out: SiteExtraction,
     ) -> None:
         prefix = _ID_PREFIX[kind]
+        area_or_line_kinds = {
+            SiteFeatureKind.ROAD,
+            SiteFeatureKind.EASEMENT,
+            SiteFeatureKind.EXISTING_STRUCTURE,
+            SiteFeatureKind.WATER,
+        }
         for p in pts:
             if p.entity_type in ("TEXT", "MTEXT"):
                 self._ambiguous(p, f"text label on a {kind.value} layer; not interpreted", out)
+                continue
+            if kind in area_or_line_kinds:
+                reason = (
+                    f"{p.entity_type.lower()} on a {kind.value} layer; linework or polygon expected"
+                )
+                self._ambiguous(p, reason, out)
                 continue
             out.features.append(
                 SiteFeature(
@@ -395,14 +456,24 @@ class MappedLayerSiteExtractor:
             )
 
 
-def _is_number(text: str | None) -> bool:
+def has_numeric_elevation_label(text: str | None) -> bool:
+    """Whether ``text`` (or a line in a multi-line label like ``Pt1\\n1664.884``) is a number."""
     if not text:
         return False
-    try:
-        float(text.strip().replace(",", "."))
-    except ValueError:
-        return False
-    return True
+    for line in text.splitlines():
+        token = line.strip().replace(",", ".")
+        if not token:
+            continue
+        try:
+            val = float(token)
+        except ValueError:
+            continue
+        if math.isfinite(val):
+            return True
+    return False
+
+
+_is_number = has_numeric_elevation_label
 
 
 def _first_error(exc: ValidationError) -> str:

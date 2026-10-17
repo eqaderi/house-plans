@@ -30,7 +30,7 @@ from datetime import datetime
 
 from house_ai.cad.base import CadExtraction, CadInspection
 from house_ai.cad.dwg_oda import adapter_for
-from house_ai.cad.layers import LayerMapping, LayerRole
+from house_ai.cad.layers import LayerMapping
 from house_ai.cad.site_extract import MappedLayerSiteExtractor, SiteExtraction
 from house_ai.domain.coordinates import (
     HorizontalCRS,
@@ -55,10 +55,12 @@ from house_ai.domain.site import CadImportProvenance, Site, site_verification_bl
 from house_ai.domain.units import METRES_PER_UNIT, LengthUnit, UnitDeclaration, unit_from_insunits
 from house_ai.geospatial.base import set_coordinate_reference_system
 from house_ai.geospatial.crs import (
+    CrsValidationError,
     describe_epsg,
     grid_to_lonlat,
     grid_to_true_north_deg,
     inside_area_of_use,
+    require_projected_metric,
     require_vertical,
 )
 from house_ai.geospatial.parcel import derive_frontage
@@ -177,36 +179,59 @@ def declared_frame(
         else UnitDeclaration()
     )
     epsg = inspection.declared_epsg
-    crs = (
-        set_coordinate_reference_system(
-            actor=Actor(kind=ActorKind.SYSTEM, id="house-ai"),
-            status=ConfirmationStatus.DECLARED_IN_SOURCE,
-            declared_epsg=epsg,
-        )
-        if epsg
-        else HorizontalCRS()
-    )
-    geo = inspection.geodata
-    if geo is not None:
-        scale = geo.get("horizontal_unit_scale")
-        if unit and isinstance(scale, float) and abs(scale - METRES_PER_UNIT[unit]) > 1e-9:
+    crs = HorizontalCRS()
+    if epsg:
+        try:
+            require_projected_metric(epsg)
+            crs = set_coordinate_reference_system(
+                actor=Actor(kind=ActorKind.SYSTEM, id="house-ai"),
+                status=ConfirmationStatus.DECLARED_IN_SOURCE,
+                declared_epsg=epsg,
+            )
+        except (CrsValidationError, ValueError) as exc:
             issues.append(
                 Issue(
-                    id=f"iss-geodata-unit-conflict-{tag}"[:64],
+                    id=f"iss-geodata-crs-invalid-{tag}"[:64].rstrip("-_"),
+                    title=f"{source_id}: the declared CRS (EPSG:{epsg}) is not usable",
+                    description=str(exc),
+                    severity=Severity.BLOCKING,
+                )
+            )
+    geo = inspection.geodata
+    if geo is not None:
+        h_scale = geo.get("horizontal_unit_scale")
+        v_scale = geo.get("vertical_unit_scale")
+        h_disagrees = (
+            unit and isinstance(h_scale, float) and abs(h_scale - METRES_PER_UNIT[unit]) > 1e-9
+        )
+        v_disagrees = (
+            unit and isinstance(v_scale, float) and abs(v_scale - METRES_PER_UNIT[unit]) > 1e-9
+        )
+        if h_disagrees or v_disagrees:
+            scale_desc = (
+                f"{h_scale} m"
+                if h_scale == v_scale or v_scale is None
+                else f"horizontal {h_scale} m, vertical {v_scale} m"
+            )
+            issues.append(
+                Issue(
+                    id=f"iss-geodata-unit-conflict-{tag}"[:64].rstrip("-_"),
                     title=f"{source_id}: GEODATA and $INSUNITS disagree on the unit",
-                    description=f"$INSUNITS says {unit.value}; GEODATA scales by {scale} m.",
+                    description=f"$INSUNITS says {unit.value}; GEODATA scales by {scale_desc}.",
                     severity=Severity.BLOCKING,
                 )
             )
         design, reference = geo.get("design_point"), geo.get("reference_point")
         north = geo.get("north_direction")
-        shifted = geo.get("coordinate_type") == "local grid" and (
-            design != reference or north not in ([0.0, 1.0], [0.0, 1.0, 0.0])
+        shifted = (
+            (design is not None and reference is not None and design != reference)
+            or (north is not None and north not in ([0.0, 1.0], [0.0, 1.0, 0.0]))
+            or geo.get("coordinate_type") == "geographic"
         )
         if shifted:
             issues.append(
                 Issue(
-                    id=f"iss-geodata-transform-{tag}"[:64],
+                    id=f"iss-geodata-transform-{tag}"[:64].rstrip("-_"),
                     title=f"{source_id}: the drawing declares a georeference transform that "
                     "is not applied",
                     description=f"GEODATA design point {design}, reference point {reference}, "
@@ -302,19 +327,114 @@ def _merge(parts: list[tuple[str, SiteExtraction]]) -> SiteExtraction:
     return out
 
 
+def _extraction_issues(
+    site_ext: SiteExtraction,
+    mapping: LayerMapping,
+    *,
+    has_multiple_boundaries: bool,
+    unit_known: bool,
+) -> list[Issue]:
+    issues: list[Issue] = []
+    for i, conflict in enumerate(site_ext.conflicts, start=1):
+        issues.append(Issue(id=f"iss-conflict-{i}", title=conflict, severity=Severity.BLOCKING))
+    if (
+        site_ext.boundary is None
+        and not has_multiple_boundaries
+        and len(site_ext.boundary_candidates) > 1
+    ):
+        issues.append(
+            Issue(
+                id="iss-boundary-ambiguous",
+                title=f"{len(site_ext.boundary_candidates)} closed polylines could be the parcel",
+                description="Candidates (source#handle): "
+                + ", ".join(site_ext.boundary_candidates)
+                + ". Name the parcel with boundary_handle in the layer mapping.",
+                severity=Severity.BLOCKING,
+            )
+        )
+    elif (
+        unit_known
+        and site_ext.boundary is None
+        and not has_multiple_boundaries
+        and mapping.has_boundary_role()
+    ):
+        issues.append(
+            Issue(
+                id="iss-boundary-missing",
+                title="No usable parcel boundary on the boundary layers",
+                severity=Severity.BLOCKING,
+            )
+        )
+    for a, b in crossing_contours(site_ext.contours):
+        issues.append(
+            Issue(
+                id=f"iss-contours-cross-{a}-{b}"[:64].rstrip("-_"),
+                title=f"Contours {a} and {b} cross although their elevations differ",
+                severity=Severity.BLOCKING,
+                subject_ids=[a, b],
+            )
+        )
+    if site_ext.ambiguous:
+        issues.append(
+            Issue(
+                id="iss-ambiguous-entities",
+                title=f"{len(site_ext.ambiguous)} ambiguous CAD entities were left out",
+                description="Listed with handle and reason in the cad_import artifacts.",
+                severity=Severity.WARNING,
+            )
+        )
+    for i, warning in enumerate(site_ext.warnings, start=1):
+        issues.append(Issue(id=f"iss-warning-{i}", title=warning, severity=Severity.WARNING))
+    if site_ext.unrecognized_layers:
+        issues.append(
+            Issue(
+                id="iss-unmapped-layers",
+                title=f"{len(site_ext.unrecognized_layers)} layers have no role and were not read",
+                description=", ".join(site_ext.unrecognized_layers),
+                severity=Severity.INFO,
+            )
+        )
+    return issues
+
+
 def interpret(
     sources: list[tuple[str, CadExtraction]], mapping: LayerMapping, frame: FrameDeclaration
 ) -> Interpretation:
     """Interpret every file in one shared frame. ``sources`` is (source id, extraction)."""
     issues: list[Issue] = []
     h_unit, v_unit = frame.source_units.unit, frame.elevation_units.unit
+    extractors = [(sid, ext, MappedLayerSiteExtractor(mapping, sid)) for sid, ext in sources]
     if h_unit is None:
-        return Interpretation(frame=frame, local=None, extraction=SiteExtraction())
+        per_source_unscaled: dict[str, SiteExtraction] = {}
+        for sid, ext, x in extractors:
+            e = ext.inspection.extents if ext.inspection else None
+            src_origin = (e[0], e[1], 0.0) if e else (0.0, 0.0, 0.0)
+            src_tf = SurveyTransform(
+                1.0, 1.0, LocalCoordinateSystem(id="source", origin=src_origin)
+            )
+            part = x.extract(ext, src_tf)
+            part.boundary = None
+            part.boundary_source_ref = None
+            part.contours = []
+            part.spot_elevations = []
+            part.features = []
+            per_source_unscaled[sid] = part
+        site_ext = _merge(list(per_source_unscaled.items()))
+        issues += _extraction_issues(
+            site_ext, mapping, has_multiple_boundaries=False, unit_known=False
+        )
+        return Interpretation(
+            frame=frame,
+            local=None,
+            extraction=site_ext,
+            issues=issues,
+            assumptions=[],
+            per_source=per_source_unscaled,
+        )
     h_m = METRES_PER_UNIT[h_unit]
     # Without an elevation unit the z values are not converted at all (see below);
     # the vertical scale used here only keeps the transform well defined.
     v_m = METRES_PER_UNIT[v_unit] if v_unit else 1.0
-    extractors = [(sid, ext, MappedLayerSiteExtractor(mapping, sid)) for sid, ext in sources]
 
     origin, basis = frame.origin, "given by a human"
     grid_frame = LocalCoordinateSystem(id="grid", origin=(0.0, 0.0, 0.0))
@@ -392,61 +512,12 @@ def interpret(
                 severity=Severity.BLOCKING,
             )
         )
-
-    for i, conflict in enumerate(site_ext.conflicts, start=1):
-        issues.append(Issue(id=f"iss-conflict-{i}", title=conflict, severity=Severity.BLOCKING))
-    if site_ext.boundary is None and not boundaries and len(site_ext.boundary_candidates) > 1:
-        issues.append(
-            Issue(
-                id="iss-boundary-ambiguous",
-                title=f"{len(site_ext.boundary_candidates)} closed polylines could be the parcel",
-                description="Candidates (source#handle): "
-                + ", ".join(site_ext.boundary_candidates)
-                + ". Name the parcel with boundary_handle in the layer mapping.",
-                severity=Severity.BLOCKING,
-            )
-        )
-    elif (
-        site_ext.boundary is None
-        and not boundaries
-        and any(r is LayerRole.BOUNDARY for r in mapping.layers.values())
-    ):
-        issues.append(
-            Issue(
-                id="iss-boundary-missing",
-                title="No usable parcel boundary on the boundary layers",
-                severity=Severity.BLOCKING,
-            )
-        )
-    for a, b in crossing_contours(site_ext.contours):
-        issues.append(
-            Issue(
-                id=f"iss-contours-cross-{a}-{b}"[:64].rstrip("-_"),
-                title=f"Contours {a} and {b} cross although their elevations differ",
-                severity=Severity.BLOCKING,
-                subject_ids=[a, b],
-            )
-        )
-    if site_ext.ambiguous:
-        issues.append(
-            Issue(
-                id="iss-ambiguous-entities",
-                title=f"{len(site_ext.ambiguous)} ambiguous CAD entities were left out",
-                description="Listed with handle and reason in the cad_import artifacts.",
-                severity=Severity.WARNING,
-            )
-        )
-    for i, warning in enumerate(site_ext.warnings, start=1):
-        issues.append(Issue(id=f"iss-warning-{i}", title=warning, severity=Severity.WARNING))
-    if site_ext.unrecognized_layers:
-        issues.append(
-            Issue(
-                id="iss-unmapped-layers",
-                title=f"{len(site_ext.unrecognized_layers)} layers have no role and were not read",
-                description=", ".join(site_ext.unrecognized_layers),
-                severity=Severity.INFO,
-            )
-        )
+    issues += _extraction_issues(
+        site_ext,
+        mapping,
+        has_multiple_boundaries=len(boundaries) > 1,
+        unit_known=True,
+    )
     assumptions = [
         Assumption(
             id="asm-local-origin",
@@ -474,10 +545,12 @@ def assemble_site(
     extra_issues: list[Issue],
     accept: set[str],
     carry_accepted: set[str] = frozenset(),
+    carry_accepted_signatures: set[tuple[str, str, str | None]] = frozenset(),
     notes: str | None = None,
 ) -> Site:
     """Build the canonical site. ``accept`` holds issue ids a human accepts now
-    (each must exist); ``carry_accepted`` keeps earlier acceptances that still apply."""
+    (each must exist); ``carry_accepted`` / ``carry_accepted_signatures`` keep
+    earlier acceptances that still apply."""
     ext = interp.extraction
     terrain, tin = terrain_from_survey(ext.spot_elevations, ext.contours)
     issues = [*extra_issues, *interp.issues]
@@ -491,7 +564,12 @@ def assemble_site(
         raise ValueError(f"cannot accept unknown issue(s): {', '.join(sorted(unknown))}")
     accepted = accept | carry_accepted
     issues = [
-        i.model_copy(update={"status": IssueStatus.ACCEPTED}) if i.id in accepted else i
+        i.model_copy(update={"status": IssueStatus.ACCEPTED})
+        if (
+            i.id in accepted
+            or (i.id, i.title, i.description) in carry_accepted_signatures
+        )
+        else i
         for i in issues
     ]
     if ext.boundary is None:
@@ -554,7 +632,7 @@ def _cad_record(
 ) -> CadImportProvenance:
     insp = src.extraction.inspection
     assert insp is not None
-    frame, _ = declared_frame(insp, src.doc.id)
+    frame = interp.frame
     return CadImportProvenance(
         source_document_id=src.doc.id,
         original_filename=src.doc.original_filename,
@@ -575,6 +653,7 @@ def _cad_record(
         unrecognized_layers=part.unrecognized_layers,
         unrecognized_entities=part.unrecognized_entities,
         layer_roles=mapping.as_dict(),
+        handle_roles=mapping.handle_roles_as_dict(),
         zero_elevation_is_valid=mapping.zero_elevation_is_valid,
         boundary_handle=mapping.boundary_handle,
         ambiguous_entities=part.ambiguous,
@@ -603,7 +682,7 @@ def ingest_site(
     cad_refs = [
         store.put(
             ArtifactKind.CAD_IMPORT,
-            f"cad-{s.doc.id}"[:64],
+            f"cad-{s.doc.id}"[:64].rstrip("-_"),
             _cad_record(s, interp.per_source.get(s.doc.id, SiteExtraction()), interp, mapping),
             actor,
         )
@@ -663,6 +742,7 @@ def confirm_site(
     mapping = LayerMapping.model_validate(
         {
             "layers": cads[0].layer_roles,
+            "handle_roles": cads[0].handle_roles,
             "zero_elevation_is_valid": cads[0].zero_elevation_is_valid,
             "boundary_handle": cads[0].boundary_handle,
         }
@@ -704,29 +784,49 @@ def confirm_site(
         datum = VerticalDatum(status=confirmed, name=conf.vertical_datum, epsg=conf.vertical_epsg)
     else:
         datum = c.vertical_datum
+    if conf.origin is not None:
+        origin: Point3 | None = conf.origin
+    elif c.local is not None and "given by a human" in (c.local.name or ""):
+        origin = c.local.origin
+    else:
+        origin = None
     if conf.rotation_deg is not None:
         rotation = conf.rotation_deg
     else:
         rotation = c.local.rotation_deg if c.local else 0.0
-    frame = FrameDeclaration(units, elevation, crs, datum, conf.origin, rotation)
+    frame = FrameDeclaration(units, elevation, crs, datum, origin, rotation)
     interp = interpret([(s.doc.id, s.extraction) for s in sources], mapping, frame)
+    new_cad_refs = [
+        store.put(
+            ArtifactKind.CAD_IMPORT,
+            f"cad-{s.doc.id}"[:64].rstrip("-_"),
+            _cad_record(s, interp.per_source.get(s.doc.id, SiteExtraction()), interp, mapping),
+            actor,
+            reason="human site confirmation: " + "; ".join(conf.summary()),
+        )
+        for s in sources
+    ]
     unchanged = interp.extraction.boundary == site.boundary
     still_verified = site.boundary_status is Epistemic.VERIFIED_FACT and unchanged
-    previously_accepted = {i.id for i in site.issues if i.status is IssueStatus.ACCEPTED}
+    previously_accepted_sigs = {
+        (i.id, i.title, i.description)
+        for i in site.issues
+        if i.status is IssueStatus.ACCEPTED
+    }
     new = assemble_site(
         interp,
         site_id=site_id,
         project_id=store.project_id,
         name=site.name,
         classification=_classification(sources),
-        inputs=[*(s.doc_ref for s in sources), *cad_refs],
+        inputs=[*(s.doc_ref for s in sources), *new_cad_refs],
         actor=actor,
         created_at=store.clock(),
         method="human_site_confirmation",
         boundary_verified=conf.boundary_verified or still_verified,
         extra_issues=frame_issues,
         accept=set(conf.accept_issues),
-        carry_accepted=previously_accepted,
+        carry_accepted_signatures=previously_accepted_sigs,
         notes=f"{actor.id} confirmed: " + "; ".join(conf.summary()),
     )
     return store.put(

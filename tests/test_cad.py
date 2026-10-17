@@ -125,8 +125,88 @@ def test_layer_mapping_file_and_case_insensitive_roles():
 
 
 def test_role_suggestions_are_hints_from_names_only():
-    hints = suggest_roles(["GRENZE", "Hoehenlinien", "Defpoints", "SLAB", "0", "TREES"])
+    hints = suggest_roles(
+        ["GRENZE", "Hoehenlinien", "SurveyPoint", "Defpoints", "SLAB", "0", "TREES"]
+    )
     assert hints["GRENZE"][0] is LayerRole.BOUNDARY
     assert hints["Hoehenlinien"][0] is LayerRole.CONTOUR
+    assert hints["SurveyPoint"][0] is LayerRole.SPOT_ELEVATION
     assert hints["TREES"][0] is LayerRole.TREE
     assert "Defpoints" not in hints and "SLAB" not in hints and "0" not in hints
+
+
+def test_oda_converter_nonzero_exit_or_missing_output_raises_dwg_conversion_error(
+    tmp_path, monkeypatch
+):
+    import subprocess
+
+    from house_ai.cad.dwg_oda import OdaConverter, OdaDwgAdapter
+
+    fake_dwg = tmp_path / "survey.dwg"
+    fake_dwg.write_bytes(b"AC1032" + b"\x00" * 100)
+    converter = OdaConverter(executable=tmp_path / "fake-oda", version="27.9.0")
+
+    def fail_run(*_args, **_kwargs):
+        return subprocess.CompletedProcess(args=[], returncode=1, stdout="", stderr="ODA error")
+
+    monkeypatch.setattr(subprocess, "run", fail_run)
+    with pytest.raises(DwgConversionError, match="exit 1"):
+        OdaDwgAdapter(converter).inspect_cad(fake_dwg)
+
+    def empty_run(*_args, **_kwargs):
+        return subprocess.CompletedProcess(args=[], returncode=0, stdout="", stderr="")
+
+    monkeypatch.setattr(subprocess, "run", empty_run)
+    with pytest.raises(DwgConversionError, match="produced no DXF"):
+        OdaDwgAdapter(converter).inspect_cad(fake_dwg)
+
+
+def test_multiline_elevation_label_detection():
+    from house_ai.cad.site_extract import has_numeric_elevation_label
+
+    assert has_numeric_elevation_label("103.25")
+    assert has_numeric_elevation_label("103,25")
+    assert has_numeric_elevation_label("Pt1\n1664.884")
+    assert has_numeric_elevation_label("نقطه مبنا\n1677.462")
+    assert not has_numeric_elevation_label("Pt1")
+    assert not has_numeric_elevation_label("area   201.07")
+    assert not has_numeric_elevation_label("Synthetic Road")
+    assert not has_numeric_elevation_label("NaN")
+    assert not has_numeric_elevation_label(None)
+
+
+def test_single_layer_drawing_can_be_mapped_with_boundary_handle_and_handle_roles(tmp_path):
+    import ezdxf
+
+    from house_ai.cad.site_extract import MappedLayerSiteExtractor
+    from house_ai.domain.coordinates import LocalCoordinateSystem, SurveyTransform
+
+    doc = ezdxf.new("R2018")
+    doc.header["$INSUNITS"] = 6
+    msp = doc.modelspace()
+    parcel = msp.add_lwpolyline(
+        [(0, 0), (20, 0), (20, 30), (0, 30)], close=True, dxfattribs={"layer": "0"}
+    )
+    road_edge = msp.add_lwpolyline([(0, 0), (0, 30)], dxfattribs={"layer": "0"})
+    spot = msp.add_point((10, 15, 1670.5), dxfattribs={"layer": "0"})
+    label = msp.add_mtext("Pt1\n1670.5", dxfattribs={"layer": "0", "insert": (10, 15, 0)})
+    dxf_path = tmp_path / "layer0.dxf"
+    doc.saveas(dxf_path)
+
+    ext = EzdxfAdapter().extract_cad(dxf_path, {})
+    mapping = LayerMapping(
+        layers={"0": LayerRole.SPOT_ELEVATION},
+        boundary_handle=parcel.dxf.handle,
+        handle_roles={
+            road_edge.dxf.handle: LayerRole.ROAD,
+            label.dxf.handle: LayerRole.ANNOTATION,
+        },
+    )
+    tf = SurveyTransform(1.0, 1.0, LocalCoordinateSystem(id="lcs", origin=(0.0, 0.0, 0.0)))
+    res = MappedLayerSiteExtractor(mapping, "src-layer0").extract(ext, tf)
+    assert res.boundary is not None and res.boundary.area_m2 == pytest.approx(600.0)
+    assert len(res.spot_elevations) == 1 and res.spot_elevations[0].z_m == pytest.approx(1670.5)
+    assert spot.dxf.handle in res.spot_elevations[0].source_ref
+    assert len(res.features) == 1 and res.features[0].kind.value == "road"
+    assert res.ignored_count == 1
+    assert res.ambiguous == [] and res.conflicts == []

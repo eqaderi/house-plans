@@ -443,9 +443,12 @@ def cmd_site_report(args: argparse.Namespace) -> int:
         "site-report.md": report_markdown(report),
         "site.svg": render_site_svg(site, report),
     }
-    for r in site.provenance.inputs:
-        if r.kind is ArtifactKind.CAD_IMPORT:
-            files["cad-import.json"] = pretty_json(store.get(r))
+    cad_inputs = [r for r in site.provenance.inputs if r.kind is ArtifactKind.CAD_IMPORT]
+    if cad_inputs:
+        files["cad-import.json"] = pretty_json(store.get(cad_inputs[0]))
+    if len(cad_inputs) > 1:
+        for r in cad_inputs:
+            files[f"{r.id}.json"] = pretty_json(store.get(r))
     for name, text in files.items():
         (out / name).write_text(text, encoding="utf-8")
         _out(f"wrote {out / name}")

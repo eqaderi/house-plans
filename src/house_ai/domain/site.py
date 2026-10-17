@@ -176,6 +176,8 @@ class CadImportProvenance(StrictModel):
     vertical_datum_status: ConfirmationStatus
     #: Layer -> role mapping used for the import, as supplied by the user.
     layer_roles: dict[str, str] = Field(default_factory=dict)
+    #: Entity handle -> role overrides used for the import, if any.
+    handle_roles: dict[str, str] = Field(default_factory=dict)
     #: Mapping options used for the import (see house_ai.cad.layers.LayerMapping).
     zero_elevation_is_valid: bool = False
     boundary_handle: str | None = None

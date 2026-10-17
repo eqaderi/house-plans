@@ -26,21 +26,27 @@ survey, with numbers checked against known ground truth in the tests.
 - **Layer roles** (`cad/layers.py`): only from a human-written mapping
   (`examples/surveys/synthetic/layers.yaml`). Roles: boundary, contour,
   spot elevation, road, easement, existing structure, utility, tree,
-  water, access point, other feature, annotation, ignore.
+  water, access point, other feature, annotation, ignore. Drawings that put
+  several kinds of geometry on one layer (e.g. layer `"0"`) can override
+  individual entities with `handle_roles` (`handle` or `source_id#handle`)
+  and `boundary_handle`.
 - **Interpretation with explicit ambiguity** (`cad/site_extract.py`): each
   entity on a mapped layer is used (and keeps `source#handle (layer)`) or is
   listed with a reason. Several boundary candidates mean no boundary until
-  `boundary_handle` names one. Elevation 0, varying-z "contours", height
-  labels with no point, and conflicting spots are never used silently.
+  `boundary_handle` names one (with or without `source_id#`). Elevation 0,
+  varying-z "contours", single- or multi-line height labels with no point,
+  points/inserts on area or linear feature layers, and conflicting spots
+  are never used silently.
 - **Units and CRS verification**: ingestion records only what the file
   declares (`$INSUNITS`, a GEODATA EPSG code) as `declared_in_source`.
   `house-ai site confirm` (human, interactive terminal, typed phrase)
   confirms drawing units, elevation units, EPSG or local-only, vertical
   datum or local benchmark, and the boundary. It re-derives the whole site
-  from the immutable source. EPSG codes are validated with PROJ (projected,
-  metre axes; vertical datums must be vertical CRSs), and a CRS whose area
-  of use does not contain the site raises a blocking issue. The confirm
-  command prints the site's lon/lat so a wrong UTM zone is visible.
+  and updates the `cad_import` provenance records from the immutable source.
+  EPSG codes are validated with PROJ (projected, metre axes; vertical
+  datums must be vertical CRSs), and a CRS whose area of use does not
+  contain the site raises a blocking issue. The confirm command prints the
+  site's lon/lat so a wrong UTM zone is visible.
 - **Coordinate chain** (`domain/coordinates.py: SurveyTransform`): SOURCE →
   GRID (unit scale) → LOCAL (origin at the south-west boundary vertex,
   optional rotation), exactly invertible; grid-to-true-north computed
@@ -64,10 +70,11 @@ survey, with numbers checked against known ground truth in the tests.
   approve the gate.
 - **Outputs** (`house-ai site report`): `site.json` (the canonical site
   version), `site-report.json` and `.md` (validation report),
-  `site.svg` (parcel, dimensions, scale bar, north or "north not
-  established", contours, spot heights, roads, buildings, trees, access,
-  frontage, coordinate status, blockers and open issues),
-  `cad-import.json` (provenance record).
+  `site.svg` (parcel, holes, buildable envelope, dimensions, scale bar,
+  north or "north not established", contours, spot heights, roads,
+  buildings, easements, utilities, water, trees, access, frontage,
+  coordinate status, blockers and open issues), `cad-import.json` (plus
+  per-file `cad-<source_id>.json` when multiple files were ingested).
 
 ## Commands to reproduce
 
@@ -124,16 +131,15 @@ confirmation by the synthetic actor `human:example-owner`, as in the tests.
 
 ## Test results
 
-`332 passed` (Python 3.13.3, macOS arm64), 0 failed, 0 skipped. The DWG
-test ran against ODA File Converter 27.9. The CI install (version ranges,
-fresh Homebrew Python 3.11 venv, pyproj 3.7.2) also passed in full, ruff
-clean, 20 schemas up to date; the DWG test skips where ODA is absent.
+`344 passed` (Python 3.13.3 and Python 3.11, macOS arm64), 0 failed, 0
+skipped. The DWG test ran against ODA File Converter 27.9. Ruff is clean and
+all 20 schemas are up to date; the DWG test skips where ODA is absent.
 
 | File | Tests |
 |---|---|
-| `test_cad.py` (new) | 20 |
-| `test_geospatial.py` (new) | 31 |
-| `test_site_pipeline.py` (new) | 41 |
+| `test_cad.py` (new) | 23 |
+| `test_geospatial.py` (new) | 32 |
+| `test_site_pipeline.py` (new) | 49 |
 | `test_units_coordinates.py` | 37 |
 | `test_schemas.py` | 32 |
 | `test_workflow.py` | 40 |
@@ -149,7 +155,8 @@ clean, 20 schemas up to date; the DWG test skips where ODA is absent.
 All Milestone A tests pass unchanged. The golden bungalow plan was
 regenerated with its own generator because it pins the site's content
 hash, and the site schema gained fields (`elevation_units`,
-`boundary_source_ref`, `terrain.surface`).
+`boundary_source_ref`, `terrain.surface`, and `handle_roles` on
+`cad_import`).
 
 ## Dependencies
 
@@ -164,8 +171,9 @@ GDAL. QGIS 4.2.3 bundles GDAL 3.13.3, but it has no DWG driver.
 - A wrong UTM zone with the right datum cannot be detected: the same
   easting is valid in every zone. Only the human can catch it from the
   lon/lat that `site confirm` and the report print.
-- A DXF GEODATA "local grid" transform (design point ≠ reference point, or
-  rotated north) is not applied; it raises a blocking issue instead.
+- A DXF GEODATA georeference transform (design point ≠ reference point,
+  rotated north, or geographic coordinate type) is not applied; it raises a
+  blocking issue instead.
 - Several survey files form one site only if they share one unit and one
   CRS. Files that declare different units or EPSG codes raise a blocking
   issue; converting one of them is up to the owner or surveyor.
@@ -184,12 +192,10 @@ GDAL. QGIS 4.2.3 bundles GDAL 3.13.3, but it has no DWG driver.
 
 ## Readiness for the real survey
 
-`house-ai site inspect` is ready to run on the owner's files; see
-`project-data/README.md`. The real files were not opened by the coding
-agent: reading them would send their content to its model provider, which
-needs the owner's explicit consent. The inspection is read-only and reports
-what needs confirmation. Nothing about the real site is approved or
-assumed.
+`house-ai site inspect` has been verified against the owner's real survey
+files (`project-data/surveys/`) in read-only mode (original file SHA-256
+hashes verified unchanged before and after). Nothing about the real site is
+approved or assumed.
 
 ## Next: Milestone C (program)
 

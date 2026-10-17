@@ -346,6 +346,13 @@
           "default": null,
           "title": "Epsg"
         },
+        "handle_roles": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "title": "Handle Roles",
+          "type": "object"
+        },
         "horizontal_crs_status": {
           "$ref": "#/$defs/ConfirmationStatus"
         },

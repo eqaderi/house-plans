@@ -685,3 +685,283 @@ def test_a_boundary_in_two_files_is_ambiguous(ingest_many, make_survey):
     site = _site(store, result.site_ref)
     assert site.boundary is None
     assert any(i.id == "iss-boundary-in-several-files" for i in site.issues)
+
+
+# -------------------------------------------------------- Milestone B review regressions
+
+
+def test_unitless_drawing_preserves_cad_import_provenance_and_updates_on_confirm(
+    ingest, make_survey
+):
+    store, result = ingest(make_survey(declare_units=False))
+    cad_v1 = store.get(result.cad_ref, CadImportProvenance)
+    assert len(cad_v1.ambiguous_entities) == 6
+    assert cad_v1.unrecognized_layers == ["MISC_XREF"]
+    assert cad_v1.unrecognized_entities["SPLINE"] == 1
+    assert cad_v1.local_origin is None
+
+    site_ref = confirm_site(store, "site", HUMAN, FULL)
+    site_v2 = _site(store, site_ref)
+    cad_ref_v2 = next(r for r in site_v2.provenance.inputs if r.kind is K.CAD_IMPORT)
+    assert cad_ref_v2.version == 2
+    cad_v2 = store.get(cad_ref_v2, CadImportProvenance)
+    assert cad_v2.drawing_units.status is C.USER_CONFIRMED
+    assert cad_v2.horizontal_crs_status is C.USER_CONFIRMED
+    assert cad_v2.epsg == 25832
+    assert cad_v2.vertical_datum_status is C.USER_CONFIRMED
+    assert cad_v2.local_origin == site_v2.coordinates.local.origin
+    assert len(cad_v2.ambiguous_entities) == 6
+
+
+def test_site_svg_renders_easement_utility_water_holes_and_buildable_envelope(ingest):
+    from house_ai.domain.geometry import Polygon2D, Polyline2D
+    from house_ai.domain.site import (
+        BuildableEnvelope,
+        PolygonGeometry,
+        PolylineGeometry,
+        SiteFeature,
+    )
+
+    store, result = ingest()
+    site = _site(store, result.site_ref).model_copy(
+        update={
+            "buildable_envelope": BuildableEnvelope(
+                polygon=Polygon2D(outer=[(3, 3), (37, 3), (37, 27), (3, 27)]),
+                status=Epistemic.ASSUMPTION,
+                basis="3 m setback assumed",
+            ),
+            "features": [
+                *_site(store, result.site_ref).features,
+                SiteFeature(
+                    id="esmt-1",
+                    kind=SiteFeatureKind.EASEMENT,
+                    geometry=PolygonGeometry(
+                        polygon=Polygon2D(
+                            outer=[(0, 0), (40, 0), (40, 3), (0, 3)],
+                            holes=[[(5, 1), (10, 1), (10, 2), (5, 2)]],
+                        )
+                    ),
+                ),
+                SiteFeature(
+                    id="util-1",
+                    kind=SiteFeatureKind.UTILITY,
+                    geometry=PolylineGeometry(line=Polyline2D(points=[(0, 5), (40, 5)])),
+                ),
+                SiteFeature(
+                    id="water-1",
+                    kind=SiteFeatureKind.WATER,
+                    geometry=PolygonGeometry(
+                        polygon=Polygon2D(outer=[(20, 20), (25, 20), (25, 25), (20, 25)])
+                    ),
+                ),
+            ],
+        }
+    )
+    svg = render_site_svg(site, validate_site(site))
+    assert "esmt-1 (easement)" in svg
+    assert 'fill-rule="evenodd"' in svg
+    assert "util-1 (utility)" in svg
+    assert "water-1 (water)" in svg
+    assert "buildable envelope (assumption): 3 m setback assumed" in svg
+
+
+def test_geodata_transform_on_projected_grid_and_invalid_epsg_block(tmp_path, new_store, mapping):
+    import ezdxf
+
+    from examples.surveys.synthetic.make_survey import GEODATA_XML, PARCEL
+
+    doc = ezdxf.new("R2018")
+    doc.header["$INSUNITS"] = 6
+    doc.layers.add("PARCEL_BOUNDARY")
+    msp = doc.modelspace()
+    msp.add_lwpolyline(PARCEL, close=True, dxfattribs={"layer": "PARCEL_BOUNDARY"})
+    geo = msp.new_geodata()
+    geo.dxf.coordinate_type = 2  # projected grid, but with non-zero reference point & bad EPSG
+    geo.dxf.design_point = (0.0, 0.0, 0.0)
+    geo.dxf.reference_point = (500_000.0, 5_400_000.0, 0.0)
+    geo.dxf.horizontal_unit_scale = 1.0
+    geo.dxf.vertical_unit_scale = 0.3048  # vertical scale disagrees with $INSUNITS=6 (metres)
+    geo.coordinate_system_definition = GEODATA_XML.format(epsg=4326)  # geographic, not projected
+    path = tmp_path / "bad_geodata.dxf"
+    doc.saveas(path)
+
+    store = new_store("bad-geodata")
+    src = store.add_source(path, HUMAN, classification=DataClassification.SYNTHETIC)
+    res = ingest_site(store, src.id, mapping, AGENT)
+    site = _site(store, res.site_ref)
+    issue_ids = {i.id for i in site.issues}
+    assert any(i.startswith("iss-geodata-crs-invalid-") for i in issue_ids)
+    assert any(i.startswith("iss-geodata-unit-conflict-") for i in issue_ids)
+    assert any(i.startswith("iss-geodata-transform-") for i in issue_ids)
+
+
+def test_multifile_boundary_handle_with_source_prefix_and_report_outputs(
+    tmp_path, ingest_many, make_survey, mapping
+):
+    a = make_survey(extra_boundary=False)
+    b = make_survey(layers=BOUNDARY_LAYERS)
+    store0, res0 = ingest_many([a, b])
+    site0 = _site(store0, res0.site_ref)
+    assert site0.boundary is None
+
+    # Use source_id#handle from the first file to disambiguate across two files.
+    doc_a_id = store0.get(res0.cad_refs[0], CadImportProvenance).source_document_id
+    named = mapping.model_copy(update={"boundary_handle": f"{doc_a_id}#40"})
+    store1, res1 = ingest_many([a, b], mapping=named)
+    site1 = _site(store1, res1.site_ref)
+    assert site1.boundary is not None
+    assert site1.boundary.area_m2 == pytest.approx(1400.0)
+    assert not any(i.id.startswith("iss-conflict-") for i in site1.issues)
+
+    out_dir = tmp_path / "multi-report"
+    assert main(["site", "report", str(store1.root), "--id", "site", "--out", str(out_dir)]) == 0
+    written = sorted(f.name for f in out_dir.iterdir())
+    assert "cad-import.json" in written
+    assert sum(name.startswith("cad-src-") for name in written) == 2
+
+
+def test_partial_confirm_preserves_human_origin_and_rechecks_changed_issues(ingest):
+    store, _ = ingest()
+    custom_origin = (500_105.0, 5_400_205.0, 0.0)
+    ref1 = confirm_site(
+        store,
+        "site",
+        HUMAN,
+        SiteConfirmation(units=LengthUnit.METRE, origin=custom_origin, epsg=27700),
+    )
+    site1 = _site(store, ref1)
+    assert site1.coordinates.local.origin == custom_origin
+    assert any(i.id == "iss-crs-area-of-use" for i in site1.issues)
+
+    # Accept the area-of-use issue for EPSG:27700 and confirm boundary without repeating origin.
+    ref2 = confirm_site(
+        store,
+        "site",
+        HUMAN,
+        SiteConfirmation(boundary_verified=True, accept_issues=["iss-crs-area-of-use"]),
+    )
+    site2 = _site(store, ref2)
+    assert site2.coordinates.local.origin == custom_origin
+    assert (
+        next(i for i in site2.issues if i.id == "iss-crs-area-of-use").status
+        is IssueStatus.ACCEPTED
+    )
+
+    # Changing to a different wrong EPSG (2154, RGF93 / Lambert-93) produces a new description
+    # and must NOT inherit the acceptance granted for EPSG:27700.
+    ref3 = confirm_site(store, "site", HUMAN, SiteConfirmation(epsg=2154))
+    site3 = _site(store, ref3)
+    assert (
+        next(i for i in site3.issues if i.id == "iss-crs-area-of-use").status
+        is IssueStatus.OPEN
+    )
+
+
+def test_open_segment_boundary_assembly_flags_dangling_lines(tmp_path, new_store):
+    import ezdxf
+
+    from house_ai.cad.layers import LayerRole
+
+    doc = ezdxf.new("R2018")
+    doc.header["$INSUNITS"] = 6
+    doc.layers.add("BOUNDARY")
+    msp = doc.modelspace()
+    s1 = msp.add_line((0, 0), (20, 0), dxfattribs={"layer": "BOUNDARY"})
+    s2 = msp.add_line((20, 0), (20, 10), dxfattribs={"layer": "BOUNDARY"})
+    s3 = msp.add_line((20, 10), (0, 10), dxfattribs={"layer": "BOUNDARY"})
+    s4 = msp.add_line((0, 10), (0, 0), dxfattribs={"layer": "BOUNDARY"})
+    dangling = msp.add_line((30, 30), (35, 35), dxfattribs={"layer": "BOUNDARY"})
+    path = tmp_path / "open_boundary.dxf"
+    doc.saveas(path)
+
+    store = new_store("open-boundary")
+    src = store.add_source(path, HUMAN, classification=DataClassification.SYNTHETIC)
+    mapping = LayerMapping(layers={"BOUNDARY": LayerRole.BOUNDARY})
+    res = ingest_site(store, src.id, mapping, AGENT)
+    site = _site(store, res.site_ref)
+    assert site.boundary is not None and site.boundary.area_m2 == pytest.approx(200.0)
+    for h in (s1.dxf.handle, s2.dxf.handle, s3.dxf.handle, s4.dxf.handle):
+        assert h in site.boundary_source_ref
+    assert dangling.dxf.handle not in site.boundary_source_ref
+    cad = store.get(res.cad_ref, CadImportProvenance)
+    assert [a.handle for a in cad.ambiguous_entities] == [dangling.dxf.handle]
+
+
+def test_degenerate_polylines_do_not_crash_inspection_or_extraction(tmp_path, new_store):
+    import ezdxf
+
+    from house_ai.cad.layers import LayerRole
+
+    doc = ezdxf.new("R2018")
+    doc.header["$INSUNITS"] = 6
+    for layer in ("BOUNDARY", "CONTOURS"):
+        doc.layers.add(layer)
+    msp = doc.modelspace()
+    # 3 vertices where first == last -> 2 distinct vertices after closing-point removal.
+    msp.add_lwpolyline([(0, 0), (10, 0), (0, 0)], close=True, dxfattribs={"layer": "BOUNDARY"})
+    # Valid boundary alongside it.
+    valid = msp.add_lwpolyline(
+        [(0, 0), (20, 0), (20, 15), (0, 15)], close=True, dxfattribs={"layer": "BOUNDARY"}
+    )
+    # 1-vertex contour polyline.
+    msp.add_lwpolyline([(5, 5)], dxfattribs={"layer": "CONTOURS", "elevation": 100.0})
+    path = tmp_path / "degenerate.dxf"
+    doc.saveas(path)
+
+    mapping = LayerMapping(
+        layers={"BOUNDARY": LayerRole.BOUNDARY, "CONTOURS": LayerRole.CONTOUR},
+        boundary_handle=valid.dxf.handle,
+    )
+    insp = inspect_file(path, mapping)
+    assert insp.readable
+    assert [c.handle for c in insp.boundary_candidates] == [valid.dxf.handle]
+
+    store = new_store("degenerate")
+    src = store.add_source(path, HUMAN, classification=DataClassification.SYNTHETIC)
+    res = ingest_site(store, src.id, mapping, AGENT)
+    site = _site(store, res.site_ref)
+    assert site.boundary is not None and site.boundary.area_m2 == pytest.approx(300.0)
+
+
+def test_long_source_ids_and_point_on_area_layer(tmp_path, new_store):
+    import ezdxf
+
+    from house_ai.cad.layers import LayerRole
+
+    def make_file(name: str, z: float) -> Path:
+        doc = ezdxf.new("R2018")
+        doc.header["$INSUNITS"] = 6
+        for la in ("BOUNDARY", "SPOTS", "EXIST_BUILDING"):
+            doc.layers.add(la)
+        msp = doc.modelspace()
+        if "part_1" in name:
+            msp.add_lwpolyline(
+                [(0, 0), (20, 0), (20, 20), (0, 20)],
+                close=True,
+                dxfattribs={"layer": "BOUNDARY"},
+            )
+            msp.add_point((5, 5, 0), dxfattribs={"layer": "EXIST_BUILDING"})
+        msp.add_point((10, 10, z), dxfattribs={"layer": "SPOTS"})
+        p = tmp_path / name
+        doc.saveas(p)
+        return p
+
+    f1 = make_file("project_survey_package_2026_part_1.dxf", 101.0)
+    f2 = make_file("project_survey_package_2026_part_2.dxf", 102.0)
+    store = new_store("long-names")
+    s1 = store.add_source(f1, HUMAN, classification=DataClassification.SYNTHETIC)
+    s2 = store.add_source(f2, HUMAN, classification=DataClassification.SYNTHETIC)
+    mapping = LayerMapping(
+        layers={
+            "BOUNDARY": LayerRole.BOUNDARY,
+            "SPOTS": LayerRole.SPOT_ELEVATION,
+            "EXIST_BUILDING": LayerRole.EXISTING_STRUCTURE,
+        }
+    )
+    res = ingest_site(store, [s1.id, s2.id], mapping, AGENT)
+    site = _site(store, res.site_ref)
+    spot_ids = [s.id for s in site.terrain.spot_elevations]
+    assert len(spot_ids) == 2 and len(set(spot_ids)) == 2
+    assert site.features == []  # POINT on EXIST_BUILDING is flagged as ambiguous, not a point bldg
+    cad1 = store.get(res.cad_refs[0], CadImportProvenance)
+    assert any("existing_structure layer" in a.reason for a in cad1.ambiguous_entities)

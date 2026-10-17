@@ -53,6 +53,9 @@ class LayerMapping(StrictModel):
 
     #: Layer name -> role. Names match case-insensitively, as in AutoCAD.
     layers: dict[str, LayerRole] = Field(default_factory=dict)
+    #: Optional entity handle (or ``source_id#handle``) -> role override, for
+    #: drawings that place several kinds of geometry on one layer (e.g. ``"0"``).
+    handle_roles: dict[str, LayerRole] = Field(default_factory=dict)
     #: Elevation 0 often means "not set" in CAD. Only when a human says the
     #: site really lies at 0 are zero elevations used.
     zero_elevation_is_valid: bool = False
@@ -63,8 +66,45 @@ class LayerMapping(StrictModel):
         lowered = {k.lower(): v for k, v in self.layers.items()}
         return lowered.get(layer.lower())
 
+    def matches_boundary_handle(self, source_id: str, handle: str) -> bool:
+        if self.boundary_handle is None:
+            return False
+        wanted = self.boundary_handle.strip().lower()
+        h = handle.strip().lower()
+        sid = source_id.strip().lower()
+        short_sid = sid.removeprefix("src-")
+        return wanted in (h, f"{sid}#{h}", f"{short_sid}#{h}")
+
+    def boundary_handle_targets_other_source(self, source_id: str) -> bool:
+        if self.boundary_handle is None or "#" not in self.boundary_handle:
+            return False
+        prefix = self.boundary_handle.split("#", 1)[0].strip().lower()
+        sid = source_id.strip().lower()
+        short_sid = sid.removeprefix("src-")
+        return prefix not in (sid, short_sid)
+
+    def role_of_entity(self, source_id: str, handle: str, layer: str) -> LayerRole | None:
+        if self.matches_boundary_handle(source_id, handle):
+            return LayerRole.BOUNDARY
+        if self.handle_roles:
+            lowered = {k.strip().lower(): v for k, v in self.handle_roles.items()}
+            h = handle.strip().lower()
+            sid = source_id.strip().lower()
+            short_sid = sid.removeprefix("src-")
+            for key in (f"{sid}#{h}", f"{short_sid}#{h}", h):
+                if key in lowered:
+                    return lowered[key]
+        return self.role_of(layer)
+
+    def has_boundary_role(self) -> bool:
+        roles = (*self.layers.values(), *self.handle_roles.values())
+        return any(r is LayerRole.BOUNDARY for r in roles) or self.boundary_handle is not None
+
     def as_dict(self) -> dict[str, str]:
         return {k: v.value for k, v in sorted(self.layers.items())}
+
+    def handle_roles_as_dict(self) -> dict[str, str]:
+        return {k: v.value for k, v in sorted(self.handle_roles.items())}
 
 
 def load_layer_mapping(path: Path) -> LayerMapping:
@@ -79,7 +119,7 @@ _KEYWORDS: list[tuple[LayerRole, tuple[str, ...]]] = [
                           "cadast", "kataster", "hodud", "marz")),
     (LayerRole.CONTOUR, ("contour", "contr", "isohyps", "hoehenlin", "höhenlin", "cntr")),
     (LayerRole.SPOT_ELEVATION, ("spot", "elev", "height", "level", "hoehe", "höhe", "kote",
-                                "pnt", "ertefa")),
+                                "pnt", "point", "ertefa")),
     (LayerRole.ROAD, ("road", "street", "strasse", "straße", "weg", "kerb", "curb", "khiaban")),
     (LayerRole.EXISTING_STRUCTURE, ("build", "bldg", "house", "gebaeude", "gebäude", "struct",
                                     "sakhteman")),
@@ -95,6 +135,8 @@ def suggest_roles(layer_names: list[str]) -> dict[str, tuple[LayerRole, str]]:
     out: dict[str, tuple[LayerRole, str]] = {}
     for name in layer_names:
         lowered = name.lower()
+        if lowered in ("0", "defpoints"):
+            continue
         for role, words in _KEYWORDS:
             hit = next((w for w in words if _matches(lowered, w)), None)
             if hit:

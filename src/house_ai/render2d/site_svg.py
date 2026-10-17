@@ -12,7 +12,7 @@ import math
 from xml.sax.saxutils import escape
 
 from house_ai.domain.epistemics import ConfirmationStatus
-from house_ai.domain.geometry import Point2
+from house_ai.domain.geometry import Point2, Polygon2D
 from house_ai.domain.site import Site, SiteFeature, SiteFeatureKind
 from house_ai.geospatial.validation import SiteValidationReport
 
@@ -23,16 +23,31 @@ PAD_FRACTION = 0.12
 
 COLOURS = {
     "boundary": "#111111",
+    "envelope": "#2980b9",
     "frontage": "#e07b00",
     "contour": "#9a6b3f",
     "road": "#c9c9c9",
     "structure": "#b8c4d6",
+    "easement": "#d4a017",
+    "utility": "#8e44ad",
+    "water": "#3498db",
     "tree": "#3c8d3c",
     "access": "#c0392b",
     "spot": "#1f4e9c",
     "blocker": "#b00020",
     "warning": "#a15c00",
     "muted": "#666666",
+}
+
+_FEATURE_COLOUR: dict[SiteFeatureKind, str] = {
+    SiteFeatureKind.ROAD: COLOURS["road"],
+    SiteFeatureKind.EXISTING_STRUCTURE: COLOURS["structure"],
+    SiteFeatureKind.EASEMENT: COLOURS["easement"],
+    SiteFeatureKind.UTILITY: COLOURS["utility"],
+    SiteFeatureKind.WATER: COLOURS["water"],
+    SiteFeatureKind.TREE: COLOURS["tree"],
+    SiteFeatureKind.ACCESS_POINT: COLOURS["access"],
+    SiteFeatureKind.OTHER: COLOURS["muted"],
 }
 
 
@@ -81,11 +96,14 @@ class _Canvas:
         )
         return d + (" Z" if closed else "")
 
+    def polygon_path(self, poly: Polygon2D) -> str:
+        return " ".join(self.path(list(r), True) for r in (poly.outer, *poly.holes))
+
 
 def _feature_points(f: SiteFeature) -> list[Point2]:
     g = f.geometry
     if g.type == "polygon":
-        return list(g.polygon.outer)
+        return [p for r in (g.polygon.outer, *g.polygon.holes) for p in r]
     if g.type == "polyline":
         return list(g.line.points)
     return [g.xy]
@@ -94,7 +112,10 @@ def _feature_points(f: SiteFeature) -> list[Point2]:
 def render_site_svg(site: Site, report: SiteValidationReport) -> str:
     pts: list[Point2] = []
     if site.boundary is not None:
-        pts += site.boundary.outer
+        pts += [p for r in (site.boundary.outer, *site.boundary.holes) for p in r]
+    if site.buildable_envelope is not None:
+        env_poly = site.buildable_envelope.polygon
+        pts += [p for r in (env_poly.outer, *env_poly.holes) for p in r]
     for f in site.features:
         pts += _feature_points(f)
     for c in site.terrain.contours:
@@ -107,16 +128,34 @@ def render_site_svg(site: Site, report: SiteValidationReport) -> str:
     out: list[str] = []
     add = out.append
 
-    # Roads and structures first, then terrain, boundary, markers on top.
+    # Area and linear features first, then terrain, boundary, envelope, markers on top.
     for f in site.features:
-        if f.kind in (SiteFeatureKind.ROAD, SiteFeatureKind.EXISTING_STRUCTURE):
-            colour = COLOURS["road" if f.kind is SiteFeatureKind.ROAD else "structure"]
+        if f.kind is not SiteFeatureKind.FRONTAGE and f.geometry.type in ("polygon", "polyline"):
+            colour = _FEATURE_COLOUR.get(f.kind, COLOURS["muted"])
             closed = f.geometry.type == "polygon"
+            if closed:
+                d = cv.polygon_path(f.geometry.polygon)
+                rule = ' fill-rule="evenodd"' if f.geometry.polygon.holes else ""
+            else:
+                d = cv.path(list(f.geometry.line.points), f.geometry.line.closed)
+                rule = ""
             fill = colour if closed else "none"
             stroke = "#888888" if closed else colour
+            width = 1 if closed else (6 if f.kind is SiteFeatureKind.ROAD else 2)
+            dash = (
+                ' stroke-dasharray="6 4"'
+                if f.kind in (SiteFeatureKind.EASEMENT, SiteFeatureKind.UTILITY)
+                else ""
+            )
+            opacity = (
+                ' fill-opacity="0.35"'
+                if closed
+                and f.kind not in (SiteFeatureKind.ROAD, SiteFeatureKind.EXISTING_STRUCTURE)
+                else ""
+            )
             add(
-                f'<path d="{cv.path(_feature_points(f), closed)}" fill="{fill}" '
-                f'stroke="{stroke}" stroke-width="{1 if closed else 6}"><title>'
+                f'<path d="{d}" fill="{fill}"{opacity}{rule} '
+                f'stroke="{stroke}" stroke-width="{width}"{dash}><title>'
                 f"{escape(f.id)} ({f.kind.value})</title></path>"
             )
     for c in sorted(site.terrain.contours, key=lambda c: (c.z_m, c.id)):
@@ -135,9 +174,9 @@ def render_site_svg(site: Site, report: SiteValidationReport) -> str:
     if site.boundary is not None:
         ring = site.boundary.outer
         add(
-            f'<path d="{cv.path(ring, True)}" fill="none" stroke="{COLOURS["boundary"]}" '
-            f'stroke-width="2.5"><title>parcel boundary ({site.boundary_status.value})'
-            "</title></path>"
+            f'<path d="{cv.polygon_path(site.boundary)}" fill="none" '
+            f'stroke="{COLOURS["boundary"]}" stroke-width="2.5"><title>parcel boundary '
+            f"({site.boundary_status.value})</title></path>"
         )
         for edge in report.boundary.edges:
             (x0, y0), (x1, y1) = cv.p(edge.start), cv.p(edge.end)
@@ -154,6 +193,14 @@ def render_site_svg(site: Site, report: SiteValidationReport) -> str:
             x, y = cv.p(v)
             add(f'<circle cx="{_f(x)}" cy="{_f(y)}" r="2.5" fill="{COLOURS["boundary"]}"/>')
             add(f'<text x="{_f(x + 4)}" y="{_f(y + 12)}" font-size="9">P{i}</text>')
+    if site.buildable_envelope is not None:
+        env = site.buildable_envelope
+        add(
+            f'<path d="{cv.polygon_path(env.polygon)}" fill="none" '
+            f'stroke="{COLOURS["envelope"]}" stroke-width="1.5" stroke-dasharray="6 4">'
+            f"<title>buildable envelope ({env.status.value}): {escape(env.basis)}"
+            "</title></path>"
+        )
     for f in site.features:
         if f.kind is SiteFeatureKind.FRONTAGE and f.geometry.type == "polyline":
             add(

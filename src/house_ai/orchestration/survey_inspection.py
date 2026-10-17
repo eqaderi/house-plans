@@ -21,7 +21,7 @@ from house_ai.cad.dwg_oda import DwgConversionError, adapter_for
 from house_ai.cad.dxf_ezdxf import DxfReadError
 from house_ai.cad.formats import detect_format
 from house_ai.cad.layers import UNCLASSIFIED, LayerMapping, LayerRole, suggest_roles
-from house_ai.cad.site_extract import MappedLayerSiteExtractor
+from house_ai.cad.site_extract import MappedLayerSiteExtractor, has_numeric_elevation_label
 from house_ai.domain.base import StrictModel
 from house_ai.domain.coordinates import LocalCoordinateSystem, SurveyTransform
 from house_ai.domain.site import AmbiguousEntity
@@ -232,11 +232,8 @@ def _elevations(ext: CadExtraction) -> list[ElevationLayerReport]:
     for p in ext.points:
         c = stats.setdefault(p.layer, Counter())
         if p.entity_type in ("TEXT", "MTEXT"):
-            try:
-                float((p.text or "").strip().replace(",", "."))
+            if has_numeric_elevation_label(p.text):
                 c["numeric_labels"] += 1
-            except ValueError:
-                pass
         elif p.z:
             c["points_with_z"] += 1
             zs.setdefault(p.layer, []).append(p.z)
@@ -302,8 +299,13 @@ def _boundary_candidates(
         if not closed or len(pts) < 3:
             continue
         ring = pts[:-1] if math.dist(pts[0], pts[-1]) < 1e-6 else pts
+        if len(ring) < 3:
+            continue
         x0, y0 = ring[0]
-        shape = Polygon([(x - x0, y - y0) for x, y in ring])  # shifted: small numbers
+        try:
+            shape = Polygon([(x - x0, y - y0) for x, y in ring])  # shifted: small numbers
+        except Exception:
+            continue
         area, perim = float(abs(shape.area)), float(shape.length)
         found.append(
             BoundaryCandidate(
