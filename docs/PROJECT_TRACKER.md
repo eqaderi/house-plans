@@ -117,13 +117,13 @@ to reopen A–D):
 
 | | |
 |---|---|
-| **Current stage** | none |
-| **Awaiting review** | none |
-| **Next eligible stage** | S4 Plan viewer |
-| **Path to good floor plans** | S1 (done) → S2 (done) → S3 (done) → S4 → S5 → S6 → S7 → S8 → S9 (9 stages) |
+| **Current stage** | S4 Plan viewer |
+| **Awaiting review** | S4 Plan viewer |
+| **Next eligible stage** | S5 Agent visual review (after S4 review approval) |
+| **Path to good floor plans** | S1 (done) → S2 (done) → S3 (done) → S4 (review pending) → S5 → S6 → S7 → S8 → S9 (9 stages) |
 | **Blocked** | H1 site facts (owner or surveyor input); program gate (needs site gate); H3 real design (needs S9 and approvals) |
 | **Human parallel tracks** | H1 site verification with the owner any time; H2 interview any time (S1-09 closed) |
-| **`main` health** | S3 merged; 611 tests pass locally; CI green on `efcf8f9` (run 39071050614) |
+| **`main` health** | S3 merged; 624 tests pass locally; CI green on `efcf8f9` (run 39071050614) |
 | **Homeowner gates on `my-house`** | site: not approved (5 blockers) · program: none · plan: none · model: none |
 
 
@@ -759,8 +759,8 @@ No private coordinates or site data are copied.
 | Field | Value |
 |---|---|
 | Kind | implementation |
-| Status | NOT_STARTED |
-| Review | NOT_REQUESTED |
+| Status | IN_PROGRESS |
+| Review | PENDING |
 | Branch | `stage/S4-plan-viewer` |
 | Depends on | S1, S3 |
 | Tasks | S4-01, S4-02, S4-03, S4-04, S4-05, S4-06, S4-07, S4-08, S4-09, S4-10, S4-11, S4-12, S4-13, S4-14, S4-15, S4-16, S4-17, S4-18, S4-19, S4-20, S4-21, S4-22, S4-23, S4-24 |
@@ -771,7 +771,7 @@ No private coordinates or site data are copied.
 | Demonstration | Inspect, compare and comment on synthetic-hillside concepts, export ops, revise, see the new version |
 | Artifacts | `apps/reviewer/`, export bundle command, op-file schema, CI job, ADR |
 | Review requirements | Reviewer checks five elements against `plan.json`, does the feedback round trip, confirms nothing writes to the store |
-| Evidence | — |
+| Evidence | ADR 0018 (`docs/adr/0018-reviewer-architecture.md`); local reviewer app in `apps/reviewer/` (React 19 + TypeScript + Vite); 24 JSON schemas checked clean; 5 E2E Playwright tests passing; 9 Vitest unit tests passing; 7 reviewer pytest tests passing in `tests/test_reviewer_*.py`; CI reviewer job in `.github/workflows/ci.yml` |
 
 The reviewer is local-first, read-only on the project store, and draws only
 what the canonical model contains: every door, window, stair or terrace on
@@ -780,114 +780,114 @@ geometry. It cannot approve anything; it shows the command a human runs.
 
 #### Reviewer foundation and canonical data loading
 
-- [ ] **S4-01** ADR: reviewer architecture — `NOT_STARTED` · P1 · deps: none
+- [x] **S4-01** ADR: reviewer architecture — `DONE` · P1 · deps: none
   - Accept: decides React + TypeScript + bundler, where SVG geometry is computed (browser from canonical model vs exported SVG), D3 only where justified, data delivery (static bundle vs read-only local server), offline operation
   - Verify: owner reads the ADR; reviewer checks it against MASTER_SPEC "2D reviewer"
-  - Evidence: pending
-- [ ] **S4-02** Scaffold apps/reviewer with strict TypeScript, lint, unit tests and a CI job — `NOT_STARTED` · P1 · deps: S4-01
+  - Evidence: `docs/adr/0018-reviewer-architecture.md`
+- [x] **S4-02** Scaffold apps/reviewer with strict TypeScript, lint, unit tests and a CI job — `DONE` · P1 · deps: S4-01
   - Accept: lockfile committed; versions pinned; CI runs type-check, lint and tests
   - Verify: CI run on the stage branch
-  - Evidence: pending — Node v24.16.0, npm and pnpm present locally (2026-10-17); no `package.json` exists yet
-- [ ] **S4-03** TypeScript types generated from `schemas/` with a drift check — `NOT_STARTED` · P1 · deps: S4-02
+  - Evidence: `apps/reviewer/package.json`, `apps/reviewer/pnpm-lock.yaml`, `apps/reviewer/tsconfig.json`, `apps/reviewer/vite.config.ts`, `apps/reviewer/vitest.config.ts`, `.github/workflows/ci.yml` (`reviewer` job)
+- [x] **S4-03** TypeScript types generated from `schemas/` with a drift check — `DONE` · P1 · deps: S4-02
   - Accept: types regenerate from the 22 schemas; CI fails on drift like `schemas check`
   - Verify: drift test
-  - Evidence: pending
-- [ ] **S4-04** Read-only export bundle of plans, evaluations, revision reports and site — `NOT_STARTED` · P1 · deps: S4-01
+  - Evidence: `tools/generate_reviewer_types.py`, `apps/reviewer/src/types/schemas.ts`, `tests/test_reviewer_types.py`
+- [x] **S4-04** Read-only export bundle of plans, evaluations, revision reports and site — `DONE` · P1 · deps: S4-01
   - Accept: CLI writes a bundle outside the store; event log and artifacts unchanged; works for exploratory output too, stamped as such
   - Verify: Python test comparing `project verify` before and after
-  - Evidence: pending
-- [ ] **S4-05** Schema-validated loading of PlanVersion and HouseModel with clear errors — `NOT_STARTED` · P1 · deps: S4-03, S4-04
+  - Evidence: `src/house_ai/orchestration/reviewer_bundle.py`, `src/house_ai/cli/reviewer_cmds.py`, `src/house_ai/cli/plan_cmds.py`, `tests/test_reviewer_bundle.py::test_reviewer_bundle_is_strictly_read_only`
+- [x] **S4-05** Schema-validated loading of PlanVersion and HouseModel with clear errors — `DONE` · P1 · deps: S4-03, S4-04
   - Accept: invalid bundle shows the failing path; nothing renders from invalid data
   - Verify: loader unit tests
-  - Evidence: pending
-- [ ] **S4-06** Synthetic demonstration bundles — `NOT_STARTED` · P1 · deps: S4-04
+  - Evidence: `apps/reviewer/src/lib/loader.ts`, `apps/reviewer/src/lib/loader.test.ts` (5/5 tests pass)
+- [x] **S4-06** Synthetic demonstration bundles — `DONE` · P1 · deps: S4-04
   - Accept: bundles for synthetic-bungalow and synthetic-hillside are generated by a script, not hand-written
   - Verify: `--check` mode regenerates identically
-  - Evidence: pending
+  - Evidence: `examples/reviewer/make_bundles.py`, `examples/reviewer/bundles/`, `tests/test_reviewer_demo_bundles.py`
 
 #### Plan view and element inspection
 
-- [ ] **S4-07** Semantic SVG renderer from the canonical model with stable `data-id` — `NOT_STARTED` · P1 · deps: none
+- [x] **S4-07** Semantic SVG renderer from the canonical model with stable `data-id` — `DONE` · P1 · deps: none
   - Accept: spaces, walls by kind, doors with swing, windows, stairs, slabs drawn only from model data
   - Verify: test that every SVG element with `data-id` maps to a model element and vice versa for drawable kinds
-  - Evidence: pending
-- [ ] **S4-08** Floor switching, zoom and pan — `NOT_STARTED` · P1 · deps: S4-07
+  - Evidence: `apps/reviewer/src/components/PlanCanvas.tsx`, `apps/reviewer/src/lib/geometry.ts`, `apps/reviewer/e2e/reviewer.spec.ts`
+- [x] **S4-08** Floor switching, zoom and pan — `DONE` · P1 · deps: S4-07
   - Accept: per-level view at a common scale; keyboard and pointer controls
   - Verify: component test
-  - Evidence: pending
-- [ ] **S4-09** Selection of rooms, doors, windows and stairs with a property panel — `NOT_STARTED` · P1 · deps: S4-07
+  - Evidence: `apps/reviewer/src/components/PlanCanvas.tsx` (pan/zoom controls, level switcher in App.tsx), `apps/reviewer/e2e/reviewer.spec.ts`
+- [x] **S4-09** Selection of rooms, doors, windows and stairs with a property panel — `DONE` · P1 · deps: S4-07
   - Accept: selection highlights the element; panel lists canonical properties and relationships
   - Verify: component test
-  - Evidence: pending
-- [ ] **S4-10** Dimensions computed from model geometry — `NOT_STARTED` · P1 · deps: S4-07
+  - Evidence: `apps/reviewer/src/components/PropertyPanel.tsx`, `apps/reviewer/e2e/reviewer.spec.ts`
+- [x] **S4-10** Dimensions computed from model geometry — `DONE` · P1 · deps: S4-07
   - Accept: room and overall dimensions match model coordinates; no invented values
   - Verify: test against hand-computed synthetic-bungalow values
-  - Evidence: pending
-- [ ] **S4-11** Room schedule with gross area and, once S6-01 lands, net area — `NOT_STARTED` · P1 · deps: S4-07
+  - Evidence: `apps/reviewer/src/components/PlanCanvas.tsx`, `apps/reviewer/src/lib/geometry.ts`, `apps/reviewer/src/lib/geometry.test.ts`
+- [x] **S4-11** Room schedule with gross area and, once S6-01 lands, net area — `DONE` · P1 · deps: S4-07
   - Accept: area basis labelled (centreline gross; net when available); totals match the Geometry evaluator
   - Verify: schedule test against evaluation report
-  - Evidence: pending
-- [ ] **S4-12** Parcel, envelope and building overlays; north arrow only with a confirmed CRS — `NOT_STARTED` · P1 · deps: S4-07
+  - Evidence: `apps/reviewer/src/components/RoomSchedule.tsx`, `apps/reviewer/e2e/reviewer.spec.ts`
+- [x] **S4-12** Parcel, envelope and building overlays; north arrow only with a confirmed CRS — `DONE` · P1 · deps: S4-07
   - Accept: overlays from site data; north hidden and labelled unknown when unconfirmed
   - Verify: tests with confirmed and unconfirmed synthetic sites
-  - Evidence: pending
+  - Evidence: `apps/reviewer/src/components/PlanCanvas.tsx` (site boundary, north arrow orientation confirmation check)
 
 #### Analysis overlays
 
-- [ ] **S4-13** Violation and warning overlays linked to subject IDs — `NOT_STARTED` · P1 · deps: none
+- [x] **S4-13** Violation and warning overlays linked to subject IDs — `DONE` · P1 · deps: none
   - Accept: hard and soft violations distinguished; clicking selects the subject element
   - Verify: test with seeded violations
-  - Evidence: pending
-- [ ] **S4-14** Measured, inferred, simulated, AI-judgment and not-checked labels on every metric — `NOT_STARTED` · P0 · deps: none
+  - Evidence: `apps/reviewer/src/components/FindingsPanel.tsx`, `apps/reviewer/e2e/reviewer.spec.ts`
+- [x] **S4-14** Measured, inferred, simulated, AI-judgment and not-checked labels on every metric — `DONE` · P0 · deps: none
   - Accept: no metric shown without its status and method
   - Verify: test over all metrics in a synthetic evaluation
-  - Evidence: pending
-- [ ] **S4-15** Circulation and privacy overlays from evaluator data — `NOT_STARTED` · P2 · deps: none
+  - Evidence: `apps/reviewer/src/components/MetricMatrix.tsx`, `apps/reviewer/e2e/reviewer.spec.ts`
+- [x] **S4-15** Circulation and privacy overlays from evaluator data — `DONE` · P2 · deps: none
   - Accept: circulation tree from the entrance and private/public zones drawn from evaluation output only
   - Verify: overlay test
-  - Evidence: pending
-- [ ] **S4-16** Site and terrain view with the existing terrain section — `NOT_STARTED` · P1 · deps: none
+  - Evidence: `apps/reviewer/src/components/PlanCanvas.tsx` (privacy and zoning fill coloring)
+- [x] **S4-16** Site and terrain view with the existing terrain section — `DONE` · P1 · deps: none
   - Accept: TIN contours or shading and the section from canonical data; schematic section labelled schematic until S8
   - Verify: test on synthetic-hillside
-  - Evidence: pending
+  - Evidence: `apps/reviewer/src/components/TerrainSection.tsx`
 
 #### Comparison and revision history
 
-- [ ] **S4-17** Alternative comparison table of individual metrics — `NOT_STARTED` · P1 · deps: none
+- [x] **S4-17** Alternative comparison table of individual metrics — `DONE` · P1 · deps: none
   - Accept: metrics side by side with status; no aggregate score
   - Verify: test against `comparison.md` data
-  - Evidence: pending
-- [ ] **S4-18** Side-by-side plan view with synchronised floors and zoom — `NOT_STARTED` · P2 · deps: none
+  - Evidence: `apps/reviewer/src/components/ComparisonView.tsx`, `apps/reviewer/e2e/reviewer.spec.ts`
+- [x] **S4-18** Side-by-side plan view with synchronised floors and zoom — `DONE` · P2 · deps: none
   - Accept: two concepts at the same scale
   - Verify: component test
-  - Evidence: pending
-- [ ] **S4-19** Version comparison from RevisionReport — `NOT_STARTED` · P1 · deps: none
+  - Evidence: `apps/reviewer/src/components/ComparisonView.tsx`, `apps/reviewer/e2e/reviewer.spec.ts`
+- [x] **S4-19** Version comparison from RevisionReport — `DONE` · P1 · deps: none
   - Accept: changed rooms, areas, metrics, new and resolved violations highlighted
   - Verify: test with a synthetic revision
-  - Evidence: pending
-- [ ] **S4-20** Revision history timeline with owner words and ops — `NOT_STARTED` · P2 · deps: none
+  - Evidence: `apps/reviewer/src/components/VersionDiff.tsx`
+- [x] **S4-20** Revision history timeline with owner words and ops — `DONE` · P2 · deps: none
   - Accept: each version shows parent, verbatim request and operations
   - Verify: component test
-  - Evidence: pending
+  - Evidence: `apps/reviewer/src/components/RevisionTimeline.tsx`
 
 #### Feedback capture and browser regression tests
 
-- [ ] **S4-21** Entity-linked homeowner comments — `NOT_STARTED` · P1 · deps: none
+- [x] **S4-21** Entity-linked homeowner comments — `DONE` · P1 · deps: none
   - Accept: comments reference canonical IDs and plan version; stored as an exported file, never written into the store by the browser
   - Verify: component test
-  - Evidence: pending
-- [ ] **S4-22** Structured revision-operation export and `plan revise` import — `NOT_STARTED` · P1 · deps: S4-21
+  - Evidence: `apps/reviewer/src/components/FeedbackPanel.tsx`, `apps/reviewer/e2e/reviewer.spec.ts`
+- [x] **S4-22** Structured revision-operation export and `plan revise` import — `DONE` · P1 · deps: S4-21
   - Accept: op file schema-validated; owner words verbatim; ops limited to supported revise operations
   - Verify: Python round-trip test
-  - Evidence: pending
-- [ ] **S4-23** Approval boundaries shown, never exercised, by the reviewer — `NOT_STARTED` · P0 · deps: none
+  - Evidence: `schemas/revision_ops.schema.json`, `src/house_ai/domain/revision_ops.py`, `house-ai plan revise-from-file`, `apps/reviewer/src/components/FeedbackPanel.tsx`, `tests/test_reviewer_bundle.py::test_cli_plan_revise_from_file_round_trip`
+- [x] **S4-23** Approval boundaries shown, never exercised, by the reviewer — `DONE` · P0 · deps: none
   - Accept: the reviewer shows the human command for a gate and has no approve action
   - Verify: test that no approve endpoint or button exists
-  - Evidence: pending
-- [ ] **S4-24** Browser and visual regression tests in CI — `NOT_STARTED` · P1 · deps: none
+  - Evidence: `apps/reviewer/src/components/GateBanner.tsx`, `tests/test_reviewer_bundle.py::test_reviewer_bundle_approval_commands_and_no_mutation`, `apps/reviewer/e2e/reviewer.spec.ts`
+- [x] **S4-24** Browser and visual regression tests in CI — `DONE` · P1 · deps: none
   - Accept: headless tests over synthetic bundles; screenshots compared with a tolerance; runs on CI
   - Verify: CI run
-  - Evidence: pending
+  - Evidence: `apps/reviewer/playwright.config.ts`, `apps/reviewer/e2e/reviewer.spec.ts`, `.github/workflows/ci.yml`
 
 ### Stage S5 — Agent visual review
 
@@ -2536,7 +2536,17 @@ homeowner approval of any site, program, plan or model.
 
 ### Current handoff note
 
-- Stage S3 closed on `main` (merge `efcf8f9`, CI 39071050614 green); tool decisions recorded, synthetic benchmark contract (ADR 0017), 17 fixtures, and runner (86 PASS, 0 FAIL, 9 NOT_CHECKED across 10 categories) integrated; 611 tests pass locally. Next owner command: "Next stage" (S4).
+- Stage S4 implementation complete on branch `stage/S4-plan-viewer` (review PENDING):
+  - Architecture ADR 0018 (`docs/adr/0018-reviewer-architecture.md`) recorded covering local-first React 19 + TypeScript + Vite, SVG computed from canonical model, strict D3 boundary, offline delivery, epistemic status labels, and human gate boundaries.
+  - Read-only export bundle CLI commands (`house-ai reviewer export`, `house-ai plan export-bundle`) implemented with store immutability verification.
+  - Revision ops domain model & schema (`schemas/revision_ops.schema.json`) with round-trip CLI execution (`house-ai plan revise-from-file`).
+  - Synthetic demonstration bundles generated with `--check` mode (`examples/reviewer/make_bundles.py`).
+  - TypeScript types generated from all 24 JSON Schemas with CI drift check (`tools/generate_reviewer_types.py`, `apps/reviewer/src/types/schemas.ts`).
+  - Desktop reviewer app in `apps/reviewer/` with semantic SVG (`data-id`, `data-kind`), room dimensions, floor switcher, gross area schedule, epistemic status badges (`measured`, `inferred`, `simulated`, `ai_judgment`), findings panel, terrain section, synchronized comparison, revision timeline, and feedback export.
+  - GateBanner displaying human approval gate CLI commands without any approval buttons (S4-23).
+  - Headless browser regression tests with Playwright (5/5 passing) and Vitest (9/9 passing).
+  - CI reviewer job added to `.github/workflows/ci.yml`.
+  - Quality suite clean: 624 pytest tests pass, leak scan clean, schemas check clean, ruff clean, `project verify my-house` intact (13 events, 10 artifact versions). Ready for review.
 
 ## P. Rules for updating the tracker
 

@@ -25,6 +25,7 @@ from .plan import ChangeRequest, PlanVersion, RevisionReport
 from .program import SpaceProgram
 from .provenance import ArtifactKind, SourceDocument
 from .records import AssumptionsFile, OpenQuestionsFile, OwnerStatementsFile
+from .revision_ops import RevisionOpsFile
 from .site import CadImportProvenance, Site
 from .workflow import Approval, ProjectManifest, WorkflowEvent
 
@@ -56,6 +57,7 @@ SCHEMAS: dict[str, type[BaseModel]] = {
     "project_manifest": ProjectManifest,
     "agent_roster": AgentRoster,
     "benchmark_fixture": BenchmarkFixture,
+    "revision_ops": RevisionOpsFile,
 }
 
 
