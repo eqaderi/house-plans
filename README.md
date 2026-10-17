@@ -40,9 +40,9 @@ without it).
 `interview run ... --ai anthropic` lets Claude word the questions for your site
 and read free answers (ADR 0010). It needs an **Anthropic API key**, which is
 separate from any chat subscription: a Claude Team/Pro plan, ChatGPT Plus or
-Google AI Pro does not give this program API access. Create a key at
-[console.anthropic.com](https://console.anthropic.com) (API usage is billed
-there, prepaid credits), then in your own terminal:
+Google AI Pro does not give this program API access. Create a key in the
+Claude Console ([platform.claude.com](https://platform.claude.com); API usage is
+billed there, separately from subscriptions), then in your own terminal:
 
 ```bash
 .venv/bin/pip install -e '.[ai]'

@@ -79,13 +79,11 @@ class TurnResult:
         return "\n".join(lines)
 
 
-#: Shown with any AI wording while the site gate is not approved (added by code, not the AI).
+#: Shown with every AI wording while the site gate is not approved (added by code, not the AI).
 UNCONFIRMED_SITE_LABEL = (
-    "(Site figures here come from the survey; you have not confirmed the site yet.)"
+    "(Anything said here about your site comes from the survey; you have not confirmed the "
+    "site yet.)"
 )
-
-
-_SITE_WORDS = ("site", "land", "plot", "parcel", "slope", "steep", "terrain", "road", "drop")
 
 
 @dataclass
@@ -223,15 +221,10 @@ class InterviewService:
             return AskedQuestion(prompt.id, prompt.text, notes=[note])
         if phrased.model is None:
             return AskedQuestion(prompt.id, prompt.text)
+        # The AI saw the site values, so any wording it gives may use them.
         site = self.session().site
-        about_site = any(c.isdigit() for c in phrased.text) or any(
-            w in phrased.text.lower() for w in _SITE_WORDS
-        )
-        notes = (
-            [UNCONFIRMED_SITE_LABEL]
-            if site is not None and site.site_ref is not None and not site.verified and about_site
-            else []
-        )
+        unconfirmed = site is not None and site.site_ref is not None and not site.verified
+        notes = [UNCONFIRMED_SITE_LABEL] if unconfirmed else []
         return AskedQuestion(prompt.id, phrased.text, assist.provider.name, phrased.model, notes)
 
     def policy(self) -> DataFlowPolicy:

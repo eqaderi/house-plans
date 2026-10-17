@@ -151,6 +151,18 @@ def test_the_ai_words_the_question_and_the_shown_wording_is_kept(unverified):
     assert svc.state().values["adults"] == 2  # read by the parser; the AI only worded it
 
 
+@pytest.mark.parametrize("verified", [False, True])
+def test_every_ai_wording_is_labelled_while_the_site_is_unconfirmed(new_store, verified):
+    svc = InterviewService(_project(new_store, approve_site=verified))
+    svc.start(AGENT)
+    svc.consent(HUMAN, "scripted")
+    svc.assist = LlmAssist(ScriptedProvider(["Who will share the hillside home with you?"]),
+                           DataFlowPolicy())  # no digit, no obvious site word  # fmt: skip
+    asked = svc.ask(svc.pending())
+    assert asked.text == "Who will share the hillside home with you?"
+    assert asked.notes == ([] if verified else [UNCONFIRMED_SITE_LABEL])
+
+
 def test_without_consent_nothing_is_sent_and_the_planned_question_is_shown(unverified):
     provider = ScriptedProvider(["should never be used"])
     unverified.assist = LlmAssist(provider, DataFlowPolicy())

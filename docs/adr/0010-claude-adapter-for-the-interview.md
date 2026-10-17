@@ -39,9 +39,9 @@ API credentials.
    before anything is sent; `send()` still enforces it on every call. The AI
    receives the site values with their status ("from the survey; NOT yet
    confirmed by the owner"), the owner's statements and what was understood so
-   far. When a reworded question touches the site and the site is not
-   approved, the code (not the AI) adds the line "Site figures here come from
-   the survey; you have not confirmed the site yet."
+   far. While the site gate is not approved, the code (not the AI) adds to every
+   reworded question: "Anything said here about your site comes from the
+   survey; you have not confirmed the site yet."
 6. **Persistence.** The answer turn stores the question exactly as shown (the
    AI's wording) and the `provider` and `model` that worded it or read the
    answer. Resuming re-asks the pending question. Contradiction choices are

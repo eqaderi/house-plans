@@ -1,9 +1,10 @@
 """Anthropic Claude adapter (ADR 0010).
 
 Optional: install with ``pip install -e '.[ai]'`` and set ``ANTHROPIC_API_KEY``
-(an Anthropic API key from console.anthropic.com; a Claude.ai or Claude Code
-subscription is not an API key). The key is read by the SDK from the
-environment and never stored, logged or put in an error message.
+(an Anthropic API key from the Claude Console; a Claude.ai or Claude Code
+subscription is not an API key), or log in with ``ant auth login``. The SDK
+reads the key from the environment; it is never stored, logged or put in an
+error message.
 
 Calls go through :func:`house_ai.providers.base.send` like every provider, so
 private content reaches Claude only with the owner's consent. Structured output

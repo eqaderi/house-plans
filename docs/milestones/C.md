@@ -122,9 +122,9 @@ against known answers.
   statements and the answers so far, and to read free answers the parser
   cannot. The owner types `allow anthropic` once (a consent turn). Structured
   output is schema-constrained and validated again; every value read is an
-  inference until the owner confirms it. The code, not the AI, adds "Site
-  figures here come from the survey; you have not confirmed the site yet"
-  while the site gate is open. Each answer turn keeps the wording shown and
+  inference until the owner confirms it. The code, not the AI, adds "Anything said here about your
+  site comes from the survey; you have not confirmed the site yet" to every
+  AI-worded question while the site gate is open. Each answer turn keeps the wording shown and
   the provider and model. Provider errors (no key, refused key, rate limit,
   outage, network, refusal, cut-off reply) fall back to the built-in question
   or parser with a note; the key never appears in output. Without the SDK or a
@@ -168,7 +168,7 @@ checked by a test.
 
 ## Test results
 
-`410 passed` on Python 3.13.3 (locked versions, with the `[ai]` extra), 0
+`412 passed` on Python 3.13.3 (locked versions, with the `[ai]` extra), 0
 failed, 0 skipped, after merging the latest `milestone-b` and adding the
 Claude adapter (2026-10-17). `ruff check src tests examples`: all checks
 passed. `house-ai schemas check`: 22 schemas up to date (new:
@@ -176,7 +176,10 @@ passed. `house-ai schemas check`: 22 schemas up to date (new:
 3.13.3 and on Python 3.11.12 (numpy 2.4.6 and pyproj 3.7.2 there, because the
 lock's numpy 2.5.4 and pyproj 3.8.0 have no 3.11 builds).
 
-`tests/test_ai_interview.py` (12 tests, fake Anthropic client and scripted
+Without the `[ai]` extra (as in CI, which installs `.[dev]`): `411 passed, 1
+skipped` (the SDK error-mapping test needs the SDK).
+
+`tests/test_ai_interview.py` (14 tests, fake Anthropic client and scripted
 provider; no network, no key) covers the request (model, structured-output
 schema, server-side fallback, attachments), refusals and cut-off replies,
 SDK errors mapped without leaking the key, AI wording kept with provider and
