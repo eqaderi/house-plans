@@ -281,10 +281,26 @@ def _boundary_candidates(
     suggestions: dict[str, tuple[LayerRole, str]],
     unit: LengthUnit | None,
 ) -> None:
-    if mapping is not None and any(r is LayerRole.BOUNDARY for r in mapping.layers.values()):
-        names = [layer.name for layer in report.layers]
-        layers = {n for n in names if mapping.role_of(n) is LayerRole.BOUNDARY}
-        basis = "closed polylines on the layers your mapping marks as boundary"
+    source_id = default_source_id(Path(report.file_name))
+    has_mapped_boundary = (
+        mapping is not None
+        and mapping.has_boundary_role()
+        and (
+            any(
+                r is LayerRole.BOUNDARY
+                for r in (*mapping.layers.values(), *mapping.handle_roles.values())
+            )
+            or not mapping.boundary_handle_targets_other_source(source_id)
+        )
+    )
+    if has_mapped_boundary and mapping is not None:
+        layers: set[str] = set()
+        if mapping.boundary_handle and not mapping.boundary_handle_targets_other_source(source_id):
+            basis = f"closed polyline matching boundary_handle {mapping.boundary_handle!r}"
+        elif any(r is LayerRole.BOUNDARY for r in mapping.handle_roles.values()):
+            basis = "closed polylines marked as boundary in your mapping"
+        else:
+            basis = "closed polylines on the layers your mapping marks as boundary"
     else:
         layers = {n for n, (role, _) in suggestions.items() if role is LayerRole.BOUNDARY}
         basis = (
@@ -295,7 +311,18 @@ def _boundary_candidates(
     scale = METRES_PER_UNIT[unit] if unit else None
     found = []
     for line in ext.polylines:
-        if layers and line.layer not in layers:
+        if has_mapped_boundary and mapping is not None:
+            if mapping.boundary_handle and not mapping.boundary_handle_targets_other_source(
+                source_id
+            ):
+                if not mapping.matches_boundary_handle(source_id, line.handle):
+                    continue
+            elif (
+                mapping.role_of_entity(source_id, line.handle, line.layer)
+                is not LayerRole.BOUNDARY
+            ):
+                continue
+        elif layers and line.layer not in layers:
             continue
         pts = line.points
         closed = line.closed or (len(pts) >= 4 and math.dist(pts[0], pts[-1]) < 1e-6)

@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import hashlib
 import math
+import re
 from collections import Counter
 from dataclasses import dataclass, field
 
@@ -518,32 +519,44 @@ class MappedLayerSiteExtractor:
             )
 
 
-def has_numeric_elevation_label(text: str | None) -> bool:
-    """Whether ``text`` (or a line in a multi-line label like ``Pt1\\n101.250``) is a number."""
-    if not text:
-        return False
-    for line in text.splitlines():
-        token = line.strip().replace(",", ".")
-        if not token:
-            continue
-        try:
-            val = float(token)
-        except ValueError:
-            continue
-        if math.isfinite(val):
-            return True
-    return False
+_POINT_HEADER_RE = re.compile(
+    r"^(?:pt|p|pnt|point|no\.?|#|bm|tp)\s*[-#.:]?\s*$", re.IGNORECASE
+)
+_LABEL_HEIGHT_RE = re.compile(
+    r"^(?:"
+    r"(?:(?:z|h|el|elev|elevation|height|kote|höhe)\s*[:=]?\s*([+-]?(?:\d+\.\d*|\.\d+|\d+)))"
+    r"|(?:(?:pt|p|pnt|point|bm|tp|#)\s*[-#.]?\s*\d+\s*[:=]?\s+([+-]?(?:\d+\.\d+|\.\d+)))"
+    r"|([+-]?(?:\d+\.\d*|\.\d+|\d+))"
+    r")(?:\s*(?:m|mm|cm|ft|'))?$",
+    re.IGNORECASE,
+)
 
 
 def numeric_label_values(text: str | None) -> list[tuple[float, float]]:
-    """Each line of a label that is a number, with half a unit of its last decimal.
+    """Each line of a label that is a height number, with half a unit of its last decimal.
 
-    ``"Pt1\n101.250"`` gives ``[(101.250, 0.0005)]``: the label agrees with any z
-    that rounds to what is written.
+    ``"Pt1\\n101.250"`` gives ``[(101.250, 0.0005)]``: the label agrees with any z
+    that rounds to what is written. Inline units (``"1664.0 m"``) and inline point
+    names before a decimal height (``"Pt1 101.25"``) are accepted; a bare integer
+    immediately after a point-header line (``"Pt\\n12"``) is treated as a point ID,
+    not an elevation.
     """
-    out = []
-    for line in (text or "").splitlines():
-        token = line.strip().replace(",", ".")
+    out: list[tuple[float, float]] = []
+    lines = [ln.strip() for ln in (text or "").replace("\\P", "\n").splitlines() if ln.strip()]
+    prev_is_point_header = False
+    for line in lines:
+        normalized = line.replace(",", ".")
+        m = _LABEL_HEIGHT_RE.match(normalized)
+        if m is None:
+            prev_is_point_header = bool(_POINT_HEADER_RE.match(line))
+            continue
+        token = m.group(1) or m.group(2) or m.group(3)
+        assert token is not None
+        has_unit = normalized[-1].lower() in ("m", "t", "'")
+        if prev_is_point_header and "." not in token and not has_unit and m.group(1) is None:
+            prev_is_point_header = False
+            continue
+        prev_is_point_header = False
         try:
             val = float(token)
         except ValueError:
@@ -552,6 +565,11 @@ def numeric_label_values(text: str | None) -> list[tuple[float, float]]:
             decimals = len(token.partition(".")[2]) if "." in token else 0
             out.append((val, 0.5 * 10.0**-decimals + 1e-9))
     return out
+
+
+def has_numeric_elevation_label(text: str | None) -> bool:
+    """Whether ``text`` (or a line in a multi-line label like ``Pt1\\n101.250``) is a number."""
+    return bool(numeric_label_values(text))
 
 
 _is_number = has_numeric_elevation_label

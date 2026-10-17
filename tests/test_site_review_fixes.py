@@ -446,3 +446,105 @@ def test_review_page_labels_how_each_value_is_known(tmp_path, capsys):
     assert "<script" not in html and "http://" not in html.replace(
         'xmlns="http://www.w3.org/2000/svg"', ""
     )
+
+
+def test_elevation_labels_with_inline_units_point_names_and_point_id_lines():
+    from house_ai.cad.site_extract import has_numeric_elevation_label, numeric_label_values
+
+    assert has_numeric_elevation_label("1664.0 m")
+    assert numeric_label_values("1664.0 m")[0][0] == pytest.approx(1664.0)
+    assert has_numeric_elevation_label("Pt1 101.25")
+    assert numeric_label_values("Pt1 101.25")[0][0] == pytest.approx(101.25)
+    assert has_numeric_elevation_label("EL=1665.378 m")
+    assert numeric_label_values("EL=1665.378 m")[0][0] == pytest.approx(1665.378)
+    assert not has_numeric_elevation_label("Pt\n12")
+    assert numeric_label_values("Pt\n12") == []
+    assert numeric_label_values("Pt\n12\n1664.884")[0][0] == pytest.approx(1664.884)
+
+
+def test_inspection_boundary_candidates_honor_handle_roles_and_case_insensitive_layers(tmp_path):
+    from house_ai.orchestration.survey_inspection import inspect_file
+
+    doc = ezdxf.new("R2018")
+    doc.header["$INSUNITS"] = 6
+    doc.layers.add("PARCEL_LAYER")
+    msp = doc.modelspace()
+    c1 = msp.add_lwpolyline(
+        [(0, 0), (20, 0), (20, 30), (0, 30)], close=True, dxfattribs={"layer": "0"}
+    )
+    c2 = msp.add_lwpolyline(
+        [(0, 0), (50, 0), (50, 50), (0, 50)], close=True, dxfattribs={"layer": "PARCEL_LAYER"}
+    )
+    path = tmp_path / "seperated.dxf"
+    doc.saveas(path)
+
+    # 1. boundary_handle with source_id#handle selects only c1 on layer "0"
+    m_handle = LayerMapping(
+        layers={"0": LayerRole.SPOT_ELEVATION},
+        boundary_handle=f"src-seperated#{c1.dxf.handle}",
+    )
+    insp_h = inspect_file(path, m_handle)
+    assert [c.handle for c in insp_h.boundary_candidates] == [c1.dxf.handle]
+    assert "boundary_handle" in insp_h.boundary_candidate_basis
+
+    # 2. Case-insensitive layer name in mapping selects c2 on "PARCEL_LAYER"
+    m_layer = LayerMapping(layers={"parcel_layer": LayerRole.BOUNDARY})
+    insp_l = inspect_file(path, m_layer)
+    assert [c.handle for c in insp_l.boundary_candidates] == [c2.dxf.handle]
+
+
+def test_site_svg_renders_point_features_with_colour_and_title(new_store, mapping):
+    from house_ai.domain.site import PointGeometry, SiteFeature, SiteFeatureKind
+    from house_ai.render2d.site_svg import COLOURS, render_site_svg
+
+    from .conftest import SURVEY_DXF
+
+    store = new_store("synthetic-survey")
+    site = store.get(ingest_site(store, _add(store, SURVEY_DXF), mapping, AGENT).site_ref, Site)
+    site_with_pts = site.model_copy(
+        update={
+            "features": [
+                *site.features,
+                SiteFeature(
+                    id="util-pole-1",
+                    kind=SiteFeatureKind.UTILITY,
+                    geometry=PointGeometry(xy=(12.0, 8.0)),
+                ),
+                SiteFeature(
+                    id="well-1",
+                    kind=SiteFeatureKind.WATER,
+                    geometry=PointGeometry(xy=(18.0, 12.0)),
+                ),
+            ]
+        }
+    )
+    svg = render_site_svg(site_with_pts, validate_site(site_with_pts))
+    assert f'fill="{COLOURS["utility"]}"><title>util-pole-1 (utility)</title></circle>' in svg
+    assert f'fill="{COLOURS["water"]}"><title>well-1 (water)</title></circle>' in svg
+
+
+def test_multifile_crs_disagreement_includes_rejected_geodata_epsg(tmp_path, new_store, mapping):
+    from examples.surveys.synthetic.make_survey import GEODATA_XML, PARCEL
+
+    from .conftest import SURVEY_DXF
+
+    doc = ezdxf.new("R2018")
+    doc.header["$INSUNITS"] = 6
+    doc.layers.add("PARCEL_BOUNDARY")
+    msp = doc.modelspace()
+    msp.add_lwpolyline(PARCEL, close=True, dxfattribs={"layer": "PARCEL_BOUNDARY"})
+    geo = msp.new_geodata()
+    geo.dxf.coordinate_type = 2
+    geo.coordinate_system_definition = GEODATA_XML.format(epsg=4326)  # geographic -> rejected
+    bad_crs_path = tmp_path / "part2_4326.dxf"
+    doc.saveas(bad_crs_path)
+
+    store = new_store("crs-disagree")
+    s1 = _add(store, SURVEY_DXF)  # declares EPSG:25832
+    s2 = _add(store, bad_crs_path)  # declares EPSG:4326 (rejected as non-projected)
+    res = ingest_site(store, [s1, s2], mapping, AGENT)
+    site = store.get(res.site_ref, Site)
+    issue_ids = {i.id for i in site.issues}
+    assert "iss-sources-disagree-crs" in issue_ids
+    assert any(i.startswith("iss-geodata-crs-invalid-") for i in issue_ids)
+
