@@ -1,0 +1,727 @@
+{
+  "$defs": {
+    "Actor": {
+      "additionalProperties": false,
+      "properties": {
+        "display_name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Display Name"
+        },
+        "id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "$ref": "#/$defs/ActorKind"
+        },
+        "model": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Model"
+        },
+        "provider": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Provider"
+        }
+      },
+      "required": [
+        "kind",
+        "id"
+      ],
+      "title": "Actor",
+      "type": "object"
+    },
+    "ActorKind": {
+      "enum": [
+        "human",
+        "agent",
+        "system"
+      ],
+      "title": "ActorKind",
+      "type": "string"
+    },
+    "ArtifactKind": {
+      "description": "Kinds of versioned artifacts kept in a project store.",
+      "enum": [
+        "source_document",
+        "cad_import",
+        "site",
+        "design_brief",
+        "space_program",
+        "assumptions",
+        "open_questions",
+        "constraint_set",
+        "codepack",
+        "plan",
+        "evaluation_report",
+        "revision_report",
+        "build_record"
+      ],
+      "title": "ArtifactKind",
+      "type": "string"
+    },
+    "ArtifactRef": {
+      "additionalProperties": false,
+      "description": "Pointer to one immutable version of an artifact, pinned by content hash.",
+      "properties": {
+        "id": {
+          "maxLength": 64,
+          "minLength": 1,
+          "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "$ref": "#/$defs/ArtifactKind"
+        },
+        "sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Sha256",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "kind",
+        "id",
+        "version",
+        "sha256"
+      ],
+      "title": "ArtifactRef",
+      "type": "object"
+    },
+    "InteractionKind": {
+      "enum": [
+        "none",
+        "door",
+        "window",
+        "drawer",
+        "switch",
+        "appliance"
+      ],
+      "title": "InteractionKind",
+      "type": "string"
+    },
+    "InteractionMetadata": {
+      "additionalProperties": false,
+      "properties": {
+        "hinge_offset": {
+          "anyOf": [
+            {
+              "maxItems": 3,
+              "minItems": 3,
+              "prefixItems": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                }
+              ],
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Hinge Offset"
+        },
+        "kind": {
+          "$ref": "#/$defs/InteractionKind",
+          "default": "none"
+        },
+        "max_angle_deg": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Max Angle Deg"
+        },
+        "parameters": {
+          "additionalProperties": true,
+          "title": "Parameters",
+          "type": "object"
+        }
+      },
+      "title": "InteractionMetadata",
+      "type": "object"
+    },
+    "LengthUnit": {
+      "enum": [
+        "mm",
+        "cm",
+        "dm",
+        "m",
+        "km",
+        "in",
+        "ft",
+        "us_survey_ft",
+        "yd",
+        "mi"
+      ],
+      "title": "LengthUnit",
+      "type": "string"
+    },
+    "Provenance": {
+      "additionalProperties": false,
+      "properties": {
+        "created_at": {
+          "format": "date-time",
+          "title": "Created At",
+          "type": "string"
+        },
+        "created_by": {
+          "$ref": "#/$defs/Actor"
+        },
+        "inputs": {
+          "items": {
+            "$ref": "#/$defs/ArtifactRef"
+          },
+          "title": "Inputs",
+          "type": "array"
+        },
+        "method": {
+          "minLength": 1,
+          "title": "Method",
+          "type": "string"
+        },
+        "notes": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Notes"
+        },
+        "tool": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Tool"
+        },
+        "tool_version": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Tool Version"
+        }
+      },
+      "required": [
+        "created_at",
+        "created_by",
+        "method"
+      ],
+      "title": "Provenance",
+      "type": "object"
+    },
+    "SceneCamera": {
+      "additionalProperties": false,
+      "properties": {
+        "fov_deg": {
+          "default": 60.0,
+          "exclusiveMinimum": 0,
+          "title": "Fov Deg",
+          "type": "number"
+        },
+        "id": {
+          "maxLength": 64,
+          "minLength": 1,
+          "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "label": {
+          "title": "Label",
+          "type": "string"
+        },
+        "orthographic": {
+          "default": false,
+          "title": "Orthographic",
+          "type": "boolean"
+        },
+        "transform": {
+          "$ref": "#/$defs/Transform3D"
+        }
+      },
+      "required": [
+        "id",
+        "label"
+      ],
+      "title": "SceneCamera",
+      "type": "object"
+    },
+    "SceneLight": {
+      "additionalProperties": false,
+      "properties": {
+        "color_hex": {
+          "default": "#FFFFFF",
+          "pattern": "^#[0-9a-fA-F]{6}$",
+          "title": "Color Hex",
+          "type": "string"
+        },
+        "id": {
+          "maxLength": 64,
+          "minLength": 1,
+          "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "intensity": {
+          "minimum": 0.0,
+          "title": "Intensity",
+          "type": "number"
+        },
+        "kind": {
+          "minLength": 1,
+          "title": "Kind",
+          "type": "string"
+        },
+        "transform": {
+          "$ref": "#/$defs/Transform3D"
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "intensity"
+      ],
+      "title": "SceneLight",
+      "type": "object"
+    },
+    "SceneMaterial": {
+      "additionalProperties": false,
+      "properties": {
+        "base_color_hex": {
+          "anyOf": [
+            {
+              "pattern": "^#[0-9a-fA-F]{6}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Base Color Hex"
+        },
+        "id": {
+          "maxLength": 64,
+          "minLength": 1,
+          "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "metallic": {
+          "anyOf": [
+            {
+              "maximum": 1.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Metallic"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "roughness": {
+          "anyOf": [
+            {
+              "maximum": 1.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Roughness"
+        },
+        "source_textures": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "title": "Source Textures",
+          "type": "object"
+        },
+        "texture_scale_m": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Texture Scale M"
+        }
+      },
+      "required": [
+        "id",
+        "name"
+      ],
+      "title": "SceneMaterial",
+      "type": "object"
+    },
+    "SceneObject": {
+      "additionalProperties": false,
+      "properties": {
+        "collision_enabled": {
+          "default": true,
+          "title": "Collision Enabled",
+          "type": "boolean"
+        },
+        "domain_id": {
+          "anyOf": [
+            {
+              "maxLength": 64,
+              "minLength": 1,
+              "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Domain Id"
+        },
+        "id": {
+          "maxLength": 64,
+          "minLength": 1,
+          "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "instance_of": {
+          "anyOf": [
+            {
+              "maxLength": 64,
+              "minLength": 1,
+              "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Instance Of"
+        },
+        "interaction": {
+          "$ref": "#/$defs/InteractionMetadata"
+        },
+        "material_ids": {
+          "items": {
+            "maxLength": 64,
+            "minLength": 1,
+            "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+            "type": "string"
+          },
+          "title": "Material Ids",
+          "type": "array"
+        },
+        "mesh_path": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Mesh Path"
+        },
+        "parent_id": {
+          "anyOf": [
+            {
+              "maxLength": 64,
+              "minLength": 1,
+              "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Parent Id"
+        },
+        "semantic_type": {
+          "minLength": 1,
+          "title": "Semantic Type",
+          "type": "string"
+        },
+        "transform": {
+          "$ref": "#/$defs/Transform3D"
+        }
+      },
+      "required": [
+        "id",
+        "semantic_type"
+      ],
+      "title": "SceneObject",
+      "type": "object"
+    },
+    "Transform3D": {
+      "additionalProperties": false,
+      "description": "3D transform in the manifest's declared units and coordinate system.",
+      "properties": {
+        "rotation_euler_deg": {
+          "default": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "maxItems": 3,
+          "minItems": 3,
+          "prefixItems": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            }
+          ],
+          "title": "Rotation Euler Deg",
+          "type": "array"
+        },
+        "scale": {
+          "default": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "maxItems": 3,
+          "minItems": 3,
+          "prefixItems": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            }
+          ],
+          "title": "Scale",
+          "type": "array"
+        },
+        "translation": {
+          "default": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "maxItems": 3,
+          "minItems": 3,
+          "prefixItems": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            }
+          ],
+          "title": "Translation",
+          "type": "array"
+        }
+      },
+      "title": "Transform3D",
+      "type": "object"
+    }
+  },
+  "$id": "https://house-ai.local/schemas/scene_manifest.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "scene_manifest.json transferring an approved Blender build to Unreal Engine.",
+  "properties": {
+    "blender_build_ref": {
+      "$ref": "#/$defs/ArtifactRef"
+    },
+    "cameras": {
+      "items": {
+        "$ref": "#/$defs/SceneCamera"
+      },
+      "title": "Cameras",
+      "type": "array"
+    },
+    "coordinate_system_id": {
+      "maxLength": 64,
+      "minLength": 1,
+      "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+      "title": "Coordinate System Id",
+      "type": "string"
+    },
+    "epsg": {
+      "anyOf": [
+        {
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Epsg"
+    },
+    "id": {
+      "maxLength": 64,
+      "minLength": 1,
+      "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+      "title": "Id",
+      "type": "string"
+    },
+    "lights": {
+      "items": {
+        "$ref": "#/$defs/SceneLight"
+      },
+      "title": "Lights",
+      "type": "array"
+    },
+    "materials": {
+      "items": {
+        "$ref": "#/$defs/SceneMaterial"
+      },
+      "title": "Materials",
+      "type": "array"
+    },
+    "objects": {
+      "items": {
+        "$ref": "#/$defs/SceneObject"
+      },
+      "title": "Objects",
+      "type": "array"
+    },
+    "origin_grid_m": {
+      "anyOf": [
+        {
+          "maxItems": 3,
+          "minItems": 3,
+          "prefixItems": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            }
+          ],
+          "type": "array"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Origin Grid M"
+    },
+    "plan_ref": {
+      "$ref": "#/$defs/ArtifactRef"
+    },
+    "player_start": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Transform3D"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "provenance": {
+      "$ref": "#/$defs/Provenance"
+    },
+    "schema_version": {
+      "default": "0.1.0",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "units": {
+      "$ref": "#/$defs/LengthUnit",
+      "default": "m"
+    }
+  },
+  "required": [
+    "id",
+    "plan_ref",
+    "blender_build_ref",
+    "coordinate_system_id",
+    "provenance"
+  ],
+  "title": "SceneManifest",
+  "type": "object"
+}

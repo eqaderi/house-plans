@@ -70,7 +70,7 @@ PLAN_APPROVED → BLENDER_BUILD ⇄ BLENDER_REVIEW → [model gate] MODEL_APPROV
 - Do not imply that something is approved when it is not. Say which gates
   are approved, for which artifact version, and by whom.
 - Reopening a gate (`workflow reopen`) supersedes its approval and every
-  later one. Do it only when the human asks for that change.
+  later one. Only a human actor may reopen an approved gate.
 - If the human's request needs a gate that is not yet approved (for example
   "build the Blender model" before the plan is approved), say so and stop.
 

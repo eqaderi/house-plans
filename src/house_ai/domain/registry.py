@@ -14,7 +14,7 @@ from pydantic import BaseModel
 
 from .agents import AgentRoster
 from .brief import DesignBrief
-from .build import BuildRecord
+from .build import BuildRecord, SceneManifest
 from .codepack import CodePack
 from .constraints import ConstraintSet
 from .evaluation import EvaluationReport
@@ -45,6 +45,7 @@ ARTIFACT_MODELS: dict[ArtifactKind, type[BaseModel]] = {
 SCHEMAS: dict[str, type[BaseModel]] = {
     **{kind.value: model for kind, model in ARTIFACT_MODELS.items()},
     "house_model": HouseModel,
+    "scene_manifest": SceneManifest,
     "change_request": ChangeRequest,
     "approval": Approval,
     "workflow_event": WorkflowEvent,

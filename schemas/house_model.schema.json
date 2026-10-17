@@ -124,6 +124,9 @@
       "properties": {
         "affects": {
           "items": {
+            "maxLength": 64,
+            "minLength": 1,
+            "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
             "type": "string"
           },
           "title": "Affects",
@@ -369,6 +372,9 @@
         },
         "subject_ids": {
           "items": {
+            "maxLength": 64,
+            "minLength": 1,
+            "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
             "type": "string"
           },
           "title": "Subject Ids",
@@ -492,9 +498,50 @@
           "default": null,
           "title": "Library"
         },
+        "metallic": {
+          "anyOf": [
+            {
+              "maximum": 1.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Metallic"
+        },
         "name": {
           "title": "Name",
           "type": "string"
+        },
+        "roughness": {
+          "anyOf": [
+            {
+              "maximum": 1.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Roughness"
+        },
+        "texture_scale_m": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Texture Scale M"
         },
         "uri": {
           "anyOf": [
@@ -582,6 +629,21 @@
           "minimum": 0,
           "title": "Offset M",
           "type": "number"
+        },
+        "opens_into": {
+          "anyOf": [
+            {
+              "maxLength": 64,
+              "minLength": 1,
+              "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Opens Into"
         },
         "operation": {
           "$ref": "#/$defs/Operation",
@@ -1102,6 +1164,21 @@
         "kind": {
           "$ref": "#/$defs/WallKind"
         },
+        "left_material_id": {
+          "anyOf": [
+            {
+              "maxLength": 64,
+              "minLength": 1,
+              "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Left Material Id"
+        },
         "level_id": {
           "maxLength": 64,
           "minLength": 1,
@@ -1123,6 +1200,21 @@
           ],
           "default": null,
           "title": "Material Id"
+        },
+        "right_material_id": {
+          "anyOf": [
+            {
+              "maxLength": 64,
+              "minLength": 1,
+              "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Right Material Id"
         },
         "start": {
           "maxItems": 2,

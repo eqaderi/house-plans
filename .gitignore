@@ -12,3 +12,12 @@ out/
 # Private project data: owner surveys, briefs and project stores.
 project-data/*
 !project-data/README.md
+sources/
+derived/
+*.dwg
+*.DWG
+*.dxf
+*.DXF
+!tests/fixtures/**/*.dxf
+!examples/**/*.dxf
+

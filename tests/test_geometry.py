@@ -57,3 +57,27 @@ def test_hole_outside_outer_is_rejected():
 def test_polyline_length():
     assert Polyline2D(points=[(0, 0), (3, 4)]).length_m == pytest.approx(5.0)
     assert Polyline2D(points=[(0, 0), (3, 0), (3, 4)], closed=True).length_m == pytest.approx(12.0)
+
+
+def test_oriented_polygon_normalises_winding():
+    cw_outer = Polygon2D(
+        outer=[(0, 0), (0, 10), (10, 10), (10, 0)],
+        holes=[[(2, 2), (8, 2), (8, 8), (2, 8)]],  # CCW hole
+    )
+    ccw_outer = Polygon2D(
+        outer=[(0, 0), (10, 0), (10, 10), (0, 10)],
+        holes=[[(2, 2), (2, 8), (8, 8), (8, 2)]],  # CW hole
+    )
+    assert cw_outer.oriented().area_m2 == pytest.approx(ccw_outer.area_m2)
+    assert cw_outer.oriented().to_shapely().exterior.is_ccw
+    assert not cw_outer.oriented().to_shapely().interiors[0].is_ccw
+
+
+def test_rotated_rectangle():
+    r0 = Polygon2D.rotated_rectangle((5.0, 5.0), 2.0, 4.0, rotation_deg=0.0)
+    r90 = Polygon2D.rotated_rectangle((5.0, 5.0), 2.0, 4.0, rotation_deg=90.0)
+    assert r0.area_m2 == pytest.approx(8.0)
+    assert r90.area_m2 == pytest.approx(8.0)
+    assert r0.bounds == pytest.approx((4.0, 3.0, 6.0, 7.0))
+    assert r90.bounds == pytest.approx((3.0, 4.0, 7.0, 6.0))
+

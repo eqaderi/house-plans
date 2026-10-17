@@ -274,14 +274,27 @@ class Workflow:
             if program.brief_ref
             else self.store.latest_of_kind(ArtifactKind.DESIGN_BRIEF)
         )
+        known_facts: set[str] = set()
+        loaded_any_brief = False
         for b_ref in brief_refs:
             try:
                 brief = self.store.get(b_ref, DesignBrief)
             except StoreError as exc:
                 reasons.append(f"program cites a brief that is not in the store: {exc}")
                 continue
+            loaded_any_brief = True
+            known_facts.update(f.id for f in brief.facts)
             for c in brief.unresolved_contradictions():
                 reasons.append(f"unresolved contradiction {c.id}: {c.statement}")
+        if loaded_any_brief:
+            for item in program.items:
+                for fid in item.source_fact_ids:
+                    if fid not in known_facts:
+                        reasons.append(f"program item {item.id} cites unknown brief fact {fid!r}")
+            for adj in program.adjacencies:
+                for fid in adj.source_fact_ids:
+                    if fid not in known_facts:
+                        reasons.append(f"adjacency {adj.id} cites unknown brief fact {fid!r}")
         return reasons
 
     def _check_plan_gate(
@@ -297,13 +310,17 @@ class Workflow:
         if not _same(program_approval.artifact, plan.model.program_ref):
             reasons.append("plan is not derived from the approved program version")
         site = self.store.get(site_approval.artifact, Site)
-        for finding in errors(check_model(plan.model, site)):
+        program = self.store.get(program_approval.artifact, SpaceProgram)
+        for finding in errors(check_model(plan.model, site, program)):
             reasons.append(f"integrity {finding.code}: {finding.message}")
-        for e_ref in self.store.latest_of_kind(ArtifactKind.EVALUATION_REPORT):
+        latest_for_plan: dict[str, EvaluationReport] = {}
+        for e_ref in self.store.refs(ArtifactKind.EVALUATION_REPORT):
             report = self.store.get(e_ref, EvaluationReport)
             if _same(report.plan_ref, ref):
-                for v in report.hard_violations:
-                    reasons.append(f"hard violation {v.id} ({report.id}): {v.message}")
+                latest_for_plan[report.id] = report
+        for report in latest_for_plan.values():
+            for v in report.hard_violations:
+                reasons.append(f"hard violation {v.id} ({report.id}): {v.message}")
         return reasons
 
     def _check_model_gate(
@@ -371,6 +388,11 @@ class Workflow:
 
     def reopen(self, gate: Gate, actor: Actor, reason: str) -> WorkflowEvent:
         """Go back to a gate's review state; supersede it and every later approval."""
+        if actor.kind is not ActorKind.HUMAN:
+            raise ApprovalRequiresHuman(
+                f"{actor.kind.value} {actor.id!r} cannot reopen the {gate.value} gate; "
+                "only a human can supersede a human approval"
+            )
         status = self.status()
         if gate not in status.approvals:
             raise TransitionNotAllowed(f"the {gate.value} gate is not approved; nothing to reopen")
@@ -384,3 +406,4 @@ class Workflow:
             reason=reason,
             payload={"gate": gate.value},
         )
+

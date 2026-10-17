@@ -48,8 +48,10 @@ def wall(ident: str, start: list, end: list, exterior: bool) -> dict:
     }
 
 
-def door(ident, host, offset, a, b, width=0.9, operation="swing_left", kind="door") -> dict:
-    return {
+def door(
+    ident, host, offset, a, b, width=0.9, operation="swing_left", kind="door", opens_into=None
+) -> dict:
+    out = {
         "id": ident,
         "kind": kind,
         "host_wall_id": host,
@@ -60,6 +62,9 @@ def door(ident, host, offset, a, b, width=0.9, operation="swing_left", kind="doo
         "connects": [a, b],
         "operation": operation,
     }
+    if opens_into is not None:
+        out["opens_into"] = opens_into
+    return out
 
 
 def window(ident, host, offset, space, width, height=1.2, sill=0.9) -> dict:

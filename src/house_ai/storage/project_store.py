@@ -233,31 +233,43 @@ class ProjectStore:
         """
         path = Path(path)
         digest = file_sha256(path)
-        for ref in self.refs(ArtifactKind.SOURCE_DOCUMENT):
-            doc = self.get(ref, SourceDocument)
-            if doc.sha256 == digest:
-                return doc
-        stored = Path("source") / f"{digest[:12]}-{_slug(path.stem)}{path.suffix.lower()}"
-        target = self.root / stored
-        if target.exists():
-            raise ImmutableArtifactError(f"{target} already exists")
-        shutil.copyfile(path, target)
-        os.chmod(target, READ_ONLY)
-        if file_sha256(target) != digest:
-            raise StoreIntegrityError(f"copy of {path} does not match the original")
-        doc = SourceDocument(
-            id=source_id or f"src-{_slug(path.stem)}",
-            original_filename=path.name,
-            sha256=digest,
-            size_bytes=target.stat().st_size,
-            media_type=media_type,
-            stored_path=stored.as_posix(),
-            classification=classification,
-            imported_at=self.clock(),
-            imported_by=actor,
-        )
-        self.put(ArtifactKind.SOURCE_DOCUMENT, doc.id, doc, actor)
-        return doc
+        with self._locked():
+            existing_ids: set[str] = set()
+            for ref in self.refs(ArtifactKind.SOURCE_DOCUMENT):
+                doc = self.get(ref, SourceDocument)
+                if doc.sha256 == digest:
+                    return doc
+                existing_ids.add(doc.id)
+            stored = Path("source") / f"{digest[:12]}-{_slug(path.stem)}{path.suffix.lower()}"
+            target = self.root / stored
+            if target.exists():
+                if file_sha256(target) != digest:
+                    raise ImmutableArtifactError(f"{target} already exists with different content")
+            else:
+                shutil.copyfile(path, target)
+            os.chmod(target, READ_ONLY)
+            if file_sha256(target) != digest:
+                raise StoreIntegrityError(f"copy of {path} does not match the original")
+            default_id = f"src-{_slug(path.stem)}"
+            if source_id is not None:
+                resolved_id = source_id
+            elif default_id not in existing_ids:
+                resolved_id = default_id
+            else:
+                resolved_id = f"{default_id}-{digest[:8]}"
+            doc = SourceDocument(
+                id=resolved_id,
+                original_filename=path.name,
+                sha256=digest,
+                size_bytes=target.stat().st_size,
+                media_type=media_type,
+                stored_path=stored.as_posix(),
+                classification=classification,
+                imported_at=self.clock(),
+                imported_by=actor,
+            )
+            self._put_unlocked(ArtifactKind.SOURCE_DOCUMENT, doc.id, doc, actor, reason=None)
+            return doc
 
     # -------------------------------------------------------------- artifacts
 
@@ -299,36 +311,47 @@ class ProjectStore:
         reason: str | None = None,
     ) -> ArtifactRef:
         """Validate and store a new immutable version of an artifact."""
+        with self._locked():
+            return self._put_unlocked(kind, artifact_id, data, actor, reason=reason)
+
+    def _put_unlocked(
+        self,
+        kind: ArtifactKind,
+        artifact_id: str,
+        data: BaseModel | dict[str, Any],
+        actor: Actor,
+        *,
+        reason: str | None,
+    ) -> ArtifactRef:
         model_cls = ARTIFACT_MODELS[kind]
         raw = data.model_dump(mode="json") if isinstance(data, BaseModel) else data
         model = model_cls.model_validate(raw)
         self._check_identity(kind, artifact_id, model)
         digest = content_hash(model)
-        with self._locked():
-            existing = self.refs(kind, artifact_id)
-            if existing and existing[-1].sha256 == digest:
-                return existing[-1]
-            version = (
-                max(
-                    existing[-1].version if existing else 0,
-                    self._highest_version_on_disk(kind, artifact_id),
-                )
-                + 1
+        existing = self.refs(kind, artifact_id)
+        if existing and existing[-1].sha256 == digest:
+            return existing[-1]
+        version = (
+            max(
+                existing[-1].version if existing else 0,
+                self._highest_version_on_disk(kind, artifact_id),
             )
-            ref = ArtifactRef(kind=kind, id=artifact_id, version=version, sha256=digest)
-            path = self._artifact_path(kind, artifact_id, version)
-            _write_once(path, pretty_json(model))
-            self._append_event_unlocked(
-                EventType.ARTIFACT_WRITTEN,
-                actor,
-                from_state=None,
-                to_state=None,
-                reason=reason,
-                payload={
-                    "ref": ref.model_dump(mode="json"),
-                    "path": path.relative_to(self.root).as_posix(),
-                },
-            )
+            + 1
+        )
+        ref = ArtifactRef(kind=kind, id=artifact_id, version=version, sha256=digest)
+        path = self._artifact_path(kind, artifact_id, version)
+        _write_once(path, pretty_json(model))
+        self._append_event_unlocked(
+            EventType.ARTIFACT_WRITTEN,
+            actor,
+            from_state=None,
+            to_state=None,
+            reason=reason,
+            payload={
+                "ref": ref.model_dump(mode="json"),
+                "path": path.relative_to(self.root).as_posix(),
+            },
+        )
         return ref
 
     def _highest_version_on_disk(self, kind: ArtifactKind, artifact_id: str) -> int:
@@ -411,14 +434,23 @@ class ProjectStore:
             if path not in registered:
                 problems.append(f"{path.relative_to(self.root)} is not registered in the event log")
 
+        registered_sources: set[Path] = set()
         for ref in self.refs(ArtifactKind.SOURCE_DOCUMENT):
             try:
                 doc = self.get(ref, SourceDocument)
             except StoreError:
                 continue  # already reported above
             src = self.root / doc.stored_path
+            registered_sources.add(src)
             if not src.is_file():
                 problems.append(f"source file {doc.stored_path} is missing")
             elif file_sha256(src) != doc.sha256:
                 problems.append(f"source file {doc.stored_path} was modified")
+        source_dir = self.root / "source"
+        if source_dir.is_dir():
+            for path in sorted(p for p in source_dir.rglob("*") if p.is_file()):
+                if path not in registered_sources:
+                    rel = path.relative_to(self.root)
+                    problems.append(f"source file {rel} is not registered in the event log")
         return problems
+

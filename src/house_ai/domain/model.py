@@ -66,6 +66,9 @@ class Wall(StrictModel):
     base_offset_m: float = 0.0
     kind: WallKind
     material_id: Id | None = None
+    #: Optional per-face finish material overrides (left/right relative to start -> end).
+    left_material_id: Id | None = None
+    right_material_id: Id | None = None
 
     @model_validator(mode="after")
     def _non_degenerate(self) -> Wall:
@@ -110,6 +113,8 @@ class Opening(StrictModel):
     sill_m: float = Field(default=0.0, ge=0)
     #: The two things on either side: space ids or "exterior". Order is not significant.
     connects: tuple[Id, Id]
+    #: Which side of ``connects`` a swinging door/casement opens into, if applicable.
+    opens_into: Id | None = None
     operation: Operation = Operation.NONE
     material_id: Id | None = None
 
@@ -118,6 +123,10 @@ class Opening(StrictModel):
         a, b = self.connects
         if a == b:
             raise ValueError(f"{self.id}: an opening must connect two different sides")
+        if self.opens_into is not None and self.opens_into not in self.connects:
+            raise ValueError(
+                f"{self.id}: opens_into ({self.opens_into!r}) must be one of {list(self.connects)}"
+            )
         return self
 
     @property
@@ -200,6 +209,12 @@ class Fixture(StrictModel):
     depth_m: PositiveFloat
     material_id: Id | None = None
 
+    def footprint_polygon(self) -> Polygon2D:
+        """Oriented 2D rectangular footprint of the fixture in the local frame."""
+        return Polygon2D.rotated_rectangle(
+            self.position, self.width_m, self.depth_m, self.rotation_deg
+        )
+
 
 class RelationshipKind(StrEnum):
     CONNECTED = "connected"
@@ -241,6 +256,9 @@ class MaterialRef(StrictModel):
     library: str | None = None
     uri: str | None = None
     base_color_hex: str | None = Field(default=None, pattern=r"^#[0-9a-fA-F]{6}$")
+    roughness: float | None = Field(default=None, ge=0.0, le=1.0)
+    metallic: float | None = Field(default=None, ge=0.0, le=1.0)
+    texture_scale_m: PositiveFloat | None = None
 
 
 class HouseModel(StrictModel):

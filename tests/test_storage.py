@@ -239,3 +239,23 @@ def test_a_crash_orphan_does_not_block_the_artifact_id(store, site):
     assert ref.version == 2
     assert store.get(ref) == site
     assert any("v0001.json is not registered" in p for p in store.verify())
+
+
+def test_add_source_disambiguates_same_stem_with_different_content(store, tmp_path):
+    dxf = tmp_path / "survey.dxf"
+    dwg = tmp_path / "survey.dwg"
+    dxf.write_bytes(b"dxf-bytes")
+    dwg.write_bytes(b"dwg-bytes")
+    doc1 = store.add_source(dxf, HUMAN)
+    doc2 = store.add_source(dwg, HUMAN)
+    assert doc1.id == "src-survey"
+    assert doc2.id.startswith("src-survey-") and doc2.id != doc1.id
+    assert len(store.refs(K.SOURCE_DOCUMENT)) == 2
+    assert store.verify() == []
+
+
+def test_verify_detects_unregistered_source_file(store):
+    stray = store.root / "source" / "unregistered.dxf"
+    stray.write_text("0\nEOF\n")
+    assert any("source/unregistered.dxf is not registered" in p for p in store.verify())
+

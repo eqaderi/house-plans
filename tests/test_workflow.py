@@ -421,3 +421,34 @@ def test_contradiction_in_an_uncited_brief_still_blocks_the_program(project):
     project.to_program_review()
     with pytest.raises(GateBlocked, match="ct-2"):
         project.wf.approve(Gate.PROGRAM, project.program, HUMAN, "approve")
+
+
+def test_agents_cannot_reopen_a_gate(project):
+    project.to_site_approved()
+    with pytest.raises(ApprovalRequiresHuman, match="cannot reopen"):
+        project.wf.reopen(Gate.SITE, AGENT, "agent wants to reopen")
+
+
+def test_program_gate_rejects_unknown_source_fact_ids(project):
+    program = example_doc("space_program.yaml")
+    program["items"][0]["source_fact_ids"] = ["f-nonexistent"]
+    prog_ref = project.store.put(K.SPACE_PROGRAM, "program", program, AGENT)
+    project.to_program_review()
+    with pytest.raises(GateBlocked, match="f-nonexistent"):
+        project.wf.approve(Gate.PROGRAM, prog_ref, HUMAN, "approve")
+
+
+def test_plan_gate_blocks_program_min_area_without_evaluation_report(project):
+    doc = example_doc("plans/plan-a.json")
+    doc["option_id"] = "plan-small-bath"
+    bath = next(s for s in doc["model"]["spaces"] if s["id"] == "sp-bath")
+    # Shrink sp-bath to 1.0 x 3.5 = 3.5 m² (program min_area_m2 is 6.0 m²)
+    bath["boundary"]["outer"] = [[14, 18.5], [15, 18.5], [15, 22], [14, 22]]
+    doc["model"]["fixtures"] = [
+        fx for fx in doc["model"]["fixtures"] if fx["space_id"] != "sp-bath"
+    ]
+    small = project.store.put(K.PLAN, "plan-small-bath", doc, AGENT)
+    project.to_concept_review()
+    with pytest.raises(GateBlocked, match="min_area_violation"):
+        project.wf.approve(Gate.PLAN, small, HUMAN, "approve")
+

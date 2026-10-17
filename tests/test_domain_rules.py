@@ -299,3 +299,49 @@ def test_actor_parsing_and_provider_fields():
         Actor.parse("claude-code")
     with pytest.raises(ValidationError, match="only be set on agent"):
         Actor(kind="human", id="owner", model="gpt")
+
+
+def test_scene_manifest_validation():
+    from house_ai.domain.build import SceneManifest
+
+    plan_ref = {"kind": "plan", "id": "plan-a", "version": 1, "sha256": "a" * 64}
+    build_ref = {"kind": "build_record", "id": "build-blender", "version": 1, "sha256": "b" * 64}
+    prov = {
+        "created_at": "2026-10-17T10:00:00Z",
+        "created_by": {"kind": "agent", "id": "blender-agent"},
+        "method": "blender_export",
+    }
+    manifest = SceneManifest.model_validate(
+        {
+            "id": "manifest-1",
+            "plan_ref": plan_ref,
+            "blender_build_ref": build_ref,
+            "coordinate_system_id": "lcs-site",
+            "materials": [{"id": "m-oak", "name": "Oak", "texture_scale_m": 1.0}],
+            "objects": [
+                {
+                    "id": "obj-door-1",
+                    "semantic_type": "door",
+                    "domain_id": "d-front",
+                    "material_ids": ["m-oak"],
+                    "interaction": {"kind": "door", "max_angle_deg": 90.0},
+                }
+            ],
+            "provenance": prov,
+        }
+    )
+    assert manifest.objects[0].interaction.kind.value == "door"
+    with pytest.raises(ValidationError, match="unknown material_id"):
+        SceneManifest.model_validate(
+            {
+                "id": "manifest-1",
+                "plan_ref": plan_ref,
+                "blender_build_ref": build_ref,
+                "coordinate_system_id": "lcs-site",
+                "objects": [
+                    {"id": "obj-1", "semantic_type": "wall", "material_ids": ["m-missing"]}
+                ],
+                "provenance": prov,
+            }
+        )
+

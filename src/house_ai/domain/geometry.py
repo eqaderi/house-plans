@@ -13,6 +13,7 @@ from typing import Annotated
 from pydantic import BeforeValidator, Field, model_validator
 from shapely.geometry import LineString
 from shapely.geometry import Polygon as ShapelyPolygon
+from shapely.geometry.polygon import orient
 from shapely.validation import explain_validity
 
 from .base import EPS_M, StrictModel
@@ -57,6 +58,14 @@ class Polygon2D(StrictModel):
     def to_shapely(self) -> ShapelyPolygon:
         return ShapelyPolygon(self.outer, self.holes)
 
+    def oriented(self) -> Polygon2D:
+        """Return an equivalent polygon with CCW outer ring and CW holes."""
+        poly = orient(self.to_shapely(), sign=1.0)
+        return Polygon2D(
+            outer=list(poly.exterior.coords[:-1]),
+            holes=[list(interior.coords[:-1]) for interior in poly.interiors],
+        )
+
     @property
     def area_m2(self) -> float:
         return float(self.to_shapely().area)
@@ -68,6 +77,19 @@ class Polygon2D(StrictModel):
     @classmethod
     def rectangle(cls, x0: float, y0: float, x1: float, y1: float) -> Polygon2D:
         return cls(outer=[(x0, y0), (x1, y0), (x1, y1), (x0, y1)])
+
+    @classmethod
+    def rotated_rectangle(
+        cls, centre: Point2, width_m: float, depth_m: float, rotation_deg: float = 0.0
+    ) -> Polygon2D:
+        """Construct a rectangle centered at ``centre`` rotated CCW by ``rotation_deg``."""
+        cx, cy = centre
+        hw, hd = width_m / 2.0, depth_m / 2.0
+        rad = math.radians(rotation_deg)
+        c, s = math.cos(rad), math.sin(rad)
+        local_corners = [(-hw, -hd), (hw, -hd), (hw, hd), (-hw, hd)]
+        outer = [(cx + c * dx - s * dy, cy + s * dx + c * dy) for dx, dy in local_corners]
+        return cls(outer=outer)
 
 
 class Polyline2D(StrictModel):
@@ -94,3 +116,4 @@ def unit_direction(a: Point2, b: Point2) -> Point2:
 
 def left_normal(direction: Point2) -> Point2:
     return (-direction[1], direction[0])
+

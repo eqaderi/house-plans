@@ -22,6 +22,7 @@ from pydantic import ValidationError
 from house_ai.domain.integrity import FindingSeverity, check_model
 from house_ai.domain.model import HouseModel
 from house_ai.domain.plan import PlanVersion
+from house_ai.domain.program import SpaceProgram
 from house_ai.domain.provenance import (
     Actor,
     ActorKind,
@@ -232,9 +233,10 @@ def cmd_artifact_check(args: argparse.Namespace) -> int:
     store = ProjectStore(Path(args.dir))
     plan = store.get(_ref(store, ArtifactKind.PLAN, args.id, args.version), PlanVersion)
     site = store.get(plan.model.site_ref, Site) if plan.model.site_ref else None
+    program = store.get(plan.model.program_ref, SpaceProgram) if plan.model.program_ref else None
     if site is None:
         _out("plan has no site_ref; site containment not checked")
-    return _report_findings(check_model(plan.model, site))
+    return _report_findings(check_model(plan.model, site, program))
 
 
 def cmd_example_load(args: argparse.Namespace) -> int:

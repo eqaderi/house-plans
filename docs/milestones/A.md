@@ -7,34 +7,40 @@ Date: 2026-10-17. Branch: `milestone-a`.
 - **Repository**: monorepo following the spec's suggested tree, plus
   `domain/` and `storage/` ([ADR 0004](../adr/0004-repository-layout.md)).
   Python package `house_ai`, `house-ai` CLI, CI workflow, lint config.
-- **Canonical schemas** (19, Pydantic v2, exported to `schemas/` as JSON
+- **Canonical schemas** (20, Pydantic v2, exported to `schemas/` as JSON
   Schema 2020-12): site with coordinate systems and terrain, CAD import
   provenance, source document, design brief, space program, assumptions,
   open questions, constraint set, code pack, house model (levels, spaces,
-  walls, openings, slabs, ceilings, stairs, zones, fixtures, relationships,
-  materials, assumptions, issues), plan version, change request, revision
-  report, evaluation report, build record, approval, workflow event,
-  project manifest, agent roster.
+  walls with per-face material overrides, openings with swing side, slabs,
+  ceilings, stairs, zones, fixtures with oriented footprints, relationships,
+  materials with PBR/scale metadata, assumptions, issues), plan version,
+  change request, revision report, evaluation report, build record, scene
+  manifest, approval, workflow event, project manifest, agent roster.
 - **Units and frames**: unit conversion including US survey foot, DXF
   `$INSUNITS` mapping (unitless → unknown), CRS/datum confirmation statuses,
   local project frame with rotation and round-trip transforms.
 - **Integrity checks** on the canonical model: unique ids, reference
-  resolution, polygon validity, no overlap, openings within their wall,
-  openings between the spaces they claim (geometric probe), reachability
-  from outside, fixtures inside their space, containment in the buildable
-  envelope, matching coordinate system.
+  resolution (including cross-checking program items, adjacency requirements,
+  issue subjects and assumption targets), polygon validity, no space overlap,
+  no unattached walls, openings within their wall, no overlapping openings on
+  a wall, openings between the spaces they claim across their full span,
+  reachability from outside, oriented fixture footprints inside their space
+  and non-overlapping, stair level and footprint consistency, containment in
+  the buildable envelope, matching coordinate system, and program minimum
+  area / hard connected adjacency checks.
 - **Project storage**: write-once versioned artifacts, immutable source
-  files, hash-chained append-only event log, tamper detection
-  (`project verify`), YAML/JSON-independent content hashes.
+  files with stem-collision disambiguation, hash-chained append-only event
+  log, tamper detection (`project verify`) covering both artifacts and
+  sources, YAML/JSON-independent content hashes.
 - **Workflow state machine**: the 15 spec states, transition table and
-  guards, four human-only approval gates that re-run their checks on the
-  pinned artifact version, `SITE_NEEDS_VERIFICATION` on ambiguous units,
-  CRS or datum, reopen with downstream supersession, state replayed from
-  the log.
+  guards, four human-only approval gates (and human-only `reopen`) that
+  re-run their checks on the pinned artifact version,
+  `SITE_NEEDS_VERIFICATION` on ambiguous units, CRS or datum, reopen with
+  downstream supersession, state replayed from the log.
 - **Safety boundary**: compliance labels that cannot claim a code check
   without a human-verified code pack, a linter for prohibited professional
-  claims, a provider data-flow policy that refuses private data without
-  explicit human consent.
+  claims, a provider data-flow policy that refuses private prompts and
+  attachments without explicit human consent.
 - **Agent entry points**: `docs/AGENT_CONTRACT.md` plus small `AGENTS.md`,
   `CLAUDE.md`, `GEMINI.md`; `agents/roles.yaml` with the 12 spec roles.
 - **Golden synthetic project**: `examples/projects/synthetic-bungalow/`,
@@ -60,19 +66,19 @@ python3.13 -m venv .venv
 
 ## Test results
 
-`211 passed` (Python 3.13.3, macOS), 0 failed, 0 skipped.
+`231 passed` (Python 3.13.3, macOS), 0 failed, 0 skipped.
 
 | File | Tests |
 |---|---|
-| `test_schemas.py` | 31 |
-| `test_units_coordinates.py` | 35 |
-| `test_geometry.py` | 10 |
-| `test_integrity.py` | 21 |
-| `test_domain_rules.py` | 33 |
-| `test_storage.py` | 22 |
-| `test_workflow.py` | 37 |
+| `test_schemas.py` | 32 |
+| `test_units_coordinates.py` | 37 |
+| `test_geometry.py` | 12 |
+| `test_integrity.py` | 28 |
+| `test_domain_rules.py` | 34 |
+| `test_storage.py` | 24 |
+| `test_workflow.py` | 40 |
 | `test_cli.py` | 14 |
-| `test_providers_agents.py` | 7 |
+| `test_providers_agents.py` | 9 |
 | `test_golden.py` | 1 |
 
 Python 3.11 is declared as supported and is in the CI matrix. The tests
@@ -91,20 +97,19 @@ macOS arm64 and manylinux x86_64.
   used yet, so EPSG codes are not validated against a registry and true
   north is left unknown.
 - Integrity checks use centerline polygons; there is no net-area
-  calculation, door-swing clearance or furniture check yet.
+  calculation or door-swing clearance check yet.
 - `RevisionReport` exists as a schema; computing it from two plan versions
   is Milestone D work.
 - The store uses POSIX `flock` and hard links; Windows is not supported.
 - A crash between writing an artifact file and appending its event leaves
   an unregistered version file. The next write skips past it and
   `project verify` reports it, but nothing cleans it up automatically.
-- The program gate checks the brief the program cites, or every stored
-  brief if it cites none. Program items' `source_fact_ids` are not yet
-  resolved against the brief.
 - Git history before commit `bf50e60` (the previous house-plans toolchain)
   contains survey-derived files (`derived/survey/*.dxf`,
-  `derived/site/d7.yaml`). The new `.gitignore` does not remove them from
-  history; whether to rewrite history is the owner's decision.
+  `derived/site/d7.yaml`). The new `.gitignore` blocks raw `.dwg`/`.dxf` and
+  legacy folders from being committed again, and a test verifies the working
+  tree is clean; whether to rewrite shared remote history is the owner's
+  decision.
 - Reads replay the whole event log; fine for expected project sizes.
 - Artifacts can be written in any workflow state; the gates, not write
   permissions, control what counts as approved.

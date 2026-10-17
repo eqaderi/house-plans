@@ -150,7 +150,10 @@
         "category": "wall",
         "id": "m-render",
         "library": null,
+        "metallic": null,
         "name": "Exterior render, off-white",
+        "roughness": null,
+        "texture_scale_m": null,
         "uri": null
       },
       {
@@ -158,7 +161,10 @@
         "category": "wall",
         "id": "m-plaster",
         "library": null,
+        "metallic": null,
         "name": "Interior plaster, white",
+        "roughness": null,
+        "texture_scale_m": null,
         "uri": null
       },
       {
@@ -166,7 +172,10 @@
         "category": "floor",
         "id": "m-oak",
         "library": null,
+        "metallic": null,
         "name": "Oak floorboards",
+        "roughness": null,
+        "texture_scale_m": null,
         "uri": null
       },
       {
@@ -174,7 +183,10 @@
         "category": "floor",
         "id": "m-concrete",
         "library": null,
+        "metallic": null,
         "name": "Concrete",
+        "roughness": null,
+        "texture_scale_m": null,
         "uri": null
       },
       {
@@ -182,7 +194,10 @@
         "category": "glazing",
         "id": "m-glass",
         "library": null,
+        "metallic": null,
         "name": "Clear double glazing",
+        "roughness": null,
+        "texture_scale_m": null,
         "uri": null
       }
     ],
@@ -199,6 +214,7 @@
         "kind": "door",
         "material_id": null,
         "offset_m": 3.8,
+        "opens_into": null,
         "operation": "swing_left",
         "sill_m": 0.0,
         "width_m": 1.0
@@ -214,6 +230,7 @@
         "kind": "door",
         "material_id": null,
         "offset_m": 2.0,
+        "opens_into": null,
         "operation": "swing_left",
         "sill_m": 0.0,
         "width_m": 0.9
@@ -229,6 +246,7 @@
         "kind": "door",
         "material_id": null,
         "offset_m": 7.0,
+        "opens_into": null,
         "operation": "swing_left",
         "sill_m": 0.0,
         "width_m": 0.9
@@ -244,6 +262,7 @@
         "kind": "door",
         "material_id": null,
         "offset_m": 1.5,
+        "opens_into": null,
         "operation": "swing_left",
         "sill_m": 0.0,
         "width_m": 0.9
@@ -259,6 +278,7 @@
         "kind": "door",
         "material_id": null,
         "offset_m": 4.8,
+        "opens_into": null,
         "operation": "swing_left",
         "sill_m": 0.0,
         "width_m": 0.8
@@ -274,6 +294,7 @@
         "kind": "door",
         "material_id": null,
         "offset_m": 8.5,
+        "opens_into": null,
         "operation": "swing_left",
         "sill_m": 0.0,
         "width_m": 0.9
@@ -289,6 +310,7 @@
         "kind": "opening",
         "material_id": null,
         "offset_m": 1.5,
+        "opens_into": null,
         "operation": "none",
         "sill_m": 0.0,
         "width_m": 1.6
@@ -304,6 +326,7 @@
         "kind": "window",
         "material_id": "m-glass",
         "offset_m": 2.0,
+        "opens_into": null,
         "operation": "tilt_turn",
         "sill_m": 0.0,
         "width_m": 2.0
@@ -319,6 +342,7 @@
         "kind": "window",
         "material_id": "m-glass",
         "offset_m": 6.5,
+        "opens_into": null,
         "operation": "tilt_turn",
         "sill_m": 0.9,
         "width_m": 1.5
@@ -334,6 +358,7 @@
         "kind": "window",
         "material_id": "m-glass",
         "offset_m": 8.0,
+        "opens_into": null,
         "operation": "tilt_turn",
         "sill_m": 0.9,
         "width_m": 1.5
@@ -349,6 +374,7 @@
         "kind": "window",
         "material_id": "m-glass",
         "offset_m": 1.5,
+        "opens_into": null,
         "operation": "tilt_turn",
         "sill_m": 0.9,
         "width_m": 1.2
@@ -364,6 +390,7 @@
         "kind": "window",
         "material_id": "m-glass",
         "offset_m": 9.0,
+        "opens_into": null,
         "operation": "tilt_turn",
         "sill_m": 0.9,
         "width_m": 1.5
@@ -379,6 +406,7 @@
         "kind": "window",
         "material_id": "m-glass",
         "offset_m": 5.4,
+        "opens_into": null,
         "operation": "tilt_turn",
         "sill_m": 1.5,
         "width_m": 0.6
@@ -394,6 +422,7 @@
         "kind": "window",
         "material_id": "m-glass",
         "offset_m": 1.5,
+        "opens_into": null,
         "operation": "tilt_turn",
         "sill_m": 0.9,
         "width_m": 1.5
@@ -675,8 +704,10 @@
         "height_m": 2.8,
         "id": "w-ext-s",
         "kind": "exterior",
+        "left_material_id": null,
         "level_id": "l0",
         "material_id": "m-render",
+        "right_material_id": null,
         "start": [
           10.0,
           12.0
@@ -692,8 +723,10 @@
         "height_m": 2.8,
         "id": "w-ext-e",
         "kind": "exterior",
+        "left_material_id": null,
         "level_id": "l0",
         "material_id": "m-render",
+        "right_material_id": null,
         "start": [
           22.0,
           12.0
@@ -709,8 +742,10 @@
         "height_m": 2.8,
         "id": "w-ext-n",
         "kind": "exterior",
+        "left_material_id": null,
         "level_id": "l0",
         "material_id": "m-render",
+        "right_material_id": null,
         "start": [
           22.0,
           22.0
@@ -726,8 +761,10 @@
         "height_m": 2.8,
         "id": "w-ext-w",
         "kind": "exterior",
+        "left_material_id": null,
         "level_id": "l0",
         "material_id": "m-render",
+        "right_material_id": null,
         "start": [
           10.0,
           22.0
@@ -743,8 +780,10 @@
         "height_m": 2.8,
         "id": "w-living-kitchen",
         "kind": "interior",
+        "left_material_id": null,
         "level_id": "l0",
         "material_id": "m-plaster",
+        "right_material_id": null,
         "start": [
           16.0,
           12.0
@@ -760,8 +799,10 @@
         "height_m": 2.8,
         "id": "w-hall-s",
         "kind": "interior",
+        "left_material_id": null,
         "level_id": "l0",
         "material_id": "m-plaster",
+        "right_material_id": null,
         "start": [
           10.0,
           17.0
@@ -777,8 +818,10 @@
         "height_m": 2.8,
         "id": "w-hall-n",
         "kind": "interior",
+        "left_material_id": null,
         "level_id": "l0",
         "material_id": "m-plaster",
+        "right_material_id": null,
         "start": [
           10.0,
           18.5
@@ -794,8 +837,10 @@
         "height_m": 2.8,
         "id": "w-bed-bath",
         "kind": "interior",
+        "left_material_id": null,
         "level_id": "l0",
         "material_id": "m-plaster",
+        "right_material_id": null,
         "start": [
           14.0,
           18.5
@@ -811,8 +856,10 @@
         "height_m": 2.8,
         "id": "w-bath-bed",
         "kind": "interior",
+        "left_material_id": null,
         "level_id": "l0",
         "material_id": "m-plaster",
+        "right_material_id": null,
         "start": [
           17.0,
           18.5

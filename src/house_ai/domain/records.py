@@ -22,7 +22,7 @@ class Assumption(StrictModel):
     basis: str | None = None
     status: Epistemic = Epistemic.ASSUMPTION
     #: Ids of things that depend on this assumption.
-    affects: list[str] = Field(default_factory=list)
+    affects: list[Id] = Field(default_factory=list)
     #: Who should confirm or reject it (e.g. "owner", "surveyor", "structural engineer").
     confirm_with: str | None = None
     made_by: Actor | None = None
@@ -73,7 +73,7 @@ class Issue(StrictModel):
     description: str | None = None
     severity: Severity
     status: IssueStatus = IssueStatus.OPEN
-    subject_ids: list[str] = Field(default_factory=list)
+    subject_ids: list[Id] = Field(default_factory=list)
     raised_by: Actor | None = None
 
 
@@ -82,7 +82,7 @@ class Contradiction(StrictModel):
 
     id: Id
     statement: str = Field(min_length=1)
-    fact_ids: list[str] = Field(min_length=2)
+    fact_ids: list[Id] = Field(min_length=2)
     resolved: bool = False
     resolution: str | None = None
 

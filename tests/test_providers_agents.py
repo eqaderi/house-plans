@@ -107,3 +107,29 @@ def test_domain_never_imports_a_vendor_sdk():
     for path in src.rglob("*.py"):
         text = path.read_text()
         assert not any(v in text for v in vendors), path
+
+
+def test_bare_or_private_prompt_is_refused_without_consent():
+    provider = RecordingProvider()
+    req = ProviderRequest(system="s", prompt="raw owner coordinates")
+    with pytest.raises(PrivateDataFlowError, match="prompt"):
+        send(provider, req, DataFlowPolicy())
+    with pytest.raises(PrivateDataFlowError, match="prompt"):
+        send(
+            provider,
+            ProviderRequest(
+                system="s",
+                prompt="private owner prompt",
+                classification=DataClassification.PRIVATE,
+                attachments=[Attachment("synthetic", DataClassification.SYNTHETIC, "{}")],
+            ),
+            DataFlowPolicy(),
+        )
+
+
+def test_no_private_survey_files_in_worktree():
+    dwg_files = list(REPO.rglob("*.dwg")) + list(REPO.rglob("*.DWG"))
+    assert dwg_files == []
+    assert not (REPO / "sources").exists()
+    assert not (REPO / "derived").exists()
+

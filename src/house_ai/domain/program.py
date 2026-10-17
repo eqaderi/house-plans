@@ -70,7 +70,7 @@ class ProgramItem(StrictModel):
     priority: Priority = Priority.MUST
     daylight: DaylightNeed = DaylightNeed.PREFERRED
     #: Brief facts this item derives from.
-    source_fact_ids: list[str] = Field(default_factory=list)
+    source_fact_ids: list[Id] = Field(default_factory=list)
     notes: str | None = None
 
     @model_validator(mode="after")
@@ -111,7 +111,7 @@ class AdjacencyRequirement(StrictModel):
     #: Soft requirements only; relative importance > 0.
     weight: float | None = Field(default=None, gt=0)
     rationale: str | None = None
-    source_fact_ids: list[str] = Field(default_factory=list)
+    source_fact_ids: list[Id] = Field(default_factory=list)
 
     @model_validator(mode="after")
     def _weight_matches_strength(self) -> AdjacencyRequirement:

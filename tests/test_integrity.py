@@ -203,3 +203,74 @@ def test_degenerate_wall_is_rejected(plan_doc):
     wall["end"] = wall["start"]
     with pytest.raises(ValidationError, match="shorter than 1 cm"):
         model_from(plan_doc)
+
+
+def test_opening_straddling_two_rooms_is_rejected(plan_doc):
+    # w-hall-n runs from x=10 to x=22; sp-bed-parents is [10, 14] and sp-bath is [14, 17].
+    # Place d-hall-bath at offset 3.1 with width 2.0 (x=13.1 to x=15.1, midpoint x=14.1 in sp-bath).
+    door = find(plan_doc["model"]["openings"], "d-hall-bath")
+    door["offset_m"] = 3.1
+    door["width_m"] = 2.0
+    findings = check_model(model_from(plan_doc))
+    assert "opening_sides_mismatch" in codes(findings)
+
+
+def test_overlapping_openings_on_same_wall(plan_doc):
+    # Move d-hall-bath to overlap d-hall-bed-parents (offset 1.5, width 0.9) on w-hall-n.
+    door = find(plan_doc["model"]["openings"], "d-hall-bath")
+    door["offset_m"] = 1.8
+    door["connects"] = ["sp-hall", "sp-bed-parents"]
+    findings = check_model(model_from(plan_doc))
+    assert "opening_overlap" in codes(findings)
+
+
+def test_unattached_wall_is_rejected(plan_doc):
+    plan_doc["model"]["walls"].append(
+        {
+            "id": "w-floating",
+            "level_id": "l0",
+            "start": [0.0, 0.0],
+            "end": [5.0, 0.0],
+            "thickness_m": 0.2,
+            "height_m": 2.8,
+            "kind": "exterior",
+        }
+    )
+    assert "unattached_wall" in codes(check_model(model_from(plan_doc)))
+
+
+def test_fixture_protruding_outside_space_despite_interior_center(plan_doc):
+    # Center is at x=14.05 inside sp-bath [14, 17], but width_m=0.4 extends to x=13.85.
+    find(plan_doc["model"]["fixtures"], "fx-wc")["position"] = [14.05, 21.4]
+    assert "fixture_outside_space" in codes(check_model(model_from(plan_doc)))
+
+
+def test_overlapping_fixtures_in_same_space(plan_doc):
+    find(plan_doc["model"]["fixtures"], "fx-basin")["position"] = [14.6, 21.4]
+    assert "fixture_overlap" in codes(check_model(model_from(plan_doc)))
+
+
+def test_stair_level_and_footprint_checks(plan_doc):
+    plan_doc["model"]["levels"].append({"id": "l1", "name": "Upper", "elevation_m": 3.7})
+    plan_doc["model"]["stairs"].append(
+        {
+            "id": "st-main",
+            "kind": "straight",
+            "from_level_id": "l0",
+            "to_level_id": "l1",
+            "footprint": {"outer": [[0, 0], [3, 0], [3, 1], [0, 1]]},
+            "bottom_space_id": "sp-hall",
+            "top_space_id": "sp-living",  # on l0, not l1
+            "width_m": 1.0,
+        }
+    )
+    findings = check_model(model_from(plan_doc))
+    assert "stair_level_mismatch" in codes(findings)
+    assert "stair_outside_connected_space" in codes(findings)
+
+
+def test_opening_opens_into_must_match_connects(plan_doc):
+    find(plan_doc["model"]["openings"], "d-hall-bath")["opens_into"] = "sp-kitchen"
+    with pytest.raises(ValidationError, match="opens_into"):
+        model_from(plan_doc)
+

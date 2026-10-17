@@ -144,6 +144,26 @@ class Site(StrictModel):
     issues: list[Issue] = Field(default_factory=list)
     provenance: Provenance
 
+    @property
+    def has_geometry(self) -> bool:
+        """Whether any local-frame geometry is populated on this site."""
+        return bool(
+            self.boundary is not None
+            or self.buildable_envelope is not None
+            or self.terrain.spot_elevations
+            or self.terrain.contours
+            or self.features
+        )
+
+    @property
+    def geometry_frame_verified(self) -> bool:
+        """Whether populated geometry has a confirmed metric unit scale and local frame."""
+        return (
+            self.coordinates.source_units.confirmed
+            and self.coordinates.local is not None
+            and self.coordinates.horizontal_crs.resolved
+        )
+
 
 def site_verification_blockers(site: Site) -> list[str]:
     """Reasons the site cannot yet be approved as site truth. Empty means ready."""
@@ -177,3 +197,4 @@ def site_verification_blockers(site: Site) -> list[str]:
         if issue.severity is Severity.BLOCKING and issue.status is IssueStatus.OPEN:
             blockers.append(f"blocking issue {issue.id}: {issue.title}")
     return blockers
+
