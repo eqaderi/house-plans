@@ -6,6 +6,7 @@ hidden in prose.
 
 from __future__ import annotations
 
+from datetime import datetime
 from enum import StrEnum
 
 from pydantic import Field, model_validator
@@ -106,3 +107,43 @@ class OpenQuestionsFile(StrictModel):
 
     def blocking_open(self) -> list[OpenQuestion]:
         return [q for q in self.questions if q.blocking and q.status is QuestionStatus.OPEN]
+
+
+class OwnerStatement(StrictModel):
+    """Something the owner said about the project, in their words, and who wrote it down.
+
+    A statement is evidence, not a confirmation: it changes no confirmation status and
+    clears no blocker. Units, CRS, datum and boundary are confirmed only by the owner
+    with ``house-ai site confirm``; gates only with ``house-ai workflow approve``.
+    """
+
+    id: Id
+    #: What it is about, e.g. "horizontal_crs", "elevation_units", "relief".
+    subject: str = Field(pattern=r"^[a-z][a-z0-9_]*$")
+    #: The owner's words, verbatim.
+    words: str = Field(min_length=1)
+    #: Who said it, e.g. "owner".
+    stated_by: str = Field(min_length=1)
+    #: How it reached the project, e.g. "chat with agent:claude-code on 2026-10-17".
+    channel: str = Field(min_length=1)
+    recorded_by: Actor
+    recorded_at: datetime
+    #: What would make it formal, e.g. the command the owner runs.
+    pending_confirmation: str | None = None
+
+
+class OwnerStatementsFile(StrictModel):
+    """Everything the owner said that is not an interview answer, oldest first."""
+
+    schema_version: str = SCHEMA_VERSION
+    project_id: Id
+    statements: list[OwnerStatement] = Field(default_factory=list)
+    provenance: Provenance
+
+    @model_validator(mode="after")
+    def _unique_ids(self) -> OwnerStatementsFile:
+        ids = [st.id for st in self.statements]
+        dupes = sorted({i for i in ids if ids.count(i) > 1})
+        if dupes:
+            raise ValueError(f"duplicate statement ids: {dupes}")
+        return self

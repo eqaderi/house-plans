@@ -1,0 +1,85 @@
+{
+  "project_id": "my-house",
+  "provenance": {
+    "created_at": "2026-10-17T09:42:06.260875Z",
+    "created_by": {
+      "display_name": null,
+      "id": "claude-code",
+      "kind": "agent",
+      "model": null,
+      "provider": null
+    },
+    "inputs": [],
+    "method": "owner_statement",
+    "notes": null,
+    "tool": "house-ai statement add",
+    "tool_version": null
+  },
+  "schema_version": "0.1.0",
+  "statements": [
+    {
+      "channel": "chat with agent:claude-code, 2026-10-17",
+      "id": "stmt-001",
+      "pending_confirmation": "UTM zone, hemisphere (N/S) and horizontal datum/EPSG are still unknown: when known, house-ai site confirm my-house --confirmer <you> --epsg <code>. UTM is in metres, so the drawing unit can be confirmed now with --units m",
+      "recorded_at": "2026-10-17T09:42:04.832302Z",
+      "recorded_by": {
+        "display_name": null,
+        "id": "claude-code",
+        "kind": "agent",
+        "model": null,
+        "provider": null
+      },
+      "stated_by": "owner",
+      "subject": "horizontal_crs",
+      "words": "The survey uses UTM coordinates."
+    },
+    {
+      "channel": "chat with agent:claude-code, 2026-10-17",
+      "id": "stmt-002",
+      "pending_confirmation": "house-ai site confirm my-house --confirmer <you> --units m --elevation-units m (which sea-level datum is still unknown)",
+      "recorded_at": "2026-10-17T09:42:05.307494Z",
+      "recorded_by": {
+        "display_name": null,
+        "id": "claude-code",
+        "kind": "agent",
+        "model": null,
+        "provider": null
+      },
+      "stated_by": "owner",
+      "subject": "elevation_units",
+      "words": "The elevation values are in METRES ABOVE SEA LEVEL."
+    },
+    {
+      "channel": "chat with agent:claude-code, 2026-10-17",
+      "id": "stmt-003",
+      "pending_confirmation": null,
+      "recorded_at": "2026-10-17T09:42:05.779164Z",
+      "recorded_by": {
+        "display_name": null,
+        "id": "claude-code",
+        "kind": "agent",
+        "model": null,
+        "provider": null
+      },
+      "stated_by": "owner",
+      "subject": "relief",
+      "words": "The approximately 12–12.5 metre elevation difference is CORRECT."
+    },
+    {
+      "channel": "chat with agent:claude-code, 2026-10-17",
+      "id": "stmt-004",
+      "pending_confirmation": null,
+      "recorded_at": "2026-10-17T09:42:06.260605Z",
+      "recorded_by": {
+        "display_name": null,
+        "id": "claude-code",
+        "kind": "agent",
+        "model": null,
+        "provider": null
+      },
+      "stated_by": "owner",
+      "subject": "slope",
+      "words": "My land is genuinely steep."
+    }
+  ]
+}

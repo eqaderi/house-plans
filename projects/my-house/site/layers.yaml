@@ -1,0 +1,18 @@
+# Layer mapping for the owner's survey (seperated.dwg + elevation.dwg).
+# PROPOSED by agent:claude-code from the inspection; the owner confirms it
+# when confirming the site. Both drawings put everything on layer "0".
+#
+# - every POINT on layer 0 is a surveyed spot elevation (real z values);
+# - MTEXT labels on layer 0 are point names / height labels (never used as
+#   elevations; a height label at a point is only a cross-check);
+# - D7 in seperated.dwg is the only closed polyline: proposed parcel boundary;
+# - BC and C5 in seperated.dwg are two parallel open polylines 9.0 m apart
+#   west of the parcel, C5 running along its west edge: read as road edges
+#   (an interpretation, to be confirmed by the owner).
+layers:
+  "0": spot_elevation
+  Defpoints: ignore
+handle_roles:
+  "src-seperated#BC": road
+  "src-seperated#C5": road
+boundary_handle: "src-seperated#D7"

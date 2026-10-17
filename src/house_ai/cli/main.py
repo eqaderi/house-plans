@@ -39,6 +39,7 @@ from house_ai.domain.workflow import Gate, WorkflowState
 from house_ai.geospatial.crs import describe_epsg, utm_candidates
 from house_ai.geospatial.validation import report_markdown, validate_site
 from house_ai.orchestration.site_ingestion import SiteConfirmation, confirm_site, ingest_site
+from house_ai.orchestration.statements import owner_statements, record_owner_statement
 from house_ai.orchestration.survey_inspection import inspect_files, inspection_markdown
 from house_ai.orchestration.workflow import (
     GATES,
@@ -51,6 +52,7 @@ from house_ai.render2d.terrain_svg import render_terrain_svg
 from house_ai.storage import ProjectStore, StoreError
 from house_ai.storage.hashing import load_document, pretty_json
 from house_ai.storage.importer import import_folder
+from house_ai.storage.projects import create_project, list_projects, resolve_project_dir
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 EXIT_OK, EXIT_FAIL, EXIT_USAGE = 0, 1, 2
@@ -62,6 +64,11 @@ def _out(text: str = "") -> None:
 
 def _err(text: str) -> None:
     print(text, file=sys.stderr)
+
+
+def _dir(text: str) -> Path:
+    """A project folder given as a path or as a name under projects/."""
+    return resolve_project_dir(text)
 
 
 def _actor(text: str) -> Actor:
@@ -142,6 +149,24 @@ def cmd_project_init(args: argparse.Namespace) -> int:
     return EXIT_OK
 
 
+def cmd_project_new(args: argparse.Namespace) -> int:
+    store = create_project(args.name, title=args.title or args.name, actor=args.actor,
+                           classification=DataClassification(args.classification))  # fmt: skip
+    _out(f"created project {store.project_id} at {store.root} (state NEW_PROJECT)")
+    _out(f"next: copy the survey into {store.root}/surveys/ and follow {store.root}/README.md")
+    return EXIT_OK
+
+
+def cmd_project_list(args: argparse.Namespace) -> int:
+    roots = list_projects()
+    for root in roots:
+        store = ProjectStore(root)
+        _out(f"{store.project_id:20} {Workflow(store).state.value:24} {root}")
+    if not roots:
+        _out("no projects under projects/; create one with `house-ai project new <name>`")
+    return EXIT_OK
+
+
 def _status_dict(store: ProjectStore) -> dict:
     wf = Workflow(store)
     status = wf.status()
@@ -165,7 +190,7 @@ def _status_dict(store: ProjectStore) -> dict:
 
 
 def cmd_project_status(args: argparse.Namespace) -> int:
-    store = ProjectStore(Path(args.dir))
+    store = ProjectStore(_dir(args.dir))
     info = _status_dict(store)
     if args.json:
         _out(json.dumps(info, indent=2, sort_keys=True))
@@ -188,7 +213,7 @@ def cmd_project_status(args: argparse.Namespace) -> int:
 
 
 def cmd_project_verify(args: argparse.Namespace) -> int:
-    store = ProjectStore(Path(args.dir))
+    store = ProjectStore(_dir(args.dir))
     problems = store.verify()
     try:
         Workflow(store).status()
@@ -206,7 +231,7 @@ def cmd_project_verify(args: argparse.Namespace) -> int:
 
 
 def cmd_source_add(args: argparse.Namespace) -> int:
-    store = ProjectStore(Path(args.dir))
+    store = ProjectStore(_dir(args.dir))
     doc = store.add_source(
         Path(args.file), args.actor, classification=DataClassification(args.classification)
     )
@@ -215,7 +240,7 @@ def cmd_source_add(args: argparse.Namespace) -> int:
 
 
 def cmd_artifact_put(args: argparse.Namespace) -> int:
-    store = ProjectStore(Path(args.dir))
+    store = ProjectStore(_dir(args.dir))
     kind = ArtifactKind(args.kind)
     data = load_document(Path(args.file))
     artifact_id = args.id or data.get("option_id") or data.get("id")
@@ -232,7 +257,7 @@ def cmd_artifact_put(args: argparse.Namespace) -> int:
 
 
 def cmd_artifact_list(args: argparse.Namespace) -> int:
-    store = ProjectStore(Path(args.dir))
+    store = ProjectStore(_dir(args.dir))
     kind = ArtifactKind(args.kind) if args.kind else None
     for ref in store.refs(kind):
         _out(f"{ref.kind.value}/{ref.id} v{ref.version} {ref.sha256}")
@@ -240,7 +265,7 @@ def cmd_artifact_list(args: argparse.Namespace) -> int:
 
 
 def cmd_artifact_check(args: argparse.Namespace) -> int:
-    store = ProjectStore(Path(args.dir))
+    store = ProjectStore(_dir(args.dir))
     plan = store.get(_ref(store, ArtifactKind.PLAN, args.id, args.version), PlanVersion)
     site = store.get(plan.model.site_ref, Site) if plan.model.site_ref else None
     program = store.get(plan.model.program_ref, SpaceProgram) if plan.model.program_ref else None
@@ -280,14 +305,14 @@ def cmd_example_load(args: argparse.Namespace) -> int:
 
 
 def cmd_transition(args: argparse.Namespace) -> int:
-    wf = Workflow(ProjectStore(Path(args.dir)))
+    wf = Workflow(ProjectStore(_dir(args.dir)))
     ev = wf.transition(WorkflowState(args.state), args.actor, args.reason)
     _out(f"{ev.from_state.value} -> {ev.to_state.value}")  # type: ignore[union-attr]
     return EXIT_OK
 
 
 def cmd_assess_site(args: argparse.Namespace) -> int:
-    store = ProjectStore(Path(args.dir))
+    store = ProjectStore(_dir(args.dir))
     wf = Workflow(store)
     blockers = wf.assess_site(_ref(store, ArtifactKind.SITE, args.id, args.version), args.actor)
     for b in blockers:
@@ -297,7 +322,7 @@ def cmd_assess_site(args: argparse.Namespace) -> int:
 
 
 def cmd_request_approval(args: argparse.Namespace) -> int:
-    store = ProjectStore(Path(args.dir))
+    store = ProjectStore(_dir(args.dir))
     gate = Gate(args.gate)
     ref = _ref(store, GATES[gate].artifact_kind, args.id, args.version)
     ev = Workflow(store).request_approval(gate, ref, args.actor)
@@ -314,7 +339,7 @@ def cmd_approve(args: argparse.Namespace) -> int:
             "Agents must not approve gates; ask the human to run this command themselves."
         )
         return EXIT_USAGE
-    store = ProjectStore(Path(args.dir))
+    store = ProjectStore(_dir(args.dir))
     wf = Workflow(store)
     gate = Gate(args.gate)
     ref = _ref(store, GATES[gate].artifact_kind, args.id, args.version)
@@ -341,7 +366,7 @@ def cmd_approve(args: argparse.Namespace) -> int:
 
 
 def cmd_reopen(args: argparse.Namespace) -> int:
-    wf = Workflow(ProjectStore(Path(args.dir)))
+    wf = Workflow(ProjectStore(_dir(args.dir)))
     ev = wf.reopen(Gate(args.gate), args.actor, args.reason)
     _out(f"reopened {args.gate}: {ev.from_state.value} -> {ev.to_state.value}")  # type: ignore[union-attr]
     return EXIT_OK
@@ -368,7 +393,7 @@ def cmd_site_inspect(args: argparse.Namespace) -> int:
 
 
 def cmd_site_ingest(args: argparse.Namespace) -> int:
-    store = ProjectStore(Path(args.dir))
+    store = ProjectStore(_dir(args.dir))
     result = ingest_site(
         store, args.source, load_layer_mapping(Path(args.layers)), args.actor, site_id=args.site_id
     )
@@ -408,7 +433,7 @@ def cmd_site_confirm(args: argparse.Namespace) -> int:
     if not conf.summary():
         _err("nothing to confirm; pass at least one of the confirmation options")
         return EXIT_USAGE
-    store = ProjectStore(Path(args.dir))
+    store = ProjectStore(_dir(args.dir))
     _out(f"You ({args.confirmer}) are confirming for site {args.id}:")
     for item in conf.summary():
         _out(f"  - {item}")
@@ -433,11 +458,12 @@ def cmd_site_confirm(args: argparse.Namespace) -> int:
 
 
 def cmd_site_report(args: argparse.Namespace) -> int:
-    store = ProjectStore(Path(args.dir))
+    store = ProjectStore(_dir(args.dir))
     ref = _ref(store, ArtifactKind.SITE, args.id, args.version)
     site = store.get(ref, Site)
     report = validate_site(site, ref)
-    out = Path(args.out)
+    statements = owner_statements(store)
+    out = Path(args.out) if args.out else store.root / "reviews" / f"{ref.id}-v{ref.version}"
     out.mkdir(parents=True, exist_ok=True)
     site_svg, terrain_svg = render_site_svg(site, report), render_terrain_svg(site, report)
     cad_inputs = [r for r in site.provenance.inputs if r.kind is ArtifactKind.CAD_IMPORT]
@@ -445,10 +471,10 @@ def cmd_site_report(args: argparse.Namespace) -> int:
     files = {
         "site.json": pretty_json(site),
         "site-report.json": pretty_json(report),
-        "site-report.md": report_markdown(report),
+        "site-report.md": report_markdown(report, statements),
         "site.svg": site_svg,
         "terrain.svg": terrain_svg,
-        "index.html": render_review_html(site, report, site_svg, terrain_svg, cads),
+        "index.html": render_review_html(site, report, site_svg, terrain_svg, cads, statements),
     }
     if cad_inputs:
         files["cad-import.json"] = pretty_json(store.get(cad_inputs[0]))
@@ -460,6 +486,24 @@ def cmd_site_report(args: argparse.Namespace) -> int:
         _out(f"wrote {out / name}")
     for b in report.blockers:
         _out(f"BLOCKER {b}")
+    return EXIT_OK
+
+
+def cmd_statement_add(args: argparse.Namespace) -> int:
+    store = ProjectStore(_dir(args.dir))
+    ref = record_owner_statement(store, subject=args.subject, words=args.words,
+                                 stated_by=args.stated_by, channel=args.channel,
+                                 actor=args.actor, pending_confirmation=args.pending)  # fmt: skip
+    _out(f"stored {ref.kind.value}/{ref.id} v{ref.version}: recorded, not confirmed")
+    return EXIT_OK
+
+
+def cmd_statement_list(args: argparse.Namespace) -> int:
+    for st in owner_statements(ProjectStore(_dir(args.dir))):
+        _out(f"{st.id} [{st.subject}] {st.stated_by}: \"{st.words}\" ({st.channel}; "
+             f"recorded by {st.recorded_by.kind.value}:{st.recorded_by.id})")  # fmt: skip
+        if st.pending_confirmation:
+            _out(f"    not yet formal: {st.pending_confirmation}")
     return EXIT_OK
 
 
@@ -520,8 +564,18 @@ def build_parser() -> argparse.ArgumentParser:
     )
     actor_arg(s)
     s.set_defaults(func=cmd_project_init)
+    s = proj.add_parser("new", help="create projects/<name>/ with its working folders")
+    s.add_argument("name", help="folder and project id, lowercase, e.g. my-house")
+    s.add_argument("--title", help="a readable name; defaults to the folder name")
+    s.add_argument(
+        "--classification", default="private", choices=[c.value for c in DataClassification]
+    )
+    actor_arg(s)
+    s.set_defaults(func=cmd_project_new)
+    s = proj.add_parser("list", help="the projects under projects/")
+    s.set_defaults(func=cmd_project_list)
     s = proj.add_parser("status")
-    s.add_argument("dir")
+    s.add_argument("dir", help="project folder, or a project name under projects/")
     s.add_argument("--json", action="store_true")
     s.set_defaults(func=cmd_project_status)
     s = proj.add_parser("verify")
@@ -608,8 +662,23 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("dir")
     s.add_argument("--id", default="site")
     s.add_argument("--version", type=int)
-    s.add_argument("--out", required=True)
+    s.add_argument("--out", help="default: <project>/reviews/<site id>-v<version>")
     s.set_defaults(func=cmd_site_report)
+
+    st = sub.add_parser("statement", help="the owner's own statements, recorded verbatim")
+    st = st.add_subparsers(dest="sub", required=True)
+    s = st.add_parser("add", help="record what the owner said; confirms nothing")
+    s.add_argument("dir")
+    s.add_argument("--subject", required=True, help="e.g. horizontal_crs, elevation_units, relief")
+    s.add_argument("--words", required=True, help="the owner's words, verbatim")
+    s.add_argument("--stated-by", default="owner")
+    s.add_argument("--channel", required=True, help="how it reached you, e.g. 'chat, 2026-10-17'")
+    s.add_argument("--pending", help="what would make it formal, e.g. a site confirm command")
+    actor_arg(s)
+    s.set_defaults(func=cmd_statement_add)
+    s = st.add_parser("list")
+    s.add_argument("dir")
+    s.set_defaults(func=cmd_statement_list)
 
     crs_p = sub.add_parser("crs", help="look up coordinate reference systems (PROJ)")
     crs_p = crs_p.add_subparsers(dest="sub", required=True)

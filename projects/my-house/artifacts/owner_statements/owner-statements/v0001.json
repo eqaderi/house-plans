@@ -1,0 +1,37 @@
+{
+  "project_id": "my-house",
+  "provenance": {
+    "created_at": "2026-10-17T09:42:04.832588Z",
+    "created_by": {
+      "display_name": null,
+      "id": "claude-code",
+      "kind": "agent",
+      "model": null,
+      "provider": null
+    },
+    "inputs": [],
+    "method": "owner_statement",
+    "notes": null,
+    "tool": "house-ai statement add",
+    "tool_version": null
+  },
+  "schema_version": "0.1.0",
+  "statements": [
+    {
+      "channel": "chat with agent:claude-code, 2026-10-17",
+      "id": "stmt-001",
+      "pending_confirmation": "UTM zone, hemisphere (N/S) and horizontal datum/EPSG are still unknown: when known, house-ai site confirm my-house --confirmer <you> --epsg <code>. UTM is in metres, so the drawing unit can be confirmed now with --units m",
+      "recorded_at": "2026-10-17T09:42:04.832302Z",
+      "recorded_by": {
+        "display_name": null,
+        "id": "claude-code",
+        "kind": "agent",
+        "model": null,
+        "provider": null
+      },
+      "stated_by": "owner",
+      "subject": "horizontal_crs",
+      "words": "The survey uses UTM coordinates."
+    }
+  ]
+}

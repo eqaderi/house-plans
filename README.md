@@ -1,7 +1,9 @@
 # HOUSE DESIGN AI
 
 A model-provider-neutral system for exploring the design of a real house on
-a real surveyed site. Its outputs are structured semantic geometry, not
+a real surveyed site. Its first purpose is the owner's own house on their own
+land ([`projects/my-house/`](projects/my-house/README.md)); other projects get
+their own folder (ADR 0009). Its outputs are structured semantic geometry, not
 pictures. The full specification is [docs/MASTER_SPEC.md](docs/MASTER_SPEC.md).
 
 **Current state: Milestone B (site ingestion), on branch `milestone-b`.**
@@ -82,7 +84,10 @@ S=examples/surveys/synthetic
 .venv/bin/house-ai site report project-data/site-demo --id site --out project-data/site-demo-report
 ```
 
-For your real survey, see [project-data/README.md](project-data/README.md).
+Your own project: `.venv/bin/house-ai project status my-house`, then
+[projects/my-house/reviews/CONFIRM-SITE.md](projects/my-house/reviews/CONFIRM-SITE.md).
+A new project: `.venv/bin/house-ai project new <name> --actor human:<you>`
+([projects/README.md](projects/README.md)).
 
 Validate any file against its schema:
 
@@ -101,7 +106,8 @@ Validate any file against its schema:
 | `agents/roles.yaml` | Agent role definitions |
 | `examples/` | Synthetic example projects |
 | `tests/` | Automated tests (synthetic data only) |
-| `project-data/` | Private project stores, git-ignored |
+| `projects/` | One folder per house project; `my-house/` is the owner's own (committed, private repository) |
+| `project-data/` | Private scratch space, git-ignored |
 | `apps/reviewer/`, `skills/` | Placeholders for later milestones |
 
 AI agents: start with [AGENTS.md](AGENTS.md), [CLAUDE.md](CLAUDE.md) or

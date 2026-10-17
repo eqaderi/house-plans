@@ -131,15 +131,16 @@ confirmation by the synthetic actor `human:example-owner`, as in the tests.
 
 ## Test results
 
-`359 passed` on Python 3.13.3 (the locked versions in `requirements-lock.txt`)
-and on Python 3.11.12 (macOS arm64), 0 failed, 0 skipped, after the
+`367 passed` on Python 3.13.3 (the locked versions in `requirements-lock.txt`),
+0 failed, 0 skipped, after the project-folder change (2026-10-17). Before it:
+`359 passed` on Python 3.13.3 and on Python 3.11.12 (macOS arm64) after the
 corrections below. The lock pins numpy 2.5.4 and pyproj 3.8.0, which have no
 Python 3.11 builds, so the 3.11 run used numpy 2.4.6 and pyproj 3.7.2; the
 lock does not install on 3.11 although `requires-python` says `>=3.11` (open
 item for the owner: raise the floor or keep a 3.11 lock). The same applies
 to the earlier 3.11 claim at ec25922. The DWG test ran against ODA File
 Converter 27.9. `ruff check src tests examples`: all checks passed.
-`house-ai schemas check`: 20 schemas up to date. Before the corrections
+`house-ai schemas check`: 21 schemas up to date (new: `owner_statements`). Before the corrections
 (at ec25922): 344 passed.
 
 | File | Tests |
@@ -147,7 +148,8 @@ Converter 27.9. `ruff check src tests examples`: all checks passed.
 | `test_cad.py` (new) | 23 |
 | `test_geospatial.py` (new) | 32 |
 | `test_site_pipeline.py` (new) | 49 |
-| `test_site_review_fixes.py` (new) | 15 |
+| `test_site_review_fixes.py` (new) | 17 |
+| `test_projects.py` (new) | 5 |
 | `test_units_coordinates.py` | 37 |
 | `test_schemas.py` | 32 |
 | `test_workflow.py` | 40 |
@@ -234,14 +236,50 @@ cross-checked against its z (`HeightLabelCheck`); steep TIN triangles
 (> 100 %) and parallel road-line separation are reported; `site report`
 writes `terrain.svg` and `index.html`.
 
+## Personal-first project folders (2026-10-17, ADR 0009)
+
+The owner decided the software is personal-first and authorised committing
+their real project to this private repository.
+
+- **Layout.** `projects/<name>/` is the `ProjectStore` root plus `surveys/`,
+  `site/`, `reviews/` and `design/`. `house-ai project new <name>` creates one
+  (with a README saying what it needs); `project list` lists them; every
+  command accepts the name (`house-ai project status my-house`). `site
+  report` defaults to `<project>/reviews/<site>-v<N>/`.
+- **Migration.** The store `project-data/my-house` was moved unchanged to
+  `projects/my-house` (relative stored paths, so `project verify` was intact
+  before and after: 8 events, 5 artifact versions). `seperated.dwg` and
+  `elevation.dwg` were copied into `surveys/` (SHA-256 27624ba1… and
+  9689880c…, identical to `source/`; git stores each once). The layer mapping
+  is `site/layers.yaml`; the inspection and the review package were
+  regenerated into `site/inspection/` and `reviews/site-v1/` from the same
+  site v1. `final.dwg` is not restored.
+- **Owner statements** (`owner_statements`, `house-ai statement add|list`):
+  the owner's words, verbatim, with who said it, the channel and the recorder.
+  They confirm nothing. Recorded for `my-house` by agent:claude-code from the
+  owner's chat of 2026-10-17: UTM coordinates; elevations in metres above sea
+  level; the 12–12.5 m drop is correct; the land is genuinely steep; UTM zone,
+  horizontal datum/EPSG and vertical datum still unknown.
+- **Steep triangles itemised.** The report and review page list every TIN
+  triangle over 100 % with its slope, area, smallest angle, steepest edge
+  (distance, Δz, rise), sources, whether it lies in the parcel, and measured
+  traits (`sliver`, `no steep edge`, `on survey edge`, `close pair`,
+  `mixes sources`, `outside parcel`). Nothing is smoothed or removed.
+
 ## The owner's real survey
 
-The wrong file (`final.dwg`) was removed from `project-data/surveys/` and
-the old inspection outputs that included it were deleted and regenerated
-from the two correct files only. The real project store, the proposed
-layer mapping and the review package live in `project-data/` (git-ignored)
-and are not reproduced here. The site is in `SITE_NEEDS_VERIFICATION`; only
-the owner can confirm units, CRS, vertical datum and boundary.
+`projects/my-house` is in `SITE_NEEDS_VERIFICATION`; nothing is approved.
+Blockers: drawing units and elevation units (declared metres, not yet
+confirmed by the owner in the tool), horizontal CRS (UTM zone, hemisphere and
+datum unknown), vertical datum, and the parcel boundary. The owner's sheet is
+`projects/my-house/reviews/CONFIRM-SITE.md`.
+
+The five steep triangles: two share one pair of points 0.72 m apart with
+0.89 m height difference (124 % rise; one point from each file, near the
+parcel's north-west corner in the drawing frame), one of them inside the
+parcel. The other three are slivers outside the parcel (smallest angle
+0.3°–1.7°) whose edges rise only 7 %, 12 % and 34 %: their steepness comes from
+their shape. Readings of either are inferences for the surveyor.
 
 ## Next: Milestone C (program)
 

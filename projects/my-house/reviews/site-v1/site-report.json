@@ -1,0 +1,314 @@
+{
+  "blockers": [
+    "drawing units are declared_in_source (m); a human must confirm them",
+    "horizontal CRS is unknown; a human must confirm the EPSG code or confirm the survey is local-only",
+    "elevation units are declared_in_source (m); a human must confirm them",
+    "vertical datum is unknown; a human must confirm it or confirm elevations are relative to a local benchmark",
+    "parcel boundary status is inference, not verified"
+  ],
+  "boundary": {
+    "area_m2": 600.0044211737725,
+    "edges": [
+      {
+        "bearing_grid_deg": null,
+        "bearing_local_deg": 185.87689044279014,
+        "bearing_true_deg": null,
+        "end": [
+          0.0,
+          0.0
+        ],
+        "index": 0,
+        "length_m": 20.99999998702684,
+        "start": [
+          2.150217868387699,
+          20.889628109987825
+        ]
+      },
+      {
+        "bearing_grid_deg": null,
+        "bearing_local_deg": 67.18784010276215,
+        "bearing_true_deg": null,
+        "end": [
+          30.022403531707823,
+          12.627754596993327
+        ],
+        "index": 1,
+        "length_m": 32.56999999973271,
+        "start": [
+          0.0,
+          0.0
+        ]
+      },
+      {
+        "bearing_grid_deg": null,
+        "bearing_local_deg": 5.876890443106109,
+        "bearing_true_deg": null,
+        "end": [
+          32.17262140021194,
+          33.51738270698115
+        ],
+        "index": 2,
+        "length_m": 20.99999998703876,
+        "start": [
+          30.022403531707823,
+          12.627754596993327
+        ]
+      },
+      {
+        "bearing_grid_deg": null,
+        "bearing_local_deg": 247.18784010284156,
+        "bearing_true_deg": null,
+        "end": [
+          2.150217868387699,
+          20.889628109987825
+        ],
+        "index": 3,
+        "length_m": 32.569999999840014,
+        "start": [
+          32.17262140021194,
+          33.51738270698115
+        ]
+      }
+    ],
+    "oriented_extent_m": [
+      42.65117304018077,
+      18.421996351802747
+    ],
+    "perimeter_m": 107.13999997363831,
+    "present": true,
+    "source_ref": "src-seperated#D7 (layer 0)",
+    "status": "inference",
+    "vertex_count": 4
+  },
+  "coordinates": {
+    "drawing_units": "m (declared_in_source)",
+    "elevation_units": "m (declared_in_source)",
+    "grid_north": "unconfirmed: the CRS is not confirmed, so grid north is not established",
+    "grid_to_true_north_deg": null,
+    "horizontal_crs": "unknown",
+    "local_frame": "lcs-site",
+    "local_origin_grid": [
+      623809.1666028872,
+      3870456.032537977,
+      0.0
+    ],
+    "local_rotation_deg": 0.0,
+    "origin_lon_lat": null,
+    "vertical_datum": "unknown"
+  },
+  "feature_counts": {
+    "frontage": 1,
+    "road": 2
+  },
+  "findings": [
+    {
+      "code": "steep_terrain",
+      "message": "5 TIN triangle(s) are steeper than 100% (45°), up to 150% between spot-elevation-85, spot-seperated-71, spot-elevation-87: a wall, kerb or embankment, or an elevation error; check these points with the surveyor (each one is listed under steep triangles)",
+      "severity": "warning"
+    },
+    {
+      "code": "spots_outside_parcel",
+      "message": "11 spot elevation(s) lie outside the parcel boundary",
+      "severity": "info"
+    }
+  ],
+  "frontage": {
+    "access_points_on_frontage": [],
+    "length_m": 20.99999998702684,
+    "road_widths": [
+      {
+        "a": "road-seperated-bc",
+        "b": "road-seperated-c5",
+        "max_m": 9.000000000114298,
+        "min_m": 8.999999999972372
+      }
+    ],
+    "segments": [
+      [
+        "frontage-e0",
+        20.99999998702684
+      ]
+    ]
+  },
+  "open_issues": [
+    "[warning] iss-ambiguous-entities: 6 ambiguous CAD entities were left out"
+  ],
+  "site_id": "site",
+  "site_ref": {
+    "id": "site",
+    "kind": "site",
+    "sha256": "8e416cdc1c64d30b707deaf12d9c38459e7a6a1aee0488a887bdc7d1532e4b80",
+    "version": 1
+  },
+  "terrain": {
+    "contour_count": 0,
+    "contour_interval_m": null,
+    "contour_levels_m": [],
+    "max_slope_pct": 150.20847561471376,
+    "mean_slope_pct": 38.86764327997583,
+    "parcel_coverage": 0.9997265348929161,
+    "spot_count": 27,
+    "spots_outside_boundary": [
+      "spot-seperated-69",
+      "spot-seperated-6b",
+      "spot-seperated-6d",
+      "spot-seperated-6f",
+      "spot-seperated-71",
+      "spot-seperated-73",
+      "spot-elevation-6d",
+      "spot-elevation-89",
+      "spot-elevation-8d",
+      "spot-elevation-8f",
+      "spot-elevation-91"
+    ],
+    "status": "surface_built",
+    "steep_triangles": [
+      {
+        "area_m2": 1.0462839960956334,
+        "edge_rise_pct": 123.65772384730516,
+        "inside_parcel": true,
+        "min_angle_deg": 3.6538711973741815,
+        "pair": [
+          "spot-seperated-71",
+          "spot-elevation-87"
+        ],
+        "pair_distance_m": 0.7213459638811429,
+        "pair_dz_m": 0.8919999999998254,
+        "slope_pct": 150.20847561471376,
+        "sources": [
+          "src-elevation",
+          "src-seperated"
+        ],
+        "traits": [
+          "sliver",
+          "close pair",
+          "mixes sources"
+        ],
+        "vertices": [
+          "spot-elevation-85",
+          "spot-seperated-71",
+          "spot-elevation-87"
+        ]
+      },
+      {
+        "area_m2": 3.6751949998929163,
+        "edge_rise_pct": 6.582002186068781,
+        "inside_parcel": false,
+        "min_angle_deg": 0.28141873264736794,
+        "pair": [
+          "spot-seperated-6b",
+          "spot-elevation-91"
+        ],
+        "pair_distance_m": 33.60679528004147,
+        "pair_dz_m": 2.211999999999989,
+        "slope_pct": 147.34319645537104,
+        "sources": [
+          "src-elevation",
+          "src-seperated"
+        ],
+        "traits": [
+          "sliver",
+          "no steep edge",
+          "on survey edge",
+          "mixes sources",
+          "outside parcel"
+        ],
+        "vertices": [
+          "spot-elevation-91",
+          "spot-seperated-6d",
+          "spot-seperated-6b"
+        ]
+      },
+      {
+        "area_m2": 2.3148579993622915,
+        "edge_rise_pct": 123.65772384730516,
+        "inside_parcel": false,
+        "min_angle_deg": 6.430217276045718,
+        "pair": [
+          "spot-seperated-71",
+          "spot-elevation-87"
+        ],
+        "pair_distance_m": 0.7213459638811429,
+        "pair_dz_m": 0.8919999999998254,
+        "slope_pct": 123.66400227010098,
+        "sources": [
+          "src-elevation",
+          "src-seperated"
+        ],
+        "traits": [
+          "sliver",
+          "close pair",
+          "mixes sources",
+          "outside parcel"
+        ],
+        "vertices": [
+          "spot-elevation-89",
+          "spot-elevation-87",
+          "spot-seperated-71"
+        ]
+      },
+      {
+        "area_m2": 10.216908999481106,
+        "edge_rise_pct": 12.241975207874397,
+        "inside_parcel": false,
+        "min_angle_deg": 1.6525950951238448,
+        "pair": [
+          "spot-seperated-69",
+          "spot-elevation-91"
+        ],
+        "pair_distance_m": 12.546994859228747,
+        "pair_dz_m": 1.5360000000000582,
+        "slope_pct": 117.14163042441959,
+        "sources": [
+          "src-elevation",
+          "src-seperated"
+        ],
+        "traits": [
+          "sliver",
+          "no steep edge",
+          "mixes sources",
+          "outside parcel"
+        ],
+        "vertices": [
+          "spot-elevation-91",
+          "spot-seperated-6b",
+          "spot-seperated-69"
+        ]
+      },
+      {
+        "area_m2": 15.25045002711181,
+        "edge_rise_pct": 34.18908630640044,
+        "inside_parcel": false,
+        "min_angle_deg": 1.1411633570476796,
+        "pair": [
+          "spot-seperated-73",
+          "spot-elevation-69"
+        ],
+        "pair_distance_m": 1.4449055338089987,
+        "pair_dz_m": 0.4939999999999145,
+        "slope_pct": 116.9029823814977,
+        "sources": [
+          "src-elevation",
+          "src-seperated"
+        ],
+        "traits": [
+          "sliver",
+          "no steep edge",
+          "on survey edge",
+          "close pair",
+          "mixes sources",
+          "outside parcel"
+        ],
+        "vertices": [
+          "spot-elevation-91",
+          "spot-elevation-69",
+          "spot-seperated-73"
+        ]
+      }
+    ],
+    "tin_triangles": 47,
+    "tin_vertices": 27,
+    "z_max_m": 1680.071,
+    "z_min_m": 1664.884
+  }
+}

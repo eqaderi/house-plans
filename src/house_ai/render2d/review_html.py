@@ -16,9 +16,11 @@ and deterministic for a given site version.
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from xml.sax.saxutils import escape
 
 from house_ai.domain.epistemics import ConfirmationStatus, Epistemic
+from house_ai.domain.records import OwnerStatement
 from house_ai.domain.site import CadImportProvenance, Site, SiteFeatureKind
 from house_ai.geospatial.validation import SiteValidationReport
 
@@ -79,6 +81,7 @@ def render_review_html(
     site_svg: str,
     terrain_svg: str,
     cad_imports: list[CadImportProvenance],
+    statements: Sequence[OwnerStatement] = (),
 ) -> str:
     ref = report.site_ref
     version = f" v{ref.version} (sha256 {ref.sha256[:12]})" if ref else ""
@@ -251,6 +254,29 @@ def render_review_html(
             "</ul><p>Preliminary: linear between survey points, so it misses anything between "
             "them (walls, banks, ditches).</p>"
         )
+        if t.steep_triangles:
+            rows = [
+                _row([
+                    e(", ".join(s.vertices)), f"{s.slope_pct:.0f} %", f"{s.area_m2:.2f} m²",
+                    f"{s.min_angle_deg:.1f}°", e(f"{s.pair[0]} – {s.pair[1]}"),
+                    f"{s.pair_distance_m:.2f} m", f"{s.pair_dz_m:.2f} m",
+                    f"{s.edge_rise_pct:.0f} %",
+                    e(", ".join(s.sources) or "unknown"),
+                    "unknown" if s.inside_parcel is None else ("yes" if s.inside_parcel else "no"),
+                    e(", ".join(s.traits) or "-"),
+                ])
+                for s in t.steep_triangles
+            ]  # fmt: skip
+            parts.append(
+                f"<h3>Triangles steeper than 100 % ({len(rows)}) {_tag(CALCULATED)}</h3>"
+                "<p>Each is kept as surveyed. The traits are measurements to check with the "
+                "surveyor (a wall, kerb, step or a mistyped height), not causes.</p>"
+            )
+            parts.append(_table(
+                ["Vertices", "Slope", "Area", "Min angle", "Steepest edge", "Distance", "Δz",
+                 "Edge rise", "Sources", "In parcel", "Traits"],
+                rows,
+            ))  # fmt: skip
     else:
         parts.append(f"<p>No terrain surface: terrain is {_tag(UNKNOWN)}.</p>")
     parts += ["<h2>6. Terrain slope</h2>", f'<div class="svg">{terrain_svg}</div>']
@@ -315,6 +341,22 @@ def render_review_html(
         + ("".join(f"<li>{e(x)}</li>" for x in report.blockers) or "<li>none</li>")
         + "</ul>",
     ]
+    if statements:
+        parts.append(
+            "<h3>What you told us (recorded, not yet confirmed in the tool)</h3>"
+            "<p>Your words, as recorded. They change no status above; the formal step is "
+            "listed with each.</p><ul>"
+            + "".join(
+                f"<li><b>{e(st.subject)}</b>: “{e(st.words)}” ({e(st.stated_by)}, "
+                f"{e(st.channel)}; recorded by {e(st.recorded_by.kind.value)}:"
+                f"{e(st.recorded_by.id)})"
+                + (f"<br>Formal step: <code>{e(st.pending_confirmation)}</code>"
+                   if st.pending_confirmation else "")
+                + "</li>"
+                for st in statements
+            )
+            + "</ul>"
+        )  # fmt: skip
     if site.assumptions:
         parts.append(
             "<h3>Assumptions</h3><ul>"

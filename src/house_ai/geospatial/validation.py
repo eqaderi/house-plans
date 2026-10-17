@@ -8,6 +8,7 @@ stops the human site gate.
 from __future__ import annotations
 
 import math
+from collections.abc import Sequence
 
 from pydantic import Field
 from shapely.geometry import Point
@@ -17,7 +18,7 @@ from house_ai.domain.base import StrictModel
 from house_ai.domain.epistemics import ConfirmationStatus
 from house_ai.domain.geometry import Point2, Point3
 from house_ai.domain.provenance import ArtifactRef
-from house_ai.domain.records import IssueStatus, Severity
+from house_ai.domain.records import IssueStatus, OwnerStatement, Severity
 from house_ai.domain.site import Site, SiteFeatureKind, site_verification_blockers
 from house_ai.domain.units import UnitDeclaration
 
@@ -67,6 +68,32 @@ class BoundaryReport(StrictModel):
     edges: list[EdgeReport] = Field(default_factory=list)
 
 
+class SteepTriangle(StrictModel):
+    """One TIN triangle steeper than ``STEEP_SLOPE_PCT``, with what was measured about it.
+
+    ``traits`` are measured properties that help a surveyor check the triangle
+    ("sliver", "no steep edge", "on survey edge", "close pair", "mixes sources",
+    "outside parcel").
+    None of them is a cause, and the triangle is never removed or smoothed.
+    """
+
+    vertices: list[str]
+    slope_pct: float
+    area_m2: float
+    min_angle_deg: float
+    #: The edge that rises most steeply, higher vertex first.
+    pair: tuple[str, str]
+    pair_distance_m: float
+    pair_dz_m: float
+    #: Rise of that edge (percent). Below STEEP_SLOPE_PCT, no two surveyed points of the
+    #: triangle are steep between themselves: the steepness comes from its thin shape.
+    edge_rise_pct: float
+    #: Source documents of the vertices (from their source references).
+    sources: list[str]
+    inside_parcel: bool | None
+    traits: list[str]
+
+
 class TerrainReport(StrictModel):
     status: str
     spot_count: int
@@ -82,6 +109,8 @@ class TerrainReport(StrictModel):
     max_slope_pct: float | None
     mean_slope_pct: float | None
     spots_outside_boundary: list[str]
+    #: Every triangle steeper than STEEP_SLOPE_PCT, steepest first.
+    steep_triangles: list[SteepTriangle] = Field(default_factory=list)
 
 
 class RoadWidth(StrictModel):
@@ -159,8 +188,95 @@ def coordinate_status(site: Site) -> CoordinateStatus:
 
 #: TIN triangles steeper than this (percent; 100% = 45°) are reported for checking.
 STEEP_SLOPE_PCT = 100.0
+#: A steep triangle with an interior angle below this (degrees) is a sliver.
+SLIVER_ANGLE_DEG = 10.0
+#: A steep triangle whose steepest edge is shorter than this (metres) has a "close pair".
+CLOSE_PAIR_M = 2.0
 #: Two road lines whose separation varies less than this (metres) are parallel.
 PARALLEL_TOL_M = 0.5
+
+
+def _min_angle_deg(a: Point3, b: Point3, c: Point3) -> float:
+    angles = []
+    for p, q, r in ((a, b, c), (b, c, a), (c, a, b)):
+        u = (q[0] - p[0], q[1] - p[1])
+        v = (r[0] - p[0], r[1] - p[1])
+        nu, nv = math.hypot(*u), math.hypot(*v)
+        if nu == 0 or nv == 0:
+            return 0.0
+        cos = max(-1.0, min(1.0, (u[0] * v[0] + u[1] * v[1]) / (nu * nv)))
+        angles.append(math.degrees(math.acos(cos)))
+    return min(angles)
+
+
+def steep_triangles(site: Site) -> list[SteepTriangle]:
+    """Every TIN triangle steeper than STEEP_SLOPE_PCT, measured, steepest first."""
+    surface = site.terrain.surface
+    if surface is None:
+        return []
+    spots = {(round(s.xy[0], 6), round(s.xy[1], 6)): s for s in site.terrain.spot_elevations}
+    edge_use: dict[tuple[int, int], int] = {}
+    for tri in surface.triangles:
+        for i, j in ((tri[0], tri[1]), (tri[1], tri[2]), (tri[2], tri[0])):
+            key = (min(i, j), max(i, j))
+            edge_use[key] = edge_use.get(key, 0) + 1
+    parcel = site.boundary.to_shapely().buffer(1e-6) if site.boundary is not None else None
+    out = []
+    for tri in surface.triangles:
+        pts = [surface.vertices[i] for i in tri]
+        slope = triangle_slope_pct(*pts)
+        if not slope > STEEP_SLOPE_PCT:
+            continue
+        found = [spots.get((round(p[0], 6), round(p[1], 6))) for p in pts]
+        names = [s.id if s else "contour vertex" for s in found]
+        sources = sorted(
+            {s.source_ref.partition("#")[0] for s in found if s is not None and s.source_ref}
+        )
+        # the edge that rises most steeply: (rise, higher vertex, lower vertex, run)
+        rises = []
+        for m, n in ((0, 1), (1, 2), (2, 0)):
+            hi, lo = (m, n) if pts[m][2] >= pts[n][2] else (n, m)
+            run = math.hypot(pts[hi][0] - pts[lo][0], pts[hi][1] - pts[lo][1])
+            dz = pts[hi][2] - pts[lo][2]
+            rises.append((math.inf if run == 0 else dz / run, hi, lo, run))
+        edge_rise, hi, lo, dist = max(rises)
+        a, b, c = pts
+        area = abs((b[0] - a[0]) * (c[1] - a[1]) - (b[1] - a[1]) * (c[0] - a[0])) / 2
+        min_angle = _min_angle_deg(*pts)
+        inside = None
+        if parcel is not None:
+            centroid = Point(sum(p[0] for p in pts) / 3, sum(p[1] for p in pts) / 3)
+            inside = parcel.covers(centroid)
+        traits = []
+        if min_angle < SLIVER_ANGLE_DEG:
+            traits.append("sliver")
+        edges = ((tri[0], tri[1]), (tri[1], tri[2]), (tri[2], tri[0]))
+        if edge_rise * 100 <= STEEP_SLOPE_PCT:
+            traits.append("no steep edge")
+        if any(edge_use[(min(i, j), max(i, j))] == 1 for i, j in edges):
+            traits.append("on survey edge")
+        if dist < CLOSE_PAIR_M:
+            traits.append("close pair")
+        if len(sources) > 1:
+            traits.append("mixes sources")
+        if inside is False:
+            traits.append("outside parcel")
+        out.append(
+            SteepTriangle(
+                vertices=names,
+                slope_pct=slope,
+                area_m2=area,
+                min_angle_deg=min_angle,
+                pair=(names[hi], names[lo]),
+                pair_distance_m=dist,
+                pair_dz_m=pts[hi][2] - pts[lo][2],
+                edge_rise_pct=edge_rise * 100,
+                sources=sources,
+                inside_parcel=inside,
+                traits=traits,
+            )
+        )
+    return sorted(out, key=lambda t: -t.slope_pct)
 
 
 def validate_site(site: Site, site_ref: ArtifactRef | None = None) -> SiteValidationReport:
@@ -221,6 +337,7 @@ def validate_site(site: Site, site_ref: ArtifactRef | None = None) -> SiteValida
             sum(s * w for s, w in finite) / sum(w for _, w in finite) if finite else None
         ),
         spots_outside_boundary=outside,
+        steep_triangles=steep_triangles(site),
     )
     for a, b in crossing_contours(terrain.contours):
         findings.append(
@@ -246,28 +363,19 @@ def validate_site(site: Site, site_ref: ArtifactRef | None = None) -> SiteValida
                 message="elevations exist but no terrain surface could be built",
             )
         )
-    if surface is not None:
-        names = {(round(s.xy[0], 6), round(s.xy[1], 6)): s.id for s in terrain.spot_elevations}
-        steep = []
-        for (ia, ib, ic), (slope, _) in zip(surface.triangles, slopes, strict=True):
-            if slope > STEEP_SLOPE_PCT:
-                ids = [
-                    names.get((round(v[0], 6), round(v[1], 6)), "contour vertex")
-                    for v in (surface.vertices[ia], surface.vertices[ib], surface.vertices[ic])
-                ]
-                steep.append((slope, ids))
-        if steep:
-            worst = max(steep, key=lambda t: t[0])
-            findings.append(
-                Finding(
-                    code="steep_terrain",
-                    severity=Severity.WARNING,
-                    message=f"{len(steep)} TIN triangle(s) are steeper than "
-                    f"{STEEP_SLOPE_PCT:.0f}% (45°), up to {worst[0]:.0f}% between "
-                    f"{', '.join(worst[1])}: a wall, kerb or embankment, or an elevation "
-                    "error; check these points with the surveyor",
-                )
+    steep = terrain_report.steep_triangles
+    if steep:
+        findings.append(
+            Finding(
+                code="steep_terrain",
+                severity=Severity.WARNING,
+                message=f"{len(steep)} TIN triangle(s) are steeper than "
+                f"{STEEP_SLOPE_PCT:.0f}% (45°), up to {steep[0].slope_pct:.0f}% between "
+                f"{', '.join(steep[0].vertices)}: a wall, kerb or embankment, or an elevation "
+                "error; check these points with the surveyor (each one is listed under "
+                "steep triangles)",
             )
+        )
     if coverage is not None and coverage < 0.999:
         findings.append(
             Finding(
@@ -375,7 +483,9 @@ def _fmt(value: float | None, unit: str = "", digits: int = 3) -> str:
     return "unknown" if value is None else f"{value:.{digits}f}{unit}"
 
 
-def report_markdown(report: SiteValidationReport) -> str:
+def report_markdown(
+    report: SiteValidationReport, statements: Sequence[OwnerStatement] = ()
+) -> str:
     c, b, t, f = report.coordinates, report.boundary, report.terrain, report.frontage
     ref = report.site_ref
     lines = [
@@ -428,6 +538,28 @@ def report_markdown(report: SiteValidationReport) -> str:
         + ("unknown" if t.parcel_coverage is None else f"{t.parcel_coverage * 100:.1f}%"),
         f"- Slope: max {_fmt(t.max_slope_pct, '%', 2)}, area-weighted mean "
         f"{_fmt(t.mean_slope_pct, '%', 2)}",
+    ]
+    if t.steep_triangles:
+        lines += [
+            "",
+            f"### Steep triangles (over {STEEP_SLOPE_PCT:.0f}%)",
+            "",
+            "Measured traits help the surveyor check each one; they are not causes. "
+            "Nothing is smoothed or removed.",
+            "",
+            "| Vertices | Slope | Area | Min angle | Steepest edge | Distance | Δz | Edge rise "
+            "| Sources | In parcel | Traits |",
+            "|---|---|---|---|---|---|---|---|---|---|---|",
+        ]
+        lines += [
+            f"| {', '.join(s.vertices)} | {s.slope_pct:.0f}% | {s.area_m2:.2f} m² | "
+            f"{s.min_angle_deg:.1f}° | {s.pair[0]} – {s.pair[1]} | {s.pair_distance_m:.2f} m | "
+            f"{s.pair_dz_m:.2f} m | {s.edge_rise_pct:.0f}% | {', '.join(s.sources) or 'unknown'} | "
+            f"{'unknown' if s.inside_parcel is None else ('yes' if s.inside_parcel else 'no')} | "
+            f"{', '.join(s.traits) or '-'} |"
+            for s in t.steep_triangles
+        ]
+    lines += [
         "",
         "## Access and frontage",
         "",
@@ -447,6 +579,15 @@ def report_markdown(report: SiteValidationReport) -> str:
     ]
     lines += ["", "## Open issues", ""]
     lines += [f"- {i}" for i in report.open_issues] or ["- none"]
+    if statements:
+        lines += ["", "## What the owner said (recorded, not confirmed in the tool)", ""]
+        for st in statements:
+            lines.append(
+                f"- {st.id} [{st.subject}] {st.stated_by}: \"{st.words}\" ({st.channel}; "
+                f"recorded by {st.recorded_by.kind.value}:{st.recorded_by.id})"
+            )
+            if st.pending_confirmation:
+                lines.append(f"  - formal step: `{st.pending_confirmation}`")
     lines += ["", "## Blockers for the site gate", ""]
     lines += [f"- {x}" for x in report.blockers] or [
         "- none: the site can be reviewed and approved by a human"

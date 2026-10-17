@@ -70,7 +70,8 @@
         "plan",
         "evaluation_report",
         "revision_report",
-        "build_record"
+        "build_record",
+        "owner_statements"
       ],
       "title": "ArtifactKind",
       "type": "string"
