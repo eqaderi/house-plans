@@ -41,8 +41,11 @@ Date: 2026-10-17. Branch: `milestone-a`.
   without a human-verified code pack, a linter for prohibited professional
   claims, a provider data-flow policy that refuses private prompts and
   attachments without explicit human consent.
-- **Agent entry points**: `docs/AGENT_CONTRACT.md` plus small `AGENTS.md`,
-  `CLAUDE.md`, `GEMINI.md`; `agents/roles.yaml` with the 12 spec roles.
+- **Agent entry points**: `docs/AGENT_CONTRACT.md` is the one shared rule
+  set for the coding agents; `AGENTS.md` (Codex), `CLAUDE.md` and
+  `GEMINI.md` only load it ([ADR 0005](../adr/0005-shared-coding-agent-instructions.md)).
+  `agents/roles.yaml` holds the 12 runtime roles of the product, which are
+  a separate concept.
 - **Golden synthetic project**: `examples/projects/synthetic-bungalow/`,
   with `build_plan.py` regenerating the golden plan and a test that it is
   current.
@@ -66,7 +69,7 @@ python3.13 -m venv .venv
 
 ## Test results
 
-`231 passed` (Python 3.13.3, macOS), 0 failed, 0 skipped.
+`240 passed` (Python 3.13.3, macOS), 0 failed, 0 skipped.
 
 | File | Tests |
 |---|---|
@@ -78,13 +81,35 @@ python3.13 -m venv .venv
 | `test_storage.py` | 24 |
 | `test_workflow.py` | 40 |
 | `test_cli.py` | 14 |
-| `test_providers_agents.py` | 9 |
+| `test_providers_agents.py` | 10 |
+| `test_agent_instructions.py` | 8 |
 | `test_golden.py` | 1 |
 
-Python 3.11 is declared as supported and is in the CI matrix. The tests
-were not run on 3.11 locally; `pip download --python-version 3.11` confirmed
-that binary wheels of the pinned pydantic, shapely and PyYAML exist for
-macOS arm64 and manylinux x86_64.
+Python 3.11 is declared as supported and is in the CI matrix. The CI
+install (`pip install -e '.[dev]'`, which resolves the version ranges, not
+the lock) was reproduced in fresh Homebrew Python 3.11 and 3.13 venvs: ruff
+clean, 20 schemas up to date, all tests passed on both. The exact lock in
+`requirements-lock.txt` is for Python 3.12+ (numpy 2.5.4 has no cp311
+wheel).
+
+## Handoff review (Claude Code, 2026-10-17)
+
+Gemini's review commit `2e62d87` was re-verified rather than trusted: the
+diff was read file by file against MASTER_SPEC and the architecture, and
+the reported 231 tests, ruff and 20 schemas reproduced. No Milestone A test
+or guard was removed. Two confirmed defects were fixed, each with a test
+that failed first:
+
+- `providers/base.py`: an unlabelled prompt was treated as synthetic
+  whenever a synthetic attachment was present, so private prompt text could
+  reach a provider. An unlabelled prompt is now always private.
+- `tests/test_providers_agents.py`: the "no survey files" test scanned the
+  whole working tree, so it failed as soon as a real survey was placed in
+  the git-ignored `project-data/`. It now checks tracked files only.
+
+Noted, not changed: `pyproject.toml` now uses version ranges, so CI does
+not pin pydantic; a future pydantic release can change the generated
+schemas and fail `schemas check` until they are re-exported.
 
 ## Known limitations
 
@@ -107,8 +132,9 @@ macOS arm64 and manylinux x86_64.
 - Git history before commit `bf50e60` (the previous house-plans toolchain)
   contains survey-derived files (`derived/survey/*.dxf`,
   `derived/site/d7.yaml`). The new `.gitignore` blocks raw `.dwg`/`.dxf` and
-  legacy folders from being committed again, and a test verifies the working
-  tree is clean; whether to rewrite shared remote history is the owner's
+  legacy folders from being committed again, and a test checks that no
+  survey files are tracked by git (private files in `project-data/` are
+  allowed); whether to rewrite shared remote history is the owner's
   decision.
 - Reads replay the whole event log; fine for expected project sizes.
 - Artifacts can be written in any workflow state; the gates, not write

@@ -1,4 +1,6 @@
 # Agent roles (MASTER_SPEC "Agent roles"). Validated by house_ai.domain.agents.AgentRoster.
+# These are runtime roles of the product, not the coding agents (Claude Code, Codex,
+# Gemini) that build this repository; those follow docs/AGENT_CONTRACT.md.
 # No role can approve a gate: `may_approve` is fixed to false by the schema.
 # The orchestrator invokes the smallest useful set of roles for each action.
 roles:

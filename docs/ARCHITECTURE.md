@@ -25,7 +25,7 @@ interfaces that exist as boundaries but have no implementation yet.
 
 ```
             ┌─────────────────────────────────────────────────────────┐
-  agents    │ AGENT_CONTRACT.md, agents/roles.yaml, providers/ (A)     │
+  agents    │ agents/roles.yaml (runtime roles), providers/ (A)        │
             └───────────────┬─────────────────────────────────────────┘
                             │ schema-valid writes only
             ┌───────────────▼─────────────────────────────────────────┐
