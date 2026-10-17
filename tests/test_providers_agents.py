@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import subprocess
+
 import pytest
 
 from house_ai.domain.agents import AgentRoster
@@ -34,6 +36,7 @@ def _request(classification: DataClassification) -> ProviderRequest:
     return ProviderRequest(
         system="s",
         prompt="p",
+        classification=DataClassification.SYNTHETIC,
         attachments=[Attachment("site v1", classification, "{...}")],
     )
 
@@ -127,9 +130,33 @@ def test_bare_or_private_prompt_is_refused_without_consent():
         )
 
 
-def test_no_private_survey_files_in_worktree():
-    dwg_files = list(REPO.rglob("*.dwg")) + list(REPO.rglob("*.DWG"))
-    assert dwg_files == []
-    assert not (REPO / "sources").exists()
-    assert not (REPO / "derived").exists()
+def test_unlabelled_prompt_is_private_even_with_synthetic_attachments():
+    provider = RecordingProvider()
+    req = ProviderRequest(
+        system="s",
+        prompt="owner's private notes",
+        attachments=[Attachment("synthetic", DataClassification.SYNTHETIC, "{}")],
+    )
+    with pytest.raises(PrivateDataFlowError, match="prompt"):
+        send(provider, req, DataFlowPolicy())
+    assert provider.calls == []
+
+
+def _tracked_files() -> list[str]:
+    if not (REPO / ".git").exists():
+        pytest.skip("not a git checkout")
+    out = subprocess.run(
+        ["git", "ls-files"], cwd=REPO, capture_output=True, text=True, check=True
+    ).stdout
+    return out.splitlines()
+
+
+def test_no_private_survey_files_are_tracked():
+    """Survey files may sit in git-ignored project-data/, but must never be committed."""
+    tracked = _tracked_files()
+    cad = [f for f in tracked if f.lower().endswith((".dwg", ".dxf"))]
+    assert [f for f in cad if f.lower().endswith(".dwg")] == []
+    assert [f for f in cad if not f.startswith(("tests/fixtures/", "examples/"))] == []
+    assert [f for f in tracked if f.startswith(("sources/", "derived/"))] == []
+    assert [f for f in tracked if f.startswith("project-data/")] == ["project-data/README.md"]
 

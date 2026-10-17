@@ -31,8 +31,8 @@ class ProviderRequest:
     system: str
     prompt: str
     attachments: list[Attachment] = field(default_factory=list)
-    #: Classification of the prompt itself. When None and no attachments are
-    #: present, treated as PRIVATE by default so unlabelled prompts cannot leak.
+    #: Classification of the prompt itself. None is treated as PRIVATE, with or
+    #: without attachments, so an unlabelled prompt cannot leak owner data.
     classification: DataClassification | None = None
     #: JSON Schema the response must satisfy, when structured output is needed.
     response_schema: dict | None = None
@@ -67,9 +67,7 @@ def check_data_flow(provider: str, request: ProviderRequest, policy: DataFlowPol
     private = [
         a.label for a in request.attachments if a.classification is DataClassification.PRIVATE
     ]
-    prompt_classification = request.classification or (
-        DataClassification.SYNTHETIC if request.attachments else DataClassification.PRIVATE
-    )
+    prompt_classification = request.classification or DataClassification.PRIVATE
     if prompt_classification is DataClassification.PRIVATE:
         private.append("prompt")
     if private and provider not in policy.allowed_private_providers:
