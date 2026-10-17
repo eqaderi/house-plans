@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import argparse
 import os
+import shutil
 import sys
 from pathlib import Path
 
@@ -69,15 +70,21 @@ def validate_skill_content(skill_path: Path) -> list[str]:
     return errors
 
 
-def sync_skills(repo_root: Path = REPO_ROOT, check_only: bool = False) -> tuple[int, list[str]]:
-    """Synchronize canonical skills to provider directories via relative symlinks."""
+def sync_skills(
+    repo_root: Path = REPO_ROOT, check_only: bool = False, prune: bool = False
+) -> tuple[int, list[str]]:
+    """Synchronize canonical skills to provider directories via relative symlinks.
+
+    Entries in a provider directory that are not canonical skills (for
+    example a developer's own local skill) are reported, and removed only
+    when ``prune`` is true.
+    """
     canonical_skills = get_canonical_skills(repo_root)
     errors: list[str] = []
 
     # Validate content of all canonical skills
     for skill_path in canonical_skills.values():
         errors.extend(validate_skill_content(skill_path))
-
 
     # Verify all expected canonical skills exist
     for expected_name in CANONICAL_SKILL_NAMES:
@@ -96,14 +103,15 @@ def sync_skills(repo_root: Path = REPO_ROOT, check_only: bool = False) -> tuple[
         if target_dir.exists():
             for existing in target_dir.iterdir():
                 if existing.name not in canonical_skills:
-                    if check_only:
-                        errors.append(f"Orphaned provider skill entry: {existing}")
+                    if check_only or not prune:
+                        errors.append(
+                            f"Non-canonical provider skill entry: {existing} "
+                            "(left in place; rerun with --prune to remove)"
+                        )
+                    elif existing.is_symlink() or existing.is_file():
+                        existing.unlink()
                     else:
-                        if existing.is_symlink() or existing.is_file():
-                            existing.unlink()
-                        elif existing.is_dir():
-                            import shutil
-                            shutil.rmtree(existing)
+                        shutil.rmtree(existing)
 
         # Ensure symlinks for all canonical skills
         for skill_name, skill_path in canonical_skills.items():
@@ -125,15 +133,10 @@ def sync_skills(repo_root: Path = REPO_ROOT, check_only: bool = False) -> tuple[
                 elif not link_path.exists():
                     errors.append(f"Broken symlink at {link_path} -> {current_target}")
             elif link_path.exists():
-                if check_only:
-                    errors.append(f"{link_path} exists and is not a symlink")
-                else:
-                    if link_path.is_dir():
-                        import shutil
-                        shutil.rmtree(link_path)
-                    else:
-                        link_path.unlink()
-                    link_path.symlink_to(relative_target)
+                errors.append(
+                    f"{link_path} is a real copy, not a symlink; "
+                    "remove it by hand after checking it has no unsynced edits"
+                )
             else:
                 if check_only:
                     errors.append(
@@ -141,7 +144,6 @@ def sync_skills(repo_root: Path = REPO_ROOT, check_only: bool = False) -> tuple[
                     )
                 else:
                     link_path.symlink_to(relative_target)
-
 
     return len(errors), errors
 
@@ -153,9 +155,14 @@ def main() -> int:
         action="store_true",
         help="Check synchronization and content validation without modifying files",
     )
+    parser.add_argument(
+        "--prune",
+        action="store_true",
+        help="Remove non-canonical entries from provider skill directories",
+    )
     args = parser.parse_args()
 
-    error_count, errors = sync_skills(check_only=args.check)
+    error_count, errors = sync_skills(check_only=args.check, prune=args.prune)
     if errors:
         for err in errors:
             print(f"ERROR: {err}", file=sys.stderr)

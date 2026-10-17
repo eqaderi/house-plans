@@ -5,74 +5,79 @@ description: Perform grounded architectural critique of floor-plan concepts acro
 
 # Critique Plan
 
+Follow [docs/AGENT_CONTRACT.md](../../docs/AGENT_CONTRACT.md) (§3 one model,
+§6 epistemic status, §10 professional boundary). In every command,
+`agent:<tool>` is your own tool name: `claude-code`, `codex` or `gemini`.
+
 ## Purpose
-Guide the agent through conducting a rigorous, evidence-grounded architectural critique of generated floor plans. The critique evaluates functional quality, zoning, circulation, daylight, privacy, and hillside relationships while separating measured facts from agent opinions, strictly referencing canonical entity IDs, and formulating structured revision operations.
+Guide the agent through an evidence-grounded architectural critique of generated floor plans: functional quality, zoning, circulation, daylight, privacy, and hillside relationships. Every claim carries its epistemic status, every cited element is a canonical ID that exists in the plan, and every proposed change is an explicit `plan revise` operation.
 
 ## When to invoke
-- When reviewing a newly generated floor-plan concept or comparing alternatives.
-- When an agent needs to evaluate circulation efficiency, acoustic privacy, or room aspect ratios.
-- When evaluating hillside excavation, underfloor void, retaining walls, or entrance levels.
-- When formulating structured revision commands (`plan revise`) in response to architectural flaws or homeowner feedback.
+- When reviewing a new concept or comparing alternatives.
+- When evaluating circulation, acoustic privacy, room proportions, or the relation of levels to the ground.
+- When turning flaws or owner feedback into `plan revise` operations.
 
 ## Inputs
-- Concept artifacts (`plan.json`, `plan.svg`, `metrics.json`, `violations.json`, `explanation.md`).
-- Approved space program (`space_program.yaml`) and design brief (`design_brief.yaml`).
-- Evaluator outputs across Geometry, Program, Adjacency, Circulation, Privacy, and Site evaluators.
+- A concept folder with `plan.json`, `plan.svg`, `metrics.json`, `violations.json`, `explanation.md`:
+  - before the gates: from `plan generate <project> --exploratory --out <dir>` (`<dir>/<concept-id>/exploratory/`);
+  - after the gates: from `plan export <project> <concept-id> --out <dir>`.
+- The space program (`projects/<project>/design/space_program.yaml`) and design brief.
 
 ## Outputs
-- Structured critique report categorized by architectural dimension.
-- Epistemic status labels for every observation (`measured`, `inferred`, `ai_judgment`, `not_checked`).
-- Concrete, executable `house-ai plan revise` commands referencing valid canonical IDs.
+- A critique (Markdown) grouped by dimension, every observation labelled `measured`, `inferred`, `ai_judgment` or `not_checked`, every element cited by ID in backticks.
+- A passing `plan ground` check for that critique.
+- Proposed `plan revise` commands (run only after the owner agrees, and only on stored concepts).
 
 ## Exact commands
 
-1. **Inspect concept metrics and evaluator violations:**
+1. **Get the concept files:**
    ```bash
-   .venv/bin/house-ai plan export <project-id> <concept-id> --out /tmp/critique-export
-   cat /tmp/critique-export/metrics.json
-   cat /tmp/critique-export/violations.json
+   # Before the site and program gates (stores nothing):
+   .venv/bin/house-ai plan generate <project> --exploratory --out <scratch-dir>/preview --actor agent:<tool>
+   # After them:
+   .venv/bin/house-ai plan export <project> <concept-id> --out <scratch-dir>/critique
    ```
+   Read `metrics.json`, `violations.json`, `explanation.md` and `plan.svg`; `comparison.md` sits next to the exploratory concepts, or run `plan compare <project>` for stored ones.
 
-2. **Compare concept against peer alternatives:**
+2. **Look up the canonical IDs.** In `plan.json` under `model`: spaces `sp-*`
+   (each with its `program_item_id` `pi-*`, `zone_id` `z-*`, `level_id` `lv-*`),
+   levels `lv-*` (e.g. `lv-entry`, `lv-down-300`), zones `z-*`, relationships `rel-*`,
+   walls `w-*`, doors `d-*`, windows `win-*`, stairs `st-*`. Program items and
+   adjacencies (`pi-*`, `adj-*`) are in `space_program.yaml`. Never write
+   an ID you did not read in these files.
+
+3. **Write the critique to a file, citing every element in backticks, then ground it:**
    ```bash
-   .venv/bin/house-ai plan compare <project-id>
+   .venv/bin/house-ai plan ground <concept-folder>/plan.json <critique.md> \
+     --program projects/<project>/design/space_program.yaml
    ```
+   Exit 0 means every cited ID exists; exit 1 lists each unknown ID. Fix the critique until it passes.
 
-3. **Verify entity IDs in the approved space program:**
+4. **Propose grounded revisions** (`--area`, `--separate`, `--adjacent`, `--near` and `--level` take program item IDs `pi-*` or space IDs `sp-*`; `--rethink` also takes a zone `z-*` or `all`):
    ```bash
-   cat projects/<project-id>/design/space_program.yaml | grep "id:"
+   .venv/bin/house-ai plan revise <project> <concept-id> "<owner's words>" \
+     --area pi-kitchen=18 --actor agent:<tool>
+   .venv/bin/house-ai plan revise <project> <concept-id> "<owner's words>" \
+     --separate pi-bed-main,pi-bed-child-1 --adjacent pi-kitchen,pi-dining --actor agent:<tool>
+   .venv/bin/house-ai plan revise <project> <concept-id> "<owner's words>" \
+     --level pi-study-1=entry --rethink z-night --actor agent:<tool>
    ```
-
-4. **Formulate grounded revision commands:**
-   ```bash
-   # Resize an elongated or undersized space:
-   .venv/bin/house-ai plan revise <project-id> <concept-id> \
-     "<critique explanation>" --area pi-kitchen=18 --actor agent:gemini
-
-   # Enforce acoustic privacy or physical adjacency:
-   .venv/bin/house-ai plan revise <project-id> <concept-id> \
-     "<critique explanation>" --separate pi-bed-main,pi-bed-child-1 \
-     --adjacent pi-kitchen,pi-dining --actor agent:gemini
-
-   # Move room to road-entry level or re-solve a whole zone:
-   .venv/bin/house-ai plan revise <project-id> <concept-id> \
-     "<critique explanation>" --level pi-office=entry --rethink z-night \
-     --actor agent:gemini
-   ```
+   `plan revise` works only on stored concepts. For an exploratory concept, put the operations in the critique as proposals.
 
 ## Required validations
-- **Strict canonical ID grounding**: Every room, zone, and level cited in the critique must exist in the canonical model (e.g. `pi-kitchen`, `pi-bed-main`, `z-day`, `z-night`, `level-entry`, `level-lower`). Citing hallucinated or nonexistent IDs is strictly forbidden.
-- **Epistemic status separation**:
-  - `measured`: geometric dimensions, polygon areas, room counts, centerline hallway lengths.
-  - `inferred`: cut/fill volumes, retaining wall heights, schematic underfloor void.
-  - `ai_judgment`: aesthetic impression, functional flow perception, furniture usability.
-  - `not_checked`: structural load paths, MEP runs, wind/microclimate, cost estimates.
-- **Never claim regulatory compliance**: Outputs are never permit-ready, construction-ready, or certified.
+- **Grounding**: `plan ground` passes for the critique. Citing an ID that is not in the plan or program is forbidden.
+- **Epistemic status**:
+  - `measured`: areas, dimensions, room counts, corridor lengths read from `metrics.json` or `plan.json`.
+  - `inferred`: cut/fill volumes, retaining wall heights, underfloor voids (schematic).
+  - `ai_judgment`: spatial quality, flow, furniture usability.
+  - `not_checked`: structure, MEP, daylight, wind, cost, code compliance.
+- Never call a plan permit-ready, construction-ready, code-compliant or structurally certified.
 
 ## Human-approval boundaries
-- Critiques and revisions are proposals. Only the homeowner can select a concept or approve the plan gate.
-- The agent must **NEVER** approve a concept at the plan gate (`workflow approve <project-id> plan`).
+- Critiques and revisions are proposals. Only the homeowner chooses a concept, and only the homeowner's words go into `plan revise`.
+- **NEVER** run `house-ai workflow approve <project> plan`.
 
 ## Failure handling
-- **Unknown entity ID error**: If a proposed revision references an invalid room ID, consult `space_program.yaml` and correct the identifier before submitting.
-- **Contradictory revision request**: If a revision makes the layout infeasible (e.g. requesting room sizes exceeding the parcel footprint), report the contradiction to the user and suggest viable alternatives.
+- **`plan ground` reports an unknown ID**: look the element up in `plan.json` or `space_program.yaml` and correct the critique; never drop the check.
+- **`plan revise` reports an unknown room**: use a `pi-*` ID from the program or an `sp-*` ID from `plan.json`, as the error says.
+- **A revision becomes infeasible**: report the solver's reason and suggest a feasible alternative.

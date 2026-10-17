@@ -1,65 +1,64 @@
 # ADR 0015: Canonical agent skills layout and tool-specific discovery
 
-Status: accepted (Stage S2, 2026-10-17)
+Status: proposed (Stage S2, 2026-10-17; awaiting the owner's approval, S2-01)
 
 ## Context
 
-Stage S2 introduces reusable project skills (`site-survey-review`,
-`architectural-programming`, `generate-concepts`, and `critique-plan`) to teach
-coding agents multi-step procedural workflows using `house-ai` commands while
-strictly respecting human approval gates and domain integrity.
+Stage S2 introduces project skills (`site-survey-review`,
+`architectural-programming`, `generate-concepts`, `critique-plan`) that teach
+coding agents multi-step `house-ai` workflows while respecting the human
+approval gates.
 
-ADR 0005 initially decided:
+[ADR 0005](0005-shared-coding-agent-instructions.md) decided:
 > "No `.claude/`, `.agents/` or `.gemini/` rules or skills directories are
 > added. Skills will be added when a recurring task justifies one."
 
-With the arrival of Stage S2, recurring architectural workflows now justify
-project skills. However, the three primary agent environments discover project
-skills in different directories:
-- **Claude Code** looks for skills in `.claude/skills/<skill-name>/SKILL.md`.
-- **OpenAI Codex CLI** looks for skills in `.agents/skills/<skill-name>/SKILL.md`
-  (and `.codex/skills/`, verified via `codex debug prompt-input`).
-- **Antigravity / Gemini CLI** looks for skills in `.agents/skills/<skill-name>/SKILL.md`
-  (documented in Antigravity Customization System, Workspace Customizations).
+The agents discover project skills in different directories. Vendor
+documentation, read 2026-10-17:
 
-Duplicating skill files across `.claude/skills` and `.agents/skills` would cause
-maintenance drift, violating the single-source-of-truth principle established in
-ADR 0005.
+| Tool | Project skill location | Symlinked skill folders | Source |
+|---|---|---|---|
+| Claude Code | `.claude/skills/<name>/SKILL.md`, in the start directory and every parent up to the repository root | Documented as supported ("a `<skill-name>` entry in the ... project location can be a symlink to a directory elsewhere on disk") | https://code.claude.com/docs/en/skills |
+| OpenAI Codex | `.agents/skills` in every directory from the working directory up to the repository root | Documented as supported ("Codex supports symlinked skill folders and follows the symlink target") | https://developers.openai.com/codex/skills (redirects to https://learn.chatgpt.com/docs/build-skills) |
+| Gemini CLI | `.gemini/skills/` or its `.agents/skills/` alias (the alias takes precedence) | Not stated | https://geminicli.com/docs/cli/skills/ |
+| Antigravity | `<workspace-root>/.agents/skills/<name>/` (`.agent/skills` still accepted) | Not stated | https://antigravity.google/docs/skills |
+
+Copying skill files into `.claude/skills` and `.agents/skills` would let them
+drift apart, against the single-source principle of ADR 0005.
 
 ## Decision
 
-1. **Revision of ADR 0005**: The clause in ADR 0005 forbidding `.claude/` and
-   `.agents/` directories is hereby revised to allow provider-specific skill
-   discovery directories, while keeping `docs/AGENT_CONTRACT.md` as the sole
-   location for engineering rules.
-2. **Canonical location**: The authoritative canonical home for all project skills
-   is `skills/<skill-name>/SKILL.md` at the repository root.
-3. **Symlink-based provider discovery**: Relative symbolic links are maintained
-   from provider discovery locations to the canonical skill directories:
-   - `.claude/skills/<skill-name>` → `../../skills/<skill-name>`
-   - `.agents/skills/<skill-name>` → `../../skills/<skill-name>`
-4. **Zero duplication & automated drift prevention**:
-   Because provider directories use relative symlinks directly pointing to
-   the canonical `skills/` directories, physical file content is never duplicated.
-   A test in `tests/test_skills.py` verifies that:
-   - Every skill directory under `skills/` has valid symlinks in `.claude/skills/`
-     and `.agents/skills/`.
-   - Symlinks resolve to real directories without broken targets.
-   - Skill files conform to the standardized authoring template.
-5. **Standard skill authoring layout**:
-   Every skill file `skills/<skill-name>/SKILL.md` must have:
-   - YAML frontmatter with `name` and `description`.
-   - Required sections: `## Purpose`, `## When to invoke`, `## Inputs`,
-     `## Outputs`, `## Exact commands`, `## Required validations`,
-     `## Human-approval boundaries`, and `## Failure handling`.
+1. **Revision of ADR 0005**: its skills clause is revised to allow
+   provider skill-discovery directories. `docs/AGENT_CONTRACT.md` stays the
+   only location for engineering rules; skills link to it.
+2. **Canonical location**: `skills/<skill-name>/SKILL.md` at the repository
+   root is the only copy of each skill.
+3. **Relative symlinks for discovery**, created by `tools/sync_skills.py`:
+   - `.claude/skills/<skill-name>` → `../../skills/<skill-name>` (Claude Code)
+   - `.agents/skills/<skill-name>` → `../../skills/<skill-name>` (Codex, Gemini CLI, Antigravity)
+   No `.gemini/skills` link: Gemini CLI reads the `.agents/skills` alias.
+4. **Drift prevention**: `tests/test_skills.py` fails when a provider link is
+   missing, broken, points elsewhere or is a real copy, when a skill lacks
+   the template's front matter or sections, names a `house-ai` command or
+   flag the CLI does not have, or hardcodes an agent identity.
+   `sync_skills.py` never deletes a non-canonical entry unless `--prune` is
+   given, and never overwrites a real copy.
+5. **Skill template**: YAML front matter with `name` and `description`;
+   sections `## Purpose`, `## When to invoke`, `## Inputs`, `## Outputs`,
+   `## Exact commands`, `## Required validations`,
+   `## Human-approval boundaries`, `## Failure handling`. Commands use
+   `--actor agent:<tool>`, never a fixed agent name.
 
 ## Consequences
 
-- All three coding agent environments (Claude Code, Codex, Antigravity) automatically
-  discover the project's skills in fresh sessions.
-- No duplicate markdown files exist; editing `skills/<name>/SKILL.md` immediately
-  updates the view for all agents.
-- Human approval gates (`workflow approve`, `site confirm`, `program reject`)
-  are explicitly enforced in skill definitions, preventing automated bypass.
-- The `tests/test_skills.py` suite runs in CI to guarantee that any new skill added
-  maintains this contract.
+- Claude Code and Codex discover the skills through documented, symlink-aware
+  locations. Discovery in both was observed (S2 records in the tracker).
+- **Unverified risk**: Gemini CLI and Antigravity document `.agents/skills`
+  but not whether they follow symlinked skill folders. Until discovery is
+  observed in one of them (S2-06), treat their support as unknown. If either
+  ignores symlinks, the fallback is a generated copy guarded by the drift
+  test, decided in a new ADR.
+- Editing `skills/<name>/SKILL.md` updates every agent at once.
+- Skills never run `workflow approve`, `workflow reopen`, `site confirm`,
+  `interview consent` or `program reject`; they stop and hand the command to
+  the human.

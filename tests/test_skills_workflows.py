@@ -10,24 +10,27 @@ execute offline on synthetic data with zero network access and enforce human gat
 
 from __future__ import annotations
 
+import json
+import re
 from pathlib import Path
 
 from house_ai.cli.main import main
 from house_ai.domain.provenance import Actor, ActorKind, ArtifactKind, DataClassification
 from house_ai.domain.units import LengthUnit
 from house_ai.domain.workflow import Gate, WorkflowState
-from house_ai.evaluation.grounding import validate_critique_grounding
+from house_ai.evaluation.grounding import collect_canonical_ids, validate_critique_grounding
 from house_ai.orchestration.site_ingestion import SiteConfirmation, confirm_site
 from house_ai.orchestration.workflow import Workflow
 from house_ai.storage import ProjectStore
 
 from .conftest import AGENT, HUMAN, SURVEY_DXF, SURVEY_LAYERS
 
+REPO = Path(__file__).resolve().parent.parent
 OWNER = Actor(kind=ActorKind.HUMAN, id="test-owner")
 AGENT_ACTOR = "agent:gemini"
 
 
-def test_site_survey_review_skill_workflow(tmp_path: Path):
+def test_site_survey_review_skill_workflow(tmp_path: Path, capsys):
     """Test the complete site-survey-review skill command sequence."""
     out_dir = tmp_path / "inspection"
     proj_dir = tmp_path / "test-site-proj"
@@ -46,12 +49,23 @@ def test_site_survey_review_skill_workflow(tmp_path: Path):
         classification=DataClassification.SYNTHETIC,
         actor=HUMAN,
     )
-    source_ref = store.add_source(
-        SURVEY_DXF,
-        HUMAN,
-        classification=DataClassification.SYNTHETIC,
+    capsys.readouterr()
+    rc = main(
+        [
+            "source",
+            "add",
+            str(proj_dir),
+            str(SURVEY_DXF),
+            "--classification",
+            "synthetic",
+            "--actor",
+            AGENT_ACTOR,
+        ]
     )
-
+    assert rc == 0
+    # The skill tells the agent to pass the id printed here, not the file path.
+    source_id = capsys.readouterr().out.split()[1].rstrip(":")
+    assert [r.id for r in store.refs(ArtifactKind.SOURCE_DOCUMENT)] == [source_id]
 
     rc = main(
         [
@@ -59,7 +73,7 @@ def test_site_survey_review_skill_workflow(tmp_path: Path):
             "ingest",
             str(proj_dir),
             "--source",
-            source_ref.id,
+            source_id,
             "--layers",
             str(SURVEY_LAYERS),
             "--actor",
@@ -69,7 +83,7 @@ def test_site_survey_review_skill_workflow(tmp_path: Path):
 
     assert rc == 0
     assert store.latest(ArtifactKind.SITE, "site") is not None
-    assert store.latest(ArtifactKind.CAD_IMPORT, f"cad-{source_ref.id}") is not None
+    assert store.latest(ArtifactKind.CAD_IMPORT, f"cad-{source_id}") is not None
 
     # 3. Transition to SITE_INGESTION and assess site blockers
     rc = main(
@@ -97,11 +111,29 @@ def test_site_survey_review_skill_workflow(tmp_path: Path):
     assert (report_dir / "site-report.md").is_file()
     assert (report_dir / "site.svg").is_file()
 
-    # 5. Verify project integrity
+    # 5. Request the human site gate review (an agent may request, never approve)
+    rc = main(
+        [
+            "workflow",
+            "request-approval",
+            str(proj_dir),
+            "site",
+            "--id",
+            "site",
+            "--actor",
+            AGENT_ACTOR,
+        ]
+    )
+    assert rc == 0
+    requests = [e for e in store.events() if e.type.value == "approval_requested"]
+    assert [e.payload["gate"] for e in requests] == ["site"]
+    assert requests[0].actor.id == "gemini"
+
+    # 6. Verify project integrity
     rc = main(["project", "verify", str(proj_dir)])
     assert rc == 0
 
-    # 6. Human boundary: agent cannot confirm site or approve site gate
+    # 7. Human boundary: agent cannot confirm site or approve site gate
     rc = main(
         [
             "site",
@@ -334,6 +366,28 @@ def test_generate_concepts_and_critique_skills_workflow(tmp_path: Path):
     assert (exploratory_dir / "comparison.md").is_file()
     # Confirm store untouched by exploratory generation
     assert store.refs(ArtifactKind.PLAN) == []
+
+    # critique-plan before the gates: ground a critique of the exploratory concept
+    plan_json = exploratory_dir / "concept-split-walkout" / "exploratory" / "plan.json"
+    critique = tmp_path / "critique.md"
+    critique.write_text(
+        "`sp-kitchen` (`pi-kitchen`) is on `lv-entry` in `z-day`; the bedrooms in `z-night` "
+        "step down to `lv-down-300`. Proposal: `--separate pi-bed-main,pi-bed-child-1`.\n",
+        encoding="utf-8",
+    )
+    assert main(["plan", "ground", str(plan_json), str(critique)]) == 0
+    critique.write_text("`level-entry` and `pi-office` do not exist.\n", encoding="utf-8")
+    assert main(["plan", "ground", str(plan_json), str(critique)]) == 1
+
+    # Every entity ID the concept and critique skills cite exists in synthetic-hillside
+    program_ref = store.latest(ArtifactKind.SPACE_PROGRAM, "program")
+    valid = collect_canonical_ids(json.loads(plan_json.read_text(encoding="utf-8")))
+    valid |= collect_canonical_ids(store.get(program_ref))
+    for skill in ("generate-concepts", "critique-plan"):
+        text = (REPO / "skills" / skill / "SKILL.md").read_text(encoding="utf-8")
+        cited = set(re.findall(r"\b(?:pi|sp|z|lv|level|adj|rel)-[a-z0-9-]*[a-z0-9]\b", text))
+        assert cited, skill
+        assert cited <= valid, f"{skill} cites unknown IDs {sorted(cited - valid)}"
 
     # Approve site and program via human fixture for gated generation
     wf = Workflow(store)

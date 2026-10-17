@@ -2,6 +2,10 @@
 
 Status: accepted (Milestone A handoff, 2026-10-17)
 
+Revised by [ADR 0015](0015-agent-skills-canonical-location-and-discovery.md)
+(proposed): its skills clause, "No `.claude/`, `.agents/` or `.gemini/` rules or
+skills directories are added", is replaced for skills only.
+
 ## Context
 
 Three coding agents work on this repository: Claude Code (primary

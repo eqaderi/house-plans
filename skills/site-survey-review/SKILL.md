@@ -5,8 +5,12 @@ description: Inspect and ingest survey CAD files (DWG/DXF), validate boundary an
 
 # Site Survey Review
 
+Follow [docs/AGENT_CONTRACT.md](../../docs/AGENT_CONTRACT.md) (§5 private data,
+§6 unknowns, §7 CAD and coordinates, §8 gates). In every command,
+`agent:<tool>` is your own tool name: `claude-code`, `codex` or `gemini`.
+
 ## Purpose
-Guide the agent through inspecting raw CAD survey files, ingesting survey entities into the project store with human layer mapping, computing boundary and terrain metrics, evaluating site blockers, and preparing the confirmation sheet for the human homeowner.
+Guide the agent through inspecting raw CAD survey files, ingesting survey entities into the project store with a human layer mapping, computing boundary and terrain metrics, evaluating site blockers, drafting the owner's questions and confirmation sheet, and requesting the human site gate.
 
 ## When to invoke
 - When a new project is created and survey files (DWG or DXF) need ingestion.
@@ -15,80 +19,90 @@ Guide the agent through inspecting raw CAD survey files, ingesting survey entiti
 - When preparing the site facts for the homeowner before the site approval gate.
 
 ## Inputs
-- Project identifier (e.g. `my-house` or `<project-id>`).
-- Raw CAD survey files (DWG or DXF) in `projects/<project-id>/surveys/`.
-- Optional layer mapping YAML if custom CAD layers are used.
+- Project folder or name under `projects/` (`<project>`).
+- Raw CAD survey files (DWG or DXF).
+- A layer mapping YAML naming which CAD layers hold the boundary, elevation points and contours.
 
 ## Outputs
 - Survey inspection report (`inspection.json`, `inspection.md`).
-- Stored site artifact (`artifacts/site/site/v0001.json`).
-- Stored CAD import artifact (`artifacts/cad_import/cad-import/v0001.json`).
-- Visual SVG site map (`site.svg`).
-- Site validation report (`site-report.md`) detailing boundary, terrain, frontage, relief, and blockers.
-- Drafted CONFIRM-SITE sheet for homeowner review.
+- Stored source documents, `cad_import` and `site` artifacts.
+- Site review package from `site report` (`site-report.md`, `site.svg`).
+- Owner confirmation sheet `projects/<project>/reviews/CONFIRM-SITE.md`.
+- An `approval_requested` event for the site gate.
 
 ## Exact commands
 
 1. **Inspect survey files (read-only, no project required):**
    ```bash
-   .venv/bin/house-ai site inspect <survey-file-1> <survey-file-2> --out /tmp/inspection
+   .venv/bin/house-ai site inspect <survey-file-1> [<survey-file-2> ...] --out <scratch-dir>/inspection
    ```
 
-2. **Ingest survey files into the project:**
+2. **Add each survey file as an immutable source, then ingest by source id:**
    ```bash
-   # Add survey CAD source document:
-   .venv/bin/house-ai source add <project-id> <survey-cad-file> --actor agent:gemini
+   .venv/bin/house-ai source add <project> <survey-cad-file> --classification <private|synthetic> \
+     --actor agent:<tool>
+   # prints: source <source-id>: <stored path> sha256 <hash>
 
-   # Ingest survey entities into site model:
-   .venv/bin/house-ai site ingest <project-id> --source <source-path> --layers <path-to-layers.yaml> \
-     --actor agent:gemini
+   .venv/bin/house-ai site ingest <project> --source <source-id> [--source <source-id-2>] \
+     --layers <layers.yaml> --actor agent:<tool>
+   ```
+   `--source` takes the id printed by `source add`, never a file path.
+
+3. **Assess the site against the gate's blockers:**
+   ```bash
+   # From NEW_PROJECT only:
+   .venv/bin/house-ai workflow transition <project> SITE_INGESTION --reason "ingesting survey" \
+     --actor agent:<tool>
+
+   .venv/bin/house-ai workflow assess-site <project> --id site --actor agent:<tool>
    ```
 
-3. **Assess site against workflow blockers:**
+4. **Generate the site review package:**
    ```bash
-   # Move project to SITE_INGESTION if in NEW_PROJECT:
-   .venv/bin/house-ai workflow transition <project-id> SITE_INGESTION --reason "ingesting survey" --actor agent:gemini
-
-   # Run site assessment:
-   .venv/bin/house-ai workflow assess-site <project-id> --id site --actor agent:gemini
+   .venv/bin/house-ai site report <project> --out projects/<project>/reviews/site-v<N>
    ```
 
+5. **Draft the owner's questions and `reviews/CONFIRM-SITE.md`.** Write it in
+   plain language (and in the owner's language) with these sections:
+   - what the owner already told us (verbatim, marked "not yet confirmed in the tool");
+   - what the survey answers (area, relief, frontage, point counts), each with how it was obtained;
+   - every open blocker from `assess-site` and `site report` (units, horizontal CRS, vertical datum, boundary), phrased as a question only the owner or surveyor can answer;
+   - suspicious terrain findings (steep or sliver triangles, close point pairs), stated as measurements, never smoothed;
+   - the exact commands the owner runs in their own terminal (see Human-approval boundaries).
+   Never guess a CRS, UTM zone, hemisphere, datum or unit from coordinate magnitudes; list them as unknown.
 
-
-4. **Generate site validation report and SVG:**
+6. **Request the human site gate review:**
    ```bash
-   .venv/bin/house-ai site report <project-id> --out projects/<project-id>/reviews/site-v1
+   .venv/bin/house-ai workflow request-approval <project> site --id site --actor agent:<tool>
    ```
 
-5. **Verify project store integrity:**
+7. **Verify integrity and status:**
    ```bash
-   .venv/bin/house-ai project verify <project-id>
-   ```
-
-6. **Check project workflow status:**
-   ```bash
-   .venv/bin/house-ai project status <project-id> --json
+   .venv/bin/house-ai project verify <project>
+   .venv/bin/house-ai project status <project> --json
    ```
 
 ## Required validations
-- Verify survey file format and byte integrity.
-- Check parcel area, boundary closure, and orientation.
-- Validate Delaunay TIN terrain triangles; check for suspicious steep triangles or duplicated XY coordinates with mismatched Z elevations.
-- Verify that coordinates remain strictly in SOURCE frame until confirmed by the owner.
-- Confirm that CRS, datum, and unit are never guessed or inferred from coordinate magnitudes.
-- Verify `project verify <project-id>` reports the store as intact with valid hash chain.
+- Survey file format and byte integrity (`site inspect`).
+- Parcel area, boundary closure, and orientation.
+- Terrain TIN: steep triangles, slivers, duplicated XY with different Z.
+- Coordinates stay in the SOURCE frame until the owner confirms the CRS.
+- CRS, datum, and unit are never inferred from coordinate magnitudes.
+- `project verify <project>` reports the store intact.
+- Real project values never go into `examples/`, `tests/` or public docs.
 
 ## Human-approval boundaries
-- **NEVER** run `house-ai site confirm`: units, horizontal CRS, vertical datum, and parcel boundary must be confirmed by a human in an interactive terminal.
-- **NEVER** run `house-ai workflow approve <project-id> site`: approving the site gate requires human authorization.
-- The agent must summarize findings, list open site blockers, format the CONFIRM-SITE sheet, and ask the human to run:
+- **NEVER** run `house-ai site confirm`: units, horizontal CRS, vertical datum, and parcel boundary are confirmed by a human in an interactive terminal.
+- **NEVER** run `house-ai workflow approve <project> site`: the site gate is human-only.
+- Stop after step 6 and ask the human to run, in their own terminal:
   ```bash
-  .venv/bin/house-ai site confirm <project-id> --units <m|ft> --epsg <EPSG> --vertical-datum <datum> --confirmer <name>
-  .venv/bin/house-ai workflow approve <project-id> site --id site --version <v> --approver <name>
+  .venv/bin/house-ai site confirm <project> --units <unit> --epsg <EPSG> --vertical-datum <datum> \
+    --boundary-verified --confirmer <name>
+  .venv/bin/house-ai workflow approve <project> site --id site --version <v> --approver <name>
   ```
 
-
 ## Failure handling
-- **ODA File Converter missing**: If DWG conversion is unavailable, ask the user to convert DWG to DXF or install ODA File Converter.
-- **Ambiguous boundary or missing elevation**: Mark boundary as `inference_only` and record missing elevation data in `open_questions.yaml`. Keep the project in `SITE_NEEDS_VERIFICATION`.
-- **Integrity failure**: If `project verify` reports tampering or hash mismatch, halt immediately and report the discrepancy.
+- **ODA File Converter missing**: if DWG conversion is unavailable, ask the user to convert DWG to DXF or install ODA File Converter.
+- **Ambiguous boundary or missing elevation**: record it as unknown in the confirmation sheet and keep the project in `SITE_NEEDS_VERIFICATION`.
+- **`site ingest` cannot find the source**: rerun `source add` and pass the printed id.
+- **Integrity failure**: if `project verify` reports tampering or a hash mismatch, stop and report it.
