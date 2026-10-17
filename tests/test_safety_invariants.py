@@ -155,8 +155,14 @@ def test_inv_schemas_up_to_date():
     assert stale == []
 
 
-def test_inv_private_data_isolation(tmp_path: Path):
+def test_inv_private_data_isolation(tmp_path: Path, monkeypatch):
     """INV-PRIVATE-DATA-ISOLATION: Tests run safely without projects/my-house present."""
-    from tools.leak_scan import REPO_ROOT, scan_repo
-    leaks = scan_repo(REPO_ROOT)
-    assert leaks == []
+    import subprocess
+
+    from tools import leak_scan
+
+    subprocess.run(["git", "init", "-q", str(tmp_path)], check=True)
+    def refuse_private_read(*args):
+        pytest.fail("a synthetic-only checkout must not read private projects")
+    monkeypatch.setattr(leak_scan, "extract_private_signatures", refuse_private_read)
+    assert leak_scan.scan_repo(tmp_path) == []

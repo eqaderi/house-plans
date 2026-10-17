@@ -215,7 +215,10 @@ def test_program_reject_refuses_non_tty_and_agent(clean_project, monkeypatch, ca
     assert len(clean_project.events()) == before_events
 
 
-def test_workflow_transition_program_review_to_interviewing_refuses_agent(clean_project, capsys):
+@pytest.mark.parametrize("actor", ["agent:claude-code", "human:owner"])
+def test_workflow_transition_program_review_to_interviewing_refuses_bypass(
+    clean_project, capsys, actor
+):
     from .conftest import example_doc
     wf = Workflow(clean_project)
     wf.transition(WorkflowState.SITE_INGESTION, HUMAN, "ingest")
@@ -232,12 +235,53 @@ def test_workflow_transition_program_review_to_interviewing_refuses_agent(clean_
     before_events = len(clean_project.events())
     ret = main([
         "workflow", "transition", str(clean_project.root), "INTERVIEWING",
-        "--reason", "bypassing reject", "--actor", "agent:claude-code",
+        "--reason", "bypassing reject", "--actor", actor,
     ])
     assert ret == EXIT_USAGE
     err = capsys.readouterr().err
-    assert "leaving PROGRAM_REVIEW back to INTERVIEWING requires a human actor" in err
+    assert "requires 'program reject' in a human terminal" in err
     assert len(clean_project.events()) == before_events
+
+
+@pytest.mark.parametrize("command", ["site", "consent", "reject"])
+def test_remaining_human_commands_refuse_wrong_phrase(clean_project, monkeypatch, command):
+    monkeypatch.setattr(sys.stdin, "isatty", lambda: True)
+    monkeypatch.setattr("builtins.input", lambda _: "wrong phrase")
+    commands = {
+        "site": ["site", "confirm", str(clean_project.root), "--id", "site",
+                 "--confirmer", "owner", "--units", "m"],
+        "consent": ["interview", "consent", str(clean_project.root), "anthropic",
+                    "--actor", "human:owner"],
+        "reject": ["program", "reject", str(clean_project.root), "--reason", "revise",
+                   "--actor", "human:owner"],
+    }
+    before = (clean_project.root / "events.jsonl").read_bytes()
+    assert main(commands[command]) == EXIT_FAIL
+    assert (clean_project.root / "events.jsonl").read_bytes() == before
+
+
+def test_program_reject_records_reason_only_after_correct_phrase(clean_project, monkeypatch):
+    from house_ai.orchestration.interview import InterviewService
+
+    from .conftest import example_doc
+
+    wf = Workflow(clean_project)
+    wf.transition(WorkflowState.SITE_INGESTION, HUMAN, "ingest")
+    site = Site.model_validate(example_doc("site.yaml"))
+    ref = clean_project.put(K.SITE, "site", site, AGENT)
+    wf.approve(Gate.SITE, ref, HUMAN, "site reviewed")
+    svc = InterviewService(clean_project)
+    svc.start(AGENT)
+    svc.build_program(AGENT)
+    wf.transition(WorkflowState.INTERVIEWING, AGENT, "interview")
+    wf.transition(WorkflowState.PROGRAM_REVIEW, AGENT, "review")
+    monkeypatch.setattr(sys.stdin, "isatty", lambda: True)
+    monkeypatch.setattr("builtins.input", lambda _: "reject program")
+    reason = "The kitchen needs more storage."
+    assert main(["program", "reject", str(clean_project.root), "--reason", reason,
+                 "--actor", "human:owner"]) == EXIT_OK
+    assert wf.state is WorkflowState.INTERVIEWING
+    assert any(f.key == "program_rejection" and f.statement == reason for f in svc.brief().facts)
 
 
 def test_program_v2_after_approval_marks_gate_stale(clean_project, capsys):

@@ -4,6 +4,7 @@ Layout of a project directory::
 
     project.json                      manifest (identity only, read-only)
     events.jsonl                      append-only, hash-chained event log
+    head.json                         atomically replaced event-tail anchor
     source/<sha12>-<filename>         original inputs, byte-for-byte, read-only
     artifacts/<kind>/<id>/v0001.json  write-once artifact versions, read-only
 
@@ -48,6 +49,7 @@ Clock = Callable[[], datetime]
 M = TypeVar("M", bound=BaseModel)
 
 READ_ONLY = stat.S_IRUSR | stat.S_IRGRP | stat.S_IROTH
+HEAD_ANCHOR_REQUIRED = "head_anchor_required"
 
 
 class StoreError(Exception):
@@ -201,6 +203,7 @@ class ProjectStore:
         payload: dict[str, Any],
     ) -> WorkflowEvent:
         existing = self.events()
+        self._require_valid_head(existing)
         prev = existing[-1] if existing else None
         fields = {
             "seq": (prev.seq + 1) if prev else 1,
@@ -210,7 +213,7 @@ class ProjectStore:
             "from_state": from_state,
             "to_state": to_state,
             "reason": reason,
-            "payload": payload,
+            "payload": {**payload, HEAD_ANCHOR_REQUIRED: True},
             "prev_hash": prev.hash if prev else None,
         }
         draft = WorkflowEvent.model_validate({**fields, "hash": "0" * 64})
@@ -238,6 +241,34 @@ class ProjectStore:
                 os.unlink(tmp)
             raise
 
+    def _head_problems(self, events: list[WorkflowEvent]) -> list[str]:
+        head_file = self.root / "head.json"
+        if not head_file.exists():
+            if any(event.payload.get(HEAD_ANCHOR_REQUIRED) is True for event in events):
+                return ["required head anchor head.json is missing"]
+            return []  # Legacy stores are anchored on their next write.
+        try:
+            head = json.loads(head_file.read_text(encoding="utf-8"))
+            if (
+                not isinstance(head, dict)
+                or type(head.get("seq")) is not int
+                or head["seq"] < 1
+                or not isinstance(head.get("hash"), str)
+                or re.fullmatch(r"[0-9a-f]{64}", head["hash"]) is None
+            ):
+                return ["head anchor head.json is invalid"]
+        except (OSError, ValueError):
+            return ["head anchor head.json is invalid"]
+        last = events[-1] if events else None
+        if last is None or last.seq != head["seq"] or last.hash != head["hash"]:
+            return ["event log tail does not match head anchor"]
+        return []
+
+    def _require_valid_head(self, events: list[WorkflowEvent]) -> None:
+        problems = self._head_problems(events)
+        if problems:
+            raise StoreIntegrityError("; ".join(problems))
+
     # ---------------------------------------------------------------- sources
 
     def add_source(
@@ -256,6 +287,7 @@ class ProjectStore:
         path = Path(path)
         digest = file_sha256(path)
         with self._locked():
+            self._require_valid_head(self.events())
             existing_ids: set[str] = set()
             for ref in self.refs(ArtifactKind.SOURCE_DOCUMENT):
                 doc = self.get(ref, SourceDocument)
@@ -345,6 +377,7 @@ class ProjectStore:
         *,
         reason: str | None,
     ) -> ArtifactRef:
+        self._require_valid_head(self.events())
         model_cls = ARTIFACT_MODELS[kind]
         raw = data.model_dump(mode="json") if isinstance(data, BaseModel) else data
         model = model_cls.model_validate(raw)
@@ -444,22 +477,7 @@ class ProjectStore:
         if not events or events[0].type is not EventType.PROJECT_CREATED:
             problems.append("event log does not start with project_created")
 
-        head_file = self.root / "head.json"
-        if head_file.is_file():
-            try:
-                head_data = json.loads(head_file.read_text(encoding="utf-8"))
-                exp_hash = head_data.get("hash")
-                exp_seq = head_data.get("seq")
-                last = events[-1] if events else None
-                if not last or last.hash != exp_hash or last.seq != exp_seq:
-                    last_h = last.hash[:12] if last else "none"
-                    exp_h = exp_hash[:12] if exp_hash else "none"
-                    problems.append(
-                        f"event log tail does not match head anchor: expected seq {exp_seq} "
-                        f"({exp_h}), found seq {last.seq if last else 0} ({last_h})"
-                    )
-            except Exception as exc:
-                problems.append(f"head anchor head.json is invalid: {exc}")
+        problems.extend(self._head_problems(events))
 
         registered: set[Path] = set()
         for ref in self.refs():
