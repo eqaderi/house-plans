@@ -18,7 +18,6 @@ from pathlib import Path
 from house_ai.cli.main import main
 from house_ai.domain.provenance import Actor, ActorKind, ArtifactKind
 from house_ai.domain.workflow import Gate, WorkflowState
-from house_ai.orchestration.plans import PlanService
 from house_ai.orchestration.reviewer_bundle import build_reviewer_bundle
 from house_ai.orchestration.workflow import Workflow
 from house_ai.storage import ProjectStore
