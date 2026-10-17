@@ -2169,8 +2169,9 @@ Closure record template:
 ### S3 records
 
 #### S3 implementation complete (2026-10-17)
-- Branch: `stage/S3-tools-benchmarks`
+- Branch: `stage/S3-tools-benchmarks` (commit `2e8e120`)
 - Implementer: `agent:codex` and `agent:gemini`
+- CI: branch run 39070040446 on Python 3.11 and 3.13
 - Changes:
   - Benchmark contract and schemas: `src/house_ai/domain/benchmark.py`, `schemas/benchmark_fixture.schema.json`, `docs/adr/0017-synthetic-benchmark-contract.md`.
   - Synthetic fixture generator `examples/benchmarks/make_fixtures.py` writing 17 self-contained fixtures covering the 600 m² 40% slope reference site, road-high/road-low elevation relationships, cross and diagonal slopes, concave parcel envelope, noisy/sliver TIN triangles, unconfirmed north, family privacy, accessible multigenerational layout, heavy cooking and garage routes, large hillside terrace, and opposite cooking preference trade-offs.
