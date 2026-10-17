@@ -1,7 +1,6 @@
 # ADR 0014: One project tracker and a reviewed stage lifecycle
 
-Status: proposed (stage T0.1, 2026-10-17; becomes accepted when the owner
-closes stage T0.1)
+Status: accepted (stage T0.1 closed by the owner, 2026-10-17, merge `7a41629`)
 
 ## Context
 

@@ -6,7 +6,7 @@ No other TODO, roadmap or stage-status file is kept. Format and update rules
 are in [§P](#p-rules-for-updating-the-tracker); `python tools/check_tracker.py`
 checks them.
 
-Last updated: 2026-10-17, stage T0.1 (branch `stage/T0.1-project-tracker`),
+Last updated: 2026-10-17, closure of stage T0.1 on `main` (merge `7a41629`),
 by `agent:claude-code`.
 
 ## A. Mission and immediate objective
@@ -117,13 +117,13 @@ to reopen A–D):
 
 | | |
 |---|---|
-| **Current stage** | T0.1 Project tracker and stage protocol: implementation complete, review **PENDING** |
-| **Awaiting review** | T0.1 on `stage/T0.1-project-tracker` |
-| **Next eligible stage** (after T0.1 is closed) | T0.2 Human-authorization and approval-gate hardening |
+| **Current stage** | none in progress (T0.1 closed 2026-10-17, merge `7a41629`) |
+| **Awaiting review** | none |
+| **Next eligible stage** | T0.2 Human-authorization and approval-gate hardening |
 | **Then** | T0.3 Private-data isolation, T0.4 Documentation reconciliation, T1.1 Skill packaging |
 | **Blocked** | H1 site facts (owner/surveyor input), H2.2-05 program gate (needs site gate), H3 real design (needs readiness gate and approvals) |
 | **Human parallel tracks** | H1.1/H1.2 site verification with the owner; H2.1 interview may start after T0.3-01 |
-| **`main` health** | `a9b68fe`, CI run 39046442142 green; 483 tests pass locally |
+| **`main` health** | `7a41629` (T0.1 merge); 497 tests pass locally; CI on `main` runs on push |
 | **Homeowner gates on `my-house`** | site: not approved (5 blockers) · program: none · plan: none · model: none |
 
 Counts come from `python tools/check_tracker.py --summary`, never from a
@@ -404,8 +404,8 @@ limitations are tracked as new tasks in later stages, not by reopening them.
 | Field | Value |
 |---|---|
 | Kind | governance |
-| Status | IN_PROGRESS |
-| Review | PENDING |
+| Status | DONE |
+| Review | APPROVED — by the owner, who waived independent review on 2026-10-17 (no independent agent review took place; see §N) |
 | Branch | `stage/T0.1-project-tracker` |
 | Depends on | D |
 | Tasks | T0.1-01, T0.1-02, T0.1-03, T0.1-04, T0.1-05, T0.1-06, T0.1-07, T0.1-08 |
@@ -416,48 +416,48 @@ limitations are tracked as new tasks in later stages, not by reopening them.
 | Demonstration | `python tools/check_tracker.py --summary` prints the counts; a fresh session can answer "Project status" from the repository alone |
 | Artifacts | `docs/PROJECT_TRACKER.md`, `docs/adr/0014-project-tracker-and-stage-lifecycle.md`, `docs/AGENT_CONTRACT.md` §1 and §10, `tools/check_tracker.py`, `tests/test_project_tracker.py` |
 | Review requirements | Independent agent re-verifies the §C baseline facts, spot-checks evidence references, runs the checks, confirms no scope creep |
-| Evidence | branch `stage/T0.1-project-tracker`; see §N |
+| Evidence | merge `7a41629` into `main`; branch CI run 39054650658 green on `d0cb896`; see §N |
 
-- [ ] **T0.1-01** Verify repository, CI and project-store state against historical reports — `IN_PROGRESS` · P0 · deps: none
+- [x] **T0.1-01** Verify repository, CI and project-store state against historical reports — `DONE` · P0 · deps: none
   - Accept: §C lists each fact with a command or file reference; discrepancies go to §K
   - Verify: reviewer re-runs `git log`, `gh run list`, `pytest -q`, `schemas check`, `project verify my-house`
   - Evidence: §C (2026-10-17); 483 passed; CI run 39046442142; `project verify my-house` intact
-  - Notes: implemented, awaiting stage review
-- [ ] **T0.1-02** Create docs/PROJECT_TRACKER.md with sections A–P — `IN_PROGRESS` · P0 · deps: T0.1-01
+  - Notes: closed with merge `7a41629`
+- [x] **T0.1-02** Create docs/PROJECT_TRACKER.md with sections A–P — `DONE` · P0 · deps: T0.1-01
   - Accept: every workstream of the governance request has stages and atomic tasks with acceptance, verification and evidence fields
   - Verify: checker passes; reviewer reads sections A–P
   - Evidence: `docs/PROJECT_TRACKER.md`
-  - Notes: implemented, awaiting stage review
-- [ ] **T0.1-03** Stage execution protocol (Project status, Next stage, Review, Close) — `IN_PROGRESS` · P0 · deps: T0.1-02
+  - Notes: closed with merge `7a41629`
+- [x] **T0.1-03** Stage execution protocol (Project status, Next stage, Review, Close) — `DONE` · P0 · deps: T0.1-02
   - Accept: §O defines the four commands; AGENT_CONTRACT §10 points to it; entry files unchanged (ADR 0005)
   - Verify: `tests/test_agent_instructions.py`; reviewer reads §O and contract §10
   - Evidence: §O; `docs/AGENT_CONTRACT.md` §1, §10
-  - Notes: implemented, awaiting stage review
-- [ ] **T0.1-04** Tracker consistency check run by the test suite — `IN_PROGRESS` · P0 · deps: T0.1-02
+  - Notes: closed with merge `7a41629`
+- [x] **T0.1-04** Tracker consistency check run by the test suite — `DONE` · P0 · deps: T0.1-02
   - Accept: detects duplicate IDs, unknown dependencies, bad statuses, checkbox mismatch, DONE without evidence, BLOCKED without a blocker, stage task-list drift
   - Verify: `tests/test_project_tracker.py` including negative cases
   - Evidence: `tools/check_tracker.py`, `tests/test_project_tracker.py`; full suite 497 passed on the branch (483 + 14 new)
-  - Notes: implemented, awaiting stage review
-- [ ] **T0.1-05** Reconcile documented state and record documentation conflicts — `IN_PROGRESS` · P0 · deps: T0.1-01
+  - Notes: closed with merge `7a41629`
+- [x] **T0.1-05** Reconcile documented state and record documentation conflicts — `DONE` · P0 · deps: T0.1-01
   - Accept: each conflict in §K names files, lines, classification and proposed resolution; nothing silently rewritten
   - Verify: reviewer checks two or more §K entries against the files
   - Evidence: §K ISS-01 to ISS-16
-  - Notes: implemented, awaiting stage review
-- [ ] **T0.1-06** ADR 0014: tracker authority, stage lifecycle, implementation order — `IN_PROGRESS` · P0 · deps: T0.1-02
+  - Notes: closed with merge `7a41629`
+- [x] **T0.1-06** ADR 0014: tracker authority, stage lifecycle, implementation order — `DONE` · P0 · deps: T0.1-02
   - Accept: ADR states decision, consequences, and that stage closure is not a homeowner gate approval
   - Verify: reviewer reads ADR 0014 against §L and §O
   - Evidence: `docs/adr/0014-project-tracker-and-stage-lifecycle.md`
-  - Notes: status "proposed" until the owner closes T0.1
-- [ ] **T0.1-07** Stage-completion checks, reviewer evidence and branch/CI/merge procedure — `IN_PROGRESS` · P0 · deps: T0.1-03
+  - Notes: ADR 0014 accepted at closure (merge `7a41629`)
+- [x] **T0.1-07** Stage-completion checks, reviewer evidence and branch/CI/merge procedure — `DONE` · P0 · deps: T0.1-03
   - Accept: §O lists required checks, branch naming, CI on a stage branch via `gh workflow run CI --ref <branch>`, merge procedure; §N defines review records
   - Verify: reviewer reads §N, §O, §P
   - Evidence: §N, §O, §P
-  - Notes: implemented, awaiting stage review
-- [ ] **T0.1-08** Remove documents the owner no longer needs — `IN_PROGRESS` · P2 · deps: T0.1-05
+  - Notes: closed with merge `7a41629`
+- [x] **T0.1-08** Remove documents the owner no longer needs — `DONE` · P2 · deps: T0.1-05
   - Accept: owner instruction of 2026-10-17 ("docs folder contain a lot of files, remove the ones we don't need"); `docs/MILESTONE_D_HANDOFF.md` (superseded roadmap with precise private values) and `docs/PRODUCT_SPEC.md` (stale summary of MASTER_SPEC) removed; no inbound link breaks; history kept in Git
   - Verify: `git grep -e MILESTONE_D_HANDOFF -e PRODUCT_SPEC`; `tests/test_agent_instructions.py`, `tests/test_project_tracker.py` link checks
   - Evidence: both files deleted on `stage/T0.1-project-tracker`; `docs/milestones/C.md` "Next" link repointed to `D.md`
-  - Notes: kept: MASTER_SPEC, AGENT_CONTRACT, AGENT_WORKFLOWS, ARCHITECTURE, DOMAIN_MODEL, PROFESSIONAL_HANDOFF, PROJECT_TRACKER, adr/, milestones/; implemented, awaiting stage review
+  - Notes: kept: MASTER_SPEC, AGENT_CONTRACT, AGENT_WORKFLOWS, ARCHITECTURE, DOMAIN_MODEL, PROFESSIONAL_HANDOFF, PROJECT_TRACKER, adr/, milestones/; closed with merge `7a41629`
 
 ### Stage T0.2 — Human-authorization and approval-gate hardening
 
@@ -2698,7 +2698,7 @@ changed), **decision** (owner must choose), **risk**.
 
 | ID | Decision | Source | Record |
 |---|---|---|---|
-| DEC-01 | Floor-plan readiness comes before Blender, IFC and Unreal; this changes implementation order, not the mission | Homeowner, governance request of 2026-10-17 | ADR 0014 (proposed until T0.1 closes) |
+| DEC-01 | Floor-plan readiness comes before Blender, IFC and Unreal; this changes implementation order, not the mission | Homeowner, governance request of 2026-10-17 | ADR 0014 (accepted) |
 | DEC-02 | PROJECT_TRACKER.md is the single roadmap; stages with separate implementation and review status; four owner commands | Homeowner request; ADR 0014 | ADR 0014, §O |
 | DEC-03 | Tasks become DONE only at stage closure on `main`, except work merged before the tracker existed | ADR 0014 | §P |
 | DEC-04 | Deep excavation, including more than 4 m, is acceptable as a design option; minimising excavation is not automatically the priority; the 4 m concern was about large empty voids under elevated floors; neither excavation nor elevation is preferred automatically | Homeowner, governance request of 2026-10-17 | This tracker; to be recorded verbatim in the interview (H2.1-10) |
@@ -2713,12 +2713,13 @@ ingestion pipeline · 0007 site review corrections · 0008 owner interview and
 space program · 0009 personal-first project folders · 0010 Claude adapter
 for the interview · 0011 agent-first interview interface · 0012 site metric
 scope · 0013 solver-backed plan generation · 0014 project tracker and stage
-lifecycle (proposed).
+lifecycle.
 
 ## M. Recently completed
 
 | Date | What | Evidence |
 |---|---|---|
+| 2026-10-17 | Stage T0.1 closed: tracker, stage protocol, tracker check; two superseded docs removed | merge `7a41629` |
 | 2026-10-17 | Milestone D merged | `a9b68fe`; CI 39046442142 |
 | 2026-10-17 | Survey evidence correction (PR #1) | `b636164`; CI 39035256427 |
 | 2026-10-17 | Milestone C merged | `2ecb587`; CI 39027912807 |
@@ -2757,6 +2758,12 @@ Closure record template:
 ```
 
 ### T0.1 records
+
+#### T0.1 closure
+- Merged: `stage/T0.1-project-tracker` at `d0cb896` into `main` as `7a41629` on 2026-10-17
+- Review: **waived by the owner** ("commit push merge pull main", 2026-10-17). No independent agent review was performed; the Review row says APPROVED only because the owner authorised the merge. A later reviewer may still audit T0.1 and record findings as new tasks.
+- CI: branch run 39054650658 green on `d0cb896`; CI on `main` runs on push of the closure commit
+- Closed by: `agent:claude-code` on the owner's instruction
 
 - Implementation complete on `stage/T0.1-project-tracker` (2026-10-17,
   `agent:claude-code`). Implementation commit `ba225c0`; CI run 39054074663
@@ -2871,11 +2878,9 @@ homeowner approval of any site, program, plan or model.
 
 ### Current handoff note
 
-- T0.1 implemented on `stage/T0.1-project-tracker`; review PENDING. Next
-  owner command: "Review stage T0.1" (ideally in Codex or another fresh
-  session). Until T0.1 is closed, `main` contains neither this tracker nor
-  the contract pointer: the reviewer must first run `git fetch && git
-  switch stage/T0.1-project-tracker` and then follow §O from that branch.
+- T0.1 closed on `main` (merge `7a41629`); the owner waived its independent
+  review. Next owner command: "Next stage", which starts T0.2 on
+  `stage/T0.2-gate-hardening`.
 
 ## P. Rules for updating the tracker
 
