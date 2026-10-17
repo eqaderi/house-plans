@@ -256,6 +256,7 @@ the `program` gate wait for the `site` gate.
 
 ## Next: Milestone D (plan)
 
-See [docs/MILESTONE_D_HANDOFF.md](../MILESTONE_D_HANDOFF.md). Formal constraint
+See [D.md](D.md) (the separate Milestone D handoff was retired on 2026-10-17;
+see [PROJECT_TRACKER.md](../PROJECT_TRACKER.md)). Formal constraint
 model and solver, 3+ alternative floor-plan concepts, plan SVG, evaluators and
 plan versioning, starting from an approved program and an approved site.

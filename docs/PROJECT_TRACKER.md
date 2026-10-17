@@ -408,9 +408,9 @@ limitations are tracked as new tasks in later stages, not by reopening them.
 | Review | PENDING |
 | Branch | `stage/T0.1-project-tracker` |
 | Depends on | D |
-| Tasks | T0.1-01, T0.1-02, T0.1-03, T0.1-04, T0.1-05, T0.1-06, T0.1-07 |
+| Tasks | T0.1-01, T0.1-02, T0.1-03, T0.1-04, T0.1-05, T0.1-06, T0.1-07, T0.1-08 |
 | Objective | One authoritative tracker, a reviewed stage lifecycle, and a check that keeps the tracker honest |
-| Scope | In: tracker, ADR 0014, AGENT_CONTRACT pointer, `tools/check_tracker.py` and its test. Out: any feature, generator, reviewer, dependency or private-data change; fixing stale docs (T0.4) |
+| Scope | In: tracker, ADR 0014, AGENT_CONTRACT pointer, `tools/check_tracker.py` and its test; removal of two redundant docs on the owner's instruction (T0.1-08). Out: any feature, generator, reviewer, dependency or private-data change; other stale-doc fixes (T0.4) |
 | Acceptance | Tracker covers sections A–P; every stage and task has the required fields; checker passes; contract below 12,000 characters; full checks green |
 | Tests | `tests/test_project_tracker.py`; `tests/test_agent_instructions.py`; full suite |
 | Demonstration | `python tools/check_tracker.py --summary` prints the counts; a fresh session can answer "Project status" from the repository alone |
@@ -453,6 +453,11 @@ limitations are tracked as new tasks in later stages, not by reopening them.
   - Verify: reviewer reads §N, §O, §P
   - Evidence: §N, §O, §P
   - Notes: implemented, awaiting stage review
+- [ ] **T0.1-08** Remove documents the owner no longer needs — `IN_PROGRESS` · P2 · deps: T0.1-05
+  - Accept: owner instruction of 2026-10-17 ("docs folder contain a lot of files, remove the ones we don't need"); `docs/MILESTONE_D_HANDOFF.md` (superseded roadmap with precise private values) and `docs/PRODUCT_SPEC.md` (stale summary of MASTER_SPEC) removed; no inbound link breaks; history kept in Git
+  - Verify: `git grep -e MILESTONE_D_HANDOFF -e PRODUCT_SPEC`; `tests/test_agent_instructions.py`, `tests/test_project_tracker.py` link checks
+  - Evidence: both files deleted on `stage/T0.1-project-tracker`; `docs/milestones/C.md` "Next" link repointed to `D.md`
+  - Notes: kept: MASTER_SPEC, AGENT_CONTRACT, AGENT_WORKFLOWS, ARCHITECTURE, DOMAIN_MODEL, PROFESSIONAL_HANDOFF, PROJECT_TRACKER, adr/, milestones/; implemented, awaiting stage review
 
 ### Stage T0.2 — Human-authorization and approval-gate hardening
 
@@ -546,7 +551,7 @@ limitations are tracked as new tasks in later stages, not by reopening them.
 - [ ] **T0.3-05** Owner decision on real values in docs and handoffs — `NOT_STARTED` · P2 · deps: none
   - Accept: owner decides whether approximate site figures may stay in AGENT_CONTRACT §7 and milestone reports; precise values and hashes move to `projects/my-house/` only
   - Verify: decision in §L; leak scan configured accordingly
-  - Evidence: pending — `MILESTONE_D_HANDOFF.md:66-81`, `milestones/B.md:243-248`, `milestones/C.md:93-94,250-251` (ISS-09)
+  - Evidence: pending — `milestones/B.md:243-248`, `milestones/C.md:93-94,250-251` (ISS-09); `MILESTONE_D_HANDOFF.md` removed in T0.1-08
   - Notes: needs the homeowner's choice
 
 ### Stage T0.4 — Documentation reconciliation
@@ -560,7 +565,7 @@ limitations are tracked as new tasks in later stages, not by reopening them.
 | Depends on | T0.1 |
 | Tasks | T0.4-01, T0.4-02, T0.4-03, T0.4-04, T0.4-05, T0.4-06 |
 | Objective | No document contradicts the verified baseline or the tracker |
-| Scope | In: README, PRODUCT_SPEC, ARCHITECTURE, milestones/C.md and D.md annotations, MILESTONE_D_HANDOFF, skills/ and apps/reviewer READMEs. Out: MASTER_SPEC requirement text; ADR decisions |
+| Scope | In: README, ARCHITECTURE, milestones/C.md and D.md annotations, skills/ and apps/reviewer READMEs. Out: MASTER_SPEC requirement text; ADR decisions; PRODUCT_SPEC and MILESTONE_D_HANDOFF (removed in T0.1-08) |
 | Acceptance | Every documentation issue in §K marked for T0.4 is resolved or explicitly deferred with the owner's consent |
 | Tests | `tests/test_agent_instructions.py`; link check of edited docs |
 | Demonstration | `grep` for "not yet merged", "five massing strategies" and a "next" status on D returns nothing stale |
@@ -572,10 +577,11 @@ limitations are tracked as new tasks in later stages, not by reopening them.
   - Accept: README no longer says "branch milestone-d, not yet merged; next: Milestone E"
   - Verify: reviewer reads README.md lines 9-10
   - Evidence: pending (ISS-10)
-- [ ] **T0.4-02** PRODUCT_SPEC milestone table matches the baseline — `NOT_STARTED` · P1 · deps: none
+- [ ] **T0.4-02** PRODUCT_SPEC milestone table matches the baseline — `DEFERRED` · P1 · deps: none
   - Accept: D shown done; E–G link to tracker stages; order change noted with DEC-01
   - Verify: reviewer reads PRODUCT_SPEC "Milestones"
   - Evidence: pending (ISS-10)
+  - Notes: superseded: PRODUCT_SPEC.md removed by T0.1-08
 - [ ] **T0.4-03** Annotate stale statements in milestones/C.md and D.md — `NOT_STARTED` · P2 · deps: none
   - Accept: D.md "Not merged", "five structural strategies", "combining split-level with walk-out is next" and C.md retracted slope/relief figures carry a dated correction note, history otherwise preserved
   - Verify: reviewer reads the notes
@@ -584,10 +590,11 @@ limitations are tracked as new tasks in later stages, not by reopening them.
   - Accept: "five massing strategies" corrected; planned items reference tracker stages
   - Verify: reviewer reads ARCHITECTURE "Package map"
   - Evidence: pending (ISS-10)
-- [ ] **T0.4-05** Retire MILESTONE_D_HANDOFF.md as a competing roadmap — `NOT_STARTED` · P1 · deps: T0.3-05
+- [ ] **T0.4-05** Retire MILESTONE_D_HANDOFF.md as a competing roadmap — `DEFERRED` · P1 · deps: T0.3-05
   - Accept: file removed or reduced to a pointer to the tracker and milestones/D.md, per the owner's T0.3-05 decision; no inbound links break
   - Verify: link check; `grep -r MILESTONE_D_HANDOFF`
   - Evidence: pending (ISS-13)
+  - Notes: superseded: the owner asked for removal on 2026-10-17; done in T0.1-08
 - [ ] **T0.4-06** skills/ and apps/reviewer/ READMEs point to their tracker stages — `NOT_STARTED` · P3 · deps: none
   - Accept: READMEs name T1.x and E1.x as the plan
   - Verify: reviewer reads both files
@@ -2671,11 +2678,11 @@ changed), **decision** (owner must choose), **risk**.
 | ISS-06 | Event log has no head anchor; removing the last events passes `project verify` | defect | `storage/project_store.py:410-460` | Anchor head hash | T0.2-07 |
 | ISS-07 | A test reads the real `projects/my-house` in CI; the CI step says "synthetic data only"; the test asserts `not_started` and will fail when the real interview starts | defect | `tests/test_interview.py:1024-1047`; `.github/workflows/ci.yml:32` | Synthetic replacement before H2.1 | T0.3-01, T0.3-04 |
 | ISS-08 | Real site values hard-coded in tests, including the retracted slope and an older relief value | defect | `tests/test_interview.py:983-986`, `test_site_review_fixes.py:529-533`, `test_plan_generation.py:71` | Synthetic values | T0.3-02 |
-| ISS-09 | Precise private survey values and hash prefixes in docs | decision | `MILESTONE_D_HANDOFF.md:66-81`, `milestones/B.md:243-248`, `milestones/C.md:93-94,250-251`; approximate values in AGENT_CONTRACT §7 | Owner decides policy | T0.3-05 |
-| ISS-10 | README says D "not yet merged; next: Milestone E"; PRODUCT_SPEC shows D "next"; milestones/D.md says "Not merged" and "five structural strategies"; ARCHITECTURE says "five massing strategies" (six exist) | stale doc | `README.md:9-10`; `PRODUCT_SPEC.md` "Milestones"; `milestones/D.md:3-4,24`; `ARCHITECTURE.md` package map | Correct with dated notes | T0.4-01 … T0.4-04 |
+| ISS-09 | Precise private survey values and hash prefixes in docs | decision | `milestones/B.md:243-248`, `milestones/C.md:93-94,250-251`; approximate values in AGENT_CONTRACT §7 | Owner decides policy | T0.3-05 |
+| ISS-10 | README says D "not yet merged; next: Milestone E"; PRODUCT_SPEC showed D "next" (file removed, T0.1-08); milestones/D.md says "Not merged" and "five structural strategies"; ARCHITECTURE says "five massing strategies" (six exist) | stale doc | `README.md:9-10`; `milestones/D.md:3-4,24`; `ARCHITECTURE.md` package map | Correct with dated notes | T0.4-01 … T0.4-04 |
 | ISS-11 | milestones/C.md and tests carry retracted site figures superseded by the survey audit | stale doc | `milestones/C.md:93-94,250-251`; `projects/my-house/reviews/survey-audit/REPORT.md` | Dated correction note | T0.4-03, T0.3-02 |
 | ISS-12 | Solver and evaluators disagree on relation semantics; seven compiled soft objectives and CodePack hard rules are not used by the solver | defect | §C limitations | Align in DG.1; owner may pull DG.1 ahead of DQ | DG.1 |
-| ISS-13 | `MILESTONE_D_HANDOFF.md` is a second roadmap (start instructions for D, "next" steps) competing with this tracker | stale doc | `docs/MILESTONE_D_HANDOFF.md` | Retire or reduce to a pointer | T0.4-05 |
+| ISS-13 | `MILESTONE_D_HANDOFF.md` is a second roadmap (start instructions for D, "next" steps) competing with this tracker | stale doc | `docs/MILESTONE_D_HANDOFF.md` | Removed on the owner's instruction | T0.1-08 |
 | ISS-14 | ADR 0005 says no `.claude/`, `.agents/` or `.gemini/` skills directories; T1 needs project skills | conflict | ADR 0005 "Decision" | New ADR revising that clause, owner approval | T1.1-01 |
 | ISS-15 | MASTER_SPEC order is E → F → G and its first-slice success includes Blender input and an Unreal manifest; the owner now puts floor-plan quality first | priority | MASTER_SPEC "Implementation strategy", "Definition of success"; owner request 2026-10-17 | Order changed, mission unchanged; MASTER_SPEC text not edited | DEC-01, ADR 0014 |
 | ISS-16 | MASTER_SPEC says owner project material is git-ignored by default; ADR 0009 commits `projects/my-house` | conflict | MASTER_SPEC "Data / privacy"; ADR 0009 | Already decided by ADR 0009 with owner authorisation; repository must stay private (verified PRIVATE) | none (decided) |
@@ -2684,6 +2691,8 @@ changed), **decision** (owner must choose), **risk**.
 | ISS-19 | Gemini CLI is not installed; Antigravity apps are; ADR 0005's Gemini check was documentary only | risk | `command -v gemini` empty; `/Applications/Antigravity*.app` | Verify in T1.1-06 or defer | T1.1-06 |
 | ISS-20 | `my-house` CRS may never be confirmable; orientation and georeferencing would stay unavailable | risk | owner statements v5 | Local-only planning decision | H1.2-05 |
 | ISS-21 | CP-SAT output differs slightly across platforms | risk | milestones/D.md "Known limitations" | Tests assert properties, not bytes | DG.3-05 |
+| ISS-22 | MASTER_SPEC "How to work" step 1 says "write docs/PRODUCT_SPEC.md"; the owner had that summary removed | conflict | `MASTER_SPEC.md:896`; T0.1-08 | Treat as a completed bootstrap instruction; MASTER_SPEC text not edited | none (owner decided) |
+| ISS-23 | §O lists `ruff check … tools` but CI lints only `src tests examples` | risk | `.github/workflows/ci.yml` | Add `tools` to the CI lint step in T0.3 or T0.4 | T0.4 (propose) |
 
 ## L. Decisions
 
@@ -2775,7 +2784,7 @@ the provider entry file, [MASTER_SPEC](MASTER_SPEC.md),
 ### "Project status"
 
 Read-only. Report: current stage (status `IN_PROGRESS`), stages with review
-`PENDING` or `CHANGES_REQUESTED`, `BLOCKED` stages and tasks with their
+`PENDING`, `CHANGES_REQUESTED` or `APPROVED` but not yet closed, `BLOCKED` stages and tasks with their
 blockers, the next eligible stage (§E rule), whether `main` matches
 `origin/main` and its latest CI run is green, and the four `my-house`
 gates (§I). Use `tools/check_tracker.py --summary` for counts.
@@ -2784,7 +2793,9 @@ gates (§I). Use `tools/check_tracker.py --summary` for counts.
 
 1. Read the files above and inspect Git state and recent history.
 2. If any stage has review `PENDING`, stop: report it and give the review
-   prompt. Never bypass pending review.
+   prompt. Never bypass pending review. If a stage has review `APPROVED`
+   but is not yet closed (status still `IN_PROGRESS`), stop and ask the
+   owner to say "Close stage <ID>".
 3. If a stage has review `CHANGES_REQUESTED`, resume it: check out its
    branch and address the findings in its latest review record.
 4. If a stage is `IN_PROGRESS` with review `NOT_REQUESTED`, resume it from
@@ -2819,23 +2830,31 @@ and say exactly how to resume. Never start a second stage.
 2. Fetch and check out the stage branch; note the head commit.
 3. Read `git diff main...HEAD` in full and the relevant code and tests.
 4. Run the required checks and the stage's tests yourself; check the CI run
-   for that commit.
+   for that commit. Branch pushes do not trigger CI: if no run exists for
+   the commit, start one with `gh workflow run ci.yml --ref <branch>`.
 5. Exercise the demonstration; inspect generated artifacts and, where
    relevant, screenshots and SVGs.
 6. Check geometry and schema integrity, regressions, provenance, human
    approval boundaries, private-data handling and scope creep.
 7. Check every task status and evidence reference in the tracker.
-8. Append a review record (§N) on the stage branch, set Review to
-   `APPROVED` or `CHANGES_REQUESTED`, commit and push. Do not merge.
+8. Append a review record (§N) naming the reviewed commit, set the stage
+   Review to `APPROVED` or `CHANGES_REQUESTED`, and commit and push only
+   that tracker change to the stage branch. Do not merge.
 
-A review is valid only for the commit it names. Any later commit to the
-branch needs a new review.
+A review is valid only for the commit it names. After the reviewed commit,
+the branch may contain only the reviewer's tracker commit (review record
+and Review row in `docs/PROJECT_TRACKER.md`); any other later change needs
+a new review.
 
 ### "Close stage <ID>"
 
-1. Confirm implementation is complete and the latest review is `APPROVED`
-   for the branch's current head commit.
-2. Confirm CI passed for that commit and the required checks pass locally.
+1. Confirm implementation is complete and the latest review record is
+   `APPROVED`. Let R be the reviewed commit it names: `git diff --name-only
+   R..HEAD` on the stage branch must list nothing or only
+   `docs/PROJECT_TRACKER.md`, and that diff must touch only §N records and
+   the stage's Review row. Otherwise stop: a new review is needed.
+2. Confirm CI passed for R and the required checks pass locally on the
+   branch head.
 3. Confirm all mandatory acceptance criteria are met and remaining blockers
    are recorded.
 4. `git switch main && git pull`, then
@@ -2854,8 +2873,9 @@ homeowner approval of any site, program, plan or model.
 
 - T0.1 implemented on `stage/T0.1-project-tracker`; review PENDING. Next
   owner command: "Review stage T0.1" (ideally in Codex or another fresh
-  session). Until T0.1 is closed, `main` does not contain this tracker; a
-  session on `main` should look for the branch with `git branch -a`.
+  session). Until T0.1 is closed, `main` contains neither this tracker nor
+  the contract pointer: the reviewer must first run `git fetch && git
+  switch stage/T0.1-project-tracker` and then follow §O from that branch.
 
 ## P. Rules for updating the tracker
 

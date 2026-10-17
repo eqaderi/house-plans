@@ -6,7 +6,7 @@ closes stage T0.1)
 ## Context
 
 Milestones A to D are merged (`a9b68fe`). What comes next was spread over
-milestone reports, `MILESTONE_D_HANDOFF.md`, the README and chat history,
+milestone reports, `MILESTONE_D_HANDOFF.md` (since removed), the README and chat history,
 and several of those disagree (see the tracker's open issues). Three coding
 agents (Claude Code, Codex, Gemini/Antigravity) work on the repository in
 separate sessions with no shared memory. The owner should not have to
