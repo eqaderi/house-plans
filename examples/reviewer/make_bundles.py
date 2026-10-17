@@ -106,9 +106,6 @@ def generate_hillside_bundle(temp_root: Path) -> dict:
     prog_ref = store.latest(ArtifactKind.SPACE_PROGRAM, "program")
     wf.approve(Gate.PROGRAM, prog_ref, OWNER, "program approved")
 
-    plan_service = PlanService(store)
-    plan_service.generate(AGENT, strategies=["compact", "split_walkout"], seed=42)
-
     concepts_dir = REPO / "examples" / "projects" / "synthetic-hillside" / "concepts"
     bundle = build_reviewer_bundle(
         store,
