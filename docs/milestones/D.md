@@ -1,7 +1,12 @@
 # Milestone D: plan concepts, evaluation and versioning
 
+> [!NOTE] Post-Milestone D Update (2026-10-17)
+> Milestone D was merged into `main` at `a9b68fe`. Six strategies are now available
+> (including `split_walkout`, which combined split-level stepping with walk-out floors).
+> Active development proceeds under [PROJECT_TRACKER.md](../PROJECT_TRACKER.md).
+
 Date: 2026-10-17. Branch: `milestone-d`, created from `main` after PR #1
-(survey evidence correction) was merged. Not merged into `main`. Design:
+(survey evidence correction) was merged. Merged into `main` at `a9b68fe`. Design:
 [ADR 0013](../adr/0013-solver-backed-plan-generation.md). Agent instructions:
 [AGENT_CONTRACT.md §9b](../AGENT_CONTRACT.md), worked commands:
 [AGENT_WORKFLOWS.md](../AGENT_WORKFLOWS.md).
@@ -21,9 +26,9 @@ Date: 2026-10-17. Branch: `milestone-d`, created from `main` after PR #1
   unverified pack yields soft guidance and the label "conceptual best-practice
   check only"; anything else is reported as not checked. No regulation is
   invented.
-- **Solver-backed generator** (`house_ai.generation`, OR-Tools CP-SAT): five
+- **Solver-backed generator** (`house_ai.generation`, OR-Tools CP-SAT): six
   structural strategies (`compact`, `split_level`, `linear`, `two_wing`,
-  `courtyard`) laid out on a 10 cm grid in a frame aligned with the road
+  `courtyard`, and `split_walkout`) laid out on a 10 cm grid in a frame aligned with the road
   frontage, so rotated parcels work. Hard-connected rooms (e.g. an open
   living-kitchen-dining triangle, a bedroom with its en-suite) are placed as
   clusters whose every required pair shares a wall. The entry and garage sit
@@ -148,8 +153,9 @@ distinct window facades, road-facing garage access, blocking plan issues).
 - Rows are closed with flexible space when the program does not fill them,
   and corridors are generous; both are reported, not optimised away.
 - Concepts that keep a whole bar at road level sit over a falling slope; the
-  void beneath is reported as fill/void, not turned into rooms. Combining
-  split-level stepping with walk-out floors is a natural next strategy.
+  void beneath is reported as fill/void, not turned into rooms. *(Note: combining
+  split-level stepping with walk-out floors was subsequently implemented as `split_walkout`
+  in commit `247a52b` before merging Milestone D).*
 - Stair, wall, floor-to-floor and garage dimensions are typical placeholders
   (assumptions); nothing is structurally, geotechnically or code checked.
 - Daylight, views, orientation, acoustics beyond shared walls, cost and
@@ -160,8 +166,8 @@ distinct window facades, road-facing garage access, blocking plan issues).
 - Fixtures and furniture are not placed; outdoor items (terrace, garden) are
   not placed and their adjacencies are reported as not checked.
 
-## Next milestone
+## Next steps
 
-Milestone E (reviewer): inspect concepts side by side, show the stored
-metrics and violations, compare versions using the revision reports, and
-capture the owner's change requests for `plan revise`. Not started.
+Milestone D was merged at commit `a9b68fe`. Active roadmap and stage progress
+are tracked in [PROJECT_TRACKER.md](../PROJECT_TRACKER.md) (the visual concept
+reviewer formerly described as Milestone E is tracked under Stage S4).

@@ -189,6 +189,12 @@ class Workflow:
             )
         if not reason.strip():
             raise TransitionNotAllowed("a transition needs a reason")
+        if current is S.PROGRAM_REVIEW and to is S.INTERVIEWING:
+            if actor.kind is not ActorKind.HUMAN:
+                raise ApprovalRequiresHuman(
+                    "leaving PROGRAM_REVIEW back to INTERVIEWING requires a human actor "
+                    "(use 'program reject')"
+                )
         problems = self._transition_guard(current, to)
         if problems:
             raise TransitionNotAllowed(f"{current.value} -> {to.value}: " + "; ".join(problems))

@@ -976,14 +976,14 @@ def test_steep_hillside_site_records_engineering_assumptions_and_warns_on_flat_p
     svc = InterviewService(store)
     svc.start(AGENT)
     _run(svc)
-    # Override site context on the latest session to match a steep ~12.4 m relief parcel.
+    # Override site context on the latest session to match a steep synthetic relief parcel.
     steep_site = SiteContext(
         site_ref=store.latest(K.SITE, "site"),
         verified=False,
-        parcel_area_m2=599.95,
-        relief_m=12.437,
-        mean_slope_pct=65.2,
-        frontage_m=21.029,
+        parcel_area_m2=520.0,
+        relief_m=14.5,
+        mean_slope_pct=55.0,
+        frontage_m=18.5,
     )
     svc.revise(
         "q-slope",
@@ -1021,26 +1021,49 @@ def test_steep_hillside_site_records_engineering_assumptions_and_warns_on_flat_p
     assert "steep_site_flat_pad" in codes
 
 
-def test_agent_inspects_real_my_house_project_without_modifying_it(capsys):
-    """If projects/my-house is present, verify status and blockers report the real steep site
-    in SITE_NEEDS_VERIFICATION without modifying any files in projects/my-house.
+def test_agent_inspects_synthetic_project_without_modifying_it(tmp_path, capsys):
+    """Verify status and blockers report an unverified steep site in
+    SITE_NEEDS_VERIFICATION without modifying any files in the project.
     """
     from house_ai.cli.main import main
+    from house_ai.domain.geometry import Polygon2D
+    from house_ai.domain.site import Epistemic, Site, SiteCoordinates
+    from house_ai.domain.workflow import WorkflowState
+    from house_ai.orchestration.workflow import Workflow
     from house_ai.storage import ProjectStore
 
-    my_house = REPO / "projects" / "my-house"
-    if not (my_house / "project.json").is_file():
-        pytest.skip("projects/my-house not present")
-    before_events = len(ProjectStore(my_house).events())
-    assert main(["project", "status", str(my_house), "--json"]) == 0
+    proj_dir = tmp_path / "synthetic-steep"
+    store = ProjectStore.init(
+        proj_dir,
+        project_id="synthetic-steep",
+        name="Synthetic Steep Project",
+        classification="synthetic",  # type: ignore[arg-type]
+        actor=HUMAN,
+    )
+    wf = Workflow(store)
+    wf.transition(WorkflowState.SITE_INGESTION, HUMAN, "ingesting")
+    # Put a site that needs verification (unverified boundary, local coords only)
+    site = Site(
+        id="site",
+        project_id="synthetic-steep",
+        name="Synthetic Steep Site",
+        classification="synthetic",  # type: ignore[arg-type]
+        coordinates=SiteCoordinates(),
+        boundary=Polygon2D.rectangle(0, 0, 20, 26),
+        boundary_status=Epistemic.INFERENCE,
+        provenance={"created_at": store.clock(), "created_by": HUMAN, "method": "test"},  # type: ignore[arg-type]
+    )
+    s_ref = store.put(K.SITE, "site", site, HUMAN)
+    wf.assess_site(s_ref, HUMAN)
+
+    before_events = len(store.events())
+    assert main(["project", "status", str(proj_dir), "--json"]) == 0
     status = json.loads(capsys.readouterr().out)
     assert status["state"] == "SITE_NEEDS_VERIFICATION"
     assert status["site"]["verified"] is False
-    assert status["site"]["parcel_area_m2"] == pytest.approx(599.95, rel=1e-2)
-    assert status["site"]["relief_m"] == pytest.approx(12.437, rel=1e-2)
-    assert len(status["site"]["verification_blockers"]) >= 3
-    assert main(["interview", "status", str(my_house), "--json"]) == 0
+    assert len(status["site"]["verification_blockers"]) >= 1
+    assert main(["interview", "status", str(proj_dir), "--json"]) == 0
     istatus = json.loads(capsys.readouterr().out)
     assert istatus["session_status"] == "not_started"
-    assert len(ProjectStore(my_house).events()) == before_events
+    assert len(store.events()) == before_events
 

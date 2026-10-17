@@ -2,6 +2,10 @@
 
 from __future__ import annotations
 
+from .actors import (
+    DISALLOWED_HUMAN_PREFIXES,
+    KNOWN_AGENT_TOOL_NAMES,
+)
 from .evaluations import (
     METRIC_EXCAVATION_VOLUME,
     METRIC_EXTERIOR_DOOR_GROUND_DELTA,
@@ -29,6 +33,8 @@ from .strategies import (
 )
 
 __all__ = [
+    "DISALLOWED_HUMAN_PREFIXES",
+    "KNOWN_AGENT_TOOL_NAMES",
     "METRIC_EXCAVATION_VOLUME",
     "METRIC_EXTERIOR_DOOR_GROUND_DELTA",
     "METRIC_FILL_VOLUME",

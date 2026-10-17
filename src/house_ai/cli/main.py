@@ -32,6 +32,7 @@ from house_ai.domain.provenance import (
     ArtifactKind,
     ArtifactRef,
     DataClassification,
+    is_disallowed_human_id,
 )
 from house_ai.domain.registry import SCHEMAS, export_schemas, stale_schemas
 from house_ai.domain.site import CadImportProvenance, Site, site_verification_blockers
@@ -48,6 +49,7 @@ from house_ai.orchestration.statements import owner_statements, record_owner_sta
 from house_ai.orchestration.survey_inspection import inspect_files, inspection_markdown
 from house_ai.orchestration.workflow import (
     GATES,
+    ApprovalRequiresHuman,
     Workflow,
     WorkflowError,
 )
@@ -195,6 +197,23 @@ def _status_dict(store: ProjectStore) -> dict:
             "frontage_m": site_ctx.frontage_m,
             "verification_blockers": svc.site_blockers(),
         }
+    approvals_dict: dict[str, dict] = {}
+    stale_approvals: list[str] = []
+    for g, a in status.approvals.items():
+        spec = GATES[g]
+        latest_ref = store.latest(spec.artifact_kind, a.artifact.id)
+        is_stale = False
+        if latest_ref and (
+            latest_ref.version > a.artifact.version or latest_ref.sha256 != a.artifact.sha256
+        ):
+            is_stale = True
+            stale_approvals.append(g.value)
+        data = a.model_dump(mode="json")
+        data["stale"] = is_stale
+        if is_stale and latest_ref:
+            data["latest_version"] = latest_ref.version
+        approvals_dict[g.value] = data
+
     iv_exists = svc.exists()
     iv_state = svc.state() if iv_exists else None
     return {
@@ -202,7 +221,8 @@ def _status_dict(store: ProjectStore) -> dict:
         "state": status.state.value,
         "allowed_transitions": [s.value for s in wf.allowed_transitions()],
         "gate_available": gate.value if gate else None,
-        "approvals": {g.value: a.model_dump(mode="json") for g, a in status.approvals.items()},
+        "approvals": approvals_dict,
+        "stale_approvals": sorted(stale_approvals),
         "superseded_approvals": [a.id for a in status.superseded],
         "pending_approval_requests": {
             g.value: r.model_dump(mode="json") for g, r in status.pending_requests.items()
@@ -232,9 +252,10 @@ def cmd_project_status(args: argparse.Namespace) -> int:
         _out(f"gate      {info['gate_available']} can be approved by a human from this state")
     for gate, appr in info["approvals"].items():
         art = appr["artifact"]
+        stale_msg = f" (STALE: v{appr['latest_version']} exists)" if appr.get("stale") else ""
         _out(
             f"approved  {gate}: {art['kind']}/{art['id']} v{art['version']} "
-            f"by {appr['approved_by']['id']}"
+            f"by {appr['approved_by']['id']}{stale_msg}"
         )
     if info["site"] is not None:
         s_info = info["site"]
@@ -344,7 +365,14 @@ def cmd_example_load(args: argparse.Namespace) -> int:
 
 def cmd_transition(args: argparse.Namespace) -> int:
     wf = Workflow(ProjectStore(_dir(args.dir)))
-    ev = wf.transition(WorkflowState(args.state), args.actor, args.reason)
+    try:
+        ev = wf.transition(WorkflowState(args.state), args.actor, args.reason)
+    except ApprovalRequiresHuman as exc:
+        _err(str(exc))
+        return EXIT_USAGE
+    except WorkflowError as exc:
+        _err(str(exc))
+        return EXIT_FAIL
     _out(f"{ev.from_state.value} -> {ev.to_state.value}")  # type: ignore[union-attr]
     return EXIT_OK
 
@@ -377,6 +405,12 @@ def cmd_approve(args: argparse.Namespace) -> int:
             "Agents must not approve gates; ask the human to run this command themselves."
         )
         return EXIT_USAGE
+    if is_disallowed_human_id(args.approver):
+        _err(
+            f"disallowed approver {args.approver!r}: approver must be a real human identifier, "
+            "not an agent or tool name (agents must not approve gates)."
+        )
+        return EXIT_USAGE
     store = ProjectStore(_dir(args.dir))
     wf = Workflow(store)
     gate = Gate(args.gate)
@@ -404,8 +438,37 @@ def cmd_approve(args: argparse.Namespace) -> int:
 
 
 def cmd_reopen(args: argparse.Namespace) -> int:
-    wf = Workflow(ProjectStore(_dir(args.dir)))
-    ev = wf.reopen(Gate(args.gate), args.actor, args.reason)
+    if not sys.stdin.isatty():
+        _err(
+            "reopening a gate needs an interactive terminal and a typed confirmation from a human. "
+            "Agents must not reopen gates; ask the human to run this command themselves."
+        )
+        return EXIT_USAGE
+    if args.actor.kind is not ActorKind.HUMAN or is_disallowed_human_id(args.actor.id):
+        _err(
+            f"{args.actor.kind.value} {args.actor.id!r} cannot reopen gates; "
+            "only a human can reopen an approved gate."
+        )
+        return EXIT_USAGE
+    store = ProjectStore(_dir(args.dir))
+    wf = Workflow(store)
+    gate = Gate(args.gate)
+    status = wf.status()
+    if gate not in status.approvals:
+        _err(f"the {gate.value} gate is not approved; nothing to reopen")
+        return EXIT_FAIL
+    approval = status.approvals[gate]
+    phrase = f"reopen {gate.value} {approval.artifact.id}"
+    _out(
+        f"You are reopening the {gate.value} gate (currently approved for "
+        f"{approval.artifact.kind.value}/{approval.artifact.id} v{approval.artifact.version})."
+    )
+    _out("Reopening marks this approval and downstream approvals as superseded.")
+    typed = input(f'Type "{phrase}" to confirm: ').strip()
+    if typed != phrase:
+        _err("confirmation did not match; nothing reopened")
+        return EXIT_FAIL
+    ev = wf.reopen(gate, args.actor, args.reason)
     _out(f"reopened {args.gate}: {ev.from_state.value} -> {ev.to_state.value}")  # type: ignore[union-attr]
     return EXIT_OK
 
@@ -453,6 +516,12 @@ def cmd_site_confirm(args: argparse.Namespace) -> int:
             "site confirmation needs an interactive terminal and a typed confirmation from a "
             "human. Agents must not confirm units, CRS, datum or boundary; ask the human to run "
             "this command themselves."
+        )
+        return EXIT_USAGE
+    if is_disallowed_human_id(args.confirmer):
+        _err(
+            f"disallowed confirmer {args.confirmer!r}: confirmer must be a real human identifier, "
+            "not an agent or tool name (agents must not confirm site facts)."
         )
         return EXIT_USAGE
     conf = SiteConfirmation(
@@ -824,6 +893,12 @@ def cmd_interview_resolve(args: argparse.Namespace) -> int:
 def cmd_interview_consent(args: argparse.Namespace) -> int:
     if not _owner_terminal("interview consent"):
         return EXIT_USAGE
+    if args.actor.kind is not ActorKind.HUMAN or is_disallowed_human_id(args.actor.id):
+        _err(
+            f"{args.actor.kind.value} {args.actor.id!r} cannot grant provider consent; "
+            "only a human can consent to sharing private data."
+        )
+        return EXIT_USAGE
     phrase = f"allow {args.provider}"
     _out(f"Your interview answers are private. Allowing {args.provider} sends them to it.")
     if input(f'Type "{phrase}" to allow: ').strip() != phrase:
@@ -1013,6 +1088,12 @@ def cmd_program_review(args: argparse.Namespace) -> int:
 
 def cmd_program_reject(args: argparse.Namespace) -> int:
     if not _owner_terminal("program reject"):
+        return EXIT_USAGE
+    if args.actor.kind is not ActorKind.HUMAN or is_disallowed_human_id(args.actor.id):
+        _err(
+            f"{args.actor.kind.value} {args.actor.id!r} cannot reject the space program; "
+            "only a human can reject a program under review."
+        )
         return EXIT_USAGE
     InterviewService(ProjectStore(_dir(args.dir))).reject_program(args.actor, args.reason)
     _out("program rejected; back to INTERVIEWING. Your words are recorded in the brief.")
@@ -1356,6 +1437,9 @@ def main(argv: Sequence[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     try:
         return args.func(args)
+    except ApprovalRequiresHuman as exc:
+        _err(f"error: {exc}")
+        return EXIT_USAGE
     except (StoreError, WorkflowError, ValidationError, ValueError, DwgConversionError) as exc:
         _err(f"error: {exc}")
         return EXIT_FAIL

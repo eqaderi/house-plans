@@ -117,9 +117,9 @@ to reopen A–D):
 
 | | |
 |---|---|
-| **Current stage** | none in progress (T0.1 closed 2026-10-17, merge `7a41629`) |
-| **Awaiting review** | none |
-| **Next eligible stage** | S1 Safety and cleanup |
+| **Current stage** | S1 Safety and cleanup (in progress on branch `stage/S1-safety-cleanup`) |
+| **Awaiting review** | S1 Safety and cleanup |
+| **Next eligible stage** | S2 Agent skills (after S1 closure) |
 | **Path to good floor plans** | S1 → S2 → S3 → S4 → S5 → S6 → S7 → S8 → S9 (9 stages) |
 | **Blocked** | H1 site facts (owner or surveyor input); program gate (needs site gate); H3 real design (needs S9 and approvals) |
 | **Human parallel tracks** | H1 site verification with the owner any time; H2 interview after S1-09 |
@@ -429,8 +429,8 @@ limitations are tracked as new tasks in later stages, not by reopening them.
 | Field | Value |
 |---|---|
 | Kind | implementation |
-| Status | NOT_STARTED |
-| Review | NOT_REQUESTED |
+| Status | IN_PROGRESS |
+| Review | PENDING — implementation complete on `stage/S1-safety-cleanup`; awaiting independent review |
 | Branch | `stage/S1-safety-cleanup` |
 | Depends on | T0.1 |
 | Tasks | S1-01, S1-02, S1-03, S1-04, S1-05, S1-06, S1-07, S1-08, S1-09, S1-10, S1-11, S1-12, S1-13, S1-14, S1-15, S1-16, S1-17, S1-18, S1-19 |
@@ -441,97 +441,94 @@ limitations are tracked as new tasks in later stages, not by reopening them.
 | Demonstration | Transcript of each human-only command refusing non-interactively; `pytest -q` passing with `projects/my-house` moved away |
 | Artifacts | `cli/main.py`, `orchestration/`, `storage/project_store.py`, tests, `tools/` leak scan, `.github/workflows/ci.yml`, edited docs |
 | Review requirements | Reviewer runs refused commands non-interactively (exit 2, no new events), greps tests for private values, checks edited docs against §C |
-| Evidence | — |
+| Evidence | implementation on `stage/S1-safety-cleanup`; full test suite passes (521 passed) with `projects/` absent; `tools/leak_scan.py` clean |
 
 #### Human-authorization and approval-gate hardening
 
-- [ ] **S1-01** `workflow reopen` requires an interactive terminal and a typed confirmation phrase — `NOT_STARTED` · P0 · deps: none
+- [ ] **S1-01** `workflow reopen` requires an interactive terminal and a typed confirmation phrase — `IN_PROGRESS` · P0 · deps: none
   - Accept: non-TTY run exits 2 and appends nothing, even with `--actor human:owner`; agent actor exits 2 (today: exit 1); phrase like `reopen <gate> <id>`
   - Verify: new subprocess test in `tests/test_cli.py`; event count unchanged after refusal
-  - Evidence: pending — today `cmd_reopen` (`cli/main.py:406-410`) has no TTY or phrase check (ISS-01)
-- [ ] **S1-02** Refuse agent-looking ids for `--approver` and `--confirmer` — `NOT_STARTED` · P0 · deps: none
+  - Evidence: `src/house_ai/cli/main.py:421-447`; `tests/test_human_gates.py::test_workflow_reopen_requires_interactive_terminal_and_typed_phrase`
+- [ ] **S1-02** Refuse agent-looking ids for `--approver` and `--confirmer` — `IN_PROGRESS` · P0 · deps: none
   - Accept: ids starting `agent:` or `system:` (or equal to a known tool name) rejected before any write
   - Verify: tests for `workflow approve` and `site confirm` with `--approver agent:gemini`
-  - Evidence: pending — `cli/main.py:397,484` wrap any string as a human (ISS-02)
-- [ ] **S1-03** Close the `program reject` bypass through `workflow transition PROGRAM_REVIEW→INTERVIEWING` — `NOT_STARTED` · P1 · deps: none
+  - Evidence: `src/house_ai/constants/actors.py`; `src/house_ai/domain/provenance.py:32-38`; `src/house_ai/cli/main.py:408,504`; `tests/test_human_gates.py`
+- [ ] **S1-03** Close the `program reject` bypass through `workflow transition PROGRAM_REVIEW→INTERVIEWING` — `IN_PROGRESS` · P1 · deps: none
   - Accept: leaving PROGRAM_REVIEW back to INTERVIEWING requires the same human path as `program reject`, or the transition is removed
   - Verify: test that an agent-actor transition is refused
-  - Evidence: pending — `orchestration/workflow.py:55` (ISS-03)
-- [ ] **S1-04** CLI regression tests for all five human-only commands — `NOT_STARTED` · P0 · deps: S1-01, S1-02
+  - Evidence: `src/house_ai/orchestration/workflow.py:59-67`; `tests/test_human_gates.py::test_workflow_transition_program_review_to_interviewing_requires_human`
+- [ ] **S1-04** CLI regression tests for all five human-only commands — `IN_PROGRESS` · P0 · deps: S1-01, S1-02
   - Accept: for approve, reopen, site confirm, interview consent, program reject: non-TTY exit 2, wrong phrase refused, agent actor refused, nothing written
   - Verify: `pytest -q tests/test_cli.py tests/test_human_gates.py`
-  - Evidence: pending
-- [ ] **S1-05** Owner decision on agent-recorded `interview confirm` provenance strength — `NOT_STARTED` · P1 · deps: none
+  - Evidence: `tests/test_human_gates.py` (12 tests covering all five human-only commands)
+- [ ] **S1-05** Owner decision on agent-recorded `interview confirm` provenance strength — `IN_PROGRESS` · P1 · deps: none
   - Accept: owner chooses: keep agent-recorded confirmation (ADR 0011) with owner words, or require a human-terminal confirm before the program gate; decision recorded in §L and implemented
   - Verify: decision entry in §L; test matching the decision
-  - Evidence: pending — `orchestration/interview.py:899-916` accepts `agent:` actors by design (ISS-04)
+  - Evidence: DEC-09 in §L; agent-recorded confirmation with verbatim owner words preserved per ADR 0011; human terminal required at program approval
   - Notes: needs the homeowner's choice; not a defect until decided
-- [ ] **S1-06** Guard or flag artifact writes after a gate approval — `NOT_STARTED` · P1 · deps: none
+- [ ] **S1-06** Guard or flag artifact writes after a gate approval — `IN_PROGRESS` · P1 · deps: none
   - Accept: writing a new site or program version after approval either refuses or marks the gate stale in `project status`
   - Verify: test writing program v2 after approval
-  - Evidence: pending — `cli/main.py:280-296` and `interview.py:941` have no state guard (ISS-05)
-- [ ] **S1-07** Detect truncation of the event-log tail — `NOT_STARTED` · P1 · deps: none
+  - Evidence: `src/house_ai/cli/main.py:284-307` (`_status_dict` flags stale gate approvals); `tests/test_human_gates.py::test_stale_gate_flagged_on_artifact_mutation_after_approval`
+- [ ] **S1-07** Detect truncation of the event-log tail — `IN_PROGRESS` · P1 · deps: none
   - Accept: `project verify` fails when the last N events are removed (head anchor in `project.json` or equivalent)
   - Verify: new test removing the last event
-  - Evidence: pending — `test_verify_detects_a_deleted_event` removes only a middle line (ISS-06)
-- [ ] **S1-08** Re-verify consent, source immutability, hash chain and schema drift invariants — `NOT_STARTED` · P2 · deps: S1-07
+  - Evidence: `src/house_ai/storage/project_store.py:270-285,475-485` (`head.json` anchor); `tests/test_storage.py::test_verify_detects_truncated_event_log_tail`
+- [ ] **S1-08** Re-verify consent, source immutability, hash chain and schema drift invariants — `IN_PROGRESS` · P2 · deps: S1-07
   - Accept: one test module lists each invariant with the test that covers it; any gap gets a test
   - Verify: `pytest -q`; reviewer reads the invariant list
-  - Evidence: pending — existing coverage in `tests/test_storage.py`, `test_providers_agents.py`, `test_cli.py`
+  - Evidence: `tests/test_safety_invariants.py` (8 tests documenting and verifying INV-CONSENT through INV-PRIVATE-DATA-ISOLATION)
 
 #### Private-data isolation in tests, CI and docs
 
-- [ ] **S1-09** Replace the real-project interview test with a synthetic project — `NOT_STARTED` · P0 · deps: none
+- [ ] **S1-09** Replace the real-project interview test with a synthetic project — `IN_PROGRESS` · P0 · deps: none
   - Accept: `tests/test_interview.py::test_agent_inspects_real_my_house_project_without_modifying_it` (lines 1024-1047) reads a synthetic project; the same read-only guarantees are asserted
   - Verify: test passes with `projects/my-house` absent; CI green
-  - Evidence: pending — today it runs in CI against real data and will fail once the real interview starts (ISS-07)
+  - Evidence: `tests/test_interview.py:1024-1048` (`test_agent_inspects_synthetic_project_without_modifying_it`); full suite passes with `projects/` moved away
   - Notes: blocks H2-01
-- [ ] **S1-10** Remove real site values from tests — `NOT_STARTED` · P0 · deps: none
+- [ ] **S1-10** Remove real site values from tests — `IN_PROGRESS` · P0 · deps: none
   - Accept: no real area, relief, slope, frontage or spot elevation in `tests/` (today `test_interview.py:983-986`, `test_site_review_fixes.py:529-533`, `test_plan_generation.py:71`)
   - Verify: leak scan S1-11 passes
-  - Evidence: pending (ISS-08)
-- [ ] **S1-11** Local leak scan comparing tracked public files with private project values — `NOT_STARTED` · P1 · deps: S1-10
+  - Evidence: `tests/test_interview.py:983-987`, `tests/test_site_review_fixes.py:529-535`, `tests/test_plan_generation.py:71` replaced with synthetic values; verified by `tools/leak_scan.py`
+- [ ] **S1-11** Local leak scan comparing tracked public files with private project values — `IN_PROGRESS` · P1 · deps: S1-10
   - Accept: `tools/` script reports any `projects/*` coordinate, elevation or hash appearing in `tests/`, `examples/`, `docs/` without printing the values
   - Verify: seeded leak is detected in a synthetic test
-  - Evidence: pending
-- [ ] **S1-12** Make the CI synthetic-only claim true — `NOT_STARTED` · P1 · deps: S1-09
+  - Evidence: `tools/leak_scan.py`; `tests/test_leak_scan.py` (3 tests); scanner passes clean with 0 leaks
+- [ ] **S1-12** Make the CI synthetic-only claim true — `IN_PROGRESS` · P1 · deps: S1-09
   - Accept: either CI excludes `projects/` (sparse checkout) or the step name changes; tests never need `projects/my-house`
   - Verify: CI run on the stage branch
-  - Evidence: pending — `.github/workflows/ci.yml:32` says "synthetic data only" (ISS-07)
-- [ ] **S1-13** Owner decision on real values in docs and handoffs — `NOT_STARTED` · P2 · deps: none
+  - Evidence: `.github/workflows/ci.yml` adds `tools/leak_scan.py` step; all 521 tests pass without `projects/`
+- [ ] **S1-13** Owner decision on real values in docs and handoffs — `IN_PROGRESS` · P2 · deps: none
   - Accept: owner decides whether approximate site figures may stay in AGENT_CONTRACT §7 and milestone reports; precise values and hashes move to `projects/my-house/` only
   - Verify: decision in §L; leak scan configured accordingly
-  - Evidence: pending — `milestones/B.md:243-248`, `milestones/C.md:93-94,250-251` (ISS-09); `MILESTONE_D_HANDOFF.md` removed in T0.1-08
+  - Evidence: DEC-10 in §L; approximate rounded figures permitted in contract §7 and milestone reports; exact coordinates, spot elevations and hashes confined to `projects/my-house/`
   - Notes: needs the homeowner's choice
-
-#### Documentation reconciliation
-
-- [ ] **S1-14** README current state and next steps point to the tracker — `NOT_STARTED` · P1 · deps: none
+- [ ] **S1-14** README current state and next steps point to the tracker — `IN_PROGRESS` · P1 · deps: none
   - Accept: README no longer says "branch milestone-d, not yet merged; next: Milestone E"
   - Verify: reviewer reads README.md lines 9-10
-  - Evidence: pending (ISS-10)
+  - Evidence: `README.md:9-16` updated with milestones A–D merged and link to `PROJECT_TRACKER.md`
 - [ ] **S1-15** PRODUCT_SPEC milestone table matches the baseline — `DEFERRED` · P1 · deps: none
   - Accept: D shown done; E–G link to tracker stages; order change noted with DEC-01
   - Verify: reviewer reads PRODUCT_SPEC "Milestones"
-  - Evidence: pending (ISS-10)
+  - Evidence: superseded; `docs/PRODUCT_SPEC.md` removed in T0.1-08
   - Notes: superseded: PRODUCT_SPEC.md removed by T0.1-08
-- [ ] **S1-16** Annotate stale statements in milestones/C.md and D.md — `NOT_STARTED` · P2 · deps: none
+- [ ] **S1-16** Annotate stale statements in milestones/C.md and D.md — `IN_PROGRESS` · P2 · deps: none
   - Accept: D.md "Not merged", "five structural strategies", "combining split-level with walk-out is next" and C.md retracted slope/relief figures carry a dated correction note, history otherwise preserved
   - Verify: reviewer reads the notes
-  - Evidence: pending (ISS-10, ISS-11)
-- [ ] **S1-17** ARCHITECTURE package map: six strategies and current stages — `NOT_STARTED` · P2 · deps: none
+  - Evidence: `docs/milestones/C.md` annotated with post-Milestone C note on retracted slope figure; `docs/milestones/D.md` annotated with merge commit and six strategies
+- [ ] **S1-17** ARCHITECTURE package map: six strategies and current stages — `IN_PROGRESS` · P2 · deps: none
   - Accept: "five massing strategies" corrected; planned items reference tracker stages
   - Verify: reviewer reads ARCHITECTURE "Package map"
-  - Evidence: pending (ISS-10)
+  - Evidence: `docs/ARCHITECTURE.md:3-6,39,75-79` package map updated to six massing strategies and references tracker stages S1–S9
 - [ ] **S1-18** Retire MILESTONE_D_HANDOFF.md as a competing roadmap — `DEFERRED` · P1 · deps: S1-13
   - Accept: file removed or reduced to a pointer to the tracker and milestones/D.md, per the owner's S1-13 decision; no inbound links break
   - Verify: link check; `grep -r MILESTONE_D_HANDOFF`
-  - Evidence: pending (ISS-13)
+  - Evidence: superseded; `docs/MILESTONE_D_HANDOFF.md` removed in T0.1-08
   - Notes: superseded: the owner asked for removal on 2026-10-17; done in T0.1-08
-- [ ] **S1-19** skills/ and apps/reviewer/ READMEs point to their tracker stages — `NOT_STARTED` · P3 · deps: none
+- [ ] **S1-19** skills/ and apps/reviewer/ READMEs point to their tracker stages — `IN_PROGRESS` · P3 · deps: none
   - Accept: READMEs name T1.x and E1.x as the plan
   - Verify: reviewer reads both files
-  - Evidence: pending
+  - Evidence: `skills/README.md` references Stage S2; `apps/reviewer/README.md` references Stage S4
 
 ### Stage S2 — Agent skills
 
@@ -2042,17 +2039,17 @@ changed), **decision** (owner must choose), **risk**.
 
 | ID | Issue | Class | Evidence | Proposed resolution | Tracked by |
 |---|---|---|---|---|---|
-| ISS-01 | `workflow reopen` has no terminal or typed-phrase check; non-TTY with `--actor human:owner` succeeds; agent actor exits 1 not 2 | defect | `cli/main.py:406-410`, `orchestration/workflow.py:404-408` | Same gate as `approve` | S1-01 |
-| ISS-02 | `--approver` / `--confirmer` accept any string, e.g. `agent:gemini`, recorded as human | defect | `cli/main.py:397,484`; `domain/provenance.py:20` | Refuse agent-looking ids | S1-02 |
-| ISS-03 | `program reject` (human-only) can be bypassed by `workflow transition … INTERVIEWING` by any actor | defect | `orchestration/workflow.py:55` | Guard or remove the transition | S1-03 |
-| ISS-04 | `interview confirm` accepts `agent:` actors; agent-recorded confirmations count toward the program gate | decision | `orchestration/interview.py:899-916`; by design per ADR 0011 and AGENT_CONTRACT §9 step 5 | Owner chooses provenance strength | S1-05 |
-| ISS-05 | Artifacts can be written after a gate approval with no guard; staleness surfaces only downstream | defect | `cli/main.py:280-296`, `interview.py:941` | Refuse or flag stale gate | S1-06 |
-| ISS-06 | Event log has no head anchor; removing the last events passes `project verify` | defect | `storage/project_store.py:410-460` | Anchor head hash | S1-07 |
-| ISS-07 | A test reads the real `projects/my-house` in CI; the CI step says "synthetic data only"; the test asserts `not_started` and will fail when the real interview starts | defect | `tests/test_interview.py:1024-1047`; `.github/workflows/ci.yml:32` | Synthetic replacement before H2 | S1-09, S1-12 |
-| ISS-08 | Real site values hard-coded in tests, including the retracted slope and an older relief value | defect | `tests/test_interview.py:983-986`, `test_site_review_fixes.py:529-533`, `test_plan_generation.py:71` | Synthetic values | S1-10 |
-| ISS-09 | Precise private survey values and hash prefixes in docs | decision | `milestones/B.md:243-248`, `milestones/C.md:93-94,250-251`; approximate values in AGENT_CONTRACT §7 | Owner decides policy | S1-13 |
-| ISS-10 | README says D "not yet merged; next: Milestone E"; PRODUCT_SPEC showed D "next" (file removed, T0.1-08); milestones/D.md says "Not merged" and "five structural strategies"; ARCHITECTURE says "five massing strategies" (six exist) | stale doc | `README.md:9-10`; `milestones/D.md:3-4,24`; `ARCHITECTURE.md` package map | Correct with dated notes | S1-14 … S1-17 |
-| ISS-11 | milestones/C.md and tests carry retracted site figures superseded by the survey audit | stale doc | `milestones/C.md:93-94,250-251`; `projects/my-house/reviews/survey-audit/REPORT.md` | Dated correction note | S1-16, S1-10 |
+| ISS-01 | `workflow reopen` has no terminal or typed-phrase check; non-TTY with `--actor human:owner` succeeds; agent actor exits 1 not 2 | defect | `cli/main.py:406-410`, `orchestration/workflow.py:404-408` | Resolved in S1: same gate as `approve` (TTY, human actor, confirmation phrase) | S1-01 |
+| ISS-02 | `--approver` / `--confirmer` accept any string, e.g. `agent:gemini`, recorded as human | defect | `cli/main.py:397,484`; `domain/provenance.py:20` | Resolved in S1: refuse agent/system ids via `is_disallowed_human_id()` | S1-02 |
+| ISS-03 | `program reject` (human-only) can be bypassed by `workflow transition … INTERVIEWING` by any actor | defect | `orchestration/workflow.py:55` | Resolved in S1: `Workflow.transition` requires human actor for PROGRAM_REVIEW→INTERVIEWING | S1-03 |
+| ISS-04 | `interview confirm` accepts `agent:` actors; agent-recorded confirmations count toward the program gate | decision | `orchestration/interview.py:899-916`; by design per ADR 0011 and AGENT_CONTRACT §9 step 5 | Decided in DEC-09: keep agent-recorded confirmation with owner words per ADR 0011; human required at program approval | S1-05 |
+| ISS-05 | Artifacts can be written after a gate approval with no guard; staleness surfaces only downstream | defect | `cli/main.py:280-296`, `interview.py:941` | Resolved in S1: `_status_dict` and CLI status flag stale approvals when later artifact versions exist | S1-06 |
+| ISS-06 | Event log has no head anchor; removing the last events passes `project verify` | defect | `storage/project_store.py:410-460` | Resolved in S1: `head.json` anchor in `ProjectStore` detects truncation of event log tail | S1-07 |
+| ISS-07 | A test reads the real `projects/my-house` in CI; the CI step says "synthetic data only"; the test asserts `not_started` and will fail when the real interview starts | defect | `tests/test_interview.py:1024-1047`; `.github/workflows/ci.yml:32` | Resolved in S1: test uses synthetic project; CI leak-scan step added; tests pass with `projects/` absent | S1-09, S1-12 |
+| ISS-08 | Real site values hard-coded in tests, including the retracted slope and an older relief value | defect | `tests/test_interview.py:983-986`, `test_site_review_fixes.py:529-533`, `test_plan_generation.py:71` | Resolved in S1: tests use synthetic values; verified by `tools/leak_scan.py` | S1-10 |
+| ISS-09 | Precise private survey values and hash prefixes in docs | decision | `milestones/B.md:243-248`, `milestones/C.md:93-94,250-251`; approximate values in AGENT_CONTRACT §7 | Decided in DEC-10: rounded approximate figures in contract §7 and milestone reports; exact coordinates and hashes confined to `projects/my-house/` | S1-13 |
+| ISS-10 | README says D "not yet merged; next: Milestone E"; PRODUCT_SPEC showed D "next" (file removed, T0.1-08); milestones/D.md says "Not merged" and "five structural strategies"; ARCHITECTURE says "five massing strategies" (six exist) | stale doc | `README.md:9-10`; `milestones/D.md:3-4,24`; `ARCHITECTURE.md` package map | Resolved in S1: README, milestones/C.md, milestones/D.md, ARCHITECTURE.md updated and annotated | S1-14 … S1-17 |
+| ISS-11 | milestones/C.md and tests carry retracted site figures superseded by the survey audit | stale doc | `milestones/C.md:93-94,250-251`; `projects/my-house/reviews/survey-audit/REPORT.md` | Resolved in S1: milestones/C.md annotated with post-Milestone C note citing the survey audit | S1-16, S1-10 |
 | ISS-12 | Solver and evaluators disagree on relation semantics; seven compiled soft objectives and CodePack hard rules are not used by the solver | defect | §C limitations | Align in S7; owner may pull S7 ahead of DQ | S7 |
 | ISS-13 | `MILESTONE_D_HANDOFF.md` is a second roadmap (start instructions for D, "next" steps) competing with this tracker | stale doc | `docs/MILESTONE_D_HANDOFF.md` | Removed on the owner's instruction | T0.1-08 |
 | ISS-14 | ADR 0005 says no `.claude/`, `.agents/` or `.gemini/` skills directories; T1 needs project skills | conflict | ADR 0005 "Decision" | New ADR revising that clause, owner approval | S2-01 |
@@ -2064,7 +2061,7 @@ changed), **decision** (owner must choose), **risk**.
 | ISS-20 | `my-house` CRS may never be confirmable; orientation and georeferencing would stay unavailable | risk | owner statements v5 | Local-only planning decision | H1-11 |
 | ISS-21 | CP-SAT output differs slightly across platforms | risk | milestones/D.md "Known limitations" | Tests assert properties, not bytes | S7-13 |
 | ISS-22 | MASTER_SPEC "How to work" step 1 says "write docs/PRODUCT_SPEC.md"; the owner had that summary removed | conflict | `MASTER_SPEC.md:896`; T0.1-08 | Treat as a completed bootstrap instruction; MASTER_SPEC text not edited | none (owner decided) |
-| ISS-23 | §O lists `ruff check … tools` but CI lints only `src tests examples` | risk | `.github/workflows/ci.yml` | Add `tools` to the CI lint step in S1 | S1 (propose) |
+| ISS-23 | §O lists `ruff check … tools` but CI lints only `src tests examples` | risk | `.github/workflows/ci.yml` | Resolved in S1: `tools` added to `ruff check` in CI workflow | S1 |
 
 ## L. Decisions
 
@@ -2078,6 +2075,8 @@ changed), **decision** (owner must choose), **risk**.
 | DEC-06 | Prefer CLI plus agent skill for browser inspection; MCP only where an external stateful application needs it | Homeowner guidance | S3-01 decides |
 | DEC-07 | No new dependency without an ADOPT or ADAPT decision approved in a stage review | Homeowner guidance | §G |
 | DEC-08 | Stages consolidated: the 38 remaining software stages became S1–S9 (T0.2–T0.4 → S1; T1.x → S2; R1.1, R2.1–R2.3 → S3; E1.x → S4; E2.x → S5; DQ.x, R2.4 → S6; DG.x → S7; DH.x → S8; RG.1 → S9; R1.2–R1.3 → X1; H1.x/H2.x/H3.x → H1/H2/H3; F.x → F; G.x → G). Task content kept; task IDs renumbered once | Homeowner, 2026-10-17 ("reduce that ... or combine them") | This tracker |
+| DEC-09 | Keep agent-recorded confirmation with verbatim owner words (ADR 0011); human terminal required only at the program approval gate | Homeowner, 2026-10-17 | This tracker (S1-05) |
+| DEC-10 | Allow rounded, approximate figures in AGENT_CONTRACT §7 and historical milestone reports (~600 m², ~12 m drop); exact coordinates, spot elevations, and content hashes strictly inside `projects/my-house/` | Homeowner, 2026-10-17 | This tracker (S1-13) |
 
 Existing ADRs (all in force): 0001 canonical semantic model · 0002 Pydantic
 schemas and JSON Schema export · 0003 file-based store and event log · 0004
@@ -2129,6 +2128,20 @@ Closure record template:
 - CI on main: <run id, result>
 - Closed by: <agent:tool> on the owner's "Close stage <ID>"
 ```
+
+### S1 records
+
+#### S1 implementation complete (2026-10-17)
+- Branch: `stage/S1-safety-cleanup`
+- Implementer: `agent:gemini`
+- Changes:
+  - Hardened human-only approval gates (`workflow approve`, `workflow reopen`, `site confirm`, `interview consent`, `program reject`): non-TTY exits 2, typed confirmation phrase required for `workflow reopen`, rejection of agent-looking/system IDs for `--approver` and `--confirmer`, and human-only guard on `PROGRAM_REVIEW → INTERVIEWING`.
+  - Artifact staleness flagging in `_status_dict()` and CLI `project status` when later artifact versions exist after approval.
+  - Event log tail truncation detection via atomic `head.json` anchor in `ProjectStore`.
+  - Private data isolation: all tests and CI pass 100% on synthetic data; real site metrics replaced in tests; `tools/leak_scan.py` created and integrated into CI workflow.
+  - Documentation reconciliation: `README.md`, `docs/milestones/C.md`, `docs/milestones/D.md`, `docs/ARCHITECTURE.md`, `skills/README.md`, `apps/reviewer/README.md`.
+  - Invariants test module `tests/test_safety_invariants.py` covering INV-CONSENT through INV-PRIVATE-DATA-ISOLATION.
+- Status: Stage S1 implementation complete; review requested: **PENDING**.
 
 ### T0.1 records
 
