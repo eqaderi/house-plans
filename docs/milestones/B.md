@@ -218,19 +218,10 @@ Each finding below was reproduced, given a failing test in
 | minor | DWG inspection showed the converted DXF's `$ACADVER` | shows the DWG release |
 | privacy | `tests/test_cad.py` and a docstring contained a real benchmark label and real elevations from the owner's survey | replaced with synthetic values; the values remain in the pushed history of ec25922 |
 
-Open (plausible, not proven defects; left for a later change):
-
-- `has_numeric_elevation_label` does not read a label with a unit or a name
-  on the same line (`1664.0 m`, `Pt1 101.25`), and counts a point number on
-  its own line (`Pt\n12`) as a height. Labels are never used as elevations,
-  so only reasons, counts and the label cross-check are affected.
-- Inspection boundary candidates ignore `handle_roles` / `boundary_handle`
-  and match boundary layer names case-sensitively.
-- In the site SVG, point features of kind utility or other have no colour
-  of their own and no tooltip.
-- `combined_frame` leaves a file whose GEODATA EPSG was rejected out of the
-  "files disagree on CRS" check (that file already has its own blocking
-  issue).
+| minor | `has_numeric_elevation_label` / `numeric_label_values` missed inline units/point names (`1664.0 m`, `Pt1 101.25`) and counted integer point IDs after a point-header line (`Pt\n12`) as heights | inline units and point prefixes accepted; bare integer lines after point-header lines ignored |
+| minor | `_boundary_candidates` in survey inspection ignored `handle_roles` / `boundary_handle` and matched layer names case-sensitively | uses `matches_boundary_handle` and `role_of_entity` case-insensitively |
+| minor | point features of kind `utility`, `water`, `other` in `site.svg` used muted grey with no `<title>` | uses `_FEATURE_COLOUR[f.kind]` and `<title>{id} ({kind})</title>` |
+| minor | `combined_frame` excluded a file whose GEODATA EPSG was rejected from the "files disagree on CRS" check | includes `inspection.declared_epsg` in multi-file CRS comparison |
 
 Found on the real survey and added: height labels drawn at a point are
 cross-checked against its z (`HeightLabelCheck`); steep TIN triangles

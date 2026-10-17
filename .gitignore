@@ -34,5 +34,8 @@ derived/
 !projects/*/surveys/*.dwg
 !projects/*/surveys/*.DWG
 !projects/*/source/*.dwg
+projects/*/surveys/final.dwg
+projects/*/surveys/FINAL.DWG
+projects/*/source/*final.dwg
 projects/*/.lock
 .tmp-*

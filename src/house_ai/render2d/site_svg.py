@@ -222,7 +222,11 @@ def render_site_svg(site: Site, report: SiteValidationReport) -> str:
                     f"<title>{escape(f.id)}: access</title></path>"
                 )
             else:
-                add(f'<circle cx="{_f(x)}" cy="{_f(y)}" r="3" fill="{COLOURS["muted"]}"/>')
+                colour = _FEATURE_COLOUR.get(f.kind, COLOURS["muted"])
+                add(
+                    f'<circle cx="{_f(x)}" cy="{_f(y)}" r="3" fill="{colour}">'
+                    f"<title>{escape(f.id)} ({f.kind.value})</title></circle>"
+                )
     for s in sorted(site.terrain.spot_elevations, key=lambda s: s.id):
         x, y = cv.p(s.xy)
         c = COLOURS["spot"]

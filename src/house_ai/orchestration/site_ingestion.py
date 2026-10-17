@@ -277,7 +277,10 @@ def combined_frame(sources: list[SurveySource]) -> tuple[FrameDeclaration, list[
         unit_decl = frames[0][1].source_units
     else:
         unit_decl = UnitDeclaration()
-    epsgs = {f.horizontal_crs.declared_epsg for _, f in frames} - {None}
+    epsgs = {
+        f.horizontal_crs.declared_epsg or s.extraction.inspection.declared_epsg
+        for s, (_, f) in zip(sources, frames, strict=True)
+    } - {None}
     if len(epsgs) > 1:
         issues.append(
             Issue(
@@ -287,9 +290,10 @@ def combined_frame(sources: list[SurveySource]) -> tuple[FrameDeclaration, list[
                 severity=Severity.BLOCKING,
             )
         )
+    valid_epsgs = {f.horizontal_crs.declared_epsg for _, f in frames} - {None}
     crs = (
         next(f.horizontal_crs for _, f in frames if f.horizontal_crs.declared_epsg)
-        if len(epsgs) == 1
+        if len(epsgs) == 1 and len(valid_epsgs) == 1
         else HorizontalCRS()
     )
     return (
