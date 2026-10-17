@@ -6,7 +6,7 @@ No other TODO, roadmap or stage-status file is kept. Format and update rules
 are in [§P](#p-rules-for-updating-the-tracker); `python tools/check_tracker.py`
 checks them.
 
-Last updated: 2026-10-17, closure of stage T0.1 on `main` (merge `7a41629`),
+Last updated: 2026-10-17, stage consolidation (DEC-08) after T0.1 closed,
 by `agent:claude-code`.
 
 ## A. Mission and immediate objective
@@ -82,34 +82,34 @@ to reopen A–D):
 - Massing is fixed rectangular bars: front row, full-length corridor, back
   row (`generation/massing.py:165`, `assemble.py:255-257`). Rooms are packed
   in 1D rows with `AddNoOverlap` and exact tiling (`solver.py:377,395-396`);
-  `NoOverlap2D` is not used. → DG.3, DG.4
+  `NoOverlap2D` is not used. → S7
 - The solver reads the compiled `ConstraintSet` only for objective weights
   (`generator.py:118-125,174`). CodePack hard rules are checked only after
   solving. Seven compiled soft objectives are ignored (circulation
   efficiency, site response, views, cross-ventilation, indoor/outdoor,
-  kitchen functionality, storage). → DG.1
+  kitchen functionality, storage). → S7
 - Solver and evaluator relation semantics differ for ADJACENT, soft
   CONNECTED, NEAR, SEPARATED, ACOUSTIC_SEPARATION, intra-cluster pairs,
   hall/EXTERIOR pairs and VISUAL (`solver.py:470,540-549,576-580`;
-  `evaluators.py:545-556`; `rooms.py:183-193`). → DG.1
+  `evaluators.py:545-556`; `rooms.py:183-193`). → S7
 - No furniture entity; fixtures, terraces and parapets are never populated;
-  outdoor items are skipped (`rooms.py:163-165`). → DQ.1, DG.5
+  outdoor items are skipped (`rooms.py:163-165`). → S6, S7
 - Walls are centrelines; areas are measured to centrelines (no net area).
-  → DQ.1
+  → S6
 - Stairs carry risers and tread but there is no headroom, landing or
-  arrival check. → DQ.2
+  arrival check. → S6
 - Levels: entry level from mean ground along the road face, others stepped
   in 1.5 m or 3.0 m increments clamped to ±3.0 m (`massing.py:234-273`);
-  levels and terrain are not optimised together. → DH.3
+  levels and terrain are not optimised together. → S8
 - The terrain section is schematic (projected level bands and a terrain
-  polyline, `render2d/plan_svg.py:374-470`), not a true cut. → DH.2
+  polyline, `render2d/plan_svg.py:374-470`), not a true cut. → S8
 - Cut/fill sampled on a 0.5 m grid; "fill" is underfloor void, labelled as
-  such (`evaluators.py:943-1018`). No analytical validation fixture. → DH.1
+  such (`evaluators.py:943-1018`). No analytical validation fixture. → S8
 - Walking distance from the entrance is straight-line and `inferred`.
-  → DQ.5
+  → S6
 - Daylight is a window count; no orientation, daylight or ventilation
-  analysis. → DQ.6
-- `combine` revisions are refused (`cli/plan_cmds.py:269`). → DG.6
+  analysis. → S6
+- `combine` revisions are refused (`cli/plan_cmds.py:269`). → S7
 - Passing tests show the software does what it claims; they do not show the
   plans are good architecture.
 
@@ -119,11 +119,11 @@ to reopen A–D):
 |---|---|
 | **Current stage** | none in progress (T0.1 closed 2026-10-17, merge `7a41629`) |
 | **Awaiting review** | none |
-| **Next eligible stage** | T0.2 Human-authorization and approval-gate hardening |
-| **Then** | T0.3 Private-data isolation, T0.4 Documentation reconciliation, T1.1 Skill packaging |
-| **Blocked** | H1 site facts (owner/surveyor input), H2.2-05 program gate (needs site gate), H3 real design (needs readiness gate and approvals) |
-| **Human parallel tracks** | H1.1/H1.2 site verification with the owner; H2.1 interview may start after T0.3-01 |
-| **`main` health** | `7a41629` (T0.1 merge); 497 tests pass locally; CI on `main` runs on push |
+| **Next eligible stage** | S1 Safety and cleanup |
+| **Path to good floor plans** | S1 → S2 → S3 → S4 → S5 → S6 → S7 → S8 → S9 (9 stages) |
+| **Blocked** | H1 site facts (owner or surveyor input); program gate (needs site gate); H3 real design (needs S9 and approvals) |
+| **Human parallel tracks** | H1 site verification with the owner any time; H2 interview after S1-09 |
+| **`main` health** | T0.1 merged; 497 tests pass locally; CI green on `788bcdc` (run 39055068527) |
 | **Homeowner gates on `my-house`** | site: not approved (5 blockers) · program: none · plan: none · model: none |
 
 Counts come from `python tools/check_tracker.py --summary`, never from a
@@ -134,96 +134,63 @@ hand count.
 "Next stage" picks the first stage in this order whose status is not `DONE`
 or `DEFERRED` and whose dependencies are all `DONE`. Human-dependent stages
 (H1, H2, H3) are not picked by "Next stage"; they run when the homeowner
-asks, in parallel with software stages. Evaluation stages R1.x may run
-alongside the engineering stage that needs them.
+asks, in parallel with software stages. X1 runs only when asked. A large
+stage may take several sessions; it stays `IN_PROGRESS` on its branch
+until done, then goes to review once.
 
 | # | Stage | Depends on |
 |---|---|---|
-| 1 | T0.1 Project tracker and stage protocol | D |
-| 2 | T0.2 Human-authorization and approval-gate hardening | T0.1 |
-| 3 | T0.3 Private-data isolation | T0.1 |
-| 4 | T0.4 Documentation reconciliation | T0.1 |
-| 5 | T1.1 Skill packaging and discovery | T0.2, T0.3, T0.4 |
-| 6 | T1.2 Site and programming skills | T1.1 |
-| 7 | T1.3 Concept and critique skills | T1.1 |
-| 8 | R1.1 Near-term tool evaluations | T0.1 |
-| 9 | E1.1 Reviewer foundation | T0.3, T0.4 |
-| 10 | E1.2 Plan view and inspection | E1.1 |
-| 11 | E1.3 Analysis overlays | E1.2 |
-| 12 | E1.4 Comparison and history | E1.2 |
-| 13 | E1.5 Feedback capture and browser tests | E1.3, E1.4, R1.1-01 |
-| 14 | E2.1 Agent browser inspection | E1.2, R1.1-01 |
-| 15 | E2.2 Grounded visual critique | E2.1 |
-| 16 | E2.3 Inspect, critique, revise loop | E2.2, T1.3, E1.5 |
-| 17 | R2.1 Benchmark harness and steep reference fixture | T0.3 |
-| 18 | DQ.1 Model foundations for usability checks | R2.1 |
-| 19 | DQ.2 Door and stair critics | DQ.1 |
-| 20 | DQ.3 Furniture feasibility critics | DQ.1 |
-| 21 | DQ.4 Wet rooms, storage and garage critics | DQ.1 |
-| 22 | DQ.5 Circulation and privacy critics | DQ.1 |
-| 23 | DQ.6 Daylight and ventilation opportunity | DQ.1 |
-| 24 | R2.2 Terrain and parcel scenarios | R2.1 |
-| 25 | R2.3 Household scenarios | R2.1 |
-| 26 | R2.4 Defect-seeded scenarios | R2.1, DQ.2, DQ.3, DQ.5, DQ.6 |
-| 27 | DG.1 Solver and evaluator semantic alignment | R2.1 |
-| 28 | DG.2 Typed topology proposals | DG.1 |
-| 29 | DG.3 Two-dimensional placement engine | DG.1 |
-| 30 | DG.4 Massing and organisation variety | DG.3 |
-| 31 | DG.5 Outdoor and terrace integration | DG.3 |
-| 32 | DG.6 Topology revisions and diversity | DG.2, DG.4 |
-| 33 | DH.1 Robust 2.5D geometry and volume validation | R2.1, R1.1-02, R1.1-03 |
-| 34 | DH.2 True sections and elevations | DH.1 |
-| 35 | DH.3 Joint level and terrain optimisation | DH.1, DG.1 |
-| 36 | DH.4 Earthworks and retaining walls | DH.1 |
-| 37 | DH.5 Access and terrain-contact connections | DH.3 |
-| 38 | DH.6 Terrain data quality and risk register | R2.1 |
-| 39 | R1.2 CAD, BIM and environment tool evaluations | T0.1 |
-| 40 | R1.3 Research generator evaluations | T0.1 |
-| 41 | RG.1 Floor-plan readiness assessment | E2.3, DQ.2–DQ.6, DG.6, DG.5, DH.2–DH.6, R2.2–R2.4, T1.2, T1.3 |
-| — | H1.1, H1.2 Real site verification (human) | none / H1.1 |
-| — | H2.1, H2.2 Real interview and program (human) | T0.3-01 / H2.1, H1.2 |
-| — | H3.1, H3.2 Real house design and iteration (human) | RG.1, H1.2, H2.2 |
-| — | F.1, F.2, G.1, G.2 Blender, IFC, Unreal, advanced (deferred) | RG.1 and owner decision |
-
-DG.1 fixes a correctness gap (solver and evaluator disagree) and may be
-pulled ahead of the DQ stages if the owner prefers (issue ISS-12).
+| — | A–D, T0.1 (done) | — |
+| 1 | S1 Safety and cleanup | T0.1 |
+| 2 | S2 Agent skills | S1 |
+| 3 | S3 Tool decisions and benchmark fixtures | S1 |
+| 4 | S4 Plan viewer | S1, S3 |
+| 5 | S5 Agent visual review | S4, S2 |
+| 6 | S6 Usability critics | S3 |
+| 7 | S7 Flexible plan generation | S3, S6 |
+| 8 | S8 Hillside geometry | S3, S7 |
+| 9 | S9 Floor-plan readiness gate | S2, S5, S6, S7, S8 |
+| — | X1 Optional tool research | T0.1 |
+| — | H1 Real site verification (human) | none |
+| — | H2 Real interview and program (human) | S1-09, H1 |
+| — | H3 Real house design (human) | S9, H1, H2 |
+| — | F Blender and IFC, G Unreal (deferred) | S9 / F |
 
 ```mermaid
 flowchart LR
-  D[A–D baseline] --> T01[T0.1 tracker]
-  T01 --> T02[T0.2 gates] & T03[T0.3 private data] & T04[T0.4 docs] & R11[R1.1 tools]
-  T02 & T03 & T04 --> T11[T1.1 skills] --> T12[T1.2] & T13[T1.3]
-  T03 & T04 --> E11[E1.1 reviewer] --> E12[E1.2] --> E13[E1.3] & E14[E1.4] --> E15[E1.5]
-  R11 --> E15 & E21
-  E12 --> E21[E2.1] --> E22[E2.2] --> E23[E2.3]
-  T13 & E15 --> E23
-  T03 --> R21[R2.1 benchmarks] --> DQ1[DQ.1] --> DQ[DQ.2–DQ.6]
-  R21 --> DG1[DG.1 alignment] --> DG[DG.2–DG.6]
-  R21 & R11 --> DH1[DH.1 2.5D] --> DH[DH.2–DH.6]
-  DQ & DG & DH & E23 --> RG1[RG.1 readiness gate]
-  RG1 --> H3[H3 real design]
-  T03 --> H21[H2.1 interview, human] --> H22[H2.2 program gate, human]
-  H1[H1 site, human] --> H22 --> H3
-  RG1 -.deferred.-> FG[F/G Blender, IFC, Unreal]
+  T01[T0.1 done] --> S1[S1 safety]
+  S1 --> S2[S2 skills] & S3[S3 tools + fixtures]
+  S3 --> S4[S4 viewer] --> S5[S5 visual review]
+  S2 --> S5
+  S3 --> S6[S6 critics] --> S7[S7 generation] --> S8[S8 hillside]
+  S5 & S6 & S7 & S8 --> S9[S9 readiness gate]
+  H1[H1 site, human] --> H2[H2 interview + program, human]
+  S9 & H2 --> H3[H3 real design, human]
+  S9 -.deferred.-> FG[F/G Blender, IFC, Unreal]
 ```
 
 ## F. Stage and task register
 
 Every stage and task appears here exactly once; other sections refer to
-their IDs. Workstream codes: A–D completed milestones; T0 governance; T1
-agent skills; E1 interactive reviewer (MASTER_SPEC Milestone E); E2 agent
-visual inspection; DQ usability and quality critics ("D+1"); DG flexible
-generation ("D+2"); DH hillside 2.5D geometry ("D+3"); R1 third-party tool
-evaluation; R2 architectural benchmarks; RG floor-plan readiness gate; H1–H3
-real house (human-dependent); F Blender and IFC (MASTER_SPEC Milestone F,
-deferred); G Unreal and advanced features (Milestone G, deferred).
+their IDs. On 2026-10-17 the owner had the plan consolidated (DEC-08): the
+software work before good floor plans is nine stages, S1–S9. Historical
+stages A–D and T0.1 keep their IDs.
+
+| Stage | Contents |
+|---|---|
+| A–D, T0.1 | Done: milestones A–D and this tracker |
+| S1–S9 | Software path to the floor-plan readiness gate |
+| X1 | Optional tool research, any time, not on the critical path |
+| H1–H3 | Real house: site, interview and program, design (needs the homeowner) |
+| F, G | Blender, IFC, Unreal (deferred) |
 
 Task line format: `` - [ ] **ID** title — `STATUS` · priority · deps: IDs ``.
-The parent stage is the ID before the last hyphen (`E1.2-03` belongs to
-stage `E1.2`). Priorities: P0 safety or blocking, P1 needed for the
-readiness gate, P2 valuable, P3 optional.
+The parent stage is the ID before the last hyphen (`S4-03` belongs to `S4`).
+Large stages may span several sessions; `####` headings group their tasks.
+Priorities: P0 safety or blocking, P1 needed for the readiness gate, P2
+valuable, P3 optional.
 
-### Workstream A–D: completed baseline
+### Workstream A–D and T0.1: completed
 
 Historical milestones, merged before this tracker existed. Their reviews
 were ad hoc (recorded in the milestone reports), not under §N. Their
@@ -397,8 +364,6 @@ limitations are tracked as new tasks in later stages, not by reopening them.
   - Verify: `tests/test_plan_workflow.py`, `test_plan_provenance_revisions.py`
   - Evidence: `src/house_ai/orchestration/plans.py`, `cli/plan_cmds.py:109-288`
 
-### Workstream T0: governance, safety and maintenance
-
 ### Stage T0.1 — Project tracker and stage protocol
 
 | Field | Value |
@@ -410,7 +375,7 @@ limitations are tracked as new tasks in later stages, not by reopening them.
 | Depends on | D |
 | Tasks | T0.1-01, T0.1-02, T0.1-03, T0.1-04, T0.1-05, T0.1-06, T0.1-07, T0.1-08 |
 | Objective | One authoritative tracker, a reviewed stage lifecycle, and a check that keeps the tracker honest |
-| Scope | In: tracker, ADR 0014, AGENT_CONTRACT pointer, `tools/check_tracker.py` and its test; removal of two redundant docs on the owner's instruction (T0.1-08). Out: any feature, generator, reviewer, dependency or private-data change; other stale-doc fixes (T0.4) |
+| Scope | In: tracker, ADR 0014, AGENT_CONTRACT pointer, `tools/check_tracker.py` and its test; removal of two redundant docs on the owner's instruction (T0.1-08). Out: any feature, generator, reviewer, dependency or private-data change; other stale-doc fixes (S1) |
 | Acceptance | Tracker covers sections A–P; every stage and task has the required fields; checker passes; contract below 12,000 characters; full checks green |
 | Tests | `tests/test_project_tracker.py`; `tests/test_agent_instructions.py`; full suite |
 | Demonstration | `python tools/check_tracker.py --summary` prints the counts; a fresh session can answer "Project status" from the repository alone |
@@ -459,148 +424,133 @@ limitations are tracked as new tasks in later stages, not by reopening them.
   - Evidence: both files deleted on `stage/T0.1-project-tracker`; `docs/milestones/C.md` "Next" link repointed to `D.md`
   - Notes: kept: MASTER_SPEC, AGENT_CONTRACT, AGENT_WORKFLOWS, ARCHITECTURE, DOMAIN_MODEL, PROFESSIONAL_HANDOFF, PROJECT_TRACKER, adr/, milestones/; closed with merge `7a41629`
 
-### Stage T0.2 — Human-authorization and approval-gate hardening
+### Stage S1 — Safety and cleanup
 
 | Field | Value |
 |---|---|
 | Kind | implementation |
 | Status | NOT_STARTED |
 | Review | NOT_REQUESTED |
-| Branch | `stage/T0.2-gate-hardening` |
+| Branch | `stage/S1-safety-cleanup` |
 | Depends on | T0.1 |
-| Tasks | T0.2-01, T0.2-02, T0.2-03, T0.2-04, T0.2-05, T0.2-06, T0.2-07, T0.2-08 |
-| Objective | Every human-only action is enforced the same way in the CLI and library, and covered by regression tests |
-| Scope | In: `cli/main.py`, `orchestration/workflow.py`, `orchestration/interview.py`, `storage/project_store.py` guards and tests. Out: new workflow states, changes to `my-house` records |
-| Acceptance | `workflow reopen`, `site confirm`, `interview consent`, `program reject`, `workflow approve` all refuse non-terminals with exit 2 and require a typed phrase where destructive; agent-looking human ids refused; gaps in §K ISS-01 to ISS-05 closed or decided |
-| Tests | New CLI tests per human-only command (non-TTY, wrong phrase, agent actor); store tail-truncation test; post-approval write test |
-| Demonstration | Transcript of each command refusing in a non-interactive shell with exit code 2 |
-| Artifacts | Code and tests above; AGENT_CONTRACT §8 wording if commands change |
-| Review requirements | Reviewer runs each refused command non-interactively and confirms exit 2 and no new events |
+| Tasks | S1-01, S1-02, S1-03, S1-04, S1-05, S1-06, S1-07, S1-08, S1-09, S1-10, S1-11, S1-12, S1-13, S1-14, S1-15, S1-16, S1-17, S1-18, S1-19 |
+| Objective | Human-only gates enforced everywhere, tests and CI on synthetic data only, docs that match reality |
+| Scope | In: CLI and library gate guards and tests, store head anchor, synthetic replacement of real-data tests, leak scan, CI step, stale-doc fixes. Out: new features; changes to `projects/my-house` records |
+| Acceptance | Every task below meets its acceptance; human-only commands refuse non-interactive shells with exit 2; no test reads `projects/my-house`; the stale-doc issues in §K are closed |
+| Tests | CLI gate tests per human-only command; store truncation test; synthetic interview test; leak-scan test; full suite |
+| Demonstration | Transcript of each human-only command refusing non-interactively; `pytest -q` passing with `projects/my-house` moved away |
+| Artifacts | `cli/main.py`, `orchestration/`, `storage/project_store.py`, tests, `tools/` leak scan, `.github/workflows/ci.yml`, edited docs |
+| Review requirements | Reviewer runs refused commands non-interactively (exit 2, no new events), greps tests for private values, checks edited docs against §C |
 | Evidence | — |
 
-- [ ] **T0.2-01** `workflow reopen` requires an interactive terminal and a typed confirmation phrase — `NOT_STARTED` · P0 · deps: none
+#### Human-authorization and approval-gate hardening
+
+- [ ] **S1-01** `workflow reopen` requires an interactive terminal and a typed confirmation phrase — `NOT_STARTED` · P0 · deps: none
   - Accept: non-TTY run exits 2 and appends nothing, even with `--actor human:owner`; agent actor exits 2 (today: exit 1); phrase like `reopen <gate> <id>`
   - Verify: new subprocess test in `tests/test_cli.py`; event count unchanged after refusal
   - Evidence: pending — today `cmd_reopen` (`cli/main.py:406-410`) has no TTY or phrase check (ISS-01)
-- [ ] **T0.2-02** Refuse agent-looking ids for `--approver` and `--confirmer` — `NOT_STARTED` · P0 · deps: none
+- [ ] **S1-02** Refuse agent-looking ids for `--approver` and `--confirmer` — `NOT_STARTED` · P0 · deps: none
   - Accept: ids starting `agent:` or `system:` (or equal to a known tool name) rejected before any write
   - Verify: tests for `workflow approve` and `site confirm` with `--approver agent:gemini`
   - Evidence: pending — `cli/main.py:397,484` wrap any string as a human (ISS-02)
-- [ ] **T0.2-03** Close the `program reject` bypass through `workflow transition PROGRAM_REVIEW→INTERVIEWING` — `NOT_STARTED` · P1 · deps: none
+- [ ] **S1-03** Close the `program reject` bypass through `workflow transition PROGRAM_REVIEW→INTERVIEWING` — `NOT_STARTED` · P1 · deps: none
   - Accept: leaving PROGRAM_REVIEW back to INTERVIEWING requires the same human path as `program reject`, or the transition is removed
   - Verify: test that an agent-actor transition is refused
   - Evidence: pending — `orchestration/workflow.py:55` (ISS-03)
-- [ ] **T0.2-04** CLI regression tests for all five human-only commands — `NOT_STARTED` · P0 · deps: T0.2-01, T0.2-02
+- [ ] **S1-04** CLI regression tests for all five human-only commands — `NOT_STARTED` · P0 · deps: S1-01, S1-02
   - Accept: for approve, reopen, site confirm, interview consent, program reject: non-TTY exit 2, wrong phrase refused, agent actor refused, nothing written
   - Verify: `pytest -q tests/test_cli.py tests/test_human_gates.py`
   - Evidence: pending
-- [ ] **T0.2-05** Owner decision on agent-recorded `interview confirm` provenance strength — `NOT_STARTED` · P1 · deps: none
+- [ ] **S1-05** Owner decision on agent-recorded `interview confirm` provenance strength — `NOT_STARTED` · P1 · deps: none
   - Accept: owner chooses: keep agent-recorded confirmation (ADR 0011) with owner words, or require a human-terminal confirm before the program gate; decision recorded in §L and implemented
   - Verify: decision entry in §L; test matching the decision
   - Evidence: pending — `orchestration/interview.py:899-916` accepts `agent:` actors by design (ISS-04)
   - Notes: needs the homeowner's choice; not a defect until decided
-- [ ] **T0.2-06** Guard or flag artifact writes after a gate approval — `NOT_STARTED` · P1 · deps: none
+- [ ] **S1-06** Guard or flag artifact writes after a gate approval — `NOT_STARTED` · P1 · deps: none
   - Accept: writing a new site or program version after approval either refuses or marks the gate stale in `project status`
   - Verify: test writing program v2 after approval
   - Evidence: pending — `cli/main.py:280-296` and `interview.py:941` have no state guard (ISS-05)
-- [ ] **T0.2-07** Detect truncation of the event-log tail — `NOT_STARTED` · P1 · deps: none
+- [ ] **S1-07** Detect truncation of the event-log tail — `NOT_STARTED` · P1 · deps: none
   - Accept: `project verify` fails when the last N events are removed (head anchor in `project.json` or equivalent)
   - Verify: new test removing the last event
   - Evidence: pending — `test_verify_detects_a_deleted_event` removes only a middle line (ISS-06)
-- [ ] **T0.2-08** Re-verify consent, source immutability, hash chain and schema drift invariants — `NOT_STARTED` · P2 · deps: T0.2-07
+- [ ] **S1-08** Re-verify consent, source immutability, hash chain and schema drift invariants — `NOT_STARTED` · P2 · deps: S1-07
   - Accept: one test module lists each invariant with the test that covers it; any gap gets a test
   - Verify: `pytest -q`; reviewer reads the invariant list
   - Evidence: pending — existing coverage in `tests/test_storage.py`, `test_providers_agents.py`, `test_cli.py`
 
-### Stage T0.3 — Private-data isolation in tests, CI and docs
+#### Private-data isolation in tests, CI and docs
 
-| Field | Value |
-|---|---|
-| Kind | implementation |
-| Status | NOT_STARTED |
-| Review | NOT_REQUESTED |
-| Branch | `stage/T0.3-private-data-isolation` |
-| Depends on | T0.1 |
-| Tasks | T0.3-01, T0.3-02, T0.3-03, T0.3-04, T0.3-05 |
-| Objective | Tests and CI use synthetic data only, and real survey values stop spreading into public-facing files |
-| Scope | In: tests, CI workflow, a leak scan, doc policy decision. Out: changing `projects/my-house` records |
-| Acceptance | No test reads `projects/my-house` or hard-codes its values; CI step name is true; leak scan passes; owner decided the doc policy |
-| Tests | Synthetic replacement tests; leak-scan test |
-| Demonstration | `pytest -q` passes with `projects/my-house` temporarily moved away (local check) |
-| Artifacts | `tests/` changes, `tools/` leak scan, `.github/workflows/ci.yml` |
-| Review requirements | Reviewer greps tests for private values and runs the suite without `projects/my-house` |
-| Evidence | — |
-
-- [ ] **T0.3-01** Replace the real-project interview test with a synthetic project — `NOT_STARTED` · P0 · deps: none
+- [ ] **S1-09** Replace the real-project interview test with a synthetic project — `NOT_STARTED` · P0 · deps: none
   - Accept: `tests/test_interview.py::test_agent_inspects_real_my_house_project_without_modifying_it` (lines 1024-1047) reads a synthetic project; the same read-only guarantees are asserted
   - Verify: test passes with `projects/my-house` absent; CI green
   - Evidence: pending — today it runs in CI against real data and will fail once the real interview starts (ISS-07)
-  - Notes: blocks H2.1-01
-- [ ] **T0.3-02** Remove real site values from tests — `NOT_STARTED` · P0 · deps: none
+  - Notes: blocks H2-01
+- [ ] **S1-10** Remove real site values from tests — `NOT_STARTED` · P0 · deps: none
   - Accept: no real area, relief, slope, frontage or spot elevation in `tests/` (today `test_interview.py:983-986`, `test_site_review_fixes.py:529-533`, `test_plan_generation.py:71`)
-  - Verify: leak scan T0.3-03 passes
+  - Verify: leak scan S1-11 passes
   - Evidence: pending (ISS-08)
-- [ ] **T0.3-03** Local leak scan comparing tracked public files with private project values — `NOT_STARTED` · P1 · deps: T0.3-02
+- [ ] **S1-11** Local leak scan comparing tracked public files with private project values — `NOT_STARTED` · P1 · deps: S1-10
   - Accept: `tools/` script reports any `projects/*` coordinate, elevation or hash appearing in `tests/`, `examples/`, `docs/` without printing the values
   - Verify: seeded leak is detected in a synthetic test
   - Evidence: pending
-- [ ] **T0.3-04** Make the CI synthetic-only claim true — `NOT_STARTED` · P1 · deps: T0.3-01
+- [ ] **S1-12** Make the CI synthetic-only claim true — `NOT_STARTED` · P1 · deps: S1-09
   - Accept: either CI excludes `projects/` (sparse checkout) or the step name changes; tests never need `projects/my-house`
   - Verify: CI run on the stage branch
   - Evidence: pending — `.github/workflows/ci.yml:32` says "synthetic data only" (ISS-07)
-- [ ] **T0.3-05** Owner decision on real values in docs and handoffs — `NOT_STARTED` · P2 · deps: none
+- [ ] **S1-13** Owner decision on real values in docs and handoffs — `NOT_STARTED` · P2 · deps: none
   - Accept: owner decides whether approximate site figures may stay in AGENT_CONTRACT §7 and milestone reports; precise values and hashes move to `projects/my-house/` only
   - Verify: decision in §L; leak scan configured accordingly
   - Evidence: pending — `milestones/B.md:243-248`, `milestones/C.md:93-94,250-251` (ISS-09); `MILESTONE_D_HANDOFF.md` removed in T0.1-08
   - Notes: needs the homeowner's choice
 
-### Stage T0.4 — Documentation reconciliation
+#### Documentation reconciliation
 
-| Field | Value |
-|---|---|
-| Kind | documentation |
-| Status | NOT_STARTED |
-| Review | NOT_REQUESTED |
-| Branch | `stage/T0.4-doc-reconciliation` |
-| Depends on | T0.1 |
-| Tasks | T0.4-01, T0.4-02, T0.4-03, T0.4-04, T0.4-05, T0.4-06 |
-| Objective | No document contradicts the verified baseline or the tracker |
-| Scope | In: README, ARCHITECTURE, milestones/C.md and D.md annotations, skills/ and apps/reviewer READMEs. Out: MASTER_SPEC requirement text; ADR decisions; PRODUCT_SPEC and MILESTONE_D_HANDOFF (removed in T0.1-08) |
-| Acceptance | Every documentation issue in §K marked for T0.4 is resolved or explicitly deferred with the owner's consent |
-| Tests | `tests/test_agent_instructions.py`; link check of edited docs |
-| Demonstration | `grep` for "not yet merged", "five massing strategies" and a "next" status on D returns nothing stale |
-| Artifacts | Edited documentation only |
-| Review requirements | Reviewer compares each edited claim with §C |
-| Evidence | — |
-
-- [ ] **T0.4-01** README current state and next steps point to the tracker — `NOT_STARTED` · P1 · deps: none
+- [ ] **S1-14** README current state and next steps point to the tracker — `NOT_STARTED` · P1 · deps: none
   - Accept: README no longer says "branch milestone-d, not yet merged; next: Milestone E"
   - Verify: reviewer reads README.md lines 9-10
   - Evidence: pending (ISS-10)
-- [ ] **T0.4-02** PRODUCT_SPEC milestone table matches the baseline — `DEFERRED` · P1 · deps: none
+- [ ] **S1-15** PRODUCT_SPEC milestone table matches the baseline — `DEFERRED` · P1 · deps: none
   - Accept: D shown done; E–G link to tracker stages; order change noted with DEC-01
   - Verify: reviewer reads PRODUCT_SPEC "Milestones"
   - Evidence: pending (ISS-10)
   - Notes: superseded: PRODUCT_SPEC.md removed by T0.1-08
-- [ ] **T0.4-03** Annotate stale statements in milestones/C.md and D.md — `NOT_STARTED` · P2 · deps: none
+- [ ] **S1-16** Annotate stale statements in milestones/C.md and D.md — `NOT_STARTED` · P2 · deps: none
   - Accept: D.md "Not merged", "five structural strategies", "combining split-level with walk-out is next" and C.md retracted slope/relief figures carry a dated correction note, history otherwise preserved
   - Verify: reviewer reads the notes
   - Evidence: pending (ISS-10, ISS-11)
-- [ ] **T0.4-04** ARCHITECTURE package map: six strategies and current stages — `NOT_STARTED` · P2 · deps: none
+- [ ] **S1-17** ARCHITECTURE package map: six strategies and current stages — `NOT_STARTED` · P2 · deps: none
   - Accept: "five massing strategies" corrected; planned items reference tracker stages
   - Verify: reviewer reads ARCHITECTURE "Package map"
   - Evidence: pending (ISS-10)
-- [ ] **T0.4-05** Retire MILESTONE_D_HANDOFF.md as a competing roadmap — `DEFERRED` · P1 · deps: T0.3-05
-  - Accept: file removed or reduced to a pointer to the tracker and milestones/D.md, per the owner's T0.3-05 decision; no inbound links break
+- [ ] **S1-18** Retire MILESTONE_D_HANDOFF.md as a competing roadmap — `DEFERRED` · P1 · deps: S1-13
+  - Accept: file removed or reduced to a pointer to the tracker and milestones/D.md, per the owner's S1-13 decision; no inbound links break
   - Verify: link check; `grep -r MILESTONE_D_HANDOFF`
   - Evidence: pending (ISS-13)
   - Notes: superseded: the owner asked for removal on 2026-10-17; done in T0.1-08
-- [ ] **T0.4-06** skills/ and apps/reviewer/ READMEs point to their tracker stages — `NOT_STARTED` · P3 · deps: none
+- [ ] **S1-19** skills/ and apps/reviewer/ READMEs point to their tracker stages — `NOT_STARTED` · P3 · deps: none
   - Accept: READMEs name T1.x and E1.x as the plan
   - Verify: reviewer reads both files
   - Evidence: pending
 
-### Workstream T1: agent skills and operational integration
+### Stage S2 — Agent skills
+
+| Field | Value |
+|---|---|
+| Kind | implementation |
+| Status | NOT_STARTED |
+| Review | NOT_REQUESTED |
+| Branch | `stage/S2-agent-skills` |
+| Depends on | S1 |
+| Tasks | S2-01, S2-02, S2-03, S2-04, S2-05, S2-06, S2-07, S2-08, S2-09, S2-10, S2-11, S2-12, S2-13 |
+| Objective | One canonical set of project skills (site review, programming, concepts, critique) discoverable by Claude Code and Codex |
+| Scope | In: ADR revising ADR 0005's skills clause, canonical layout, minimal sync, four skills, synthetic workflow tests, discovery evidence. Out: visual-review skill (S5) |
+| Acceptance | Skills listed by Claude Code and Codex in fresh sessions; each skill uses only real commands and stops at every human gate; synthetic workflows pass |
+| Tests | Skill drift and front-matter tests; synthetic workflow tests per skill |
+| Demonstration | Two agents each run generate-concepts and critique-plan on synthetic-hillside |
+| Artifacts | `skills/*/SKILL.md`, ADR 0015, sync mechanism, tests |
+| Review requirements | Reviewer repeats discovery and one workflow in an agent the implementer did not use |
+| Evidence | — |
 
 Skills teach agents how to combine existing `house-ai` commands; the CLI
 stays the deterministic interface. No large agent framework, no MCP wrapper
@@ -608,438 +558,424 @@ around CLI commands without a demonstrated need, no runtime subagents unless
 useful. One canonical copy of each skill; provider-specific installation
 only where a tool cannot read the canonical location.
 
-### Stage T1.1 — Skill packaging and discovery
+#### Skill packaging and discovery
 
-| Field | Value |
-|---|---|
-| Kind | implementation |
-| Status | NOT_STARTED |
-| Review | NOT_REQUESTED |
-| Branch | `stage/T1.1-skill-packaging` |
-| Depends on | T0.2, T0.3, T0.4 |
-| Tasks | T1.1-01, T1.1-02, T1.1-03, T1.1-04, T1.1-05, T1.1-06 |
-| Objective | A single canonical skill source that Claude Code, Codex and Antigravity/Gemini can each discover |
-| Scope | In: ADR revising ADR 0005's "no skills directories" clause, canonical layout under `skills/`, minimal sync or link mechanism, drift test, discovery checks. Out: the skills' content (T1.2, T1.3, E2.3) |
-| Acceptance | ADR accepted by the owner; discovery evidenced in Claude Code and Codex; Gemini/Antigravity checked or recorded as unavailable |
-| Tests | Drift test: provider copies or links match the canonical skill; skill front-matter schema test |
-| Demonstration | A placeholder skill listed by Claude Code and by Codex in a fresh session |
-| Artifacts | `skills/<name>/SKILL.md` layout, ADR 0015, sync script or links, tests |
-| Review requirements | Reviewer repeats the discovery check in at least one agent the implementer did not use |
-| Evidence | — |
-
-- [ ] **T1.1-01** Decide canonical skill location and per-tool discovery; ADR revising ADR 0005 — `NOT_STARTED` · P1 · deps: none
+- [ ] **S2-01** Decide canonical skill location and per-tool discovery; ADR revising ADR 0005 — `NOT_STARTED` · P1 · deps: none
   - Accept: ADR names where Claude Code (`.claude/skills/`), Codex and Antigravity/Gemini look for skills, verified against current vendor docs, and the minimal mechanism (links, copy script or none)
   - Verify: owner approves the ADR; reviewer checks the cited docs
   - Evidence: pending — ADR 0005 currently says "No `.claude/`, `.agents/` or `.gemini/` rules or skills directories are added" (ISS-14)
-- [ ] **T1.1-02** Canonical skill layout and authoring template — `NOT_STARTED` · P1 · deps: T1.1-01
+- [ ] **S2-02** Canonical skill layout and authoring template — `NOT_STARTED` · P1 · deps: S2-01
   - Accept: template fields: purpose, when to invoke, inputs, outputs, exact commands, required validations, human-approval boundaries, failure handling
   - Verify: front-matter and section test over `skills/*/SKILL.md`
   - Evidence: pending
-- [ ] **T1.1-03** Minimal provider installation or sync with a drift test — `NOT_STARTED` · P1 · deps: T1.1-02
+- [ ] **S2-03** Minimal provider installation or sync with a drift test — `NOT_STARTED` · P1 · deps: S2-02
   - Accept: no hand-maintained second copy; test fails if a provider copy diverges
   - Verify: `pytest -q tests/test_skills.py`
   - Evidence: pending
-- [ ] **T1.1-04** Discovery verified in Claude Code — `NOT_STARTED` · P1 · deps: T1.1-03
+- [ ] **S2-04** Discovery verified in Claude Code — `NOT_STARTED` · P1 · deps: S2-03
   - Accept: a fresh Claude Code session in the repository lists the project skills
   - Verify: session transcript excerpt or `/skills` output recorded in §N
   - Evidence: pending
-- [ ] **T1.1-05** Discovery verified in Codex — `NOT_STARTED` · P1 · deps: T1.1-03
+- [ ] **S2-05** Discovery verified in Codex — `NOT_STARTED` · P1 · deps: S2-03
   - Accept: Codex shows the skills in a fresh session (e.g. `codex debug prompt-input` or skill listing)
   - Verify: command output recorded in §N
   - Evidence: pending — Codex CLI installed (`codex` on PATH, 2026-10-17)
-- [ ] **T1.1-06** Discovery checked in Antigravity or Gemini CLI — `NOT_STARTED` · P2 · deps: T1.1-03
+- [ ] **S2-06** Discovery checked in Antigravity or Gemini CLI — `NOT_STARTED` · P2 · deps: S2-03
   - Accept: discovery shown, or recorded as not possible with the reason
   - Verify: screenshot or transcript in §N
   - Evidence: pending — `gemini` not on PATH; Antigravity.app and Antigravity IDE.app present in /Applications (2026-10-17)
   - Notes: if neither tool can be run, set DEFERRED with the owner's agreement
 
-### Stage T1.2 — Site and programming skills
+#### Site and programming skills
 
-| Field | Value |
-|---|---|
-| Kind | implementation |
-| Status | NOT_STARTED |
-| Review | NOT_REQUESTED |
-| Branch | `stage/T1.2-site-programming-skills` |
-| Depends on | T1.1 |
-| Tasks | T1.2-01, T1.2-02, T1.2-03 |
-| Objective | Agents run site review and architectural programming the same way every time |
-| Scope | In: `site-survey-review`, `architectural-programming` skills and synthetic workflow tests. Out: running them on `my-house` (H1, H2) |
-| Acceptance | Each skill names only real commands, stops at every human gate, records verbatim words and inferences per AGENT_CONTRACT §4 and §9 |
-| Tests | Scripted synthetic workflow per skill asserting store state after each step |
-| Demonstration | Each skill exercised on the synthetic survey and synthetic-family interview by an agent |
-| Artifacts | `skills/site-survey-review/`, `skills/architectural-programming/`, tests |
-| Review requirements | Reviewer follows each skill on synthetic data in a different agent |
-| Evidence | — |
-
-- [ ] **T1.2-01** site-survey-review skill — `NOT_STARTED` · P1 · deps: none
+- [ ] **S2-07** site-survey-review skill — `NOT_STARTED` · P1 · deps: none
   - Accept: covers inspect, ingest, assess-site, blockers, owner questions, CONFIRM-SITE sheet; never runs `site confirm` or `workflow approve`
   - Verify: synthetic workflow test; every command in the skill exists in `house-ai --help`
   - Evidence: pending
-- [ ] **T1.2-02** architectural-programming skill (English, Persian, mixed) — `NOT_STARTED` · P1 · deps: none
+- [ ] **S2-08** architectural-programming skill (English, Persian, mixed) — `NOT_STARTED` · P1 · deps: none
   - Accept: a few high-information questions per round, verbatim recording, `--set` inferences, confirm/reject/revise, contradictions, `program build`, `program review`; hillside questions included
   - Verify: synthetic interview replay test reaches a valid program
   - Evidence: pending
-- [ ] **T1.2-03** Synthetic workflow tests for both skills — `NOT_STARTED` · P1 · deps: T1.2-01, T1.2-02
+- [ ] **S2-09** Synthetic workflow tests for both skills — `NOT_STARTED` · P1 · deps: S2-07, S2-08
   - Accept: tests run the skill command sequences on synthetic data and assert outputs, no network
   - Verify: `pytest -q tests/test_skills_workflows.py`
   - Evidence: pending
 
-### Stage T1.3 — Concept and critique skills
+#### Concept and critique skills
+
+- [ ] **S2-10** generate-concepts skill — `NOT_STARTED` · P1 · deps: none
+  - Accept: covers exploratory vs gated generation, strategies, infeasible reasons, revise ops, review request; refuses on unapproved real projects
+  - Verify: synthetic workflow test
+  - Evidence: pending
+- [ ] **S2-11** critique-plan skill — `NOT_STARTED` · P1 · deps: none
+  - Accept: reads evaluation reports, separates measured from inferred from AI judgment, names canonical IDs, proposes explicit revise ops
+  - Verify: test that a critique with an unknown ID is rejected by the grounding check (shared with S5-06 when available)
+  - Evidence: pending
+- [ ] **S2-12** Synthetic workflow tests for both skills — `NOT_STARTED` · P1 · deps: S2-10, S2-11
+  - Accept: generate → critique → revise → compare runs offline on synthetic-hillside
+  - Verify: `pytest -q`
+  - Evidence: pending
+- [ ] **S2-13** Skills used successfully by two agent environments — `NOT_STARTED` · P1 · deps: S2-12, S2-04, S2-05
+  - Accept: transcripts from two agents (expected: Claude Code and Codex) completing the synthetic workflow
+  - Verify: transcripts linked in §N
+  - Evidence: pending
+
+### Stage S3 — Tool decisions and benchmark fixtures
 
 | Field | Value |
 |---|---|
 | Kind | implementation |
 | Status | NOT_STARTED |
 | Review | NOT_REQUESTED |
-| Branch | `stage/T1.3-concept-critique-skills` |
-| Depends on | T1.1 |
-| Tasks | T1.3-01, T1.3-02, T1.3-03, T1.3-04 |
-| Objective | Agents generate, compare and critique concepts with grounded, labelled claims |
-| Scope | In: `generate-concepts`, `critique-plan` skills; tests; evidence of use in two agents. Out: visual-review (E2.3); new critics (DQ) |
-| Acceptance | Skills never present one concept as "the answer"; critique claims cite metric IDs or canonical element IDs and carry status `ai_judgment` unless measured |
-| Tests | Synthetic generate, revise and critique workflow tests |
-| Demonstration | Two different agents each run generate-concepts and critique-plan on synthetic-hillside |
-| Artifacts | `skills/generate-concepts/`, `skills/critique-plan/`, tests |
-| Review requirements | Reviewer checks every claim in a sample critique against the evaluation report |
+| Branch | `stage/S3-tools-benchmarks` |
+| Depends on | S1 |
+| Tasks | S3-01, S3-02, S3-03, S3-04, S3-05, S3-06, S3-07, S3-08, S3-09, S3-10, S3-11, S3-12, S3-13, S3-14, S3-15, S3-16, S3-17, S3-18, S3-19, S3-20 |
+| Objective | Choose the browser and geometry tools, and build the synthetic sites and households every later stage tests against |
+| Scope | In: Playwright, Trimesh, Manifold, ArchLang, Anatomy evaluations; benchmark runner; steep reference fixture; terrain and household scenarios. Out: integrating the tools (S4, S5, S8) |
+| Acceptance | Register rows decided with recorded experiments; runner reports per category; fixtures generated by script with documented ground truth and no private data |
+| Tests | Harness tests; fixture `--check` regeneration; leak scan |
+| Demonstration | Runner table over all fixtures; experiment summaries in §G |
+| Artifacts | Register updates, `tests/benchmarks/` or `examples/benchmarks/`, fixture generators |
+| Review requirements | Reviewer reruns one experiment, checks licences at the source, confirms fixtures are generated, not copied |
 | Evidence | — |
 
-- [ ] **T1.3-01** generate-concepts skill — `NOT_STARTED` · P1 · deps: none
-  - Accept: covers exploratory vs gated generation, strategies, infeasible reasons, revise ops, review request; refuses on unapproved real projects
-  - Verify: synthetic workflow test
-  - Evidence: pending
-- [ ] **T1.3-02** critique-plan skill — `NOT_STARTED` · P1 · deps: none
-  - Accept: reads evaluation reports, separates measured from inferred from AI judgment, names canonical IDs, proposes explicit revise ops
-  - Verify: test that a critique with an unknown ID is rejected by the grounding check (shared with E2.2-02 when available)
-  - Evidence: pending
-- [ ] **T1.3-03** Synthetic workflow tests for both skills — `NOT_STARTED` · P1 · deps: T1.3-01, T1.3-02
-  - Accept: generate → critique → revise → compare runs offline on synthetic-hillside
-  - Verify: `pytest -q`
-  - Evidence: pending
-- [ ] **T1.3-04** Skills used successfully by two agent environments — `NOT_STARTED` · P1 · deps: T1.3-03, T1.1-04, T1.1-05
-  - Accept: transcripts from two agents (expected: Claude Code and Codex) completing the synthetic workflow
-  - Verify: transcripts linked in §N
+Each candidate has a row and a detail block in the
+[tool register](#g-tool-and-skill-evaluation-register). An evaluation task
+is DONE only when the register row has a decision backed by a recorded
+experiment. Nothing is installed into the project environment just because
+research recommends it; experiments run in throwaway environments and only
+an ADOPT or ADAPT decision, approved in review, adds a dependency.
+
+Synthetic projects that expose architectural mistakes. Measurable evidence
+is kept separate from subjective judgment; no single opaque quality score.
+No private coordinates or site data are copied.
+
+#### Near-term tool evaluations
+
+- [ ] **S3-01** Evaluate Playwright CLI and its agent skill (TOOL-PLAYWRIGHT) — `NOT_STARTED` · P1 · deps: none
+  - Accept: CLI vs MCP vs Playwright Test compared for agent inspection and CI tests; macOS arm64 and offline verified; decision
+  - Verify: register row; screenshot of a local static page taken by an agent through the chosen route
+  - Evidence: pending — mentioned in research only; not installed
+- [ ] **S3-02** Evaluate Trimesh (TOOL-TRIMESH) — `NOT_STARTED` · P1 · deps: none
+  - Accept: TIN-to-mesh, volume and section accuracy on S8-01 analytical fixtures; licence and wheels for Python 3.11/3.13 arm64
+  - Verify: register row; experiment numbers vs analytical values
+  - Evidence: pending — not installed in `.venv` (`pip list`, 2026-10-17)
+- [ ] **S3-03** Evaluate Manifold / manifold3d (TOOL-MANIFOLD) — `NOT_STARTED` · P1 · deps: none
+  - Accept: robust boolean volumes on the same fixtures; comparison with Trimesh
+  - Verify: register row
+  - Evidence: pending — not installed in `.venv`
+- [ ] **S3-04** Evaluate ArchLang as an independent diagnostic (TOOL-ARCHLANG) — `NOT_STARTED` · P2 · deps: none
+  - Accept: export a synthetic HouseModel to ArchLang, compare geometry and semantics, run its lint on clean and seeded-defect plans, decide integrate, adapt checks or reject; never replace HouseModel without explicit approval
+  - Verify: register row with seeded-defect results
+  - Evidence: pending — mentioned in research only; sources disagree on version and MCP support
+- [ ] **S3-05** Study Anatomy for SVG interaction and skill packaging patterns (TOOL-ANATOMY) — `NOT_STARTED` · P3 · deps: none
+  - Accept: list of patterns borrowed or rejected for E1/T1; not treated as an architecture engine
+  - Verify: register row
+  - Evidence: pending — mentioned in research only
+- [ ] **S3-06** Intake process for further candidates (TOOL-OTHER) — `NOT_STARTED` · P3 · deps: none
+  - Accept: new candidates get a register row with the same fields before any install
+  - Verify: register has the template row
   - Evidence: pending
 
-### Workstream E1: interactive floor-plan reviewer (MASTER_SPEC Milestone E)
+#### Benchmark harness and synthetic steep reference fixture
+
+- [ ] **S3-07** Benchmark fixture format and runner — `NOT_STARTED` · P1 · deps: none
+  - Accept: each fixture declares site, program, expected findings and categories; runner prints a per-category table
+  - Verify: harness tests
+  - Evidence: pending
+- [ ] **S3-08** Synthetic steep reference fixture (~600 m² parcel, ~12.5 m relief, ~40 % area-weighted slope) — `NOT_STARTED` · P1 · deps: S3-07
+  - Accept: generated by script with a fictional CRS-free frame; measured area, relief and slope within 5 % of targets; no private coordinates
+  - Verify: fixture `--check`; leak scan (S1-11)
+  - Evidence: pending — existing synthetic-hillside is ~36 % fall, different size
+- [ ] **S3-09** Acceptance categories and expected-finding schema — `NOT_STARTED` · P1 · deps: S3-07
+  - Accept: categories: geometric feasibility, practical usability, circulation, privacy, terrain compatibility, spatial/topological diversity, metric accuracy, unknowns, visual consistency, versioned revisions
+  - Verify: schema test
+  - Evidence: pending
+
+#### Terrain and parcel scenarios
+
+- [ ] **S3-10** Flat simple parcel and narrow-deep parcel — `NOT_STARTED` · P1 · deps: none
+  - Accept: two fixtures with known areas and envelopes
+  - Verify: fixture tests
+  - Evidence: pending
+- [ ] **S3-11** Steep road-high and steep road-low parcels — `NOT_STARTED` · P1 · deps: none
+  - Accept: ground rising and falling away from the road
+  - Verify: fixture tests
+  - Evidence: pending
+- [ ] **S3-12** Cross-slope and diagonal-slope terrain — `NOT_STARTED` · P1 · deps: none
+  - Accept: slope perpendicular and diagonal to the frontage
+  - Verify: fixture tests
+  - Evidence: pending
+- [ ] **S3-13** Concave parcel — `NOT_STARTED` · P2 · deps: none
+  - Accept: non-convex boundary with a known buildable envelope
+  - Verify: fixture tests
+  - Evidence: pending
+- [ ] **S3-14** Terrain breaklines and noisy or sliver TIN triangles — `NOT_STARTED` · P2 · deps: none
+  - Accept: survey with a retaining-wall breakline and near-duplicate points
+  - Verify: fixture tests
+  - Evidence: pending
+- [ ] **S3-15** Unknown north — `NOT_STARTED` · P1 · deps: none
+  - Accept: unconfirmed CRS; every orientation-dependent metric must come out `not_checked`
+  - Verify: fixture tests
+  - Evidence: pending
+
+#### Household scenarios
+
+- [ ] **S3-16** Family privacy scenario — `NOT_STARTED` · P1 · deps: none
+  - Accept: strong guest/family separation requested
+  - Verify: fixture tests
+  - Evidence: pending
+- [ ] **S3-17** Accessible multigenerational household — `NOT_STARTED` · P1 · deps: none
+  - Accept: step-free bedroom and bathroom for an older resident
+  - Verify: fixture tests
+  - Evidence: pending
+- [ ] **S3-18** Garage and heavy-cooking scenario — `NOT_STARTED` · P1 · deps: none
+  - Accept: two vehicles, separate heavy-cooking kitchen, garage-to-kitchen route
+  - Verify: fixture tests
+  - Evidence: pending
+- [ ] **S3-19** Large-terrace hillside — `NOT_STARTED` · P2 · deps: none
+  - Accept: large terrace connected to living spaces on a steep site
+  - Verify: fixture tests
+  - Evidence: pending
+- [ ] **S3-20** Preference-based comparisons — `NOT_STARTED` · P2 · deps: none
+  - Accept: same site, two households with opposite priorities; comparison shows different trade-offs without a single score
+  - Verify: runner output
+  - Evidence: pending
+
+### Stage S4 — Plan viewer
+
+| Field | Value |
+|---|---|
+| Kind | implementation |
+| Status | NOT_STARTED |
+| Review | NOT_REQUESTED |
+| Branch | `stage/S4-plan-viewer` |
+| Depends on | S1, S3 |
+| Tasks | S4-01, S4-02, S4-03, S4-04, S4-05, S4-06, S4-07, S4-08, S4-09, S4-10, S4-11, S4-12, S4-13, S4-14, S4-15, S4-16, S4-17, S4-18, S4-19, S4-20, S4-21, S4-22, S4-23, S4-24 |
+| Objective | Local React/TypeScript reviewer: inspect plans, overlays, compare versions, capture feedback as revise operations (MASTER_SPEC Milestone E) |
+| Scope | In: architecture ADR, app, schema-typed loading, plan view, overlays, comparison, history, feedback export, browser tests. Out: approving anything from the browser |
+| Acceptance | Every drawn element maps to a canonical ID; displayed values equal model values; exported feedback replays through `plan revise`; browser tests run in CI |
+| Tests | Loader, renderer, overlay, comparison and browser tests; op-file round trip in Python |
+| Demonstration | Inspect, compare and comment on synthetic-hillside concepts, export ops, revise, see the new version |
+| Artifacts | `apps/reviewer/`, export bundle command, op-file schema, CI job, ADR |
+| Review requirements | Reviewer checks five elements against `plan.json`, does the feedback round trip, confirms nothing writes to the store |
+| Evidence | — |
 
 The reviewer is local-first, read-only on the project store, and draws only
 what the canonical model contains: every door, window, stair or terrace on
 screen corresponds to a canonical element ID. No illustration stands in for
 geometry. It cannot approve anything; it shows the command a human runs.
 
-### Stage E1.1 — Reviewer foundation and canonical data loading
+#### Reviewer foundation and canonical data loading
 
-| Field | Value |
-|---|---|
-| Kind | implementation |
-| Status | NOT_STARTED |
-| Review | NOT_REQUESTED |
-| Branch | `stage/E1.1-reviewer-foundation` |
-| Depends on | T0.3, T0.4 |
-| Tasks | E1.1-01, E1.1-02, E1.1-03, E1.1-04, E1.1-05, E1.1-06 |
-| Objective | A React/TypeScript app in `apps/reviewer/` that loads canonical plan data, validated against the JSON Schemas |
-| Scope | In: architecture ADR, scaffold, generated TS types, read-only export bundle, loader, synthetic demo data, CI job. Out: interactions (E1.2+) |
-| Acceptance | `npm test` and type-check pass in CI; loader rejects schema-invalid input; export bundle writes nothing into the store |
-| Tests | Loader unit tests (valid, invalid, missing fields); bundle export test in Python |
-| Demonstration | Reviewer opens the synthetic-hillside bundle and lists concepts and levels |
-| Artifacts | `apps/reviewer/` (package.json, src/), `house-ai review export` (or equivalent), ADR, CI job |
-| Review requirements | Reviewer runs the app locally on the synthetic bundle and checks it never writes to the store |
-| Evidence | — |
-
-- [ ] **E1.1-01** ADR: reviewer architecture — `NOT_STARTED` · P1 · deps: none
+- [ ] **S4-01** ADR: reviewer architecture — `NOT_STARTED` · P1 · deps: none
   - Accept: decides React + TypeScript + bundler, where SVG geometry is computed (browser from canonical model vs exported SVG), D3 only where justified, data delivery (static bundle vs read-only local server), offline operation
   - Verify: owner reads the ADR; reviewer checks it against MASTER_SPEC "2D reviewer"
   - Evidence: pending
-- [ ] **E1.1-02** Scaffold apps/reviewer with strict TypeScript, lint, unit tests and a CI job — `NOT_STARTED` · P1 · deps: E1.1-01
+- [ ] **S4-02** Scaffold apps/reviewer with strict TypeScript, lint, unit tests and a CI job — `NOT_STARTED` · P1 · deps: S4-01
   - Accept: lockfile committed; versions pinned; CI runs type-check, lint and tests
   - Verify: CI run on the stage branch
   - Evidence: pending — Node v24.16.0, npm and pnpm present locally (2026-10-17); no `package.json` exists yet
-- [ ] **E1.1-03** TypeScript types generated from `schemas/` with a drift check — `NOT_STARTED` · P1 · deps: E1.1-02
+- [ ] **S4-03** TypeScript types generated from `schemas/` with a drift check — `NOT_STARTED` · P1 · deps: S4-02
   - Accept: types regenerate from the 22 schemas; CI fails on drift like `schemas check`
   - Verify: drift test
   - Evidence: pending
-- [ ] **E1.1-04** Read-only export bundle of plans, evaluations, revision reports and site — `NOT_STARTED` · P1 · deps: E1.1-01
+- [ ] **S4-04** Read-only export bundle of plans, evaluations, revision reports and site — `NOT_STARTED` · P1 · deps: S4-01
   - Accept: CLI writes a bundle outside the store; event log and artifacts unchanged; works for exploratory output too, stamped as such
   - Verify: Python test comparing `project verify` before and after
   - Evidence: pending
-- [ ] **E1.1-05** Schema-validated loading of PlanVersion and HouseModel with clear errors — `NOT_STARTED` · P1 · deps: E1.1-03, E1.1-04
+- [ ] **S4-05** Schema-validated loading of PlanVersion and HouseModel with clear errors — `NOT_STARTED` · P1 · deps: S4-03, S4-04
   - Accept: invalid bundle shows the failing path; nothing renders from invalid data
   - Verify: loader unit tests
   - Evidence: pending
-- [ ] **E1.1-06** Synthetic demonstration bundles — `NOT_STARTED` · P1 · deps: E1.1-04
+- [ ] **S4-06** Synthetic demonstration bundles — `NOT_STARTED` · P1 · deps: S4-04
   - Accept: bundles for synthetic-bungalow and synthetic-hillside are generated by a script, not hand-written
   - Verify: `--check` mode regenerates identically
   - Evidence: pending
 
-### Stage E1.2 — Plan view and element inspection
+#### Plan view and element inspection
 
-| Field | Value |
-|---|---|
-| Kind | implementation |
-| Status | NOT_STARTED |
-| Review | NOT_REQUESTED |
-| Branch | `stage/E1.2-plan-view` |
-| Depends on | E1.1 |
-| Tasks | E1.2-01, E1.2-02, E1.2-03, E1.2-04, E1.2-05, E1.2-06 |
-| Objective | Accurate, inspectable semantic SVG plans with stable canonical IDs |
-| Scope | In: plan rendering, floors, zoom/pan, selection, dimensions, schedules, site overlays. Out: analysis overlays (E1.3), comparison (E1.4) |
-| Acceptance | Every rendered element carries `data-id` equal to its canonical ID; displayed dimensions and areas equal model values to the stated precision |
-| Tests | Component tests comparing displayed values with model values; ID round-trip test |
-| Demonstration | Click a room, door, window, stair in the synthetic-hillside concept; panel shows its canonical properties |
-| Artifacts | `apps/reviewer/src/` plan components |
-| Review requirements | Reviewer checks five random elements' displayed values against `plan.json` |
-| Evidence | — |
-
-- [ ] **E1.2-01** Semantic SVG renderer from the canonical model with stable `data-id` — `NOT_STARTED` · P1 · deps: none
+- [ ] **S4-07** Semantic SVG renderer from the canonical model with stable `data-id` — `NOT_STARTED` · P1 · deps: none
   - Accept: spaces, walls by kind, doors with swing, windows, stairs, slabs drawn only from model data
   - Verify: test that every SVG element with `data-id` maps to a model element and vice versa for drawable kinds
   - Evidence: pending
-- [ ] **E1.2-02** Floor switching, zoom and pan — `NOT_STARTED` · P1 · deps: E1.2-01
+- [ ] **S4-08** Floor switching, zoom and pan — `NOT_STARTED` · P1 · deps: S4-07
   - Accept: per-level view at a common scale; keyboard and pointer controls
   - Verify: component test
   - Evidence: pending
-- [ ] **E1.2-03** Selection of rooms, doors, windows and stairs with a property panel — `NOT_STARTED` · P1 · deps: E1.2-01
+- [ ] **S4-09** Selection of rooms, doors, windows and stairs with a property panel — `NOT_STARTED` · P1 · deps: S4-07
   - Accept: selection highlights the element; panel lists canonical properties and relationships
   - Verify: component test
   - Evidence: pending
-- [ ] **E1.2-04** Dimensions computed from model geometry — `NOT_STARTED` · P1 · deps: E1.2-01
+- [ ] **S4-10** Dimensions computed from model geometry — `NOT_STARTED` · P1 · deps: S4-07
   - Accept: room and overall dimensions match model coordinates; no invented values
   - Verify: test against hand-computed synthetic-bungalow values
   - Evidence: pending
-- [ ] **E1.2-05** Room schedule with gross area and, once DQ.1-01 lands, net area — `NOT_STARTED` · P1 · deps: E1.2-01
+- [ ] **S4-11** Room schedule with gross area and, once S6-01 lands, net area — `NOT_STARTED` · P1 · deps: S4-07
   - Accept: area basis labelled (centreline gross; net when available); totals match the Geometry evaluator
   - Verify: schedule test against evaluation report
   - Evidence: pending
-- [ ] **E1.2-06** Parcel, envelope and building overlays; north arrow only with a confirmed CRS — `NOT_STARTED` · P1 · deps: E1.2-01
+- [ ] **S4-12** Parcel, envelope and building overlays; north arrow only with a confirmed CRS — `NOT_STARTED` · P1 · deps: S4-07
   - Accept: overlays from site data; north hidden and labelled unknown when unconfirmed
   - Verify: tests with confirmed and unconfirmed synthetic sites
   - Evidence: pending
 
-### Stage E1.3 — Analysis overlays
+#### Analysis overlays
 
-| Field | Value |
-|---|---|
-| Kind | implementation |
-| Status | NOT_STARTED |
-| Review | NOT_REQUESTED |
-| Branch | `stage/E1.3-analysis-overlays` |
-| Depends on | E1.2 |
-| Tasks | E1.3-01, E1.3-02, E1.3-03, E1.3-04 |
-| Objective | Show evaluator findings on the plan, each with its epistemic status |
-| Scope | In: violations, status labels, circulation and privacy overlays, terrain and section views. Out: new evaluators |
-| Acceptance | Every overlay item links to an evaluation metric or violation and its subject IDs; status labels shown for every metric |
-| Tests | Overlay tests with seeded violations |
-| Demonstration | Synthetic concept with known soft violations shows them on the right elements |
-| Artifacts | Overlay components |
-| Review requirements | Reviewer checks overlays against `violations.json` and `metrics.json` |
-| Evidence | — |
-
-- [ ] **E1.3-01** Violation and warning overlays linked to subject IDs — `NOT_STARTED` · P1 · deps: none
+- [ ] **S4-13** Violation and warning overlays linked to subject IDs — `NOT_STARTED` · P1 · deps: none
   - Accept: hard and soft violations distinguished; clicking selects the subject element
   - Verify: test with seeded violations
   - Evidence: pending
-- [ ] **E1.3-02** Measured, inferred, simulated, AI-judgment and not-checked labels on every metric — `NOT_STARTED` · P0 · deps: none
+- [ ] **S4-14** Measured, inferred, simulated, AI-judgment and not-checked labels on every metric — `NOT_STARTED` · P0 · deps: none
   - Accept: no metric shown without its status and method
   - Verify: test over all metrics in a synthetic evaluation
   - Evidence: pending
-- [ ] **E1.3-03** Circulation and privacy overlays from evaluator data — `NOT_STARTED` · P2 · deps: none
+- [ ] **S4-15** Circulation and privacy overlays from evaluator data — `NOT_STARTED` · P2 · deps: none
   - Accept: circulation tree from the entrance and private/public zones drawn from evaluation output only
   - Verify: overlay test
   - Evidence: pending
-- [ ] **E1.3-04** Site and terrain view with the existing terrain section — `NOT_STARTED` · P1 · deps: none
-  - Accept: TIN contours or shading and the section from canonical data; schematic section labelled schematic until DH.2
+- [ ] **S4-16** Site and terrain view with the existing terrain section — `NOT_STARTED` · P1 · deps: none
+  - Accept: TIN contours or shading and the section from canonical data; schematic section labelled schematic until S8
   - Verify: test on synthetic-hillside
   - Evidence: pending
 
-### Stage E1.4 — Comparison and revision history
+#### Comparison and revision history
 
-| Field | Value |
-|---|---|
-| Kind | implementation |
-| Status | NOT_STARTED |
-| Review | NOT_REQUESTED |
-| Branch | `stage/E1.4-comparison-history` |
-| Depends on | E1.2 |
-| Tasks | E1.4-01, E1.4-02, E1.4-03, E1.4-04 |
-| Objective | Compare alternatives and versions without collapsing them into one score |
-| Scope | In: comparison table, side-by-side plans, version diff, history. Out: feedback capture (E1.5) |
-| Acceptance | Comparison values equal stored metrics; version diff equals the stored RevisionReport |
-| Tests | Comparison and diff tests against stored reports |
-| Demonstration | Two synthetic concepts and a revised version compared on screen |
-| Artifacts | Comparison components |
-| Review requirements | Reviewer checks a diff against `revision_report` |
-| Evidence | — |
-
-- [ ] **E1.4-01** Alternative comparison table of individual metrics — `NOT_STARTED` · P1 · deps: none
+- [ ] **S4-17** Alternative comparison table of individual metrics — `NOT_STARTED` · P1 · deps: none
   - Accept: metrics side by side with status; no aggregate score
   - Verify: test against `comparison.md` data
   - Evidence: pending
-- [ ] **E1.4-02** Side-by-side plan view with synchronised floors and zoom — `NOT_STARTED` · P2 · deps: none
+- [ ] **S4-18** Side-by-side plan view with synchronised floors and zoom — `NOT_STARTED` · P2 · deps: none
   - Accept: two concepts at the same scale
   - Verify: component test
   - Evidence: pending
-- [ ] **E1.4-03** Version comparison from RevisionReport — `NOT_STARTED` · P1 · deps: none
+- [ ] **S4-19** Version comparison from RevisionReport — `NOT_STARTED` · P1 · deps: none
   - Accept: changed rooms, areas, metrics, new and resolved violations highlighted
   - Verify: test with a synthetic revision
   - Evidence: pending
-- [ ] **E1.4-04** Revision history timeline with owner words and ops — `NOT_STARTED` · P2 · deps: none
+- [ ] **S4-20** Revision history timeline with owner words and ops — `NOT_STARTED` · P2 · deps: none
   - Accept: each version shows parent, verbatim request and operations
   - Verify: component test
   - Evidence: pending
 
-### Stage E1.5 — Feedback capture and browser regression tests
+#### Feedback capture and browser regression tests
+
+- [ ] **S4-21** Entity-linked homeowner comments — `NOT_STARTED` · P1 · deps: none
+  - Accept: comments reference canonical IDs and plan version; stored as an exported file, never written into the store by the browser
+  - Verify: component test
+  - Evidence: pending
+- [ ] **S4-22** Structured revision-operation export and `plan revise` import — `NOT_STARTED` · P1 · deps: S4-21
+  - Accept: op file schema-validated; owner words verbatim; ops limited to supported revise operations
+  - Verify: Python round-trip test
+  - Evidence: pending
+- [ ] **S4-23** Approval boundaries shown, never exercised, by the reviewer — `NOT_STARTED` · P0 · deps: none
+  - Accept: the reviewer shows the human command for a gate and has no approve action
+  - Verify: test that no approve endpoint or button exists
+  - Evidence: pending
+- [ ] **S4-24** Browser and visual regression tests in CI — `NOT_STARTED` · P1 · deps: none
+  - Accept: headless tests over synthetic bundles; screenshots compared with a tolerance; runs on CI
+  - Verify: CI run
+  - Evidence: pending
+
+### Stage S5 — Agent visual review
 
 | Field | Value |
 |---|---|
 | Kind | implementation |
 | Status | NOT_STARTED |
 | Review | NOT_REQUESTED |
-| Branch | `stage/E1.5-feedback-browser-tests` |
-| Depends on | E1.3, E1.4, R1.1-01 |
-| Tasks | E1.5-01, E1.5-02, E1.5-03, E1.5-04 |
-| Objective | The homeowner's feedback becomes structured revision operations; the reviewer is covered by browser tests |
-| Scope | In: entity-linked comments, revision-op export, `plan revise` import of that export, approval-boundary display, browser and visual tests. Out: approving from the browser |
-| Acceptance | An exported op file replays through `plan revise` and produces the expected version; browser tests run in CI headless |
-| Tests | Browser tests (tool chosen in R1.1-01); op-file round-trip test in Python |
-| Demonstration | Comment on a synthetic room, export ops, run `plan revise --ops-file`, see the new version in the reviewer |
-| Artifacts | Feedback components, op-file schema, CLI option, browser tests |
-| Review requirements | Reviewer performs the round trip and inspects the stored revision |
+| Branch | `stage/S5-visual-review` |
+| Depends on | S4, S2 |
+| Tasks | S5-01, S5-02, S5-03, S5-04, S5-05, S5-06, S5-07, S5-08, S5-09, S5-10, S5-11, S5-12 |
+| Objective | Agents look at real rendered plans, critique them against canonical IDs, revise and prove each fix |
+| Scope | In: browser setup, screenshots, critique schema, grounding validator, seeded visual defects, loop, visual-review skill. Out: real-house use |
+| Acceptance | Ungrounded critiques rejected; seeded defects found against the right IDs; claimed fixes verified by a check or a new capture |
+| Tests | Screenshot, grounding and seeded-defect tests; loop test |
+| Demonstration | Seeded synthetic defect found, revised, re-rendered and verified |
+| Artifacts | Browser config, `VisualCritique` schema, validator, `skills/visual-review/` |
+| Review requirements | Reviewer submits an ungrounded critique and a fake fix and sees both rejected |
 | Evidence | — |
-
-- [ ] **E1.5-01** Entity-linked homeowner comments — `NOT_STARTED` · P1 · deps: none
-  - Accept: comments reference canonical IDs and plan version; stored as an exported file, never written into the store by the browser
-  - Verify: component test
-  - Evidence: pending
-- [ ] **E1.5-02** Structured revision-operation export and `plan revise` import — `NOT_STARTED` · P1 · deps: E1.5-01
-  - Accept: op file schema-validated; owner words verbatim; ops limited to supported revise operations
-  - Verify: Python round-trip test
-  - Evidence: pending
-- [ ] **E1.5-03** Approval boundaries shown, never exercised, by the reviewer — `NOT_STARTED` · P0 · deps: none
-  - Accept: the reviewer shows the human command for a gate and has no approve action
-  - Verify: test that no approve endpoint or button exists
-  - Evidence: pending
-- [ ] **E1.5-04** Browser and visual regression tests in CI — `NOT_STARTED` · P1 · deps: none
-  - Accept: headless tests over synthetic bundles; screenshots compared with a tolerance; runs on CI
-  - Verify: CI run
-  - Evidence: pending
-
-### Workstream E2: AI visual inspection
 
 Visual review supplements deterministic checks; it never replaces them
 (MASTER_SPEC "Blender" visual-review loop, applied here to 2D). Every
 visual claim must point at a canonical element ID; ungrounded claims are
 rejected.
 
-### Stage E2.1 — Agent browser inspection setup
+#### Agent browser inspection setup
 
-| Field | Value |
-|---|---|
-| Kind | implementation |
-| Status | NOT_STARTED |
-| Review | NOT_REQUESTED |
-| Branch | `stage/E2.1-agent-browser-inspection` |
-| Depends on | E1.2, R1.1-01 |
-| Tasks | E2.1-01, E2.1-02, E2.1-03, E2.1-04 |
-| Objective | Coding agents can open the reviewer, capture screenshots and read semantic element IDs |
-| Scope | In: browser tool configuration chosen in R1.1-01, screenshot command, accessible names, static SVG rasterisation. Out: critique records (E2.2) |
-| Acceptance | One documented command produces screenshots of every level of a synthetic concept with an ID map |
-| Tests | Screenshot capture test on synthetic fixtures |
-| Demonstration | An agent captures and describes a synthetic plan citing element IDs |
-| Artifacts | Config, scripts, docs |
-| Review requirements | Reviewer repeats the capture in a different agent |
-| Evidence | — |
-
-- [ ] **E2.1-01** Configure the chosen browser tool for coding agents — `NOT_STARTED` · P1 · deps: none
-  - Accept: setup documented; works offline against the local reviewer; MCP only if R1.1-01 justified it
+- [ ] **S5-01** Configure the chosen browser tool for coding agents — `NOT_STARTED` · P1 · deps: none
+  - Accept: setup documented; works offline against the local reviewer; MCP only if S3-01 justified it
   - Verify: fresh-session run by an agent
   - Evidence: pending
-- [ ] **E2.1-02** Screenshot capture of reviewer views on stable synthetic fixtures — `NOT_STARTED` · P1 · deps: E2.1-01
+- [ ] **S5-02** Screenshot capture of reviewer views on stable synthetic fixtures — `NOT_STARTED` · P1 · deps: S5-01
   - Accept: deterministic viewport, fonts and data; output paths and hashes recorded
   - Verify: repeated capture gives identical or within-tolerance images
   - Evidence: pending
-- [ ] **E2.1-03** Semantic SVG and DOM identifiers readable by agents — `NOT_STARTED` · P1 · deps: none
+- [ ] **S5-03** Semantic SVG and DOM identifiers readable by agents — `NOT_STARTED` · P1 · deps: none
   - Accept: accessible names and `data-id` expose element kind and canonical ID
   - Verify: accessibility-tree snapshot test
   - Evidence: pending
-- [ ] **E2.1-04** Static plan rasterisation with rsvg-convert or Inkscape — `NOT_STARTED` · P2 · deps: none
+- [ ] **S5-04** Static plan rasterisation with rsvg-convert or Inkscape — `NOT_STARTED` · P2 · deps: none
   - Accept: `plan.svg` to PNG without a browser for quick inspection; optional when tools are missing
   - Verify: test skipped without the tool
   - Evidence: pending — rsvg-convert 2.60.0 and Inkscape 1.4.4 installed (2026-10-17); not yet used by the project
 
-### Stage E2.2 — Grounded visual critique records
+#### Grounded visual critique records
 
-| Field | Value |
-|---|---|
-| Kind | implementation |
-| Status | NOT_STARTED |
-| Review | NOT_REQUESTED |
-| Branch | `stage/E2.2-grounded-critique` |
-| Depends on | E2.1 |
-| Tasks | E2.2-01, E2.2-02, E2.2-03, E2.2-04 |
-| Objective | Visual critiques are structured, linked to canonical IDs and screenshots, and validated |
-| Scope | In: critique schema, grounding validator, seeded visual-defect fixtures, regression tests. Out: automatic revisions (E2.3) |
-| Acceptance | Ungrounded critiques are rejected; seeded defects are detectable and reported against the right IDs |
-| Tests | Schema tests; grounding tests; seeded-defect tests |
-| Demonstration | Agent critique of a seeded synthetic plan stored as a validated record |
-| Artifacts | Domain schema (with `schemas export`), validator, fixtures |
-| Review requirements | Reviewer submits an ungrounded critique and sees it rejected |
-| Evidence | — |
-
-- [ ] **E2.2-01** VisualCritique schema — `NOT_STARTED` · P1 · deps: none
+- [ ] **S5-05** VisualCritique schema — `NOT_STARTED` · P1 · deps: none
   - Accept: element IDs, plan version, screenshot hash, claim text, status `ai_judgment`, suggested revise ops; exported schema and DOMAIN_MODEL updated
   - Verify: `schemas check`; schema tests
   - Evidence: pending
-- [ ] **E2.2-02** Grounding validator for critiques — `NOT_STARTED` · P0 · deps: E2.2-01
+- [ ] **S5-06** Grounding validator for critiques — `NOT_STARTED` · P0 · deps: S5-05
   - Accept: every referenced ID exists in the stated plan version; measurable claims must cite a metric or are rejected
   - Verify: negative tests
   - Evidence: pending
-- [ ] **E2.2-03** Seeded visual-defect fixtures and detection tests — `NOT_STARTED` · P1 · deps: E2.2-01
+- [ ] **S5-07** Seeded visual-defect fixtures and detection tests — `NOT_STARTED` · P1 · deps: S5-05
   - Accept: fixtures with overlapping labels, door into wall, window on retaining wall, missing stair arrival; tests assert detection by deterministic or visual checks with correct IDs
   - Verify: `pytest -q`
   - Evidence: pending
-- [ ] **E2.2-04** Screenshot and semantic regression tests — `NOT_STARTED` · P2 · deps: none
+- [ ] **S5-08** Screenshot and semantic regression tests — `NOT_STARTED` · P2 · deps: none
   - Accept: screenshot diffs and ID-map diffs fail on unintended changes
   - Verify: CI run
   - Evidence: pending
 
-### Stage E2.3 — Inspect, critique, revise, re-render loop
+#### Inspect, critique, revise, re-render loop
+
+- [ ] **S5-09** Loop procedure from critique to revise operations to re-render — `NOT_STARTED` · P1 · deps: none
+  - Accept: critiques map to explicit `plan revise` ops; new version re-captured
+  - Verify: loop test
+  - Evidence: pending
+- [ ] **S5-10** Fix verification — `NOT_STARTED` · P0 · deps: S5-09
+  - Accept: each "fixed" claim is checked by the evaluator or a new capture; unverified claims stay open
+  - Verify: test where a fake fix is rejected
+  - Evidence: pending
+- [ ] **S5-11** visual-review skill — `NOT_STARTED` · P1 · deps: S5-09
+  - Accept: follows the S2 template; forbids ungrounded claims
+  - Verify: skill drift and workflow tests
+  - Evidence: pending
+- [ ] **S5-12** Documented synthetic demonstration — `NOT_STARTED` · P1 · deps: S5-10
+  - Accept: before/after screenshots, critique records and revision report for synthetic-hillside
+  - Verify: reviewer replays it
+  - Evidence: pending
+
+### Stage S6 — Usability critics
 
 | Field | Value |
 |---|---|
 | Kind | implementation |
 | Status | NOT_STARTED |
 | Review | NOT_REQUESTED |
-| Branch | `stage/E2.3-visual-review-loop` |
-| Depends on | E2.2, T1.3, E1.5 |
-| Tasks | E2.3-01, E2.3-02, E2.3-03, E2.3-04 |
-| Objective | Agents iterate on a plan visually and prove each claimed fix |
-| Scope | In: loop procedure, fix verification, `visual-review` skill, documented demonstration. Out: real-house use (H3) |
-| Acceptance | A claimed fix is accepted only when the deterministic check or re-captured view confirms it |
-| Tests | Loop test on a seeded synthetic defect |
-| Demonstration | Seeded defect found, revised, re-rendered and verified, with all records stored |
-| Artifacts | `skills/visual-review/`, loop docs, tests |
-| Review requirements | Reviewer replays the demonstration and checks each fix claim |
+| Branch | `stage/S6-usability-critics` |
+| Depends on | S3 |
+| Tasks | S6-01, S6-02, S6-03, S6-04, S6-05, S6-06, S6-07, S6-08, S6-09, S6-10, S6-11, S6-12, S6-13, S6-14, S6-15, S6-16, S6-17, S6-18, S6-19, S6-20, S6-21, S6-22, S6-23, S6-24, S6-25, S6-26, S6-27, S6-28, S6-29, S6-30, S6-31, S6-32 |
+| Objective | Rooms are usable, not just big enough: net areas, furniture, doors, stairs, bathrooms, garage, routes, privacy, daylight |
+| Scope | In: model foundations (net area, furniture/clearance, swings), all critics, seeded-defect suite. Out: changing the generator to avoid findings (S7) |
+| Acceptance | Each critic catches its seeded defect against the right element IDs and passes clean twins; thresholds are labelled assumptions with sources |
+| Tests | Analytical tests, seeded-defect suite, clean-plan tests, regression suite in CI |
+| Demonstration | Critic report for synthetic-hillside concepts |
+| Artifacts | `domain/` extension and ADR, `evaluation/` critics, templates, fixtures |
+| Review requirements | Reviewer hand-checks one net area, one route length and one infeasible furniture verdict |
 | Evidence | — |
-
-- [ ] **E2.3-01** Loop procedure from critique to revise operations to re-render — `NOT_STARTED` · P1 · deps: none
-  - Accept: critiques map to explicit `plan revise` ops; new version re-captured
-  - Verify: loop test
-  - Evidence: pending
-- [ ] **E2.3-02** Fix verification — `NOT_STARTED` · P0 · deps: E2.3-01
-  - Accept: each "fixed" claim is checked by the evaluator or a new capture; unverified claims stay open
-  - Verify: test where a fake fix is rejected
-  - Evidence: pending
-- [ ] **E2.3-03** visual-review skill — `NOT_STARTED` · P1 · deps: E2.3-01
-  - Accept: follows the T1.1 template; forbids ungrounded claims
-  - Verify: skill drift and workflow tests
-  - Evidence: pending
-- [ ] **E2.3-04** Documented synthetic demonstration — `NOT_STARTED` · P1 · deps: E2.3-02
-  - Accept: before/after screenshots, critique records and revision report for synthetic-hillside
-  - Verify: reviewer replays it
-  - Evidence: pending
-
-### Workstream DQ: architectural usability and quality critics ("D+1")
 
 Proven geometric checks, not vague AI scores. "Usable" means a room can
 hold its furniture with clearances and doors that swing freely, not only
@@ -1047,456 +983,313 @@ that it meets a minimum area. Every dimension used as a threshold is a
 labelled assumption with a cited source until a CodePack or professional
 supplies it. Critics report per-element findings with method and status.
 
-### Stage DQ.1 — Model foundations for usability checks
+#### Model foundations for usability checks
 
-| Field | Value |
-|---|---|
-| Kind | implementation |
-| Status | NOT_STARTED |
-| Review | NOT_REQUESTED |
-| Branch | `stage/DQ.1-usability-foundations` |
-| Depends on | R2.1 |
-| Tasks | DQ.1-01, DQ.1-02, DQ.1-03, DQ.1-04 |
-| Objective | The canonical model and geometry helpers can express net areas, door swings and furniture clearances |
-| Scope | In: net area, furniture/clearance representation (domain extension with ADR and schema export), door-swing geometry, template library. Out: individual critics (DQ.2–DQ.6) |
-| Acceptance | Net vs gross area computed from wall thickness; furniture templates placed as canonical elements or derived checks per ADR; schemas exported; DOMAIN_MODEL updated |
-| Tests | Analytical tests on synthetic rooms with known net areas and swing arcs |
-| Demonstration | Synthetic-bungalow room schedule with gross and net areas |
-| Artifacts | `domain/` extension, `geometry` helpers, `constants/` templates, ADR |
-| Review requirements | Reviewer hand-checks two net areas and one swing polygon |
-| Evidence | — |
-
-- [ ] **DQ.1-01** Net usable area from wall thickness and openings — `NOT_STARTED` · P1 · deps: none
+- [ ] **S6-01** Net usable area from wall thickness and openings — `NOT_STARTED` · P1 · deps: none
   - Accept: per-space net area and net dimensions; gross and net both reported with basis
   - Verify: analytical test: 4.0×3.0 m centreline room with 0.15 m partitions gives the hand-computed net area
   - Evidence: pending — today areas are centreline only (PROFESSIONAL_HANDOFF "Areas")
-- [ ] **DQ.1-02** ADR and domain extension for furniture and clearance zones — `NOT_STARTED` · P1 · deps: none
+- [ ] **S6-02** ADR and domain extension for furniture and clearance zones — `NOT_STARTED` · P1 · deps: none
   - Accept: decision whether furniture is a canonical element or a derived check; stable IDs; schema exported
   - Verify: `schemas check`; owner reads the ADR
   - Evidence: pending — no furniture entity in `domain/model.py`
-- [ ] **DQ.1-03** Door-swing and clearance polygon geometry helpers — `NOT_STARTED` · P1 · deps: none
+- [ ] **S6-03** Door-swing and clearance polygon geometry helpers — `NOT_STARTED` · P1 · deps: none
   - Accept: swing arc, leaf, approach zones per door side; sliding doors handled
   - Verify: analytical tests
   - Evidence: pending
-- [ ] **DQ.1-04** Furniture and fixture template library with cited dimensions — `NOT_STARTED` · P1 · deps: DQ.1-02
+- [ ] **S6-04** Furniture and fixture template library with cited dimensions — `NOT_STARTED` · P1 · deps: S6-02
   - Accept: bed, wardrobe, desk, chair, dining set, sofa group, kitchen run, appliances, WC, basin, shower, bath, vehicle; each dimension an assumption with source
   - Verify: template schema test
   - Evidence: pending
 
-### Stage DQ.2 — Door and stair critics
+#### Door and stair critics
 
-| Field | Value |
-|---|---|
-| Kind | implementation |
-| Status | NOT_STARTED |
-| Review | NOT_REQUESTED |
-| Branch | `stage/DQ.2-door-stair-critics` |
-| Depends on | DQ.1 |
-| Tasks | DQ.2-01, DQ.2-02, DQ.2-03, DQ.2-04 |
-| Objective | Doors open freely and stairs fit, with headroom and usable landings |
-| Scope | In: door swing conflicts, stair geometry, headroom, arrival and departure. Out: changing the generator to avoid them (DG) |
-| Acceptance | Each critic flags its seeded defect in R2.4 fixtures and passes the clean synthetic plans |
-| Tests | Seeded-defect tests; clean-plan tests |
-| Demonstration | Critic output on synthetic-hillside concepts |
-| Artifacts | `evaluation/` critics, tests |
-| Review requirements | Reviewer verifies one finding by hand geometry |
-| Evidence | — |
-
-- [ ] **DQ.2-01** Door swing clearance and conflicts — `NOT_STARTED` · P1 · deps: none
+- [ ] **S6-05** Door swing clearance and conflicts — `NOT_STARTED` · P1 · deps: none
   - Accept: door vs door, door vs wall end, door vs fixture or furniture zone, door vs stair top
   - Verify: seeded-defect test
   - Evidence: pending
-- [ ] **DQ.2-02** Stair rise, going, width, run length and landing checks — `NOT_STARTED` · P1 · deps: none
+- [ ] **S6-06** Stair rise, going, width, run length and landing checks — `NOT_STARTED` · P1 · deps: none
   - Accept: configurable thresholds as assumptions; finds stairs whose run does not fit their footprint
   - Verify: analytical test
   - Evidence: pending
-- [ ] **DQ.2-03** Stair headroom against the slab above — `NOT_STARTED` · P1 · deps: DQ.2-02
+- [ ] **S6-07** Stair headroom against the slab above — `NOT_STARTED` · P1 · deps: S6-06
   - Accept: headroom along the walking line using slab openings and floor-to-floor heights
   - Verify: seeded low-headroom fixture
   - Evidence: pending
-- [ ] **DQ.2-04** Stair arrival and departure clearances — `NOT_STARTED` · P1 · deps: DQ.2-02
+- [ ] **S6-08** Stair arrival and departure clearances — `NOT_STARTED` · P1 · deps: S6-06
   - Accept: clear zone at top and bottom, no door swinging into it
   - Verify: seeded fixture
   - Evidence: pending
 
-### Stage DQ.3 — Furniture feasibility critics
+#### Furniture feasibility critics
 
-| Field | Value |
-|---|---|
-| Kind | implementation |
-| Status | NOT_STARTED |
-| Review | NOT_REQUESTED |
-| Branch | `stage/DQ.3-furniture-critics` |
-| Depends on | DQ.1 |
-| Tasks | DQ.3-01, DQ.3-02, DQ.3-03, DQ.3-04, DQ.3-05 |
-| Objective | Each room can hold the furniture its function needs, with clearances and without blocking doors or windows |
-| Scope | In: bedrooms, study, dining, living, kitchen. Out: interior design or styling |
-| Acceptance | Feasibility found or a specific reason reported (which item, which clearance, which element blocks it) |
-| Tests | Positive and negative synthetic rooms per room type |
-| Demonstration | Furniture layout overlay data for a synthetic concept |
-| Artifacts | Placement search, critics, tests |
-| Review requirements | Reviewer checks one infeasible verdict by hand |
-| Evidence | — |
-
-- [ ] **DQ.3-01** Bed and wardrobe placement with clearances — `NOT_STARTED` · P1 · deps: none
+- [ ] **S6-09** Bed and wardrobe placement with clearances — `NOT_STARTED` · P1 · deps: none
   - Accept: double and single bed variants; access sides; wardrobe door or drawer clearance
   - Verify: a 2.6 m wide room fails a double bed with two-side access; a 3.4 m room passes
   - Evidence: pending
-- [ ] **DQ.3-02** Desk and chair clearances — `NOT_STARTED` · P2 · deps: none
+- [ ] **S6-10** Desk and chair clearances — `NOT_STARTED` · P2 · deps: none
   - Accept: chair pull-out zone kept clear of door swing
   - Verify: synthetic tests
   - Evidence: pending
-- [ ] **DQ.3-03** Dining table and chairs — `NOT_STARTED` · P1 · deps: none
+- [ ] **S6-11** Dining table and chairs — `NOT_STARTED` · P1 · deps: none
   - Accept: table size from household size in the program; chair zones and passage
   - Verify: synthetic tests
   - Evidence: pending
-- [ ] **DQ.3-04** Living-room arrangement — `NOT_STARTED` · P1 · deps: none
+- [ ] **S6-12** Living-room arrangement — `NOT_STARTED` · P1 · deps: none
   - Accept: seating group with circulation not crossing the group
   - Verify: synthetic tests
   - Evidence: pending
-- [ ] **DQ.3-05** Kitchen counters, appliances, work zones and circulation conflicts — `NOT_STARTED` · P1 · deps: none
+- [ ] **S6-13** Kitchen counters, appliances, work zones and circulation conflicts — `NOT_STARTED` · P1 · deps: none
   - Accept: counter run length, appliance clearances, aisle widths, through-traffic crossing the work zone flagged
-  - Verify: seeded heavy-cooking fixture (R2.3-03)
+  - Verify: seeded heavy-cooking fixture (S3-18)
   - Evidence: pending
 
-### Stage DQ.4 — Wet rooms, storage and garage critics
+#### Wet rooms, storage and garage critics
 
-| Field | Value |
-|---|---|
-| Kind | implementation |
-| Status | NOT_STARTED |
-| Review | NOT_REQUESTED |
-| Branch | `stage/DQ.4-wet-storage-garage` |
-| Depends on | DQ.1 |
-| Tasks | DQ.4-01, DQ.4-02, DQ.4-03, DQ.4-04 |
-| Objective | Bathrooms, storage and garages are usable, not just present |
-| Scope | In: WC, basin, shower, bath clearances; storage and service rooms; vehicle envelopes and doors; arrival where modelled. Out: plumbing design |
-| Acceptance | Seeded defects found; clean synthetic plans pass |
-| Tests | Synthetic tests per item |
-| Demonstration | Critic output on synthetic concepts |
-| Artifacts | Critics, tests |
-| Review requirements | Reviewer checks one garage finding by hand |
-| Evidence | — |
-
-- [ ] **DQ.4-01** Bathroom fixture placement and WC, shower and basin clearances — `NOT_STARTED` · P1 · deps: none
+- [ ] **S6-14** Bathroom fixture placement and WC, shower and basin clearances — `NOT_STARTED` · P1 · deps: none
   - Accept: fixtures fit with front clearances and the door does not hit them
   - Verify: seeded fixtures
   - Evidence: pending
-- [ ] **DQ.4-02** Storage and service-space usability — `NOT_STARTED` · P2 · deps: none
+- [ ] **S6-15** Storage and service-space usability — `NOT_STARTED` · P2 · deps: none
   - Accept: shelf depth and access zone; laundry appliance and folding space
   - Verify: synthetic tests
   - Evidence: pending
-- [ ] **DQ.4-03** Garage vehicle envelopes, vehicle door and pedestrian door clearances — `NOT_STARTED` · P1 · deps: none
+- [ ] **S6-16** Garage vehicle envelopes, vehicle door and pedestrian door clearances — `NOT_STARTED` · P1 · deps: none
   - Accept: vehicle count and size from the program; car doors can open; pedestrian route to the house door
   - Verify: seeded garage fixture
   - Evidence: pending
-- [ ] **DQ.4-04** Vehicle arrival and turning where the road and drive are modelled — `NOT_STARTED` · P2 · deps: DQ.4-03
+- [ ] **S6-17** Vehicle arrival and turning where the road and drive are modelled — `NOT_STARTED` · P2 · deps: S6-16
   - Accept: swept path or reported "not checked" when the road geometry is unknown
   - Verify: synthetic road fixture
   - Evidence: pending
 
-### Stage DQ.5 — Circulation and privacy critics
+#### Circulation and privacy critics
 
-| Field | Value |
-|---|---|
-| Kind | implementation |
-| Status | NOT_STARTED |
-| Review | NOT_REQUESTED |
-| Branch | `stage/DQ.5-circulation-privacy` |
-| Depends on | DQ.1 |
-| Tasks | DQ.5-01, DQ.5-02, DQ.5-03, DQ.5-04, DQ.5-05, DQ.5-06 |
-| Objective | Measured routes, efficient circulation, and privacy that matches the owner's stated priorities |
-| Scope | In: corridor and residual space, path-based routes, daily routes, guest vs family circulation, acoustic separation incl. vertical, bathroom entrance privacy. Out: generator changes |
-| Acceptance | Route lengths measured along walkable paths (status `measured`); straight-line metrics retired or relabelled |
-| Tests | Analytical route tests; seeded privacy fixtures |
-| Demonstration | Daily-route report on a synthetic concept |
-| Artifacts | Critics, path graph, tests |
-| Review requirements | Reviewer checks one route length by hand |
-| Evidence | — |
-
-- [ ] **DQ.5-01** Excess corridor and residual-space detection — `NOT_STARTED` · P1 · deps: none
+- [ ] **S6-18** Excess corridor and residual-space detection — `NOT_STARTED` · P1 · deps: none
   - Accept: circulation share, dead-end length, filler space reported per level
-  - Verify: seeded poor-corridor fixture (R2.4-03)
+  - Verify: seeded poor-corridor fixture (S6-29)
   - Evidence: pending
-- [ ] **DQ.5-02** Path-based route measurement through doors — `NOT_STARTED` · P1 · deps: none
+- [ ] **S6-19** Path-based route measurement through doors — `NOT_STARTED` · P1 · deps: none
   - Accept: shortest walkable path including stairs; replaces the straight-line `max_walk_from_entrance_m` (`inferred` today)
   - Verify: analytical L-shaped route test
   - Evidence: pending
-- [ ] **DQ.5-03** Daily routes between garage, kitchen, entrance and family areas — `NOT_STARTED` · P1 · deps: DQ.5-02
+- [ ] **S6-20** Daily routes between garage, kitchen, entrance and family areas — `NOT_STARTED` · P1 · deps: S6-19
   - Accept: route lengths, level changes and rooms crossed for each named route
   - Verify: synthetic tests
   - Evidence: pending
-- [ ] **DQ.5-04** Guest versus family-private circulation — `NOT_STARTED` · P1 · deps: DQ.5-02
+- [ ] **S6-21** Guest versus family-private circulation — `NOT_STARTED` · P1 · deps: S6-19
   - Accept: guest routes that pass private rooms flagged with the rooms named
-  - Verify: family-privacy fixture (R2.3-01)
+  - Verify: family-privacy fixture (S3-16)
   - Evidence: pending
-- [ ] **DQ.5-05** Bedroom acoustic and privacy separation including vertical stacking — `NOT_STARTED` · P1 · deps: none
+- [ ] **S6-22** Bedroom acoustic and privacy separation including vertical stacking — `NOT_STARTED` · P1 · deps: none
   - Accept: noisy rooms above, below or beside bedrooms flagged (today only same row or level is considered)
   - Verify: seeded stacked fixture
   - Evidence: pending
-- [ ] **DQ.5-06** Bathroom entrance privacy — `NOT_STARTED` · P2 · deps: none
+- [ ] **S6-23** Bathroom entrance privacy — `NOT_STARTED` · P2 · deps: none
   - Accept: bathroom doors visible from entrance or living areas flagged
   - Verify: synthetic tests
   - Evidence: pending
 
-### Stage DQ.6 — Daylight and ventilation opportunity
+#### Daylight and ventilation opportunity
 
-| Field | Value |
-|---|---|
-| Kind | implementation |
-| Status | NOT_STARTED |
-| Review | NOT_REQUESTED |
-| Branch | `stage/DQ.6-daylight-ventilation` |
-| Depends on | DQ.1 |
-| Tasks | DQ.6-01, DQ.6-02, DQ.6-03 |
-| Objective | Honest, geometry-based daylight and ventilation opportunity without orientation claims while north is unknown |
-| Scope | In: window-capable wall length, window-to-floor ratios, cross-ventilation potential, quality regression suite. Out: simulation (R1.2-03) |
-| Acceptance | Orientation-dependent metrics are `not_checked` without a confirmed CRS; buried walls never count as window-capable |
-| Tests | Analytical tests; regression suite over R2 fixtures |
-| Demonstration | Daylight-opportunity report on synthetic-hillside |
-| Artifacts | Critics, regression suite |
-| Review requirements | Reviewer checks a buried-wall case |
-| Evidence | — |
-
-- [ ] **DQ.6-01** Window-capable external wall length and daylight opportunity per room — `NOT_STARTED` · P1 · deps: none
+- [ ] **S6-24** Window-capable external wall length and daylight opportunity per room — `NOT_STARTED` · P1 · deps: none
   - Accept: exterior, unburied wall length and window area to floor area per habitable room
   - Verify: analytical tests including a retaining wall
   - Evidence: pending — today `required_daylight_exterior_windows` counts windows only
-- [ ] **DQ.6-02** Cross-ventilation potential — `NOT_STARTED` · P2 · deps: DQ.6-01
+- [ ] **S6-25** Cross-ventilation potential — `NOT_STARTED` · P2 · deps: S6-24
   - Accept: openings on different facades of a space or connected zone, reported as opportunity, not airflow
   - Verify: synthetic tests
   - Evidence: pending
-- [ ] **DQ.6-03** Architectural quality regression suite over all critics — `NOT_STARTED` · P1 · deps: DQ.6-01
+- [ ] **S6-26** Architectural quality regression suite over all critics — `NOT_STARTED` · P1 · deps: S6-24
   - Accept: every critic runs over the R2 fixtures with expected findings checked in CI
   - Verify: `pytest -q tests/benchmarks`
   - Evidence: pending
 
-### Workstream DG: flexible architectural generation ("D+2")
+#### Defect-seeded scenarios
+
+- [ ] **S6-27** Multi-level stair and headroom defects — `NOT_STARTED` · P1 · deps: none
+  - Accept: low headroom, short run, blocked arrival
+  - Verify: suite
+  - Evidence: pending
+- [ ] **S6-28** Furniture and door-clearance conflicts — `NOT_STARTED` · P1 · deps: none
+  - Accept: door hitting bed, wardrobe blocked, WC clearance missing
+  - Verify: suite
+  - Evidence: pending
+- [ ] **S6-29** Poor corridor efficiency — `NOT_STARTED` · P1 · deps: none
+  - Accept: long dead-end corridor and residual spaces
+  - Verify: suite
+  - Evidence: pending
+- [ ] **S6-30** Wrong entrance and garage relationships — `NOT_STARTED` · P1 · deps: none
+  - Accept: garage far from kitchen; entrance through a private room
+  - Verify: suite
+  - Evidence: pending
+- [ ] **S6-31** Windows facing buried walls — `NOT_STARTED` · P1 · deps: none
+  - Accept: window on a face with ground above sill
+  - Verify: suite
+  - Evidence: pending
+- [ ] **S6-32** Outdoor doors above or below grade and inconsistent floor-to-floor connections — `NOT_STARTED` · P1 · deps: none
+  - Accept: door 1.5 m above ground; stair connecting levels whose heights disagree
+  - Verify: suite
+  - Evidence: pending
+
+### Stage S7 — Flexible plan generation
+
+| Field | Value |
+|---|---|
+| Kind | implementation |
+| Status | NOT_STARTED |
+| Review | NOT_REQUESTED |
+| Branch | `stage/S7-flexible-generation` |
+| Depends on | S3, S6 |
+| Tasks | S7-01, S7-02, S7-03, S7-04, S7-05, S7-06, S7-07, S7-08, S7-09, S7-10, S7-11, S7-12, S7-13, S7-14, S7-15, S7-16, S7-17, S7-18, S7-19, S7-20, S7-21, S7-22, S7-23, S7-24, S7-25 |
+| Objective | Solver and evaluator agree; agents propose typed topologies; rooms placed freely in 2D; real variety, terraces, topology revisions |
+| Scope | In: semantic alignment, proposals, 2D engine, corridor-free and open plans, L/multi-wing/courtyard, stair cores, terraces, combine, diversity. Out: terrain-level optimisation (S8) |
+| Acceptance | Zero solver/evaluator disagreements on fixtures; valid plans without mandatory corridors; near-duplicate concepts flagged; combine supported |
+| Tests | Agreement, generation, performance, revision, diversity and adversarial tests |
+| Demonstration | Corridor-free, L-shaped and courtyard concepts on the synthetic steep fixture with a diversity report |
+| Artifacts | ADR on relation semantics, `ConceptProposal` schema, new generator path, tests |
+| Review requirements | Reviewer runs the agreement and performance tests and builds two near-identical concepts to check they are flagged |
+| Evidence | — |
 
 The AI proposes spatial ideas; the geometry engine constructs and validates
 them. Raw LLM coordinates never replace the canonical model.
 
-### Stage DG.1 — Solver and evaluator semantic alignment
+#### Solver and evaluator semantic alignment
 
-| Field | Value |
-|---|---|
-| Kind | implementation |
-| Status | NOT_STARTED |
-| Review | NOT_REQUESTED |
-| Branch | `stage/DG.1-semantic-alignment` |
-| Depends on | R2.1 |
-| Tasks | DG.1-01, DG.1-02, DG.1-03, DG.1-04, DG.1-05 |
-| Objective | What the solver optimises is what the evaluator measures, and compiled constraints are actually used |
-| Scope | In: relation semantics spec, solver reads ConstraintSet, ignored objectives wired or reported, soft CONNECTED doors, regression tests. Out: new massing (DG.3+) |
-| Acceptance | For every relation the solver reports satisfied, the evaluator agrees, on all synthetic fixtures |
-| Tests | Property test: solver-satisfied relation ⇒ evaluator-satisfied |
-| Demonstration | Before/after table of relation agreement on synthetic-hillside |
-| Artifacts | ADR for relation semantics; solver and evaluator changes; tests |
-| Review requirements | Reviewer runs the agreement test and reads the ADR |
-| Evidence | — |
-
-- [ ] **DG.1-01** One relation-semantics definition shared by solver and evaluator — `NOT_STARTED` · P0 · deps: none
+- [ ] **S7-01** One relation-semantics definition shared by solver and evaluator — `NOT_STARTED` · P0 · deps: none
   - Accept: ADR defines ADJACENT, CONNECTED, NEAR, SEPARATED, ACOUSTIC_SEPARATION, VISUAL, hall and EXTERIOR pairs; both sides import it
   - Verify: owner reads ADR; agreement test
   - Evidence: pending — mismatches listed in §C (ISS-12)
-- [ ] **DG.1-02** Solver enforces compiled hard constraints from the ConstraintSet — `NOT_STARTED` · P1 · deps: DG.1-01
+- [ ] **S7-02** Solver enforces compiled hard constraints from the ConstraintSet — `NOT_STARTED` · P1 · deps: S7-01
   - Accept: CodePack min area and width rules enforced in the solver, not only checked afterwards
   - Verify: test with a CodePack minimum the old solver violated
   - Evidence: pending — `generator.py:118-125,174` reads only weights
-- [ ] **DG.1-03** Wire or explicitly report the ignored soft objectives — `NOT_STARTED` · P1 · deps: DG.1-01
+- [ ] **S7-03** Wire or explicitly report the ignored soft objectives — `NOT_STARTED` · P1 · deps: S7-01
   - Accept: circulation efficiency, site response, views, cross-ventilation, indoor/outdoor, kitchen functionality, storage are optimised or reported as `not_optimised` in the explanation
   - Verify: test over the compiled objective list
   - Evidence: pending
-- [ ] **DG.1-04** Soft CONNECTED relations produce doors when satisfied — `NOT_STARTED` · P1 · deps: DG.1-01
+- [ ] **S7-04** Soft CONNECTED relations produce doors when satisfied — `NOT_STARTED` · P1 · deps: S7-01
   - Accept: touching rooms with a soft CONNECTED request get a door or the relation is reported unmet consistently
   - Verify: agreement test
   - Evidence: pending — `assemble.py:642-650`
-- [ ] **DG.1-05** Agreement regression tests across all strategies — `NOT_STARTED` · P0 · deps: DG.1-02, DG.1-03, DG.1-04
+- [ ] **S7-05** Agreement regression tests across all strategies — `NOT_STARTED` · P0 · deps: S7-02, S7-03, S7-04
   - Accept: zero disagreements on synthetic fixtures
   - Verify: `pytest -q`
   - Evidence: pending
 
-### Stage DG.2 — Typed topology proposals
+#### Typed topology proposals
 
-| Field | Value |
-|---|---|
-| Kind | implementation |
-| Status | NOT_STARTED |
-| Review | NOT_REQUESTED |
-| Branch | `stage/DG.2-topology-proposals` |
-| Depends on | DG.1 |
-| Tasks | DG.2-01, DG.2-02, DG.2-03 |
-| Objective | Agents propose spatial concepts as typed, validated topology instead of coordinates |
-| Scope | In: ConceptProposal schema, validator, CLI. Out: placement engine (DG.3) |
-| Acceptance | A proposal is stored as an `inference` with agent provenance and rejected when inconsistent with the program |
-| Tests | Schema and validator tests with malformed proposals |
-| Demonstration | An agent proposes a topology for synthetic-hillside and the solver uses it |
-| Artifacts | Domain schema, validator, CLI command |
-| Review requirements | Reviewer submits an inconsistent proposal |
-| Evidence | — |
-
-- [ ] **DG.2-01** ConceptProposal schema — `NOT_STARTED` · P1 · deps: none
+- [ ] **S7-06** ConceptProposal schema — `NOT_STARTED` · P1 · deps: none
   - Accept: zones, adjacency graph, level assignment, stair-core position, outdoor links, intent text
   - Verify: `schemas check`
   - Evidence: pending
-- [ ] **DG.2-02** Formal validation of topology proposals — `NOT_STARTED` · P1 · deps: DG.2-01
+- [ ] **S7-07** Formal validation of topology proposals — `NOT_STARTED` · P1 · deps: S7-06
   - Accept: program coverage, connectivity, hard adjacencies, level feasibility checked before solving
   - Verify: negative tests
   - Evidence: pending
-- [ ] **DG.2-03** CLI to submit a proposal and generate from it — `NOT_STARTED` · P1 · deps: DG.2-02
+- [ ] **S7-08** CLI to submit a proposal and generate from it — `NOT_STARTED` · P1 · deps: S7-07
   - Accept: `plan propose` (or equivalent) records the proposal and runs generation; exploratory mode supported
   - Verify: workflow test
   - Evidence: pending
 
-### Stage DG.3 — Two-dimensional placement engine
+#### Two-dimensional placement engine
 
-| Field | Value |
-|---|---|
-| Kind | implementation |
-| Status | NOT_STARTED |
-| Review | NOT_REQUESTED |
-| Branch | `stage/DG.3-2d-placement` |
-| Depends on | DG.1 |
-| Tasks | DG.3-01, DG.3-02, DG.3-03, DG.3-04, DG.3-05 |
-| Objective | Rooms placed freely in 2D within the envelope, with compact or corridor-free circulation where the program allows |
-| Scope | In: NoOverlap2D (or alternative) evaluation, 2D placement, corridor-free and open-plan, performance budget. Out: courtyards and multi-wing (DG.4) |
-| Acceptance | Valid plans without a mandatory full-length corridor; solve time within a stated budget on the synthetic steep fixture |
-| Tests | Validity, determinism and performance tests |
-| Demonstration | Corridor-free concept on synthetic-bungalow and synthetic steep fixture |
-| Artifacts | New generator path, benchmark notes, tests |
-| Review requirements | Reviewer runs the performance test and inspects plans visually (E2) |
-| Evidence | — |
-
-- [ ] **DG.3-01** Evaluate CP-SAT NoOverlap2D and alternatives — `NOT_STARTED` · P1 · deps: none
+- [ ] **S7-09** Evaluate CP-SAT NoOverlap2D and alternatives — `NOT_STARTED` · P1 · deps: none
   - Accept: benchmark on synthetic programs: solve time, optimality gap, determinism; decision recorded
   - Verify: benchmark script and results in the stage evidence
   - Evidence: pending — `NoOverlap2D` unused today
-- [ ] **DG.3-02** 2D room placement with topology constraints — `NOT_STARTED` · P1 · deps: DG.3-01
+- [ ] **S7-10** 2D room placement with topology constraints — `NOT_STARTED` · P1 · deps: S7-09
   - Accept: rooms placed in x and y; adjacency by shared wall length; canonical model assembled and `check_model` clean
   - Verify: generation tests
   - Evidence: pending
-- [ ] **DG.3-03** Corridor-free and compact circulation patterns — `NOT_STARTED` · P1 · deps: DG.3-02
+- [ ] **S7-11** Corridor-free and compact circulation patterns — `NOT_STARTED` · P1 · deps: S7-10
   - Accept: circulation only where needed; circulation share reported lower than the bar strategies on the same program
   - Verify: comparison test
   - Evidence: pending
-- [ ] **DG.3-04** Meaningful open-plan arrangements — `NOT_STARTED` · P1 · deps: DG.3-02
-  - Accept: living, kitchen and dining as zones of one composite space with furniture feasibility (DQ.3) passing
+- [ ] **S7-12** Meaningful open-plan arrangements — `NOT_STARTED` · P1 · deps: S7-10
+  - Accept: living, kitchen and dining as zones of one composite space with furniture feasibility (S6) passing
   - Verify: synthetic tests
   - Evidence: pending
-- [ ] **DG.3-05** Solver performance and reproducibility budget — `NOT_STARTED` · P2 · deps: DG.3-02
+- [ ] **S7-13** Solver performance and reproducibility budget — `NOT_STARTED` · P2 · deps: S7-10
   - Accept: time limit, seed and platform recorded; tests assert properties, not bytes
   - Verify: performance test
   - Evidence: pending
 
-### Stage DG.4 — Massing and organisation variety
+#### Massing and organisation variety
 
-| Field | Value |
-|---|---|
-| Kind | implementation |
-| Status | NOT_STARTED |
-| Review | NOT_REQUESTED |
-| Branch | `stage/DG.4-massing-variety` |
-| Depends on | DG.3 |
-| Tasks | DG.4-01, DG.4-02, DG.4-03, DG.4-04, DG.4-05 |
-| Objective | Genuinely different organisations: L-shapes, multi-wing, courtyards, alternative stair cores and zoning |
-| Scope | In: new massing families and floor organisations. Out: terraces (DG.5), terrain optimisation (DH.3) |
-| Acceptance | Each family produces valid plans on at least one R2 fixture or reports a precise infeasibility reason |
-| Tests | Generation tests per family |
-| Demonstration | Comparison of families on synthetic steep fixture |
-| Artifacts | Generator code, tests |
-| Review requirements | Reviewer checks diversity metrics (DG.6-04) once available, otherwise visual comparison |
-| Evidence | — |
-
-- [ ] **DG.4-01** L-shaped and multi-wing arrangements on the 2D engine — `NOT_STARTED` · P1 · deps: none
+- [ ] **S7-14** L-shaped and multi-wing arrangements on the 2D engine — `NOT_STARTED` · P1 · deps: none
   - Accept: wings at free positions, not a fixed offset behind the entry bar
   - Verify: generation tests
   - Evidence: pending
-- [ ] **DG.4-02** Courtyard geometry with an open court — `NOT_STARTED` · P2 · deps: none
+- [ ] **S7-15** Courtyard geometry with an open court — `NOT_STARTED` · P2 · deps: none
   - Accept: polygon with a hole or enclosing wings; court as an outdoor space
   - Verify: generation tests
   - Evidence: pending — `courtyard` today is two bars and a gallery
-- [ ] **DG.4-03** Alternative stair-core locations and floor organisations — `NOT_STARTED` · P1 · deps: none
+- [ ] **S7-16** Alternative stair-core locations and floor organisations — `NOT_STARTED` · P1 · deps: none
   - Accept: stair position is a variable or a proposal input; floors organised by zone (day, night, guest)
   - Verify: tests
   - Evidence: pending
-- [ ] **DG.4-04** Privacy-driven zoning — `NOT_STARTED` · P1 · deps: none
+- [ ] **S7-17** Privacy-driven zoning — `NOT_STARTED` · P1 · deps: none
   - Accept: guest, family and service zones separated per program priorities
   - Verify: family-privacy fixture
   - Evidence: pending
-- [ ] **DG.4-05** Non-rectangular and composite spaces where justified — `NOT_STARTED` · P3 · deps: none
+- [ ] **S7-18** Non-rectangular and composite spaces where justified — `NOT_STARTED` · P3 · deps: none
   - Accept: L-shaped rooms or composite open-plan spaces pass `check_model`
   - Verify: tests
   - Evidence: pending
 
-### Stage DG.5 — Outdoor and terrace integration
+#### Outdoor and terrace integration
 
-| Field | Value |
-|---|---|
-| Kind | implementation |
-| Status | NOT_STARTED |
-| Review | NOT_REQUESTED |
-| Branch | `stage/DG.5-outdoor-terraces` |
-| Depends on | DG.3 |
-| Tasks | DG.5-01, DG.5-02 |
-| Objective | Terraces and gardens become real geometry with real relationships to rooms and ground |
-| Scope | In: terrace slabs and parapets, outdoor items from the program, indoor/outdoor relationships. Out: landscape design |
-| Acceptance | Outdoor program items placed or reported with a reason; their adjacencies measured instead of `not_checked` |
-| Tests | Generation and evaluation tests |
-| Demonstration | Large-terrace hillside fixture (R2.3-04) |
-| Artifacts | Generator and evaluator changes |
-| Review requirements | Reviewer checks terrace levels against terrain |
-| Evidence | — |
-
-- [ ] **DG.5-01** Terrace geometry and placement — `NOT_STARTED` · P1 · deps: none
+- [ ] **S7-19** Terrace geometry and placement — `NOT_STARTED` · P1 · deps: none
   - Accept: TERRACE slabs and parapets populated with levels and edges
   - Verify: generation tests
   - Evidence: pending — `domain/model.py:137-152` supports TERRACE; generator never populates it
-- [ ] **DG.5-02** Indoor/outdoor relationships evaluated — `NOT_STARTED` · P1 · deps: DG.5-01
+- [ ] **S7-20** Indoor/outdoor relationships evaluated — `NOT_STARTED` · P1 · deps: S7-19
   - Accept: room-to-terrace door connections and level differences measured
   - Verify: evaluation tests
   - Evidence: pending
 
-### Stage DG.6 — Topology revisions and diversity
+#### Topology revisions and diversity
+
+- [ ] **S7-21** Revisions that change architectural topology — `NOT_STARTED` · P1 · deps: none
+  - Accept: revise accepts a topology proposal delta; history preserved
+  - Verify: revision tests
+  - Evidence: pending
+- [ ] **S7-22** Combine compatible features from alternatives — `NOT_STARTED` · P2 · deps: S7-21
+  - Accept: `combine` no longer refused; feature mapping explicit and owner-confirmed
+  - Verify: combine test
+  - Evidence: pending — refused today at `cli/plan_cmds.py:269`
+- [ ] **S7-23** Preserve owner design intent across revisions — `NOT_STARTED` · P1 · deps: S7-21
+  - Accept: earlier owner requests are re-checked on every new version; regressions reported
+  - Verify: multi-step revision test
+  - Evidence: pending — partial coverage in `tests/test_plan_provenance_revisions.py`
+- [ ] **S7-24** Quantitative diversity metrics and superficial-variant detection — `NOT_STARTED` · P1 · deps: none
+  - Accept: topology graph distance, zoning, level assignment and footprint overlap; threshold flags near-duplicates
+  - Verify: test with a mirrored or shifted duplicate
+  - Evidence: pending — `comparison.md` has footprint overlap and level differences only
+- [ ] **S7-25** Adversarial generation tests — `NOT_STARTED` · P2 · deps: none
+  - Accept: contradictory, oversized, undersized and pathological programs fail clearly without invalid models
+  - Verify: `pytest -q`
+  - Evidence: pending
+
+### Stage S8 — Hillside geometry
 
 | Field | Value |
 |---|---|
 | Kind | implementation |
 | Status | NOT_STARTED |
 | Review | NOT_REQUESTED |
-| Branch | `stage/DG.6-revisions-diversity` |
-| Depends on | DG.2, DG.4 |
-| Tasks | DG.6-01, DG.6-02, DG.6-03, DG.6-04, DG.6-05 |
-| Objective | Revisions can change topology and combine alternatives without losing intent; diversity is measured |
-| Scope | In: topology revisions, combine, intent preservation, diversity metrics, adversarial tests. Out: real-house use |
-| Acceptance | "Combine the entrance of B with the courtyard of A" supported via proposals; superficially different concepts detected |
-| Tests | Revision, combine, diversity and adversarial tests |
-| Demonstration | Combine two synthetic concepts and show the revision report |
-| Artifacts | Revision ops, diversity metrics, tests |
-| Review requirements | Reviewer constructs two near-identical concepts and checks they are flagged |
+| Branch | `stage/S8-hillside-geometry` |
+| Depends on | S3, S7 |
+| Tasks | S8-01, S8-02, S8-03, S8-04, S8-05, S8-06, S8-07, S8-08, S8-09, S8-10, S8-11, S8-12, S8-13, S8-14, S8-15, S8-16, S8-17, S8-18, S8-19, S8-20, S8-21, S8-22 |
+| Objective | Floors meet the ground correctly: true sections, joint level/terrain optimisation, earthworks, retaining, access, terrain risk |
+| Scope | In: analytical volume fixtures, meshes, sections and elevations, level optimisation, sectional strategies, earthworks, door-to-ground, garage access, TIN quality, risk register. Out: engineering design |
+| Acceptance | Volumes match analytical values within tolerance; sections agree with levels; no default preference for excavation or elevation; risks listed as needing a professional |
+| Tests | Analytical fixture tests; section geometry tests; terrain scenario tests |
+| Demonstration | Sections, sectional-strategy comparison and risk register for the synthetic steep fixture |
+| Artifacts | Geometry adapter, section generator, solver and evaluator changes |
+| Review requirements | Reviewer recomputes one analytical volume and one section height, confirms deep excavation is not penalised by default |
 | Evidence | — |
-
-- [ ] **DG.6-01** Revisions that change architectural topology — `NOT_STARTED` · P1 · deps: none
-  - Accept: revise accepts a topology proposal delta; history preserved
-  - Verify: revision tests
-  - Evidence: pending
-- [ ] **DG.6-02** Combine compatible features from alternatives — `NOT_STARTED` · P2 · deps: DG.6-01
-  - Accept: `combine` no longer refused; feature mapping explicit and owner-confirmed
-  - Verify: combine test
-  - Evidence: pending — refused today at `cli/plan_cmds.py:269`
-- [ ] **DG.6-03** Preserve owner design intent across revisions — `NOT_STARTED` · P1 · deps: DG.6-01
-  - Accept: earlier owner requests are re-checked on every new version; regressions reported
-  - Verify: multi-step revision test
-  - Evidence: pending — partial coverage in `tests/test_plan_provenance_revisions.py`
-- [ ] **DG.6-04** Quantitative diversity metrics and superficial-variant detection — `NOT_STARTED` · P1 · deps: none
-  - Accept: topology graph distance, zoning, level assignment and footprint overlap; threshold flags near-duplicates
-  - Verify: test with a mirrored or shifted duplicate
-  - Evidence: pending — `comparison.md` has footprint overlap and level differences only
-- [ ] **DG.6-05** Adversarial generation tests — `NOT_STARTED` · P2 · deps: none
-  - Accept: contradictory, oversized, undersized and pathological programs fail clearly without invalid models
-  - Verify: `pytest -q`
-  - Evidence: pending
-
-### Workstream DH: hillside architecture and 2.5D geometry ("D+3")
 
 Homeowner requirement (DEC-04): deep excavation, including more than 4 m,
 is an acceptable design option; minimising excavation is not automatically
@@ -1507,938 +1300,530 @@ circulation, daylight, construction complexity and engineering risk. No
 structural, foundation, geotechnical or drainage suitability is ever
 claimed without a recorded professional verification.
 
-### Stage DH.1 — Robust 2.5D geometry and volume validation
+#### Robust 2.5D geometry and volume validation
 
-| Field | Value |
-|---|---|
-| Kind | implementation |
-| Status | NOT_STARTED |
-| Review | NOT_REQUESTED |
-| Branch | `stage/DH.1-2.5d-geometry` |
-| Depends on | R2.1, R1.1-02, R1.1-03 |
-| Tasks | DH.1-01, DH.1-02, DH.1-03 |
-| Objective | Terrain and building volumes computed robustly and proven against analytical answers |
-| Scope | In: analytical fixtures, TIN-to-mesh, building/terrain intersection, separated cut/fill/void. Out: sections (DH.2) |
-| Acceptance | Volumes within a stated tolerance of analytical values; cut, engineered fill and void never mixed |
-| Tests | Analytical fixture tests |
-| Demonstration | Metrics table on analytical and synthetic-hillside fixtures |
-| Artifacts | Geometry module behind an adapter, tests |
-| Review requirements | Reviewer recomputes one analytical case |
-| Evidence | — |
-
-- [ ] **DH.1-01** Analytical terrain and volume fixtures — `NOT_STARTED` · P1 · deps: none
+- [ ] **S8-01** Analytical terrain and volume fixtures — `NOT_STARTED` · P1 · deps: none
   - Accept: planar slope, wedge, pyramid and stepped pad with closed-form cut and void volumes
   - Verify: fixture tests
   - Evidence: pending
-- [ ] **DH.1-02** TIN-to-mesh and terrain/building intersection — `NOT_STARTED` · P1 · deps: DH.1-01
-  - Accept: closed meshes, intersection volumes; library chosen in R1.1-02/03 behind an adapter, domain untouched
+- [ ] **S8-02** TIN-to-mesh and terrain/building intersection — `NOT_STARTED` · P1 · deps: S8-01
+  - Accept: closed meshes, intersection volumes; library chosen in S3-02 or S3-03 behind an adapter, domain untouched
   - Verify: analytical tests
   - Evidence: pending
-- [ ] **DH.1-03** Separate cut, engineered fill and underfloor void metrics — `NOT_STARTED` · P1 · deps: DH.1-02
+- [ ] **S8-03** Separate cut, engineered fill and underfloor void metrics — `NOT_STARTED` · P1 · deps: S8-02
   - Accept: three distinct metrics with method and status; replaces the 0.5 m grid sampling or proves equivalence
   - Verify: analytical tests within tolerance
   - Evidence: pending — `evaluators.py:943-1018`
 
-### Stage DH.2 — True sections and elevations
+#### True sections and elevations
 
-| Field | Value |
-|---|---|
-| Kind | implementation |
-| Status | NOT_STARTED |
-| Review | NOT_REQUESTED |
-| Branch | `stage/DH.2-sections` |
-| Depends on | DH.1 |
-| Tasks | DH.2-01, DH.2-02, DH.2-03 |
-| Objective | Real cut sections and elevations that show how floors meet the ground |
-| Scope | In: configurable section lines, longitudinal, transverse, through stairs, garage and entrances, elevations. Out: rendering polish |
-| Acceptance | Section geometry derived from the model and the terrain mesh; ground line and floors agree with metrics |
-| Tests | Section geometry tests on analytical fixtures |
-| Demonstration | Four sections of a synthetic hillside concept |
-| Artifacts | Section generator, SVG output, reviewer integration hook |
-| Review requirements | Reviewer checks one section height against `plan.json` levels |
-| Evidence | — |
-
-- [ ] **DH.2-01** Configurable section lines and true cut sections — `NOT_STARTED` · P1 · deps: none
+- [ ] **S8-04** Configurable section lines and true cut sections — `NOT_STARTED` · P1 · deps: none
   - Accept: any line across the parcel; walls, slabs, stairs and ground cut and projected
   - Verify: analytical tests
   - Evidence: pending — today schematic only (`render2d/plan_svg.py:374-470`)
-- [ ] **DH.2-02** Standard sections: longitudinal, transverse, through stairs, through garage and entrances — `NOT_STARTED` · P1 · deps: DH.2-01
+- [ ] **S8-05** Standard sections: longitudinal, transverse, through stairs, through garage and entrances — `NOT_STARTED` · P1 · deps: S8-04
   - Accept: generated automatically per concept
   - Verify: test that each section exists and intersects the named element
   - Evidence: pending
-- [ ] **DH.2-03** Building and platform elevations — `NOT_STARTED` · P2 · deps: DH.2-01
+- [ ] **S8-06** Building and platform elevations — `NOT_STARTED` · P2 · deps: S8-04
   - Accept: facade elevations with ground line and openings
   - Verify: tests
   - Evidence: pending
 
-### Stage DH.3 — Joint level and terrain optimisation
+#### Joint level and terrain optimisation
 
-| Field | Value |
-|---|---|
-| Kind | implementation |
-| Status | NOT_STARTED |
-| Review | NOT_REQUESTED |
-| Branch | `stage/DH.3-level-optimisation` |
-| Depends on | DH.1, DG.1 |
-| Tasks | DH.3-01, DH.3-02, DH.3-03, DH.3-04 |
-| Objective | Floor levels chosen together with the terrain, comparing embedded, walk-out, split, stepped, elevated and hybrid solutions |
-| Scope | In: level variables in the solver, buried floors and daylight, alternative sectional strategies, void reporting. Out: structural design |
-| Acceptance | Concepts for each sectional strategy compared on the same criteria; no automatic preference for excavation or elevation |
-| Tests | Generation tests on R2.2 terrain fixtures |
-| Demonstration | Sectional-strategy comparison on the synthetic steep fixture |
-| Artifacts | Solver and evaluator changes, comparison output |
-| Review requirements | Reviewer confirms deep excavation is not penalised by default and voids are reported |
-| Evidence | — |
-
-- [ ] **DH.3-01** Floor-to-ground relationship model and joint level optimisation — `NOT_STARTED` · P1 · deps: none
+- [ ] **S8-07** Floor-to-ground relationship model and joint level optimisation — `NOT_STARTED` · P1 · deps: none
   - Accept: level elevations are decision variables bounded by terrain; replaces the ±3.0 m clamp heuristic (`massing.py:251-255`)
   - Verify: tests on road-high and road-low fixtures
   - Evidence: pending
-- [ ] **DH.3-02** Embedded and partially buried floors with daylight consequences — `NOT_STARTED` · P1 · deps: DH.3-01
-  - Accept: buried faces lose window capability (DQ.6-01); habitable rooms on buried faces flagged
+- [ ] **S8-08** Embedded and partially buried floors with daylight consequences — `NOT_STARTED` · P1 · deps: S8-07
+  - Accept: buried faces lose window capability (S6-24); habitable rooms on buried faces flagged
   - Verify: tests
   - Evidence: pending
-- [ ] **DH.3-03** Walk-out, split-level, stepped, elevated and hybrid alternatives compared — `NOT_STARTED` · P1 · deps: DH.3-01
+- [ ] **S8-09** Walk-out, split-level, stepped, elevated and hybrid alternatives compared — `NOT_STARTED` · P1 · deps: S8-07
   - Accept: each produced where feasible; trade-offs shown per DEC-04 without a default preference
   - Verify: comparison test
   - Evidence: pending
-- [ ] **DH.3-04** Underfloor void reporting with large-void flags — `NOT_STARTED` · P1 · deps: DH.3-01
+- [ ] **S8-10** Underfloor void reporting with large-void flags — `NOT_STARTED` · P1 · deps: S8-07
   - Accept: void volume and maximum clear height per elevated area; voids deeper than a configurable height flagged (the owner's 4 m concern)
   - Verify: tests
   - Evidence: pending
 
-### Stage DH.4 — Earthworks and retaining walls
+#### Earthworks and retaining walls
 
-| Field | Value |
-|---|---|
-| Kind | implementation |
-| Status | NOT_STARTED |
-| Review | NOT_REQUESTED |
-| Branch | `stage/DH.4-earthworks` |
-| Depends on | DH.1 |
-| Tasks | DH.4-01, DH.4-02, DH.4-03 |
-| Objective | Candidate retaining walls and earthwork quantities, clearly labelled as conceptual |
-| Scope | In: retaining-wall candidates, retained height and face area, excavation and fill estimates, drainage and waterproofing conflict flags. Out: engineering design |
-| Acceptance | Quantities labelled `simulated` or `inferred`, never as construction estimates; risks listed |
-| Tests | Analytical tests |
-| Demonstration | Earthworks report on the synthetic steep fixture |
-| Artifacts | Evaluator changes, risk output |
-| Review requirements | Reviewer checks labels and the absence of engineering claims |
-| Evidence | — |
-
-- [ ] **DH.4-01** Retaining-wall candidate geometry with retained height and face area — `NOT_STARTED` · P1 · deps: none
+- [ ] **S8-11** Retaining-wall candidate geometry with retained height and face area — `NOT_STARTED` · P1 · deps: none
   - Accept: per wall: length, maximum and mean retained height, face area
   - Verify: analytical tests
   - Evidence: pending — today length and face area only, `RETAINING` above 0.6 m retained
-- [ ] **DH.4-02** Excavation and fill estimates — `NOT_STARTED` · P1 · deps: none
+- [ ] **S8-12** Excavation and fill estimates — `NOT_STARTED` · P1 · deps: none
   - Accept: excavation and engineered fill separated from void; labelled not a construction estimate
   - Verify: analytical tests
   - Evidence: pending
-- [ ] **DH.4-03** Drainage and waterproofing conflict flags — `NOT_STARTED` · P2 · deps: DH.4-01
+- [ ] **S8-13** Drainage and waterproofing conflict flags — `NOT_STARTED` · P2 · deps: S8-11
   - Accept: buried habitable walls, uphill retaining faces and terrain-contact doors listed as risks needing a professional
   - Verify: tests
   - Evidence: pending
 
-### Stage DH.5 — Access and terrain-contact connections
+#### Access and terrain-contact connections
 
-| Field | Value |
-|---|---|
-| Kind | implementation |
-| Status | NOT_STARTED |
-| Review | NOT_REQUESTED |
-| Branch | `stage/DH.5-access-connections` |
-| Depends on | DH.3 |
-| Tasks | DH.5-01, DH.5-02, DH.5-03, DH.5-04 |
-| Objective | Every exterior door, garage and terrace meets the ground or the road at a plausible level |
-| Scope | In: door thresholds vs ground, road-level garage and ramps, indoor vs outdoor stairs, outdoor connections. Out: landscape design |
-| Acceptance | Doors above or below grade flagged with the height difference; garage ramp grade reported |
-| Tests | Seeded fixtures (R2.4-06) |
-| Demonstration | Access report on the synthetic steep fixture |
-| Artifacts | Evaluator changes, tests |
-| Review requirements | Reviewer checks one door threshold against terrain |
-| Evidence | — |
-
-- [ ] **DH.5-01** Terrain-contact doors: threshold versus ground — `NOT_STARTED` · P1 · deps: none
+- [ ] **S8-14** Terrain-contact doors: threshold versus ground — `NOT_STARTED` · P1 · deps: none
   - Accept: per exterior door, ground level outside and difference; steps or ramp needed reported
   - Verify: seeded fixture
   - Evidence: pending — `exterior_door_ground_delta_m` exists as an `inferred` metric
-- [ ] **DH.5-02** Road-level garage access, vehicle ramps and grades — `NOT_STARTED` · P1 · deps: none
+- [ ] **S8-15** Road-level garage access, vehicle ramps and grades — `NOT_STARTED` · P1 · deps: none
   - Accept: garage floor vs road level at the frontage; ramp grade and length reported
   - Verify: road-high and road-low fixtures
   - Evidence: pending
-- [ ] **DH.5-03** Indoor versus outdoor stair requirements — `NOT_STARTED` · P2 · deps: DH.5-01
+- [ ] **S8-16** Indoor versus outdoor stair requirements — `NOT_STARTED` · P2 · deps: S8-14
   - Accept: outdoor level changes needing stairs identified and counted
   - Verify: tests
   - Evidence: pending
-- [ ] **DH.5-04** Outdoor connections and terraces against terrain — `NOT_STARTED` · P1 · deps: DH.5-01
+- [ ] **S8-17** Outdoor connections and terraces against terrain — `NOT_STARTED` · P1 · deps: S8-14
   - Accept: terrace edges vs ground; garden access from living levels
   - Verify: large-terrace fixture
   - Evidence: pending
 
-### Stage DH.6 — Terrain data quality and engineering-risk register
+#### Terrain data quality and engineering-risk register
 
-| Field | Value |
-|---|---|
-| Kind | implementation |
-| Status | NOT_STARTED |
-| Review | NOT_REQUESTED |
-| Branch | `stage/DH.6-terrain-quality-risk` |
-| Depends on | R2.1 |
-| Tasks | DH.6-01, DH.6-02, DH.6-03, DH.6-04, DH.6-05 |
-| Objective | Terrain uncertainty is visible and engineering risks are listed, not hidden |
-| Scope | In: breaklines, sliver detection, unknown coverage, risk register output, hillside stress tests. Out: geotechnical judgment |
-| Acceptance | Each concept carries a risk register; terrain areas without survey support are marked unknown |
-| Tests | Breakline, sliver and coverage fixtures; stress tests |
-| Demonstration | Risk register for the synthetic steep fixture |
-| Artifacts | Geospatial and evaluation changes |
-| Review requirements | Reviewer checks that no risk is phrased as resolved |
-| Evidence | — |
-
-- [ ] **DH.6-01** Terrain breaklines in the TIN — `NOT_STARTED` · P2 · deps: none
+- [ ] **S8-18** Terrain breaklines in the TIN — `NOT_STARTED` · P2 · deps: none
   - Accept: constrained edges from survey lines (walls, kerbs, banks) when mapped
   - Verify: breakline fixture
   - Evidence: pending
-- [ ] **DH.6-02** Suspicious and sliver triangle detection — `NOT_STARTED` · P1 · deps: none
+- [ ] **S8-19** Suspicious and sliver triangle detection — `NOT_STARTED` · P1 · deps: none
   - Accept: thin or steep-artifact triangles listed with location; extends the existing `steep_triangle` warning
-  - Verify: noisy TIN fixture (R2.2-05)
+  - Verify: noisy TIN fixture (S3-14)
   - Evidence: pending
-- [ ] **DH.6-03** Unknown terrain coverage reporting — `NOT_STARTED` · P1 · deps: none
+- [ ] **S8-20** Unknown terrain coverage reporting — `NOT_STARTED` · P1 · deps: none
   - Accept: footprint and section parts outside surveyed support marked unknown, not interpolated silently
   - Verify: tests
   - Evidence: pending
-- [ ] **DH.6-04** Unresolved engineering-risk register per concept — `NOT_STARTED` · P1 · deps: none
+- [ ] **S8-21** Unresolved engineering-risk register per concept — `NOT_STARTED` · P1 · deps: none
   - Accept: structure, foundations, retaining, drainage, waterproofing, slope stability listed as "needs professional" with triggers
   - Verify: tests; PROFESSIONAL_HANDOFF updated
   - Evidence: pending
-- [ ] **DH.6-05** Synthetic hillside stress tests — `NOT_STARTED` · P2 · deps: none
+- [ ] **S8-22** Synthetic hillside stress tests — `NOT_STARTED` · P2 · deps: none
   - Accept: extreme slopes and irregular parcels fail clearly or produce valid output
   - Verify: `pytest -q`
   - Evidence: pending
 
-### Workstream R1: third-party tool and skill evaluation
-
-Each candidate has a row and a detail block in the
-[tool register](#g-tool-and-skill-evaluation-register). An evaluation task
-is DONE only when the register row has a decision backed by a recorded
-experiment. Nothing is installed into the project environment just because
-research recommends it; experiments run in throwaway environments and only
-an ADOPT or ADAPT decision, approved in review, adds a dependency.
-
-### Stage R1.1 — Near-term tool evaluations
-
-| Field | Value |
-|---|---|
-| Kind | evaluation |
-| Status | NOT_STARTED |
-| Review | NOT_REQUESTED |
-| Branch | `stage/R1.1-near-term-tools` |
-| Depends on | T0.1 |
-| Tasks | R1.1-01, R1.1-02, R1.1-03, R1.1-04, R1.1-05, R1.1-06 |
-| Objective | Decide which browser and geometry tools the reviewer, visual inspection and hillside stages will use |
-| Scope | In: Playwright, Trimesh, Manifold, ArchLang, Anatomy, intake of further candidates. Out: integration (done in E1, E2, DH) |
-| Acceptance | Each register row filled with evidence and a decision; experiments reproducible from notes |
-| Tests | Experiment scripts kept outside the package or under `tools/experiments/` |
-| Demonstration | Each experiment's output summarised in the register |
-| Artifacts | Register updates; experiment notes |
-| Review requirements | Reviewer reruns at least one experiment and checks licences at the source |
-| Evidence | — |
-
-- [ ] **R1.1-01** Evaluate Playwright CLI and its agent skill (TOOL-PLAYWRIGHT) — `NOT_STARTED` · P1 · deps: none
-  - Accept: CLI vs MCP vs Playwright Test compared for agent inspection and CI tests; macOS arm64 and offline verified; decision
-  - Verify: register row; screenshot of a local static page taken by an agent through the chosen route
-  - Evidence: pending — mentioned in research only; not installed
-- [ ] **R1.1-02** Evaluate Trimesh (TOOL-TRIMESH) — `NOT_STARTED` · P1 · deps: none
-  - Accept: TIN-to-mesh, volume and section accuracy on DH.1-01 analytical fixtures; licence and wheels for Python 3.11/3.13 arm64
-  - Verify: register row; experiment numbers vs analytical values
-  - Evidence: pending — not installed in `.venv` (`pip list`, 2026-10-17)
-- [ ] **R1.1-03** Evaluate Manifold / manifold3d (TOOL-MANIFOLD) — `NOT_STARTED` · P1 · deps: none
-  - Accept: robust boolean volumes on the same fixtures; comparison with Trimesh
-  - Verify: register row
-  - Evidence: pending — not installed in `.venv`
-- [ ] **R1.1-04** Evaluate ArchLang as an independent diagnostic (TOOL-ARCHLANG) — `NOT_STARTED` · P2 · deps: none
-  - Accept: export a synthetic HouseModel to ArchLang, compare geometry and semantics, run its lint on clean and seeded-defect plans, decide integrate, adapt checks or reject; never replace HouseModel without explicit approval
-  - Verify: register row with seeded-defect results
-  - Evidence: pending — mentioned in research only; sources disagree on version and MCP support
-- [ ] **R1.1-05** Study Anatomy for SVG interaction and skill packaging patterns (TOOL-ANATOMY) — `NOT_STARTED` · P3 · deps: none
-  - Accept: list of patterns borrowed or rejected for E1/T1; not treated as an architecture engine
-  - Verify: register row
-  - Evidence: pending — mentioned in research only
-- [ ] **R1.1-06** Intake process for further candidates (TOOL-OTHER) — `NOT_STARTED` · P3 · deps: none
-  - Accept: new candidates get a register row with the same fields before any install
-  - Verify: register has the template row
-  - Evidence: pending
-
-### Stage R1.2 — CAD, BIM and environment tool evaluations
-
-| Field | Value |
-|---|---|
-| Kind | evaluation |
-| Status | NOT_STARTED |
-| Review | NOT_REQUESTED |
-| Branch | `stage/R1.2-cad-bim-tools` |
-| Depends on | T0.1 |
-| Tasks | R1.2-01, R1.2-02, R1.2-03, R1.2-04 |
-| Objective | Know which CAD, BIM and simulation tools actually work here before F, G or DQ.6 rely on them |
-| Scope | In: Blender MCP, FreeCAD MCP, Ladybug Tools, IfcOpenShell/Bonsai, smoke tests on synthetic data. Out: production integration |
-| Acceptance | Register rows show installed, configured, connected and tested as separate facts |
-| Tests | Smoke-test scripts on synthetic data |
-| Demonstration | Each tool's smoke-test output |
-| Artifacts | Register updates |
-| Review requirements | Reviewer repeats one connection test |
-| Evidence | — |
-
-- [ ] **R1.2-01** Blender MCP: verify the Codex installation, connection and operation on synthetic data (TOOL-BLENDER-MCP) — `NOT_STARTED` · P2 · deps: none
-  - Accept: Codex connects, creates and reads a synthetic object; later canonical-model integration assessed
-  - Verify: register row with session evidence
-  - Evidence: pending — configured in Codex `config.toml` (`[mcp_servers.blender]`, package blender-mcp 1.0.0); Blender.app present; connection not verified
-- [ ] **R1.2-02** FreeCAD MCP: verify installation, Python compatibility, connection and operation (TOOL-FREECAD-MCP) — `NOT_STARTED` · P2 · deps: none
-  - Accept: connection works; independent solid or CAD check of a synthetic plan assessed
-  - Verify: register row
-  - Evidence: pending — configured in Codex (`[mcp_servers.freecad]`, freecad-mcp 0.1.20, venv Python 3.13.3); FreeCAD 1.1.3 present; connection not verified
-- [ ] **R1.2-03** Ladybug Tools for solar and daylight opportunity (TOOL-LADYBUG) — `NOT_STARTED` · P3 · deps: none
-  - Accept: offline sun-path and daylight experiment on a synthetic site with assumed north; orientation claims deferred until north is verified (H1.1-05)
-  - Verify: register row
-  - Evidence: pending — not installed
-- [ ] **R1.2-04** IfcOpenShell and Bonsai for semantic IFC round trip (TOOL-IFCOPENSHELL) — `NOT_STARTED` · P2 · deps: none
-  - Accept: synthetic HouseModel to IFC and back with canonical IDs preserved; production integration deferred to F.2
-  - Verify: register row with round-trip diff
-  - Evidence: pending — not installed
-
-### Stage R1.3 — Research generator evaluations
-
-| Field | Value |
-|---|---|
-| Kind | evaluation |
-| Status | NOT_STARTED |
-| Review | NOT_REQUESTED |
-| Branch | `stage/R1.3-research-generators` |
-| Depends on | T0.1 |
-| Tasks | R1.3-01, R1.3-02, R1.3-03 |
-| Objective | Learn what research floor-plan generators offer, in isolation, without adding them to the product |
-| Scope | In: isolated benchmarks in a separate environment. Out: any dependency in `house-ai` |
-| Acceptance | Maturity, reproducibility, licence and runtime recorded; useful ideas mapped to DG tasks |
-| Tests | none in the main suite |
-| Demonstration | Benchmark notes per candidate |
-| Artifacts | Register updates |
-| Review requirements | Reviewer checks licence findings at the source |
-| Evidence | — |
-
-- [ ] **R1.3-01** Graph2Plan (TOOL-GRAPH2PLAN) — `NOT_STARTED` · P3 · deps: none
-  - Accept: research maturity and reproducibility assessed in an isolated environment
-  - Verify: register row
-  - Evidence: pending
-- [ ] **R1.3-02** House-GAN and House-GAN++ (TOOL-HOUSEGAN) — `NOT_STARTED` · P3 · deps: none
-  - Accept: topology-generation ideas relevant to DG.2 listed; isolated only
-  - Verify: register row
-  - Evidence: pending
-- [ ] **R1.3-03** HouseDiffusion (TOOL-HOUSEDIFFUSION) — `NOT_STARTED` · P3 · deps: none
-  - Accept: vector geometry potential, GPL licence implications and runtime (GPU) constraints recorded; isolated only
-  - Verify: register row
-  - Evidence: pending
-
-### Workstream R2: architectural quality benchmarks
-
-Synthetic projects that expose architectural mistakes. Measurable evidence
-is kept separate from subjective judgment; no single opaque quality score.
-No private coordinates or site data are copied.
-
-### Stage R2.1 — Benchmark harness and synthetic steep reference fixture
-
-| Field | Value |
-|---|---|
-| Kind | implementation |
-| Status | NOT_STARTED |
-| Review | NOT_REQUESTED |
-| Branch | `stage/R2.1-benchmark-harness` |
-| Depends on | T0.3 |
-| Tasks | R2.1-01, R2.1-02, R2.1-03 |
-| Objective | A fixture format and runner that every critic and generator stage can extend |
-| Scope | In: harness, acceptance categories, the synthetic steep reference fixture. Out: individual scenarios (R2.2–R2.4) |
-| Acceptance | Runner reports per-category results; the steep fixture matches its targets within tolerance and shares no data with `my-house` |
-| Tests | Harness tests; fixture `--check` regeneration |
-| Demonstration | Runner output for synthetic-bungalow, synthetic-hillside and the new steep fixture |
-| Artifacts | `tests/benchmarks/` or `examples/benchmarks/`, generator scripts |
-| Review requirements | Reviewer confirms the steep fixture is generated, not copied |
-| Evidence | — |
-
-- [ ] **R2.1-01** Benchmark fixture format and runner — `NOT_STARTED` · P1 · deps: none
-  - Accept: each fixture declares site, program, expected findings and categories; runner prints a per-category table
-  - Verify: harness tests
-  - Evidence: pending
-- [ ] **R2.1-02** Synthetic steep reference fixture (~600 m² parcel, ~12.5 m relief, ~40 % area-weighted slope) — `NOT_STARTED` · P1 · deps: R2.1-01
-  - Accept: generated by script with a fictional CRS-free frame; measured area, relief and slope within 5 % of targets; no private coordinates
-  - Verify: fixture `--check`; leak scan (T0.3-03)
-  - Evidence: pending — existing synthetic-hillside is ~36 % fall, different size
-- [ ] **R2.1-03** Acceptance categories and expected-finding schema — `NOT_STARTED` · P1 · deps: R2.1-01
-  - Accept: categories: geometric feasibility, practical usability, circulation, privacy, terrain compatibility, spatial/topological diversity, metric accuracy, unknowns, visual consistency, versioned revisions
-  - Verify: schema test
-  - Evidence: pending
-
-### Stage R2.2 — Terrain and parcel scenarios
-
-| Field | Value |
-|---|---|
-| Kind | implementation |
-| Status | NOT_STARTED |
-| Review | NOT_REQUESTED |
-| Branch | `stage/R2.2-terrain-scenarios` |
-| Depends on | R2.1 |
-| Tasks | R2.2-01, R2.2-02, R2.2-03, R2.2-04, R2.2-05, R2.2-06 |
-| Objective | Terrain and parcel shapes that stress site handling and hillside strategies |
-| Scope | In: fixtures and expected findings. Out: fixing the generator |
-| Acceptance | Each fixture generated by script with documented ground truth; current behaviour recorded, expected failures marked |
-| Tests | Fixture `--check`; runner over all fixtures |
-| Demonstration | Runner table |
-| Artifacts | Fixtures |
-| Review requirements | Reviewer checks one fixture's ground truth by hand |
-| Evidence | — |
-
-- [ ] **R2.2-01** Flat simple parcel and narrow-deep parcel — `NOT_STARTED` · P1 · deps: none
-  - Accept: two fixtures with known areas and envelopes
-  - Verify: fixture tests
-  - Evidence: pending
-- [ ] **R2.2-02** Steep road-high and steep road-low parcels — `NOT_STARTED` · P1 · deps: none
-  - Accept: ground rising and falling away from the road
-  - Verify: fixture tests
-  - Evidence: pending
-- [ ] **R2.2-03** Cross-slope and diagonal-slope terrain — `NOT_STARTED` · P1 · deps: none
-  - Accept: slope perpendicular and diagonal to the frontage
-  - Verify: fixture tests
-  - Evidence: pending
-- [ ] **R2.2-04** Concave parcel — `NOT_STARTED` · P2 · deps: none
-  - Accept: non-convex boundary with a known buildable envelope
-  - Verify: fixture tests
-  - Evidence: pending
-- [ ] **R2.2-05** Terrain breaklines and noisy or sliver TIN triangles — `NOT_STARTED` · P2 · deps: none
-  - Accept: survey with a retaining-wall breakline and near-duplicate points
-  - Verify: fixture tests
-  - Evidence: pending
-- [ ] **R2.2-06** Unknown north — `NOT_STARTED` · P1 · deps: none
-  - Accept: unconfirmed CRS; every orientation-dependent metric must come out `not_checked`
-  - Verify: fixture tests
-  - Evidence: pending
-
-### Stage R2.3 — Household scenarios
-
-| Field | Value |
-|---|---|
-| Kind | implementation |
-| Status | NOT_STARTED |
-| Review | NOT_REQUESTED |
-| Branch | `stage/R2.3-household-scenarios` |
-| Depends on | R2.1 |
-| Tasks | R2.3-01, R2.3-02, R2.3-03, R2.3-04, R2.3-05 |
-| Objective | Synthetic households whose programs test privacy, accessibility, cooking, garages and terraces |
-| Scope | In: synthetic interviews and programs built with the real program builder; preference comparisons. Out: real homeowner data |
-| Acceptance | Each scenario's program builds and validates; expected findings declared |
-| Tests | Fixture `--check` |
-| Demonstration | Runner table |
-| Artifacts | Fixtures |
-| Review requirements | Reviewer reads one scenario's verbatim answers for realism |
-| Evidence | — |
-
-- [ ] **R2.3-01** Family privacy scenario — `NOT_STARTED` · P1 · deps: none
-  - Accept: strong guest/family separation requested
-  - Verify: fixture tests
-  - Evidence: pending
-- [ ] **R2.3-02** Accessible multigenerational household — `NOT_STARTED` · P1 · deps: none
-  - Accept: step-free bedroom and bathroom for an older resident
-  - Verify: fixture tests
-  - Evidence: pending
-- [ ] **R2.3-03** Garage and heavy-cooking scenario — `NOT_STARTED` · P1 · deps: none
-  - Accept: two vehicles, separate heavy-cooking kitchen, garage-to-kitchen route
-  - Verify: fixture tests
-  - Evidence: pending
-- [ ] **R2.3-04** Large-terrace hillside — `NOT_STARTED` · P2 · deps: none
-  - Accept: large terrace connected to living spaces on a steep site
-  - Verify: fixture tests
-  - Evidence: pending
-- [ ] **R2.3-05** Preference-based comparisons — `NOT_STARTED` · P2 · deps: none
-  - Accept: same site, two households with opposite priorities; comparison shows different trade-offs without a single score
-  - Verify: runner output
-  - Evidence: pending
-
-### Stage R2.4 — Defect-seeded scenarios
-
-| Field | Value |
-|---|---|
-| Kind | implementation |
-| Status | NOT_STARTED |
-| Review | NOT_REQUESTED |
-| Branch | `stage/R2.4-seeded-defects` |
-| Depends on | R2.1, DQ.2, DQ.3, DQ.5, DQ.6 |
-| Tasks | R2.4-01, R2.4-02, R2.4-03, R2.4-04, R2.4-05, R2.4-06 |
-| Objective | Hand-constructed plans with known mistakes that the critics must catch |
-| Scope | In: seeded HouseModels and expected findings. Out: generator changes |
-| Acceptance | Every seeded defect is reported against the right element IDs; clean twins report nothing |
-| Tests | Seeded-defect suite in CI |
-| Demonstration | Runner table |
-| Artifacts | Fixtures |
-| Review requirements | Reviewer adds one new seeded defect and confirms detection |
-| Evidence | — |
-
-- [ ] **R2.4-01** Multi-level stair and headroom defects — `NOT_STARTED` · P1 · deps: none
-  - Accept: low headroom, short run, blocked arrival
-  - Verify: suite
-  - Evidence: pending
-- [ ] **R2.4-02** Furniture and door-clearance conflicts — `NOT_STARTED` · P1 · deps: none
-  - Accept: door hitting bed, wardrobe blocked, WC clearance missing
-  - Verify: suite
-  - Evidence: pending
-- [ ] **R2.4-03** Poor corridor efficiency — `NOT_STARTED` · P1 · deps: none
-  - Accept: long dead-end corridor and residual spaces
-  - Verify: suite
-  - Evidence: pending
-- [ ] **R2.4-04** Wrong entrance and garage relationships — `NOT_STARTED` · P1 · deps: none
-  - Accept: garage far from kitchen; entrance through a private room
-  - Verify: suite
-  - Evidence: pending
-- [ ] **R2.4-05** Windows facing buried walls — `NOT_STARTED` · P1 · deps: none
-  - Accept: window on a face with ground above sill
-  - Verify: suite
-  - Evidence: pending
-- [ ] **R2.4-06** Outdoor doors above or below grade and inconsistent floor-to-floor connections — `NOT_STARTED` · P1 · deps: none
-  - Accept: door 1.5 m above ground; stair connecting levels whose heights disagree
-  - Verify: suite
-  - Evidence: pending
-
-### Workstream RG: floor-plan readiness gate
-
-### Stage RG.1 — Floor-plan readiness assessment
+### Stage S9 — Floor-plan readiness gate
 
 | Field | Value |
 |---|---|
 | Kind | assessment |
 | Status | NOT_STARTED |
 | Review | NOT_REQUESTED |
-| Branch | `stage/RG.1-readiness-assessment` |
-| Depends on | E2.3, DQ.2, DQ.3, DQ.4, DQ.5, DQ.6, DG.5, DG.6, DH.2, DH.3, DH.4, DH.5, DH.6, R2.2, R2.3, R2.4, T1.2, T1.3 |
-| Tasks | RG.1-01, RG.1-02, RG.1-03 |
+| Branch | `stage/S9-readiness-gate` |
+| Depends on | S2, S5, S6, S7, S8 |
+| Tasks | S9-01, S9-02, S9-03 |
 | Objective | Decide, with evidence, whether the system is ready to design the real house |
-| Scope | In: evidence for each criterion in §H, an end-to-end synthetic demonstration, the homeowner's acknowledgement of limitations. Out: designing `my-house` |
+| Scope | In: evidence per §H criterion, end-to-end synthetic demonstration, owner's acknowledgement of limitations. Out: designing `my-house` |
 | Acceptance | Every §H criterion PASS with evidence, or an owner-accepted exception |
 | Tests | Full suite; benchmark runner |
-| Demonstration | End-to-end run on the synthetic steep fixture from interview to reviewed revision |
+| Demonstration | Synthetic steep fixture from interview to reviewed revision |
 | Artifacts | §H filled in; demonstration record |
 | Review requirements | Independent reviewer re-runs the demonstration; owner acknowledges limitations |
 | Evidence | — |
 
-- [ ] **RG.1-01** Evidence for each readiness criterion FPR-01 to FPR-13 — `NOT_STARTED` · P1 · deps: none
+#### Floor-plan readiness assessment
+
+- [ ] **S9-01** Evidence for each readiness criterion FPR-01 to FPR-13 — `NOT_STARTED` · P1 · deps: none
   - Accept: §H table shows PASS/FAIL with evidence links
   - Verify: reviewer checks each link
   - Evidence: pending
-- [ ] **RG.1-02** End-to-end synthetic demonstration — `NOT_STARTED` · P1 · deps: RG.1-01
+- [ ] **S9-02** End-to-end synthetic demonstration — `NOT_STARTED` · P1 · deps: S9-01
   - Accept: synthetic interview → program → concepts → critics → visual review → owner-style revision → comparison, all recorded
   - Verify: reviewer replays it
   - Evidence: pending
-- [ ] **RG.1-03** Homeowner acknowledges the architectural limitations — `NOT_STARTED` · P1 · deps: RG.1-02
+- [ ] **S9-03** Homeowner acknowledges the architectural limitations — `NOT_STARTED` · P1 · deps: S9-02
   - Accept: owner's words recorded in §I; limitations requiring human or professional judgment listed
   - Verify: §I entry
   - Evidence: pending
   - Notes: human action
 
-### Workstream H1: real site verification (human-dependent)
+### Stage X1 — Optional tool research
+
+| Field | Value |
+|---|---|
+| Kind | evaluation |
+| Status | NOT_STARTED |
+| Review | NOT_REQUESTED |
+| Branch | `stage/X1-optional-research` |
+| Depends on | T0.1 |
+| Tasks | X1-01, X1-02, X1-03, X1-04, X1-05, X1-06, X1-07 |
+| Objective | Check Blender MCP, FreeCAD MCP, Ladybug, IfcOpenShell and research generators, in isolation; not on the path to good plans |
+| Scope | In: smoke tests and isolated benchmarks. Out: any project dependency |
+| Acceptance | Register rows show installed, configured, connected and tested as separate facts, with decisions |
+| Tests | Smoke-test scripts on synthetic data |
+| Demonstration | Smoke-test output per tool |
+| Artifacts | Register updates |
+| Review requirements | Reviewer repeats one connection test and checks licences |
+| Evidence | — |
+
+#### CAD, BIM and environment tool evaluations
+
+- [ ] **X1-01** Blender MCP: verify the Codex installation, connection and operation on synthetic data (TOOL-BLENDER-MCP) — `NOT_STARTED` · P2 · deps: none
+  - Accept: Codex connects, creates and reads a synthetic object; later canonical-model integration assessed
+  - Verify: register row with session evidence
+  - Evidence: pending — configured in Codex `config.toml` (`[mcp_servers.blender]`, package blender-mcp 1.0.0); Blender.app present; connection not verified
+- [ ] **X1-02** FreeCAD MCP: verify installation, Python compatibility, connection and operation (TOOL-FREECAD-MCP) — `NOT_STARTED` · P2 · deps: none
+  - Accept: connection works; independent solid or CAD check of a synthetic plan assessed
+  - Verify: register row
+  - Evidence: pending — configured in Codex (`[mcp_servers.freecad]`, freecad-mcp 0.1.20, venv Python 3.13.3); FreeCAD 1.1.3 present; connection not verified
+- [ ] **X1-03** Ladybug Tools for solar and daylight opportunity (TOOL-LADYBUG) — `NOT_STARTED` · P3 · deps: none
+  - Accept: offline sun-path and daylight experiment on a synthetic site with assumed north; orientation claims deferred until north is verified (H1-05)
+  - Verify: register row
+  - Evidence: pending — not installed
+- [ ] **X1-04** IfcOpenShell and Bonsai for semantic IFC round trip (TOOL-IFCOPENSHELL) — `NOT_STARTED` · P2 · deps: none
+  - Accept: synthetic HouseModel to IFC and back with canonical IDs preserved; production integration deferred to F
+  - Verify: register row with round-trip diff
+  - Evidence: pending — not installed
+
+#### Research generator evaluations
+
+- [ ] **X1-05** Graph2Plan (TOOL-GRAPH2PLAN) — `NOT_STARTED` · P3 · deps: none
+  - Accept: research maturity and reproducibility assessed in an isolated environment
+  - Verify: register row
+  - Evidence: pending
+- [ ] **X1-06** House-GAN and House-GAN++ (TOOL-HOUSEGAN) — `NOT_STARTED` · P3 · deps: none
+  - Accept: topology-generation ideas relevant to S7 listed; isolated only
+  - Verify: register row
+  - Evidence: pending
+- [ ] **X1-07** HouseDiffusion (TOOL-HOUSEDIFFUSION) — `NOT_STARTED` · P3 · deps: none
+  - Accept: vector geometry potential, GPL licence implications and runtime (GPU) constraints recorded; isolated only
+  - Verify: register row
+  - Evidence: pending
+
+### Stage H1 — Real site verification
+
+| Field | Value |
+|---|---|
+| Kind | human-dependent |
+| Status | BLOCKED |
+| Review | NOT_REQUESTED |
+| Branch | `stage/H1-site` |
+| Depends on | none |
+| Tasks | H1-01, H1-02, H1-03, H1-04, H1-05, H1-06, H1-07, H1-08, H1-09, H1-10, H1-11, H1-12 |
+| Objective | Units, CRS, datum, north and boundary for `my-house` from evidence, then the homeowner's site approval |
+| Scope | In: owner and surveyor information, owner statements, site gate. Out: design |
+| Acceptance | Each fact confirmed with evidence or recorded unknown with consequences; site gate approved by the homeowner, or local-only planning accepted in writing |
+| Tests | `house-ai project verify my-house` after every change |
+| Demonstration | `project status my-house` blockers shrinking, then SITE_APPROVED |
+| Artifacts | Owner statements and source documents in `projects/my-house/` |
+| Review requirements | Reviewer confirms every new fact cites an owner statement or document and the approval is human |
+| Evidence | — |
 
 Agents never fabricate confirmation. Facts come from survey evidence, the
 homeowner, or a surveyor; `site confirm` and `workflow approve` are run by
 the homeowner in their own terminal. Reference:
 [`projects/my-house/reviews/CONFIRM-SITE.md`](../projects/my-house/reviews/CONFIRM-SITE.md).
 
-### Stage H1.1 — Survey evidence and coordinate reference
+#### Survey evidence and coordinate reference
 
-| Field | Value |
-|---|---|
-| Kind | human-dependent |
-| Status | BLOCKED |
-| Review | NOT_REQUESTED |
-| Branch | `stage/H1.1-site-crs` (only for committed project-record changes) |
-| Depends on | none |
-| Tasks | H1.1-01, H1.1-02, H1.1-03, H1.1-04, H1.1-05, H1.1-06 |
-| Objective | Establish units, CRS, datum and north for `my-house` from evidence, not guesses |
-| Scope | In: owner and surveyor information, `statement add`, evidence files. Out: approving the site gate (H1.2-06) |
-| Acceptance | Each fact confirmed with evidence or recorded as unknown with consequences |
-| Tests | `house-ai project verify my-house` after every change |
-| Demonstration | `house-ai project status my-house --json` shows the blockers shrinking |
-| Artifacts | Owner statements, source documents in `projects/my-house/` |
-| Review requirements | Reviewer confirms every new fact cites an owner statement or document |
-| Evidence | — |
-
-- [x] **H1.1-01** Review original survey evidence — `DONE` · P0 · deps: none
+- [x] **H1-01** Review original survey evidence — `DONE` · P0 · deps: none
   - Accept: site figures traced to DWG entities; unsupported values retracted
   - Verify: `tools/audit_site.py` replay
   - Evidence: PR #1 (`710e624`, merged `b636164`); `projects/my-house/reviews/survey-audit/REPORT.md`
-- [ ] **H1.1-02** Confirm drawing units — `BLOCKED` · P0 · deps: none
+- [ ] **H1-02** Confirm drawing units — `BLOCKED` · P0 · deps: none
   - Accept: units confirmed by the owner or surveyor and recorded
   - Verify: `project status` blocker removed after `site confirm`
   - Evidence: pending — owner statement `stmt-002` covers elevation units only
   - Notes: blocked on homeowner/surveyor information
-- [ ] **H1.1-03** Confirm or qualify UTM zone, hemisphere, horizontal datum and EPSG — `BLOCKED` · P0 · deps: none
+- [ ] **H1-03** Confirm or qualify UTM zone, hemisphere, horizontal datum and EPSG — `BLOCKED` · P0 · deps: none
   - Accept: EPSG recorded from documentary evidence, or recorded as unknown with the local-only consequence
   - Verify: owner statement or surveyor document
   - Evidence: pending — owner said "UTM" (`stmt-001`); zone, hemisphere and datum unknown (owner statements v5)
   - Notes: blocked on homeowner/surveyor information; never inferred from coordinate magnitudes
-- [ ] **H1.1-04** Confirm vertical units and vertical datum — `BLOCKED` · P1 · deps: none
+- [ ] **H1-04** Confirm vertical units and vertical datum — `BLOCKED` · P1 · deps: none
   - Accept: datum named or recorded as "metres above sea level, datum unknown"
   - Verify: owner statement
   - Evidence: pending
   - Notes: blocked on homeowner/surveyor information
-- [ ] **H1.1-05** Establish true north from adequate evidence — `BLOCKED` · P1 · deps: H1.1-03
+- [ ] **H1-05** Establish true north from adequate evidence — `BLOCKED` · P1 · deps: H1-03
   - Accept: grid-to-true-north from a confirmed CRS, or a documented north from the surveyor
   - Verify: `geospatial/crs.py` convergence output
   - Evidence: pending
   - Notes: blocked until the CRS is confirmed
-- [ ] **H1.1-06** Obtain surveyor or local professional information — `NOT_STARTED` · P1 · deps: none
+- [ ] **H1-06** Obtain surveyor or local professional information — `NOT_STARTED` · P1 · deps: none
   - Accept: questions from CONFIRM-SITE.md sent by the owner; answers stored as source documents
   - Verify: new source documents in the store
   - Evidence: pending
   - Notes: human action
 
-### Stage H1.2 — Parcel, access and terrain review, site gate
+#### Parcel, access and terrain review, site gate
 
-| Field | Value |
-|---|---|
-| Kind | human-dependent |
-| Status | BLOCKED |
-| Review | NOT_REQUESTED |
-| Branch | `stage/H1.2-site-gate` (only for committed project-record changes) |
-| Depends on | H1.1 |
-| Tasks | H1.2-01, H1.2-02, H1.2-03, H1.2-04, H1.2-05, H1.2-06 |
-| Objective | A verified site the homeowner approves, or an explicitly accepted local-only planning basis |
-| Scope | In: boundary, frontage and access, terrain warnings, setbacks, site gate. Out: design |
-| Acceptance | Site gate approved by the homeowner in their terminal, or local-only limitations recorded and accepted |
-| Tests | `project verify my-house` |
-| Demonstration | `project status my-house` shows SITE_APPROVED |
-| Artifacts | Project record |
-| Review requirements | Reviewer confirms the approval event is human and pins the current site version |
-| Evidence | — |
-
-- [ ] **H1.2-01** Confirm the legal parcel boundary — `BLOCKED` · P0 · deps: none
+- [ ] **H1-07** Confirm the legal parcel boundary — `BLOCKED` · P0 · deps: none
   - Accept: owner or surveyor confirms `--boundary-verified`, or boundary stays an inference with consequences listed
   - Verify: site record
   - Evidence: pending — boundary status is "inference only" (`project status`)
   - Notes: blocked on homeowner/surveyor information
-- [ ] **H1.2-02** Confirm road frontage and access assumptions — `NOT_STARTED` · P1 · deps: none
+- [ ] **H1-08** Confirm road frontage and access assumptions — `NOT_STARTED` · P1 · deps: none
   - Accept: owner confirms which side is the road, access points and parking expectations
   - Verify: owner statement
   - Evidence: pending
   - Notes: human action
-- [ ] **H1.2-03** Review suspicious terrain triangles with the owner — `NOT_STARTED` · P1 · deps: none
+- [ ] **H1-09** Review suspicious terrain triangles with the owner — `NOT_STARTED` · P1 · deps: none
   - Accept: `steep_triangle` and `xy_duplicate_z_mismatch` warnings explained; owner decides keep, correct or obtain more survey points
   - Verify: owner statement
   - Evidence: pending — warnings listed in `projects/my-house/reviews/site-v1/site-report.md`
-- [ ] **H1.2-04** Record unknown setbacks and building restrictions — `NOT_STARTED` · P1 · deps: none
+- [ ] **H1-10** Record unknown setbacks and building restrictions — `NOT_STARTED` · P1 · deps: none
   - Accept: setbacks, height limits and coverage rules recorded as unknown in `open_questions` until a source is provided
   - Verify: open questions artifact
   - Evidence: pending
-- [ ] **H1.2-05** Decide whether local-only planning is acceptable and record its limitations — `NOT_STARTED` · P2 · deps: H1.1-03
+- [ ] **H1-11** Decide whether local-only planning is acceptable and record its limitations — `NOT_STARTED` · P2 · deps: H1-03
   - Accept: if the CRS stays unknown, owner accepts in writing that orientation, north and georeferenced exports are unavailable
   - Verify: owner statement; §I
   - Evidence: pending
   - Notes: owner decision
-- [ ] **H1.2-06** Homeowner runs `site confirm` and approves the site gate — `BLOCKED` · P0 · deps: H1.1-02, H1.1-03, H1.1-04, H1.2-01
+- [ ] **H1-12** Homeowner runs `site confirm` and approves the site gate — `BLOCKED` · P0 · deps: H1-02, H1-03, H1-04, H1-07
   - Accept: `site confirm` and `workflow approve my-house site` run by the homeowner in an interactive terminal
   - Verify: `project status my-house` → SITE_APPROVED; approval actor is human
   - Evidence: pending
   - Notes: blocked on the facts above; agents must never run these commands
 
-### Workstream H2: real homeowner interview and program (human-dependent)
-
-Uses the agent-operated interview (AGENT_CONTRACT §9) and, once T1.2
-exists, the `architectural-programming` skill. Homeowner statements are
-stored verbatim; interpretations stay `inference` until confirmed. The
-interview may begin before site verification finishes.
-
-### Stage H2.1 — Interview rounds
+### Stage H2 — Real interview and program
 
 | Field | Value |
 |---|---|
 | Kind | human-dependent |
 | Status | NOT_STARTED |
 | Review | NOT_REQUESTED |
-| Branch | `stage/H2.1-interview` (project-record commits) |
-| Depends on | T0.3-01 |
-| Tasks | H2.1-01, H2.1-02, H2.1-03, H2.1-04, H2.1-05, H2.1-06, H2.1-07, H2.1-08, H2.1-09, H2.1-10 |
-| Objective | Understand how the household lives and what the house must do |
-| Scope | In: interview rounds with the homeowner. Out: program approval (H2.2) |
-| Acceptance | All applicable checklist questions covered; every inference confirmed, rejected or marked unknown |
-| Tests | `project verify my-house` |
-| Demonstration | `interview status my-house --json` shows coverage |
-| Artifacts | Interview session in `projects/my-house/` |
-| Review requirements | Reviewer samples turns: verbatim text present, inferences labelled |
+| Branch | `stage/H2-interview-program` |
+| Depends on | S1-09, H1 |
+| Tasks | H2-01, H2-02, H2-03, H2-04, H2-05, H2-06, H2-07, H2-08, H2-09, H2-10, H2-11, H2-12, H2-13, H2-14, H2-15 |
+| Objective | Understand how the household lives and reach an owner-approved space program |
+| Scope | In: interview rounds, confirmations, contradictions, `program build`, `program review`, program gate. Out: plans |
+| Acceptance | All applicable checklist questions covered; zero unconfirmed inferences; program gate approved by the homeowner |
+| Tests | `project verify my-house`; program validation clean |
+| Demonstration | `interview status` coverage, then PROGRAM_APPROVED |
+| Artifacts | Interview session, brief, program, assumptions, open questions in `projects/my-house/` |
+| Review requirements | Reviewer samples turns for verbatim text and labelled inferences |
 | Evidence | — |
 
-- [ ] **H2.1-01** Start the interview — `NOT_STARTED` · P1 · deps: T0.3-01
+Uses the agent-operated interview (AGENT_CONTRACT §9) and, once S2
+exists, the `architectural-programming` skill. Homeowner statements are
+stored verbatim; interpretations stay `inference` until confirmed. The
+interview may begin before site verification finishes.
+
+#### Interview rounds
+
+- [ ] **H2-01** Start the interview — `NOT_STARTED` · P1 · deps: S1-09
   - Accept: `interview start my-house` run by an agent with the homeowner present
   - Verify: `interview status` shows a session
   - Evidence: pending
   - Notes: human session
-- [ ] **H2.1-02** Household composition, future needs and accessibility or ageing in place — `NOT_STARTED` · P1 · deps: H2.1-01
+- [ ] **H2-02** Household composition, future needs and accessibility or ageing in place — `NOT_STARTED` · P1 · deps: H2-01
   - Accept: adults, children, future children, elders, long-term guests, mobility needs
   - Verify: confirmed slots
   - Evidence: pending
-- [ ] **H2.1-03** Daily routines, sleeping arrangements, bedrooms and bathrooms — `NOT_STARTED` · P1 · deps: H2.1-01
+- [ ] **H2-03** Daily routines, sleeping arrangements, bedrooms and bathrooms — `NOT_STARTED` · P1 · deps: H2-01
   - Accept: waking and sleeping patterns, bedroom and bathroom counts and sharing
   - Verify: confirmed slots
   - Evidence: pending
-- [ ] **H2.1-04** Family living, guest living and guest/family privacy — `NOT_STARTED` · P1 · deps: H2.1-01
+- [ ] **H2-04** Family living, guest living and guest/family privacy — `NOT_STARTED` · P1 · deps: H2-01
   - Accept: entertaining habits, separate guest areas, privacy level
   - Verify: confirmed slots
   - Evidence: pending
-- [ ] **H2.1-05** Cooking habits, kitchen organisation and kitchen–garage–dining–service relationships — `NOT_STARTED` · P1 · deps: H2.1-01
+- [ ] **H2-05** Cooking habits, kitchen organisation and kitchen–garage–dining–service relationships — `NOT_STARTED` · P1 · deps: H2-01
   - Accept: kitchen type, heavy cooking, pantry, laundry and storage, garage route
   - Verify: confirmed slots
   - Evidence: pending
-- [ ] **H2.1-06** Children's play and study; work, reading, prayer, quiet, cultural and religious spaces — `NOT_STARTED` · P1 · deps: H2.1-01
+- [ ] **H2-06** Children's play and study; work, reading, prayer, quiet, cultural and religious spaces — `NOT_STARTED` · P1 · deps: H2-01
   - Accept: rooms or zones needed and their privacy and orientation needs
   - Verify: confirmed slots
   - Evidence: pending
-- [ ] **H2.1-07** Vehicles, parking, access, garden, outdoor living and terraces — `NOT_STARTED` · P1 · deps: H2.1-01
+- [ ] **H2-07** Vehicles, parking, access, garden, outdoor living and terraces — `NOT_STARTED` · P1 · deps: H2-01
   - Accept: vehicle sizes and count, EV charging, outdoor rooms and terrace uses
   - Verify: confirmed slots
   - Evidence: pending
-- [ ] **H2.1-08** Daylight, views, ventilation, acoustics, security, climate and maintenance — `NOT_STARTED` · P2 · deps: H2.1-01
-  - Accept: priorities recorded; orientation-dependent wishes marked pending north (H1.1-05)
+- [ ] **H2-08** Daylight, views, ventilation, acoustics, security, climate and maintenance — `NOT_STARTED` · P2 · deps: H2-01
+  - Accept: priorities recorded; orientation-dependent wishes marked pending north (H1-05)
   - Verify: confirmed slots
   - Evidence: pending
-- [ ] **H2.1-09** Architectural character, budget, construction priorities and future adaptability — `NOT_STARTED` · P1 · deps: H2.1-01
+- [ ] **H2-09** Architectural character, budget, construction priorities and future adaptability — `NOT_STARTED` · P1 · deps: H2-01
   - Accept: style words verbatim; budget range or unknown; expansion plans
   - Verify: confirmed slots
   - Evidence: pending
-- [ ] **H2.1-10** Hillside layout preferences — `NOT_STARTED` · P1 · deps: H2.1-01
+- [ ] **H2-10** Hillside layout preferences — `NOT_STARTED` · P1 · deps: H2-01
   - Accept: road-level entry and parking, walk-out vs split vs elevated preferences; owner's statement that deep excavation is acceptable and large empty voids are the concern recorded verbatim
   - Verify: confirmed slots
   - Evidence: pending
 
-### Stage H2.2 — Program synthesis and approval
+#### Program synthesis and approval
 
-| Field | Value |
-|---|---|
-| Kind | human-dependent |
-| Status | BLOCKED |
-| Review | NOT_REQUESTED |
-| Branch | `stage/H2.2-program` (project-record commits) |
-| Depends on | H2.1, H1.2 |
-| Tasks | H2.2-01, H2.2-02, H2.2-03, H2.2-04, H2.2-05 |
-| Objective | An owner-approved space program for the real house |
-| Scope | In: hard vs negotiable, contradictions, confirmations, `program build`, `program review`, program gate. Out: plans |
-| Acceptance | Program gate approved by the homeowner in their terminal, pinned to the current program version |
-| Tests | `project verify my-house`; program validation clean |
-| Demonstration | `project status my-house` shows PROGRAM_APPROVED |
-| Artifacts | Brief, program, assumptions, open questions in `projects/my-house/design/` |
-| Review requirements | Reviewer checks no unconfirmed inference remains |
-| Evidence | — |
-
-- [ ] **H2.2-01** Separate hard constraints from negotiable preferences — `NOT_STARTED` · P1 · deps: none
+- [ ] **H2-11** Separate hard constraints from negotiable preferences — `NOT_STARTED` · P1 · deps: none
   - Accept: each requirement labelled hard or soft by the owner
   - Verify: brief
   - Evidence: pending
-- [ ] **H2.2-02** Resolve contradictions and record trade-offs — `NOT_STARTED` · P1 · deps: none
+- [ ] **H2-12** Resolve contradictions and record trade-offs — `NOT_STARTED` · P1 · deps: none
   - Accept: every open contradiction resolved or deferred with the owner's words
   - Verify: `interview status` shows none open
   - Evidence: pending
-- [ ] **H2.2-03** Confirm or reject every inference — `NOT_STARTED` · P1 · deps: H2.2-01
+- [ ] **H2-13** Confirm or reject every inference — `NOT_STARTED` · P1 · deps: H2-11
   - Accept: zero unconfirmed inferences
   - Verify: `interview status --json`
   - Evidence: pending
-- [ ] **H2.2-04** Build and validate the program — `NOT_STARTED` · P1 · deps: H2.2-02, H2.2-03
+- [ ] **H2-14** Build and validate the program — `NOT_STARTED` · P1 · deps: H2-12, H2-13
   - Accept: `program build` writes the design files; no blocking findings
   - Verify: `program-review.md`
   - Evidence: pending
-- [ ] **H2.2-05** Homeowner approves the program gate — `BLOCKED` · P0 · deps: H2.2-04, H1.2-06
+- [ ] **H2-15** Homeowner approves the program gate — `BLOCKED` · P0 · deps: H2-14, H1-12
   - Accept: `program review` by the agent, then `workflow approve my-house program` by the homeowner
   - Verify: PROGRAM_APPROVED; approval actor human
   - Evidence: pending
   - Notes: blocked on the site gate (AGENT_CONTRACT §9 step 7)
 
-### Workstream H3: real house design and iteration (human-dependent)
+### Stage H3 — Real house design
+
+| Field | Value |
+|---|---|
+| Kind | human-dependent |
+| Status | BLOCKED |
+| Review | NOT_REQUESTED |
+| Branch | `stage/H3-real-design` |
+| Depends on | S9, H1, H2 |
+| Tasks | H3-01, H3-02, H3-03, H3-04, H3-05, H3-06, H3-07, H3-08, H3-09, H3-10, H3-11, H3-12, H3-13 |
+| Objective | Distinct, checked concepts for `my-house`, iterated with the homeowner to an approved plan and an honest professional handoff |
+| Scope | In: gated generation, critics, sections, visual review, revisions, selection, professional feedback, plan gate, handoff. Out: permits or construction documents |
+| Acceptance | Three or more distinct concepts with full critic output; plan gate approved by the homeowner; handoff makes no professional claims |
+| Tests | `project verify my-house` |
+| Demonstration | Reviewer session with the homeowner; handoff package |
+| Artifacts | Plans, evaluations, revision reports, handoff export |
+| Review requirements | Reviewer checks every claim in concept summaries and the handoff |
+| Evidence | — |
 
 A plan is not successful because it is mathematically valid; the homeowner
 must understand how the house works in everyday life.
 
-### Stage H3.1 — Concepts for the real house
+#### Concepts for the real house
 
-| Field | Value |
-|---|---|
-| Kind | human-dependent |
-| Status | BLOCKED |
-| Review | NOT_REQUESTED |
-| Branch | `stage/H3.1-real-concepts` (project-record commits) |
-| Depends on | RG.1, H1.2, H2.2 |
-| Tasks | H3.1-01, H3.1-02, H3.1-03, H3.1-04, H3.1-05, H3.1-06 |
-| Objective | Several genuinely different, checked concepts for `my-house` |
-| Scope | In: gated generation, critics, sections, visual review, limitations. Out: plan approval (H3.2) |
-| Acceptance | At least three distinct concepts with full critic output, sections and risk registers |
-| Tests | `project verify my-house` |
-| Demonstration | Reviewer session with the homeowner |
-| Artifacts | Plans and evaluations in the store; exports in `design/` |
-| Review requirements | Independent reviewer checks every claim in the concept summaries |
-| Evidence | — |
-
-- [ ] **H3.1-01** Confirm prerequisites and approvals — `BLOCKED` · P1 · deps: none
+- [ ] **H3-01** Confirm prerequisites and approvals — `BLOCKED` · P1 · deps: none
   - Accept: site and program approved; readiness gate passed or owner-accepted exceptions
   - Verify: `project status`; §H
   - Evidence: pending
-  - Notes: blocked on RG.1, H1.2-06, H2.2-05
-- [ ] **H3.1-02** Generate multiple genuinely distinct concepts — `NOT_STARTED` · P1 · deps: H3.1-01
-  - Accept: concepts pass diversity checks (DG.6-04); validated against verified survey and approved program
+  - Notes: blocked on S9, H1-12, H2-15
+- [ ] **H3-02** Generate multiple genuinely distinct concepts — `NOT_STARTED` · P1 · deps: H3-01
+  - Accept: concepts pass diversity checks (S7-24); validated against verified survey and approved program
   - Verify: `plan list`, diversity report
   - Evidence: pending
-- [ ] **H3.1-03** Compare footprint, terrain response, excavation, retaining walls and underfloor void — `NOT_STARTED` · P1 · deps: H3.1-02
+- [ ] **H3-03** Compare footprint, terrain response, excavation, retaining walls and underfloor void — `NOT_STARTED` · P1 · deps: H3-02
   - Accept: comparison per DEC-04 with no default preference
   - Verify: comparison export
   - Evidence: pending
-- [ ] **H3.1-04** Inspect all floors and meaningful sections — `NOT_STARTED` · P1 · deps: H3.1-02
+- [ ] **H3-04** Inspect all floors and meaningful sections — `NOT_STARTED` · P1 · deps: H3-02
   - Accept: every level and the standard sections reviewed in the reviewer
   - Verify: visual-review records
   - Evidence: pending
-- [ ] **H3.1-05** Run the full critic suite and visual review — `NOT_STARTED` · P1 · deps: H3.1-02
+- [ ] **H3-05** Run the full critic suite and visual review — `NOT_STARTED` · P1 · deps: H3-02
   - Accept: stairs, circulation, kitchen–garage, privacy, bedrooms and bathrooms, furniture, daylight, outdoor connections all reported
   - Verify: evaluation reports and critique records
   - Evidence: pending
-- [ ] **H3.1-06** Record limitations and unknown engineering conditions — `NOT_STARTED` · P1 · deps: H3.1-05
+- [ ] **H3-06** Record limitations and unknown engineering conditions — `NOT_STARTED` · P1 · deps: H3-05
   - Accept: risk register and open questions per concept
   - Verify: exports
   - Evidence: pending
 
-### Stage H3.2 — Iteration, selection and concept handoff
+#### Iteration, selection and concept handoff
 
-| Field | Value |
-|---|---|
-| Kind | human-dependent |
-| Status | BLOCKED |
-| Review | NOT_REQUESTED |
-| Branch | `stage/H3.2-iteration-handoff` (project-record commits) |
-| Depends on | H3.1 |
-| Tasks | H3.2-01, H3.2-02, H3.2-03, H3.2-04, H3.2-05, H3.2-06, H3.2-07 |
-| Objective | The homeowner iterates to a design they choose, and professionals receive an honest concept package |
-| Scope | In: feedback, revisions, rejection, selection, professional feedback, plan gate, handoff. Out: permits or construction documents |
-| Acceptance | Plan gate approved by the homeowner; handoff states what is not verified |
-| Tests | `project verify my-house` |
-| Demonstration | Handoff package |
-| Artifacts | Plan versions, revision reports, handoff export |
-| Review requirements | Reviewer checks the handoff makes no professional claims |
-| Evidence | — |
-
-- [ ] **H3.2-01** Collect homeowner feedback through the reviewer — `BLOCKED` · P1 · deps: none
+- [ ] **H3-07** Collect homeowner feedback through the reviewer — `BLOCKED` · P1 · deps: none
   - Accept: entity-linked comments exported per concept
   - Verify: op files
   - Evidence: pending
-  - Notes: blocked on H3.1
-- [ ] **H3.2-02** Revise concepts, preserve history and compare revisions — `NOT_STARTED` · P1 · deps: H3.2-01
+  - Notes: blocked on H3
+- [ ] **H3-08** Revise concepts, preserve history and compare revisions — `NOT_STARTED` · P1 · deps: H3-07
   - Accept: every revision stored with owner words and a revision report
   - Verify: `plan list`
   - Evidence: pending
-- [ ] **H3.2-03** Reject unusable designs with reasons — `NOT_STARTED` · P2 · deps: H3.2-02
+- [ ] **H3-09** Reject unusable designs with reasons — `NOT_STARTED` · P2 · deps: H3-08
   - Accept: rejected concepts recorded with the owner's words
   - Verify: store events
   - Evidence: pending
-- [ ] **H3.2-04** Select promising alternatives for professional feedback — `NOT_STARTED` · P1 · deps: H3.2-02
+- [ ] **H3-10** Select promising alternatives for professional feedback — `NOT_STARTED` · P1 · deps: H3-08
   - Accept: owner names the alternatives and questions for professionals
   - Verify: owner statement
   - Evidence: pending
-- [ ] **H3.2-05** Record professional review results — `NOT_STARTED` · P1 · deps: H3.2-04
+- [ ] **H3-11** Record professional review results — `NOT_STARTED` · P1 · deps: H3-10
   - Accept: stored as `professional_approval` or findings with the professional's identity and scope
   - Verify: store record
   - Evidence: pending
   - Notes: depends on external professionals
-- [ ] **H3.2-06** Homeowner approves the plan gate when appropriate — `NOT_STARTED` · P1 · deps: H3.2-05
+- [ ] **H3-12** Homeowner approves the plan gate when appropriate — `NOT_STARTED` · P1 · deps: H3-11
   - Accept: `plan review` by the agent; `workflow approve my-house plan` by the homeowner
   - Verify: PLAN_APPROVED; approval actor human
   - Evidence: pending
-- [ ] **H3.2-07** Architectural concept handoff package — `NOT_STARTED` · P1 · deps: H3.2-06
+- [ ] **H3-13** Architectural concept handoff package — `NOT_STARTED` · P1 · deps: H3-12
   - Accept: plans, sections, schedules, assumptions, open questions, risk register, provenance; PROFESSIONAL_HANDOFF language
   - Verify: reviewer reads the package
   - Evidence: pending
 
-### Workstream F: Blender and IFC (MASTER_SPEC Milestone F; deferred)
+### Stage F — Blender and IFC
+
+| Field | Value |
+|---|---|
+| Kind | deferred |
+| Status | DEFERRED |
+| Review | NOT_REQUESTED |
+| Branch | `stage/F-blender-ifc` |
+| Depends on | S9 |
+| Tasks | F-01, F-02, F-03, F-04, F-05, F-06, F-07 |
+| Objective | Deterministic Blender model and IFC export from the approved plan (MASTER_SPEC Milestone F) |
+| Scope | MASTER_SPEC "Blender" and "BIM" |
+| Acceptance | Re-plan before starting |
+| Tests | Blender smoke tests; IFC round trip |
+| Demonstration | Synthetic plan in Blender and IFC |
+| Artifacts | `src/house_ai/blender/`, `src/house_ai/bim/` |
+| Review requirements | Re-plan before starting |
+| Evidence | — |
 
 Deferred by DEC-01 until the floor-plan readiness gate passes and the owner
 asks for 3D. Blender never becomes the source of truth.
 
-### Stage F.1 — Blender model from the approved plan
+#### Blender model from the approved plan
 
-| Field | Value |
-|---|---|
-| Kind | deferred |
-| Status | DEFERRED |
-| Review | NOT_REQUESTED |
-| Branch | `stage/F.1-blender` |
-| Depends on | RG.1, R1.2 |
-| Tasks | F.1-01, F.1-02, F.1-03, F.1-04, F.1-05 |
-| Objective | Deterministic canonical-plan-to-Blender build with validation and review renders |
-| Scope | MASTER_SPEC "Blender" |
-| Acceptance | Re-plan before starting |
-| Tests | Blender smoke tests where Blender is available |
-| Demonstration | Synthetic plan built in Blender |
-| Artifacts | `src/house_ai/blender/` |
-| Review requirements | Re-plan before starting |
-| Evidence | — |
-
-- [ ] **F.1-01** Deterministic canonical-plan-to-Blender export script — `DEFERRED` · P3 · deps: none
+- [ ] **F-01** Deterministic canonical-plan-to-Blender export script — `DEFERRED` · P3 · deps: none
   - Accept: version-controlled script builds semantic collections from a plan version
   - Verify: smoke test with Blender
   - Evidence: pending
-- [ ] **F.1-02** Basic 3D massing and terrain/building spatial verification — `DEFERRED` · P3 · deps: F.1-01
+- [ ] **F-02** Basic 3D massing and terrain/building spatial verification — `DEFERRED` · P3 · deps: F-01
   - Accept: model dimensions equal canonical values
   - Verify: validation script
   - Evidence: pending
-- [ ] **F.1-03** Orthographic and sectional review renders — `DEFERRED` · P3 · deps: F.1-01
+- [ ] **F-03** Orthographic and sectional review renders — `DEFERRED` · P3 · deps: F-01
   - Accept: MASTER_SPEC render list
   - Verify: render files
   - Evidence: pending
-- [ ] **F.1-04** Door, stair and space verification plus furniture and material visualisation — `DEFERRED` · P3 · deps: F.1-02
+- [ ] **F-04** Door, stair and space verification plus furniture and material visualisation — `DEFERRED` · P3 · deps: F-02
   - Accept: element counts and IDs match the plan
   - Verify: validation script
   - Evidence: pending
-- [ ] **F.1-05** Model approval workflow (model gate) — `DEFERRED` · P3 · deps: F.1-04
+- [ ] **F-05** Model approval workflow (model gate) — `DEFERRED` · P3 · deps: F-04
   - Accept: BLENDER_BUILD → BLENDER_REVIEW → MODEL_APPROVED with a human gate
   - Verify: workflow tests
   - Evidence: pending
 
-### Stage F.2 — IFC and BIM interoperability
+#### IFC and BIM interoperability
 
-| Field | Value |
-|---|---|
-| Kind | deferred |
-| Status | DEFERRED |
-| Review | NOT_REQUESTED |
-| Branch | `stage/F.2-ifc` |
-| Depends on | RG.1, R1.2-04 |
-| Tasks | F.2-01, F.2-02 |
-| Objective | Map approved entities to IFC with canonical IDs preserved |
-| Scope | MASTER_SPEC "BIM" |
-| Acceptance | Re-plan before starting |
-| Tests | Round-trip tests |
-| Demonstration | Synthetic IFC opened in a viewer |
-| Artifacts | `src/house_ai/bim/` |
-| Review requirements | Re-plan before starting |
-| Evidence | — |
-
-- [ ] **F.2-01** IfcOpenShell export preserving canonical IDs — `DEFERRED` · P3 · deps: none
+- [ ] **F-06** IfcOpenShell export preserving canonical IDs — `DEFERRED` · P3 · deps: none
   - Accept: spaces, walls, openings, slabs, stairs exported
   - Verify: IFC validation
   - Evidence: pending
-- [ ] **F.2-02** Semantic round-trip test — `DEFERRED` · P3 · deps: F.2-01
+- [ ] **F-07** Semantic round-trip test — `DEFERRED` · P3 · deps: F-06
   - Accept: re-import matches the canonical model within tolerance
   - Verify: test
   - Evidence: pending
 
-### Workstream G: Unreal and advanced features (MASTER_SPEC Milestone G; deferred)
-
-Not prerequisites for credible 2D floor plans.
-
-### Stage G.1 — Unreal walkthrough
+### Stage G — Unreal and advanced features
 
 | Field | Value |
 |---|---|
 | Kind | deferred |
 | Status | DEFERRED |
 | Review | NOT_REQUESTED |
-| Branch | `stage/G.1-unreal` |
-| Depends on | F.1 |
-| Tasks | G.1-01, G.1-02, G.1-03, G.1-04 |
-| Objective | Walkable first-person Unreal scene from the approved Blender model |
-| Scope | MASTER_SPEC "Unreal Engine" |
+| Branch | `stage/G-unreal-advanced` |
+| Depends on | F |
+| Tasks | G-01, G-02, G-03, G-04, G-05, G-06, G-07, G-08 |
+| Objective | Walkable Unreal scene and later advanced features (MASTER_SPEC Milestone G) |
+| Scope | MASTER_SPEC "Unreal Engine" and advanced items |
 | Acceptance | Re-plan before starting |
 | Tests | Importer structure tests where Unreal is available |
 | Demonstration | Synthetic walkthrough |
@@ -2446,56 +1831,43 @@ Not prerequisites for credible 2D floor plans.
 | Review requirements | Re-plan before starting |
 | Evidence | — |
 
-- [ ] **G.1-01** FBX export and semantic scene manifest — `DEFERRED` · P3 · deps: none
+Not prerequisites for credible 2D floor plans.
+
+#### Unreal walkthrough
+
+- [ ] **G-01** FBX export and semantic scene manifest — `DEFERRED` · P3 · deps: none
   - Accept: `scene_manifest.json` with stable IDs, transforms, units, materials
   - Verify: schema validation
   - Evidence: pending — `scene_manifest` schema exists
-- [ ] **G.1-02** Unreal import automation with scale, axis and terrain alignment — `DEFERRED` · P3 · deps: G.1-01
+- [ ] **G-02** Unreal import automation with scale, axis and terrain alignment — `DEFERRED` · P3 · deps: G-01
   - Accept: metres to centimetres, axis conversion, georeferencing preserved
   - Verify: import test
   - Evidence: pending
-- [ ] **G.1-03** First-person walkthrough with collision and room access — `DEFERRED` · P3 · deps: G.1-02
+- [ ] **G-03** First-person walkthrough with collision and room access — `DEFERRED` · P3 · deps: G-02
   - Accept: human-scale start, collision, reachable rooms
   - Verify: smoke test
   - Evidence: pending
-- [ ] **G.1-04** Interactive doors and windows, lighting and time of day — `DEFERRED` · P3 · deps: G.1-03
+- [ ] **G-04** Interactive doors and windows, lighting and time of day — `DEFERRED` · P3 · deps: G-03
   - Accept: doors open; basic lighting and sky
   - Verify: smoke test
   - Evidence: pending
 
-### Stage G.2 — Advanced features
+#### Advanced features
 
-| Field | Value |
-|---|---|
-| Kind | deferred |
-| Status | DEFERRED |
-| Review | NOT_REQUESTED |
-| Branch | `stage/G.2-advanced` |
-| Depends on | RG.1 |
-| Tasks | G.2-01, G.2-02, G.2-03, G.2-04 |
-| Objective | Optional depth after the core design workflow works |
-| Scope | MASTER_SPEC "Only then proceed toward advanced BIM ..." |
-| Acceptance | Re-plan before starting |
-| Tests | Per feature |
-| Demonstration | Per feature |
-| Artifacts | Per feature |
-| Review requirements | Re-plan before starting |
-| Evidence | — |
-
-- [ ] **G.2-01** Detailed materials and photorealism — `DEFERRED` · P3 · deps: none
+- [ ] **G-05** Detailed materials and photorealism — `DEFERRED` · P3 · deps: none
   - Accept: re-plan
   - Verify: re-plan
   - Evidence: pending
-- [ ] **G.2-02** Energy and environmental simulation — `DEFERRED` · P3 · deps: none
+- [ ] **G-06** Energy and environmental simulation — `DEFERRED` · P3 · deps: none
   - Accept: results labelled `simulated` from real simulators only
   - Verify: re-plan
   - Evidence: pending
-- [ ] **G.2-03** Detailed MEP and structural workflows and code-compliance packs — `DEFERRED` · P3 · deps: none
+- [ ] **G-07** Detailed MEP and structural workflows and code-compliance packs — `DEFERRED` · P3 · deps: none
   - Accept: only with verified CodePacks and professional involvement
   - Verify: re-plan
   - Evidence: pending
-- [ ] **G.2-04** Experimental neural generators — `DEFERRED` · P3 · deps: R1.3
-  - Accept: only after R1.3 recommends one
+- [ ] **G-08** Experimental neural generators — `DEFERRED` · P3 · deps: X1
+  - Accept: only after X1 recommends one
   - Verify: re-plan
   - Evidence: pending
 
@@ -2511,22 +1883,22 @@ evaluating task. Decision values: UNEVALUATED, ADOPT, ADAPT, REJECT, DEFER.
 
 | ID | Candidate | Intended contribution | Highest verified (2026-10-17) | Task | Decision |
 |---|---|---|---|---|---|
-| TOOL-PLAYWRIGHT | Playwright CLI and agent skill; Playwright MCP; Playwright Test | Agent browser inspection (E2), browser regression tests (E1.5) | mentioned in research | R1.1-01 | UNEVALUATED |
-| TOOL-TRIMESH | Trimesh | TIN meshes, volumes, sections (DH) | mentioned in research | R1.1-02 | UNEVALUATED |
-| TOOL-MANIFOLD | Manifold / manifold3d | Robust mesh booleans for cut/fill and sections (DH) | mentioned in research | R1.1-03 | UNEVALUATED |
-| TOOL-ARCHLANG | ArchLang | Independent plan diagnostics and lint (DQ, E2) | mentioned in research | R1.1-04 | UNEVALUATED |
-| TOOL-ANATOMY | Anatomy agent skill | Interactive SVG and skill-packaging patterns (E1, T1) | mentioned in research | R1.1-05 | UNEVALUATED |
-| TOOL-OTHER | Further candidates found during implementation | Same evidence process before any install | proposed | R1.1-06 | UNEVALUATED |
-| TOOL-BLENDER-MCP | Blender MCP | Optional interactive Blender interface (F) | configured (Codex) | R1.2-01 | UNEVALUATED |
-| TOOL-FREECAD-MCP | FreeCAD MCP | Independent CAD and solid checks | configured (Codex) | R1.2-02 | UNEVALUATED |
-| TOOL-LADYBUG | Ladybug Tools | Solar and daylight opportunity (DQ.6, G.2) | mentioned in research | R1.2-03 | UNEVALUATED |
-| TOOL-IFCOPENSHELL | IfcOpenShell and Bonsai | IFC/BIM round trip (F.2) | mentioned in research | R1.2-04 | UNEVALUATED |
-| TOOL-GRAPH2PLAN | Graph2Plan | Research: graph-to-plan generation (DG.2 ideas) | mentioned in research | R1.3-01 | UNEVALUATED |
-| TOOL-HOUSEGAN | House-GAN, House-GAN++ | Research: topology-conditioned generation | mentioned in research | R1.3-02 | UNEVALUATED |
-| TOOL-HOUSEDIFFUSION | HouseDiffusion | Research: vector floor-plan diffusion | mentioned in research | R1.3-03 | UNEVALUATED |
-| TOOL-RSVG | rsvg-convert, Inkscape | Static SVG rasterisation for inspection (E2.1-04) | installed | E2.1-04 | UNEVALUATED |
+| TOOL-PLAYWRIGHT | Playwright CLI and agent skill; Playwright MCP; Playwright Test | Agent browser inspection (E2), browser regression tests (S4) | mentioned in research | S3-01 | UNEVALUATED |
+| TOOL-TRIMESH | Trimesh | TIN meshes, volumes, sections (DH) | mentioned in research | S3-02 | UNEVALUATED |
+| TOOL-MANIFOLD | Manifold / manifold3d | Robust mesh booleans for cut/fill and sections (DH) | mentioned in research | S3-03 | UNEVALUATED |
+| TOOL-ARCHLANG | ArchLang | Independent plan diagnostics and lint (DQ, E2) | mentioned in research | S3-04 | UNEVALUATED |
+| TOOL-ANATOMY | Anatomy agent skill | Interactive SVG and skill-packaging patterns (E1, T1) | mentioned in research | S3-05 | UNEVALUATED |
+| TOOL-OTHER | Further candidates found during implementation | Same evidence process before any install | proposed | S3-06 | UNEVALUATED |
+| TOOL-BLENDER-MCP | Blender MCP | Optional interactive Blender interface (F) | configured (Codex) | X1-01 | UNEVALUATED |
+| TOOL-FREECAD-MCP | FreeCAD MCP | Independent CAD and solid checks | configured (Codex) | X1-02 | UNEVALUATED |
+| TOOL-LADYBUG | Ladybug Tools | Solar and daylight opportunity (S6, G) | mentioned in research | X1-03 | UNEVALUATED |
+| TOOL-IFCOPENSHELL | IfcOpenShell and Bonsai | IFC/BIM round trip (F) | mentioned in research | X1-04 | UNEVALUATED |
+| TOOL-GRAPH2PLAN | Graph2Plan | Research: graph-to-plan generation (S7 ideas) | mentioned in research | X1-05 | UNEVALUATED |
+| TOOL-HOUSEGAN | House-GAN, House-GAN++ | Research: topology-conditioned generation | mentioned in research | X1-06 | UNEVALUATED |
+| TOOL-HOUSEDIFFUSION | HouseDiffusion | Research: vector floor-plan diffusion | mentioned in research | X1-07 | UNEVALUATED |
+| TOOL-RSVG | rsvg-convert, Inkscape | Static SVG rasterisation for inspection (S5-04) | installed | S5-04 | UNEVALUATED |
 | TOOL-ODA | ODA File Converter | DWG to DXF (B-01) | integrated | B-01 | ADOPT |
-| TOOL-ORTOOLS | OR-Tools CP-SAT | Layout solver (D-02, DG.3) | integrated | D-02 | ADOPT |
+| TOOL-ORTOOLS | OR-Tools CP-SAT | Layout solver (D-02, S7) | integrated | D-02 | ADOPT |
 
 Already integrated before this tracker: ezdxf, pyproj, Shapely, Pydantic,
 OR-Tools, ODA File Converter (optional), anthropic SDK (optional extra).
@@ -2547,7 +1919,7 @@ experiment, decision and evidence.
   candidate *(unverified)*. Experiment: agent captures and describes a
   local synthetic reviewer page; CI headless run.
 - **TOOL-TRIMESH.** URL https://github.com/mikedh/trimesh; licence MIT
-  *(unverified)*. Not installed in `.venv`. Experiment: DH.1-01 analytical
+  *(unverified)*. Not installed in `.venv`. Experiment: S8-01 analytical
   volumes and sections; wheels for Python 3.11/3.13 arm64.
 - **TOOL-MANIFOLD.** URL https://github.com/elalish/manifold (Python
   `manifold3d`); licence Apache-2.0 *(unverified)*. Not installed.
@@ -2574,10 +1946,10 @@ experiment, decision and evidence.
   operation **not verified**.
 - **TOOL-LADYBUG.** URL https://github.com/ladybug-tools; licence to verify
   per package. Not installed. Orientation-specific claims deferred until
-  north is verified (H1.1-05).
+  north is verified (H1-05).
 - **TOOL-IFCOPENSHELL.** URL https://github.com/IfcOpenShell/IfcOpenShell;
   IfcOpenShell LGPL-3.0, Bonsai GPL-3.0 *(unverified)*. Not installed.
-  Production integration deferred to F.2.
+  Production integration deferred to F.
 - **TOOL-GRAPH2PLAN.** URL https://github.com/HanHan55/Graph2plan
   *(unverified)*; licence to verify. Isolated benchmark only.
 - **TOOL-HOUSEGAN.** URLs https://github.com/ennauata/housegan,
@@ -2592,27 +1964,27 @@ experiment, decision and evidence.
 ## H. Floor-plan readiness gate
 
 The system is ready to design the real house only when every criterion
-below is PASS with evidence (RG.1-01), the synthetic end-to-end
-demonstration has been independently reviewed (RG.1-02), and the homeowner
-has acknowledged the remaining limitations (RG.1-03). Blender and Unreal
+below is PASS with evidence (S9-01), the synthetic end-to-end
+demonstration has been independently reviewed (S9-02), and the homeowner
+has acknowledged the remaining limitations (S9-03). Blender and Unreal
 are not required. Passing this gate is a software-readiness statement, not
 an approval of any design and not a professional certification.
 
 | ID | Criterion | Evidence required (tasks) | Status |
 |---|---|---|---|
-| FPR-01 | Interprets verified site data, with unknowns explicit | B-03, B-04, DH.6-03, R2.2-06 | NOT MET |
-| FPR-02 | Uses an approved space program only | D-06, T0.2-06 | NOT MET |
-| FPR-03 | Generates genuinely different concepts | DG.3, DG.4, DG.6-04 | NOT MET |
-| FPR-04 | Models usable rooms (net area, furniture, fixtures) | DQ.1, DQ.3, DQ.4 | NOT MET |
-| FPR-05 | Validates doors and stairs, including headroom | DQ.2 | NOT MET |
-| FPR-06 | Evaluates circulation and privacy with measured routes | DQ.5, DG.1 | NOT MET |
-| FPR-07 | Evaluates hillside relationships (levels, doors to ground, garage, voids, retaining) | DH.3, DH.4, DH.5 | NOT MET |
-| FPR-08 | Produces consistent plans and true terrain sections | DH.1, DH.2 | NOT MET |
-| FPR-09 | Supports visual inspection by agents, grounded in canonical IDs | E2.1, E2.2, E2.3 | NOT MET |
-| FPR-10 | Supports homeowner review and comparison | E1.2, E1.3, E1.4 | NOT MET |
-| FPR-11 | Revises designs without losing intent | E1.5, DG.6-01, DG.6-03 | NOT MET |
-| FPR-12 | Preserves provenance and human approval gates | A-02, A-03, T0.2 | NOT MET |
-| FPR-13 | Exposes unknown engineering and code issues plainly | DH.6-04, PROFESSIONAL_HANDOFF | NOT MET |
+| FPR-01 | Interprets verified site data, with unknowns explicit | B-03, B-04, S8-20, S3-15 | NOT MET |
+| FPR-02 | Uses an approved space program only | D-06, S1-06 | NOT MET |
+| FPR-03 | Generates genuinely different concepts | S7, S7-24 | NOT MET |
+| FPR-04 | Models usable rooms (net area, furniture, fixtures) | S6 | NOT MET |
+| FPR-05 | Validates doors and stairs, including headroom | S6 | NOT MET |
+| FPR-06 | Evaluates circulation and privacy with measured routes | S6, S7 | NOT MET |
+| FPR-07 | Evaluates hillside relationships (levels, doors to ground, garage, voids, retaining) | S8 | NOT MET |
+| FPR-08 | Produces consistent plans and true terrain sections | S8 | NOT MET |
+| FPR-09 | Supports visual inspection by agents, grounded in canonical IDs | S5 | NOT MET |
+| FPR-10 | Supports homeowner review and comparison | S4 | NOT MET |
+| FPR-11 | Revises designs without losing intent | S4, S7-21, S7-23 | NOT MET |
+| FPR-12 | Preserves provenance and human approval gates | A-02, A-03, S1 | NOT MET |
+| FPR-13 | Exposes unknown engineering and code issues plainly | S8-21, PROFESSIONAL_HANDOFF | NOT MET |
 
 Limitations that will remain after the gate and need human or
 professional judgment: structure, foundations, geotechnics, drainage and
@@ -2623,44 +1995,44 @@ aesthetic quality; the household's own sense of comfort.
 
 | Item | State (2026-10-17) | Next action | Task |
 |---|---|---|---|
-| Survey evidence audit | done | none | H1.1-01 |
-| Units, CRS, datum, north | unknown (5 site blockers) | owner or surveyor information | H1.1-02 … H1.1-06 |
-| Parcel boundary | inference only | owner or surveyor confirmation | H1.2-01 |
-| **Site gate** | not approved | homeowner runs `site confirm` and `workflow approve … site` | H1.2-06 |
-| Interview | not started (0 turns) | start after T0.3-01 | H2.1-01 |
-| **Program gate** | no program | interview, build, review, homeowner approval | H2.2-05 |
-| Floor-plan readiness gate | not met | RG.1 | RG.1-01 |
-| **Plan gate** | no plans | H3 | H3.2-06 |
-| **Model gate** | deferred | F.1 | F.1-05 |
-| Homeowner acknowledgement of limitations | not given | RG.1-03 | RG.1-03 |
+| Survey evidence audit | done | none | H1-01 |
+| Units, CRS, datum, north | unknown (5 site blockers) | owner or surveyor information | H1-02 … H1-06 |
+| Parcel boundary | inference only | owner or surveyor confirmation | H1-07 |
+| **Site gate** | not approved | homeowner runs `site confirm` and `workflow approve … site` | H1-12 |
+| Interview | not started (0 turns) | start after S1-09 | H2-01 |
+| **Program gate** | no program | interview, build, review, homeowner approval | H2-15 |
+| Floor-plan readiness gate | not met | S9 | S9-01 |
+| **Plan gate** | no plans | H3 | H3-12 |
+| **Model gate** | deferred | F | F-05 |
+| Homeowner acknowledgement of limitations | not given | S9-03 | S9-03 |
 
 Software-stage closure never implies any of these approvals.
 
 ## J. Architectural quality benchmark register
 
-Benchmarks are tasks in R2.1–R2.4; this table only maps the requested
-scenarios to them. Acceptance categories are defined by R2.1-03.
+Benchmarks are tasks in S3–S6; this table only maps the requested
+scenarios to them. Acceptance categories are defined by S3-09.
 
 | Scenario | Task |
 |---|---|
-| Synthetic steep reference (~600 m², ~12.5 m relief, ~40 %) | R2.1-02 |
-| Flat simple; narrow and deep | R2.2-01 |
-| Steep road-high; steep road-low | R2.2-02 |
-| Cross-slope; diagonal slope | R2.2-03 |
-| Concave parcel | R2.2-04 |
-| Breaklines; noisy or sliver TIN | R2.2-05 |
-| Unknown north | R2.2-06 |
-| Family privacy | R2.3-01 |
-| Accessible multigenerational | R2.3-02 |
-| Garage and heavy cooking | R2.3-03 |
-| Large-terrace hillside | R2.3-04 |
-| Homeowner-preference comparisons | R2.3-05 |
-| Multi-level stair and headroom | R2.4-01 |
-| Furniture and door-clearance conflicts | R2.4-02 |
-| Poor corridor efficiency | R2.4-03 |
-| Wrong entrance and garage relationships | R2.4-04 |
-| Windows facing buried walls | R2.4-05 |
-| Outdoor doors above or below grade; inconsistent floor connections | R2.4-06 |
+| Synthetic steep reference (~600 m², ~12.5 m relief, ~40 %) | S3-08 |
+| Flat simple; narrow and deep | S3-10 |
+| Steep road-high; steep road-low | S3-11 |
+| Cross-slope; diagonal slope | S3-12 |
+| Concave parcel | S3-13 |
+| Breaklines; noisy or sliver TIN | S3-14 |
+| Unknown north | S3-15 |
+| Family privacy | S3-16 |
+| Accessible multigenerational | S3-17 |
+| Garage and heavy cooking | S3-18 |
+| Large-terrace hillside | S3-19 |
+| Homeowner-preference comparisons | S3-20 |
+| Multi-level stair and headroom | S6-27 |
+| Furniture and door-clearance conflicts | S6-28 |
+| Poor corridor efficiency | S6-29 |
+| Wrong entrance and garage relationships | S6-30 |
+| Windows facing buried walls | S6-31 |
+| Outdoor doors above or below grade; inconsistent floor connections | S6-32 |
 
 ## K. Open issues, risks and uncertainties
 
@@ -2670,29 +2042,29 @@ changed), **decision** (owner must choose), **risk**.
 
 | ID | Issue | Class | Evidence | Proposed resolution | Tracked by |
 |---|---|---|---|---|---|
-| ISS-01 | `workflow reopen` has no terminal or typed-phrase check; non-TTY with `--actor human:owner` succeeds; agent actor exits 1 not 2 | defect | `cli/main.py:406-410`, `orchestration/workflow.py:404-408` | Same gate as `approve` | T0.2-01 |
-| ISS-02 | `--approver` / `--confirmer` accept any string, e.g. `agent:gemini`, recorded as human | defect | `cli/main.py:397,484`; `domain/provenance.py:20` | Refuse agent-looking ids | T0.2-02 |
-| ISS-03 | `program reject` (human-only) can be bypassed by `workflow transition … INTERVIEWING` by any actor | defect | `orchestration/workflow.py:55` | Guard or remove the transition | T0.2-03 |
-| ISS-04 | `interview confirm` accepts `agent:` actors; agent-recorded confirmations count toward the program gate | decision | `orchestration/interview.py:899-916`; by design per ADR 0011 and AGENT_CONTRACT §9 step 5 | Owner chooses provenance strength | T0.2-05 |
-| ISS-05 | Artifacts can be written after a gate approval with no guard; staleness surfaces only downstream | defect | `cli/main.py:280-296`, `interview.py:941` | Refuse or flag stale gate | T0.2-06 |
-| ISS-06 | Event log has no head anchor; removing the last events passes `project verify` | defect | `storage/project_store.py:410-460` | Anchor head hash | T0.2-07 |
-| ISS-07 | A test reads the real `projects/my-house` in CI; the CI step says "synthetic data only"; the test asserts `not_started` and will fail when the real interview starts | defect | `tests/test_interview.py:1024-1047`; `.github/workflows/ci.yml:32` | Synthetic replacement before H2.1 | T0.3-01, T0.3-04 |
-| ISS-08 | Real site values hard-coded in tests, including the retracted slope and an older relief value | defect | `tests/test_interview.py:983-986`, `test_site_review_fixes.py:529-533`, `test_plan_generation.py:71` | Synthetic values | T0.3-02 |
-| ISS-09 | Precise private survey values and hash prefixes in docs | decision | `milestones/B.md:243-248`, `milestones/C.md:93-94,250-251`; approximate values in AGENT_CONTRACT §7 | Owner decides policy | T0.3-05 |
-| ISS-10 | README says D "not yet merged; next: Milestone E"; PRODUCT_SPEC showed D "next" (file removed, T0.1-08); milestones/D.md says "Not merged" and "five structural strategies"; ARCHITECTURE says "five massing strategies" (six exist) | stale doc | `README.md:9-10`; `milestones/D.md:3-4,24`; `ARCHITECTURE.md` package map | Correct with dated notes | T0.4-01 … T0.4-04 |
-| ISS-11 | milestones/C.md and tests carry retracted site figures superseded by the survey audit | stale doc | `milestones/C.md:93-94,250-251`; `projects/my-house/reviews/survey-audit/REPORT.md` | Dated correction note | T0.4-03, T0.3-02 |
-| ISS-12 | Solver and evaluators disagree on relation semantics; seven compiled soft objectives and CodePack hard rules are not used by the solver | defect | §C limitations | Align in DG.1; owner may pull DG.1 ahead of DQ | DG.1 |
+| ISS-01 | `workflow reopen` has no terminal or typed-phrase check; non-TTY with `--actor human:owner` succeeds; agent actor exits 1 not 2 | defect | `cli/main.py:406-410`, `orchestration/workflow.py:404-408` | Same gate as `approve` | S1-01 |
+| ISS-02 | `--approver` / `--confirmer` accept any string, e.g. `agent:gemini`, recorded as human | defect | `cli/main.py:397,484`; `domain/provenance.py:20` | Refuse agent-looking ids | S1-02 |
+| ISS-03 | `program reject` (human-only) can be bypassed by `workflow transition … INTERVIEWING` by any actor | defect | `orchestration/workflow.py:55` | Guard or remove the transition | S1-03 |
+| ISS-04 | `interview confirm` accepts `agent:` actors; agent-recorded confirmations count toward the program gate | decision | `orchestration/interview.py:899-916`; by design per ADR 0011 and AGENT_CONTRACT §9 step 5 | Owner chooses provenance strength | S1-05 |
+| ISS-05 | Artifacts can be written after a gate approval with no guard; staleness surfaces only downstream | defect | `cli/main.py:280-296`, `interview.py:941` | Refuse or flag stale gate | S1-06 |
+| ISS-06 | Event log has no head anchor; removing the last events passes `project verify` | defect | `storage/project_store.py:410-460` | Anchor head hash | S1-07 |
+| ISS-07 | A test reads the real `projects/my-house` in CI; the CI step says "synthetic data only"; the test asserts `not_started` and will fail when the real interview starts | defect | `tests/test_interview.py:1024-1047`; `.github/workflows/ci.yml:32` | Synthetic replacement before H2 | S1-09, S1-12 |
+| ISS-08 | Real site values hard-coded in tests, including the retracted slope and an older relief value | defect | `tests/test_interview.py:983-986`, `test_site_review_fixes.py:529-533`, `test_plan_generation.py:71` | Synthetic values | S1-10 |
+| ISS-09 | Precise private survey values and hash prefixes in docs | decision | `milestones/B.md:243-248`, `milestones/C.md:93-94,250-251`; approximate values in AGENT_CONTRACT §7 | Owner decides policy | S1-13 |
+| ISS-10 | README says D "not yet merged; next: Milestone E"; PRODUCT_SPEC showed D "next" (file removed, T0.1-08); milestones/D.md says "Not merged" and "five structural strategies"; ARCHITECTURE says "five massing strategies" (six exist) | stale doc | `README.md:9-10`; `milestones/D.md:3-4,24`; `ARCHITECTURE.md` package map | Correct with dated notes | S1-14 … S1-17 |
+| ISS-11 | milestones/C.md and tests carry retracted site figures superseded by the survey audit | stale doc | `milestones/C.md:93-94,250-251`; `projects/my-house/reviews/survey-audit/REPORT.md` | Dated correction note | S1-16, S1-10 |
+| ISS-12 | Solver and evaluators disagree on relation semantics; seven compiled soft objectives and CodePack hard rules are not used by the solver | defect | §C limitations | Align in S7; owner may pull S7 ahead of DQ | S7 |
 | ISS-13 | `MILESTONE_D_HANDOFF.md` is a second roadmap (start instructions for D, "next" steps) competing with this tracker | stale doc | `docs/MILESTONE_D_HANDOFF.md` | Removed on the owner's instruction | T0.1-08 |
-| ISS-14 | ADR 0005 says no `.claude/`, `.agents/` or `.gemini/` skills directories; T1 needs project skills | conflict | ADR 0005 "Decision" | New ADR revising that clause, owner approval | T1.1-01 |
+| ISS-14 | ADR 0005 says no `.claude/`, `.agents/` or `.gemini/` skills directories; T1 needs project skills | conflict | ADR 0005 "Decision" | New ADR revising that clause, owner approval | S2-01 |
 | ISS-15 | MASTER_SPEC order is E → F → G and its first-slice success includes Blender input and an Unreal manifest; the owner now puts floor-plan quality first | priority | MASTER_SPEC "Implementation strategy", "Definition of success"; owner request 2026-10-17 | Order changed, mission unchanged; MASTER_SPEC text not edited | DEC-01, ADR 0014 |
 | ISS-16 | MASTER_SPEC says owner project material is git-ignored by default; ADR 0009 commits `projects/my-house` | conflict | MASTER_SPEC "Data / privacy"; ADR 0009 | Already decided by ADR 0009 with owner authorisation; repository must stay private (verified PRIVATE) | none (decided) |
-| ISS-17 | AGENT_CONTRACT is 11,988 of the 12,000 characters allowed by ADR 0005 and its test | risk | `tests/test_agent_instructions.py:13` | Move §9 command detail to AGENT_WORKFLOWS when next edited | T0.4 (propose) |
+| ISS-17 | AGENT_CONTRACT is 11,988 of the 12,000 characters allowed by ADR 0005 and its test | risk | `tests/test_agent_instructions.py:13` | Move §9 command detail to AGENT_WORKFLOWS when next edited | S1 (propose) |
 | ISS-18 | The governance request lists `docs/DESIGN_PRINCIPLES.md`; it does not exist | stale doc | `ls docs/` | Principles live in ARCHITECTURE "Principles"; no new file | none |
-| ISS-19 | Gemini CLI is not installed; Antigravity apps are; ADR 0005's Gemini check was documentary only | risk | `command -v gemini` empty; `/Applications/Antigravity*.app` | Verify in T1.1-06 or defer | T1.1-06 |
-| ISS-20 | `my-house` CRS may never be confirmable; orientation and georeferencing would stay unavailable | risk | owner statements v5 | Local-only planning decision | H1.2-05 |
-| ISS-21 | CP-SAT output differs slightly across platforms | risk | milestones/D.md "Known limitations" | Tests assert properties, not bytes | DG.3-05 |
+| ISS-19 | Gemini CLI is not installed; Antigravity apps are; ADR 0005's Gemini check was documentary only | risk | `command -v gemini` empty; `/Applications/Antigravity*.app` | Verify in S2-06 or defer | S2-06 |
+| ISS-20 | `my-house` CRS may never be confirmable; orientation and georeferencing would stay unavailable | risk | owner statements v5 | Local-only planning decision | H1-11 |
+| ISS-21 | CP-SAT output differs slightly across platforms | risk | milestones/D.md "Known limitations" | Tests assert properties, not bytes | S7-13 |
 | ISS-22 | MASTER_SPEC "How to work" step 1 says "write docs/PRODUCT_SPEC.md"; the owner had that summary removed | conflict | `MASTER_SPEC.md:896`; T0.1-08 | Treat as a completed bootstrap instruction; MASTER_SPEC text not edited | none (owner decided) |
-| ISS-23 | §O lists `ruff check … tools` but CI lints only `src tests examples` | risk | `.github/workflows/ci.yml` | Add `tools` to the CI lint step in T0.3 or T0.4 | T0.4 (propose) |
+| ISS-23 | §O lists `ruff check … tools` but CI lints only `src tests examples` | risk | `.github/workflows/ci.yml` | Add `tools` to the CI lint step in S1 | S1 (propose) |
 
 ## L. Decisions
 
@@ -2701,10 +2073,11 @@ changed), **decision** (owner must choose), **risk**.
 | DEC-01 | Floor-plan readiness comes before Blender, IFC and Unreal; this changes implementation order, not the mission | Homeowner, governance request of 2026-10-17 | ADR 0014 (accepted) |
 | DEC-02 | PROJECT_TRACKER.md is the single roadmap; stages with separate implementation and review status; four owner commands | Homeowner request; ADR 0014 | ADR 0014, §O |
 | DEC-03 | Tasks become DONE only at stage closure on `main`, except work merged before the tracker existed | ADR 0014 | §P |
-| DEC-04 | Deep excavation, including more than 4 m, is acceptable as a design option; minimising excavation is not automatically the priority; the 4 m concern was about large empty voids under elevated floors; neither excavation nor elevation is preferred automatically | Homeowner, governance request of 2026-10-17 | This tracker; to be recorded verbatim in the interview (H2.1-10) |
+| DEC-04 | Deep excavation, including more than 4 m, is acceptable as a design option; minimising excavation is not automatically the priority; the 4 m concern was about large empty voids under elevated floors; neither excavation nor elevation is preferred automatically | Homeowner, governance request of 2026-10-17 | This tracker; to be recorded verbatim in the interview (H2-10) |
 | DEC-05 | Stage branches `stage/<ID>-<slug>`; CI on a branch via `gh workflow run CI --ref <branch>`; merges into `main` are merge commits (`git merge --no-ff`), as for milestones A–D | Existing practice (`a9b68fe`, `2ecb587`) | §O |
-| DEC-06 | Prefer CLI plus agent skill for browser inspection; MCP only where an external stateful application needs it | Homeowner guidance | R1.1-01 decides |
+| DEC-06 | Prefer CLI plus agent skill for browser inspection; MCP only where an external stateful application needs it | Homeowner guidance | S3-01 decides |
 | DEC-07 | No new dependency without an ADOPT or ADAPT decision approved in a stage review | Homeowner guidance | §G |
+| DEC-08 | Stages consolidated: the 38 remaining software stages became S1–S9 (T0.2–T0.4 → S1; T1.x → S2; R1.1, R2.1–R2.3 → S3; E1.x → S4; E2.x → S5; DQ.x, R2.4 → S6; DG.x → S7; DH.x → S8; RG.1 → S9; R1.2–R1.3 → X1; H1.x/H2.x/H3.x → H1/H2/H3; F.x → F; G.x → G). Task content kept; task IDs renumbered once | Homeowner, 2026-10-17 ("reduce that ... or combine them") | This tracker |
 
 Existing ADRs (all in force): 0001 canonical semantic model · 0002 Pydantic
 schemas and JSON Schema export · 0003 file-based store and event log · 0004
@@ -2879,8 +2252,8 @@ homeowner approval of any site, program, plan or model.
 ### Current handoff note
 
 - T0.1 closed on `main` (merge `7a41629`); the owner waived its independent
-  review. Next owner command: "Next stage", which starts T0.2 on
-  `stage/T0.2-gate-hardening`.
+  review. Next owner command: "Next stage", which starts S1 on
+  `stage/S1-safety-cleanup`.
 
 ## P. Rules for updating the tracker
 
@@ -2890,7 +2263,8 @@ Scope, Acceptance, Tests, Demonstration, Artifacts, Review requirements,
 Evidence). Task: `` - [ ] **<ID>** <title> — `<STATUS>` · <P0–P3> · deps: <IDs or none> ``
 followed by indented `Accept:`, `Verify:`, `Evidence:` and
 optional `Notes:` lines. Table cells never contain a `|`. IDs are never
-reused or renumbered; a dropped task becomes `DEFERRED` with a note.
+reused or renumbered (one exception: the owner-ordered consolidation DEC-08);
+a dropped task becomes `DEFERRED` with a note.
 
 **Statuses.** Implementation: `NOT_STARTED`, `IN_PROGRESS`, `BLOCKED`,
 `DONE`, `DEFERRED`. Review (stages only): `NOT_REQUESTED`, `PENDING`,
