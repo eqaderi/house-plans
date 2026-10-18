@@ -1,0 +1,33 @@
+{
+  "schema_version": "1.0.0",
+  "project": "synthetic-hillside",
+  "option": "concept-split-walkout",
+  "plan_version": 1,
+  "author": "agent:gemini",
+  "screenshot_hash": "808609c4cc636db8b9f1975da645f84bf26a978b0add6e77f150f2bf25010a88",
+  "screenshot_path": null,
+  "created_at": "2026-10-18T02:47:52.497484Z",
+  "claims": [
+    {
+      "id": "vc-001",
+      "element_ids": [
+        "win-buried-001",
+        "w-down-300-001"
+      ],
+      "claim_text": "Window win-buried-001 is hosted on retaining wall w-down-300-001 which directly abuts earthwork cut, preventing daylight access and egress.",
+      "status": "ai_judgment",
+      "severity": "warning",
+      "suggested_ops": [
+        {
+          "op_type": "connect",
+          "target": "win-buried-001",
+          "value": "w-down-300-013",
+          "notes": null
+        }
+      ],
+      "screenshot_hash": null,
+      "bounding_box": null
+    }
+  ],
+  "verified": false
+}

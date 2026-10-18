@@ -1,0 +1,14 @@
+{
+  "critique_id": "critique-concept-split-walkout-v1",
+  "from_version": 1,
+  "to_version": 2,
+  "all_resolved": true,
+  "results": [
+    {
+      "claim_id": "vc-001",
+      "is_resolved": true,
+      "evidence": "Defect resolved on elements {'w-down-300-001', 'win-buried-001'}; verified by model inspection.",
+      "remaining_defects": []
+    }
+  ]
+}

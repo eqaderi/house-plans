@@ -24,6 +24,7 @@ real `house-ai` commands, and stops at every human gate. Commands write
 2. **`architectural-programming`**: adaptive interview in rounds (English, Persian, mixed) with hillside questions, verbatim recording, confirmation, contradictions, space program, program gate request.
 3. **`generate-concepts`**: exploratory and stored CP-SAT concepts, feasibility reasons, revision ops, plan gate request.
 4. **`critique-plan`**: grounded critique of exploratory or exported concepts, checked with `house-ai plan ground`, with explicit revision ops.
+5. **`visual-review`**: visual inspection and grounded critique of rendered plan SVGs or reviewer bundles, defect detection (door clashes, window/wall misalignment, label overlaps), fix verification.
 
 ## Skill Template
 

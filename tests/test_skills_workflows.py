@@ -491,3 +491,127 @@ def test_generate_concepts_and_critique_skills_workflow(tmp_path: Path):
         ]
     )
     assert rc == 2
+
+
+def test_visual_review_skill_workflow(tmp_path: Path):
+    """End-to-end synthetic workflow test for the visual-review skill (S5-11)."""
+    proj_dir = tmp_path / "synthetic-hillside"
+    export_dir = tmp_path / "exported-concept"
+    bundle_dir = tmp_path / "exported-bundle"
+
+    # Load synthetic-hillside fixture
+    rc = main(
+        [
+            "example",
+            "load",
+            str(proj_dir),
+            "--name",
+            "synthetic-hillside",
+            "--project-id",
+            "synthetic-hillside",
+            "--actor",
+            "human:example",
+        ]
+    )
+    assert rc == 0
+    store = ProjectStore(proj_dir)
+
+    # Approve site and program for gated generation
+    wf = Workflow(store)
+    wf.approve(Gate.SITE, store.latest(ArtifactKind.SITE, "site"), OWNER, "site approved")
+    wf.transition(WorkflowState.INTERVIEWING, AGENT, "interview done")
+    wf.transition(WorkflowState.PROGRAM_REVIEW, AGENT, "program ready")
+    wf.approve(
+        Gate.PROGRAM,
+        store.latest(ArtifactKind.SPACE_PROGRAM, "program"),
+        OWNER,
+        "program approved",
+    )
+
+    # Generate concept
+    rc = main(
+        [
+            "plan",
+            "generate",
+            str(proj_dir),
+            "--strategy",
+            "split_walkout",
+            "--seed",
+            "1",
+            "--actor",
+            AGENT_ACTOR,
+        ]
+    )
+    assert rc == 0
+    plans = store.latest_of_kind(ArtifactKind.PLAN)
+    assert len(plans) >= 1
+    concept_id = plans[0].id
+
+    # 1. Export concept files for visual inspection
+    rc = main(["plan", "export", str(proj_dir), concept_id, "--out", str(export_dir)])
+    assert rc == 0
+    plan_json_path = next(export_dir.rglob("plan.json"))
+    assert plan_json_path.is_file()
+
+    # 2. Export reviewer bundle
+    rc = main(["plan", "export-bundle", str(proj_dir), "--out", str(bundle_dir)])
+    assert rc == 0
+    assert (bundle_dir / "bundle.json").is_file()
+
+    # 3. Grounded critique check: valid critique citing canonical plan ID
+    plan_data = json.loads(plan_json_path.read_text("utf-8"))
+    program = store.get(store.latest(ArtifactKind.SPACE_PROGRAM, "program"))
+    valid_spaces = [s["id"] for s in plan_data["model"]["spaces"] if s["id"].startswith("sp-")]
+    valid_program_items = [item.id for item in program.items]
+    assert len(valid_spaces) > 0
+    assert len(valid_program_items) > 0
+
+    valid_critique = tmp_path / "valid_critique.md"
+    valid_critique.write_text(
+        f"# Visual Review\nInspected `{valid_spaces[0]}` in plan canvas. Proportions are sound.\n",
+        encoding="utf-8",
+    )
+    rc = main(["plan", "ground", str(plan_json_path), str(valid_critique)])
+    assert rc == 0
+
+    # 4. Ungrounded critique check: citing invalid element ID is rejected
+    invalid_critique = tmp_path / "invalid_critique.md"
+    invalid_critique.write_text(
+        "# Visual Review\nClash detected on `sp-nonexistent-penthouse`.\n",
+        encoding="utf-8",
+    )
+    rc = main(["plan", "ground", str(plan_json_path), str(invalid_critique)])
+    assert rc == 1
+
+    # 5. Revise concept from feedback
+    rc = main(
+        [
+            "plan",
+            "revise",
+            str(proj_dir),
+            concept_id,
+            "Enlarge kitchen for accessibility",
+            "--area",
+            f"{valid_program_items[0]}=22",
+            "--actor",
+            AGENT_ACTOR,
+        ]
+    )
+    assert rc == 0
+
+    # 6. Human boundary: agent cannot approve plan gate
+    rc = main(
+        [
+            "workflow",
+            "approve",
+            str(proj_dir),
+            "plan",
+            "--id",
+            concept_id,
+            "--version",
+            "2",
+            "--approver",
+            "agent:gemini",
+        ]
+    )
+    assert rc == 2

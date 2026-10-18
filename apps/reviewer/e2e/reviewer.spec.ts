@@ -51,6 +51,34 @@ test.describe("House AI Plan Reviewer - Local 2D Reviewer E2E", () => {
     await expect(envelope).toHaveAttribute("data-id", "site-buildable-envelope");
   });
 
+  test("Accessibility tree snapshot and semantic DOM identifiers readable by agents (S5-03)", async ({
+    page,
+  }) => {
+    await page.goto("/");
+    await expect(page.locator('[data-testid="plan-canvas"]')).toBeVisible();
+
+    // Verify accessibility tree snapshot exposes canonical element names and IDs
+    const canvas = page.locator('[data-testid="plan-canvas"]');
+    const snapshotStr = await canvas.ariaSnapshot();
+    expect(snapshotStr).toBeTruthy();
+    expect(snapshotStr).toContain("Space");
+
+    // Assert explicit aria-labels on SVG DOM elements
+    const spaces = page.locator('svg g[data-kind="space"]');
+    const firstAria = await spaces.first().getAttribute("aria-label");
+    expect(firstAria).toMatch(/^Space /);
+
+    const walls = page.locator('svg line[data-kind="wall"]');
+    const firstWallAria = await walls.first().getAttribute("aria-label");
+    expect(firstWallAria).toMatch(/^Wall /);
+
+    const doors = page.locator('svg g[data-kind="door"]');
+    if ((await doors.count()) > 0) {
+      const firstDoorAria = await doors.first().getAttribute("aria-label");
+      expect(firstDoorAria).toMatch(/^Door /);
+    }
+  });
+
   test("Element selection inspects canonical attributes in PropertyPanel (S4-09)", async ({
     page,
   }) => {
@@ -159,5 +187,61 @@ test.describe("House AI Plan Reviewer - Local 2D Reviewer E2E", () => {
     await page.goto("/?bundle=/bundles/synthetic-hillside/bundle.json");
     await expect(page.locator("header")).toContainText("synthetic-hillside");
     await expect(page.locator('[data-testid="plan-canvas"]')).toBeVisible();
+  });
+
+  test("Screenshot and semantic ID-map regression tests (S5-08)", async ({
+    page,
+  }) => {
+    await page.goto("/?bundle=/bundles/synthetic-bungalow/bundle.json");
+    await expect(page.locator("header")).toContainText("synthetic-bungalow");
+    const canvas = page.locator('[data-testid="plan-canvas"]');
+    await expect(canvas).toBeVisible();
+    await expect(page.locator('svg polygon[data-kind="space"]').first()).toBeVisible();
+
+    // 1. Extract semantic ID map from DOM
+    const elementsWithId = page.locator('svg [data-id]');
+    const count = await elementsWithId.count();
+    expect(count).toBeGreaterThan(5);
+
+    const idMap: Record<string, { kind: string; ariaLabel: string }> = {};
+    for (let i = 0; i < count; i++) {
+      const el = elementsWithId.nth(i);
+      const dataId = await el.getAttribute("data-id");
+      const dataKind = await el.getAttribute("data-kind") || "unknown";
+      const ariaLabel = await el.getAttribute("aria-label") || "";
+      if (dataId) {
+        idMap[dataId] = { kind: dataKind, ariaLabel };
+      }
+    }
+
+    // Verify canonical site overlays
+    expect(idMap["site-parcel-boundary"]).toBeDefined();
+    expect(idMap["site-parcel-boundary"].kind).toBe("parcel");
+    expect(idMap["site-buildable-envelope"]).toBeDefined();
+    expect(idMap["site-buildable-envelope"].kind).toBe("envelope");
+
+    // Verify canonical spaces in synthetic-bungalow
+    const expectedSpaces = [
+      "sp-living",
+      "sp-kitchen",
+      "sp-hall",
+      "sp-bed-parents",
+      "sp-bath",
+      "sp-bed-children",
+    ];
+    for (const spId of expectedSpaces) {
+      expect(idMap[spId], `Missing space in semantic ID map: ${spId}`).toBeDefined();
+      expect(idMap[spId].kind).toBe("space");
+      expect(idMap[spId].ariaLabel).toContain(spId);
+    }
+
+    // 2. Screenshot capture and verification
+    const screenshotBuffer = await canvas.screenshot();
+    expect(screenshotBuffer.length).toBeGreaterThan(1000);
+    // PNG magic signature: 0x89 0x50 0x4E 0x47 0x0D 0x0A 0x1A 0x0A
+    expect(screenshotBuffer[0]).toBe(0x89);
+    expect(screenshotBuffer[1]).toBe(0x50);
+    expect(screenshotBuffer[2]).toBe(0x4e);
+    expect(screenshotBuffer[3]).toBe(0x47);
   });
 });

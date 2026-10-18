@@ -223,3 +223,9 @@ the surveyed hull.
 - `BuildRecord`: target (`blender`, `unreal`, `ifc`), the plan version it
   was generated from, tool, script and output file hashes.
 - `AgentRoster`: role definitions; `may_approve` is fixed to `false`.
+
+## Reviewer and visual critique records
+
+- `RevisionOpsFile` (`revision_ops.schema.json`): Structured operations (`--area`, `--separate`, `--adjacent`, `--near`, `--level`, `--rethink`, `--strategy`, `--connect`, `--orientation`, `--daylight`) and entity-linked comments exported from the 2D reviewer UI or authored by agents, replayed via `house-ai plan revise-from-file`.
+- `VisualCritiqueFile` (`visual_critique.schema.json`): Agent visual review records. Contains `VisualClaim` observations with element IDs grounded in a specific plan version, screenshot hash, claim text, epistemic status `ai_judgment`, severity, and suggested revision operations.
+

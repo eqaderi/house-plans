@@ -1,0 +1,218 @@
+{
+  "$defs": {
+    "ClaimStatus": {
+      "description": "How an evaluator produced a reported value.",
+      "enum": [
+        "measured",
+        "inferred",
+        "simulated",
+        "ai_judgment",
+        "not_checked"
+      ],
+      "title": "ClaimStatus",
+      "type": "string"
+    },
+    "RevisionOp": {
+      "additionalProperties": false,
+      "description": "One structured revision operation matching plan revise arguments.",
+      "properties": {
+        "notes": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Notes"
+        },
+        "op_type": {
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "title": "Op Type",
+          "type": "string"
+        },
+        "target": {
+          "minLength": 1,
+          "title": "Target",
+          "type": "string"
+        },
+        "value": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Value"
+        }
+      },
+      "required": [
+        "op_type",
+        "target"
+      ],
+      "title": "RevisionOp",
+      "type": "object"
+    },
+    "VisualClaim": {
+      "additionalProperties": false,
+      "description": "A visual observation made by an agent inspecting a rendered plan.",
+      "properties": {
+        "bounding_box": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "number"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Bounding Box"
+        },
+        "claim_text": {
+          "minLength": 1,
+          "title": "Claim Text",
+          "type": "string"
+        },
+        "element_ids": {
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Element Ids",
+          "type": "array"
+        },
+        "id": {
+          "maxLength": 64,
+          "minLength": 1,
+          "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "screenshot_hash": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Screenshot Hash"
+        },
+        "severity": {
+          "default": "warning",
+          "title": "Severity",
+          "type": "string"
+        },
+        "status": {
+          "$ref": "#/$defs/ClaimStatus",
+          "default": "ai_judgment"
+        },
+        "suggested_ops": {
+          "items": {
+            "$ref": "#/$defs/RevisionOp"
+          },
+          "title": "Suggested Ops",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "element_ids",
+        "claim_text"
+      ],
+      "title": "VisualClaim",
+      "type": "object"
+    }
+  },
+  "$id": "https://house-ai.local/schemas/visual_critique.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "File recording visual review critiques by an agent against a plan version.",
+  "properties": {
+    "author": {
+      "minLength": 1,
+      "title": "Author",
+      "type": "string"
+    },
+    "claims": {
+      "items": {
+        "$ref": "#/$defs/VisualClaim"
+      },
+      "title": "Claims",
+      "type": "array"
+    },
+    "created_at": {
+      "format": "date-time",
+      "title": "Created At",
+      "type": "string"
+    },
+    "option": {
+      "minLength": 1,
+      "title": "Option",
+      "type": "string"
+    },
+    "plan_version": {
+      "minimum": 1,
+      "title": "Plan Version",
+      "type": "integer"
+    },
+    "project": {
+      "minLength": 1,
+      "title": "Project",
+      "type": "string"
+    },
+    "schema_version": {
+      "default": "1.0.0",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "screenshot_hash": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Screenshot Hash",
+      "type": "string"
+    },
+    "screenshot_path": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Screenshot Path"
+    },
+    "verified": {
+      "default": false,
+      "title": "Verified",
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "project",
+    "option",
+    "plan_version",
+    "author",
+    "screenshot_hash"
+  ],
+  "title": "VisualCritiqueFile",
+  "type": "object"
+}
