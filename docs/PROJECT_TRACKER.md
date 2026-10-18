@@ -987,7 +987,7 @@ rejected.
 |---|---|
 | Kind | implementation |
 | Status | IN_PROGRESS |
-| Review | PENDING |
+| Review | CHANGES_REQUESTED |
 | Branch | `stage/S6-usability-critics` |
 | Depends on | S3 |
 | Tasks | S6-01, S6-02, S6-03, S6-04, S6-05, S6-06, S6-07, S6-08, S6-09, S6-10, S6-11, S6-12, S6-13, S6-14, S6-15, S6-16, S6-17, S6-18, S6-19, S6-20, S6-21, S6-22, S6-23, S6-24, S6-25, S6-26, S6-27, S6-28, S6-29, S6-30, S6-31, S6-32 |
@@ -2183,6 +2183,64 @@ Closure record template:
 ```
 
 ### S6 records
+
+#### S6 review 1 — CHANGES_REQUESTED
+- Reviewed commit: 132c3d5f11ed25d51f16a09437c6217bff719020 (implementation `7a429fe`)
+- Reviewer: agent:claude-code, Claude Opus 5.5 (implementer was agent:codex)
+- Date: 2026-10-18
+- Checks run:
+  - CI: run 39111586976 on `132c3d5` and run 39111567306 on `7a429fe`, both success.
+  - Pytest: `.venv/bin/python -m pytest -q` -> 700 passed in 119.35s; `tests/benchmarks tests/test_plan_evaluation.py` -> 64 passed.
+  - Linter: `.venv/bin/ruff check src tests examples tools` -> clean.
+  - Schemas: `.venv/bin/house-ai schemas check` -> 26 schemas up to date.
+  - Tracker: `tools/check_tracker.py --summary` -> clean (20 stages, 262 tasks).
+  - `project verify my-house` -> intact: 13 events, 10 artifact versions. No `projects/` file changed; no real project data in examples or tests; repository PRIVATE.
+  - Reviewer app: `tsc` clean; Vitest 14/14.
+  - Fixtures: `make_fixtures --check` -> 17 synthetic fixtures current. The `unknown-north` growth (20×30 to 32×34 m) is justified and its expectations were recomputed analytically; no expectation was weakened.
+  - Demonstration: `make_report` regenerates `report.md` and `report.json` byte-identically.
+  - Hash compatibility: all 127 documents that main validates hash identically on this branch.
+- Hand-checks (review requirement):
+  - Net area: a 4×3 m centreline room with 0.15 m walls gives 3.85×2.85 = 10.9725 m² for both interior and exterior walls. `NetAreaEvaluator` reports 10.972 (measured). PASS.
+  - Route: on the L polygon, (5,1) -> (2,2) -> (1,5) gives √10 + √10 = 6.324555 m, and `shortest_in_polygon` returns 6.324555320336759. PASS.
+  - Furniture verdict on an axis-aligned twin: a 2.6 m room has 2.45 m clear, less than 2.75 and 2.8, so it fails. Rooms of 2.9, 3.0 and 3.4 m pass. PASS on the twin only. On rotated plans the verdict is wrong; see B4. The infeasible verdicts in the committed demo are therefore not trustworthy.
+- Findings, blocking. Each was reproduced by this reviewer.
+  1. B1, unbounded furniture search (`evaluation/usability_geometry.py` fit backtracking). It has no node or time budget and no symmetry breaking between identical templates. A 7×6.5 m `model(..., "garage")` with three 1.8×4.5 m vehicles (0.6 m door side) did not finish in 90 s; one or two vehicles finish in 0.0 s. This runs inside normal plan evaluation, so `plan generate` can hang when the program asks for more cars than fit. Fix: bound the search, treat identical items as interchangeable, and report `not_checked` with a reason when the budget is exhausted.
+  2. B2, tolerance below generator noise. `EPS = 1e-7` is used by `routes.py:76` and the net-wall coverage check. On the demo's single-level `linear` concept, the midpoints of `d-bed-main`, `d-bath-1` and `d-laundry` lie 2–4e-7 m off the corridor floor. They are dropped, coverage is 10 of 14 spaces, and `max_walk_from_entrance_m` is not_checked. Setting EPS to 1e-5 gives measured 17.044 m (main: 17.08 inferred). The same noise produces a false `net_wall_basis_incomplete` on `sp-corridor-b0`.
+  3. B3, regression of `max_walk_from_entrance_m`. On main, all three demo concepts had a value (compact 34.54, split_level 29.39, linear 17.08). On this branch the metric is not_checked on every generated concept, so the `explain.py` key metric disappears. Causes: B2, and `src/house_ai/generation` never emits `Stair.walking_line`, so every generated stair is unknown. As a result, S6-06/07/08 (run, headroom, landing) and S6-19/20/21 (routes, daily routes, guest crossings) never run on any generated plan. Restore a measured or explicitly labelled value on generated concepts, either by emitting the walking line (data only, not S7 avoidance work) or by a labelled fallback. Add a multi-level generated-plan test.
+  4. B4, rotation-dependent furniture verdicts. The fit search tries only 0/90/180/270° in the LOCAL frame. `model(3.4, 5)` fits a double bed at 0° and fails when the room and walls are rotated 12° or 45°. The hillside concepts are rotated 12°. Per the sub-review, re-aligning them flips dining, kitchen, `sp-bed-main` bed_double and laundry from fail to fit, so those `*_no_sampled_fit` findings in `examples/usability/demonstration/report.md` are false positives. Fit in each room's principal frame or include the room's edge angles, and add a rotated twin test.
+  5. B5, riser tolerance. `usability.py:212` uses 1e-4, but `generation/assemble.py:801` rounds `riser_height_m` to 4 dp: 17 × 0.1765 = 3.0005 against a 3.0 m rise. Every generated stair gets a measured `stair_height_mismatch`, which appears twice in the committed demo report. The tolerance must cover the stored precision.
+  6. B6, S6-26 acceptance ("every critic runs over the R2 fixtures with expected findings checked in CI") is not met. The 17 R2 fixtures hold only four S6 expectations: `guest_routes_crossing_private_count` = 0, `accessible_turning_space` = true, `garage_to_kitchen_length_m` not_checked, and `daylight_orientation` null, which is hard-coded at `usability.py:913`. None is an expected usability violation. The Door, Stair, NetArea, Privacy and Vehicle critics have no R2 expectation. `test_all_critics_run_over_r2_cases_and_match_declared_expectations` asserts only that critics run with consistent labels.
+- Findings, non-blocking but required. Verified by this reviewer unless noted.
+  7. MAJOR: elders are left out of seats. `program/builder.py:540` uses adults + children, but `interview/questions.py:133` counts elders separately (`household_size = adults + children + elders`). Two parents, two children and a grandparent give 4 seats, so the dining table is undersized with no warning. This affects the multigenerational case.
+  8. MAJOR: stale provenance. `examples/projects/synthetic-hillside/space_program.yaml` gained `usability`, and its hash moved from `9bed3e94…` to `aaebe10f…`. Twenty `program_ref.sha256` values in the committed `concepts/*/exploratory/` files still name `9bed3e94…`, and their `metrics.json` keeps pre-S6 values. Regenerate them or record why they are pinned.
+  9. MAJOR, reported by sub-review and not independently reproduced: stair footprints are walkable on their bottom level. A west–east route through `stair_model()` passes straight through the flight (5.192 m), and the representative room point lies inside the flight.
+  10. MAJOR: the dead-end clean twin (`examples/usability/scenarios.py:196-207`) passes vacuously. `dead_end_length_m` is not_checked rather than a measured short value, and the twin still fires `excess_circulation`.
+  11. MAJOR, test evidence: these violation codes are never produced by any test.
+      - `garage_pedestrian_route_blocked` (S6-16; the garage test has no doors, so the route is not_checked)
+      - `daily_route_long` (S6-30)
+      - `low_daylight_opportunity` (S6-24)
+      - `bedroom_noise_adjacency` (S6-22, "beside")
+      - `stair_width_assumption` and `stair_going_assumption` (S6-06)
+      - `floor_connection_height_mismatch` (S6-32)
+      - `door_approach_blocked`, `accessible_turning_space_missing`, `stair_walking_line_invalid`
+      S6-13 "aisle widths" is only the template's 1.219 m front clearance; no aisle between placed runs is measured, so S6-13 and the ADR table overclaim. family-privacy checks only a count of 0, and heavy-cooking has no kitchen-critic expectation.
+  12. MINOR: `net_area_m2` is stamped measured even when `net_wall_basis_complete` is false. Bedrooms without a designated variant also run the double-bed study, which adds `bed_double_no_sampled_fit` noise for child rooms. S6-20 asserts `> 4` instead of a hand-computed length. The `test_kitchen_actual_run_length_and_appliance_access` name overclaims, since it checks no appliance access. `make_fixtures.py:350` calls a furnished bathroom "unfurnished".
+  13. MINOR, reported by sub-review and not independently reproduced:
+      - Slab voids are ignored when the level's floor slab has a nonzero `top_offset_m`.
+      - Butt-capped wall solids leave a notch at reflex corners.
+      - The door approach depth is measured from the centreline (0.825 m clear with 0.15 m walls).
+      - The three-point circumradius passes a sharp 90° drive corner while the method is labelled "conservative".
+      - A tiny room with empty net floor raises IndexError at `usability.py:92-95`.
+      - Doors with `sill_m > 0` are excluded from routing.
+      - A stair spanning two levels is compared with the bottom level's `floor_to_floor_m`.
+      - `RouteNetwork` is built twice per plan.
+      - `RoomSchedule.tsx:86` reads `sp.boundary.holes` unguarded.
+- Tracker accuracy:
+  - Tasks S6-01..S6-32 are correctly `IN_PROGRESS`, with no premature DONE.
+  - Evidence overclaims on S6-13, S6-16, S6-18/S6-29, S6-22, S6-24, S6-26, S6-30 and S6-32 (finding 11, B6).
+  - S6-02's Verify line requires that the owner reads ADR 0019. That has not happened, and the ADR is marked "accepted" by the implementer.
+  - After the fixes, regenerate `examples/usability/demonstration/` and re-run the three hand-checks on generated, rotated concepts.
+- Verdict: CHANGES_REQUESTED
 
 #### S6 implementation complete (2026-10-18)
 
