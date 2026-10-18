@@ -81,6 +81,7 @@ class ArtifactKind(StrEnum):
     BUILD_RECORD = "build_record"
     INTERVIEW_SESSION = "interview_session"
     OWNER_STATEMENTS = "owner_statements"
+    CONCEPT_PROPOSAL = "concept_proposal"
 
 
 class ArtifactRef(StrictModel):

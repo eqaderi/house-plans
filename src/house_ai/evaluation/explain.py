@@ -7,8 +7,14 @@ claims are never made (``find_prohibited_claims`` must stay empty).
 
 from __future__ import annotations
 
+from shapely.affinity import scale, translate
 from shapely.ops import unary_union
 
+from house_ai.constants.evaluations import (
+    DIVERSITY_IOU_THRESHOLD,
+    DIVERSITY_TOPOLOGY_THRESHOLD,
+    FLAG_NEAR_DUPLICATE,
+)
 from house_ai.constants.strategies import (
     STRATEGY_COMPACT,
     STRATEGY_COURTYARD,
@@ -17,8 +23,9 @@ from house_ai.constants.strategies import (
     STRATEGY_SPLIT_WALKOUT,
     STRATEGY_TWO_WING,
 )
+from house_ai.domain.constraints import ConstraintSet, ObjectiveRule
 from house_ai.domain.evaluation import EvaluationReport, MetricClaim
-from house_ai.domain.model import HouseModel
+from house_ai.domain.model import HouseModel, Space
 from house_ai.domain.plan import AreaChange, MetricChange, PlanVersion, RevisionReport
 from house_ai.domain.program import SpaceProgram
 from house_ai.domain.provenance import ArtifactRef, Provenance
@@ -97,6 +104,55 @@ def _fmt(m: MetricClaim | None, unit: str = "") -> str:
     return f"{text}{(' ' + unit) if unit else ''}{tag}"
 
 
+SOLVER_OPTIMISED_OBJECTIVES: dict[str, str] = {
+    "adjacency_quality": "optimised in solver: weighted adjacency satisfaction",
+    "circulation_efficiency": "optimised in solver: filler area and circulation penalty",
+    "privacy": "optimised in solver: weighted separation between private and public zones",
+    "acoustic_zoning": "optimised in solver: acoustic separation between noisy and quiet zones",
+    "daylight_opportunity": "optimised in solver: daylight-facing room requirements and penalties",
+    "envelope_simplicity": "optimised in solver: bar compactness and envelope perimeter",
+    "cost_proxy": "optimised in solver: bar compactness proxy",
+    "site_response": "optimised in solver: road-side versus garden-side habitable room placement",
+}
+
+SOLVER_UNOPTIMISED_OBJECTIVES: dict[str, str] = {
+    "views": "not_optimised in solver: view-cone and orientation analysis not modelled in massing",
+    "cross_ventilation": "not_optimised in solver: evaluated downstream by UsabilityEvaluator",
+    "indoor_outdoor": "not_optimised in solver: outdoor terrace relationships evaluated downstream",
+    "kitchen_functionality": "not_optimised in solver: evaluated downstream by UsabilityEvaluator",
+    "storage": "not_optimised in solver: evaluated downstream by UsabilityEvaluator",
+}
+
+
+def soft_objectives_report(
+    constraints: ConstraintSet | None,
+    plan: PlanVersion | None = None,
+) -> list[tuple[str, str, str, float | None]]:
+    """Return [(objective_name, status, rationale_or_detail, weight)]
+    for compiled soft objectives.
+    """
+    if constraints is None:
+        return []
+    supported = set(SOLVER_OPTIMISED_OBJECTIVES)
+    if plan and plan.generation and plan.generation.parameters.get("engine") == "2d_nooverlap":
+        supported = set(str(plan.generation.parameters.get("optimised_objectives", "")).split(","))
+    out = []
+    for c in constraints.soft():
+        if isinstance(c.rule, ObjectiveRule):
+            name = c.rule.objective.value
+            weight = c.weight
+            if name in supported:
+                status = "optimised"
+                detail = SOLVER_OPTIMISED_OBJECTIVES.get(name, f"optimised in solver: {name}")
+            else:
+                status = "not_optimised"
+                detail = SOLVER_UNOPTIMISED_OBJECTIVES.get(
+                    name, "not_optimised in solver: evaluated downstream"
+                )
+            out.append((name, status, detail, weight))
+    return sorted(out, key=lambda x: x[0])
+
+
 def explanation_markdown(
     plan: PlanVersion,
     version: int | None,
@@ -104,6 +160,7 @@ def explanation_markdown(
     program: SpaceProgram | None,
     *,
     banner: str | None = None,
+    constraints: ConstraintSet | None = None,
 ) -> str:
     model = plan.model
     ver = f" v{version}" if version else ""
@@ -181,6 +238,16 @@ def explanation_markdown(
         lines += ["", "## Open issues", ""]
         for i in model.issues:
             lines.append(f"- [{i.severity.value}] {i.title}")
+    objs = soft_objectives_report(constraints, plan)
+    if objs:
+        lines += ["", "## Compiled soft objectives", ""]
+        lines += [
+            "| Objective | Status | Weight | Detail |",
+            "|---|---|---:|---|",
+        ]
+        for name, status, detail, weight in objs:
+            w_str = f"{weight:g}" if weight is not None else "—"
+            lines.append(f"| `{name}` | `{status}` | {w_str} | {detail} |")
     if plan.generation is not None:
         g = plan.generation
         params = ", ".join(f"{k}={v}" for k, v in sorted(g.parameters.items()))
@@ -202,6 +269,143 @@ def explanation_markdown(
             )
         )
     return "\n".join(lines) + "\n"
+
+
+def _model_adjacency_edges(model: HouseModel) -> set[tuple[str, str]]:
+    """Undirected space pairs connected by doors, openings or shared walls."""
+    edges: set[tuple[str, str]] = set()
+    space_by_id = {s.id: s for s in model.spaces}
+    # 1. Doors and openings connecting interior spaces
+    for op in model.openings:
+        if op.connects and len(op.connects) == 2:
+            c0, c1 = op.connects
+            if c0 and c1 and c0 != "exterior" and c1 != "exterior":
+                s0 = space_by_id.get(c0)
+                s1 = space_by_id.get(c1)
+                k0 = (s0.program_item_id or s0.id) if s0 else c0
+                k1 = (s1.program_item_id or s1.id) if s1 else c1
+                if k0 != k1:
+                    edges.add(tuple(sorted((k0, k1))))
+    # 2. Adjacent rooms sharing boundary
+    polys = {(s.program_item_id or s.id): s.boundary.to_shapely() for s in model.spaces}
+    keys = sorted(polys.keys())
+    for i in range(len(keys)):
+        for j in range(i + 1, len(keys)):
+            k0, k1 = keys[i], keys[j]
+            p0, p1 = polys[k0], polys[k1]
+            if p0.touches(p1):
+                inter = p0.intersection(p1)
+                if inter.length > 0.5:
+                    edges.add(tuple(sorted((k0, k1))))
+    return edges
+
+
+def topology_distance(a: HouseModel, b: HouseModel) -> float:
+    """Circulation/adjacency graph Jaccard distance between two concept models."""
+    ea = _model_adjacency_edges(a)
+    eb = _model_adjacency_edges(b)
+    union = ea | eb
+    if not union:
+        return 0.0
+    return round(1.0 - len(ea & eb) / len(union), 3)
+
+
+def room_aspect_ratio_variance(model: HouseModel) -> float:
+    """Variance in room aspect ratios across a concept model."""
+    ratios = []
+    for s in model.spaces:
+        minx, miny, maxx, maxy = s.boundary.to_shapely().bounds
+        w, h = maxx - minx, maxy - miny
+        if min(w, h) > 0.01:
+            ratios.append(max(w, h) / min(w, h))
+    if len(ratios) < 2:
+        return 0.0
+    mean = sum(ratios) / len(ratios)
+    return round(sum((r - mean) ** 2 for r in ratios) / len(ratios), 3)
+
+
+def detect_near_duplicates(
+    a: HouseModel,
+    b: HouseModel,
+    iou_thresh: float = DIVERSITY_IOU_THRESHOLD,
+    topo_thresh: float = DIVERSITY_TOPOLOGY_THRESHOLD,
+) -> tuple[bool, str | None]:
+    """Flag superficial variants: mirrored, shifted or identical footprint/topology."""
+    fa = unary_union([s.boundary.to_shapely() for s in a.spaces])
+    fb = unary_union([s.boundary.to_shapely() for s in b.spaces])
+    if not fa.area or not fb.area:
+        return False, None
+
+    topo_dist = topology_distance(a, b)
+    z_diff = zoning_difference(a, b)
+
+    # Check room centroid mappings for identical, shifted, or mirrored variants
+    shared_spaces = sorted(set(s.id for s in a.spaces) & set(s.id for s in b.spaces))
+    if len(shared_spaces) >= 2 and topo_dist <= topo_thresh and z_diff <= 0.15:
+
+        def _centroid(s: Space) -> tuple[float, float]:
+            pts = s.boundary.outer
+            return (sum(p[0] for p in pts) / len(pts), sum(p[1] for p in pts) / len(pts))
+
+        c_a = {s.id: _centroid(s) for s in a.spaces if s.id in shared_spaces}
+        c_b = {s.id: _centroid(s) for s in b.spaces if s.id in shared_spaces}
+
+        dx_list = [c_b[sid][0] - c_a[sid][0] for sid in shared_spaces]
+        dy_list = [c_b[sid][1] - c_a[sid][1] for sid in shared_spaces]
+
+        is_shifted = (max(dx_list) - min(dx_list) < 0.2) and (max(dy_list) - min(dy_list) < 0.2)
+        if is_shifted:
+            if abs(dx_list[0]) < 0.2 and abs(dy_list[0]) < 0.2:
+                return True, "identical or near-identical footprint and topology"
+            return True, "shifted variant with identical footprint and topology"
+
+        # Check mirrored in X: x_b = -x_a + offset, y_b = y_a + offset
+        dx_mir_x = [c_b[sid][0] - (-c_a[sid][0]) for sid in shared_spaces]
+        if (max(dx_mir_x) - min(dx_mir_x) < 0.2) and (max(dy_list) - min(dy_list) < 0.2):
+            return True, "mirrored variant with identical footprint and topology"
+
+        # Check mirrored in Y: x_b = x_a + offset, y_b = -y_a + offset
+        dy_mir_y = [c_b[sid][1] - (-c_a[sid][1]) for sid in shared_spaces]
+        if (max(dx_list) - min(dx_list) < 0.2) and (max(dy_mir_y) - min(dy_mir_y) < 0.2):
+            return True, "mirrored variant with identical footprint and topology"
+
+    # Direct IoU
+    union_area = fa.union(fb).area
+    direct_iou = fa.intersection(fb).area / union_area if union_area else 1.0
+
+    # Origin-aligned (translated) IoU
+    minx_a, miny_a, _, _ = fa.bounds
+    minx_b, miny_b, _, _ = fb.bounds
+    fa_0 = translate(fa, -minx_a, -miny_a)
+    fb_0 = translate(fb, -minx_b, -miny_b)
+    u_trans = fa_0.union(fb_0).area
+    trans_iou = fa_0.intersection(fb_0).area / u_trans if u_trans else 1.0
+
+    # Mirrored X IoU
+    fb_mir_x = scale(fb_0, xfact=-1.0, yfact=1.0, origin=(0, 0))
+    minx_mx, miny_mx, _, _ = fb_mir_x.bounds
+    fb_mir_x = translate(fb_mir_x, -minx_mx, -miny_mx)
+    u_mx = fa_0.union(fb_mir_x).area
+    mir_x_iou = fa_0.intersection(fb_mir_x).area / u_mx if u_mx else 1.0
+
+    # Mirrored Y IoU
+    fb_mir_y = scale(fb_0, xfact=1.0, yfact=-1.0, origin=(0, 0))
+    minx_my, miny_my, _, _ = fb_mir_y.bounds
+    fb_mir_y = translate(fb_mir_y, -minx_my, -miny_my)
+    u_my = fa_0.union(fb_mir_y).area
+    mir_y_iou = fa_0.intersection(fb_mir_y).area / u_my if u_my else 1.0
+
+    max_shape_iou = max(direct_iou, trans_iou, mir_x_iou, mir_y_iou)
+
+    if topo_dist <= topo_thresh and z_diff <= 0.15 and max_shape_iou >= iou_thresh:
+        if direct_iou >= iou_thresh:
+            return True, "identical or near-identical footprint and topology"
+        elif mir_x_iou >= iou_thresh or mir_y_iou >= iou_thresh:
+            return True, "mirrored variant with identical footprint and topology"
+        elif trans_iou >= iou_thresh:
+            return True, "shifted variant with identical footprint and topology"
+
+    return False, None
 
 
 def footprint_iou(a: HouseModel, b: HouseModel) -> float:
@@ -270,18 +474,30 @@ def comparison_markdown(
             "",
             "## How different the concepts are (measured)",
             "",
-            "| Pair | Footprint overlap (IoU) | Rooms on a different level | Levels/stairs |",
-            "|---|---:|---:|---|",
+            "| Pair | Footprint IoU | Topology dist | Diff level | Levels/stairs | Assessment |",
+            "|---|---:|---:|---:|---|---|",
         ]
+        duplicates: list[tuple[str, str, str]] = []
         for i, (pa, _, _) in enumerate(rows):
             for pb, _, _ in rows[i + 1 :]:
                 iou = footprint_iou(pa.model, pb.model)
+                td = topology_distance(pa.model, pb.model)
                 zd = zoning_difference(pa.model, pb.model)
                 sa, sb = concept_signature(pa.model), concept_signature(pb.model)
+                is_dup, reason = detect_near_duplicates(pa.model, pb.model)
+                if is_dup and reason:
+                    assessment = f"{FLAG_NEAR_DUPLICATE} ({reason})"
+                    duplicates.append((pa.option_id, pb.option_id, reason))
+                else:
+                    assessment = "Distinct"
                 lines.append(
-                    f"| {pa.option_id} / {pb.option_id} | {iou:.2f} | {zd:.0%} | "
-                    f"{sa[0]}/{sa[1]} vs {sb[0]}/{sb[1]} |"
+                    f"| {pa.option_id} / {pb.option_id} | {iou:.2f} | {td:.2f} | {zd:.0%} | "
+                    f"{sa[0]}/{sa[1]} vs {sb[0]}/{sb[1]} | {assessment} |"
                 )
+        if duplicates:
+            lines += [""]
+            for opt_a, opt_b, reason in duplicates:
+                lines.append(f"> ⚠️ **Near-duplicate pair**: `{opt_a}` and `{opt_b}` ({reason})")
     if infeasible:
         lines += ["", "## Strategies that could not be laid out", ""]
         for strategy, reason in infeasible:

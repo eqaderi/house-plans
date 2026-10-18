@@ -74,9 +74,7 @@ def test_modify_inherits_intent_and_overrides_item_space_aliases(tmp_path):
     _, next_opts, next_effective = svc._apply_ops(child, program, [], ChangeRequestKind.MODIFY)
     assert next_effective == effective
     assert next_opts.targets == {"sp-kitchen": 18.0}
-    _, fresh, effective = svc._apply_ops(
-        child, program, [], ChangeRequestKind.RESTART_FROM_PROGRAM
-    )
+    _, fresh, effective = svc._apply_ops(child, program, [], ChangeRequestKind.RESTART_FROM_PROGRAM)
     assert fresh.targets == fresh.level_prefs == fresh.hints == {}
     assert fresh.relations == effective == []
 
@@ -207,4 +205,135 @@ def test_historical_cli_export_uses_pinned_site_and_program(tmp_path, monkeypatc
     assert assumptions["program"] == [
         a.model_dump(mode="json") for a in old_assumptions.assumptions
     ]
+    assert store.verify() == []
+
+
+def test_topology_revision_connect_stair_outdoor(tmp_path):
+    """Test S7-21: Revisions that change architectural topology."""
+    store = _load(tmp_path)
+    _approve_site_and_program(store)
+    svc = PlanService(store)
+    svc.generate(AGENT, strategies=["compact"])
+
+    # Revise with topology operations: connect, stair relocation, outdoor links
+    rev_res = svc.revise(
+        "concept-compact",
+        "Add a direct terrace connection from living room, relocate stair to perimeter, "
+        "and connect kitchen and dining.",
+        AGENT,
+        ops=[
+            "connect:sp-kitchen,sp-dining",
+            "stair:perimeter",
+            "outdoor:sp-living,terrace",
+        ],
+    )
+    plan_v2 = rev_res.option.candidate.plan
+    assert plan_v2 is not None
+    assert plan_v2.parent is not None
+    assert plan_v2.change_request.kind is ChangeRequestKind.MODIFY
+    assert rev_res.option.plan_ref.version == 2
+    assert "connect:sp-kitchen,sp-dining" in plan_v2.generation.revision_ops
+    assert "stair:perimeter" in plan_v2.generation.revision_ops
+    assert "outdoor:sp-living,terrace" in plan_v2.generation.revision_ops
+    # Version history is preserved
+    refs = store.refs(ArtifactKind.PLAN, "concept-compact")
+    assert len(refs) == 2
+    assert store.verify() == []
+
+
+def test_combine_compatible_features_from_alternatives(tmp_path):
+    """Test S7-22: Combine compatible features from multiple alternatives."""
+    store = _load(tmp_path)
+    _approve_site_and_program(store)
+    svc = PlanService(store)
+    svc.generate(AGENT, strategies=["compact", "linear"])
+
+    # Combine compact and linear alternatives
+    combined_res = svc.combine(
+        "concept-compact",
+        ["concept-compact", "concept-linear"],
+        "Combine the compact footprint with linear daylighting and courtyard outdoor link.",
+        AGENT,
+        features=["concept-linear:sp-living=area,connections"],
+        feature_confirmation="Yes, adopt linear living room size and connections onto compact.",
+        ops=["outdoor:sp-living,courtyard"],
+    )
+    cand_plan = combined_res.option.candidate.plan
+    assert cand_plan is not None
+    assert cand_plan.change_request.kind is ChangeRequestKind.COMBINE
+    assert len(cand_plan.change_request.base_versions) >= 2
+    # Base versions are reflected in provenance and change request
+    base_ids = [b.id for b in cand_plan.change_request.base_versions]
+    assert "concept-compact" in base_ids
+    assert "concept-linear" in base_ids
+    assert combined_res.option.plan_ref.version == 2
+    assert store.verify() == []
+
+
+def test_preserve_owner_design_intent_across_multi_step_revisions(tmp_path):
+    """Test S7-23: Preserve owner design intent across multi-version revisions
+    and detect regressions.
+    """
+    from house_ai.constants.evaluations import REGRESSION_VIOLATION_PREFIX
+
+    store = _load(tmp_path)
+    _approve_site_and_program(store)
+    svc = PlanService(store)
+    svc.generate(AGENT, strategies=["compact"])
+
+    # Step 1 -> Step 2: Request larger kitchen (16 m2)
+    s2 = svc.revise(
+        "concept-compact",
+        "Enlarge the kitchen.",
+        AGENT,
+        ops=["area:pi-kitchen=16"],
+    )
+    assert s2.option.candidate.plan.model.space("sp-kitchen").area_m2 >= 14.0
+
+    # Step 2 -> Step 3: Request study on lower level
+    s3 = svc.revise(
+        "concept-compact",
+        "Put the study on the lower level.",
+        AGENT,
+        ops=["level:pi-study-1=lower"],
+    )
+    # Kitchen intent is still preserved in effective ops and geometry
+    assert s3.option.candidate.plan.model.space("sp-kitchen").area_m2 >= 14.0
+    assert "area:pi-kitchen=16" in s3.option.candidate.plan.generation.revision_ops
+
+    # Step 3 -> Step 4: Keep previous intent and add separate relation
+    s4 = svc.revise(
+        "concept-compact",
+        "Separate living from bedroom.",
+        AGENT,
+        ops=["separate:pi-living,pi-bed-main"],
+    )
+    plan_v4 = s4.option.candidate.plan
+    assert "area:pi-kitchen=16" in plan_v4.generation.revision_ops
+    assert "level:pi-study-1=lower" in plan_v4.generation.revision_ops
+    assert plan_v4.model.space("sp-kitchen").area_m2 >= 14.0
+    # No regressions reported when design intent is maintained
+    regressions = [
+        v for v in s4.revision.new_violations if v.startswith(REGRESSION_VIOLATION_PREFIX)
+    ]
+    assert regressions == []
+
+    # Step 5 & 6: Verify regression detection when an earlier request is not met
+    svc.revise(
+        "concept-compact",
+        "Make kitchen 30 m2.",
+        AGENT,
+        ops=["area:pi-kitchen=30"],
+    )
+    s6 = svc.revise(
+        "concept-compact",
+        "Rethink the study.",
+        AGENT,
+        ops=["rethink:pi-study-1"],
+    )
+    reg_warnings = [
+        v for v in s6.revision.new_violations if v.startswith(REGRESSION_VIOLATION_PREFIX)
+    ]
+    assert len(reg_warnings) >= 1
+    assert "sp-kitchen" in reg_warnings[0]
     assert store.verify() == []

@@ -19,15 +19,30 @@ import json
 from dataclasses import dataclass, field
 from pathlib import Path
 
+import yaml
+
+from house_ai.constants.evaluations import REGRESSION_VIOLATION_PREFIX
+from house_ai.constants.proposals import (
+    OUTDOOR_LINK_TERRACE,
+    VALID_OUTDOOR_LINKS,
+    VALID_STAIR_POSITIONS,
+)
+from house_ai.constants.strategies import STRATEGY_EXTENDED_ORDER
 from house_ai.constraints.compiler import compile_constraints
 from house_ai.domain.brief import DesignBrief
 from house_ai.domain.codepack import CodePack
 from house_ai.domain.constraints import ConstraintSet
 from house_ai.domain.evaluation import EvaluationReport
-from house_ai.domain.plan import ChangeRequest, ChangeRequestKind, PlanVersion, RevisionReport
+from house_ai.domain.plan import (
+    ChangeRequest,
+    ChangeRequestKind,
+    PlanVersion,
+    RevisionReport,
+)
 from house_ai.domain.program import AdjacencyKind, SpaceProgram, Strength
+from house_ai.domain.proposal import ConceptProposal
 from house_ai.domain.provenance import Actor, ArtifactKind, ArtifactRef, Provenance
-from house_ai.domain.records import AssumptionsFile
+from house_ai.domain.records import AssumptionsFile, Severity
 from house_ai.domain.site import Site
 from house_ai.domain.workflow import Gate, WorkflowEvent, WorkflowState
 from house_ai.evaluation.explain import (
@@ -43,12 +58,13 @@ from house_ai.generation.generator import (
     CpSatPlanGenerator,
     GenerationRequest,
 )
-from house_ai.generation.massing import STRATEGY_LABELS, STRATEGY_ORDER
-from house_ai.generation.rooms import Relation, expand_program
+from house_ai.generation.massing import STRATEGY_LABELS
+from house_ai.generation.rooms import Relation, expand_program, space_id_for
 from house_ai.generation.solver import SolverOptions
 from house_ai.render2d.plan_svg import render_plan_svg
 from house_ai.storage import ProjectStore
 from house_ai.storage.hashing import content_hash, pretty_json
+from house_ai.validation.topology import validate_proposal
 
 from .workflow import Workflow
 
@@ -195,6 +211,54 @@ class PlanService:
 
     # --------------------------------------------------------------- generate
 
+    def propose(
+        self,
+        actor: Actor,
+        proposal: ConceptProposal,
+        *,
+        out_dir: Path | None = None,
+        exploratory: bool = False,
+        deterministic_time: float = 4.0,
+        seed: int = 0,
+    ) -> GenerationOutcome:
+        inp = self.inputs(exploratory)
+        findings = validate_proposal(proposal, inp.program, inp.site)
+        blocking = [f for f in findings if f.severity is Severity.BLOCKING]
+        if blocking:
+            raise PlanWorkflowError(
+                "proposal validation failed: "
+                + "; ".join(f"{f.code}: {f.message}" for f in blocking)
+            )
+
+        proposal_ref: ArtifactRef
+        if not exploratory:
+            proposal_ref = self.store.put(
+                ArtifactKind.CONCEPT_PROPOSAL,
+                proposal.id,
+                proposal,
+                actor,
+                reason=f"proposal: {proposal.name}",
+            )
+        else:
+            proposal_ref = ArtifactRef(
+                kind=ArtifactKind.CONCEPT_PROPOSAL,
+                id=proposal.id,
+                version=1,
+                sha256=content_hash(proposal),
+            )
+
+        strategies = [proposal.target_strategy] if proposal.target_strategy else None
+        return self.generate(
+            actor,
+            strategies=strategies,
+            seed=seed,
+            out_dir=out_dir,
+            exploratory=exploratory,
+            deterministic_time=deterministic_time,
+            proposal=proposal,
+            proposal_ref=proposal_ref,
+        )
+
     def generate(
         self,
         actor: Actor,
@@ -204,11 +268,13 @@ class PlanService:
         out_dir: Path | None = None,
         exploratory: bool = False,
         deterministic_time: float = 4.0,
+        proposal: ConceptProposal | None = None,
+        proposal_ref: ArtifactRef | None = None,
     ) -> GenerationOutcome:
         for s in strategies or []:
             if s not in STRATEGY_LABELS:
                 raise PlanWorkflowError(
-                    f"unknown strategy {s!r}; known: {', '.join(STRATEGY_ORDER)}"
+                    f"unknown strategy {s!r}; known: {', '.join(STRATEGY_EXTENDED_ORDER)}"
                 )
         if not exploratory and self.wf.status().approvals.get(Gate.PLAN) is not None:
             raise PlanWorkflowError("a plan is approved; a human must reopen the plan gate first")
@@ -224,9 +290,13 @@ class PlanService:
             strategies=strategies,
             seed=seed,
             deterministic_time=deterministic_time,
+            proposal=proposal,
+            proposal_ref=proposal_ref,
         )
         candidates = CpSatPlanGenerator().candidates(req)
         outcome = GenerationOutcome(exploratory, [StoredOption(c) for c in candidates], notes=notes)
+        if proposal is not None:
+            outcome.notes.append(f"Topology proposal applied: {proposal.name} ({proposal.id})")
         if not_checked:
             outcome.notes.append(
                 "CodePack rules not checked (no evaluator for their parameters): "
@@ -290,7 +360,13 @@ class PlanService:
             banner = EXPLORATORY_BANNER if exploratory else None
             for opt in outcome.generated:
                 opt.export_dir = self.export(
-                    opt.candidate.plan, opt.plan_ref, opt.report, inp, out_dir, banner=banner
+                    opt.candidate.plan,
+                    opt.plan_ref,
+                    opt.report,
+                    inp,
+                    out_dir,
+                    banner=banner,
+                    constraints=constraints,
                 )
             rows = [
                 (o.candidate.plan, o.plan_ref.version if o.plan_ref else None, o.report)
@@ -323,6 +399,21 @@ class PlanService:
 
     # ----------------------------------------------------------------- revise
 
+    def _resolve_spaces(self, name: str, program: SpaceProgram) -> list[str]:
+        by_item = {
+            it.id: [space_id_for(it, i) for i in range(1, it.quantity + 1)] for it in program.items
+        }
+        spaces = {sid for group in by_item.values() for sid in group}
+        if name in spaces:
+            return [name]
+        if name in by_item:
+            return by_item[name]
+        raise PlanWorkflowError(
+            f"unknown room {name!r}; use a program item id (pi-...) or a space id (sp-...)"
+        )
+
+    # ----------------------------------------------------------------- revise
+
     def revise(
         self,
         option_id: str,
@@ -334,11 +425,19 @@ class PlanService:
         version: int | None = None,
         seed: int | None = None,
         out_dir: Path | None = None,
+        proposal: ConceptProposal | None = None,
+        base_versions: list[str | ArtifactRef] | None = None,
+        features: list[str] | None = None,
+        feature_confirmation: str | None = None,
     ) -> RevisionOutcome:
         ops = list(ops or [])
         if not text.strip():
             raise PlanWorkflowError("a revision needs the owner's request, verbatim")
-        if kind not in (ChangeRequestKind.MODIFY, ChangeRequestKind.RESTART_FROM_PROGRAM):
+        if kind not in (
+            ChangeRequestKind.MODIFY,
+            ChangeRequestKind.RESTART_FROM_PROGRAM,
+            ChangeRequestKind.COMBINE,
+        ):
             raise PlanWorkflowError(
                 f"{kind.value} revisions are not supported yet; use `plan generate` for "
                 "alternatives, or express the change as explicit operations (--area, --separate, "
@@ -354,24 +453,157 @@ class PlanService:
                 f"{status.state.value}. An approved plan is frozen: a human must reopen the plan "
                 "gate (`house-ai workflow reopen <dir> plan`)."
             )
-        refs = self.store.refs(ArtifactKind.PLAN, option_id)
-        if not refs:
-            raise PlanWorkflowError(f"no plan named {option_id!r}")
-        base_ref = next((r for r in refs if r.version == version), None) if version else refs[-1]
-        if base_ref is None:
-            raise PlanWorkflowError(f"{option_id} has no version {version}")
-        base = self.store.get(base_ref, PlanVersion)
+
+        base_refs: list[ArtifactRef] = []
+        if kind is ChangeRequestKind.COMBINE:
+            if base_versions:
+                for b in base_versions:
+                    if isinstance(b, ArtifactRef):
+                        base_refs.append(b)
+                    else:
+                        b_refs = self.store.refs(ArtifactKind.PLAN, b)
+                        if not b_refs:
+                            raise PlanWorkflowError(f"no plan named {b!r}")
+                        base_refs.append(b_refs[-1])
+            else:
+                refs = self.store.refs(ArtifactKind.PLAN, option_id)
+                if len(refs) >= 2:
+                    base_refs = [refs[-2], refs[-1]]
+                else:
+                    raise PlanWorkflowError(
+                        "a combine revision requires at least two base versions"
+                    )
+            if len(base_refs) < 2:
+                raise PlanWorkflowError("a combine revision requires at least two base versions")
+            base_ref = base_refs[0]
+            base = self.store.get(base_ref, PlanVersion)
+            if not features or not feature_confirmation or not feature_confirmation.strip():
+                raise PlanWorkflowError(
+                    "combine needs explicit --feature SOURCE:ROOM=area,level,connections mappings "
+                    "and --feature-confirmation containing the owner's exact confirmation"
+                )
+            sources = {r.id: (self.store.get(r, PlanVersion), r) for r in base_refs}
+            if len(sources) != len(base_refs):
+                raise PlanWorkflowError("combine bases must be distinct alternatives")
+            transferred = set()
+            for feature in features:
+                source_id, sep, rest = feature.partition(":")
+                sid, eq, kinds = rest.partition("=")
+                aspects = kinds.split(",")
+                if (
+                    not sep
+                    or not eq
+                    or source_id not in sources
+                    or not set(aspects) <= {"area", "level", "connections"}
+                ):
+                    raise PlanWorkflowError(f"invalid feature mapping {feature!r}")
+                source, _ = sources[source_id]
+                room = next((r for r in source.model.spaces if r.id == sid), None)
+                if room is None:
+                    raise PlanWorkflowError(f"{source_id} has no space {sid!r}")
+                transferred.add(source_id)
+                if "area" in aspects:
+                    ops.append(f"area:{sid}={room.area_m2:g}")
+                if "level" in aspects:
+                    entry = next(
+                        (lv.elevation_m for lv in source.model.levels if lv.id == "lv-entry"), 0
+                    )
+                    delta = source.model.level(room.level_id).elevation_m - entry
+                    pref = "lower" if delta < -0.01 else "upper" if delta > 0.01 else "entry"
+                    ops.append(f"level:{sid}={pref}")
+                if "connections" in aspects:
+                    neighbors = {
+                        b if a == sid else a
+                        for o in source.model.openings
+                        if o.is_passable
+                        for a, b in [o.connects]
+                        if sid in (a, b)
+                    }
+                    known = {
+                        space_id_for(it, i)
+                        for it in self.inputs(False).program.items
+                        for i in range(1, it.quantity + 1)
+                    }
+                    for neighbor in sorted(neighbors & known):
+                        ops.append(f"connect:{sid},{neighbor}")
+            if set(sources) - {base_ref.id} - transferred:
+                raise PlanWorkflowError("each additional base needs an explicit feature mapping")
+        else:
+            refs = self.store.refs(ArtifactKind.PLAN, option_id)
+            if not refs:
+                raise PlanWorkflowError(f"no plan named {option_id!r}")
+            base_ref = (
+                next((r for r in refs if r.version == version), None) if version else refs[-1]
+            )
+            if base_ref is None:
+                raise PlanWorkflowError(f"{option_id} has no version {version}")
+            base = self.store.get(base_ref, PlanVersion)
+            base_refs = [base_ref]
+
         inp = self.inputs(exploratory=False)
         strategy, solver_opts, effective_ops = self._apply_ops(base, inp.program, ops, kind)
+
+        loaded_proposal = proposal
+        proposal_ref: ArtifactRef | None = None
+        if loaded_proposal is None and kind is not ChangeRequestKind.RESTART_FROM_PROGRAM:
+            proposal_ref = next(
+                (
+                    r
+                    for r in reversed(base.provenance.inputs)
+                    if r.kind is ArtifactKind.CONCEPT_PROPOSAL
+                ),
+                None,
+            )
+            if proposal_ref:
+                loaded_proposal = self.store.get(proposal_ref, ConceptProposal)
+        for op in ops:
+            if op.startswith("proposal:"):
+                p_path = Path(op.partition(":")[2])
+                if not p_path.exists():
+                    raise PlanWorkflowError(f"proposal file not found: {p_path}")
+                try:
+                    raw = yaml.safe_load(p_path.read_text(encoding="utf-8"))
+                    loaded_proposal = ConceptProposal.model_validate(raw)
+                except Exception as exc:
+                    raise PlanWorkflowError(f"invalid proposal file {p_path}: {exc}") from exc
+                break
+
+        if loaded_proposal is not None:
+            findings = validate_proposal(loaded_proposal, inp.program, inp.site)
+            blocking = [f for f in findings if f.severity is Severity.BLOCKING]
+            if blocking:
+                raise PlanWorkflowError(
+                    "proposal validation failed: "
+                    + "; ".join(f"{f.code}: {f.message}" for f in blocking)
+                )
+            proposal_ref = proposal_ref or self.store.put(
+                ArtifactKind.CONCEPT_PROPOSAL,
+                loaded_proposal.id,
+                loaded_proposal,
+                actor,
+                reason=f"proposal: {loaded_proposal.name}",
+            )
+            if loaded_proposal.target_strategy and not any(
+                op.startswith("strategy:") for op in ops
+            ):
+                strategy = loaded_proposal.target_strategy
+            if loaded_proposal.stair_cores and not solver_opts.stair_position:
+                solver_opts.stair_position = loaded_proposal.stair_cores[0].position
+            if loaded_proposal.outdoor_links:
+                for ol in loaded_proposal.outdoor_links:
+                    for sid in self._resolve_spaces(ol.program_item_id, inp.program):
+                        solver_opts.outdoor_links.append((sid, ol.kind))
+
         constraints, _, _ = self._constraints(inp, actor)
-        cr_n = sum(1 for r in refs) + 1
+        existing_refs = self.store.refs(ArtifactKind.PLAN, option_id)
+        cr_n = len(existing_refs) + 1
         cr = ChangeRequest(
             id=f"cr-{option_id}-{cr_n}"[:64],
             text=text,
             kind=kind,
             requested_by=actor,
             requested_at=self.store.clock(),
-            base_versions=[base_ref],
+            base_versions=base_refs,
         )
         req = GenerationRequest(
             site=inp.site,
@@ -388,6 +620,9 @@ class PlanService:
             change_request=cr,
             revision_ops=effective_ops,
             option_id=option_id,
+            proposal=loaded_proposal,
+            proposal_ref=proposal_ref,
+            inputs=base_refs,
         )
         cand = CpSatPlanGenerator().candidates(req)[0]
         if cand.plan is None:
@@ -397,6 +632,20 @@ class PlanService:
         if self.wf.state is S.CONCEPT_REVIEW:
             self.wf.transition(S.CONCEPT_GENERATION, actor, f"revising {option_id}: {text}")
         c_ref = self._store_constraints(constraints, actor, "compiled for a plan revision")
+        if kind is ChangeRequestKind.COMBINE and cand.plan.generation:
+            cand.plan = cand.plan.model_copy(
+                update={
+                    "generation": cand.plan.generation.model_copy(
+                        update={
+                            "parameters": {
+                                **cand.plan.generation.parameters,
+                                "feature_mappings": json.dumps(features),
+                                "feature_confirmation": feature_confirmation,
+                            }
+                        }
+                    )
+                }
+            )
         plan = cand.plan.model_copy(
             update={
                 "provenance": cand.plan.provenance.model_copy(
@@ -433,6 +682,82 @@ class PlanService:
                 inputs=[base_ref, plan_ref],
             ),
         )
+
+        # Preserve owner design intent across revisions: check regressions (S7-23)
+        regressions: list[str] = []
+        prior_effective = [
+            op
+            for op in (base.generation.revision_ops if base.generation else [])
+            if op.partition(":")[0] not in {"rethink", "strategy", "proposal"}
+        ]
+        changed_keys = set()
+        for op in ops:
+            v_tag, _, a_tag = op.partition(":")
+            if v_tag in {"area", "level"}:
+                changed_keys.add((v_tag, a_tag.partition("=")[0]))
+            elif v_tag in {"separate", "adjacent", "near", "connect"}:
+                ra, _, rb = a_tag.partition(",")
+                changed_keys.add(("relation", *sorted((ra, rb))))
+
+        for pop in prior_effective:
+            v_tag, _, a_tag = pop.partition(":")
+            if v_tag == "area":
+                name, _, val = a_tag.partition("=")
+                if (v_tag, name) in changed_keys:
+                    continue
+                target_val = float(val)
+                for sid in self._resolve_spaces(name, inp.program):
+                    sp = next((s for s in plan.model.spaces if s.id == sid), None)
+                    if sp and sp.area_m2 < target_val - 2.0:
+                        regressions.append(
+                            f"{REGRESSION_VIOLATION_PREFIX}'{pop}' is no longer satisfied "
+                            f"({sp.id} area {sp.area_m2:.1f} m² < requested {target_val:g} m²)"
+                        )
+            elif v_tag == "level":
+                name, _, pref = a_tag.partition("=")
+                if (v_tag, name) in changed_keys:
+                    continue
+                for sid in self._resolve_spaces(name, inp.program):
+                    sp = next((s for s in plan.model.spaces if s.id == sid), None)
+                    if sp:
+                        sp_lv = plan.model.level(sp.level_id)
+                        entry_lv = next(
+                            (lv for lv in plan.model.levels if lv.id == "lv-entry"), None
+                        )
+                        entry_elev = entry_lv.elevation_m if entry_lv else 0.0
+                        if pref == "lower" and sp_lv.elevation_m >= entry_elev:
+                            regressions.append(
+                                f"{REGRESSION_VIOLATION_PREFIX}'{pop}' is no longer satisfied"
+                            )
+                        elif pref == "upper" and sp_lv.elevation_m <= entry_elev:
+                            regressions.append(
+                                f"{REGRESSION_VIOLATION_PREFIX}'{pop}' is no longer satisfied"
+                            )
+                        elif pref == "entry" and sp_lv.elevation_m != entry_elev:
+                            regressions.append(
+                                f"{REGRESSION_VIOLATION_PREFIX}'{pop}' is no longer satisfied"
+                            )
+            elif v_tag == "separate":
+                ra, _, rb = a_tag.partition(",")
+                if ("relation", *sorted((ra, rb))) in changed_keys:
+                    continue
+                sids_a = set(self._resolve_spaces(ra, inp.program))
+                sids_b = set(self._resolve_spaces(rb, inp.program))
+                for opn in plan.model.openings:
+                    if opn.connects and len(opn.connects) == 2:
+                        c0, c1 = opn.connects
+                        if (c0 in sids_a and c1 in sids_b) or (c0 in sids_b and c1 in sids_a):
+                            regressions.append(
+                                f"{REGRESSION_VIOLATION_PREFIX}'{pop}' is no longer satisfied "
+                                "(door placed between separated rooms)"
+                            )
+                            break
+
+        if regressions:
+            rev = rev.model_copy(
+                update={"new_violations": sorted(set(rev.new_violations) | set(regressions))}
+            )
+
         rev_ref = self.store.put(
             ArtifactKind.REVISION_REPORT,
             rev.id,
@@ -446,31 +771,49 @@ class PlanService:
         opt = StoredOption(cand, plan_ref, report, report_ref)
         export = None
         if out_dir is not None:
-            export = self.export(plan, plan_ref, report, inp, out_dir)
+            export = self.export(plan, plan_ref, report, inp, out_dir, constraints=constraints)
             (export / "revision.md").write_text(revision_markdown(rev), encoding="utf-8")
             (export / "revision.json").write_text(pretty_json(rev), encoding="utf-8")
             opt.export_dir = export
         return RevisionOutcome(opt, rev, rev_ref, export)
 
+    def combine(
+        self,
+        option_id: str,
+        bases: list[str],
+        text: str,
+        actor: Actor,
+        *,
+        ops: list[str] | None = None,
+        seed: int | None = None,
+        out_dir: Path | None = None,
+        features: list[str] | None = None,
+        feature_confirmation: str | None = None,
+    ) -> RevisionOutcome:
+        """Combine compatible features from multiple concept alternatives (S7-22)."""
+        return self.revise(
+            option_id,
+            text,
+            actor,
+            ops=ops,
+            kind=ChangeRequestKind.COMBINE,
+            base_versions=bases,
+            features=features,
+            feature_confirmation=feature_confirmation,
+            seed=seed,
+            out_dir=out_dir,
+        )
+
     def _apply_ops(
         self, base: PlanVersion, program: SpaceProgram, ops: list[str], kind: ChangeRequestKind
     ) -> tuple[str, SolverOptions, list[str]]:
         rooms = expand_program(program)
-        by_item: dict[str, list[str]] = {}
-        for r in rooms.rooms:
-            by_item.setdefault(r.item.id, []).append(r.space_id)
         spaces = {r.space_id for r in rooms.rooms}
 
         def resolve(name: str) -> list[str]:
-            if name in spaces:
-                return [name]
-            if name in by_item:
-                return by_item[name]
-            raise PlanWorkflowError(
-                f"unknown room {name!r}; use a program item id (pi-...) or a space id (sp-...)"
-            )
+            return self._resolve_spaces(name, program)
 
-        # Area, level and relationship requests describe continuing design intent.
+        # Area, level, relationship, stair, outdoor requests describe continuing design intent.
         # Rethink and strategy are instructions for one solve; the resulting strategy
         # is already recorded on the parent. Keep original operation strings where
         # possible, resolving aliases so later requests override the same rooms.
@@ -478,9 +821,10 @@ class PlanService:
             [
                 op
                 for op in base.generation.revision_ops
-                if op.partition(":")[0] not in {"rethink", "strategy"}
+                if op.partition(":")[0] not in {"rethink", "strategy", "proposal"}
             ]
-            if kind is ChangeRequestKind.MODIFY and base.generation is not None
+            if kind in (ChangeRequestKind.MODIFY, ChangeRequestKind.COMBINE)
+            and base.generation is not None
             else []
         )
         effective: dict[tuple[str, ...], tuple[int, str]] = {}
@@ -492,11 +836,18 @@ class PlanService:
             if verb in {"area", "level"}:
                 name, _, _ = arg.partition("=")
                 keys = [(verb, sid) for sid in resolve(name)]
-            elif verb in {"separate", "adjacent", "near"}:
+            elif verb in {"separate", "adjacent", "near", "connect"}:
                 a, _, b = arg.partition(",")
                 keys = sorted(
                     {("relation", *sorted((sa, sb))) for sa in resolve(a) for sb in resolve(b)}
                 )
+            elif verb == "stair":
+                keys = [("stair", "core")]
+            elif verb == "outdoor":
+                room, _, _ = arg.partition(",")
+                keys = [("outdoor", sid) for sid in resolve(room)]
+            elif verb == "proposal":
+                keys = [("proposal", "proposal")]
             else:
                 transient.append(op)
                 continue
@@ -517,6 +868,11 @@ class PlanService:
                 for key in retained:
                     if key[0] == "relation":
                         ops.append(f"{verb}:{key[1]},{key[2]}")
+                    elif key[0] in ("stair", "proposal"):
+                        ops.append(op)
+                    elif key[0] == "outdoor":
+                        _, _, knd = arg.partition(",")
+                        ops.append(f"outdoor:{key[1]},{knd}")
                     else:
                         ops.append(f"{verb}:{key[1]}={arg.partition('=')[2]}")
         ops += transient
@@ -542,18 +898,40 @@ class PlanService:
                     raise PlanWorkflowError(f"level must be one of {sorted(LEVEL_PREFS)}")
                 for sid in resolve(name):
                     opts.level_prefs[sid] = pref
-            elif verb in ("separate", "adjacent", "near"):
+            elif verb in ("separate", "adjacent", "near", "connect"):
                 a, _, b = arg.partition(",")
                 kind_ = {
                     "separate": AdjacencyKind.SEPARATED,
                     "adjacent": AdjacencyKind.ADJACENT,
                     "near": AdjacencyKind.NEAR,
+                    "connect": AdjacencyKind.CONNECTED,
                 }[verb]
                 for sa in resolve(a):
                     for sb in resolve(b):
                         opts.relations.append(
                             Relation(sa, sb, kind_, Strength.SOFT, 5.0, f"revision-{verb}")
                         )
+            elif verb == "stair":
+                if arg not in VALID_STAIR_POSITIONS:
+                    raise PlanWorkflowError(
+                        f"unknown stair position {arg!r}; known: {sorted(VALID_STAIR_POSITIONS)}"
+                    )
+                opts.stair_position = arg
+                opts.force_2d = True
+            elif verb == "outdoor":
+                room, _, kind_ = arg.partition(",")
+                kind_ = kind_ or OUTDOOR_LINK_TERRACE
+                if kind_ not in VALID_OUTDOOR_LINKS:
+                    raise PlanWorkflowError(
+                        f"unknown outdoor link kind {kind_!r}; known: {sorted(VALID_OUTDOOR_LINKS)}"
+                    )
+                for sid in resolve(room):
+                    opts.outdoor_links.append((sid, kind_))
+                opts.force_2d = True
+            elif verb == "proposal":
+                p_path = Path(arg)
+                if not p_path.exists():
+                    raise PlanWorkflowError(f"proposal file not found: {arg}")
             elif verb == "rethink":
                 if arg == "all":
                     rethink |= spaces
@@ -572,7 +950,7 @@ class PlanService:
                 "--strategy to choose one"
             )
         if (
-            kind is ChangeRequestKind.MODIFY
+            kind in (ChangeRequestKind.MODIFY, ChangeRequestKind.COMBINE)
             and base.generation is not None
             and strategy == base.strategy
         ):
@@ -637,6 +1015,7 @@ class PlanService:
         out_dir: Path,
         *,
         banner: str | None = None,
+        constraints: ConstraintSet | None = None,
     ) -> Path:
         version = ref.version if ref else None
         folder = Path(out_dir) / plan.option_id / (f"v{version:04d}" if version else "exploratory")
@@ -663,8 +1042,12 @@ class PlanService:
                 json.dumps(violations, indent=2, sort_keys=True, ensure_ascii=False) + "\n",
                 encoding="utf-8",
             )
+            if constraints is None and inp is not None:
+                constraints = getattr(inp, "constraints", None)
             (folder / "explanation.md").write_text(
-                explanation_markdown(plan, version, report, program, banner=banner),
+                explanation_markdown(
+                    plan, version, report, program, banner=banner, constraints=constraints
+                ),
                 encoding="utf-8",
             )
         program_assumptions = []

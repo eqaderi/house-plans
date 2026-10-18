@@ -17,13 +17,20 @@ import ortools
 
 from house_ai.constants.strategies import (
     STRATEGY_COMPACT,
+    STRATEGY_CORRIDOR_FREE,
     STRATEGY_COURTYARD,
     STRATEGY_LINEAR,
+    STRATEGY_OPEN_PLAN,
     STRATEGY_SPLIT_LEVEL,
     STRATEGY_SPLIT_WALKOUT,
     STRATEGY_TWO_WING,
 )
-from house_ai.domain.constraints import ConstraintSet, ObjectiveRule
+from house_ai.domain.constraints import (
+    ConstraintSet,
+    MinAreaRule,
+    MinDimensionRule,
+    ObjectiveRule,
+)
 from house_ai.domain.integrity import IntegrityFinding, check_model, errors
 from house_ai.domain.plan import (
     ChangeRequest,
@@ -31,11 +38,13 @@ from house_ai.domain.plan import (
     PlanVersion,
     RoomPlacement,
 )
-from house_ai.domain.program import SpaceProgram
+from house_ai.domain.program import AdjacencyRequirement, SpaceProgram
+from house_ai.domain.proposal import ConceptProposal
 from house_ai.domain.provenance import Actor, ActorKind, ArtifactRef, Provenance
 from house_ai.domain.site import Site
 
 from .assemble import assemble
+from .assemble2d import assemble_2d
 from .frame import FrameError, Ground, design_frame, from_dm, limit_polygon, to_dm
 from .massing import (
     CORRIDOR_DM,
@@ -47,6 +56,7 @@ from .massing import (
 )
 from .rooms import ProgramRooms, expand_program
 from .solver import SolveFailed, SolverOptions, solve
+from .solver2d import Solve2DFailed, solve_2d_placement
 
 GENERATOR = "house-ai-cpsat-bars"
 GENERATOR_VERSION = "0.2.0"
@@ -113,6 +123,25 @@ class GenerationRequest:
     revision_ops: list[str] = field(default_factory=list)
     option_id: str | None = None
     depth_patterns: list[tuple[int, int]] | None = None
+    proposal: ConceptProposal | None = None
+    proposal_ref: ArtifactRef | None = None
+
+
+def hard_dimension_bounds(
+    constraints: ConstraintSet | None,
+) -> tuple[dict[str, float], dict[str, float]]:
+    if constraints is None:
+        return {}, {}
+    min_areas: dict[str, float] = {}
+    min_widths: dict[str, float] = {}
+    for c in constraints.hard():
+        if isinstance(c.rule, MinAreaRule) and c.rule.min_area_m2 is not None:
+            pid = c.rule.program_item_id
+            min_areas[pid] = max(min_areas.get(pid, 0.0), c.rule.min_area_m2)
+        elif isinstance(c.rule, MinDimensionRule) and c.rule.min_width_m is not None:
+            pid = c.rule.program_item_id
+            min_widths[pid] = max(min_widths.get(pid, 0.0), c.rule.min_width_m)
+    return min_areas, min_widths
 
 
 def objective_weights(constraints: ConstraintSet | None) -> dict[str, float]:
@@ -154,7 +183,28 @@ class CpSatPlanGenerator:
         return [c.plan for c in self.candidates(req) if c.plan is not None]
 
     def candidates(self, req: GenerationRequest) -> list[Candidate]:
-        rooms = expand_program(req.program)
+        hard_areas, hard_widths = hard_dimension_bounds(req.constraints)
+        program = req.program
+        if req.proposal and req.proposal.adjacency_graph:
+            existing_ids = {a.id for a in program.adjacencies}
+            extra_adj = [
+                AdjacencyRequirement(
+                    id=padj.id,
+                    a=padj.a,
+                    b=padj.b,
+                    kind=padj.kind,
+                    strength=padj.strength,
+                    weight=padj.weight,
+                    rationale=padj.rationale,
+                )
+                for padj in req.proposal.adjacency_graph
+                if padj.id not in existing_ids
+            ]
+            if extra_adj:
+                program = program.model_copy(
+                    update={"adjacencies": [*program.adjacencies, *extra_adj]}
+                )
+        rooms = expand_program(program, hard_min_areas=hard_areas, hard_min_widths=hard_widths)
         try:
             frame = design_frame(req.site)
             limit = frame.polygon_to_design(limit_polygon(req.site)[0])
@@ -167,13 +217,21 @@ class CpSatPlanGenerator:
         corridor = CORRIDOR_DM
         if rooms.hall_item is not None and rooms.hall_item.min_width_m:
             corridor = max(corridor, to_dm(rooms.hall_item.min_width_m))
-        ctx = MassingContext(frame, limit, ground, rooms, req.program, corridor)
+        ctx = MassingContext(frame, limit, ground, rooms, program, corridor)
         opts = req.solver or SolverOptions()
+        opts.min_areas = hard_areas
+        opts.min_widths = hard_widths
         opts.seed = req.seed
         opts.deterministic_time = req.deterministic_time
         opts.objective_weights = {**objective_weights(req.constraints), **opts.objective_weights}
+        if req.proposal and req.proposal.level_assignments:
+            for la in req.proposal.level_assignments:
+                opts.level_prefs[la.program_item_id] = la.level_id
+        strategies = req.strategies
+        if strategies is None and req.proposal and req.proposal.target_strategy:
+            strategies = [req.proposal.target_strategy]
         out = []
-        for strategy in req.strategies or STRATEGY_ORDER:
+        for strategy in strategies or STRATEGY_ORDER:
             out.append(self._strategy(strategy, ctx, rooms, frame, ground, req, opts))
         return out
 
@@ -181,8 +239,103 @@ class CpSatPlanGenerator:
         option = req.option_id or option_id_for(strategy)
         cand = Candidate(strategy, option, "infeasible")
         if strategy not in STRATEGY_LABELS:
-            cand.reason = f"unknown strategy {strategy!r}; known: {', '.join(STRATEGY_ORDER)}"
+            cand.reason = f"unknown strategy {strategy!r}; known: {', '.join(STRATEGY_LABELS)}"
             return cand
+
+        use_2d = (
+            strategy in (STRATEGY_CORRIDOR_FREE, STRATEGY_OPEN_PLAN)
+            or (req.proposal is not None)
+            or getattr(opts, "force_2d", False)
+            or bool(getattr(opts, "stair_position", None))
+            or bool(getattr(opts, "outdoor_links", None))
+        )
+        if use_2d:
+            try:
+                sol2d = solve_2d_placement(
+                    req.program,
+                    req.site,
+                    frame,
+                    opts,
+                    strategy=strategy,
+                    proposal=req.proposal,
+                )
+            except (Infeasible, Solve2DFailed) as exc:
+                cand.attempts.append(f"2D placement: {exc}")
+                cand.reason = f"2D placement infeasible: {exc}"
+                return cand
+
+            model = assemble_2d(
+                sol2d,
+                req.site,
+                frame,
+                ground,
+                req.program,
+                actor=GENERATOR_ACTOR,
+                model_id=f"house-{option.removeprefix('concept-')}",
+                name=f"{STRATEGY_LABELS[strategy]}",
+                site_ref=req.site_ref,
+                program_ref=req.program_ref,
+            )
+            findings = check_model(model, req.site, req.program)
+            record = GenerationRecord(
+                generator=GENERATOR,
+                generator_version=GENERATOR_VERSION,
+                solver="ortools-cp-sat-nooverlap2d",
+                solver_version=ortools.__version__,
+                solver_status=sol2d.status,
+                objective=float(sol2d.objective),
+                seed=req.seed,
+                deterministic_time_limit=req.deterministic_time,
+                parameters={
+                    "strategy": strategy,
+                    "engine": "2d_nooverlap",
+                    "circulation_share": sol2d.circulation_share,
+                    "platform": sol2d.platform_info,
+                    "deterministic_time": sol2d.deterministic_time,
+                    "wall_time_s": sol2d.wall_time_s,
+                    "optimised_objectives": ",".join(sol2d.optimised_objectives),
+                    **({"proposal_id": req.proposal.id} if req.proposal else {}),
+                },
+                placements=[
+                    RoomPlacement(
+                        space_id=r.space_id,
+                        bar_id="wing-main",
+                        row_id=r.level_id,
+                        start_m=from_dm(r.u0),
+                    )
+                    for r in [*sol2d.rooms, *sol2d.circulation_rooms]
+                ],
+                revision_ops=list(req.revision_ops),
+            )
+            cand.plan = PlanVersion(
+                option_id=option,
+                label=f"{STRATEGY_LABELS[strategy]}",
+                strategy=strategy,
+                parent=req.parent,
+                change_request=req.change_request,
+                model=model,
+                generation=record,
+                provenance=Provenance(
+                    created_at=req.created_at,
+                    created_by=GENERATOR_ACTOR,
+                    method="cpsat_2d_placement",
+                    tool=GENERATOR,
+                    tool_version=GENERATOR_VERSION,
+                    inputs=[
+                        r
+                        for r in (req.site_ref, req.program_ref, req.proposal_ref, *req.inputs)
+                        if r is not None
+                    ],
+                    notes=(
+                        "Generated by a constraint solver from the program; a design exploration, "
+                        "not a reviewed or engineered design."
+                    ),
+                ),
+            )
+            cand.status = "generated"
+            cand.findings = findings
+            return cand
+
         best = None
         for depths in req.depth_patterns or _patterns(strategy, rooms):
             tag = f"rows {from_dm(depths[0]):g}/{from_dm(depths[1]):g} m"
@@ -231,6 +384,7 @@ class CpSatPlanGenerator:
                 **m.params,
                 **{f"{b}_start_m": from_dm(v) for b, v in sol.bar_start.items()},
                 **{f"{b}_length_m": from_dm(v) for b, v in sol.bar_length.items()},
+                **({"proposal_id": req.proposal.id} if req.proposal else {}),
             },
             placements=[
                 RoomPlacement(
@@ -253,7 +407,11 @@ class CpSatPlanGenerator:
                 method="cpsat_generation",
                 tool=GENERATOR,
                 tool_version=GENERATOR_VERSION,
-                inputs=[r for r in (req.site_ref, req.program_ref, *req.inputs) if r is not None],
+                inputs=[
+                    r
+                    for r in (req.site_ref, req.program_ref, req.proposal_ref, *req.inputs)
+                    if r is not None
+                ],
                 notes="Generated by a constraint solver from the program; a design exploration, "
                 "not a reviewed or engineered design.",
             ),

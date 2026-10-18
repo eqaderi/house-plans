@@ -23,6 +23,7 @@ from .interview import InterviewSession
 from .model import HouseModel
 from .plan import ChangeRequest, PlanVersion, RevisionReport
 from .program import SpaceProgram
+from .proposal import ConceptProposal
 from .provenance import ArtifactKind, SourceDocument
 from .records import AssumptionsFile, OpenQuestionsFile, OwnerStatementsFile
 from .revision_ops import RevisionOpsFile
@@ -47,6 +48,7 @@ ARTIFACT_MODELS: dict[ArtifactKind, type[BaseModel]] = {
     ArtifactKind.BUILD_RECORD: BuildRecord,
     ArtifactKind.INTERVIEW_SESSION: InterviewSession,
     ArtifactKind.OWNER_STATEMENTS: OwnerStatementsFile,
+    ArtifactKind.CONCEPT_PROPOSAL: ConceptProposal,
 }
 
 SCHEMAS: dict[str, type[BaseModel]] = {

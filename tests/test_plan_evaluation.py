@@ -460,3 +460,63 @@ def test_generated_concepts_have_measured_routes_and_checked_straight_stairs(hil
                 fit = _metric(report, "stair_run_fit", st.id)
                 assert fit.status is ClaimStatus.MEASURED and fit.value is True
     assert multi_level >= 2
+
+
+def test_diversity_metrics_and_superficial_variant_detection(plan_a_report):
+    """Test S7-24: Quantitative diversity metrics and superficial-variant detection."""
+    from house_ai.constants.evaluations import FLAG_NEAR_DUPLICATE
+    from house_ai.evaluation.explain import (
+        detect_near_duplicates,
+        room_aspect_ratio_variance,
+        topology_distance,
+    )
+
+    _, _, base_plan, _ = _bungalow()
+    base_model = base_plan.model
+
+    # Verify aspect ratio variance is non-negative
+    var = room_aspect_ratio_variance(base_model)
+    assert var >= 0.0
+
+    # 1. Create a shifted variant (translated by +10m, +5m)
+    shifted_spaces = []
+    for s in base_model.spaces:
+        pts = [[round(p[0] + 10.0, 2), round(p[1] + 5.0, 2)] for p in s.boundary.outer]
+        shifted_spaces.append(
+            s.model_copy(update={"boundary": s.boundary.model_copy(update={"outer": pts})})
+        )
+    shifted_model = base_model.model_copy(update={"spaces": shifted_spaces})
+
+    # Topology distance should be 0.0 for identical topology
+    assert topology_distance(base_model, shifted_model) == 0.0
+
+    # Detect shifted near-duplicate
+    is_dup, reason = detect_near_duplicates(base_model, shifted_model)
+    assert is_dup is True
+    assert "shifted" in reason
+
+    # 2. Create a mirrored variant (mirror along X axis)
+    mirrored_spaces = []
+    for s in base_model.spaces:
+        pts = [[round(-p[0], 2), round(p[1], 2)] for p in s.boundary.outer]
+        mirrored_spaces.append(
+            s.model_copy(update={"boundary": s.boundary.model_copy(update={"outer": pts})})
+        )
+    mirrored_model = base_model.model_copy(update={"spaces": mirrored_spaces})
+
+    is_dup_mir, reason_mir = detect_near_duplicates(base_model, mirrored_model)
+    assert is_dup_mir is True
+    assert "mirrored" in reason_mir
+
+    # 3. Test comparison_markdown surfaces near-duplicates
+    shifted_plan = base_plan.model_copy(
+        update={"option_id": "concept-shifted", "model": shifted_model}
+    )
+    # Generate mock evaluation report
+    report_a = plan_a_report
+    report_b = plan_a_report.model_copy(update={"plan_id": shifted_plan.option_id})
+    cmp_md = comparison_markdown([(base_plan, 1, report_a), (shifted_plan, 1, report_b)], [])
+    assert FLAG_NEAR_DUPLICATE in cmp_md
+    assert "Topology dist" in cmp_md
+    assert find_prohibited_claims(cmp_md) == []
+    assert "None is reviewed" in cmp_md

@@ -82,7 +82,8 @@
         "revision_report",
         "build_record",
         "interview_session",
-        "owner_statements"
+        "owner_statements",
+        "concept_proposal"
       ],
       "title": "ArtifactKind",
       "type": "string"
@@ -292,6 +293,53 @@
         "basis"
       ],
       "title": "ClearanceZone",
+      "type": "object"
+    },
+    "CompositeSpace": {
+      "additionalProperties": false,
+      "description": "One physical open room, partitioned into non-overlapping functional Space zones.\n\nChild polygons retain program IDs and furniture studies. Their union is this\nphysical boundary; shared partitions are full-width/full-height open apertures.",
+      "properties": {
+        "boundary": {
+          "$ref": "#/$defs/Polygon2D"
+        },
+        "id": {
+          "maxLength": 64,
+          "minLength": 1,
+          "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "level_id": {
+          "maxLength": 64,
+          "minLength": 1,
+          "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+          "title": "Level Id",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "space_ids": {
+          "items": {
+            "maxLength": 64,
+            "minLength": 1,
+            "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+            "type": "string"
+          },
+          "minItems": 2,
+          "title": "Space Ids",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "level_id",
+        "boundary",
+        "space_ids"
+      ],
+      "title": "CompositeSpace",
       "type": "object"
     },
     "Epistemic": {
@@ -1466,6 +1514,13 @@
         "$ref": "#/$defs/ClearanceZone"
       },
       "title": "Clearance Zones",
+      "type": "array"
+    },
+    "composite_spaces": {
+      "items": {
+        "$ref": "#/$defs/CompositeSpace"
+      },
+      "title": "Composite Spaces",
       "type": "array"
     },
     "coordinate_system_id": {

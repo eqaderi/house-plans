@@ -165,21 +165,26 @@ system it is drawn in and pins `site_ref` and `program_ref`.
 | `Zone` | Named group of spaces with a privacy class |
 | `Fixture` | Typed fixture with position, rotation and footprint in a space |
 | `SpaceRelationship` | Declared intent between two spaces (geometry decides whether it holds) |
+| `CompositeSpace` | One physical open room partitioned into non-overlapping functional Space zones (e.g. open-plan living/dining/kitchen) |
 | `MaterialRef` | Reference to a material by id, category and optional library URI |
 | `assumptions`, `issues` | Assumptions and unresolved issues attached to this model |
 
 Circulation is not stored. It is derived from passable openings and stairs
 (`integrity.circulation_graph`), so it cannot disagree with the geometry.
 
-## Plans, revisions and evaluations
+## Concept proposals, plans, revisions and evaluations
 
 Site reports retain `mean_slope_pct` as the horizontal-area-weighted mean over
 the complete survey TIN. `parcel_mean_slope_pct` uses each triangle's exact
 intersection area with the parcel, over `parcel_tin_area_m2` only, without
 extrapolation. `SiteContext.mean_slope_pct` (interview/program context) uses this
-parcel value; it is unknown without a covered parcel. These are derived metrics,
-not additional terrain geometry. See [ADR 0012](adr/0012-site-metric-scope.md).
+parcel value; it is unknown without a covered parcel. See [ADR 0012](adr/0012-site-metric-scope.md).
 
+- `ConceptProposal` (artifact kind `concept_proposal`): human or agent proposal
+  structuring floor organization (`level_assignments`, `stair_cores`), zoning,
+  outdoor links (`terrace`, `balcony`, `courtyard`), topology additions
+  (`adjacency_graph`), and optional `target_strategy`. Validated deterministically
+  before solving and recorded in provenance.
 - `PlanVersion` (artifact kind `plan`, artifact id = `option_id`): label,
   strategy, parent version, the `ChangeRequest` that produced it, provenance,
   the `HouseModel` and, for generated plans, a `GenerationRecord`. The store

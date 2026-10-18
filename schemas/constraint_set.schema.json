@@ -105,7 +105,8 @@
         "revision_report",
         "build_record",
         "interview_session",
-        "owner_statements"
+        "owner_statements",
+        "concept_proposal"
       ],
       "title": "ArtifactKind",
       "type": "string"

@@ -150,6 +150,25 @@ def _check_references(
         need(s.id, "floor_material_id", s.floor_material_id, materials)
         if program_items is not None:
             need(s.id, "program_item_id", s.program_item_id, program_items)
+    for group in model.composite_spaces:
+        need(group.id, "level_id", group.level_id, levels)
+        for sid in group.space_ids:
+            need(group.id, "space_ids", sid, spaces)
+        if set(group.space_ids) <= spaces:
+            children = [model.space(sid) for sid in group.space_ids]
+            union = unary_union([sp.boundary.to_shapely() for sp in children])
+            if (
+                any(sp.level_id != group.level_id for sp in children)
+                or union.geom_type != "Polygon"
+                or union.symmetric_difference(group.boundary.to_shapely()).area > 1e-4
+            ):
+                out.append(
+                    _err(
+                        "invalid_composite_space",
+                        "Composite boundary/levels do not match its zones",
+                        group.id,
+                    )
+                )
     for w in model.walls:
         need(w.id, "level_id", w.level_id, levels)
         need(w.id, "material_id", w.material_id, materials)
@@ -182,7 +201,8 @@ def _check_references(
     for zone in model.clearance_zones:
         need(zone.id, "space_id", zone.space_id, spaces)
         clearable = {
-            e.id for group in (model.furniture, model.fixtures, model.openings, model.stairs)
+            e.id
+            for group in (model.furniture, model.fixtures, model.openings, model.stairs)
             for e in group
         }
         need(zone.id, "element_id", zone.element_id, clearable)
@@ -241,9 +261,7 @@ def _check_walls(model: HouseModel) -> list[IntegrityFinding]:
     return out
 
 
-def _probe_sides_at(
-    model: HouseModel, wall: Wall, along: float
-) -> tuple[str | None, str | None]:
+def _probe_sides_at(model: HouseModel, wall: Wall, along: float) -> tuple[str | None, str | None]:
     direction = unit_direction(wall.start, wall.end)
     normal = left_normal(direction)
     pt = (wall.start[0] + direction[0] * along, wall.start[1] + direction[1] * along)
@@ -534,4 +552,3 @@ def _check_program(model: HouseModel, program: SpaceProgram) -> list[IntegrityFi
                     )
                 )
     return out
-

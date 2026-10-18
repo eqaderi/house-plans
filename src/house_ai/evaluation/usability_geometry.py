@@ -72,8 +72,7 @@ def net_floor(model: HouseModel, space: Space):
     slabs = [
         sl.boundary.to_shapely()
         for sl in model.slabs
-        if sl.level_id == space.level_id
-        and sl.kind in {SlabKind.FLOOR, SlabKind.TERRACE}
+        if sl.level_id == space.level_id and sl.kind in {SlabKind.FLOOR, SlabKind.TERRACE}
     ]
     return floor.intersection(unary_union(slabs)) if slabs else floor
 
@@ -264,9 +263,7 @@ def _dimensions(t):
 
 def _overlap(p, q):
     """Overlap area of two axis-aligned boxes given as bounds."""
-    return max(0.0, min(p[2], q[2]) - max(p[0], q[0])) * max(
-        0.0, min(p[3], q[3]) - max(p[1], q[1])
-    )
+    return max(0.0, min(p[2], q[2]) - max(p[0], q[0])) * max(0.0, min(p[3], q[3]) - max(p[1], q[1]))
 
 
 @lru_cache(maxsize=256)
@@ -309,8 +306,7 @@ def _fit_cached(floor_wkb, excluded_wkb, approach_wkb, template_jsons):
                     if (
                         tolerant.contains(env)
                         and (
-                            not excluded_p.intersects(env)
-                            or env.intersection(excluded).area < EPS
+                            not excluded_p.intersects(env) or env.intersection(excluded).area < EPS
                         )
                         and (
                             not approaches_p.intersects(body)
