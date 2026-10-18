@@ -243,7 +243,8 @@ def fit_templates(model, space, templates):
         local(floor).wkb,
         local(unary_union(swings)).wkb,
         local(unary_union(approaches)).wkb,
-        tuple(sorted(t.model_dump_json() for t in templates)),
+        # Templates with equal dimensions sit next to each other (see `_dimensions`).
+        tuple(t.model_dump_json() for t in sorted(templates, key=_dimensions)),
     )
     if found is None or found == BUDGET_EXHAUSTED:
         return found
@@ -254,6 +255,11 @@ def fit_templates(model, space, templates):
         )
         for body, env in found
     ]
+
+
+def _dimensions(t):
+    """Placement-relevant identity: body and access margins, not IDs or sources."""
+    return tuple(getattr(t, k).value for k in ("width", "depth", "left", "right", "front", "back"))
 
 
 def _overlap(p, q):
@@ -314,10 +320,11 @@ def _fit_cached(floor_wkb, excluded_wkb, approach_wkb, template_jsons):
                         out.append((body.bounds, env.bounds))
         return out
 
+    keys = [_dimensions(t) for t in templates]
     by_template = {}
     candidates = [
-        by_template[s] if s in by_template else by_template.setdefault(s, placements(t))
-        for s, t in zip(template_jsons, templates, strict=True)
+        by_template[k] if k in by_template else by_template.setdefault(k, placements(t))
+        for k, t in zip(keys, templates, strict=True)
     ]
     budget = [FIT_BUDGET]
 
@@ -325,7 +332,7 @@ def _fit_cached(floor_wkb, excluded_wkb, approach_wkb, template_jsons):
         if i == len(candidates):
             return chosen
         # Identical templates are interchangeable: place them in increasing candidate order.
-        same = i > 0 and template_jsons[i] == template_jsons[i - 1]
+        same = i > 0 and keys[i] == keys[i - 1]
         for k in range(first if same else 0, len(candidates[i])):
             budget[0] -= 1
             if budget[0] < 0:

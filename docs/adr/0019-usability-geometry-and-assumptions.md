@@ -64,8 +64,9 @@ reviewer types describe the optional additions.
 - Furniture studies work in the room's own frame (its longest boundary edge), so a
   verdict does not change when the plan is rotated. They search four orthogonal
   rotations over a 0.1 m translation grid plus placements aligned with every finish
-  face (door recesses widen the bounds, so bounds alone misalign the grid). Identical
-  templates are interchangeable, and a body-area bound rejects impossible sets. The
+  face (door recesses widen the bounds, so bounds alone misalign the grid). Templates
+  with equal body and margin dimensions are interchangeable whatever their IDs (e.g.
+  two cars), and a body-area bound rejects impossible sets. The
   search stops after 200,000 candidate placements: the study is then `not_checked`
   with method `search_budget_exhausted_before_decision`, never a failed fit. A failed
   study means no arrangement in that search, not continuous infeasibility. No

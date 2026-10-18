@@ -768,17 +768,30 @@ def test_door_on_wall_with_generator_coordinate_noise_still_routes():
 def test_fit_search_is_bounded_and_identical_vehicles_are_interchangeable():
     import time
 
+    from house_ai.evaluation.usability import FurnitureUsabilityEvaluator as F
+    from house_ai.evaluation.usability_geometry import _dimensions
+
     car = dict(id="car", width_m=1.8, length_m=4.5, door_side_clearance_m=0.6, source="synthetic")
+    cars = [car, {**car, "id": "car-2"}, {**car, "id": "car-3"}]
+    # Vehicles differ by ID only: their placement identity is equal, so they are interchangeable.
+    from house_ai.evaluation.usability import _CriticOut
+
+    garage = ctx(model(7, 6.5, "garage"), program=program(vehicles=cars))
+    templates = F()._studies(garage, garage.model.spaces[0], _CriticOut("study"))
+    assert len({_dimensions(t) for t in templates[0][1]}) == 1
+    evaluator = F()
+    two = program(vehicles=cars[:2])
     doc = model(7, 6.5, "garage")
-    evaluator = FurnitureUsabilityEvaluator()
-    two = program(vehicles=[car, {**car, "id": "car-2"}])
     assert metric(evaluator.evaluate(ctx(doc, program=two)), "garage_sampled_fit").value is True
-    three = program(vehicles=[car, {**car, "id": "car-2"}, {**car, "id": "car-3"}])
+    # 5.4 m: three 1.8 m bodies with 0.6 m door zones need 7.8 m; decided as no fit.
+    narrow = evaluator.evaluate(ctx(model(5.4, 6.5, "garage"), program=program(vehicles=cars)))
+    assert metric(narrow, "garage_sampled_fit").value is False
+    assert "garage_no_sampled_fit" in {v.code for v in narrow.violations}
+    # 7 m: still undecided within the search budget; reported as not checked, not as a failure.
     start = time.perf_counter()
-    result = evaluator.evaluate(ctx(doc, program=three))
+    result = evaluator.evaluate(ctx(doc, program=program(vehicles=cars)))
     assert time.perf_counter() - start < 30
     fit = metric(result, "garage_sampled_fit")
-    # Undecided within the search budget: not checked, and no infeasibility finding.
     assert fit.status == ClaimStatus.NOT_CHECKED and fit.method.startswith("search_budget")
     assert "garage_no_sampled_fit" not in {v.code for v in result.violations}
 
