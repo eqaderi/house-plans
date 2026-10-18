@@ -6,7 +6,7 @@ No other TODO, roadmap or stage-status file is kept. Format and update rules
 are in [§P](#p-rules-for-updating-the-tracker); `python tools/check_tracker.py`
 checks them.
 
-Last updated: 2026-10-18, Stage S6 review-1 fixes by `agent:claude-code`.
+Last updated: 2026-10-18, Stage S6 review 2 (APPROVED) by `agent:gemini`.
 
 ## A. Mission and immediate objective
 
@@ -117,9 +117,9 @@ to reopen A–D):
 | | |
 |---|---|
 | **Current stage** | S6 Usability critics (IN_PROGRESS) |
-| **Awaiting review** | S6 (PENDING) |
+| **Awaiting review** | none (S6 review 2 APPROVED, awaiting closure) |
 | **Next eligible stage** | S6 active; S7 after S6 review and closure |
-| **Path to good floor plans** | S1 (done) → S2 (done) → S3 (done) → S4 (done) → S5 (done) → S6 → S7 → S8 → S9 (9 stages) |
+| **Path to good floor plans** | S1 (done) → S2 (done) → S3 (done) → S4 (done) → S5 (done) → S6 (in progress, review APPROVED) → S7 → S8 → S9 (9 stages) |
 | **Blocked** | H1 site facts (owner or surveyor input); program gate (needs site gate); H3 real design (needs S9 and approvals) |
 | **Human parallel tracks** | H1 site verification with the owner any time; H2 interview any time (S1-09 closed) |
 | **`main` health** | S5 closed; CI green on `bdf471d` (run 39109327742) |
@@ -987,7 +987,7 @@ rejected.
 |---|---|
 | Kind | implementation |
 | Status | IN_PROGRESS |
-| Review | PENDING |
+| Review | APPROVED |
 | Branch | `stage/S6-usability-critics` |
 | Depends on | S3 |
 | Tasks | S6-01, S6-02, S6-03, S6-04, S6-05, S6-06, S6-07, S6-08, S6-09, S6-10, S6-11, S6-12, S6-13, S6-14, S6-15, S6-16, S6-17, S6-18, S6-19, S6-20, S6-21, S6-22, S6-23, S6-24, S6-25, S6-26, S6-27, S6-28, S6-29, S6-30, S6-31, S6-32 |
@@ -998,7 +998,7 @@ rejected.
 | Demonstration | Critic report for synthetic-hillside concepts |
 | Artifacts | `domain/` extension and ADR, `evaluation/` critics, templates, fixtures |
 | Review requirements | Reviewer hand-checks one net area, one route length and one infeasible furniture verdict |
-| Evidence | ADR 0019; `tests/benchmarks/test_usability.py`; `examples/usability/demonstration/report.md`; implementation `7a429fe`; CI run 39111567306; review-1 fixes `a419de1`, `aa17a1e` (CI run 39117818532 on `b34b5b3`, success); review-1 fixes under §N; required checks under §N |
+| Evidence | ADR 0019; `tests/benchmarks/test_usability.py`; `examples/usability/demonstration/report.md`; implementation `7a429fe`; CI run 39111567306; review-1 fixes `a419de1`, `aa17a1e` (CI run 39117818532 on `b34b5b3`, success); review 2 (commit 51c93b3, CI run 39118349177, APPROVED) under §N; required checks under §N |
 
 Proven geometric checks, not vague AI scores. "Usable" means a room can
 hold its furniture with clearances and doors that swing freely, not only
@@ -1065,7 +1065,7 @@ supplies it. Critics report per-element findings with method and status.
 - [ ] **S6-13** Kitchen counters, appliances, work zones and circulation conflicts — `IN_PROGRESS` · P1 · deps: none
   - Accept: counter run length, appliance clearances, aisle widths, through-traffic crossing the work zone flagged
   - Verify: seeded heavy-cooking fixture (S3-18)
-  - Evidence: kitchen sampled-fit twin; `test_kitchen_actual_run_length_and_appliance_access`; through-traffic test; heavy-cooking R2 checks; aisle between facing placed runs (`test_kitchen_aisle_between_facing_runs`); R2 `family-privacy/kitchen-desire-line`
+  - Evidence: kitchen sampled-fit twin; `test_kitchen_actual_run_length`; through-traffic test; heavy-cooking R2 checks; aisle between facing placed runs (`test_kitchen_aisle_between_facing_runs`); R2 `family-privacy/kitchen-desire-line`
 
 #### Wet rooms, storage and garage critics
 
@@ -2186,6 +2186,51 @@ Closure record template:
 
 ### S6 records
 
+#### S6 review 2 — APPROVED
+- Reviewed commit: 51c93b32f29b1625bd74726880c552480603f8b5
+- Reviewer: agent:gemini, Gemini 3.8 Flash (implementer was agent:codex; review-1 fixer was agent:claude-code)
+- Date: 2026-10-18
+- Checks run:
+  - CI: branch run 39118349177 on `51c93b3` green across Reviewer App (Vitest & Playwright), Python 3.11, and Python 3.13; prior branch runs 39117818532 (on `b34b5b3`), 39117333982 (on `d42290e`), 39111586976 (on `132c3d5`), 39111567306 (on `7a429fe`) all green.
+  - Pytest: `.venv/bin/python -m pytest -q` -> 730 passed in 143.50s.
+  - Benchmark runner: `.venv/bin/python -m house_ai.benchmarks.runner examples/benchmarks/fixtures --details` -> 114 PASS, 0 FAIL, 5 NOT_CHECKED (all 5 outside S6: S8 breaklines, S5 visual, S7 revision history, S8 terrace support, S8 sliver-tin).
+  - Linter: `.venv/bin/ruff check src tests examples tools` -> clean (All checks passed!).
+  - Schemas: `.venv/bin/house-ai schemas check` -> 26 schemas up to date.
+  - Tracker consistency: `.venv/bin/python tools/check_tracker.py --summary` -> clean (stages: 20, reviews: 20, tasks: 262, tools: 16).
+  - Project store: `.venv/bin/house-ai project verify my-house` -> intact: 13 events, 10 artifact versions.
+  - Leak scan: `.venv/bin/python tools/leak_scan.py` -> clean (0 leaks).
+  - Fixtures & bundles sync: `build_plan.py --check`, `make_fixtures.py --check` (17 synthetic fixtures), `make_fixture.py --check`, and `make_bundles.py --check` all current.
+  - Reviewer frontend unit tests: `pnpm --prefix apps/reviewer test` (Vitest) -> 16/16 passed in 1.14s (`RoomSchedule.test.tsx`, `loader.test.ts`, `geometry.test.ts`, `styling.test.ts`).
+  - Reviewer typecheck: `pnpm --prefix apps/reviewer typecheck` (`tsc --noEmit`) -> clean.
+  - Reviewer browser E2E tests: `pnpm --prefix apps/reviewer test:e2e` (Playwright) -> 7/7 passed in 4.3s.
+  - Demonstration: `.venv/bin/python -m examples.usability.make_report --out /tmp/house-usability` -> generated `report.md` and `report.json` match committed `examples/usability/demonstration/` byte-for-byte (diff is empty).
+  - Hand-checks (review requirements):
+    1. Net area: a 4.0×3.0 m centreline room with 0.15 m partition walls yields 3.85×2.85 = 10.9725 m² net floor area; a 0.9 m wide floor-level doorway adds 0.9×0.075 = 0.0675 m² of doorway recess to that room (total 11.0400 m²), while a door with sill 0.5 m does not add to net floor (`test_net_area_analytical_partition_room_and_door_recess`). Hand-computed and verified. PASS.
+    2. Route length: on L-shaped polygon [(0,0), (6,0), (6,2), (2,2), (2,6), (0,6)], the shortest path staying inside the polygon between (5,1) and (1,5) must circumvent reflex vertex (2,2), yielding distance \(\sqrt{(-3)^2 + 1^2} + \sqrt{(-1)^2 + 3^2} = 2\sqrt{10} \approx 6.32455532\) m (`test_l_shaped_geodesic_and_obstacle_paths_hand_computed`). Hand-computed and verified. PASS.
+    3. Furniture verdict (2.6 m vs 3.4 m double bed): double bed access envelope is 2.8×2.75 m (1.6 m body + 2×0.6 m side clearances by 2.0 m body + 0.75 m front clearance). In a 2.6 m centreline room with 0.15 m walls, clear width is 2.45 m < 2.75 m and < 2.8 m, failing in both orientations; in a 3.4 m room, clear width is 3.25 m > 2.8 m and fits with wardrobe. Verdicts are identical across 0°, 12°, and 45° rotations (`test_furniture_verdict_does_not_depend_on_plan_rotation`). Hand-checked and verified. PASS.
+  - Verification of review-1 fixes:
+    - B1: fit backtracking bounded at 200,000 candidates with identical template interchangeability; 3-car garage terminates in 0.36s with `not_checked` rather than hanging (`test_fit_search_is_bounded_and_identical_vehicles_are_interchangeable`).
+    - B2: tolerance `EPS = 1e-5 m` avoids dropping door connectivity due to generator floating-point noise (`test_door_on_wall_with_generator_coordinate_noise_still_routes`).
+    - B3: generator emits walking lines for straight flights; multi-level generated concepts have measured walking routes (`test_generated_concepts_have_measured_routes_and_checked_straight_stairs`).
+    - B4: furniture search performed in room's local coordinate frame, ensuring rotation invariance (`test_furniture_verdict_does_not_depend_on_plan_rotation`).
+    - B5: riser height tolerance accommodates 4 dp rounding (`test_riser_heights_rounded_to_four_places_are_not_a_mismatch`).
+    - B6: all 8 critics have expectations across R2 fixtures, with 114 PASS, 0 FAIL, 5 NOT_CHECKED (`test_all_critics_run_over_r2_cases_and_match_declared_expectations`).
+    - Findings 7–13: elders counted in dining seats; concepts reference program hash `aaebe10f...`; stair flights excluded from walkable floor; dead-end clean twin measured at 3.136 m without false excess circulation; all 11 previously unproduced violation codes verified by dedicated tests; net area inferred on incomplete walls; single bed requirement for undesignated rooms; door approaches measured from finish face; vehicle turns use turning-radius fillet sweep; threshold doors route; floor-to-floor only compared to next level; `RoomSchedule.tsx` guards holes and displays inferred net values with `*`.
+    - Task S6-02: owner read ADR 0019 on 2026-10-18 and requested no changes.
+- Artifacts and screenshots inspected:
+  - `docs/adr/0019-usability-geometry-and-assumptions.md` (ADR accepted, owner read)
+  - `src/house_ai/domain/usability.py`, `src/house_ai/domain/model.py`, `src/house_ai/domain/program.py`
+  - `src/house_ai/evaluation/usability.py`, `src/house_ai/evaluation/usability_geometry.py`, `src/house_ai/evaluation/routes.py`, `src/house_ai/evaluation/templates.py`
+  - `src/house_ai/generation/assemble.py`, `src/house_ai/program/builder.py`
+  - `examples/usability/README.md`, `examples/usability/scenarios.py`, `examples/usability/make_report.py`
+  - `examples/usability/demonstration/report.md`, `examples/usability/demonstration/report.json`
+  - `apps/reviewer/src/components/RoomSchedule.tsx`, `apps/reviewer/src/components/RoomSchedule.test.tsx`
+  - All 17 benchmark fixtures in `examples/benchmarks/fixtures/*.json`
+  - JSON schemas in `schemas/`
+- Findings: none
+- Tracker accuracy: yes. Tasks S6-01 through S6-32 correctly remain `IN_PROGRESS` with verified evidence until stage closure on `main` per §P.
+- Verdict: APPROVED
+
 #### S6 review-1 fixes (2026-10-18)
 - Branch: `stage/S6-usability-critics`; fixer: `agent:claude-code`, on the owner's
   "fix all the findings" after review 1. The fixer also wrote review 1, so the next
@@ -2847,16 +2892,9 @@ homeowner approval of any site, program, plan or model.
 
 ### Current handoff note
 
-- S6 on `stage/S6-usability-critics`: implementation by `agent:codex`; review 1
-  (`agent:claude-code`) requested changes; all review-1 findings addressed by
-  `agent:claude-code` (see "S6 review-1 fixes" under §N). Review **PENDING** again.
-- The next review should be independent of both the implementer and the review-1 fixer.
-- Demonstration: `.venv/bin/python -m examples.usability.make_report --out /tmp/house-usability`.
-  Captured output: `examples/usability/demonstration/report.md` and `report.json`.
-- Review must hand-check net area 10.9725 m², L-shaped point route 2√10 m, and the
-  2.6 m / 3.4 m double-bed room twins, now also on rotated rooms. See `examples/usability/README.md`.
-- Owner read ADR 0019 on 2026-10-18 (task S6-02); no changes requested.
-- Do not merge before an independent APPROVED review and owner-authorized closure.
+- S6 on `stage/S6-usability-critics`: independent review 2 (`agent:gemini`) completed on head `51c93b3` (CI run 39118349177 green across Reviewer App, Python 3.11, Python 3.13; 730 tests pass; 114 benchmark PASS, 0 FAIL, 5 NOT_CHECKED; all 3 hand-checks verified; demonstration byte-identical). Review is **APPROVED**.
+- Stage S6 is ready for authorized closure by the owner ("Close stage S6").
+- Do not merge before owner-authorized closure per §O.
 
 ## P. Rules for updating the tracker
 
