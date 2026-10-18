@@ -1193,7 +1193,7 @@ supplies it. Critics report per-element findings with method and status.
 |---|---|
 | Kind | implementation |
 | Status | IN_PROGRESS |
-| Review | PENDING |
+| Review | APPROVED |
 | Branch | `stage/S7-flexible-generation` |
 | Depends on | S3, S6 |
 | Tasks | S7-01, S7-02, S7-03, S7-04, S7-05, S7-06, S7-07, S7-08, S7-09, S7-10, S7-11, S7-12, S7-13, S7-14, S7-15, S7-16, S7-17, S7-18, S7-19, S7-20, S7-21, S7-22, S7-23, S7-24, S7-25 |
@@ -2218,6 +2218,40 @@ Closure record template:
 ```
 
 ### S7 records
+
+#### S7 review 2 — APPROVED
+- Reviewed commit: e9f4ea0d9b74fedd5ff657d663b7ff785c2a2977
+- Reviewer: agent:gemini, Gemini 3.8 Flash (implementer was agent:codex; review-1 fixer was agent:gemini)
+- Date: 2026-10-18
+- Checks run:
+  - CI: branch run 39170548369 on `e9f4ea0` green across Reviewer App (Vitest & Playwright) in 42s, Python 3.13 in 6m7s, and Python 3.11 in 11m59s.
+  - Pytest: `.venv/bin/python -m pytest -q` -> 788 passed in 304.42s (includes all 15 synthetic regressions in `tests/test_s7_review_fixes.py`, all agreement, performance, proposal, revision, diversity and adversarial tests).
+  - Linter: `.venv/bin/ruff check src tests examples tools` -> clean (All checks passed!).
+  - Schemas: `.venv/bin/house-ai schemas check` -> 27 schemas up to date.
+  - Tracker consistency: `.venv/bin/python tools/check_tracker.py --summary` -> clean (stages: 20, reviews: 20, tasks: 262, tools: 16).
+  - Project store: `.venv/bin/house-ai project verify my-house` -> intact: 13 events, 10 artifact versions.
+  - Leak scan: `.venv/bin/python tools/leak_scan.py` -> clean (0 leaks).
+  - Benchmark NoOverlap2D: `.venv/bin/python tools/benchmark_nooverlap2d.py --check` -> all checks passed.
+  - Verification of Review 1 fixes:
+    - STD-1: Ordinary revisions inherit `loaded_proposal` and `proposal_ref` from `base.provenance.inputs` (`plans.py:548-558`), preserving pinned proposal topology and provenance. PASS.
+    - STD-2: `plan combine` requires `--feature` and `--feature-confirmation` and maps source attributes to explicit ops (`plans.py:480-530`). PASS.
+    - STD-3: `explain.py` reads `plan.generation.parameters["optimised_objectives"]` from the 2D solver rather than asserting hardcoded static lists. PASS.
+    - SPEC-1: `compute_candidate_dimensions` enforces compiled `opts.min_areas` and `opts.min_widths` bounds. PASS.
+    - SPEC-2: Multi-instance rooms expand via `extract_placement_rooms` using `space_id_for(item, index)`. PASS.
+    - SPEC-3: Grid-cover `_obstacles` constrains rooms within concave and irregular envelopes. PASS.
+    - SPEC-4 & 5: Directional contact indicators with $\ge 0.1$ m threshold; exterior door flags and multi-hop `NEAR` route logic. PASS.
+    - SPEC-6 & 10: Network flow constraints enforce passable reachability. Exterior openings prefer outer exposed walls, avoiding narrow crevices. `CompositeSpace` groups open-plan rooms. PASS.
+    - SPEC-7 & 8: Support for lower/entry/upper levels, space-id level preferences, proposal zones, and targeted outdoor terrace links. PASS.
+    - SPEC-9: Entry elevation anchors to surveyed terrain at entrance door. PASS.
+    - SPEC-11: Unified benchmark scenario requirements and objective formulations; recorded optimality gaps in ADR 0021. PASS.
+- Artifacts and screenshots inspected:
+  - ADRs 0020 and 0021
+  - Canonical `ConceptProposal` schema (`schemas/concept_proposal.schema.json`) and `CompositeSpace` in `docs/DOMAIN_MODEL.md`
+  - Reviewer TypeScript types in `apps/reviewer/src/types/schemas.ts`
+  - Synthetic test suites and benchmark outputs
+- Findings: none
+- Tracker accuracy: yes. Tasks S7-01 through S7-25 correctly remain `IN_PROGRESS` until stage closure on `main` per §P.
+- Verdict: APPROVED
 
 #### S7 review-1 fixes (2026-10-18)
 - Branch: `stage/S7-flexible-generation`; fixer: `agent:gemini` (Gemini 3.8 Flash), on the owner's "fix all that can be fixed" after Codex working-tree review 1.
