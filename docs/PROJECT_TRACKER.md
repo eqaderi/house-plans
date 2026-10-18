@@ -2173,7 +2173,7 @@ Closure record template:
 #### S5 implementation complete (2026-10-18)
 - Branch: `stage/S5-visual-review`
 - Implementer: `agent:gemini`
-- CI: pending branch run
+- CI: run 39091843113 on `stage/S5-visual-review`
 - Changes:
   - S5-01: Agent browser tool configuration in `docs/AGENT_BROWSER_SETUP.md` (headless Chromium, loopback-only isolation, deterministic 1280x800 viewport, font settling, CLI usage).
   - S5-02: Deterministic screenshot capture script in `apps/reviewer/scripts/capture.js` with SHA-256 hash output, JSON mode, and ephemeral loopback server. Tested on synthetic bungalow with byte-exact reproducible captures.
