@@ -2110,7 +2110,7 @@ changed), **decision** (owner must choose), **risk**.
 | ISS-24 | S6 furniture/clear-zone geometry is canonical, but the SVG/reviewer does not yet draw or pick these new element kinds; complex stair flights and branching corridor dead ends remain unmeasured | risk | ADR 0019; `evaluation/usability.py`; `examples/usability/demonstration/report.md` | Expose these limitations; add visualization and richer flight/route geometry as generation evolves | S7, S8 |
 | ISS-25 | R2 `flat-simple/plan-visual` still names S5 as future work even though S5 is closed | stale doc | `examples/benchmarks/fixtures/flat-simple.json`; benchmark runner reports NOT_CHECKED | Replace this old probe with an actual visual regression expectation at readiness validation; S6 changes only its own probes | S9 |
 | ISS-26 | Generated split-level straight flights pass under the lower bar's roof slab without a void: measured pitch-line headroom 1.25 m (`stair_low_headroom` on `st-0`, `slab-roof-down-300` in the S6 demo); generated U-shaped flights have no walking line, so their run, headroom and landings stay unchecked and routes over them are inferred | risk | `examples/usability/demonstration/report.md`; `generation/assemble.py::build_stairs` | Generator to cut slab voids over every flight and model U-shaped walking lines | S7 |
-| ISS-27 | Furniture studies decide by bounded discrete search; a 7×6.5 m garage asked to hold three 1.8×4.5 m cars stops undecided (`not_checked`) and the kitchen studies on generated linear/split-level concepts fail by about 0.025 m under the assumed clearances | risk | `evaluation/usability_geometry.py::fit_templates`; ADR 0019 | Revisit search strategy and clearance assumptions with real furniture; generator to size rooms for the studies | S7 |
+| ISS-27 | Furniture studies decide by bounded discrete search; a 7×6.5 m garage asked to hold three 1.8×4.5 m cars stops undecided (`not_checked`) and the kitchen studies on generated linear/split-level concepts fail by about 0.025 m under the assumed clearances. The program builder designates no bedroom for a double bed, so outside hand-written fixtures `bed_double_no_sampled_fit` never fires (undesignated rooms need a single bed only), including for the main bedroom | risk | `evaluation/usability_geometry.py::fit_templates`; ADR 0019 | Revisit search strategy and clearance assumptions with real furniture; program builder or generator to designate double-bed rooms; generator to size rooms for the studies | S7 |
 
 ## L. Decisions
 
@@ -2194,7 +2194,9 @@ Closure record template:
   - B1: the fit search is bounded at 200,000 candidates; when it stops undecided the
     study is `not_checked`, never a failed fit. Identical templates are interchangeable,
     a body-area bound rejects impossible sets, and overlaps are box arithmetic in the room
-    frame. The 7×6.5 m three-car garage now ends in under 1 s as not checked.
+    frame; identity is the six dimensions, so vehicles that differ only by ID are
+    interchangeable. The 7×6.5 m three-car garage now ends in under 1 s as not checked;
+    a 5.4×6.5 m three-car garage is decided as no fit.
   - B2: geometric tolerance is now 1e-5 m. Doors on the linear concept now join the route
     graph, and its maximum walk is measured at 17.044 m.
   - B3: the generator emits walking lines for straight flights. A stair without one
