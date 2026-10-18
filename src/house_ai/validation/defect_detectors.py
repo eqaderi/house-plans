@@ -9,8 +9,18 @@ Detects visual and geometric defects including:
 
 from __future__ import annotations
 
+import math
+from collections.abc import Sequence
 from dataclasses import dataclass
 
+from house_ai.constants.reviewer import (
+    DEFECT_DOOR_EXCEEDS_WALL,
+    DEFECT_MISSING_HOST_WALL,
+    DEFECT_MISSING_STAIR_ARRIVAL,
+    DEFECT_MISSING_STAIR_LEVEL,
+    DEFECT_OVERLAPPING_LABELS,
+    DEFECT_WINDOW_ON_RETAINING_WALL,
+)
 from house_ai.domain.model import HouseModel, OpeningKind, WallKind
 
 
@@ -20,6 +30,13 @@ class DefectFinding:
     element_ids: list[str]
     description: str
     suggested_op: str | None = None
+
+
+def _polygon_centroid(points: Sequence[Sequence[float]]) -> tuple[float, float]:
+    """Calculate the centroid of a polygon vertex ring."""
+    cx = sum(p[0] for p in points) / len(points)
+    cy = sum(p[1] for p in points) / len(points)
+    return (cx, cy)
 
 
 def detect_windows_on_retaining_walls(model: HouseModel) -> list[DefectFinding]:
@@ -33,7 +50,7 @@ def detect_windows_on_retaining_walls(model: HouseModel) -> list[DefectFinding]:
             if host and host.kind == WallKind.RETAINING:
                 findings.append(
                     DefectFinding(
-                        defect_type="window_on_retaining_wall",
+                        defect_type=DEFECT_WINDOW_ON_RETAINING_WALL,
                         element_ids=[op.id, host.id],
                         description=(
                             f"Window '{op.id}' is hosted on retaining wall '{host.id}' "
@@ -62,22 +79,20 @@ def detect_overlapping_space_labels(
             pts_a = sp_a.boundary.outer
             if not pts_a:
                 continue
-            cx_a = sum(p[0] for p in pts_a) / len(pts_a)
-            cy_a = sum(p[1] for p in pts_a) / len(pts_a)
+            center_a = _polygon_centroid(pts_a)
 
             for j in range(i + 1, len(sp_list)):
                 sp_b = sp_list[j]
                 pts_b = sp_b.boundary.outer
                 if not pts_b:
                     continue
-                cx_b = sum(p[0] for p in pts_b) / len(pts_b)
-                cy_b = sum(p[1] for p in pts_b) / len(pts_b)
+                center_b = _polygon_centroid(pts_b)
 
-                dist = ((cx_a - cx_b) ** 2 + (cy_a - cy_b) ** 2) ** 0.5
+                dist = math.dist(center_a, center_b)
                 if dist < min_label_distance_m:
                     findings.append(
                         DefectFinding(
-                            defect_type="overlapping_labels",
+                            defect_type=DEFECT_OVERLAPPING_LABELS,
                             element_ids=[sp_a.id, sp_b.id],
                             description=(
                                 f"Spaces '{sp_a.id}' and '{sp_b.id}' have colliding label centers "
@@ -101,7 +116,7 @@ def detect_stair_arrival_defects(model: HouseModel) -> list[DefectFinding]:
         if st.from_level_id not in level_ids:
             findings.append(
                 DefectFinding(
-                    defect_type="missing_stair_level",
+                    defect_type=DEFECT_MISSING_STAIR_LEVEL,
                     element_ids=[st.id],
                     description=(
                         f"Stair '{st.id}' references nonexistent "
@@ -112,7 +127,7 @@ def detect_stair_arrival_defects(model: HouseModel) -> list[DefectFinding]:
         if st.to_level_id not in level_ids:
             findings.append(
                 DefectFinding(
-                    defect_type="missing_stair_level",
+                    defect_type=DEFECT_MISSING_STAIR_LEVEL,
                     element_ids=[st.id],
                     description=(
                         f"Stair '{st.id}' references nonexistent "
@@ -125,7 +140,7 @@ def detect_stair_arrival_defects(model: HouseModel) -> list[DefectFinding]:
         if st.top_space_id and st.top_space_id not in space_level_map:
             findings.append(
                 DefectFinding(
-                    defect_type="missing_stair_arrival",
+                    defect_type=DEFECT_MISSING_STAIR_ARRIVAL,
                     element_ids=[st.id, st.top_space_id],
                     description=(
                         f"Stair '{st.id}' arrives at nonexistent "
@@ -136,7 +151,7 @@ def detect_stair_arrival_defects(model: HouseModel) -> list[DefectFinding]:
         if st.bottom_space_id and st.bottom_space_id not in space_level_map:
             findings.append(
                 DefectFinding(
-                    defect_type="missing_stair_arrival",
+                    defect_type=DEFECT_MISSING_STAIR_ARRIVAL,
                     element_ids=[st.id, st.bottom_space_id],
                     description=(
                         f"Stair '{st.id}' departs from nonexistent "
@@ -159,22 +174,19 @@ def detect_door_into_wall_clash(model: HouseModel) -> list[DefectFinding]:
             if not host:
                 findings.append(
                     DefectFinding(
-                        defect_type="missing_host_wall",
+                        defect_type=DEFECT_MISSING_HOST_WALL,
                         element_ids=[op.id],
                         description=f"Door '{op.id}' has missing host wall '{op.host_wall_id}'.",
                     )
                 )
                 continue
 
-            # Calculate wall length
-            dx = host.end[0] - host.start[0]
-            dy = host.end[1] - host.start[1]
-            wall_len = (dx**2 + dy**2) ** 0.5
+            wall_len = math.dist(host.start[:2], host.end[:2])
 
             if op.offset_m + op.width_m > wall_len + 1e-4:
                 findings.append(
                     DefectFinding(
-                        defect_type="door_exceeds_wall",
+                        defect_type=DEFECT_DOOR_EXCEEDS_WALL,
                         element_ids=[op.id, host.id],
                         description=(
                             f"Door '{op.id}' (offset {op.offset_m}m + width {op.width_m}m) "

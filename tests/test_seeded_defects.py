@@ -4,6 +4,13 @@ from __future__ import annotations
 
 import pytest
 
+from house_ai.constants.reviewer import (
+    DEFECT_DOOR_EXCEEDS_WALL,
+    DEFECT_MISSING_STAIR_ARRIVAL,
+    DEFECT_MISSING_STAIR_LEVEL,
+    DEFECT_OVERLAPPING_LABELS,
+    DEFECT_WINDOW_ON_RETAINING_WALL,
+)
 from house_ai.domain.geometry import Polygon2D
 from house_ai.domain.model import (
     HouseModel,
@@ -120,7 +127,7 @@ def test_detects_window_on_retaining_wall(clean_model):
 
     findings = detect_windows_on_retaining_walls(clean_model)
     assert len(findings) == 1
-    assert findings[0].defect_type == "window_on_retaining_wall"
+    assert findings[0].defect_type == DEFECT_WINDOW_ON_RETAINING_WALL
     assert "win-buried-1" in findings[0].element_ids
     assert "w-ret-hillside" in findings[0].element_ids
 
@@ -149,7 +156,7 @@ def test_detects_overlapping_space_labels(clean_model):
 
     findings = detect_overlapping_space_labels(clean_model, min_label_distance_m=1.0)
     assert len(findings) == 1
-    assert findings[0].defect_type == "overlapping_labels"
+    assert findings[0].defect_type == DEFECT_OVERLAPPING_LABELS
     assert set(findings[0].element_ids) == {"sp-closet-a", "sp-closet-b"}
 
 
@@ -170,9 +177,9 @@ def test_detects_missing_stair_arrival(clean_model):
     findings = detect_stair_arrival_defects(clean_model)
     assert len(findings) >= 2
     types = [f.defect_type for f in findings]
-    assert "missing_stair_level" in types
-    assert "missing_stair_arrival" in types
-    arrival_finding = next(f for f in findings if f.defect_type == "missing_stair_arrival")
+    assert DEFECT_MISSING_STAIR_LEVEL in types
+    assert DEFECT_MISSING_STAIR_ARRIVAL in types
+    arrival_finding = next(f for f in findings if f.defect_type == DEFECT_MISSING_STAIR_ARRIVAL)
     assert "sp-phantom-attic" in arrival_finding.element_ids
 
 
@@ -191,6 +198,6 @@ def test_detects_door_clash(clean_model):
 
     findings = detect_door_into_wall_clash(clean_model)
     assert len(findings) == 1
-    assert findings[0].defect_type == "door_exceeds_wall"
+    assert findings[0].defect_type == DEFECT_DOOR_EXCEEDS_WALL
     assert "d-overshoot" in findings[0].element_ids
     assert "w-ext-1" in findings[0].element_ids

@@ -11,6 +11,8 @@ import subprocess
 import tempfile
 from pathlib import Path
 
+from house_ai.constants.reviewer import TOOL_INKSCAPE, TOOL_RSVG_CONVERT
+
 COMMON_BIN_DIRS = [
     Path("/opt/homebrew/bin"),
     Path("/usr/local/bin"),
@@ -25,22 +27,22 @@ def find_rasterizer() -> tuple[str, Path] | None:
         Tuple of (tool_name, tool_path) or None if neither tool is installed.
     """
     # 1. Check rsvg-convert
-    rsvg_path = shutil.which("rsvg-convert")
+    rsvg_path = shutil.which(TOOL_RSVG_CONVERT)
     if rsvg_path:
-        return ("rsvg-convert", Path(rsvg_path))
+        return (TOOL_RSVG_CONVERT, Path(rsvg_path))
     for d in COMMON_BIN_DIRS:
-        candidate = d / "rsvg-convert"
+        candidate = d / TOOL_RSVG_CONVERT
         if candidate.is_file() and os.access(candidate, os.X_OK):
-            return ("rsvg-convert", candidate)
+            return (TOOL_RSVG_CONVERT, candidate)
 
     # 2. Check inkscape
-    inkscape_path = shutil.which("inkscape")
+    inkscape_path = shutil.which(TOOL_INKSCAPE)
     if inkscape_path:
-        return ("inkscape", Path(inkscape_path))
+        return (TOOL_INKSCAPE, Path(inkscape_path))
     for d in COMMON_BIN_DIRS:
-        candidate = d / "inkscape"
+        candidate = d / TOOL_INKSCAPE
         if candidate.is_file() and os.access(candidate, os.X_OK):
-            return ("inkscape", candidate)
+            return (TOOL_INKSCAPE, candidate)
 
     return None
 
@@ -84,14 +86,14 @@ def rasterize_svg_to_png(
         temp_svg_path = Path(f.name)
 
     try:
-        if tool_name == "rsvg-convert":
+        if tool_name == TOOL_RSVG_CONVERT:
             cmd = [str(tool_bin), "-f", "png", "-d", str(dpi), "-p", str(dpi)]
             if width is not None:
                 cmd.extend(["-w", str(width)])
             if height is not None:
                 cmd.extend(["-h", str(height)])
             cmd.extend(["-o", str(output_png_path), str(temp_svg_path)])
-        elif tool_name == "inkscape":
+        elif tool_name == TOOL_INKSCAPE:
             cmd = [
                 str(tool_bin),
                 str(temp_svg_path),

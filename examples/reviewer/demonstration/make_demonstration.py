@@ -77,6 +77,7 @@ def generate_demonstration_artifacts() -> None:
         option="concept-split-walkout",
         plan_version=1,
         author="agent:gemini",
+        created_at="2026-10-18T02:47:52.497484Z",
         screenshot_hash=before_hash,
         claims=[
             VisualClaim(
@@ -109,6 +110,7 @@ def generate_demonstration_artifacts() -> None:
         plan_version=1,
         verbatim_request="Relocate window win-buried-001 off retaining wall to exterior wall",
         author="agent:gemini",
+        created_at="2026-10-18T02:47:52.498118Z",
         operations=critique.claims[0].suggested_ops,
     )
     ops_path = DEMO_DIR / "revision_ops.json"

@@ -52,6 +52,12 @@ class VisualFixReport:
             )
 
 
+def _format_element_set(elements: set[str] | list[str]) -> str:
+    """Format element IDs deterministically with sorted set notation."""
+    sorted_items = ", ".join(f"'{eid}'" for eid in sorted(elements))
+    return f"{{{sorted_items}}}"
+
+
 def verify_visual_critique_fixes(
     base_plan: PlanVersion,
     revised_plan: PlanVersion,
@@ -74,6 +80,7 @@ def verify_visual_critique_fixes(
 
     for claim in critique.claims:
         cited_ids = set(claim.element_ids)
+        elements_repr = _format_element_set(cited_ids)
 
         # Check if any revised defect still implicates the cited elements
         active_defects = [
@@ -87,7 +94,7 @@ def verify_visual_critique_fixes(
                 ClaimVerificationResult(
                     claim_id=claim.id,
                     is_resolved=False,
-                    evidence=f"Defect still present on elements {cited_ids}: {defect_desc}",
+                    evidence=f"Defect still present on elements {elements_repr}: {defect_desc}",
                     remaining_defects=[d.defect_type for d in active_defects],
                 )
             )
@@ -122,7 +129,7 @@ def verify_visual_critique_fixes(
                     claim_id=claim.id,
                     is_resolved=True,
                     evidence=(
-                        f"Defect resolved on elements {cited_ids}; "
+                        f"Defect resolved on elements {elements_repr}; "
                         "verified by model inspection."
                     ),
                 )
@@ -134,7 +141,7 @@ def verify_visual_critique_fixes(
                     claim_id=claim.id,
                     is_resolved=False,
                     evidence=(
-                        f"Fake fix detected: elements {cited_ids} remain unchanged "
+                        f"Fake fix detected: elements {elements_repr} remain unchanged "
                         "with no geometry or topological revision."
                     ),
                 )

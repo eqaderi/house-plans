@@ -6,11 +6,13 @@ from typing import Annotated
 
 from pydantic import Field
 
+from ..constants.reviewer import (
+    SEVERITY_WARNING,
+    VISUAL_CRITIQUE_SCHEMA_VERSION,
+)
 from .base import Id, StrictModel, UtcDatetime, utc_now
 from .epistemics import ClaimStatus
 from .revision_ops import RevisionOp
-
-VISUAL_CRITIQUE_SCHEMA_VERSION = "1.0.0"
 
 
 class VisualClaim(StrictModel):
@@ -20,7 +22,7 @@ class VisualClaim(StrictModel):
     element_ids: list[str] = Field(min_length=1)
     claim_text: str = Field(min_length=1)
     status: ClaimStatus = ClaimStatus.AI_JUDGMENT
-    severity: str = "warning"  # "blocking" | "warning" | "info"
+    severity: str = SEVERITY_WARNING  # "blocking" | "warning" | "info"
     suggested_ops: list[RevisionOp] = Field(default_factory=list)
     screenshot_hash: str | None = None
     bounding_box: list[float] | None = None  # [min_x, min_y, max_x, max_y]

@@ -89,3 +89,40 @@ ELEMENT_KINDS: tuple[str, ...] = (
     KIND_LABEL,
     KIND_ELEVATION_MARKER,
 )
+
+# Defect types for visual and geometric defect detectors
+DEFECT_WINDOW_ON_RETAINING_WALL: str = "window_on_retaining_wall"
+DEFECT_OVERLAPPING_LABELS: str = "overlapping_labels"
+DEFECT_MISSING_STAIR_LEVEL: str = "missing_stair_level"
+DEFECT_MISSING_STAIR_ARRIVAL: str = "missing_stair_arrival"
+DEFECT_MISSING_HOST_WALL: str = "missing_host_wall"
+DEFECT_DOOR_EXCEEDS_WALL: str = "door_exceeds_wall"
+
+DEFECT_TYPES: tuple[str, ...] = (
+    DEFECT_WINDOW_ON_RETAINING_WALL,
+    DEFECT_OVERLAPPING_LABELS,
+    DEFECT_MISSING_STAIR_LEVEL,
+    DEFECT_MISSING_STAIR_ARRIVAL,
+    DEFECT_MISSING_HOST_WALL,
+    DEFECT_DOOR_EXCEEDS_WALL,
+)
+
+# Visual critique severities
+SEVERITY_BLOCKING: str = "blocking"
+SEVERITY_WARNING: str = "warning"
+SEVERITY_INFO: str = "info"
+
+CRITIQUE_SEVERITIES: tuple[str, ...] = (
+    SEVERITY_BLOCKING,
+    SEVERITY_WARNING,
+    SEVERITY_INFO,
+)
+
+# SVG rasterization CLI tools
+TOOL_RSVG_CONVERT: str = "rsvg-convert"
+TOOL_INKSCAPE: str = "inkscape"
+
+# Visual critique filenames and schema version
+VISUAL_CRITIQUE_FILENAME: str = "visual_critique.json"
+VISUAL_CRITIQUE_SCHEMA_VERSION: str = "1.0.0"
+
