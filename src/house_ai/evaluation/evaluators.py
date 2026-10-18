@@ -628,15 +628,21 @@ class CirculationEvaluator:
             levels_reached == {lv.id for lv in model.levels},
             "graph_analysis",
         )
-        walk = self._walk(model)
-        if walk:
-            out.metric(
-                "max_walk_from_entrance_m",
-                max(walk.values()),
-                "door_to_door_straight_lines",
-                INF,
-                unit="m",
-            )
+        from .routes import RouteNetwork
+
+        routes = RouteNetwork.for_model(model).entrance_routes()
+        complete = bool(routes) and len(routes) == len(model.spaces)
+        estimated = any(r.estimated for r in routes.values())
+        out.metric(
+            "max_walk_from_entrance_m",
+            max(r.length_m for r in routes.values()) if complete else None,
+            "net_floor_visibility_graph_point_path"
+            + ("_with_estimated_stair_runs" if estimated else ""),
+            (INF if estimated else M) if complete else NC,
+            unit="m",
+        )
+        if not complete:
+            out.metric("entrance_route_coverage", len(routes), "measurable_space_routes")
         privacy = _privacy(model)
         crossings = 0
         crossed: list[str] = []
@@ -678,70 +684,10 @@ class CirculationEvaluator:
 
     @staticmethod
     def _walk(model: HouseModel) -> dict[str, float]:
-        """Approximate interior routes from pedestrian entrances, preserving each space.
+        """Compatibility entry point for the S6 net-floor route engine."""
+        from .routes import RouteNetwork
 
-        A portal has a node on each side, joined only by its opening. In
-        particular, coincident coordinates on stacked floors are not connected.
-        Exterior exits are never linked to each other through an outside shortcut.
-        """
-        entrances, _ = _pedestrian_entrances(model)
-        nodes: dict[str, list[tuple[str, float, float]]] = {}
-        edges: dict[tuple[str, float, float], list[tuple[tuple[str, float, float], float]]] = {}
-        starts = []
-
-        def link(p, q, d):
-            edges.setdefault(p, []).append((q, d))
-            edges.setdefault(q, []).append((p, d))
-
-        for o in model.openings:
-            if not o.is_passable:
-                continue
-            w = model.wall(o.host_wall_id)
-            t = (o.offset_m + o.width_m / 2) / w.length_m
-            xy = (
-                w.start[0] + (w.end[0] - w.start[0]) * t,
-                w.start[1] + (w.end[1] - w.start[1]) * t,
-            )
-            sides = [(sid, *xy) for sid in o.connects if sid != EXTERIOR]
-            for p in sides:
-                nodes.setdefault(p[0], []).append(p)
-            if len(sides) == 2:
-                link(*sides, 0.0)
-            elif o.id in entrances:
-                starts.extend(sides)
-        for st in model.stairs:
-            c = st.footprint.to_shapely().centroid
-            run = max(1, (st.riser_count or 2) - 1) * (st.tread_depth_m or 0.28)
-            ends = []
-            for sid in (st.bottom_space_id, st.top_space_id):
-                p = (sid, c.x, c.y)
-                nodes.setdefault(sid, []).append(p)
-                ends.append(p)
-            link(*ends, run)
-        for pts in nodes.values():
-            for i, p in enumerate(pts):
-                for q in pts[i + 1 :]:
-                    link(p, q, math.dist(p[1:], q[1:]))
-        dist = {p: 0.0 for p in starts}
-        frontier = sorted((0.0, p) for p in starts)
-        import heapq
-
-        heapq.heapify(frontier)
-        while frontier:
-            d, p = heapq.heappop(frontier)
-            if d > dist.get(p, math.inf):
-                continue
-            for q, w in edges.get(p, []):
-                if d + w < dist.get(q, math.inf):
-                    dist[q] = d + w
-                    heapq.heappush(frontier, (d + w, q))
-        out: dict[str, float] = {}
-        for s in model.spaces:
-            c = s.boundary.to_shapely().representative_point()
-            ds = [dist[p] + math.dist(p[1:], (c.x, c.y)) for p in nodes.get(s.id, []) if p in dist]
-            if ds:
-                out[s.id] = min(ds)
-        return out
+        return RouteNetwork(model).entrance_distances()
 
 
 # ---------------------------------------------------------------------- privacy

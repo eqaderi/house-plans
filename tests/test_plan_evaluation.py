@@ -19,6 +19,7 @@ from house_ai.domain.site import Site
 from house_ai.evaluation.base import FUTURE_EVALUATORS, REQUIRED_EVALUATORS
 from house_ai.evaluation.explain import comparison_markdown, explanation_markdown
 from house_ai.evaluation.report import evaluate_plan
+from house_ai.evaluation.usability import USABILITY_EVALUATORS
 from house_ai.generation.generator import CpSatPlanGenerator, GenerationRequest
 from house_ai.storage.hashing import content_hash, load_document
 
@@ -186,7 +187,7 @@ def test_every_claim_says_how_it_was_obtained(plan_a_report):
     r = plan_a_report
     assert [
         e.name for e in r.evaluators if e.status is EvaluatorRunStatus.RAN
-    ] == REQUIRED_EVALUATORS
+    ] == REQUIRED_EVALUATORS + [e.name for e in USABILITY_EVALUATORS]
     assert {e.name for e in r.evaluators if e.status is EvaluatorRunStatus.NOT_RUN} == set(
         FUTURE_EVALUATORS
     )
@@ -195,7 +196,7 @@ def test_every_claim_says_how_it_was_obtained(plan_a_report):
         assert (m.value is None) == (m.status is ClaimStatus.NOT_CHECKED)
     for name in ("excavation_volume_m3", "fill_volume_m3", "max_cut_m"):
         assert _metric(r, name).status is ClaimStatus.INFERRED  # interpolated terrain
-    assert _metric(r, "max_walk_from_entrance_m").status is ClaimStatus.INFERRED
+    assert _metric(r, "max_walk_from_entrance_m").status is ClaimStatus.MEASURED
 
 
 def test_unverified_codepack_never_yields_a_code_check(plan_a_report):
@@ -292,54 +293,114 @@ def _route_model(*, stacked=False, garage=False):
     from house_ai.domain.model import HouseModel
 
     second_level = "l1" if stacked else "l0"
-    second_bounds = [[0, 0], [4, 0], [4, 2], [0, 2]] if stacked else [
-        [4, 0], [14, 0], [14, 2], [4, 2]
-    ]
+    second_bounds = (
+        [[0, 0], [4, 0], [4, 2], [0, 2]] if stacked else [[4, 0], [14, 0], [14, 2], [4, 2]]
+    )
     doc = {
-        "id": "route-model", "name": "Synthetic route", "coordinate_system_id": "local",
+        "id": "route-model",
+        "name": "Synthetic route",
+        "coordinate_system_id": "local",
         "levels": [{"id": "l0", "name": "Entry", "elevation_m": 0}],
         "spaces": [
-            {"id": "entry", "name": "Entry", "function": "entry", "level_id": "l0",
-             "boundary": {"outer": [[0, 0], [4, 0], [4, 2], [0, 2]]}},
-            {"id": "other", "name": "Other", "function": "garage" if garage else "living",
-             "level_id": second_level, "boundary": {"outer": second_bounds}},
+            {
+                "id": "entry",
+                "name": "Entry",
+                "function": "entry",
+                "level_id": "l0",
+                "boundary": {"outer": [[0, 0], [4, 0], [4, 2], [0, 2]]},
+            },
+            {
+                "id": "other",
+                "name": "Other",
+                "function": "garage" if garage else "living",
+                "level_id": second_level,
+                "boundary": {"outer": second_bounds},
+            },
         ],
-        "walls": [], "openings": [],
+        "walls": [],
+        "openings": [],
     }
     if stacked:
         doc["levels"].append({"id": "l1", "name": "Upper", "elevation_m": 2})
-        doc["stairs"] = [{
-            "id": "stairs", "kind": "straight", "from_level_id": "l0", "to_level_id": "l1",
-            "bottom_space_id": "entry", "top_space_id": "other", "width_m": 1,
-            "riser_count": 11, "tread_depth_m": 0.28,
-            "footprint": {"outer": [[2.5, 0.5], [3.5, 0.5], [3.5, 1.5], [2.5, 1.5]]},
-        }]
+        doc["stairs"] = [
+            {
+                "id": "stairs",
+                "kind": "straight",
+                "from_level_id": "l0",
+                "to_level_id": "l1",
+                "bottom_space_id": "entry",
+                "top_space_id": "other",
+                "width_m": 1,
+                "riser_count": 11,
+                "tread_depth_m": 0.28,
+                "footprint": {"outer": [[2.5, 0.5], [3.5, 0.5], [3.5, 1.5], [2.5, 1.5]]},
+            }
+        ]
     portals = [
         ("d-front", "l0", 0, "entry", "exterior"),
-        ("d-garage" if garage else "d-rear", second_level,
-         0 if stacked else 14, "other", "exterior"),
+        (
+            "d-garage" if garage else "d-rear",
+            second_level,
+            0 if stacked else 14,
+            "other",
+            "exterior",
+        ),
     ]
     if not stacked:
         portals.append(("d-internal", "l0", 4, "entry", "other"))
     for ident, level, x, a, b in portals:
-        doc["walls"].append({
-            "id": "w-" + ident, "level_id": level, "start": [x, 0], "end": [x, 2],
-            "thickness_m": 0.2, "height_m": 2.8, "kind": "exterior",
-        })
-        doc["openings"].append({
-            "id": ident, "host_wall_id": "w-" + ident, "kind": "door",
-            "offset_m": 0.5, "width_m": 1, "height_m": 2.1, "connects": [a, b],
-        })
+        doc["walls"].append(
+            {
+                "id": "w-" + ident,
+                "level_id": level,
+                "start": [x, 0],
+                "end": [x, 2],
+                "thickness_m": 0.2,
+                "height_m": 2.8,
+                "kind": "exterior",
+            }
+        )
+        doc["openings"].append(
+            {
+                "id": ident,
+                "host_wall_id": "w-" + ident,
+                "kind": "door",
+                "offset_m": 0.5,
+                "width_m": 1,
+                "height_m": 2.1,
+                "connects": [a, b],
+            }
+        )
     return HouseModel.model_validate(doc)
 
 
 def test_walking_routes_preserve_stacked_levels_and_include_the_stair_run():
+    from house_ai.evaluation.base import EvaluationContext
     from house_ai.evaluation.evaluators import CirculationEvaluator
+    from house_ai.evaluation.routes import RouteNetwork
 
-    distances = CirculationEvaluator._walk(_route_model(stacked=True))
+    model = _route_model(stacked=True)
+    # Without a walking line the flight is an estimated edge between footprint centroids:
+    # 3 m to the centroid, hypot(10 x 0.28, 2) up the flight, 1 m to the room point.
+    distances = CirculationEvaluator._walk(model)
     assert distances["entry"] == pytest.approx(2)
-    # 3 m from entrance to stair centre + 10 treads x 0.28 m + 1 m to room centre.
-    assert distances["other"] == pytest.approx(6.8)
+    assert distances["other"] == pytest.approx(3 + (2.8**2 + 2**2) ** 0.5 + 1)
+    assert RouteNetwork(model).from_entrance("other").estimated
+    result = CirculationEvaluator().evaluate(EvaluationContext(model, None, None, None))
+    assert _metric(result, "max_walk_from_entrance_m").status is ClaimStatus.INFERRED
+    model.stairs[0].riser_count = None
+    assert "other" not in CirculationEvaluator._walk(model)
+    model.stairs[0].riser_count = 11
+    from house_ai.domain.geometry import Polygon2D
+
+    model.stairs[0].footprint = Polygon2D.rectangle(0.5, 0.5, 3.3, 1.5)
+    model.stairs[0].walking_line = [(0.5, 1), (3.3, 1)]
+    # Half a metre to the bottom and the 3D pitch line. The flight is not floor, so the
+    # room point is the middle of the widest free span at y=1, [3.3, 4.0]: 0.35 m on.
+    assert CirculationEvaluator._walk(model)["other"] == pytest.approx(
+        0.5 + (2.8**2 + 2**2) ** 0.5 + 0.35
+    )
+    assert not RouteNetwork(model).from_entrance("other").estimated
 
 
 @pytest.mark.parametrize("garage", [False, True])
@@ -376,3 +437,26 @@ def test_unlabelled_pedestrian_fallback_is_reported_as_an_assumption():
     result = CirculationEvaluator().evaluate(EvaluationContext(model, None, None, None))
     assert _metric(result, "entrance_route_basis").value == "assumed_first_pedestrian_door"
     assert CirculationEvaluator._walk(model)["other"] == pytest.approx(9)
+
+
+def test_generated_concepts_have_measured_routes_and_checked_straight_stairs(hillside_reports):
+    from house_ai.domain.model import StairKind
+
+    multi_level = 0
+    for plan, report, _ in hillside_reports:
+        model = plan.model
+        multi_level += len(model.levels) > 1
+        walk = _metric(report, "max_walk_from_entrance_m")
+        # Every space is reached; an unmodelled (U-shaped) flight makes the value inferred.
+        assert walk.value is not None and walk.value > 0
+        unknown = any(st.walking_line is None for st in model.stairs)
+        assert walk.status is (ClaimStatus.INFERRED if unknown else ClaimStatus.MEASURED)
+        codes = {v.code for v in report.violations}
+        assert "stair_height_mismatch" not in codes
+        assert "net_wall_basis_incomplete" not in codes
+        for st in model.stairs:
+            if st.kind is StairKind.STRAIGHT:
+                assert st.walking_line is not None
+                fit = _metric(report, "stair_run_fit", st.id)
+                assert fit.status is ClaimStatus.MEASURED and fit.value is True
+    assert multi_level >= 2

@@ -14,6 +14,7 @@ from house_ai.domain.site import Site
 
 from .base import FUTURE_EVALUATORS, EvaluationContext
 from .evaluators import REQUIRED, VERSION, codepack_rules_checked
+from .usability import USABILITY_EVALUATORS
 
 EVALUATION_ACTOR = Actor(kind=ActorKind.SYSTEM, id="house-ai-evaluation")
 
@@ -36,7 +37,7 @@ def evaluate_plan(
 ) -> EvaluationReport:
     ctx = EvaluationContext(plan.model, site, program, constraints, site_verified)
     runs, metrics, violations = [], [], []
-    for ev in REQUIRED:
+    for ev in [*REQUIRED, *USABILITY_EVALUATORS]:
         res = ev.evaluate(ctx)
         runs.append(res.run)
         metrics.extend(res.metrics)

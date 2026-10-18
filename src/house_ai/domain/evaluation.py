@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from enum import StrEnum
 
-from pydantic import Field, model_validator
+from pydantic import Field, model_serializer, model_validator
 
 from .base import SCHEMA_VERSION, Id, StrictModel
 from .codepack import ComplianceStatement
@@ -28,6 +28,14 @@ class MetricClaim(StrictModel):
     evaluator: str
     evaluator_version: str
     subject_ids: list[str] = Field(default_factory=list)
+    assumption_basis: str | None = None
+
+    @model_serializer(mode="wrap")
+    def _legacy_hash_compatible(self, handler):
+        data = handler(self)
+        if self.assumption_basis is None:
+            data.pop("assumption_basis", None)
+        return data
 
     @model_validator(mode="after")
     def _not_checked_has_no_value(self) -> MetricClaim:
@@ -49,6 +57,16 @@ class Violation(StrictModel):
     subject_ids: list[str] = Field(default_factory=list)
     status: ClaimStatus
     evaluator: str
+    method: str | None = None
+    assumption_basis: str | None = None
+
+    @model_serializer(mode="wrap")
+    def _legacy_hash_compatible(self, handler):
+        data = handler(self)
+        for field in ("method", "assumption_basis"):
+            if getattr(self, field) is None:
+                data.pop(field, None)
+        return data
 
 
 class EvaluatorRunStatus(StrEnum):

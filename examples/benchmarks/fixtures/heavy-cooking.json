@@ -1203,7 +1203,7 @@
               14.6,
               21.4
             ],
-            "rotation_deg": 180.0,
+            "rotation_deg": 0.0,
             "width_m": 0.4,
             "depth_m": 0.65,
             "material_id": null
@@ -1216,7 +1216,7 @@
               15.6,
               21.6
             ],
-            "rotation_deg": 180.0,
+            "rotation_deg": 0.0,
             "width_m": 0.6,
             "depth_m": 0.45,
             "material_id": null
@@ -1229,7 +1229,7 @@
               16.4,
               19.6
             ],
-            "rotation_deg": 0.0,
+            "rotation_deg": 180.0,
             "width_m": 0.9,
             "depth_m": 0.9,
             "material_id": null
@@ -1242,7 +1242,7 @@
               21.4,
               14.5
             ],
-            "rotation_deg": 90.0,
+            "rotation_deg": 270.0,
             "width_m": 0.8,
             "depth_m": 0.6,
             "material_id": null
@@ -1397,15 +1397,29 @@
       "id": "grocery-route",
       "category": "circulation",
       "target": "missing-service",
-      "source": "future",
-      "metric": "garage_kitchen_walk_m",
+      "source": "evaluation",
+      "metric": "garage_to_kitchen_length_m",
       "code": null,
       "subject_ids": [],
       "value": null,
       "status": "not_checked",
       "tolerance": 1e-6,
-      "pending_stage": "S6",
-      "basis": "route cannot be measured until service rooms exist"
+      "pending_stage": null,
+      "basis": "missing garage: route is explicitly not checked"
+    },
+    {
+      "id": "vehicle-arrival",
+      "category": "circulation",
+      "target": "missing-service",
+      "source": "evaluation",
+      "metric": "vehicle_swept_path",
+      "code": null,
+      "subject_ids": [],
+      "value": null,
+      "status": "not_checked",
+      "tolerance": 1e-6,
+      "pending_stage": null,
+      "basis": "no vehicle dimensions, arrival path or drive polygon are modelled"
     }
   ]
 }

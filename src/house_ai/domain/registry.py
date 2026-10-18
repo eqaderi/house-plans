@@ -27,6 +27,7 @@ from .provenance import ArtifactKind, SourceDocument
 from .records import AssumptionsFile, OpenQuestionsFile, OwnerStatementsFile
 from .revision_ops import RevisionOpsFile
 from .site import CadImportProvenance, Site
+from .usability import FurnitureTemplate
 from .visual_critique import VisualCritiqueFile
 from .workflow import Approval, ProjectManifest, WorkflowEvent
 
@@ -49,6 +50,7 @@ ARTIFACT_MODELS: dict[ArtifactKind, type[BaseModel]] = {
 }
 
 SCHEMAS: dict[str, type[BaseModel]] = {
+    "furniture_template": FurnitureTemplate,
     **{kind.value: model for kind, model in ARTIFACT_MODELS.items()},
     "house_model": HouseModel,
     "scene_manifest": SceneManifest,

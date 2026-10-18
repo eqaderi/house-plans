@@ -44,6 +44,7 @@ FeatureGeometry = Annotated[
 
 class SiteFeatureKind(StrEnum):
     ROAD = "road"
+    DRIVEWAY = "driveway"
     EASEMENT = "easement"
     EXISTING_STRUCTURE = "existing_structure"
     UTILITY = "utility"

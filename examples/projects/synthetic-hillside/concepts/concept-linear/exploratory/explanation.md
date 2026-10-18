@@ -44,7 +44,7 @@ Status in brackets when a value is not measured exactly.
 - Hard adjacencies met: 5
 - Soft adjacency score (0-1): 0.83
 - Level preferences met: 9
-- Longest walk from the front door: 24.79 m (inferred)
+- Longest walk from the front door: 24.87 m
 - Routes to shared rooms through private rooms: 0
 - Walls between private and public rooms: 2
 - Footprint compactness (1 = circle): 0.22
@@ -56,7 +56,7 @@ Status in brackets when a value is not measured exactly.
 - Retained earth face: 0.00 m² (inferred)
 - Closest approach to the envelope edge: 0.10 m
 
-## Violations (0 hard, 9 soft)
+## Violations (0 hard, 18 soft)
 
 - **soft** `elongated_room`: sp-bath-ensuite has a 3.4:1 aspect ratio; check furniture and clear usable dimensions (3:1 is a conceptual review trigger, not a code limit)
 - **soft** `elongated_room`: sp-bath-1 has a 3.0:1 aspect ratio; check furniture and clear usable dimensions (3:1 is a conceptual review trigger, not a code limit)
@@ -67,6 +67,15 @@ Status in brackets when a value is not measured exactly.
 - **soft** `elevated_floor_support_unresolved`: About 484.7 m³ lies between terrain and the lowest floors, up to 4.99 m high. This is underfloor void, not specified engineered fill; supports, lateral stability, foundations and drainage are unresolved. Compare embedded, walk-out and stepped alternatives without assuming that less excavation is preferable
 - **soft** `exterior_access_level_unresolved`: d-front-entry-ext floor differs from existing ground by +0.53 m; an approach, ramp, steps or excavated terrace has not been designed (0.3 m is a conceptual review trigger, not an accessibility rule)
 - **soft** `exterior_access_level_unresolved`: d-garage-garage-ext floor differs from existing ground by +0.37 m; an approach, ramp, steps or excavated terrace has not been designed (0.3 m is a conceptual review trigger, not an accessibility rule)
+- **soft** `living_through_traffic`: Portal desire line crosses a work/seating zone; alternate routes may exist.
+- **soft** `living_through_traffic`: Portal desire line crosses a work/seating zone; alternate routes may exist.
+- **soft** `daily_route_long`: garage_to_kitchen: 18.059 m point route.
+- **soft** `daily_route_long`: entry_to_kitchen: 22.135 m point route.
+- **soft** `bedroom_noise_adjacency`: Noisy activity beside/above/below sleeping space; acoustic assembly performance is unknown.
+- **soft** `bedroom_noise_adjacency`: Noisy activity beside/above/below sleeping space; acoustic assembly performance is unknown.
+- **soft** `low_daylight_opportunity`: Unburied glazing ratio is below assumption; no daylight simulation.
+- **soft** `outdoor_door_grade_mismatch`: Door threshold is 0.471 m relative to grade; check landing/ramp.
+- **soft** `outdoor_door_grade_mismatch`: Door threshold is 0.309 m relative to grade; check landing/ramp.
 
 Not evaluated (no evaluator yet): DaylightEvaluator, SolarEvaluator, AccessibilityEvaluator, LifeSafetyEvaluator, StructuralConceptEvaluator, MEPConceptEvaluator, CostEvaluator, EnergyEvaluator, CulturalFitEvaluator.
 
@@ -85,4 +94,4 @@ Not evaluated (no evaluator yet): DaylightEvaluator, SolarEvaluator, Accessibili
 
 - Generator `house-ai-cpsat-bars` 0.2.0, solver ortools-cp-sat 9.15.6755: OPTIMAL, objective 14580, seed 0, deterministic-time budget 4.
 - Parameters: b0_length_m=17.5, b0_start_m=0.1, back_row_depth_m=4.2, corridor_width_m=1.2, front_row_depth_m=4.2, level_elevations_m=11.70, levels=1, strategy=linear.
-- Inputs: site/site v1 (c2d20667c325), space_program/program v1 (9bed3e94e948)
+- Inputs: site/site v1 (c2d20667c325), space_program/program v1 (aaebe10f8491)

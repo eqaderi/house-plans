@@ -676,6 +676,61 @@
       "title": "ClaimStatus",
       "type": "string"
     },
+    "ClearanceZone": {
+      "additionalProperties": false,
+      "properties": {
+        "basis": {
+          "minLength": 1,
+          "title": "Basis",
+          "type": "string"
+        },
+        "boundary": {
+          "$ref": "#/$defs/Polygon2D"
+        },
+        "element_id": {
+          "maxLength": 64,
+          "minLength": 1,
+          "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+          "title": "Element Id",
+          "type": "string"
+        },
+        "id": {
+          "maxLength": 64,
+          "minLength": 1,
+          "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "purpose": {
+          "minLength": 1,
+          "title": "Purpose",
+          "type": "string"
+        },
+        "space_id": {
+          "maxLength": 64,
+          "minLength": 1,
+          "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+          "title": "Space Id",
+          "type": "string"
+        },
+        "status": {
+          "const": "assumption",
+          "default": "assumption",
+          "title": "Status",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "element_id",
+        "space_id",
+        "boundary",
+        "purpose",
+        "basis"
+      ],
+      "title": "ClearanceZone",
+      "type": "object"
+    },
     "ConfirmationStatus": {
       "description": "Status of a fact that must come from a source document or a human.\n\nUsed for drawing units, horizontal CRS and vertical datum. Nothing in the\nsystem may move a value to USER_CONFIRMED on its own; only a human can.",
       "enum": [
@@ -963,6 +1018,71 @@
       "title": "Fixture",
       "type": "object"
     },
+    "Furniture": {
+      "additionalProperties": false,
+      "properties": {
+        "depth_m": {
+          "exclusiveMinimum": 0,
+          "title": "Depth M",
+          "type": "number"
+        },
+        "id": {
+          "maxLength": 64,
+          "minLength": 1,
+          "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "position": {
+          "maxItems": 2,
+          "minItems": 2,
+          "prefixItems": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            }
+          ],
+          "title": "Position",
+          "type": "array"
+        },
+        "rotation_deg": {
+          "default": 0,
+          "title": "Rotation Deg",
+          "type": "number"
+        },
+        "space_id": {
+          "maxLength": 64,
+          "minLength": 1,
+          "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+          "title": "Space Id",
+          "type": "string"
+        },
+        "template_id": {
+          "maxLength": 64,
+          "minLength": 1,
+          "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+          "title": "Template Id",
+          "type": "string"
+        },
+        "width_m": {
+          "exclusiveMinimum": 0,
+          "title": "Width M",
+          "type": "number"
+        }
+      },
+      "required": [
+        "id",
+        "space_id",
+        "template_id",
+        "position",
+        "width_m",
+        "depth_m"
+      ],
+      "title": "Furniture",
+      "type": "object"
+    },
     "HeightLabelCheck": {
       "additionalProperties": false,
       "description": "A height label drawn exactly at a surveyed point, compared with the point's z.\n\nThe label never becomes an elevation; it only corroborates (or disputes) the\npoint's own z value. Both values are in drawing units, as written.",
@@ -1066,6 +1186,13 @@
           "title": "Ceilings",
           "type": "array"
         },
+        "clearance_zones": {
+          "items": {
+            "$ref": "#/$defs/ClearanceZone"
+          },
+          "title": "Clearance Zones",
+          "type": "array"
+        },
         "coordinate_system_id": {
           "maxLength": 64,
           "minLength": 1,
@@ -1078,6 +1205,13 @@
             "$ref": "#/$defs/Fixture"
           },
           "title": "Fixtures",
+          "type": "array"
+        },
+        "furniture": {
+          "items": {
+            "$ref": "#/$defs/Furniture"
+          },
+          "title": "Furniture",
           "type": "array"
         },
         "id": {
@@ -2340,6 +2474,7 @@
     "SiteFeatureKind": {
       "enum": [
         "road",
+        "driveway",
         "easement",
         "existing_structure",
         "utility",
@@ -2656,6 +2791,9 @@
           "default": null,
           "title": "Target Gross Area M2"
         },
+        "usability": {
+          "$ref": "#/$defs/UsabilityRequirements"
+        },
         "zones": {
           "items": {
             "$ref": "#/$defs/ProgramZone"
@@ -2858,6 +2996,32 @@
           "default": null,
           "title": "Tread Depth M"
         },
+        "walking_line": {
+          "anyOf": [
+            {
+              "items": {
+                "maxItems": 2,
+                "minItems": 2,
+                "prefixItems": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "number"
+                  }
+                ],
+                "type": "array"
+              },
+              "minItems": 2,
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Walking Line"
+        },
         "width_m": {
           "exclusiveMinimum": 0,
           "title": "Width M",
@@ -3042,6 +3206,142 @@
         }
       },
       "title": "UnitDeclaration",
+      "type": "object"
+    },
+    "UsabilityRequirements": {
+      "additionalProperties": false,
+      "properties": {
+        "arrival_path": {
+          "anyOf": [
+            {
+              "items": {
+                "maxItems": 2,
+                "minItems": 2,
+                "prefixItems": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "number"
+                  }
+                ],
+                "type": "array"
+              },
+              "minItems": 2,
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Arrival Path"
+        },
+        "double_bed_program_item_ids": {
+          "items": {
+            "maxLength": 64,
+            "minLength": 1,
+            "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+            "type": "string"
+          },
+          "title": "Double Bed Program Item Ids",
+          "type": "array"
+        },
+        "household_seats": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Household Seats"
+        },
+        "single_bed_program_item_ids": {
+          "items": {
+            "maxLength": 64,
+            "minLength": 1,
+            "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+            "type": "string"
+          },
+          "title": "Single Bed Program Item Ids",
+          "type": "array"
+        },
+        "vehicles": {
+          "anyOf": [
+            {
+              "items": {
+                "$ref": "#/$defs/VehicleEnvelope"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Vehicles"
+        }
+      },
+      "title": "UsabilityRequirements",
+      "type": "object"
+    },
+    "VehicleEnvelope": {
+      "additionalProperties": false,
+      "description": "Requested vehicle size; not a turning-radius or swept-path model.",
+      "properties": {
+        "door_side_clearance_m": {
+          "exclusiveMinimum": 0,
+          "title": "Door Side Clearance M",
+          "type": "number"
+        },
+        "id": {
+          "maxLength": 64,
+          "minLength": 1,
+          "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "length_m": {
+          "exclusiveMinimum": 0,
+          "title": "Length M",
+          "type": "number"
+        },
+        "source": {
+          "minLength": 1,
+          "title": "Source",
+          "type": "string"
+        },
+        "turning_radius_m": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Turning Radius M"
+        },
+        "width_m": {
+          "exclusiveMinimum": 0,
+          "title": "Width M",
+          "type": "number"
+        }
+      },
+      "required": [
+        "id",
+        "width_m",
+        "length_m",
+        "door_side_clearance_m",
+        "source"
+      ],
+      "title": "VehicleEnvelope",
       "type": "object"
     },
     "VerticalDatum": {

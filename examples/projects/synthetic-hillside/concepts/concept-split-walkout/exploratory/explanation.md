@@ -55,7 +55,7 @@ Status in brackets when a value is not measured exactly.
 - Hard adjacencies met: 5
 - Soft adjacency score (0-1): 0.83
 - Level preferences met: 9
-- Longest walk from the front door: 46.72 m (inferred)
+- Longest walk from the front door: 44.49 m (inferred)
 - Routes to shared rooms through private rooms: 0
 - Walls between private and public rooms: 0
 - Footprint compactness (1 = circle): 0.28
@@ -67,7 +67,7 @@ Status in brackets when a value is not measured exactly.
 - Retained earth face: 44.95 m² (inferred)
 - Closest approach to the envelope edge: 0.10 m
 
-## Violations (0 hard, 10 soft)
+## Violations (0 hard, 23 soft)
 
 - **soft** `required_daylight_no_exterior_window`: sp-bed-child-1 requests daylight but has no exterior window; borrowed light and actual illumination are not checked
 - **soft** `required_daylight_no_exterior_window`: sp-bed-child-2 requests daylight but has no exterior window; borrowed light and actual illumination are not checked
@@ -79,6 +79,19 @@ Status in brackets when a value is not measured exactly.
 - **soft** `exterior_access_level_unresolved`: d-front-entry-ext floor differs from existing ground by +0.53 m; an approach, ramp, steps or excavated terrace has not been designed (0.3 m is a conceptual review trigger, not an accessibility rule)
 - **soft** `exterior_access_level_unresolved`: d-garage-garage-ext floor differs from existing ground by +0.39 m; an approach, ramp, steps or excavated terrace has not been designed (0.3 m is a conceptual review trigger, not an accessibility rule)
 - **soft** `height_limit_exceeded`: about 11.8 m above the lowest ground under the house; the envelope allows 10 m (assumption)
+- **soft** `stair_low_headroom`: Pitch-line headroom 1.250 m under slab.
+- **soft** `living_through_traffic`: Portal desire line crosses a work/seating zone; alternate routes may exist.
+- **soft** `living_through_traffic`: Portal desire line crosses a work/seating zone; alternate routes may exist.
+- **soft** `daily_route_long`: entry_to_kitchen: 16.075 m point route.
+- **soft** `excess_circulation`: Circulation share exceeds the conceptual assumption.
+- **soft** `excess_circulation`: Circulation share exceeds the conceptual assumption.
+- **soft** `bedroom_noise_stacking`: Noisy activity beside/above/below sleeping space; acoustic assembly performance is unknown.
+- **soft** `bedroom_noise_stacking`: Noisy activity beside/above/below sleeping space; acoustic assembly performance is unknown.
+- **soft** `bedroom_noise_stacking`: Noisy activity beside/above/below sleeping space; acoustic assembly performance is unknown.
+- **soft** `low_daylight_opportunity`: Unburied glazing ratio is below assumption; no daylight simulation.
+- **soft** `low_daylight_opportunity`: Unburied glazing ratio is below assumption; no daylight simulation.
+- **soft** `outdoor_door_grade_mismatch`: Door threshold is 0.471 m relative to grade; check landing/ramp.
+- **soft** `outdoor_door_grade_mismatch`: Door threshold is 0.329 m relative to grade; check landing/ramp.
 
 Not evaluated (no evaluator yet): DaylightEvaluator, SolarEvaluator, AccessibilityEvaluator, LifeSafetyEvaluator, StructuralConceptEvaluator, MEPConceptEvaluator, CostEvaluator, EnergyEvaluator, CulturalFitEvaluator.
 
@@ -104,4 +117,4 @@ Not evaluated (no evaluator yet): DaylightEvaluator, SolarEvaluator, Accessibili
 
 - Generator `house-ai-cpsat-bars` 0.2.0, solver ortools-cp-sat 9.15.6755: OPTIMAL, objective 31182, seed 0, deterministic-time budget 4.
 - Parameters: b-walkout_length_m=9.5, b-walkout_start_m=0.1, b0_length_m=9.5, b0_start_m=0.1, b1_length_m=6.0, b1_start_m=4.7, back_row_depth_m=4.2, corridor_width_m=1.2, front_row_depth_m=4.8, hybrid_walkout=True, level_elevations_m=5.70, 8.70, 11.70, levels=3, strategy=split_walkout.
-- Inputs: site/site v1 (c2d20667c325), space_program/program v1 (9bed3e94e948)
+- Inputs: site/site v1 (c2d20667c325), space_program/program v1 (aaebe10f8491)

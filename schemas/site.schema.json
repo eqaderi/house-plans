@@ -1141,6 +1141,7 @@
     "SiteFeatureKind": {
       "enum": [
         "road",
+        "driveway",
         "easement",
         "existing_structure",
         "utility",

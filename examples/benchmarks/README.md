@@ -63,8 +63,9 @@ passable graph edges from seven to six. A social household prefers direct
 connection; a quiet household prefers separation. These are fixed comparison
 cases, not proof that the generator can produce diverse plans.
 
-Future expectations explicitly name their owner: S5 visual consistency; S6
-usability, destination-aware guest routes, grocery paths and orientation-aware
-daylight; S7 generated diversity and versioned revisions; S8 constrained
-breaklines, terrain quality and terrace support. They are reported as
-`NOT_CHECKED`, never assigned invented measurements or scores.
+S6 usability runs in `tests/benchmarks/`: destination-aware guest routes,
+conceptual turning space and missing grocery-route endpoints now have real
+expectations. Unknown orientation is explicitly not checked. Remaining future
+probes name their owner: S5 visual consistency; S7 generated diversity and
+versioned revisions; S8 constrained breaklines, terrain quality and terrace
+support. Unimplemented probes remain `NOT_CHECKED`.

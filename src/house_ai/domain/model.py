@@ -5,8 +5,8 @@ Unreal geometry are all derived from it (ADR 0001). Everything is in the
 LOCAL project frame, metres.
 
 Milestone A convention: space boundaries are drawn to wall centerlines, so
-adjacent spaces share edges and areas are centerline areas. Net (finish to
-finish) areas are a derived quantity for later milestones.
+adjacent spaces share edges and areas are centerline areas. S6 derives net
+finish-face areas in evaluation/usability_geometry.py.
 """
 
 from __future__ import annotations
@@ -14,13 +14,14 @@ from __future__ import annotations
 from enum import StrEnum
 from typing import Literal
 
-from pydantic import Field, model_validator
+from pydantic import Field, model_serializer, model_validator
 
 from .base import SCHEMA_VERSION, Id, PositiveFloat, StrictModel
 from .geometry import Point2, Polygon2D, segment_length
 from .program import Privacy, SpaceFunction
 from .provenance import ArtifactRef
 from .records import Assumption, Issue
+from .usability import ClearanceZone, Furniture
 
 
 class Level(StrictModel):
@@ -182,6 +183,15 @@ class Stair(StrictModel):
     riser_count: int | None = Field(default=None, ge=1)
     riser_height_m: PositiveFloat | None = None
     tread_depth_m: PositiveFloat | None = None
+    #: Ordered bottom-to-top walking line. Missing means orientation is unknown.
+    walking_line: list[Point2] | None = Field(default=None, min_length=2)
+
+    @model_serializer(mode="wrap")
+    def _legacy_hash_compatible(self, handler):
+        data = handler(self)
+        if self.walking_line is None:
+            data.pop("walking_line", None)
+        return data
 
     @model_validator(mode="after")
     def _different_levels(self) -> Stair:
@@ -279,10 +289,20 @@ class HouseModel(StrictModel):
     stairs: list[Stair] = Field(default_factory=list)
     zones: list[Zone] = Field(default_factory=list)
     fixtures: list[Fixture] = Field(default_factory=list)
+    furniture: list[Furniture] = Field(default_factory=list)
+    clearance_zones: list[ClearanceZone] = Field(default_factory=list)
     relationships: list[SpaceRelationship] = Field(default_factory=list)
     materials: list[MaterialRef] = Field(default_factory=list)
     assumptions: list[Assumption] = Field(default_factory=list)
     issues: list[Issue] = Field(default_factory=list)
+
+    @model_serializer(mode="wrap")
+    def _legacy_hash_compatible(self, handler):
+        data = handler(self)
+        for field in ("furniture", "clearance_zones"):
+            if not getattr(self, field):
+                data.pop(field, None)
+        return data
 
     def space(self, space_id: str) -> Space:
         return next(s for s in self.spaces if s.id == space_id)
@@ -305,6 +325,8 @@ class HouseModel(StrictModel):
             self.stairs,
             self.zones,
             self.fixtures,
+            self.furniture,
+            self.clearance_zones,
             self.relationships,
             self.materials,
             self.assumptions,

@@ -48,6 +48,127 @@
       "status": "inferred",
       "strength": "soft",
       "subject_ids": []
+    },
+    {
+      "assumption_basis": "assumption min_headroom_m=2; precedent: https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/996860/Approved_Document_K.pdf; not code checked",
+      "code": "stair_low_headroom",
+      "constraint_id": null,
+      "evaluator": "StairUsabilityEvaluator",
+      "id": "v-005-stair-low-headroom",
+      "message": "Pitch-line headroom 1.250 m under slab.",
+      "method": "slab_intersection_piecewise_linear_pitchline",
+      "status": "inferred",
+      "strength": "soft",
+      "subject_ids": [
+        "st-0",
+        "slab-roof-down-300"
+      ]
+    },
+    {
+      "assumption_basis": "docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption)",
+      "code": "kitchen_no_sampled_fit",
+      "constraint_id": null,
+      "evaluator": "FurnitureUsabilityEvaluator",
+      "id": "v-006-kitchen-no-sampled-fit",
+      "message": "No arrangement in the declared discrete template search; continuous infeasibility has not been proved.",
+      "method": "0_1m_four_rotation_room_frame_packing",
+      "status": "inferred",
+      "strength": "soft",
+      "subject_ids": [
+        "sp-kitchen"
+      ]
+    },
+    {
+      "assumption_basis": "docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption)",
+      "code": "living_through_traffic",
+      "constraint_id": null,
+      "evaluator": "RouteUsabilityEvaluator",
+      "id": "v-007-living-through-traffic",
+      "message": "Portal desire line crosses a work/seating zone; alternate routes may exist.",
+      "method": "direct_desire_line_zone_intersection",
+      "status": "inferred",
+      "strength": "soft",
+      "subject_ids": [
+        "sp-living",
+        "d-living-corridor-b0",
+        "o-kitchen-living"
+      ]
+    },
+    {
+      "assumption_basis": "docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption)",
+      "code": "living_through_traffic",
+      "constraint_id": null,
+      "evaluator": "RouteUsabilityEvaluator",
+      "id": "v-008-living-through-traffic",
+      "message": "Portal desire line crosses a work/seating zone; alternate routes may exist.",
+      "method": "direct_desire_line_zone_intersection",
+      "status": "inferred",
+      "strength": "soft",
+      "subject_ids": [
+        "sp-living",
+        "d-living-corridor-b0",
+        "o-dining-living"
+      ]
+    },
+    {
+      "assumption_basis": "docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption)",
+      "code": "bedroom_noise_adjacency",
+      "constraint_id": null,
+      "evaluator": "PrivacyUsabilityEvaluator",
+      "id": "v-009-bedroom-noise-adjacency",
+      "message": "Noisy activity beside/above/below sleeping space; acoustic assembly performance is unknown.",
+      "method": "plan_contact_or_stack",
+      "status": "inferred",
+      "strength": "soft",
+      "subject_ids": [
+        "sp-bed-child-1",
+        "sp-laundry"
+      ]
+    },
+    {
+      "assumption_basis": "docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption)",
+      "code": "bedroom_noise_adjacency",
+      "constraint_id": null,
+      "evaluator": "PrivacyUsabilityEvaluator",
+      "id": "v-010-bedroom-noise-adjacency",
+      "message": "Noisy activity beside/above/below sleeping space; acoustic assembly performance is unknown.",
+      "method": "plan_contact_or_stack",
+      "status": "inferred",
+      "strength": "soft",
+      "subject_ids": [
+        "sp-bed-child-1",
+        "sp-mechanical"
+      ]
+    },
+    {
+      "assumption_basis": "assumption min_glazing_ratio=0.1; precedent: docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption); not code checked",
+      "code": "low_daylight_opportunity",
+      "constraint_id": null,
+      "evaluator": "DaylightOpportunityEvaluator",
+      "id": "v-011-low-daylight-opportunity",
+      "message": "Unburied glazing ratio is below assumption; no daylight simulation.",
+      "method": "glazing_area_ratio",
+      "status": "inferred",
+      "strength": "soft",
+      "subject_ids": [
+        "sp-dining"
+      ]
+    },
+    {
+      "assumption_basis": "assumption max_grade_step_m=0.2; precedent: docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption); not code checked",
+      "code": "outdoor_door_grade_mismatch",
+      "constraint_id": null,
+      "evaluator": "DaylightOpportunityEvaluator",
+      "id": "v-012-outdoor-door-grade-mismatch",
+      "message": "Door threshold is 0.241 m relative to grade; check landing/ramp.",
+      "method": "outside_face_tin_interpolation",
+      "status": "inferred",
+      "strength": "soft",
+      "subject_ids": [
+        "d-garage-garage-ext",
+        "w-entry-001",
+        "sp-garage"
+      ]
     }
   ]
 }
