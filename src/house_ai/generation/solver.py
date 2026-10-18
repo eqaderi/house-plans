@@ -31,8 +31,9 @@ from ortools.sat.python import cp_model
 
 from house_ai.domain.program import AdjacencyKind, SpaceFunction, Strength
 
-from .massing import GARAGE_DEPTH_DM, Bar, Massing, Row, room_group
+from .massing import GARAGE_DEPTH_DM, Bar, Massing, MassingContext, Row, room_group
 from .rooms import Cluster, ProgramRooms, Relation, RoomSpec, Slot
+from .terrain_levels import joint_level_variables
 
 MIN_SLOT_DM = 15
 MAX_ASPECT = 3
@@ -86,6 +87,8 @@ class SolverOptions:
     force_2d: bool = False
     min_areas: dict[str, float] = field(default_factory=dict)
     min_widths: dict[str, float] = field(default_factory=dict)
+    terrain_context: MassingContext | None = None
+    sectional_strategy: str | None = None
 
 
 @dataclass
@@ -308,6 +311,10 @@ def solve(m: Massing, rooms: ProgramRooms, opts: SolverOptions) -> Solution:
         md.Add(start[b.id] + length[b.id] <= b.start_hi_dm)
 
     obj: list = []
+    level_vars, buried_vars, level_objective = joint_level_variables(
+        md, m, start, length, opts.terrain_context, opts.sectional_strategy
+    )
+    obj.extend(level_objective)
     x: dict[tuple[str, str], cp_model.IntVar] = {}
     st: dict[tuple[str, str], cp_model.IntVar] = {}
     width: dict[tuple[str, str], cp_model.LinearExpr] = {}
@@ -354,11 +361,28 @@ def solve(m: Massing, rooms: ProgramRooms, opts: SolverOptions) -> Solution:
                         if bar.groups and room_group(room) not in bar.groups:
                             pen += W_GROUP
                         inner = slot.stacked and k == 0
-                        dark = inner or not row.daylight_face
+                        dark = (
+                            inner
+                            or row.blocked_by_neighbor
+                            or (not row.daylight_face and row.id not in buried_vars)
+                        )
                         if dark and room.daylight_required:
                             pen += int(W_DAYLIGHT_REQUIRED * w("daylight_opportunity"))
                         elif dark and room.wants_daylight:
                             pen += int(W_DAYLIGHT_PREFERRED * w("daylight_opportunity"))
+                        if (
+                            not inner
+                            and not row.blocked_by_neighbor
+                            and (row.id in buried_vars and room.wants_daylight)
+                        ):
+                            dark_assignment = md.NewBoolVar(f"dark_{u.id}_{rid}_{j}_{k}")
+                            md.AddMinEquality(dark_assignment, [xr, buried_vars[row.id]])
+                            weight = (
+                                W_DAYLIGHT_REQUIRED
+                                if room.daylight_required
+                                else (W_DAYLIGHT_PREFERRED)
+                            )
+                            obj.append(int(weight * w("daylight_opportunity")) * dark_assignment)
                         if (
                             bar.entry
                             and row.side == "front"
@@ -514,6 +538,25 @@ def solve(m: Massing, rooms: ProgramRooms, opts: SolverOptions) -> Solution:
     status = solver.Solve(md)
     if status not in (cp_model.OPTIMAL, cp_model.FEASIBLE):
         raise SolveFailed(f"CP-SAT found no layout ({solver.StatusName(status)})")
+
+    if level_vars:
+        for b in m.bars:
+            b.elevation_m = solver.Value(level_vars[b.id]) / 100
+            for row in b.room_rows:
+                if row.id in buried_vars:
+                    row.buried = bool(solver.Value(buried_vars[row.id]))
+                    row.daylight_face = not row.buried and not row.blocked_by_neighbor
+        m.entry_elevation_m = next(b.elevation_m for b in m.bars if b.entry)
+        m.params["levels"] = m.level_count
+        m.params["level_solver"] = "joint_cpsat_terrain_lookup_5cm_xy_1cm_z"
+        m.params["level_elevations_m"] = ", ".join(
+            f"{z:.2f}" for z in sorted({b.elevation_m for b in m.bars})
+        )
+        m.notes.append(
+            "Floor elevations and bar positions/lengths solved jointly with TIN "
+            "lookup; sectional contact bands and circulation/daylight objectives, "
+            "no excavation/void penalty. Earthworks evaluated exactly afterward."
+        )
 
     placed = []
     for u in units:

@@ -11,27 +11,18 @@ from __future__ import annotations
 
 import math
 from collections import deque
-from collections.abc import Callable
 
 from shapely.geometry import LineString, Point
 from shapely.ops import unary_union
 
 from house_ai.constants.evaluations import (
-    METRIC_EXCAVATION_VOLUME,
-    METRIC_EXTERIOR_DOOR_GROUND_DELTA,
-    METRIC_FILL_VOLUME,
-    METRIC_MAX_CUT,
-    METRIC_MAX_FILL,
     METRIC_ROOM_TERRACE_DOOR_COUNT,
     METRIC_ROOM_TERRACE_LEVEL_DELTA,
     METRIC_TERRACE_GROUND_DELTA,
-    VIOLATION_ELEVATED_FLOOR_SUPPORT,
     VIOLATION_ELONGATED_ROOM,
-    VIOLATION_EXTERIOR_ACCESS_LEVEL,
     VIOLATION_REQUIRED_DAYLIGHT_NO_WINDOW,
     VIOLATION_TERRACE_NO_DOOR,
     VIOLATION_TERRACE_STEP_TOO_HIGH,
-    VIOLATION_TERRAIN_COVERAGE_INCOMPLETE,
 )
 from house_ai.domain.base import EXTERIOR
 from house_ai.domain.constraints import MinAreaRule, MinDimensionRule
@@ -57,8 +48,6 @@ M, INF, NC = ClaimStatus.MEASURED, ClaimStatus.INFERRED, ClaimStatus.NOT_CHECKED
 S = SpaceFunction
 CIRCULATION = {S.CORRIDOR, S.HALL, S.ENTRY, S.STAIR, S.LIFT}
 OUTDOOR = {S.TERRACE, S.BALCONY}
-#: Grid spacing for terrain sampling under footprints, metres.
-TERRAIN_GRID_M = 0.5
 #: Shared boundary at least this long counts as sharing a wall.
 SHARED_WALL_M = 0.9
 
@@ -863,110 +852,11 @@ class SiteEvaluator:
     def _terrain(ctx: EvaluationContext, out: _Out, foot) -> None:
         model, site = ctx.model, ctx.site
         assert site is not None
-        surface = site_surface(site)
-        tin = "tin_interpolation_0.5m_grid"
-        if surface is None:
-            for name in (
-                "excavation_volume_m3",
-                "fill_volume_m3",
-                "max_cut_m",
-                "max_fill_m",
-                "retaining_wall_face_area_m2",
-            ):
-                out.metric(name, None, "terrain_unknown", NC)
-            return
-        z_of: Callable = lambda xy: elevation_at(surface, xy)  # noqa: E731
-        cut_v = fill_v = 0.0
-        max_cut = max_fill = 0.0
-        known = total = 0
-        ground_seen: list[float] = []
-        cell = TERRAIN_GRID_M**2
-        levels = sorted(model.levels, key=lambda lv: lv.elevation_m)
-        # The lowest floor at each grid point decides how deep the house reaches into the ground.
-        shapes = {
-            lv.id: unary_union(
-                [s.boundary.to_shapely() for s in model.spaces if s.level_id == lv.id]
-            )
-            for lv in levels
-        }
-        minx, miny, maxx, maxy = foot.bounds
-        y = miny + TERRAIN_GRID_M / 2
-        while y < maxy:
-            x = minx + TERRAIN_GRID_M / 2
-            while x < maxx:
-                pt = Point(x, y)
-                floor = next((lv.elevation_m for lv in levels if shapes[lv.id].contains(pt)), None)
-                if floor is not None:
-                    total += 1
-                    g = z_of((x, y))
-                    if g is not None:
-                        known += 1
-                        ground_seen.append(g)
-                        cut, fill = max(0.0, g - floor), max(0.0, floor - g)
-                        cut_v += cut * cell
-                        fill_v += fill * cell
-                        max_cut, max_fill = max(max_cut, cut), max(max_fill, fill)
-                x += TERRAIN_GRID_M
-            y += TERRAIN_GRID_M
-        cov = 100.0 * known / total if total else 0.0
-        out.metric("terrain_coverage_pct", cov, "tin_hull_sampling", unit="%")
-        status = INF if known else NC
-        out.metric(METRIC_EXCAVATION_VOLUME, cut_v, tin, status, unit="m3")
-        out.metric(METRIC_FILL_VOLUME, fill_v, tin, status, unit="m3")
-        out.metric(METRIC_MAX_CUT, max_cut, tin, status, unit="m")
-        out.metric(METRIC_MAX_FILL, max_fill, tin, status, unit="m")
-        if known < total:
-            out.violation(
-                VIOLATION_TERRAIN_COVERAGE_INCOMPLETE,
-                Strength.SOFT,
-                f"Survey TIN covers {cov:.1f}% of floor samples; cut/void quantities cover "
-                "only known samples and cannot represent the whole building",
-                [],
-                INF,
-            )
-        if known and max_fill > 0.6:
-            out.violation(
-                VIOLATION_ELEVATED_FLOOR_SUPPORT,
-                Strength.SOFT,
-                f"About {fill_v:.1f} m³ lies between terrain and the lowest floors, up to "
-                f"{max_fill:.2f} m high. This is underfloor void, not specified engineered "
-                "fill; supports, lateral stability, foundations and drainage are unresolved. "
-                "Compare embedded, walk-out and stepped alternatives without assuming "
-                "that less excavation is preferable",
-                [],
-                INF,
-            )
-        # Door distance to a road alone does not establish usable outdoor access.
-        for door in model.openings:
-            if door.kind is not OpeningKind.DOOR or EXTERIOR not in door.connects:
-                continue
-            wall = model.wall(door.host_wall_id)
-            t = (door.offset_m + door.width_m / 2) / wall.length_m
-            xy = (
-                wall.start[0] + t * (wall.end[0] - wall.start[0]),
-                wall.start[1] + t * (wall.end[1] - wall.start[1]),
-            )
-            ground = z_of(xy)
-            delta = model.level(wall.level_id).elevation_m - ground if ground is not None else None
-            out.metric(
-                METRIC_EXTERIOR_DOOR_GROUND_DELTA,
-                delta,
-                "tin_at_door_midpoint",
-                INF if ground is not None else NC,
-                unit="m",
-                subjects=[door.id],
-            )
-            if delta is not None and abs(delta) > 0.3:
-                out.violation(
-                    VIOLATION_EXTERIOR_ACCESS_LEVEL,
-                    Strength.SOFT,
-                    f"{door.id} floor differs from existing ground by {delta:+.2f} m; "
-                    "an approach, ramp, steps or excavated terrace has not been designed "
-                    "(0.3 m is a conceptual review trigger, not an accessibility rule)",
-                    [door.id],
-                    INF,
-                )
+        from house_ai.evaluation.hillside import terrain_metrics
 
+        terrain_metrics(ctx, out)
+        surface = site_surface(site)
+        z_of = lambda xy: elevation_at(surface, xy) if surface else None  # noqa: E731
         # Indoor/outdoor relationships and room-to-terrace connections (S7-20)
         terrace_spaces = [s for s in model.spaces if s.function in OUTDOOR]
         for t_space in terrace_spaces:
@@ -1031,65 +921,6 @@ class SiteEvaluator:
                     subjects=[t_space.id],
                 )
 
-        if ground_seen:
-            span = max(math.dist(a, b) for a in _vertices(foot) for b in _vertices(foot))
-            out.metric(
-                "ground_relief_under_footprint_m",
-                max(ground_seen) - min(ground_seen),
-                tin,
-                INF,
-                unit="m",
-            )
-            out.metric(
-                "footprint_slope_pct",
-                100 * (max(ground_seen) - min(ground_seen)) / span,
-                tin,
-                INF,
-                unit="%",
-            )
-            top = max(lv.elevation_m + (lv.floor_to_floor_m or 3.0) for lv in model.levels)
-            height = top - min(ground_seen)
-            out.metric("height_above_lowest_ground_m", height, tin, INF, unit="m")
-            env = site.buildable_envelope
-            if env is not None and env.max_height_m is not None and height > env.max_height_m:
-                hard = env.status is Epistemic.VERIFIED_FACT
-                out.violation(
-                    "height_limit_exceeded",
-                    Strength.HARD if hard else Strength.SOFT,
-                    f"about {height:.1f} m above the lowest ground under the house; the "
-                    f"envelope allows {env.max_height_m:g} m ({env.status.value})",
-                    [],
-                    INF,
-                )
-        retained_area = 0.0
-        retaining = [w for w in model.walls if w.kind is WallKind.RETAINING]
-        for w in retaining:
-            z = model.level(w.level_id).elevation_m
-            n = max(2, int(w.length_m / 0.5))
-            d = w.length_m
-            nx, ny = -(w.end[1] - w.start[1]) / d, (w.end[0] - w.start[0]) / d
-            hs = []
-            for i in range(n):
-                t = (i + 0.5) / n
-                px = w.start[0] + (w.end[0] - w.start[0]) * t
-                py = w.start[1] + (w.end[1] - w.start[1]) * t
-                for sgn in (1, -1):
-                    g = z_of((px + sgn * nx * 0.6, py + sgn * ny * 0.6))
-                    if g is not None and g > z:
-                        hs.append(g - z)
-                        break
-            if hs:
-                retained_area += w.length_m * sum(hs) / len(hs)
-        out.metric(
-            "retaining_wall_length_m",
-            sum(w.length_m for w in retaining),
-            "wall_kind_sum",
-            unit="m",
-            subjects=[w.id for w in retaining],
-        )
-        out.metric("retaining_wall_face_area_m2", retained_area, tin, INF, unit="m2")
-        steps = sorted({lv.elevation_m for lv in model.levels})
-        out.metric("level_elevations_m", ", ".join(f"{z:.2f}" for z in steps), "level_lookup")
 
 
 def _vertices(geom) -> list[tuple[float, float]]:

@@ -40,6 +40,7 @@ from house_ai.domain.site import (
     SiteFeature,
     SiteFeatureKind,
     SpotElevation,
+    TerrainBreakline,
 )
 
 from .base import CadExtraction, CadInspection, RawPoint, RawPolyline
@@ -71,6 +72,7 @@ class SiteExtraction:
     #: Handles of all closed polylines that could be the boundary.
     boundary_candidates: list[str] = field(default_factory=list)
     contours: list[Contour] = field(default_factory=list)
+    breaklines: list[TerrainBreakline] = field(default_factory=list)
     spot_elevations: list[SpotElevation] = field(default_factory=list)
     features: list[SiteFeature] = field(default_factory=list)
     ambiguous: list[AmbiguousEntity] = field(default_factory=list)
@@ -154,6 +156,8 @@ class MappedLayerSiteExtractor:
                 self._contours(pts, lines, transform, out)
             elif role is LayerRole.SPOT_ELEVATION:
                 self._spots(pts, lines, transform, out)
+            elif role is LayerRole.BREAKLINE:
+                self._breaklines(pts, lines, transform, out)
             else:
                 self._features(FEATURE_KINDS[role], pts, lines, transform, out)
         for line in (pl for _, lines in by_role.values() for pl in lines):
@@ -163,6 +167,35 @@ class MappedLayerSiteExtractor:
                     "length and area are chord approximations"
                 )
         return out
+
+    def _breaklines(self, pts, lines, transform, out):
+        for p in pts:
+            self._ambiguous(p, "breakline requires a surveyed 3D line", out)
+        for line in lines:
+            zs = line.zs or (
+                [line.elevation] * len(line.points) if line.elevation is not None else []
+            )
+            if len(zs) != len(line.points) or line.has_arcs or any(self._zero(z) for z in zs):
+                self._ambiguous(
+                    line,
+                    "breakline needs explicit valid vertex elevations and straight segments",
+                    out,
+                )
+                continue
+            points = [
+                transform.source_to_local((x, y, z))
+                for (x, y), z in zip(line.points, zs, strict=True)
+            ]
+            if line.closed and points[0] != points[-1]:
+                points.append(points[0])
+            try:
+                out.breaklines.append(
+                    TerrainBreakline(
+                        id=self._id("brk", line), vertices=points, source_ref=self._ref(line)
+                    )
+                )
+            except ValidationError as exc:
+                self._ambiguous(line, f"invalid breakline: {_first_error(exc)}", out)
 
     # --------------------------------------------------------------- helpers
 
@@ -291,8 +324,7 @@ class MappedLayerSiteExtractor:
                         )
                     handles = ",".join(ln.handle for ln in used)
                     out.boundary_source_ref = (
-                        f"{self.source_id}#{handles} (assembled from {len(used)} "
-                        "open segments)"
+                        f"{self.source_id}#{handles} (assembled from {len(used)} open segments)"
                     )
                     out.warnings.append(
                         f"the boundary was assembled from {len(used)} open segments; "
@@ -519,9 +551,7 @@ class MappedLayerSiteExtractor:
             )
 
 
-_POINT_HEADER_RE = re.compile(
-    r"^(?:pt|p|pnt|point|no\.?|#|bm|tp)\s*[-#.:]?\s*$", re.IGNORECASE
-)
+_POINT_HEADER_RE = re.compile(r"^(?:pt|p|pnt|point|no\.?|#|bm|tp)\s*[-#.:]?\s*$", re.IGNORECASE)
 _LABEL_HEIGHT_RE = re.compile(
     r"^(?:"
     r"(?:(?:z|h|el|elev|elevation|height|kote|höhe)\s*[:=]?\s*([+-]?(?:\d+\.\d*|\.\d+|\d+)))"

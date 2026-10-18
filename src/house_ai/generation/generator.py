@@ -125,6 +125,7 @@ class GenerationRequest:
     depth_patterns: list[tuple[int, int]] | None = None
     proposal: ConceptProposal | None = None
     proposal_ref: ArtifactRef | None = None
+    sectional_strategy: str | None = None
 
 
 def hard_dimension_bounds(
@@ -237,6 +238,8 @@ class CpSatPlanGenerator:
 
     def _strategy(self, strategy, ctx, rooms, frame, ground, req, opts) -> Candidate:
         option = req.option_id or option_id_for(strategy)
+        if req.sectional_strategy and req.option_id is None:
+            option += "-" + req.sectional_strategy.replace("_", "-")
         cand = Candidate(strategy, option, "infeasible")
         if strategy not in STRATEGY_LABELS:
             cand.reason = f"unknown strategy {strategy!r}; known: {', '.join(STRATEGY_LABELS)}"
@@ -250,6 +253,12 @@ class CpSatPlanGenerator:
             or bool(getattr(opts, "outdoor_links", None))
         )
         if use_2d:
+            if req.sectional_strategy is not None:
+                cand.reason = (
+                    "sectional intent currently requires a bar massing; "
+                    "2D placement has fixed stacked levels and cannot solve this intent"
+                )
+                return cand
             try:
                 sol2d = solve_2d_placement(
                     req.program,
@@ -341,6 +350,11 @@ class CpSatPlanGenerator:
             tag = f"rows {from_dm(depths[0]):g}/{from_dm(depths[1]):g} m"
             try:
                 m = build_massing(strategy, ctx, depths)
+                from .terrain_levels import configure_section
+
+                configure_section(m, req.sectional_strategy)
+                opts.terrain_context = ctx
+                opts.sectional_strategy = req.sectional_strategy
                 sol = solve(m, rooms, opts)
             except (Infeasible, SolveFailed) as exc:
                 cand.attempts.append(f"{tag}: {exc}")

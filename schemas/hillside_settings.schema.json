@@ -1,0 +1,35 @@
+{
+  "$id": "https://house-ai.local/schemas/hillside_settings.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Concept review triggers, not jurisdictional or engineering limits.",
+  "properties": {
+    "access_step_trigger_m": {
+      "default": 0.3,
+      "exclusiveMinimum": 0,
+      "title": "Access Step Trigger M",
+      "type": "number"
+    },
+    "large_void_height_m": {
+      "default": 4.0,
+      "exclusiveMinimum": 0,
+      "title": "Large Void Height M",
+      "type": "number"
+    },
+    "sliver_quality_trigger": {
+      "default": 0.02,
+      "exclusiveMaximum": 1,
+      "exclusiveMinimum": 0,
+      "title": "Sliver Quality Trigger",
+      "type": "number"
+    },
+    "vehicle_grade_trigger_pct": {
+      "default": 15.0,
+      "exclusiveMinimum": 0,
+      "title": "Vehicle Grade Trigger Pct",
+      "type": "number"
+    }
+  },
+  "title": "HillsideSettings",
+  "type": "object"
+}

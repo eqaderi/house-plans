@@ -111,6 +111,7 @@ def cmd_plan_generate(args: argparse.Namespace) -> int:
         res = PlanService(store).generate(
             args.actor,
             strategies=args.strategy or None,
+            sectional_strategy=getattr(args, "sectional_strategy", None),
             seed=args.seed,
             out_dir=out,
             exploratory=args.exploratory,
@@ -387,11 +388,46 @@ def cmd_plan_review(args: argparse.Namespace) -> int:
     return EXIT_OK
 
 
+def cmd_plan_sections(args: argparse.Namespace) -> int:
+    from house_ai.domain.hillside import HillsideSettings, SectionLine
+    from house_ai.domain.plan import PlanVersion
+    from house_ai.domain.site import Site
+    from house_ai.render2d.hillside_export import export_hillside_views
+
+    try:
+        plan = PlanVersion.model_validate(load_document(Path(args.plan)))
+        site = Site.model_validate(load_document(Path(args.site))) if args.site else None
+        lines = (
+            [SectionLine.model_validate(r) for r in load_document(Path(args.lines))]
+            if args.lines
+            else None
+        )
+        settings = (
+            HillsideSettings.model_validate(load_document(Path(args.settings)))
+            if args.settings
+            else None
+        )
+        export_hillside_views(plan.model, site, Path(args.out), lines, settings)
+    except (ValueError, OSError) as exc:
+        _out(f"refused: {exc}")
+        return EXIT_USAGE
+    _out(f"wrote hillside sections, elevations and risks to {args.out}")
+    return EXIT_OK
+
+
 def register(sub, actor_arg: Callable[[argparse.ArgumentParser], None]) -> None:
     pl = sub.add_parser("plan", help="floor-plan concepts (Milestone D)")
     pl = pl.add_subparsers(dest="sub", required=True)
     s = pl.add_parser("strategies", help="the concept strategies the generator knows")
     s.set_defaults(func=cmd_plan_strategies)
+
+    s = pl.add_parser("sections", help="derive true cuts and hillside views from a plan export")
+    s.add_argument("plan", help="exported canonical plan.json")
+    s.add_argument("--site", help="site YAML/JSON; omitted terrain remains unknown")
+    s.add_argument("--lines", help="JSON list of SectionLine objects; default: standard cuts")
+    s.add_argument("--settings", help="HillsideSettings YAML/JSON, conceptual review triggers")
+    s.add_argument("--out", required=True)
+    s.set_defaults(func=cmd_plan_sections)
 
     s = pl.add_parser("generate", help="generate, evaluate and store concepts")
     s.add_argument("dir")
@@ -402,6 +438,13 @@ def register(sub, actor_arg: Callable[[argparse.ArgumentParser], None]) -> None:
         help="repeat to choose strategies (default: all)",
     )
     s.add_argument("--seed", type=int, default=0)
+    from house_ai.generation.terrain_levels import SECTIONAL_STRATEGIES
+
+    s.add_argument(
+        "--sectional-strategy",
+        choices=SECTIONAL_STRATEGIES,
+        help="sectional intent solved jointly with bar placement and elevations",
+    )
     s.add_argument(
         "--time", type=float, default=4.0, help="CP-SAT deterministic time budget per solve"
     )

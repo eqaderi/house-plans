@@ -24,6 +24,8 @@ python-dateutil==2.9.0.post0
 PyYAML==6.0.3
 ruff==0.17.1
 shapely==2.2.0
+trimesh==5.1.1
+manifold3d==3.5.4
 six==1.17.0
 typing-inspection==0.4.4
 typing_extensions==4.16.0

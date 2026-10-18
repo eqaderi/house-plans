@@ -51,7 +51,7 @@ They are not professional approvals.
 Milestone A provides the structured project record (`house-ai project
 status --json`, the artifacts under `artifacts/`, and the JSON Schemas in
 `schemas/`). Milestone D adds, per plan concept and version, `plan.json`
-(the canonical model), a dimensioned `plan.svg` with a schematic terrain
+(the canonical model), a dimensioned `plan.svg` with a true terrain
 section, `metrics.json`, `violations.json`, `assumptions.json` and
 `explanation.md`, plus `comparison.md` across concepts (`house-ai plan
 export`). They are solver-generated explorations: stair geometry, wall
@@ -60,3 +60,31 @@ typical placeholders, and cut, fill and retained-earth figures are
 interpolated from survey points, not geotechnical findings. IFC, Blender and
 Unreal exports arrive in later milestones and will each record the plan
 version they were made from.
+
+## Hillside review material (S8)
+
+Every concept export adds true `sections.json/svg`, projected
+`elevations.json/svg`, `hillside.json` and `engineering-risks.md`. These list
+structure, foundations, retaining, drainage, waterproofing and slope
+stability as **needs professional**, with element IDs and observed triggers.
+Read the complete register before choosing a sectional approach.
+
+Cut, proposed engineered fill and underfloor void are distinct quantities.
+They integrate the piecewise planar TIN against slab undersides where
+provided; missing slabs use labelled finished-floor upper bounds. Fill
+requires explicit formation pads. Unknown footprint, pad and section support
+stays unknown. Exact integration for a TIN does not make the terrain exact
+between survey observations. These are conceptual geometric quantities,
+not construction estimates: footings, temporary works, excavation batter,
+working space, soil bulking, compaction and ground improvement are excluded.
+Deep excavation is an acceptable comparison option, with no default depth
+penalty; large voids use a configurable review trigger (default 4 m).
+
+Door thresholds use terrain 0.5 m outside the door. Garage grades describe a
+straight candidate frontage approach; turning, ramps, vertical curves,
+headroom, discharge and legal access require design and verification. Terrace
+profiles show contact opportunities without claiming traversable garden
+access. Unknown stair flight orientation remains unknown in true cuts.
+Facade views project canonical walls/openings in LOCAL axes and do not
+resolve hidden geometry. No professional suitability is implied by a green
+integrity result or homeowner approval.

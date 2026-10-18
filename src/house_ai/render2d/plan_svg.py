@@ -1,6 +1,6 @@
 """Dimensioned floor-plan SVG drawn from a canonical plan version.
 
-One panel per level at a common scale, plus a schematic section against the
+One panel per level at a common scale, plus a true longitudinal cut against the
 surveyed terrain. Everything drawn comes from the model: spaces, walls (by
 kind, retaining walls dark), doors with swings, windows, stairs, room labels
 with areas and dimensions, overall dimensions, the circulation tree from the
@@ -31,7 +31,6 @@ from house_ai.domain.site import (
     Site,
     SiteFeatureKind,
 )
-from house_ai.domain.terrain import elevation_at, site_surface
 
 PANEL_W = 560.0
 MARGIN = 36.0
@@ -372,98 +371,14 @@ def _level_panel(v: _View, model: HouseModel, site: Site | None, level_id: str, 
 
 
 def _section(model: HouseModel, site: Site | None, x0: float, y0: float, width: float) -> str:
-    """Schematic section along the axis from the road through the building centre."""
-    union = unary_union([s.boundary.to_shapely() for s in model.spaces])
-    c = union.centroid
-    direction = (0.0, 1.0)
-    if site is not None:
-        roads = [
-            f.geometry
-            for f in site.features
-            if f.kind
-            in (SiteFeatureKind.ROAD, SiteFeatureKind.FRONTAGE, SiteFeatureKind.ACCESS_POINT)
-        ]
-        shapes = []
-        for g in roads:
-            if isinstance(g, PolygonGeometry):
-                shapes.append(g.polygon.to_shapely())
-            elif isinstance(g, PolylineGeometry):
-                shapes.append(g.line.to_shapely())
-            elif isinstance(g, PointGeometry):
-                shapes.append(Point(g.xy))
-        if shapes:
-            near = unary_union(shapes)
-            from shapely.ops import nearest_points
+    """True longitudinal cut through canonical elements and surveyed ground."""
+    from house_ai.geospatial.sections import cut_section, standard_sections
+    from house_ai.render2d.sections_svg import section_fragment
 
-            p = nearest_points(near, c)[0]
-            d = math.dist((p.x, p.y), (c.x, c.y))
-            if d > 1e-6:
-                direction = ((c.x - p.x) / d, (c.y - p.y) / d)
-    proj = [
-        ((x - c.x) * direction[0] + (y - c.y) * direction[1])
-        for s in model.spaces
-        for x, y in s.boundary.outer
-    ]
-    lo, hi = min(proj) - 6.0, max(proj) + 6.0
-    surface = site_surface(site) if site is not None else None
-    ground = []
-    if surface is not None:
-        n = 60
-        for i in range(n + 1):
-            t = lo + (hi - lo) * i / n
-            z = elevation_at(surface, (c.x + direction[0] * t, c.y + direction[1] * t))
-            if z is not None:
-                ground.append((t, z))
-    bands = []
-    for lv in model.levels:
-        ps = [
-            ((x - c.x) * direction[0] + (y - c.y) * direction[1])
-            for s in model.spaces
-            if s.level_id == lv.id
-            for x, y in s.boundary.outer
-        ]
-        bands.append((lv, min(ps), max(ps)))
-    zs = (
-        [z for _, z in ground]
-        + [lv.elevation_m for lv in model.levels]
-        + [lv.elevation_m + (lv.floor_to_floor_m or 3.0) for lv in model.levels]
-    )
-    zmin, zmax = min(zs) - 1.0, max(zs) + 1.0
-    sx = (width - 80) / (hi - lo)
-    sz = min(sx, (SECTION_H - 60) / (zmax - zmin))
-
-    def P(t: float, z: float) -> tuple[float, float]:
-        return (x0 + 50 + (t - lo) * sx, y0 + SECTION_H - 25 - (z - zmin) * sz)
-
-    out = [
-        _t(
-            x0 + 10,
-            y0 + 16,
-            "Schematic section from the road through the house "
-            "(terrain interpolated from survey points; vertical scale = horizontal)",
-            11,
-            anchor="start",
-            weight="bold",
-        )
-    ]
-    if len(ground) >= 2:
-        pts = " ".join(f"{_f(a)},{_f(b)}" for a, b in (P(t, z) for t, z in ground))
-        out.append(f'<polyline points="{pts}" fill="none" stroke="#6b4a2b" stroke-width="1.6"/>')
-    else:
-        out.append(_t(x0 + width / 2, y0 + SECTION_H / 2, "terrain unknown", 11, colour="#b00020"))
-    for lv, a, b in bands:
-        h = lv.floor_to_floor_m or 3.0
-        (ax, ay), (bx, by) = P(a, lv.elevation_m), P(b, lv.elevation_m + h)
-        out.append(
-            f'<rect x="{_f(ax)}" y="{_f(by)}" width="{_f(bx - ax)}" height="{_f(ay - by)}" '
-            f'fill="#f6e7c8" fill-opacity="0.55" stroke="#333" stroke-width="1"/>'
-        )
-        out.append(_t(ax + 4, ay - 5, f"{lv.name} {lv.elevation_m:+.2f}", 9, anchor="start"))
-    x, y = P(lo, zmin)
-    out.append(_t(x, y + 14, "road side", 9, anchor="start", colour="#666"))
-    x, y = P(hi, zmin)
-    out.append(_t(x, y + 14, "into the site", 9, anchor="end", colour="#666"))
-    return "".join(out)
+    requests = standard_sections(model, site)
+    if not requests:
+        return ""
+    return section_fragment(cut_section(model, site, requests[0]), x0, y0, width, SECTION_H)
 
 
 def render_plan_svg(

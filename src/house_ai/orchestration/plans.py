@@ -270,6 +270,7 @@ class PlanService:
         deterministic_time: float = 4.0,
         proposal: ConceptProposal | None = None,
         proposal_ref: ArtifactRef | None = None,
+        sectional_strategy: str | None = None,
     ) -> GenerationOutcome:
         for s in strategies or []:
             if s not in STRATEGY_LABELS:
@@ -292,6 +293,7 @@ class PlanService:
             deterministic_time=deterministic_time,
             proposal=proposal,
             proposal_ref=proposal_ref,
+            sectional_strategy=sectional_strategy,
         )
         candidates = CpSatPlanGenerator().candidates(req)
         outcome = GenerationOutcome(exploratory, [StoredOption(c) for c in candidates], notes=notes)
@@ -1026,6 +1028,9 @@ class PlanService:
         (folder / "plan.svg").write_text(
             render_plan_svg(plan, site, report, version=version, banner=banner), encoding="utf-8"
         )
+        from house_ai.render2d.hillside_export import export_hillside_views
+
+        export_hillside_views(plan.model, site, folder)
         if report is not None:
             (folder / "metrics.json").write_text(pretty_json(report), encoding="utf-8")
             violations = {

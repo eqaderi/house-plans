@@ -19,6 +19,7 @@ from .build import BuildRecord, SceneManifest
 from .codepack import CodePack
 from .constraints import ConstraintSet
 from .evaluation import EvaluationReport
+from .hillside import HillsideSettings, SectionLine
 from .interview import InterviewSession
 from .model import HouseModel
 from .plan import ChangeRequest, PlanVersion, RevisionReport
@@ -52,6 +53,8 @@ ARTIFACT_MODELS: dict[ArtifactKind, type[BaseModel]] = {
 }
 
 SCHEMAS: dict[str, type[BaseModel]] = {
+    "section_line": SectionLine,
+    "hillside_settings": HillsideSettings,
     "furniture_template": FurnitureTemplate,
     **{kind.value: model for kind, model in ARTIFACT_MODELS.items()},
     "house_model": HouseModel,

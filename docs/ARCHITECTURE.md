@@ -255,3 +255,23 @@ measurements, ambiguous and malformed input, provenance, the human site
 confirmation, the CLI, a DWG round trip through ODA (skipped without it),
 and snapshot checks of the committed example outputs, all against the
 synthetic survey in `examples/surveys/synthetic/` with known ground truth.
+
+## Hillside geometry (S8)
+
+`geospatial/earthworks.py` integrates clipped TIN triangles exactly for the
+chosen terrain model and design planes. `geospatial/mesh.py` isolates the
+Trimesh/Manifold adapter and independently cross-checks analytical fixtures.
+Slab undersides, explicit formation pads and surveyed ground distinguish cut,
+fill and underfloor void. `generation/terrain_levels.py` couples bar start,
+length and level elevations in the same CP-SAT solve through terrain lookup.
+It preserves stair/link topology and has no excavation or void-volume cost.
+Free 2D placement still has fixed stacked offsets and explicitly refuses
+sectional intents; it is not advertised as using the joint terrain solve.
+
+`geospatial/sections.py` derives true vertical cuts and separately labelled
+facade projections. `render2d/hillside_export.py` exports these alongside
+`hillside.json` and a per-concept professional-risk register. The inline plan
+SVG uses a true longitudinal cut, replacing schematic projected level bands.
+`plan sections` exposes configurable cuts on exported canonical plans.
+Mapped 3D breaklines constrain TIN cells; no layer-role or elevation inference
+is introduced. Algorithms, discretisation and limitations: ADR 0022.

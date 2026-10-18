@@ -14,9 +14,9 @@ VIOLATION_TERRACE_STEP_TOO_HIGH = "terrace_step_too_high"
 
 #: Key terrain and site metrics
 METRIC_EXCAVATION_VOLUME = "excavation_volume_m3"
-METRIC_FILL_VOLUME = "fill_volume_m3"
+METRIC_FILL_VOLUME = "underfloor_void_volume_m3"
 METRIC_MAX_CUT = "max_cut_m"
-METRIC_MAX_FILL = "max_fill_m"
+METRIC_MAX_FILL = "max_underfloor_void_height_m"
 METRIC_RETAINING_WALL_LENGTH = "retaining_wall_length_m"
 METRIC_RETAINING_WALL_FACE_AREA = "retaining_wall_face_area_m2"
 METRIC_EXTERIOR_DOOR_GROUND_DELTA = "exterior_door_ground_delta_m"

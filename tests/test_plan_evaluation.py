@@ -194,7 +194,7 @@ def test_every_claim_says_how_it_was_obtained(plan_a_report):
     for m in r.metrics:
         assert m.method and m.evaluator and m.evaluator_version
         assert (m.value is None) == (m.status is ClaimStatus.NOT_CHECKED)
-    for name in ("excavation_volume_m3", "fill_volume_m3", "max_cut_m"):
+    for name in ("excavation_volume_m3", "underfloor_void_volume_m3", "max_cut_m"):
         assert _metric(r, name).status is ClaimStatus.INFERRED  # interpolated terrain
     assert _metric(r, "max_walk_from_entrance_m").status is ClaimStatus.MEASURED
 
