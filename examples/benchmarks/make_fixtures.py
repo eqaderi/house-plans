@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import argparse
 import copy
+import math
 from pathlib import Path
 
 from house_ai.domain.benchmark import BenchmarkFixture
@@ -231,6 +232,56 @@ def model_doc(site, program):
     return model
 
 
+def stair_case(model, void_start_x):
+    """Add an upper room over the living room, reached by a straight stair inside it.
+
+    15 risers of round(3.1/15, 4) m and 0.28 m goings: a 3.92 m run along x at y=14.5,
+    from x=11.1 (0.6 m) to x=15.02 (3.7 m). The upper slab (underside 3.5 m) has a void
+    from `void_start_x` to the top, so the pitch-line headroom where the slab ends is
+    2.9 - 3.1 * (void_start_x - 11.1) / 3.92 m.
+    """
+    model = copy.deepcopy(model)
+    model["levels"].append(dict(id="l1", name="Upper floor", elevation_m=3.7))
+    model["spaces"].append(
+        dict(
+            id="sp-upper",
+            name="Upper room",
+            function="family",
+            level_id="l1",
+            boundary=rect(10, 12, 16, 17),
+        )
+    )
+    model["slabs"] = [sl for sl in model["slabs"] if sl["id"] != "slab-roof"] + [
+        dict(
+            id="slab-l1",
+            level_id="l1",
+            kind="floor",
+            thickness_m=0.2,
+            boundary={
+                **rect(10, 12, 16, 17),
+                "holes": [rect(void_start_x, 14, 15.02, 15)["outer"]],
+            },
+        )
+    ]
+    model["stairs"] = [
+        dict(
+            id="st-living",
+            kind="straight",
+            from_level_id="l0",
+            to_level_id="l1",
+            bottom_space_id="sp-living",
+            top_space_id="sp-upper",
+            footprint=rect(11.1, 14, 15.02, 15),
+            width_m=1.0,
+            riser_count=15,
+            riser_height_m=round(3.1 / 15, 4),
+            tread_depth_m=0.28,
+            walking_line=[(11.1, 14.5), (15.02, 14.5)],
+        )
+    ]
+    return model
+
+
 def case(ident, model, *, defect=False, description=None):
     return dict(id=ident, description=description or ident, model=model, seeded_defect=defect)
 
@@ -291,6 +342,72 @@ def households():
                     target="separated",
                     basis="shortest measured route to living crosses hall, no private bedroom",
                 ),
+                metric(
+                    "net-area-children",
+                    "metric_accuracy",
+                    "net_area_m2",
+                    15.706,
+                    source="evaluation",
+                    target="separated",
+                    subjects=["sp-bed-children"],
+                    tolerance=1e-3,
+                    basis="(21.85-17.075)*(21.85-18.575) between finish faces "
+                    "+ 0.9*0.075 doorway recess = 15.7056",
+                ),
+                finding(
+                    "kitchen-desire-line",
+                    "circulation",
+                    "kitchen_through_traffic",
+                    1,
+                    source="evaluation",
+                    target="separated",
+                    subjects=["sp-kitchen", "d-hall-kitchen", "o-living-kitchen"],
+                    basis="hall door (17.45,17) to living opening (16,14.3) crosses the "
+                    "kitchen floor inset 0.75 m",
+                )
+                | {"status": "inferred"},
+                finding(
+                    "bath-door-hidden",
+                    "privacy",
+                    "bathroom_entrance_visible",
+                    0,
+                    source="evaluation",
+                    target="separated",
+                    basis="hall is not an entrance/living space; no sightline source",
+                ),
+                finding(
+                    "bath-door-visible",
+                    "privacy",
+                    "bathroom_entrance_visible",
+                    1,
+                    source="evaluation",
+                    target="entry-bedroom-doors",
+                    subjects=["d-hall-bath", "sp-hall", "sp-bath"],
+                    basis="unobstructed ray inside the hall reclassified as entry",
+                )
+                | {"status": "inferred"},
+                metric(
+                    "front-door-step",
+                    "terrain_compatibility",
+                    "outdoor_door_grade_delta_m",
+                    0.6,
+                    source="evaluation",
+                    target="separated",
+                    subjects=["d-front"],
+                    status="inferred",
+                    basis="floor at 0.6 m on flat grade z=0",
+                ),
+                finding(
+                    "front-door-step-flagged",
+                    "terrain_compatibility",
+                    "outdoor_door_grade_mismatch",
+                    1,
+                    source="evaluation",
+                    target="separated",
+                    subjects=["d-front"],
+                    basis="0.6 m step exceeds the 0.2 m conceptual warning",
+                )
+                | {"status": "inferred"},
             ],
         )
     )
@@ -302,6 +419,11 @@ def households():
     clean = model_doc(site, program)
     defect = copy.deepcopy(clean)
     defect["openings"] = [o for o in defect["openings"] if o["id"] != "d-hall-bath"]
+    swings = {}
+    for side in ("sp-bed-parents", "sp-hall"):
+        swings[side] = copy.deepcopy(clean)
+        door = next(o for o in swings[side]["openings"] if o["id"] == "d-hall-bed-parents")
+        door["opens_into"] = side
     out.append(
         fixture(
             "multigenerational",
@@ -309,7 +431,14 @@ def households():
             "Older resident requires an entry-level bedroom and bathroom; remove bathroom door "
             "to seed an unreachable room. Widths, thresholds and turning space remain unmeasured.",
             program=program,
-            cases=[case("step-free-graph", clean), case("bath-unreachable", defect, defect=True)],
+            cases=[
+                case("step-free-graph", clean),
+                case("bath-unreachable", defect, defect=True),
+                case("door-into-bedroom", swings["sp-bed-parents"], defect=True),
+                case("door-into-hall", swings["sp-hall"]),
+                case("stair-clear", stair_case(clean, 12.0)),
+                case("stair-low-headroom", stair_case(clean, 12.6), defect=True),
+            ],
             expectations=[
                 metric(
                     "bedroom-required-accessible",
@@ -349,7 +478,92 @@ def households():
                     target="step-free-graph",
                     subjects=["sp-bath"],
                     status="inferred",
-                    basis="unfurnished 2x3m bathroom contains assumed 1.5m circle",
+                    basis="2.85 x 3.275 m net bathroom keeps a 1.5 m circle clear of its "
+                    "wc, basin and shower",
+                ),
+                finding(
+                    "bedroom-turning-missing",
+                    "practical_usability",
+                    "accessible_turning_space_missing",
+                    1,
+                    source="evaluation",
+                    target="step-free-graph",
+                    subjects=["sp-bed-parents"],
+                    basis="1.6x2 m bed leaves 1.05-1.125 m strips; every 0.75 m radius centre "
+                    "is within 0.75 m of a bed corner or wall",
+                )
+                | {"status": "inferred"},
+                finding(
+                    "door-hits-bed-access",
+                    "practical_usability",
+                    "door_object_conflict",
+                    1,
+                    source="evaluation",
+                    target="door-into-bedroom",
+                    subjects=["d-hall-bed-parents", "fx-bed-parents"],
+                    basis="0.9 m sweep to y=19.4 enters the bed's 0.75 m foot zone from y=18.95",
+                )
+                | {"status": "inferred"},
+                metric(
+                    "door-sweep-area",
+                    "metric_accuracy",
+                    "door_swing_area_m2",
+                    math.pi * 0.9**2 / 4,
+                    source="evaluation",
+                    target="door-into-hall",
+                    subjects=["d-hall-bed-parents"],
+                    tolerance=1e-3,
+                    basis="quarter circle of the 0.9 m leaf",
+                ),
+                finding(
+                    "door-into-hall-clear",
+                    "practical_usability",
+                    "door_object_conflict",
+                    0,
+                    source="evaluation",
+                    target="door-into-hall",
+                    basis="sweep stays in the empty hall",
+                ),
+                metric(
+                    "stair-headroom-clear",
+                    "geometric_feasibility",
+                    "stair_min_headroom_m",
+                    2.9 - 3.1 * 0.9 / 3.92,
+                    source="evaluation",
+                    target="stair-clear",
+                    subjects=["st-living"],
+                    tolerance=1e-3,
+                    basis="2.9 - 3.1*(12.0-11.1)/3.92 = 2.188 m at the void edge",
+                ),
+                finding(
+                    "stair-headroom-low",
+                    "geometric_feasibility",
+                    "stair_low_headroom",
+                    1,
+                    source="evaluation",
+                    target="stair-low-headroom",
+                    subjects=["st-living", "slab-l1"],
+                    basis="2.9 - 3.1*(12.6-11.1)/3.92 = 1.714 m, below the 2 m assumption",
+                )
+                | {"status": "inferred"},
+                metric(
+                    "stair-run-fits",
+                    "geometric_feasibility",
+                    "stair_run_fit",
+                    True,
+                    source="evaluation",
+                    target="stair-clear",
+                    subjects=["st-living"],
+                    basis="(15-1)*0.28 = 3.92 m walking line inside a 1 m wide footprint",
+                ),
+                finding(
+                    "stair-rounding-consistent",
+                    "geometric_feasibility",
+                    "stair_height_mismatch",
+                    0,
+                    source="evaluation",
+                    target="stair-clear",
+                    basis="15*0.2067 = 3.1005 m; within half a 4 dp unit per riser",
                 ),
             ],
         )
@@ -445,6 +659,16 @@ def households():
                     target="missing-service",
                     status="not_checked",
                     basis="missing garage: route is explicitly not checked",
+                ),
+                metric(
+                    "vehicle-arrival",
+                    "circulation",
+                    "vehicle_swept_path",
+                    None,
+                    source="evaluation",
+                    target="missing-service",
+                    status="not_checked",
+                    basis="no vehicle dimensions, arrival path or drive polygon are modelled",
                 ),
             ],
         )
@@ -567,6 +791,23 @@ def preferences():
                 basis="rectangular room dimensions; smaller isolated kitchen is a trade-off",
             )
             for target, area in (("open-layout", 30), ("isolated-layout", 17.5))
+        )
+        expectations.extend(
+            finding(
+                f"bedroom-noise-{target}",
+                "privacy",
+                "bedroom_noise_adjacency",
+                count,
+                source="evaluation",
+                target=target,
+                subjects=["sp-kitchen", "sp-living"] if count else [],
+                basis=basis,
+            )
+            | ({"status": "inferred"} if count else {})
+            for target, count, basis in (
+                ("open-layout", 0, "bedrooms are across the hall from living and kitchen"),
+                ("isolated-layout", 1, "front room used as a bedroom shares the 5 m wall x=16"),
+            )
         )
         out.append(
             fixture(
@@ -753,6 +994,35 @@ def fixtures():
                 target="unoriented",
                 status="not_checked",
                 basis="orientation simulation is not performed; north is unknown",
+            ),
+            *[
+                finding(
+                    f"buried-{window}",
+                    "terrain_compatibility",
+                    "window_buried",
+                    1,
+                    source="evaluation",
+                    target="unoriented",
+                    subjects=[window],
+                    basis=f"grade z=0.1x is above the sill (floor 0.6 m) {where}",
+                )
+                | {"status": "inferred"}
+                for window, where in (
+                    ("win-living-s", "+0 m along x 12-14"),
+                    ("win-kitchen-s", "+0.9 m along x 18-19.5"),
+                    ("win-kitchen-e", "+0.9 m at x=22"),
+                    ("win-bed-children-n", "+0.9 m along x 19-20.5"),
+                )
+            ],
+            finding(
+                "unburied-living-w",
+                "terrain_compatibility",
+                "window_buried",
+                0,
+                source="evaluation",
+                target="unoriented",
+                subjects=["win-living-w"],
+                basis="grade 1.0 m at x=10 is below the 1.5 m sill",
             ),
         ]
     )

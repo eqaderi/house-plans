@@ -74,9 +74,11 @@ def build_report():
             row["metrics"] = [m.model_dump(mode="json") for r in results for m in r.metrics]
             row["findings"] = [v.model_dump(mode="json") for r in results for v in r.violations]
         report["options"].append(row)
-    for ident, name, bad, clean, code, subject in seeded_pairs():
+    for ident, name, bad, clean, code, subject, pair_program in seeded_pairs():
         critic = next(e for e in USABILITY_EVALUATORS if e.name == name)
-        results = [critic.evaluate(EvaluationContext(m, None, None, None)) for m in (bad, clean)]
+        results = [
+            critic.evaluate(EvaluationContext(m, None, pair_program, None)) for m in (bad, clean)
+        ]
         report["defects"].append(
             dict(
                 id=ident,
@@ -110,10 +112,12 @@ def markdown(report):
         )
     lines += [
         "",
-        "Furniture uses a 0.1 m, four-rotation search. A failure means no sampled fit,",
-        "not continuous infeasibility. Routes are point paths through net-floor polygons;",
-        "they do not certify wheelchair width. Unknown stair direction, vehicle dimensions,",
-        "and terrain coverage remain not checked. Solar/daylight and airflow are not simulated.",
+        "Furniture uses a bounded 0.1 m, four-rotation search in each room's own frame.",
+        "A failure means no sampled fit, not continuous infeasibility; an undecided search",
+        "is not checked. Routes are point paths through net-floor polygons; they do not",
+        "certify wheelchair width. Routes across a stair without a walking line are inferred",
+        "estimates. Vehicle dimensions and terrain coverage remain not checked when absent.",
+        "Solar/daylight and airflow are not simulated.",
         "",
         "## Findings",
         "",

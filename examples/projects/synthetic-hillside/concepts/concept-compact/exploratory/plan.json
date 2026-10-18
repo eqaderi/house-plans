@@ -1011,7 +1011,7 @@
     "program_ref": {
       "id": "program",
       "kind": "space_program",
-      "sha256": "9bed3e94e948c91fd6fa372b592d2cb9f1a7059905628380fd8f3b3da5c25512",
+      "sha256": "aaebe10f8491be667220a6bee4753f53c123540b4ea93ded30fc0ae3c236d6f1",
       "version": 1
     },
     "relationships": [
@@ -2795,7 +2795,7 @@
   "option_id": "concept-compact",
   "parent": null,
   "provenance": {
-    "created_at": "2026-10-17T15:35:23.592770Z",
+    "created_at": "2026-10-18T09:48:08.590069Z",
     "created_by": {
       "display_name": null,
       "id": "house-ai-plan-generator",
@@ -2813,7 +2813,7 @@
       {
         "id": "program",
         "kind": "space_program",
-        "sha256": "9bed3e94e948c91fd6fa372b592d2cb9f1a7059905628380fd8f3b3da5c25512",
+        "sha256": "aaebe10f8491be667220a6bee4753f53c123540b4ea93ded30fc0ae3c236d6f1",
         "version": 1
       }
     ],

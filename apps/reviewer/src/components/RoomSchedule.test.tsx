@@ -31,4 +31,20 @@ describe("RoomSchedule net areas", () => {
     expect(renderToStaticMarkup(<RoomSchedule model={model} evaluation={evaluation} />))
       .toContain("Total Modelled Net Area: not checked");
   });
+
+  it("shows an inferred net area from an incomplete wall model with its marker", () => {
+    const evaluation = { metrics: [
+      { evaluator: "NetAreaEvaluator", metric: "net_area_m2", status: "inferred",
+        subject_ids: ["room"], value: 11.4 },
+      { evaluator: "NetAreaEvaluator", metric: "net_wall_basis_complete", status: "measured",
+        subject_ids: ["room"], value: false },
+    ] } as EvaluationReport;
+    const html = renderToStaticMarkup(<RoomSchedule model={model} evaluation={evaluation} />);
+    expect(html).toContain("11.4 m² *");
+  });
+
+  it("renders a boundary without a holes array", () => {
+    const bare = { spaces: [{ ...model.spaces![0], boundary: { outer: [[0,0], [4,0], [4,3], [0,3]] } }] } as unknown as HouseModel;
+    expect(renderToStaticMarkup(<RoomSchedule model={bare} />)).toContain("12.0 m²");
+  });
 });

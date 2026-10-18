@@ -1117,7 +1117,7 @@
               14.6,
               21.4
             ],
-            "rotation_deg": 180.0,
+            "rotation_deg": 0.0,
             "width_m": 0.4,
             "depth_m": 0.65,
             "material_id": null
@@ -1130,7 +1130,7 @@
               15.6,
               21.6
             ],
-            "rotation_deg": 180.0,
+            "rotation_deg": 0.0,
             "width_m": 0.6,
             "depth_m": 0.45,
             "material_id": null
@@ -1143,7 +1143,7 @@
               16.4,
               19.6
             ],
-            "rotation_deg": 0.0,
+            "rotation_deg": 180.0,
             "width_m": 0.9,
             "depth_m": 0.9,
             "material_id": null
@@ -1156,7 +1156,7 @@
               21.4,
               14.5
             ],
-            "rotation_deg": 90.0,
+            "rotation_deg": 270.0,
             "width_m": 0.8,
             "depth_m": 0.6,
             "material_id": null
@@ -1982,7 +1982,7 @@
               14.6,
               21.4
             ],
-            "rotation_deg": 180.0,
+            "rotation_deg": 0.0,
             "width_m": 0.4,
             "depth_m": 0.65,
             "material_id": null
@@ -1995,7 +1995,7 @@
               15.6,
               21.6
             ],
-            "rotation_deg": 180.0,
+            "rotation_deg": 0.0,
             "width_m": 0.6,
             "depth_m": 0.45,
             "material_id": null
@@ -2008,7 +2008,7 @@
               16.4,
               19.6
             ],
-            "rotation_deg": 0.0,
+            "rotation_deg": 180.0,
             "width_m": 0.9,
             "depth_m": 0.9,
             "material_id": null
@@ -2168,6 +2168,37 @@
       "tolerance": 1e-6,
       "pending_stage": null,
       "basis": "rectangular room dimensions; smaller isolated kitchen is a trade-off"
+    },
+    {
+      "id": "bedroom-noise-open-layout",
+      "category": "privacy",
+      "target": "open-layout",
+      "source": "evaluation",
+      "metric": null,
+      "code": "bedroom_noise_adjacency",
+      "subject_ids": [],
+      "value": 0,
+      "status": "measured",
+      "tolerance": 1e-6,
+      "pending_stage": null,
+      "basis": "bedrooms are across the hall from living and kitchen"
+    },
+    {
+      "id": "bedroom-noise-isolated-layout",
+      "category": "privacy",
+      "target": "isolated-layout",
+      "source": "evaluation",
+      "metric": null,
+      "code": "bedroom_noise_adjacency",
+      "subject_ids": [
+        "sp-kitchen",
+        "sp-living"
+      ],
+      "value": 1,
+      "status": "inferred",
+      "tolerance": 1e-6,
+      "pending_stage": null,
+      "basis": "front room used as a bedroom shares the 5 m wall x=16"
     }
   ]
 }

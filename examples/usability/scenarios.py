@@ -5,6 +5,7 @@ from __future__ import annotations
 import copy
 
 from house_ai.domain.model import HouseModel
+from house_ai.domain.program import SpaceProgram
 from house_ai.domain.site import Site
 from house_ai.storage.hashing import load_document
 
@@ -125,8 +126,59 @@ def stair_model(*, defect=None):
     return HouseModel.model_validate(doc)
 
 
+def double_bed_program():
+    """Synthetic bungalow program with its parents' bedroom designated for a double bed."""
+    from pathlib import Path
+
+    path = Path(__file__).parents[1] / "projects/synthetic-bungalow/space_program.yaml"
+    doc = load_document(path)
+    doc["usability"] = {"double_bed_program_item_ids": ["pi-bed-parents"]}
+    return SpaceProgram.model_validate(doc)
+
+
+def bedroom_model(width, depth):
+    doc = model(width, depth)
+    doc["spaces"][0]["program_item_id"] = "pi-bed-parents"
+    return HouseModel.model_validate(doc)
+
+
+def corridor_model(length):
+    """Living room whose only door to a 2 m wide corridor is near the corridor's south end."""
+    shared = min(8, length)
+    walls = [
+        wall("south", (0, 0), (10, 0), kind="exterior"),
+        wall("north", (10, 8), (0, 8), kind="exterior"),
+        wall("west", (0, 8), (0, 0), kind="exterior"),
+        wall("shared", (10, 0), (10, shared)),
+        wall("c-south", (10, 0), (12, 0), kind="exterior"),
+        wall("c-east", (12, 0), (12, length), kind="exterior"),
+        wall("c-north", (12, length), (10, length), kind="exterior"),
+    ]
+    if length < 8:
+        walls.append(wall("east-upper", (10, length), (10, 8), kind="exterior"))
+    if length > 8:
+        walls.append(wall("c-west-upper", (10, 8), (10, length), kind="exterior"))
+    return HouseModel.model_validate(
+        dict(
+            id="analytical",
+            name="Synthetic analytical twin",
+            coordinate_system_id="local",
+            levels=[dict(id="ground", name="Ground", elevation_m=0, floor_to_floor_m=3)],
+            spaces=[
+                space("room", "living", (0, 0, 10, 8)),
+                space("corridor", "corridor", (10, 0, 12, length)),
+            ],
+            walls=walls,
+            openings=[
+                door(operation="sliding"),
+                door("hall-door", "shared", 1, ("room", "corridor"), operation="sliding"),
+            ],
+        )
+    )
+
+
 def seeded_pairs():
-    """(case ID, critic name, defect, clean twin, expected code, cited element)."""
+    """(case ID, critic, defect, clean twin, expected code, cited element, program or None)."""
     yield (
         "headroom",
         "StairUsabilityEvaluator",
@@ -134,6 +186,7 @@ def seeded_pairs():
         stair_model(),
         "stair_low_headroom",
         "stair",
+        None,
     )
     yield (
         "short-run",
@@ -142,6 +195,7 @@ def seeded_pairs():
         stair_model(),
         "stair_run_does_not_fit",
         "stair",
+        None,
     )
     yield (
         "arrival",
@@ -150,6 +204,7 @@ def seeded_pairs():
         stair_model(),
         "stair_landing_blocked",
         "stair",
+        None,
     )
     yield (
         "height",
@@ -158,6 +213,7 @@ def seeded_pairs():
         stair_model(),
         "stair_height_mismatch",
         "stair",
+        None,
     )
     clean = model(4, 6, doors=True)
     clean["furniture"] = [furniture("bed", position=(2.8, 3))]
@@ -170,6 +226,7 @@ def seeded_pairs():
         HouseModel.model_validate(clean),
         "door_object_conflict",
         "bed",
+        None,
     )
     clean = model(4, 6, function="bathroom")
     clean["fixtures"] = [
@@ -184,26 +241,26 @@ def seeded_pairs():
         HouseModel.model_validate(clean),
         "object_clearance_blocked",
         "wc",
+        None,
     )
     yield (
         "bed-width",
         "FurnitureUsabilityEvaluator",
-        HouseModel.model_validate(model(2.6, 5)),
-        HouseModel.model_validate(model(3.4, 5)),
+        bedroom_model(2.6, 5),
+        bedroom_model(3.4, 5),
         "bed_double_no_sampled_fit",
         "room",
+        double_bed_program(),
     )
-    clean = model(2, 10, function="corridor", doors=True)
-    bad = copy.deepcopy(clean)
-    # Clean twin opens at each end; defect has only one portal.
-    clean["openings"].append(door("rear-door", "north", 0.5))
+    # Both twins have one portal, so both dead ends are measured: about 8.6 m and 3.1 m.
     yield (
         "dead-end",
         "RouteUsabilityEvaluator",
-        HouseModel.model_validate(bad),
-        HouseModel.model_validate(clean),
+        corridor_model(10),
+        corridor_model(4),
         "long_dead_end",
-        "room",
+        "corridor",
+        None,
     )
 
 

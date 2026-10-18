@@ -1147,7 +1147,7 @@
               14.6,
               21.4
             ],
-            "rotation_deg": 180.0,
+            "rotation_deg": 0.0,
             "width_m": 0.4,
             "depth_m": 0.65,
             "material_id": null
@@ -1160,7 +1160,7 @@
               15.6,
               21.6
             ],
-            "rotation_deg": 180.0,
+            "rotation_deg": 0.0,
             "width_m": 0.6,
             "depth_m": 0.45,
             "material_id": null
@@ -1173,7 +1173,7 @@
               16.4,
               19.6
             ],
-            "rotation_deg": 0.0,
+            "rotation_deg": 180.0,
             "width_m": 0.9,
             "depth_m": 0.9,
             "material_id": null
@@ -1186,7 +1186,7 @@
               21.4,
               14.5
             ],
-            "rotation_deg": 90.0,
+            "rotation_deg": 270.0,
             "width_m": 0.8,
             "depth_m": 0.6,
             "material_id": null
@@ -1466,6 +1466,86 @@
       "tolerance": 1e-6,
       "pending_stage": null,
       "basis": "orientation simulation is not performed; north is unknown"
+    },
+    {
+      "id": "buried-win-living-s",
+      "category": "terrain_compatibility",
+      "target": "unoriented",
+      "source": "evaluation",
+      "metric": null,
+      "code": "window_buried",
+      "subject_ids": [
+        "win-living-s"
+      ],
+      "value": 1,
+      "status": "inferred",
+      "tolerance": 1e-6,
+      "pending_stage": null,
+      "basis": "grade z=0.1x is above the sill (floor 0.6 m) +0 m along x 12-14"
+    },
+    {
+      "id": "buried-win-kitchen-s",
+      "category": "terrain_compatibility",
+      "target": "unoriented",
+      "source": "evaluation",
+      "metric": null,
+      "code": "window_buried",
+      "subject_ids": [
+        "win-kitchen-s"
+      ],
+      "value": 1,
+      "status": "inferred",
+      "tolerance": 1e-6,
+      "pending_stage": null,
+      "basis": "grade z=0.1x is above the sill (floor 0.6 m) +0.9 m along x 18-19.5"
+    },
+    {
+      "id": "buried-win-kitchen-e",
+      "category": "terrain_compatibility",
+      "target": "unoriented",
+      "source": "evaluation",
+      "metric": null,
+      "code": "window_buried",
+      "subject_ids": [
+        "win-kitchen-e"
+      ],
+      "value": 1,
+      "status": "inferred",
+      "tolerance": 1e-6,
+      "pending_stage": null,
+      "basis": "grade z=0.1x is above the sill (floor 0.6 m) +0.9 m at x=22"
+    },
+    {
+      "id": "buried-win-bed-children-n",
+      "category": "terrain_compatibility",
+      "target": "unoriented",
+      "source": "evaluation",
+      "metric": null,
+      "code": "window_buried",
+      "subject_ids": [
+        "win-bed-children-n"
+      ],
+      "value": 1,
+      "status": "inferred",
+      "tolerance": 1e-6,
+      "pending_stage": null,
+      "basis": "grade z=0.1x is above the sill (floor 0.6 m) +0.9 m along x 19-20.5"
+    },
+    {
+      "id": "unburied-living-w",
+      "category": "terrain_compatibility",
+      "target": "unoriented",
+      "source": "evaluation",
+      "metric": null,
+      "code": "window_buried",
+      "subject_ids": [
+        "win-living-w"
+      ],
+      "value": 0,
+      "status": "measured",
+      "tolerance": 1e-6,
+      "pending_stage": null,
+      "basis": "grade 1.0 m at x=10 is below the 1.5 m sill"
     }
   ]
 }

@@ -500,6 +500,18 @@ ZONES = [
 ]
 
 
+def _household_seats(f: Facts) -> int | None:
+    """Dining seats for everyone the program plans bedrooms for.
+
+    Adults and children must both be stated. Older relatives are added when stated;
+    when absent the program plans no elder bedrooms, so none are seated either.
+    """
+    counts = [f.get("adults"), f.get("children"), f.get("elders", 0)]
+    if not all(type(c) is int for c in counts) or sum(counts) <= 0:
+        return None
+    return sum(counts)
+
+
 def build_program(
     brief: DesignBrief,
     *,
@@ -536,11 +548,7 @@ def build_program(
         budget=budget,
         site_ref=site.site_ref if site else None,
         site_verified=bool(site and site.verified),
-        usability=UsabilityRequirements(
-            household_seats=(b.f.get("adults") + b.f.get("children"))
-            if type(b.f.get("adults")) is int and type(b.f.get("children")) is int
-            and b.f.get("adults") + b.f.get("children") > 0 else None,
-        ),
+        usability=UsabilityRequirements(household_seats=_household_seats(b.f)),
         provenance=provenance,
     )
     assumptions = [

@@ -126,8 +126,11 @@ def test_references_are_pinned_and_nonnegative_cases_pass_integrity():
 
 def test_seeded_bath_disconnect_reports_one_real_failure_and_clean_case_is_reachable():
     f = load("multigenerational")
-    clean, defect = f.cases
-    assert not errors(check_model(clean.model, f.site, f.program))
+    cases = {c.id: c for c in f.cases}
+    clean, defect = cases["step-free-graph"], cases["bath-unreachable"]
+    # The S6 door and stair cases are integrity-clean reference geometry as well.
+    for c in [clean, cases["door-into-hall"], cases["door-into-bedroom"], cases["stair-clear"]]:
+        assert not errors(check_model(c.model, f.site, f.program))
     findings = check_model(defect.model, f.site, f.program)
     assert [v.subject_ids for v in findings if v.code == "space_unreachable"] == [["sp-bath"]]
     items = {i.id: i for i in f.program.items}

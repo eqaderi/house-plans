@@ -31,13 +31,16 @@ For independent review, hand-check these three examples:
   0.9×0.075 = 0.0675 m² of half-wall recess to that room.
 - L-shaped point route: (5,1) → (2,2) → (1,5) measures
   2√10 = 6.324555… m. A straight line crosses outside the L and is rejected.
-- Double bed: the assumed access envelope is 2.8×2.75 m. A 2.6 m wide
-  centreline room is 2.45 m clear and fails in both orientations; the 3.4 m
-  clean twin fits bed and wardrobe in the declared search.
+- Double bed (program designates the room for one): the assumed access
+  envelope is 2.8×2.75 m. A 2.6 m wide centreline room is 2.45 m clear and fails
+  in both orientations; the 3.4 m clean twin fits bed and wardrobe in the declared
+  search. The verdict is the same when the room is rotated 12° or 45°, because the
+  search runs in the room's own frame.
 
 The checks are conceptual studies under explicit assumptions. Routes measure
-points, furniture search is discrete, headroom follows a straight pitch line,
-and window/terrain exposure is sampled. Missing stair orientation or vehicle
-dimensions is not checked. There is no regulatory, solar, airflow or acoustic
+points, furniture search is discrete and bounded (an undecided search is not
+checked), headroom follows a straight pitch line, and window/terrain exposure is
+sampled. A stair without a walking line makes routes across it inferred
+estimates; missing vehicle dimensions are not checked. There is no regulatory, solar, airflow or acoustic
 performance certification. Details and sources are in
 [ADR 0019](../../docs/adr/0019-usability-geometry-and-assumptions.md).

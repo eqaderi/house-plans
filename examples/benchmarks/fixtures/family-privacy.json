@@ -1157,7 +1157,7 @@
               14.6,
               21.4
             ],
-            "rotation_deg": 180.0,
+            "rotation_deg": 0.0,
             "width_m": 0.4,
             "depth_m": 0.65,
             "material_id": null
@@ -1170,7 +1170,7 @@
               15.6,
               21.6
             ],
-            "rotation_deg": 180.0,
+            "rotation_deg": 0.0,
             "width_m": 0.6,
             "depth_m": 0.45,
             "material_id": null
@@ -1183,7 +1183,7 @@
               16.4,
               19.6
             ],
-            "rotation_deg": 0.0,
+            "rotation_deg": 180.0,
             "width_m": 0.9,
             "depth_m": 0.9,
             "material_id": null
@@ -1196,7 +1196,7 @@
               21.4,
               14.5
             ],
-            "rotation_deg": 90.0,
+            "rotation_deg": 270.0,
             "width_m": 0.8,
             "depth_m": 0.6,
             "material_id": null
@@ -2046,7 +2046,7 @@
               14.6,
               21.4
             ],
-            "rotation_deg": 180.0,
+            "rotation_deg": 0.0,
             "width_m": 0.4,
             "depth_m": 0.65,
             "material_id": null
@@ -2059,7 +2059,7 @@
               15.6,
               21.6
             ],
-            "rotation_deg": 180.0,
+            "rotation_deg": 0.0,
             "width_m": 0.6,
             "depth_m": 0.45,
             "material_id": null
@@ -2072,7 +2072,7 @@
               16.4,
               19.6
             ],
-            "rotation_deg": 0.0,
+            "rotation_deg": 180.0,
             "width_m": 0.9,
             "depth_m": 0.9,
             "material_id": null
@@ -2085,7 +2085,7 @@
               21.4,
               14.5
             ],
-            "rotation_deg": 90.0,
+            "rotation_deg": 270.0,
             "width_m": 0.8,
             "depth_m": 0.6,
             "material_id": null
@@ -2233,6 +2233,104 @@
       "tolerance": 1e-6,
       "pending_stage": null,
       "basis": "shortest measured route to living crosses hall, no private bedroom"
+    },
+    {
+      "id": "net-area-children",
+      "category": "metric_accuracy",
+      "target": "separated",
+      "source": "evaluation",
+      "metric": "net_area_m2",
+      "code": null,
+      "subject_ids": [
+        "sp-bed-children"
+      ],
+      "value": 15.706,
+      "status": "measured",
+      "tolerance": 0.001,
+      "pending_stage": null,
+      "basis": "(21.85-17.075)*(21.85-18.575) between finish faces + 0.9*0.075 doorway recess = 15.7056"
+    },
+    {
+      "id": "kitchen-desire-line",
+      "category": "circulation",
+      "target": "separated",
+      "source": "evaluation",
+      "metric": null,
+      "code": "kitchen_through_traffic",
+      "subject_ids": [
+        "sp-kitchen",
+        "d-hall-kitchen",
+        "o-living-kitchen"
+      ],
+      "value": 1,
+      "status": "inferred",
+      "tolerance": 1e-6,
+      "pending_stage": null,
+      "basis": "hall door (17.45,17) to living opening (16,14.3) crosses the kitchen floor inset 0.75 m"
+    },
+    {
+      "id": "bath-door-hidden",
+      "category": "privacy",
+      "target": "separated",
+      "source": "evaluation",
+      "metric": null,
+      "code": "bathroom_entrance_visible",
+      "subject_ids": [],
+      "value": 0,
+      "status": "measured",
+      "tolerance": 1e-6,
+      "pending_stage": null,
+      "basis": "hall is not an entrance/living space; no sightline source"
+    },
+    {
+      "id": "bath-door-visible",
+      "category": "privacy",
+      "target": "entry-bedroom-doors",
+      "source": "evaluation",
+      "metric": null,
+      "code": "bathroom_entrance_visible",
+      "subject_ids": [
+        "d-hall-bath",
+        "sp-hall",
+        "sp-bath"
+      ],
+      "value": 1,
+      "status": "inferred",
+      "tolerance": 1e-6,
+      "pending_stage": null,
+      "basis": "unobstructed ray inside the hall reclassified as entry"
+    },
+    {
+      "id": "front-door-step",
+      "category": "terrain_compatibility",
+      "target": "separated",
+      "source": "evaluation",
+      "metric": "outdoor_door_grade_delta_m",
+      "code": null,
+      "subject_ids": [
+        "d-front"
+      ],
+      "value": 0.6,
+      "status": "inferred",
+      "tolerance": 1e-6,
+      "pending_stage": null,
+      "basis": "floor at 0.6 m on flat grade z=0"
+    },
+    {
+      "id": "front-door-step-flagged",
+      "category": "terrain_compatibility",
+      "target": "separated",
+      "source": "evaluation",
+      "metric": null,
+      "code": "outdoor_door_grade_mismatch",
+      "subject_ids": [
+        "d-front"
+      ],
+      "value": 1,
+      "status": "inferred",
+      "tolerance": 1e-6,
+      "pending_stage": null,
+      "basis": "0.6 m step exceeds the 0.2 m conceptual warning"
     }
   ]
 }

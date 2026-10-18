@@ -1,8 +1,12 @@
 """Shortest point paths inside net-floor polygons through explicit portals.
 
 Visibility graph includes concave corners and obstacle vertices. No exterior
-shortcuts, no coincident-level links, and no link across an unknown stair.
-This measures a point route, not an accessibility/body-width certificate.
+shortcuts and no coincident-level links. A stair with a declared straight walking
+line is a measured pitch-line edge; a stair without one is an *estimated* edge
+between the free-floor points nearest its footprint centroid on each connected
+floor, of length hypot((risers - 1) x going, rise), and any
+route using it is inferred rather than measured. A stair without riser data is
+not linked. This measures a point route, not an accessibility/body-width certificate.
 """
 
 from __future__ import annotations
@@ -13,6 +17,7 @@ from dataclasses import dataclass
 from itertools import combinations
 
 from shapely.geometry import LineString, Point
+from shapely.ops import nearest_points
 
 from house_ai.domain.base import EXTERIOR
 from house_ai.domain.model import HouseModel, StairKind
@@ -27,6 +32,7 @@ class Route:
     space_ids: tuple[str, ...]
     element_ids: tuple[str, ...]
     level_changes: int
+    estimated: bool = False
 
 
 def shortest_in_polygon(poly, a, b):
@@ -63,13 +69,26 @@ def shortest_in_polygon(poly, a, b):
     return None
 
 
+_CACHE: tuple[str, RouteNetwork] | None = None
+
+
 class RouteNetwork:
+    @classmethod
+    def for_model(cls, model: HouseModel) -> RouteNetwork:
+        """Reuse the network built for an identical model (one entry, content keyed)."""
+        global _CACHE
+        key = model.model_dump_json()
+        if _CACHE is None or _CACHE[0] != key:
+            _CACHE = (key, cls(model))
+        return _CACHE[1]
+
     def __init__(self, model: HouseModel):
         self.model = model
         self.nodes = {}  # key -> (space, point, element)
         self.edges = {}
         self.entrances = []
         self.unknown_stairs = []
+        self.estimated_stairs = []
         floors = {s.id: free_floor(model, s) for s in model.spaces}
 
         def node(key, sid, xy, element):
@@ -87,17 +106,24 @@ class RouteNetwork:
 
         entrances, self.entrance_basis = _pedestrian_entrances(model)
         for o in model.openings:
-            if not o.is_passable or o.sill_m > EPS:
+            if not o.is_passable:
                 continue
-            xy = opening_segment(model, o).interpolate(0.5, normalized=True).coords[0]
+            mid = opening_segment(model, o).interpolate(0.5, normalized=True)
+            reach = model.wall(o.host_wall_id).thickness_m / 2 + EPS
             ends = []
             for sid in o.connects:
-                if sid != EXTERIOR:
-                    k = node(f"door:{o.id}:{sid}", sid, xy, o.id)
-                    if k:
-                        ends.append(k)
+                if sid == EXTERIOR:
+                    continue
+                # A threshold leaves the wall solid under the door: step to the finish face.
+                floor = floors[sid]
+                xy = mid.coords[0]
+                if not floor.is_empty and reach >= floor.distance(mid) > EPS:
+                    xy = nearest_points(floor, mid)[0].coords[0]
+                k = node(f"door:{o.id}:{sid}", sid, xy, o.id)
+                if k:
+                    ends.append(k)
             if len(ends) == 2:
-                self.link(*ends, 0.0)
+                self.link(*ends, math.dist(self.nodes[ends[0]][1], self.nodes[ends[1]][1]))
             elif o.id in entrances:
                 self.entrances.extend(ends)
         for st in model.stairs:
@@ -106,7 +132,7 @@ class RouteNetwork:
                 or st.kind != StairKind.STRAIGHT
                 or len(st.walking_line) != 2
             ):
-                self.unknown_stairs.append(st.id)
+                self._estimated_stair(st, node, floors)
                 continue
             line = LineString(st.walking_line)
             rise = (
@@ -138,9 +164,28 @@ class RouteNetwork:
                 if d is not None:
                     self.link(a, b, d)
 
-    def link(self, a, b, length, stair=False):
-        self.edges[a].append((b, length, stair))
-        self.edges[b].append((a, length, stair))
+    def _estimated_stair(self, st, node, floors):
+        rise = (
+            self.model.level(st.to_level_id).elevation_m
+            - self.model.level(st.from_level_id).elevation_m
+        )
+        c = st.footprint.to_shapely().centroid
+        ends = []
+        for sid in (st.bottom_space_id, st.top_space_id):
+            # A stairwell void can cover the centroid: attach at the nearest free floor.
+            floor = floors[sid]
+            xy = (c.x, c.y) if floor.is_empty else nearest_points(floor, c)[0].coords[0]
+            ends.append(node(f"stair:{st.id}:{sid}", sid, xy, st.id))
+        if all(ends) and rise > 0 and st.riser_count and st.tread_depth_m:
+            run = max(1, st.riser_count - 1) * st.tread_depth_m
+            self.link(*ends, math.hypot(run, rise), stair=True, estimated=True)
+            self.estimated_stairs.append(st.id)
+        else:
+            self.unknown_stairs.append(st.id)
+
+    def link(self, a, b, length, stair=False, estimated=False):
+        self.edges[a].append((b, length, stair, estimated))
+        self.edges[b].append((a, length, stair, estimated))
 
     def route(self, starts, end):
         if end not in self.nodes:
@@ -149,6 +194,7 @@ class RouteNetwork:
         dist = {k: 0.0 for k in starts}
         parents = {k: None for k in starts}
         changes = {k: 0 for k in starts}
+        guessed = {k: False for k in starts}
         queue = [(0.0, k) for k in starts]
         heapq.heapify(queue)
         while queue:
@@ -168,13 +214,14 @@ class RouteNetwork:
                         spaces.append(sid)
                     if element not in elements:
                         elements.append(element)
-                return Route(d, tuple(spaces), tuple(elements), changes[end])
-            for other, length, stair in self.edges[k]:
+                return Route(d, tuple(spaces), tuple(elements), changes[end], guessed[end])
+            for other, length, stair, estimated in self.edges[k]:
                 nd = d + length
                 if nd < dist.get(other, math.inf):
                     dist[other] = nd
                     parents[other] = k
                     changes[other] = changes[k] + int(stair)
+                    guessed[other] = guessed[k] or estimated
                     heapq.heappush(queue, (nd, other))
         return None
 
@@ -184,12 +231,15 @@ class RouteNetwork:
     def between(self, a, b):
         return self.route(["space:" + a], "space:" + b)
 
-    def entrance_distances(self):
+    def entrance_routes(self):
         return {
-            s.id: route.length_m
+            s.id: route
             for s in self.model.spaces
             if (route := self.from_entrance(s.id)) is not None
         }
+
+    def entrance_distances(self):
+        return {sid: route.length_m for sid, route in self.entrance_routes().items()}
 
     def daily_routes(self):
         pairs = [

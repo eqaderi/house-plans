@@ -35,7 +35,8 @@ export const RoomSchedule: React.FC<RoomScheduleProps> = ({ model, program, eval
   const incomplete = new Set<string>();
   for (const metric of evaluation?.metrics || []) {
     if (metric.evaluator !== "NetAreaEvaluator" || metric.subject_ids?.length !== 1) continue;
-    if (metric.metric === "net_area_m2" && metric.status === "measured" && typeof metric.value === "number") {
+    // Inferred when the wall model is incomplete (marked with *); never shown when not checked.
+    if (metric.metric === "net_area_m2" && (metric.status === "measured" || metric.status === "inferred") && typeof metric.value === "number") {
       netAreas.set(metric.subject_ids[0], metric.value);
     }
     if (metric.metric === "net_wall_basis_complete" && metric.value === false) {
@@ -83,7 +84,7 @@ export const RoomSchedule: React.FC<RoomScheduleProps> = ({ model, program, eval
                 {lvlSpaces.map((sp: Space) => {
                   const poly = (sp.boundary?.outer || []) as [number, number][];
                   const area = (poly.length > 0 ? computePolygonAreaM2(poly) : 0)
-                    - (sp.boundary.holes || []).reduce((sum, ring) => sum + computePolygonAreaM2(ring as [number, number][]), 0);
+                    - (sp.boundary?.holes || []).reduce((sum, ring) => sum + computePolygonAreaM2(ring as [number, number][]), 0);
                   levelAreaM2 += area;
                   totalGrossAreaM2 += area;
 

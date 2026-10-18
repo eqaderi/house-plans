@@ -375,21 +375,32 @@ def _route_model(*, stacked=False, garage=False):
 
 
 def test_walking_routes_preserve_stacked_levels_and_include_the_stair_run():
+    from house_ai.evaluation.base import EvaluationContext
     from house_ai.evaluation.evaluators import CirculationEvaluator
+    from house_ai.evaluation.routes import RouteNetwork
 
     model = _route_model(stacked=True)
-    # The old fixture has no orientation and its 1 m footprint cannot hold 2.8 m of run.
+    # Without a walking line the flight is an estimated edge between footprint centroids:
+    # 3 m to the centroid, hypot(10 x 0.28, 2) up the flight, 1 m to the room point.
     distances = CirculationEvaluator._walk(model)
     assert distances["entry"] == pytest.approx(2)
-    assert "other" not in distances
+    assert distances["other"] == pytest.approx(3 + (2.8**2 + 2**2) ** 0.5 + 1)
+    assert RouteNetwork(model).from_entrance("other").estimated
+    result = CirculationEvaluator().evaluate(EvaluationContext(model, None, None, None))
+    assert _metric(result, "max_walk_from_entrance_m").status is ClaimStatus.INFERRED
+    model.stairs[0].riser_count = None
+    assert "other" not in CirculationEvaluator._walk(model)
+    model.stairs[0].riser_count = 11
     from house_ai.domain.geometry import Polygon2D
 
     model.stairs[0].footprint = Polygon2D.rectangle(0.5, 0.5, 3.3, 1.5)
     model.stairs[0].walking_line = [(0.5, 1), (3.3, 1)]
-    # Half a metre to the bottom, 3D pitch line, then 1.3 m to the room centre.
+    # Half a metre to the bottom and the 3D pitch line. The flight is not floor, so the
+    # room point is the middle of the widest free span at y=1, [3.3, 4.0]: 0.35 m on.
     assert CirculationEvaluator._walk(model)["other"] == pytest.approx(
-        0.5 + (2.8**2 + 2**2) ** 0.5 + 1.3
+        0.5 + (2.8**2 + 2**2) ** 0.5 + 0.35
     )
+    assert not RouteNetwork(model).from_entrance("other").estimated
 
 
 @pytest.mark.parametrize("garage", [False, True])
@@ -426,3 +437,26 @@ def test_unlabelled_pedestrian_fallback_is_reported_as_an_assumption():
     result = CirculationEvaluator().evaluate(EvaluationContext(model, None, None, None))
     assert _metric(result, "entrance_route_basis").value == "assumed_first_pedestrian_door"
     assert CirculationEvaluator._walk(model)["other"] == pytest.approx(9)
+
+
+def test_generated_concepts_have_measured_routes_and_checked_straight_stairs(hillside_reports):
+    from house_ai.domain.model import StairKind
+
+    multi_level = 0
+    for plan, report, _ in hillside_reports:
+        model = plan.model
+        multi_level += len(model.levels) > 1
+        walk = _metric(report, "max_walk_from_entrance_m")
+        # Every space is reached; an unmodelled (U-shaped) flight makes the value inferred.
+        assert walk.value is not None and walk.value > 0
+        unknown = any(st.walking_line is None for st in model.stairs)
+        assert walk.status is (ClaimStatus.INFERRED if unknown else ClaimStatus.MEASURED)
+        codes = {v.code for v in report.violations}
+        assert "stair_height_mismatch" not in codes
+        assert "net_wall_basis_incomplete" not in codes
+        for st in model.stairs:
+            if st.kind is StairKind.STRAIGHT:
+                assert st.walking_line is not None
+                fit = _metric(report, "stair_run_fit", st.id)
+                assert fit.status is ClaimStatus.MEASURED and fit.value is True
+    assert multi_level >= 2

@@ -746,6 +746,7 @@ class _Builder:
                 r = sa.rect
                 fp = self.frame.rect(r.u0 + 1, r.v0 + 1, r.u1 - 1, r.v1 - 1)
                 kind = StairKind.U_SHAPED
+                walking_line = None  # A U-shaped flight's line is not modelled.
                 width = min(1.1, (from_dm(r.w if a.axis == "u" else r.h) - 0.2) / 2)
                 low, high = (sa, sb) if a.elevation_m < b.elevation_m else (sb, sa)
             else:
@@ -787,6 +788,14 @@ class _Builder:
                 low, high = (
                     (top_space, other) if a.elevation_m < b.elevation_m else (other, top_space)
                 )
+                # Centre line of the flight, ordered bottom to top: top_space lies below
+                # the boundary (the `lo` end), the other space above it (the `hi` end).
+                mid = (s0 + s1) / 2
+                ends = [lo, hi] if low is top_space else [hi, lo]
+                walking_line = [
+                    self.frame.to_local(mid, e) if a.axis == "u" else self.frame.to_local(e, mid)
+                    for e in ends
+                ]
             self.stairs.append(
                 Stair(
                     id=f"st-{i}",
@@ -800,6 +809,7 @@ class _Builder:
                     riser_count=n,
                     riser_height_m=round(riser, 4),
                     tread_depth_m=TREAD_M,
+                    walking_line=walking_line,
                 )
             )
 

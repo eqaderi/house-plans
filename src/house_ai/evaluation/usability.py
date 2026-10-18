@@ -10,7 +10,8 @@ import math
 from hashlib import sha256
 from itertools import combinations
 
-from shapely.geometry import LineString, Point
+from shapely import affinity
+from shapely.geometry import LineString, Point, box
 from shapely.ops import unary_union
 
 from house_ai.domain.base import EXTERIOR
@@ -24,6 +25,7 @@ from .evaluators import _Out, _privacy
 from .routes import RouteNetwork, shortest_in_polygon
 from .templates import PROJECT, TEMPLATES, UsabilityPolicy, dimension, template
 from .usability_geometry import (
+    BUDGET_EXHAUSTED,
     EPS,
     door_geometry,
     fit_templates,
@@ -49,6 +51,18 @@ HABITABLE = {
     S.PLAY,
 }
 CIRCULATION = {S.ENTRY, S.CORRIDOR, S.HALL, S.STAIR, S.LIFT}
+
+
+# Distance ahead of a counter front searched for an opposite run (numerical choice).
+AISLE_SEARCH_M = 3.0
+
+
+def template_front_strip(item, depth):
+    """Strip of the given depth in front of a placed item (front is local negative Y)."""
+    w, d = item.width_m, item.depth_m
+    strip = box(-w / 2, -d / 2 - depth, w / 2, -d / 2)
+    strip = affinity.rotate(strip, item.rotation_deg, origin=(0, 0))
+    return affinity.translate(strip, *item.position)
 
 
 class _CriticOut(_Out):
@@ -88,17 +102,6 @@ class NetAreaEvaluator(Critic):
             net = net_floor(model, s)
             ids = [s.id]
             out.claim("gross_area_m2", s.area_m2, ids, "polygon_area_centerline", unit="m2")
-            out.claim("net_area_m2", net.area, ids, "wall_solids_minus_floor_apertures", unit="m2")
-            rect = net.minimum_rotated_rectangle
-            if rect.geom_type == "Polygon":
-                pts = list(rect.exterior.coords)
-                dims = sorted(math.dist(a, b) for a, b in zip(pts, pts[1:], strict=False))
-                out.claim(
-                    "net_extent_short_m", dims[0], ids, "net_minimum_rotated_bounds", unit="m"
-                )
-                out.claim(
-                    "net_extent_long_m", dims[-1], ids, "net_minimum_rotated_bounds", unit="m"
-                )
             relevant = [
                 w
                 for w in model.walls
@@ -110,6 +113,27 @@ class NetAreaEvaluator(Critic):
             complete = (
                 s.boundary.to_shapely().boundary.difference(coverage.buffer(EPS)).length < EPS
             )
+            # Without walls on every edge the net value is an upper bound, not a measurement.
+            out.claim(
+                "net_area_m2",
+                net.area,
+                ids,
+                "wall_solids_minus_floor_apertures",
+                M if complete else INF,
+                unit="m2",
+            )
+            rect = net.minimum_rotated_rectangle
+            if rect.geom_type == "Polygon" and not rect.is_empty:
+                pts = list(rect.exterior.coords)
+                dims = sorted(math.dist(a, b) for a, b in zip(pts, pts[1:], strict=False))
+                for name, value in (
+                    ("net_extent_short_m", dims[0]),
+                    ("net_extent_long_m", dims[-1]),
+                ):
+                    out.claim(name, value, ids, "net_minimum_rotated_bounds", unit="m")
+            else:
+                for name in ("net_extent_short_m", "net_extent_long_m"):
+                    out.claim(name, None, ids, "empty_or_degenerate_net_floor", NC)
             out.claim("net_wall_basis_complete", complete, ids, "boundary_wall_coverage")
             if not complete:
                 out.flag(
@@ -209,14 +233,22 @@ class StairUsabilityEvaluator(Critic):
             if st.riser_count and st.riser_height_m:
                 error = abs(rise - st.riser_count * st.riser_height_m)
                 out.claim("stair_rise_error_m", error, ids, "risers_vs_levels", unit="m")
-                if error > 1e-4:
+                # Riser heights are stored to 4 dp: allow half a unit per riser.
+                if error > st.riser_count * 5e-5 + 1e-6:
                     out.flag(
                         "stair_height_mismatch",
                         ids + [bottom.id, top.id],
                         "Riser total disagrees with connected floor elevations.",
                         status=M,
                     )
-            if bottom.floor_to_floor_m is not None and abs(bottom.floor_to_floor_m - rise) > 1e-4:
+            above = [lv for lv in model.levels if lv.elevation_m > bottom.elevation_m + EPS]
+            adjacent = min(above, key=lambda lv: lv.elevation_m).id == top.id if above else False
+            # Only a stair to the next level up can test the bottom level's floor-to-floor.
+            if (
+                adjacent
+                and bottom.floor_to_floor_m is not None
+                and abs(bottom.floor_to_floor_m - rise) > 1e-4
+            ):
                 out.flag(
                     "floor_connection_height_mismatch",
                     ids + [bottom.id, top.id],
@@ -394,6 +426,7 @@ class FurnitureUsabilityEvaluator(Critic):
                         [s.id, *[f.id for f in counters]],
                         "Placed counter run is shorter than the conceptual 3 m template.",
                     )
+                self._kitchen_aisles(out, s, counters)
             item = (
                 next((i for i in ctx.program.items if i.id == s.program_item_id), None)
                 if ctx.program
@@ -446,28 +479,78 @@ class FurnitureUsabilityEvaluator(Critic):
             # Furniture already placed represents a design, not an invitation to fit a second set.
             if objects:
                 continue
-            for label, templates in studies:
+            for label, templates, required in studies:
                 result = fit_templates(model, s, templates)
+                basis = "assumption: " + "; ".join(t.id + ": " + t.width.source for t in templates)
+                if result == BUDGET_EXHAUSTED:
+                    out.claim(
+                        label + "_sampled_fit",
+                        None,
+                        [s.id],
+                        "search_budget_exhausted_before_decision",
+                        NC,
+                        basis=basis,
+                    )
+                    continue
                 out.claim(
                     label + "_sampled_fit",
                     result is not None,
                     [s.id],
-                    "0_1m_four_rotation_polygon_packing",
+                    "0_1m_four_rotation_room_frame_packing",
                     INF,
-                    basis="assumption: "
-                    + "; ".join(t.id + ": " + t.width.source for t in templates),
+                    basis=basis,
                 )
-                if result is None:
+                if result is None and required:
                     out.flag(
                         label + "_no_sampled_fit",
                         [s.id],
                         "No arrangement in the declared discrete template search; "
                         "continuous infeasibility has not been proved.",
-                        method="0_1m_four_rotation_polygon_packing",
+                        method="0_1m_four_rotation_room_frame_packing",
                     )
                 elif s.function == S.GARAGE:
                     self._garage_route(out, model, s, result)
         return out.result()
+
+    def _kitchen_aisles(self, out, s, counters):
+        """Clear width between placed runs whose fronts face each other."""
+        aisle = TEMPLATES["kitchen-run"].front.value
+        widths = []
+        for a, b in combinations(counters, 2):
+            bodies = [c.footprint_polygon().to_shapely() for c in (a, b)]
+            # Each front is local negative Y: a facing pair sees the other body ahead.
+            ahead = [
+                template_front_strip(c, AISLE_SEARCH_M).intersects(other)
+                for c, other in ((a, bodies[1]), (b, bodies[0]))
+            ]
+            if not all(ahead):
+                continue
+            width = bodies[0].distance(bodies[1])
+            widths.append(width)
+            out.claim(
+                "kitchen_aisle_width_m",
+                width,
+                [s.id, a.id, b.id],
+                "facing_counter_body_distance",
+                unit="m",
+                basis=TEMPLATES["kitchen-run"].front.source,
+            )
+            if width + EPS < aisle:
+                out.flag(
+                    "kitchen_aisle_narrow",
+                    [s.id, a.id, b.id],
+                    f"Aisle between facing runs is {width:.3f} m, below the {aisle} m assumption.",
+                    method="facing_counter_body_distance",
+                    basis=TEMPLATES["kitchen-run"].front.source,
+                )
+        if not widths:
+            out.claim(
+                "kitchen_aisle_width_m",
+                None,
+                [s.id, *[c.id for c in counters]],
+                "no_facing_counter_pair",
+                NC,
+            )
 
     def _garage_route(self, out, model, s, result):
         remaining = net_floor(model, s).difference(unary_union([b for b, _ in result]))
@@ -506,14 +589,18 @@ class FurnitureUsabilityEvaluator(Critic):
     def _studies(self, ctx, s, out):
         req = ctx.program.usability if ctx.program else None
         if s.function in {S.BEDROOM, S.GUEST_SUITE}:
-            variants = ["bed-double", "bed-single"]
+            # Undesignated rooms must hold a single bed; the double study is information only.
+            variants = [("bed-double", False), ("bed-single", True)]
             if req and s.program_item_id in req.double_bed_program_item_ids:
-                variants = ["bed-double"]
+                variants = [("bed-double", True)]
             elif req and s.program_item_id in req.single_bed_program_item_ids:
-                variants = ["bed-single"]
-            return [(v.replace("-", "_"), [TEMPLATES[v], TEMPLATES["wardrobe"]]) for v in variants]
+                variants = [("bed-single", True)]
+            return [
+                (v.replace("-", "_"), [TEMPLATES[v], TEMPLATES["wardrobe"]], required)
+                for v, required in variants
+            ]
         if s.function == S.STUDY:
-            return [("desk_chair", [TEMPLATES["desk"]])]
+            return [("desk_chair", [TEMPLATES["desk"]], True)]
         if s.function == S.DINING:
             if req is None or req.household_seats is None:
                 out.claim("dining_sampled_fit", None, [s.id], "household_seats_unknown", NC)
@@ -524,7 +611,7 @@ class FurnitureUsabilityEvaluator(Critic):
                 "dining-household-width",
                 max(1.2, math.ceil(max(1, req.household_seats - 2) / 2) * 0.6),
             )
-            return [("dining", [t])]
+            return [("dining", [t], True)]
         lookup = {
             S.LIVING: ("living", ["sofa-group"]),
             S.FAMILY: ("living", ["sofa-group"]),
@@ -538,7 +625,7 @@ class FurnitureUsabilityEvaluator(Critic):
         }
         if s.function in lookup:
             label, ids = lookup[s.function]
-            return [(label, [TEMPLATES[i] for i in ids])]
+            return [(label, [TEMPLATES[i] for i in ids], True)]
         if s.function == S.GARAGE:
             if req is None or req.vehicles is None:
                 out.claim("garage_sampled_fit", None, [s.id], "vehicle_count_or_size_unknown", NC)
@@ -556,8 +643,22 @@ class FurnitureUsabilityEvaluator(Critic):
                 )
                 for v in req.vehicles
             ]
-            return [("garage", vehicles)] if vehicles else []
+            return [("garage", vehicles, True)] if vehicles else []
         return []
+
+
+def _route_status(route):
+    if route is None:
+        return NC
+    return INF if route.estimated else M
+
+
+def _route_method(route, missing):
+    if route is None:
+        return missing
+    return "net_floor_visibility_graph_point_path" + (
+        "_with_estimated_stair_run" if route.estimated else ""
+    )
 
 
 class RouteUsabilityEvaluator(Critic):
@@ -565,24 +666,26 @@ class RouteUsabilityEvaluator(Critic):
 
     def evaluate(self, ctx):
         out, model, p = _CriticOut(self.name), ctx.model, self.policy
-        net = RouteNetwork(model)
+        net = RouteNetwork.for_model(model)
         privacy = _privacy(model)
         crossing_routes = 0
         guest_routes_complete = True
+        guest_routes_estimated = False
         for s in model.spaces:
             route = net.from_entrance(s.id)
             out.claim(
                 "entrance_route_length_m",
                 route.length_m if route else None,
                 [s.id],
-                "net_floor_visibility_graph_point_path" if route else "no_measurable_portal_path",
-                M if route else NC,
+                _route_method(route, "no_measurable_portal_path"),
+                _route_status(route),
                 unit="m",
             )
             guest_destination = s.function in {S.RECEPTION, S.LIVING, S.DINING, S.GUEST_SUITE, S.WC}
             if guest_destination and route is None:
                 guest_routes_complete = False
             if route and guest_destination:
+                guest_routes_estimated |= route.estimated
                 private = [
                     sid for sid in route.space_ids[:-1] if privacy.get(sid) == Privacy.PRIVATE
                 ]
@@ -593,7 +696,7 @@ class RouteUsabilityEvaluator(Critic):
                         [s.id, *private],
                         "Shortest guest-destination route crosses named private rooms.",
                         method="destination_visibility_graph",
-                        status=M,
+                        status=_route_status(route),
                     )
             if s.function in {S.LIVING, S.FAMILY, S.KITCHEN}:
                 self._through_traffic(out, model, s, net)
@@ -602,7 +705,7 @@ class RouteUsabilityEvaluator(Critic):
             crossing_routes,
             [],
             "destination_visibility_graph",
-            M if guest_routes_complete else NC,
+            (INF if guest_routes_estimated else M) if guest_routes_complete else NC,
         )
         for a, b, pairs in net.daily_routes():
             name = f"{a.value}_to_{b.value}"
@@ -614,8 +717,8 @@ class RouteUsabilityEvaluator(Critic):
                     name + "_length_m",
                     route.length_m if route else None,
                     ids,
-                    "net_floor_visibility_graph_point_path" if route else "no_measurable_path",
-                    M if route else NC,
+                    _route_method(route, "no_measurable_path"),
+                    _route_status(route),
                     unit="m",
                 )
                 if route:
@@ -628,6 +731,7 @@ class RouteUsabilityEvaluator(Critic):
                             f"{name}: {route.length_m:.3f} m point route.",
                             method="visibility_graph",
                             basis=p.basis("max_daily_route_m"),
+                            status=_route_status(route),
                         )
         for lv in model.levels:
             spaces = [s for s in model.spaces if s.level_id == lv.id]
@@ -990,40 +1094,76 @@ class VehicleArrivalEvaluator(Critic):
             )
             return out.result()
         road = unary_union([f.geometry.polygon.to_shapely() for f in surfaces])
-        line = LineString(req.arrival_path)
-        radii = []
-        for a, b, c in zip(
-            req.arrival_path, req.arrival_path[1:], req.arrival_path[2:], strict=False
-        ):
-            ab, bc, ca = math.dist(a, b), math.dist(b, c), math.dist(c, a)
-            twice_area = abs((b[0] - a[0]) * (c[1] - a[1]) - (b[1] - a[1]) * (c[0] - a[0]))
-            if twice_area > EPS:
-                radii.append(ab * bc * ca / (2 * twice_area))
         for v in req.vehicles:
             if v.turning_radius_m is None:
                 out.claim("vehicle_swept_path", None, [v.id], "turning_radius_unknown", NC)
                 continue
+            centreline = filleted_path(req.arrival_path, v.turning_radius_m)
+            turns = centreline is not None
             # Vehicle is bounded by a circle: deliberately conservative at bends and endpoints.
             radius = math.hypot(v.width_m, v.length_m) / 2
-            sweep = line.buffer(radius + 0.001, quad_segs=64)
-            fits = road.buffer(EPS).covers(sweep)
-            turns = not radii or min(radii) >= v.turning_radius_m
+            fits = turns and road.buffer(EPS).covers(
+                LineString(centreline).buffer(radius + 0.001, quad_segs=64)
+            )
             out.claim(
                 "vehicle_swept_path",
-                fits and turns,
+                fits,
                 [v.id, *[f.id for f in surfaces]],
-                "conservative_bounding_circle_sweep_and_three_point_curvature",
+                "bounding_circle_sweep_of_turning_radius_filleted_centreline",
                 INF,
-                basis="assumption: circular vehicle bound and polyline curvature; " + v.source,
+                basis="assumption: circular vehicle bound; turning radius as centreline radius; "
+                + v.source,
             )
-            if not fits or not turns:
+            if not fits:
                 out.flag(
                     "vehicle_arrival_conflict",
                     [v.id, *[f.id for f in surfaces]],
-                    "Swept envelope exceeds road/drive or sampled curvature is too tight.",
-                    method="bounding_circle_sweep_and_sampled_curvature",
+                    "Corner cannot take the turning radius, or the swept envelope leaves the "
+                    "road/drive.",
+                    method="bounding_circle_sweep_of_turning_radius_filleted_centreline",
                 )
         return out.result()
+
+
+def filleted_path(path, radius):
+    """Arrival polyline with each corner replaced by a circular arc of `radius`.
+
+    Returns None when a fillet's tangent length does not fit its legs (interior legs
+    are shared equally by their two corners). Arcs are sampled every 1 degree.
+    """
+    pts = [tuple(path[0])]
+    lengths = [math.dist(a, b) for a, b in zip(path, path[1:], strict=False)]
+    last = len(path) - 2
+    for i in range(1, len(path) - 1):
+        a, b, c = path[i - 1], path[i], path[i + 1]
+        u1 = ((b[0] - a[0]) / lengths[i - 1], (b[1] - a[1]) / lengths[i - 1])
+        u2 = ((c[0] - b[0]) / lengths[i], (c[1] - b[1]) / lengths[i])
+        cross = u1[0] * u2[1] - u1[1] * u2[0]
+        theta = math.atan2(abs(cross), u1[0] * u2[0] + u1[1] * u2[1])
+        if theta < 1e-9:
+            pts.append(tuple(b))
+            continue
+        if theta > math.pi - 1e-9:
+            return None
+        tangent = radius * math.tan(theta / 2)
+        room_prev = lengths[i - 1] if i == 1 else lengths[i - 1] / 2
+        room_next = lengths[i] if i == last else lengths[i] / 2
+        if tangent > min(room_prev, room_next) + EPS:
+            return None
+        sign = 1 if cross > 0 else -1
+        p1 = (b[0] - u1[0] * tangent, b[1] - u1[1] * tangent)
+        centre = (p1[0] - u1[1] * sign * radius, p1[1] + u1[0] * sign * radius)
+        start = math.atan2(p1[1] - centre[1], p1[0] - centre[0])
+        steps = max(1, math.ceil(math.degrees(theta)))
+        pts.extend(
+            (
+                centre[0] + radius * math.cos(start + sign * theta * k / steps),
+                centre[1] + radius * math.sin(start + sign * theta * k / steps),
+            )
+            for k in range(steps + 1)
+        )
+    pts.append(tuple(path[-1]))
+    return pts
 
 
 USABILITY_EVALUATORS = [

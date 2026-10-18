@@ -241,16 +241,20 @@ assumption sources and limits.
   checks. Proposed template fits are derived studies and never inserted in a plan.
 - `HouseModel.clearance_zones`: explicit polygons referencing an element and space,
   with a purpose, basis and assumption status. They remain distinct from solids.
-- `Stair.walking_line`: optional bottom-to-top 2D path. Its absence leaves run,
-  landings, headroom and stair-dependent metric routes unmeasured. Slab openings
-  remain polygon holes. Headroom uses a linearly rising pitch line, not detailed
-  geometry for intermediate landings of complex stairs.
+- `Stair.walking_line`: optional bottom-to-top 2D path; the generator emits it for
+  straight flights. Its absence leaves run, landings and headroom unmeasured, and
+  routes across the stair become inferred estimates (centroid-to-centroid run).
+  With a walking line the flight footprint is not walkable floor on either level.
+  Slab openings remain polygon holes. Headroom uses a linearly rising pitch line,
+  not detailed geometry for intermediate landings of complex stairs.
 - `SpaceProgram.usability`: optional household seats, vehicle envelopes, arrival
   path and bed variants by program item. Vehicle dimensions, side-door access and
   source are explicit; turning radius may be unknown. The program builder only
-  derives household seats when adult and child counts are both supplied.
+  derives household seats when adult and child counts are both supplied; stated
+  older relatives are added (absent elders mean the program plans no elder room).
 - `FurnitureTemplate`: individually cited `DimensionAssumption` records for body
-  width/depth and four access margins. Front means local negative Y. Templates
+  width/depth and four access margins. Front means local negative Y, for templates
+  and for placed `Fixture`/`Furniture` rotation alike (the user side). Templates
   are exported as `furniture_template.schema.json`; library version 1.0.0.
 - `MetricClaim.assumption_basis`, `Violation.method` and `Violation.assumption_basis`
   expose how a usability result was obtained. Usability findings are soft. Checked

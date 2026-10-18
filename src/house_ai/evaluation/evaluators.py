@@ -630,17 +630,19 @@ class CirculationEvaluator:
         )
         from .routes import RouteNetwork
 
-        network = RouteNetwork(model)
-        walk = network.entrance_distances()
+        routes = RouteNetwork.for_model(model).entrance_routes()
+        complete = bool(routes) and len(routes) == len(model.spaces)
+        estimated = any(r.estimated for r in routes.values())
         out.metric(
             "max_walk_from_entrance_m",
-            max(walk.values()) if walk else None,
-            "net_floor_visibility_graph_point_path",
-            M if walk and len(walk) == len(model.spaces) else NC,
+            max(r.length_m for r in routes.values()) if complete else None,
+            "net_floor_visibility_graph_point_path"
+            + ("_with_estimated_stair_runs" if estimated else ""),
+            (INF if estimated else M) if complete else NC,
             unit="m",
         )
-        if len(walk) < len(model.spaces):
-            out.metric("entrance_route_coverage", len(walk), "measurable_space_routes")
+        if not complete:
+            out.metric("entrance_route_coverage", len(routes), "measurable_space_routes")
         privacy = _privacy(model)
         crossings = 0
         crossed: list[str] = []

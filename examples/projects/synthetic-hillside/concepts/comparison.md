@@ -8,7 +8,7 @@ Each column is one concept; values are individual metrics, not a combined score.
 |---|---|---|---|---|---|
 | Strategy | compact | split_level | linear | two_wing | split_walkout |
 | Hard violations | 0 | 0 | 0 | 0 | 0 |
-| Soft violations | 6 | 4 | 9 | 4 | 10 |
+| Soft violations | 14 | 12 | 18 | 12 | 23 |
 | Gross floor area (centreline) | 240.00 m² | 222.24 m² | 210.00 m² | 202.08 m² | 289.20 m² |
 | Footprint | 120.00 m² | 222.24 m² | 210.00 m² | 202.08 m² | 175.20 m² |
 | Floor levels | 2 | 2 | 1 | 2 | 3 |
@@ -18,7 +18,7 @@ Each column is one concept; values are individual metrics, not a combined score.
 | Hard adjacencies met | 5 | 5 | 5 | 5 | 5 |
 | Soft adjacency score (0-1) | 0.83 | 0.91 | 0.83 | 0.91 | 0.83 |
 | Level preferences met | 9 | 9 | 9 | 9 | 9 |
-| Longest walk from the front door | 33.58 m (inferred) | 34.60 m (inferred) | 24.79 m (inferred) | 31.38 m (inferred) | 46.72 m (inferred) |
+| Longest walk from the front door | 35.00 m (inferred) | 31.00 m | 24.87 m | 27.79 m | 44.49 m (inferred) |
 | Routes to shared rooms through private rooms | 0 | 0 | 0 | 0 | 0 |
 | Walls between private and public rooms | 1 | 0 | 2 | 0 | 0 |
 | Footprint compactness (1 = circle) | 0.37 | 0.25 | 0.22 | 0.16 | 0.28 |

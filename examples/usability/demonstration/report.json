@@ -3645,7 +3645,7 @@
         },
         {
           "metric": "net_wall_basis_complete",
-          "value": false,
+          "value": true,
           "unit": null,
           "method": "boundary_wall_coverage",
           "status": "measured",
@@ -3705,7 +3705,7 @@
         },
         {
           "metric": "net_wall_basis_complete",
-          "value": false,
+          "value": true,
           "unit": null,
           "method": "boundary_wall_coverage",
           "status": "measured",
@@ -3945,7 +3945,7 @@
         },
         {
           "metric": "net_wall_basis_complete",
-          "value": false,
+          "value": true,
           "unit": null,
           "method": "boundary_wall_coverage",
           "status": "measured",
@@ -4929,9 +4929,9 @@
         },
         {
           "metric": "dining_sampled_fit",
-          "value": false,
+          "value": true,
           "unit": null,
-          "method": "0_1m_four_rotation_polygon_packing",
+          "method": "0_1m_four_rotation_room_frame_packing",
           "status": "inferred",
           "evaluator": "FurnitureUsabilityEvaluator",
           "evaluator_version": "1.0.0",
@@ -4953,10 +4953,22 @@
           ]
         },
         {
-          "metric": "kitchen_sampled_fit",
-          "value": false,
+          "metric": "kitchen_aisle_width_m",
+          "value": null,
           "unit": null,
-          "method": "0_1m_four_rotation_polygon_packing",
+          "method": "no_facing_counter_pair",
+          "status": "not_checked",
+          "evaluator": "FurnitureUsabilityEvaluator",
+          "evaluator_version": "1.0.0",
+          "subject_ids": [
+            "sp-kitchen"
+          ]
+        },
+        {
+          "metric": "kitchen_sampled_fit",
+          "value": true,
+          "unit": null,
+          "method": "0_1m_four_rotation_room_frame_packing",
           "status": "inferred",
           "evaluator": "FurnitureUsabilityEvaluator",
           "evaluator_version": "1.0.0",
@@ -4969,7 +4981,7 @@
           "metric": "living_sampled_fit",
           "value": true,
           "unit": null,
-          "method": "0_1m_four_rotation_polygon_packing",
+          "method": "0_1m_four_rotation_room_frame_packing",
           "status": "inferred",
           "evaluator": "FurnitureUsabilityEvaluator",
           "evaluator_version": "1.0.0",
@@ -4982,7 +4994,7 @@
           "metric": "bathroom_sampled_fit",
           "value": true,
           "unit": null,
-          "method": "0_1m_four_rotation_polygon_packing",
+          "method": "0_1m_four_rotation_room_frame_packing",
           "status": "inferred",
           "evaluator": "FurnitureUsabilityEvaluator",
           "evaluator_version": "1.0.0",
@@ -4995,7 +5007,7 @@
           "metric": "bed_double_sampled_fit",
           "value": false,
           "unit": null,
-          "method": "0_1m_four_rotation_polygon_packing",
+          "method": "0_1m_four_rotation_room_frame_packing",
           "status": "inferred",
           "evaluator": "FurnitureUsabilityEvaluator",
           "evaluator_version": "1.0.0",
@@ -5008,7 +5020,7 @@
           "metric": "bed_single_sampled_fit",
           "value": true,
           "unit": null,
-          "method": "0_1m_four_rotation_polygon_packing",
+          "method": "0_1m_four_rotation_room_frame_packing",
           "status": "inferred",
           "evaluator": "FurnitureUsabilityEvaluator",
           "evaluator_version": "1.0.0",
@@ -5021,7 +5033,7 @@
           "metric": "bed_double_sampled_fit",
           "value": false,
           "unit": null,
-          "method": "0_1m_four_rotation_polygon_packing",
+          "method": "0_1m_four_rotation_room_frame_packing",
           "status": "inferred",
           "evaluator": "FurnitureUsabilityEvaluator",
           "evaluator_version": "1.0.0",
@@ -5034,7 +5046,7 @@
           "metric": "bed_single_sampled_fit",
           "value": true,
           "unit": null,
-          "method": "0_1m_four_rotation_polygon_packing",
+          "method": "0_1m_four_rotation_room_frame_packing",
           "status": "inferred",
           "evaluator": "FurnitureUsabilityEvaluator",
           "evaluator_version": "1.0.0",
@@ -5047,7 +5059,7 @@
           "metric": "bed_double_sampled_fit",
           "value": false,
           "unit": null,
-          "method": "0_1m_four_rotation_polygon_packing",
+          "method": "0_1m_four_rotation_room_frame_packing",
           "status": "inferred",
           "evaluator": "FurnitureUsabilityEvaluator",
           "evaluator_version": "1.0.0",
@@ -5060,7 +5072,7 @@
           "metric": "bed_single_sampled_fit",
           "value": true,
           "unit": null,
-          "method": "0_1m_four_rotation_polygon_packing",
+          "method": "0_1m_four_rotation_room_frame_packing",
           "status": "inferred",
           "evaluator": "FurnitureUsabilityEvaluator",
           "evaluator_version": "1.0.0",
@@ -5073,7 +5085,7 @@
           "metric": "bathroom_sampled_fit",
           "value": true,
           "unit": null,
-          "method": "0_1m_four_rotation_polygon_packing",
+          "method": "0_1m_four_rotation_room_frame_packing",
           "status": "inferred",
           "evaluator": "FurnitureUsabilityEvaluator",
           "evaluator_version": "1.0.0",
@@ -5086,7 +5098,7 @@
           "metric": "desk_chair_sampled_fit",
           "value": true,
           "unit": null,
-          "method": "0_1m_four_rotation_polygon_packing",
+          "method": "0_1m_four_rotation_room_frame_packing",
           "status": "inferred",
           "evaluator": "FurnitureUsabilityEvaluator",
           "evaluator_version": "1.0.0",
@@ -5109,9 +5121,9 @@
         },
         {
           "metric": "laundry_folding_sampled_fit",
-          "value": false,
+          "value": true,
           "unit": null,
-          "method": "0_1m_four_rotation_polygon_packing",
+          "method": "0_1m_four_rotation_room_frame_packing",
           "status": "inferred",
           "evaluator": "FurnitureUsabilityEvaluator",
           "evaluator_version": "1.0.0",
@@ -5124,7 +5136,7 @@
           "metric": "service_sampled_fit",
           "value": true,
           "unit": null,
-          "method": "0_1m_four_rotation_polygon_packing",
+          "method": "0_1m_four_rotation_room_frame_packing",
           "status": "inferred",
           "evaluator": "FurnitureUsabilityEvaluator",
           "evaluator_version": "1.0.0",
@@ -5147,10 +5159,10 @@
         },
         {
           "metric": "entrance_route_length_m",
-          "value": null,
+          "value": 28.64,
           "unit": "m",
-          "method": "no_measurable_portal_path",
-          "status": "not_checked",
+          "method": "net_floor_visibility_graph_point_path_with_estimated_stair_run",
+          "status": "inferred",
           "evaluator": "RouteUsabilityEvaluator",
           "evaluator_version": "1.0.0",
           "subject_ids": [
@@ -5171,10 +5183,10 @@
         },
         {
           "metric": "entrance_route_length_m",
-          "value": null,
+          "value": 12.864,
           "unit": "m",
-          "method": "no_measurable_portal_path",
-          "status": "not_checked",
+          "method": "net_floor_visibility_graph_point_path",
+          "status": "measured",
           "evaluator": "RouteUsabilityEvaluator",
           "evaluator_version": "1.0.0",
           "subject_ids": [
@@ -5183,10 +5195,10 @@
         },
         {
           "metric": "entrance_route_length_m",
-          "value": null,
+          "value": 14.629,
           "unit": "m",
-          "method": "no_measurable_portal_path",
-          "status": "not_checked",
+          "method": "net_floor_visibility_graph_point_path",
+          "status": "measured",
           "evaluator": "RouteUsabilityEvaluator",
           "evaluator_version": "1.0.0",
           "subject_ids": [
@@ -5195,7 +5207,7 @@
         },
         {
           "metric": "entrance_route_length_m",
-          "value": 10.198,
+          "value": 10.235,
           "unit": "m",
           "method": "net_floor_visibility_graph_point_path",
           "status": "measured",
@@ -5207,10 +5219,10 @@
         },
         {
           "metric": "entrance_route_length_m",
-          "value": null,
+          "value": 35.972,
           "unit": "m",
-          "method": "no_measurable_portal_path",
-          "status": "not_checked",
+          "method": "net_floor_visibility_graph_point_path_with_estimated_stair_run",
+          "status": "inferred",
           "evaluator": "RouteUsabilityEvaluator",
           "evaluator_version": "1.0.0",
           "subject_ids": [
@@ -5219,10 +5231,10 @@
         },
         {
           "metric": "entrance_route_length_m",
-          "value": null,
+          "value": 34.535,
           "unit": "m",
-          "method": "no_measurable_portal_path",
-          "status": "not_checked",
+          "method": "net_floor_visibility_graph_point_path_with_estimated_stair_run",
+          "status": "inferred",
           "evaluator": "RouteUsabilityEvaluator",
           "evaluator_version": "1.0.0",
           "subject_ids": [
@@ -5231,10 +5243,10 @@
         },
         {
           "metric": "entrance_route_length_m",
-          "value": null,
+          "value": 28.653,
           "unit": "m",
-          "method": "no_measurable_portal_path",
-          "status": "not_checked",
+          "method": "net_floor_visibility_graph_point_path_with_estimated_stair_run",
+          "status": "inferred",
           "evaluator": "RouteUsabilityEvaluator",
           "evaluator_version": "1.0.0",
           "subject_ids": [
@@ -5243,10 +5255,10 @@
         },
         {
           "metric": "entrance_route_length_m",
-          "value": null,
+          "value": 30.536,
           "unit": "m",
-          "method": "no_measurable_portal_path",
-          "status": "not_checked",
+          "method": "net_floor_visibility_graph_point_path_with_estimated_stair_run",
+          "status": "inferred",
           "evaluator": "RouteUsabilityEvaluator",
           "evaluator_version": "1.0.0",
           "subject_ids": [
@@ -5255,10 +5267,10 @@
         },
         {
           "metric": "entrance_route_length_m",
-          "value": null,
+          "value": 35.355,
           "unit": "m",
-          "method": "no_measurable_portal_path",
-          "status": "not_checked",
+          "method": "net_floor_visibility_graph_point_path_with_estimated_stair_run",
+          "status": "inferred",
           "evaluator": "RouteUsabilityEvaluator",
           "evaluator_version": "1.0.0",
           "subject_ids": [
@@ -5267,10 +5279,10 @@
         },
         {
           "metric": "entrance_route_length_m",
-          "value": null,
+          "value": 33.205,
           "unit": "m",
-          "method": "no_measurable_portal_path",
-          "status": "not_checked",
+          "method": "net_floor_visibility_graph_point_path_with_estimated_stair_run",
+          "status": "inferred",
           "evaluator": "RouteUsabilityEvaluator",
           "evaluator_version": "1.0.0",
           "subject_ids": [
@@ -5291,10 +5303,10 @@
         },
         {
           "metric": "entrance_route_length_m",
-          "value": null,
+          "value": 29.605,
           "unit": "m",
-          "method": "no_measurable_portal_path",
-          "status": "not_checked",
+          "method": "net_floor_visibility_graph_point_path_with_estimated_stair_run",
+          "status": "inferred",
           "evaluator": "RouteUsabilityEvaluator",
           "evaluator_version": "1.0.0",
           "subject_ids": [
@@ -5303,10 +5315,10 @@
         },
         {
           "metric": "entrance_route_length_m",
-          "value": null,
+          "value": 31.256,
           "unit": "m",
-          "method": "no_measurable_portal_path",
-          "status": "not_checked",
+          "method": "net_floor_visibility_graph_point_path_with_estimated_stair_run",
+          "status": "inferred",
           "evaluator": "RouteUsabilityEvaluator",
           "evaluator_version": "1.0.0",
           "subject_ids": [
@@ -5327,10 +5339,10 @@
         },
         {
           "metric": "entrance_route_length_m",
-          "value": null,
+          "value": 22.133,
           "unit": "m",
-          "method": "no_measurable_portal_path",
-          "status": "not_checked",
+          "method": "net_floor_visibility_graph_point_path_with_estimated_stair_run",
+          "status": "inferred",
           "evaluator": "RouteUsabilityEvaluator",
           "evaluator_version": "1.0.0",
           "subject_ids": [
@@ -5339,20 +5351,46 @@
         },
         {
           "metric": "guest_routes_crossing_private_count",
-          "value": null,
+          "value": 0,
           "unit": null,
           "method": "destination_visibility_graph",
-          "status": "not_checked",
+          "status": "measured",
           "evaluator": "RouteUsabilityEvaluator",
           "evaluator_version": "1.0.0",
           "subject_ids": []
         },
         {
           "metric": "garage_to_kitchen_length_m",
-          "value": null,
+          "value": 12.061,
           "unit": "m",
-          "method": "no_measurable_path",
-          "status": "not_checked",
+          "method": "net_floor_visibility_graph_point_path",
+          "status": "measured",
+          "evaluator": "RouteUsabilityEvaluator",
+          "evaluator_version": "1.0.0",
+          "subject_ids": [
+            "sp-garage",
+            "sp-kitchen"
+          ]
+        },
+        {
+          "metric": "garage_to_kitchen_level_changes",
+          "value": 0,
+          "unit": null,
+          "method": "stair_edges",
+          "status": "measured",
+          "evaluator": "RouteUsabilityEvaluator",
+          "evaluator_version": "1.0.0",
+          "subject_ids": [
+            "sp-garage",
+            "sp-kitchen"
+          ]
+        },
+        {
+          "metric": "garage_to_kitchen_rooms_crossed",
+          "value": "sp-garage,sp-corridor-b0,sp-living,sp-dining,sp-kitchen",
+          "unit": null,
+          "method": "path_trace",
+          "status": "measured",
           "evaluator": "RouteUsabilityEvaluator",
           "evaluator_version": "1.0.0",
           "subject_ids": [
@@ -5362,10 +5400,36 @@
         },
         {
           "metric": "entry_to_kitchen_length_m",
-          "value": null,
+          "value": 11.891,
           "unit": "m",
-          "method": "no_measurable_path",
-          "status": "not_checked",
+          "method": "net_floor_visibility_graph_point_path",
+          "status": "measured",
+          "evaluator": "RouteUsabilityEvaluator",
+          "evaluator_version": "1.0.0",
+          "subject_ids": [
+            "sp-entry",
+            "sp-kitchen"
+          ]
+        },
+        {
+          "metric": "entry_to_kitchen_level_changes",
+          "value": 0,
+          "unit": null,
+          "method": "stair_edges",
+          "status": "measured",
+          "evaluator": "RouteUsabilityEvaluator",
+          "evaluator_version": "1.0.0",
+          "subject_ids": [
+            "sp-entry",
+            "sp-kitchen"
+          ]
+        },
+        {
+          "metric": "entry_to_kitchen_rooms_crossed",
+          "value": "sp-entry,sp-corridor-b0,sp-living,sp-dining,sp-kitchen",
+          "unit": null,
+          "method": "path_trace",
+          "status": "measured",
           "evaluator": "RouteUsabilityEvaluator",
           "evaluator_version": "1.0.0",
           "subject_ids": [
@@ -5984,145 +6048,35 @@
       ],
       "findings": [
         {
-          "id": "u-73f8ba35884efe871c4a",
+          "id": "u-4ecf73e506427407263c",
           "constraint_id": null,
-          "code": "net_wall_basis_incomplete",
+          "code": "living_through_traffic",
           "strength": "soft",
-          "message": "Net area subtracts modelled walls only; wall thickness is missing on edges.",
+          "message": "Portal desire line crosses a work/seating zone; alternate routes may exist.",
           "subject_ids": [
-            "sp-corridor-b0"
+            "sp-living",
+            "d-living-corridor-b0",
+            "o-kitchen-living"
           ],
           "status": "inferred",
-          "evaluator": "NetAreaEvaluator",
-          "method": "polygon_intersection",
+          "evaluator": "RouteUsabilityEvaluator",
+          "method": "direct_desire_line_zone_intersection",
           "assumption_basis": "docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption)"
         },
         {
-          "id": "u-85f13cf4c40ed56a41a7",
+          "id": "u-354669dcbc103c3ac6c5",
           "constraint_id": null,
-          "code": "net_wall_basis_incomplete",
+          "code": "living_through_traffic",
           "strength": "soft",
-          "message": "Net area subtracts modelled walls only; wall thickness is missing on edges.",
+          "message": "Portal desire line crosses a work/seating zone; alternate routes may exist.",
           "subject_ids": [
-            "sp-corridor-b1"
+            "sp-living",
+            "d-living-corridor-b0",
+            "o-dining-living"
           ],
           "status": "inferred",
-          "evaluator": "NetAreaEvaluator",
-          "method": "polygon_intersection",
-          "assumption_basis": "docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption)"
-        },
-        {
-          "id": "u-90a904bdbda43d1f4bda",
-          "constraint_id": null,
-          "code": "net_wall_basis_incomplete",
-          "strength": "soft",
-          "message": "Net area subtracts modelled walls only; wall thickness is missing on edges.",
-          "subject_ids": [
-            "sp-living"
-          ],
-          "status": "inferred",
-          "evaluator": "NetAreaEvaluator",
-          "method": "polygon_intersection",
-          "assumption_basis": "docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption)"
-        },
-        {
-          "id": "u-16543cdb660896f16ad1",
-          "constraint_id": null,
-          "code": "stair_height_mismatch",
-          "strength": "soft",
-          "message": "Riser total disagrees with connected floor elevations.",
-          "subject_ids": [
-            "st-0",
-            "lv-down-300",
-            "lv-entry"
-          ],
-          "status": "measured",
-          "evaluator": "StairUsabilityEvaluator",
-          "method": "polygon_intersection",
-          "assumption_basis": "docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption)"
-        },
-        {
-          "id": "u-cf73f9c11e104ca63333",
-          "constraint_id": null,
-          "code": "dining_no_sampled_fit",
-          "strength": "soft",
-          "message": "No arrangement in the declared discrete template search; continuous infeasibility has not been proved.",
-          "subject_ids": [
-            "sp-dining"
-          ],
-          "status": "inferred",
-          "evaluator": "FurnitureUsabilityEvaluator",
-          "method": "0_1m_four_rotation_polygon_packing",
-          "assumption_basis": "docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption)"
-        },
-        {
-          "id": "u-9bee180f6924f340ca8e",
-          "constraint_id": null,
-          "code": "kitchen_no_sampled_fit",
-          "strength": "soft",
-          "message": "No arrangement in the declared discrete template search; continuous infeasibility has not been proved.",
-          "subject_ids": [
-            "sp-kitchen"
-          ],
-          "status": "inferred",
-          "evaluator": "FurnitureUsabilityEvaluator",
-          "method": "0_1m_four_rotation_polygon_packing",
-          "assumption_basis": "docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption)"
-        },
-        {
-          "id": "u-9051c83285c9c1862d82",
-          "constraint_id": null,
-          "code": "bed_double_no_sampled_fit",
-          "strength": "soft",
-          "message": "No arrangement in the declared discrete template search; continuous infeasibility has not been proved.",
-          "subject_ids": [
-            "sp-bed-main"
-          ],
-          "status": "inferred",
-          "evaluator": "FurnitureUsabilityEvaluator",
-          "method": "0_1m_four_rotation_polygon_packing",
-          "assumption_basis": "docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption)"
-        },
-        {
-          "id": "u-084210b2a9192212fe2c",
-          "constraint_id": null,
-          "code": "bed_double_no_sampled_fit",
-          "strength": "soft",
-          "message": "No arrangement in the declared discrete template search; continuous infeasibility has not been proved.",
-          "subject_ids": [
-            "sp-bed-child-1"
-          ],
-          "status": "inferred",
-          "evaluator": "FurnitureUsabilityEvaluator",
-          "method": "0_1m_four_rotation_polygon_packing",
-          "assumption_basis": "docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption)"
-        },
-        {
-          "id": "u-39de98b306cbdc29de94",
-          "constraint_id": null,
-          "code": "bed_double_no_sampled_fit",
-          "strength": "soft",
-          "message": "No arrangement in the declared discrete template search; continuous infeasibility has not been proved.",
-          "subject_ids": [
-            "sp-bed-child-2"
-          ],
-          "status": "inferred",
-          "evaluator": "FurnitureUsabilityEvaluator",
-          "method": "0_1m_four_rotation_polygon_packing",
-          "assumption_basis": "docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption)"
-        },
-        {
-          "id": "u-613d4893d3b1ad23f335",
-          "constraint_id": null,
-          "code": "laundry_folding_no_sampled_fit",
-          "strength": "soft",
-          "message": "No arrangement in the declared discrete template search; continuous infeasibility has not been proved.",
-          "subject_ids": [
-            "sp-laundry"
-          ],
-          "status": "inferred",
-          "evaluator": "FurnitureUsabilityEvaluator",
-          "method": "0_1m_four_rotation_polygon_packing",
+          "evaluator": "RouteUsabilityEvaluator",
+          "method": "direct_desire_line_zone_intersection",
           "assumption_basis": "docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption)"
         },
         {
@@ -8505,7 +8459,17 @@
             "width_m": 1.2,
             "riser_count": 17,
             "riser_height_m": 0.1765,
-            "tread_depth_m": 0.28
+            "tread_depth_m": 0.28,
+            "walking_line": [
+              [
+                -0.487607,
+                17.685085
+              ],
+              [
+                0.468791,
+                13.185607
+              ]
+            ]
           }
         ],
         "zones": [
@@ -8861,7 +8825,7 @@
         ],
         "issues": []
       },
-      "model_hash": "9be240e328af02f546cf4b81843e9c141f76e4ffad714d9900458916fcb247f9",
+      "model_hash": "dad9239e7b7154c83db376616b5373a848eeec0b10c875566b5fe9e75afca6a9",
       "critics": [
         {
           "name": "NetAreaEvaluator",
@@ -8963,7 +8927,7 @@
         },
         {
           "metric": "net_wall_basis_complete",
-          "value": false,
+          "value": true,
           "unit": null,
           "method": "boundary_wall_coverage",
           "status": "measured",
@@ -9023,7 +8987,7 @@
         },
         {
           "metric": "net_wall_basis_complete",
-          "value": false,
+          "value": true,
           "unit": null,
           "method": "boundary_wall_coverage",
           "status": "measured",
@@ -9263,7 +9227,7 @@
         },
         {
           "metric": "net_wall_basis_complete",
-          "value": false,
+          "value": true,
           "unit": null,
           "method": "boundary_wall_coverage",
           "status": "measured",
@@ -9839,7 +9803,7 @@
         },
         {
           "metric": "net_extent_short_m",
-          "value": 2.05,
+          "value": 1.975,
           "unit": "m",
           "method": "net_minimum_rotated_bounds",
           "status": "measured",
@@ -9863,7 +9827,7 @@
         },
         {
           "metric": "net_wall_basis_complete",
-          "value": false,
+          "value": true,
           "unit": null,
           "method": "boundary_wall_coverage",
           "status": "measured",
@@ -10210,11 +10174,23 @@
           ]
         },
         {
+          "metric": "stair_required_run_m",
+          "value": 4.48,
+          "unit": "m",
+          "method": "tread_count_times_going",
+          "status": "measured",
+          "evaluator": "StairUsabilityEvaluator",
+          "evaluator_version": "1.0.0",
+          "subject_ids": [
+            "st-0"
+          ]
+        },
+        {
           "metric": "stair_run_fit",
-          "value": null,
+          "value": true,
           "unit": null,
-          "method": "missing_line_or_unsupported_complex_flight",
-          "status": "not_checked",
+          "method": "walking_line_and_footprint_width",
+          "status": "measured",
           "evaluator": "StairUsabilityEvaluator",
           "evaluator_version": "1.0.0",
           "subject_ids": [
@@ -10223,10 +10199,10 @@
         },
         {
           "metric": "stair_min_headroom_m",
-          "value": null,
-          "unit": null,
-          "method": "missing_line_or_unsupported_complex_flight",
-          "status": "not_checked",
+          "value": 1.25,
+          "unit": "m",
+          "method": "slab_intersection_pitchline",
+          "status": "measured",
           "evaluator": "StairUsabilityEvaluator",
           "evaluator_version": "1.0.0",
           "subject_ids": [
@@ -10235,21 +10211,37 @@
         },
         {
           "metric": "stair_landing_clear",
-          "value": null,
+          "value": true,
           "unit": null,
-          "method": "missing_line_or_unsupported_complex_flight",
-          "status": "not_checked",
+          "method": "landing_polygon_containment",
+          "status": "measured",
           "evaluator": "StairUsabilityEvaluator",
           "evaluator_version": "1.0.0",
           "subject_ids": [
-            "st-0"
-          ]
+            "st-0",
+            "sp-stair-0b"
+          ],
+          "assumption_basis": "assumption landing_m=0.9; precedent: docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption); not code checked"
+        },
+        {
+          "metric": "stair_landing_clear",
+          "value": true,
+          "unit": null,
+          "method": "landing_polygon_containment",
+          "status": "measured",
+          "evaluator": "StairUsabilityEvaluator",
+          "evaluator_version": "1.0.0",
+          "subject_ids": [
+            "st-0",
+            "sp-stair-0a"
+          ],
+          "assumption_basis": "assumption landing_m=0.9; precedent: docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption); not code checked"
         },
         {
           "metric": "dining_sampled_fit",
-          "value": false,
+          "value": true,
           "unit": null,
-          "method": "0_1m_four_rotation_polygon_packing",
+          "method": "0_1m_four_rotation_room_frame_packing",
           "status": "inferred",
           "evaluator": "FurnitureUsabilityEvaluator",
           "evaluator_version": "1.0.0",
@@ -10271,10 +10263,22 @@
           ]
         },
         {
+          "metric": "kitchen_aisle_width_m",
+          "value": null,
+          "unit": null,
+          "method": "no_facing_counter_pair",
+          "status": "not_checked",
+          "evaluator": "FurnitureUsabilityEvaluator",
+          "evaluator_version": "1.0.0",
+          "subject_ids": [
+            "sp-kitchen"
+          ]
+        },
+        {
           "metric": "kitchen_sampled_fit",
           "value": false,
           "unit": null,
-          "method": "0_1m_four_rotation_polygon_packing",
+          "method": "0_1m_four_rotation_room_frame_packing",
           "status": "inferred",
           "evaluator": "FurnitureUsabilityEvaluator",
           "evaluator_version": "1.0.0",
@@ -10287,7 +10291,7 @@
           "metric": "living_sampled_fit",
           "value": true,
           "unit": null,
-          "method": "0_1m_four_rotation_polygon_packing",
+          "method": "0_1m_four_rotation_room_frame_packing",
           "status": "inferred",
           "evaluator": "FurnitureUsabilityEvaluator",
           "evaluator_version": "1.0.0",
@@ -10300,7 +10304,7 @@
           "metric": "bathroom_sampled_fit",
           "value": true,
           "unit": null,
-          "method": "0_1m_four_rotation_polygon_packing",
+          "method": "0_1m_four_rotation_room_frame_packing",
           "status": "inferred",
           "evaluator": "FurnitureUsabilityEvaluator",
           "evaluator_version": "1.0.0",
@@ -10311,9 +10315,9 @@
         },
         {
           "metric": "bed_double_sampled_fit",
-          "value": false,
+          "value": true,
           "unit": null,
-          "method": "0_1m_four_rotation_polygon_packing",
+          "method": "0_1m_four_rotation_room_frame_packing",
           "status": "inferred",
           "evaluator": "FurnitureUsabilityEvaluator",
           "evaluator_version": "1.0.0",
@@ -10326,7 +10330,7 @@
           "metric": "bed_single_sampled_fit",
           "value": true,
           "unit": null,
-          "method": "0_1m_four_rotation_polygon_packing",
+          "method": "0_1m_four_rotation_room_frame_packing",
           "status": "inferred",
           "evaluator": "FurnitureUsabilityEvaluator",
           "evaluator_version": "1.0.0",
@@ -10339,7 +10343,7 @@
           "metric": "bed_double_sampled_fit",
           "value": false,
           "unit": null,
-          "method": "0_1m_four_rotation_polygon_packing",
+          "method": "0_1m_four_rotation_room_frame_packing",
           "status": "inferred",
           "evaluator": "FurnitureUsabilityEvaluator",
           "evaluator_version": "1.0.0",
@@ -10350,9 +10354,9 @@
         },
         {
           "metric": "bed_single_sampled_fit",
-          "value": false,
+          "value": true,
           "unit": null,
-          "method": "0_1m_four_rotation_polygon_packing",
+          "method": "0_1m_four_rotation_room_frame_packing",
           "status": "inferred",
           "evaluator": "FurnitureUsabilityEvaluator",
           "evaluator_version": "1.0.0",
@@ -10365,7 +10369,7 @@
           "metric": "bed_double_sampled_fit",
           "value": false,
           "unit": null,
-          "method": "0_1m_four_rotation_polygon_packing",
+          "method": "0_1m_four_rotation_room_frame_packing",
           "status": "inferred",
           "evaluator": "FurnitureUsabilityEvaluator",
           "evaluator_version": "1.0.0",
@@ -10376,9 +10380,9 @@
         },
         {
           "metric": "bed_single_sampled_fit",
-          "value": false,
+          "value": true,
           "unit": null,
-          "method": "0_1m_four_rotation_polygon_packing",
+          "method": "0_1m_four_rotation_room_frame_packing",
           "status": "inferred",
           "evaluator": "FurnitureUsabilityEvaluator",
           "evaluator_version": "1.0.0",
@@ -10391,7 +10395,7 @@
           "metric": "bathroom_sampled_fit",
           "value": true,
           "unit": null,
-          "method": "0_1m_four_rotation_polygon_packing",
+          "method": "0_1m_four_rotation_room_frame_packing",
           "status": "inferred",
           "evaluator": "FurnitureUsabilityEvaluator",
           "evaluator_version": "1.0.0",
@@ -10404,7 +10408,7 @@
           "metric": "desk_chair_sampled_fit",
           "value": true,
           "unit": null,
-          "method": "0_1m_four_rotation_polygon_packing",
+          "method": "0_1m_four_rotation_room_frame_packing",
           "status": "inferred",
           "evaluator": "FurnitureUsabilityEvaluator",
           "evaluator_version": "1.0.0",
@@ -10427,9 +10431,9 @@
         },
         {
           "metric": "laundry_folding_sampled_fit",
-          "value": false,
+          "value": true,
           "unit": null,
-          "method": "0_1m_four_rotation_polygon_packing",
+          "method": "0_1m_four_rotation_room_frame_packing",
           "status": "inferred",
           "evaluator": "FurnitureUsabilityEvaluator",
           "evaluator_version": "1.0.0",
@@ -10442,7 +10446,7 @@
           "metric": "service_sampled_fit",
           "value": true,
           "unit": null,
-          "method": "0_1m_four_rotation_polygon_packing",
+          "method": "0_1m_four_rotation_room_frame_packing",
           "status": "inferred",
           "evaluator": "FurnitureUsabilityEvaluator",
           "evaluator_version": "1.0.0",
@@ -10465,10 +10469,10 @@
         },
         {
           "metric": "entrance_route_length_m",
-          "value": null,
+          "value": 20.195,
           "unit": "m",
-          "method": "no_measurable_portal_path",
-          "status": "not_checked",
+          "method": "net_floor_visibility_graph_point_path",
+          "status": "measured",
           "evaluator": "RouteUsabilityEvaluator",
           "evaluator_version": "1.0.0",
           "subject_ids": [
@@ -10489,10 +10493,10 @@
         },
         {
           "metric": "entrance_route_length_m",
-          "value": null,
+          "value": 18.012,
           "unit": "m",
-          "method": "no_measurable_portal_path",
-          "status": "not_checked",
+          "method": "net_floor_visibility_graph_point_path",
+          "status": "measured",
           "evaluator": "RouteUsabilityEvaluator",
           "evaluator_version": "1.0.0",
           "subject_ids": [
@@ -10501,10 +10505,10 @@
         },
         {
           "metric": "entrance_route_length_m",
-          "value": null,
+          "value": 19.855,
           "unit": "m",
-          "method": "no_measurable_portal_path",
-          "status": "not_checked",
+          "method": "net_floor_visibility_graph_point_path",
+          "status": "measured",
           "evaluator": "RouteUsabilityEvaluator",
           "evaluator_version": "1.0.0",
           "subject_ids": [
@@ -10513,10 +10517,10 @@
         },
         {
           "metric": "entrance_route_length_m",
-          "value": null,
+          "value": 15.999,
           "unit": "m",
-          "method": "no_measurable_portal_path",
-          "status": "not_checked",
+          "method": "net_floor_visibility_graph_point_path",
+          "status": "measured",
           "evaluator": "RouteUsabilityEvaluator",
           "evaluator_version": "1.0.0",
           "subject_ids": [
@@ -10525,10 +10529,10 @@
         },
         {
           "metric": "entrance_route_length_m",
-          "value": null,
+          "value": 25.793,
           "unit": "m",
-          "method": "no_measurable_portal_path",
-          "status": "not_checked",
+          "method": "net_floor_visibility_graph_point_path",
+          "status": "measured",
           "evaluator": "RouteUsabilityEvaluator",
           "evaluator_version": "1.0.0",
           "subject_ids": [
@@ -10537,10 +10541,10 @@
         },
         {
           "metric": "entrance_route_length_m",
-          "value": null,
+          "value": 24.84,
           "unit": "m",
-          "method": "no_measurable_portal_path",
-          "status": "not_checked",
+          "method": "net_floor_visibility_graph_point_path",
+          "status": "measured",
           "evaluator": "RouteUsabilityEvaluator",
           "evaluator_version": "1.0.0",
           "subject_ids": [
@@ -10549,10 +10553,10 @@
         },
         {
           "metric": "entrance_route_length_m",
-          "value": null,
+          "value": 21.03,
           "unit": "m",
-          "method": "no_measurable_portal_path",
-          "status": "not_checked",
+          "method": "net_floor_visibility_graph_point_path",
+          "status": "measured",
           "evaluator": "RouteUsabilityEvaluator",
           "evaluator_version": "1.0.0",
           "subject_ids": [
@@ -10561,10 +10565,10 @@
         },
         {
           "metric": "entrance_route_length_m",
-          "value": null,
+          "value": 22.989,
           "unit": "m",
-          "method": "no_measurable_portal_path",
-          "status": "not_checked",
+          "method": "net_floor_visibility_graph_point_path",
+          "status": "measured",
           "evaluator": "RouteUsabilityEvaluator",
           "evaluator_version": "1.0.0",
           "subject_ids": [
@@ -10573,10 +10577,10 @@
         },
         {
           "metric": "entrance_route_length_m",
-          "value": null,
+          "value": 25.141,
           "unit": "m",
-          "method": "no_measurable_portal_path",
-          "status": "not_checked",
+          "method": "net_floor_visibility_graph_point_path",
+          "status": "measured",
           "evaluator": "RouteUsabilityEvaluator",
           "evaluator_version": "1.0.0",
           "subject_ids": [
@@ -10633,10 +10637,10 @@
         },
         {
           "metric": "entrance_route_length_m",
-          "value": null,
+          "value": 8.275,
           "unit": "m",
-          "method": "no_measurable_portal_path",
-          "status": "not_checked",
+          "method": "net_floor_visibility_graph_point_path",
+          "status": "measured",
           "evaluator": "RouteUsabilityEvaluator",
           "evaluator_version": "1.0.0",
           "subject_ids": [
@@ -10645,10 +10649,10 @@
         },
         {
           "metric": "entrance_route_length_m",
-          "value": null,
+          "value": 16.41,
           "unit": "m",
-          "method": "no_measurable_portal_path",
-          "status": "not_checked",
+          "method": "net_floor_visibility_graph_point_path",
+          "status": "measured",
           "evaluator": "RouteUsabilityEvaluator",
           "evaluator_version": "1.0.0",
           "subject_ids": [
@@ -10657,20 +10661,46 @@
         },
         {
           "metric": "guest_routes_crossing_private_count",
-          "value": null,
+          "value": 0,
           "unit": null,
           "method": "destination_visibility_graph",
-          "status": "not_checked",
+          "status": "measured",
           "evaluator": "RouteUsabilityEvaluator",
           "evaluator_version": "1.0.0",
           "subject_ids": []
         },
         {
           "metric": "garage_to_kitchen_length_m",
-          "value": null,
+          "value": 13.115,
           "unit": "m",
-          "method": "no_measurable_path",
-          "status": "not_checked",
+          "method": "net_floor_visibility_graph_point_path",
+          "status": "measured",
+          "evaluator": "RouteUsabilityEvaluator",
+          "evaluator_version": "1.0.0",
+          "subject_ids": [
+            "sp-garage",
+            "sp-kitchen"
+          ]
+        },
+        {
+          "metric": "garage_to_kitchen_level_changes",
+          "value": 0,
+          "unit": null,
+          "method": "stair_edges",
+          "status": "measured",
+          "evaluator": "RouteUsabilityEvaluator",
+          "evaluator_version": "1.0.0",
+          "subject_ids": [
+            "sp-garage",
+            "sp-kitchen"
+          ]
+        },
+        {
+          "metric": "garage_to_kitchen_rooms_crossed",
+          "value": "sp-garage,sp-corridor-b0,sp-living,sp-dining,sp-kitchen",
+          "unit": null,
+          "method": "path_trace",
+          "status": "measured",
           "evaluator": "RouteUsabilityEvaluator",
           "evaluator_version": "1.0.0",
           "subject_ids": [
@@ -10680,10 +10710,36 @@
         },
         {
           "metric": "entry_to_kitchen_length_m",
-          "value": null,
+          "value": 17.117,
           "unit": "m",
-          "method": "no_measurable_path",
-          "status": "not_checked",
+          "method": "net_floor_visibility_graph_point_path",
+          "status": "measured",
+          "evaluator": "RouteUsabilityEvaluator",
+          "evaluator_version": "1.0.0",
+          "subject_ids": [
+            "sp-entry",
+            "sp-kitchen"
+          ]
+        },
+        {
+          "metric": "entry_to_kitchen_level_changes",
+          "value": 0,
+          "unit": null,
+          "method": "stair_edges",
+          "status": "measured",
+          "evaluator": "RouteUsabilityEvaluator",
+          "evaluator_version": "1.0.0",
+          "subject_ids": [
+            "sp-entry",
+            "sp-kitchen"
+          ]
+        },
+        {
+          "metric": "entry_to_kitchen_rooms_crossed",
+          "value": "sp-entry,sp-corridor-b0,sp-living,sp-dining,sp-kitchen",
+          "unit": null,
+          "method": "path_trace",
+          "status": "measured",
           "evaluator": "RouteUsabilityEvaluator",
           "evaluator_version": "1.0.0",
           "subject_ids": [
@@ -10815,7 +10871,7 @@
         },
         {
           "metric": "residual_area_m2",
-          "value": 0.182,
+          "value": 1.848,
           "unit": "m2",
           "method": "morphological_opening",
           "status": "measured",
@@ -11302,90 +11358,19 @@
       ],
       "findings": [
         {
-          "id": "u-73f8ba35884efe871c4a",
+          "id": "u-5c3f89aa30d5c3fdfcf9",
           "constraint_id": null,
-          "code": "net_wall_basis_incomplete",
+          "code": "stair_low_headroom",
           "strength": "soft",
-          "message": "Net area subtracts modelled walls only; wall thickness is missing on edges.",
-          "subject_ids": [
-            "sp-corridor-b0"
-          ],
-          "status": "inferred",
-          "evaluator": "NetAreaEvaluator",
-          "method": "polygon_intersection",
-          "assumption_basis": "docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption)"
-        },
-        {
-          "id": "u-85f13cf4c40ed56a41a7",
-          "constraint_id": null,
-          "code": "net_wall_basis_incomplete",
-          "strength": "soft",
-          "message": "Net area subtracts modelled walls only; wall thickness is missing on edges.",
-          "subject_ids": [
-            "sp-corridor-b1"
-          ],
-          "status": "inferred",
-          "evaluator": "NetAreaEvaluator",
-          "method": "polygon_intersection",
-          "assumption_basis": "docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption)"
-        },
-        {
-          "id": "u-90a904bdbda43d1f4bda",
-          "constraint_id": null,
-          "code": "net_wall_basis_incomplete",
-          "strength": "soft",
-          "message": "Net area subtracts modelled walls only; wall thickness is missing on edges.",
-          "subject_ids": [
-            "sp-living"
-          ],
-          "status": "inferred",
-          "evaluator": "NetAreaEvaluator",
-          "method": "polygon_intersection",
-          "assumption_basis": "docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption)"
-        },
-        {
-          "id": "u-cba81991e7e4c9a5998d",
-          "constraint_id": null,
-          "code": "net_wall_basis_incomplete",
-          "strength": "soft",
-          "message": "Net area subtracts modelled walls only; wall thickness is missing on edges.",
-          "subject_ids": [
-            "sp-stair-0a"
-          ],
-          "status": "inferred",
-          "evaluator": "NetAreaEvaluator",
-          "method": "polygon_intersection",
-          "assumption_basis": "docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption)"
-        },
-        {
-          "id": "u-16543cdb660896f16ad1",
-          "constraint_id": null,
-          "code": "stair_height_mismatch",
-          "strength": "soft",
-          "message": "Riser total disagrees with connected floor elevations.",
+          "message": "Pitch-line headroom 1.250 m under slab.",
           "subject_ids": [
             "st-0",
-            "lv-down-300",
-            "lv-entry"
-          ],
-          "status": "measured",
-          "evaluator": "StairUsabilityEvaluator",
-          "method": "polygon_intersection",
-          "assumption_basis": "docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption)"
-        },
-        {
-          "id": "u-cf73f9c11e104ca63333",
-          "constraint_id": null,
-          "code": "dining_no_sampled_fit",
-          "strength": "soft",
-          "message": "No arrangement in the declared discrete template search; continuous infeasibility has not been proved.",
-          "subject_ids": [
-            "sp-dining"
+            "slab-roof-down-300"
           ],
           "status": "inferred",
-          "evaluator": "FurnitureUsabilityEvaluator",
-          "method": "0_1m_four_rotation_polygon_packing",
-          "assumption_basis": "docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption)"
+          "evaluator": "StairUsabilityEvaluator",
+          "method": "slab_intersection_piecewise_linear_pitchline",
+          "assumption_basis": "assumption min_headroom_m=2; precedent: https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/996860/Approved_Document_K.pdf; not code checked"
         },
         {
           "id": "u-9bee180f6924f340ca8e",
@@ -11398,91 +11383,7 @@
           ],
           "status": "inferred",
           "evaluator": "FurnitureUsabilityEvaluator",
-          "method": "0_1m_four_rotation_polygon_packing",
-          "assumption_basis": "docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption)"
-        },
-        {
-          "id": "u-9051c83285c9c1862d82",
-          "constraint_id": null,
-          "code": "bed_double_no_sampled_fit",
-          "strength": "soft",
-          "message": "No arrangement in the declared discrete template search; continuous infeasibility has not been proved.",
-          "subject_ids": [
-            "sp-bed-main"
-          ],
-          "status": "inferred",
-          "evaluator": "FurnitureUsabilityEvaluator",
-          "method": "0_1m_four_rotation_polygon_packing",
-          "assumption_basis": "docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption)"
-        },
-        {
-          "id": "u-084210b2a9192212fe2c",
-          "constraint_id": null,
-          "code": "bed_double_no_sampled_fit",
-          "strength": "soft",
-          "message": "No arrangement in the declared discrete template search; continuous infeasibility has not been proved.",
-          "subject_ids": [
-            "sp-bed-child-1"
-          ],
-          "status": "inferred",
-          "evaluator": "FurnitureUsabilityEvaluator",
-          "method": "0_1m_four_rotation_polygon_packing",
-          "assumption_basis": "docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption)"
-        },
-        {
-          "id": "u-6ec2956dceb35b66d194",
-          "constraint_id": null,
-          "code": "bed_single_no_sampled_fit",
-          "strength": "soft",
-          "message": "No arrangement in the declared discrete template search; continuous infeasibility has not been proved.",
-          "subject_ids": [
-            "sp-bed-child-1"
-          ],
-          "status": "inferred",
-          "evaluator": "FurnitureUsabilityEvaluator",
-          "method": "0_1m_four_rotation_polygon_packing",
-          "assumption_basis": "docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption)"
-        },
-        {
-          "id": "u-39de98b306cbdc29de94",
-          "constraint_id": null,
-          "code": "bed_double_no_sampled_fit",
-          "strength": "soft",
-          "message": "No arrangement in the declared discrete template search; continuous infeasibility has not been proved.",
-          "subject_ids": [
-            "sp-bed-child-2"
-          ],
-          "status": "inferred",
-          "evaluator": "FurnitureUsabilityEvaluator",
-          "method": "0_1m_four_rotation_polygon_packing",
-          "assumption_basis": "docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption)"
-        },
-        {
-          "id": "u-4cf22d5ebab17cd2c9ed",
-          "constraint_id": null,
-          "code": "bed_single_no_sampled_fit",
-          "strength": "soft",
-          "message": "No arrangement in the declared discrete template search; continuous infeasibility has not been proved.",
-          "subject_ids": [
-            "sp-bed-child-2"
-          ],
-          "status": "inferred",
-          "evaluator": "FurnitureUsabilityEvaluator",
-          "method": "0_1m_four_rotation_polygon_packing",
-          "assumption_basis": "docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption)"
-        },
-        {
-          "id": "u-613d4893d3b1ad23f335",
-          "constraint_id": null,
-          "code": "laundry_folding_no_sampled_fit",
-          "strength": "soft",
-          "message": "No arrangement in the declared discrete template search; continuous infeasibility has not been proved.",
-          "subject_ids": [
-            "sp-laundry"
-          ],
-          "status": "inferred",
-          "evaluator": "FurnitureUsabilityEvaluator",
-          "method": "0_1m_four_rotation_polygon_packing",
+          "method": "0_1m_four_rotation_room_frame_packing",
           "assumption_basis": "docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption)"
         },
         {
@@ -11518,6 +11419,27 @@
           "assumption_basis": "docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption)"
         },
         {
+          "id": "u-4daf1e3e3bc9e131d4c8",
+          "constraint_id": null,
+          "code": "daily_route_long",
+          "strength": "soft",
+          "message": "entry_to_kitchen: 17.117 m point route.",
+          "subject_ids": [
+            "sp-entry",
+            "sp-kitchen",
+            "sp-entry",
+            "d-entry-corridor-b0",
+            "d-living-corridor-b0",
+            "o-dining-living",
+            "o-kitchen-dining",
+            "sp-kitchen"
+          ],
+          "status": "measured",
+          "evaluator": "RouteUsabilityEvaluator",
+          "method": "visibility_graph",
+          "assumption_basis": "assumption max_daily_route_m=15; precedent: docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption); not code checked"
+        },
+        {
           "id": "u-0a9e43a426014dad2e79",
           "constraint_id": null,
           "code": "excess_circulation",
@@ -11532,36 +11454,6 @@
           "evaluator": "RouteUsabilityEvaluator",
           "method": "polygon_intersection",
           "assumption_basis": "assumption max_corridor_ratio=0.25; precedent: docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption); not code checked"
-        },
-        {
-          "id": "u-eb27bf87fc86d914ba2c",
-          "constraint_id": null,
-          "code": "bedroom_noise_stacking",
-          "strength": "soft",
-          "message": "Noisy activity beside/above/below sleeping space; acoustic assembly performance is unknown.",
-          "subject_ids": [
-            "sp-bed-main",
-            "sp-kitchen"
-          ],
-          "status": "inferred",
-          "evaluator": "PrivacyUsabilityEvaluator",
-          "method": "plan_contact_or_stack",
-          "assumption_basis": "docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption)"
-        },
-        {
-          "id": "u-37a4aa184d4f3a931eac",
-          "constraint_id": null,
-          "code": "bedroom_noise_stacking",
-          "strength": "soft",
-          "message": "Noisy activity beside/above/below sleeping space; acoustic assembly performance is unknown.",
-          "subject_ids": [
-            "sp-bed-main",
-            "sp-living"
-          ],
-          "status": "inferred",
-          "evaluator": "PrivacyUsabilityEvaluator",
-          "method": "plan_contact_or_stack",
-          "assumption_basis": "docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption)"
         },
         {
           "id": "u-77f5082ec230626dcce0",
@@ -13868,7 +13760,7 @@
         },
         {
           "metric": "net_wall_basis_complete",
-          "value": false,
+          "value": true,
           "unit": null,
           "method": "boundary_wall_coverage",
           "status": "measured",
@@ -14108,7 +14000,7 @@
         },
         {
           "metric": "net_wall_basis_complete",
-          "value": false,
+          "value": true,
           "unit": null,
           "method": "boundary_wall_coverage",
           "status": "measured",
@@ -14852,9 +14744,9 @@
         },
         {
           "metric": "dining_sampled_fit",
-          "value": false,
+          "value": true,
           "unit": null,
-          "method": "0_1m_four_rotation_polygon_packing",
+          "method": "0_1m_four_rotation_room_frame_packing",
           "status": "inferred",
           "evaluator": "FurnitureUsabilityEvaluator",
           "evaluator_version": "1.0.0",
@@ -14876,10 +14768,22 @@
           ]
         },
         {
+          "metric": "kitchen_aisle_width_m",
+          "value": null,
+          "unit": null,
+          "method": "no_facing_counter_pair",
+          "status": "not_checked",
+          "evaluator": "FurnitureUsabilityEvaluator",
+          "evaluator_version": "1.0.0",
+          "subject_ids": [
+            "sp-kitchen"
+          ]
+        },
+        {
           "metric": "kitchen_sampled_fit",
           "value": false,
           "unit": null,
-          "method": "0_1m_four_rotation_polygon_packing",
+          "method": "0_1m_four_rotation_room_frame_packing",
           "status": "inferred",
           "evaluator": "FurnitureUsabilityEvaluator",
           "evaluator_version": "1.0.0",
@@ -14892,7 +14796,7 @@
           "metric": "living_sampled_fit",
           "value": true,
           "unit": null,
-          "method": "0_1m_four_rotation_polygon_packing",
+          "method": "0_1m_four_rotation_room_frame_packing",
           "status": "inferred",
           "evaluator": "FurnitureUsabilityEvaluator",
           "evaluator_version": "1.0.0",
@@ -14905,7 +14809,7 @@
           "metric": "bathroom_sampled_fit",
           "value": true,
           "unit": null,
-          "method": "0_1m_four_rotation_polygon_packing",
+          "method": "0_1m_four_rotation_room_frame_packing",
           "status": "inferred",
           "evaluator": "FurnitureUsabilityEvaluator",
           "evaluator_version": "1.0.0",
@@ -14916,9 +14820,9 @@
         },
         {
           "metric": "bed_double_sampled_fit",
-          "value": false,
+          "value": true,
           "unit": null,
-          "method": "0_1m_four_rotation_polygon_packing",
+          "method": "0_1m_four_rotation_room_frame_packing",
           "status": "inferred",
           "evaluator": "FurnitureUsabilityEvaluator",
           "evaluator_version": "1.0.0",
@@ -14931,7 +14835,7 @@
           "metric": "bed_single_sampled_fit",
           "value": true,
           "unit": null,
-          "method": "0_1m_four_rotation_polygon_packing",
+          "method": "0_1m_four_rotation_room_frame_packing",
           "status": "inferred",
           "evaluator": "FurnitureUsabilityEvaluator",
           "evaluator_version": "1.0.0",
@@ -14944,7 +14848,7 @@
           "metric": "bed_double_sampled_fit",
           "value": false,
           "unit": null,
-          "method": "0_1m_four_rotation_polygon_packing",
+          "method": "0_1m_four_rotation_room_frame_packing",
           "status": "inferred",
           "evaluator": "FurnitureUsabilityEvaluator",
           "evaluator_version": "1.0.0",
@@ -14957,7 +14861,7 @@
           "metric": "bed_single_sampled_fit",
           "value": true,
           "unit": null,
-          "method": "0_1m_four_rotation_polygon_packing",
+          "method": "0_1m_four_rotation_room_frame_packing",
           "status": "inferred",
           "evaluator": "FurnitureUsabilityEvaluator",
           "evaluator_version": "1.0.0",
@@ -14970,7 +14874,7 @@
           "metric": "bed_double_sampled_fit",
           "value": false,
           "unit": null,
-          "method": "0_1m_four_rotation_polygon_packing",
+          "method": "0_1m_four_rotation_room_frame_packing",
           "status": "inferred",
           "evaluator": "FurnitureUsabilityEvaluator",
           "evaluator_version": "1.0.0",
@@ -14983,7 +14887,7 @@
           "metric": "bed_single_sampled_fit",
           "value": true,
           "unit": null,
-          "method": "0_1m_four_rotation_polygon_packing",
+          "method": "0_1m_four_rotation_room_frame_packing",
           "status": "inferred",
           "evaluator": "FurnitureUsabilityEvaluator",
           "evaluator_version": "1.0.0",
@@ -14996,7 +14900,7 @@
           "metric": "bathroom_sampled_fit",
           "value": true,
           "unit": null,
-          "method": "0_1m_four_rotation_polygon_packing",
+          "method": "0_1m_four_rotation_room_frame_packing",
           "status": "inferred",
           "evaluator": "FurnitureUsabilityEvaluator",
           "evaluator_version": "1.0.0",
@@ -15009,7 +14913,7 @@
           "metric": "desk_chair_sampled_fit",
           "value": true,
           "unit": null,
-          "method": "0_1m_four_rotation_polygon_packing",
+          "method": "0_1m_four_rotation_room_frame_packing",
           "status": "inferred",
           "evaluator": "FurnitureUsabilityEvaluator",
           "evaluator_version": "1.0.0",
@@ -15032,9 +14936,9 @@
         },
         {
           "metric": "laundry_folding_sampled_fit",
-          "value": false,
+          "value": true,
           "unit": null,
-          "method": "0_1m_four_rotation_polygon_packing",
+          "method": "0_1m_four_rotation_room_frame_packing",
           "status": "inferred",
           "evaluator": "FurnitureUsabilityEvaluator",
           "evaluator_version": "1.0.0",
@@ -15047,7 +14951,7 @@
           "metric": "service_sampled_fit",
           "value": true,
           "unit": null,
-          "method": "0_1m_four_rotation_polygon_packing",
+          "method": "0_1m_four_rotation_room_frame_packing",
           "status": "inferred",
           "evaluator": "FurnitureUsabilityEvaluator",
           "evaluator_version": "1.0.0",
@@ -15106,7 +15010,7 @@
         },
         {
           "metric": "entrance_route_length_m",
-          "value": 9.459,
+          "value": 9.496,
           "unit": "m",
           "method": "net_floor_visibility_graph_point_path",
           "status": "measured",
@@ -15118,10 +15022,10 @@
         },
         {
           "metric": "entrance_route_length_m",
-          "value": null,
+          "value": 15.852,
           "unit": "m",
-          "method": "no_measurable_portal_path",
-          "status": "not_checked",
+          "method": "net_floor_visibility_graph_point_path",
+          "status": "measured",
           "evaluator": "RouteUsabilityEvaluator",
           "evaluator_version": "1.0.0",
           "subject_ids": [
@@ -15130,10 +15034,10 @@
         },
         {
           "metric": "entrance_route_length_m",
-          "value": null,
+          "value": 14.407,
           "unit": "m",
-          "method": "no_measurable_portal_path",
-          "status": "not_checked",
+          "method": "net_floor_visibility_graph_point_path",
+          "status": "measured",
           "evaluator": "RouteUsabilityEvaluator",
           "evaluator_version": "1.0.0",
           "subject_ids": [
@@ -15166,10 +15070,10 @@
         },
         {
           "metric": "entrance_route_length_m",
-          "value": null,
+          "value": 10.881,
           "unit": "m",
-          "method": "no_measurable_portal_path",
-          "status": "not_checked",
+          "method": "net_floor_visibility_graph_point_path",
+          "status": "measured",
           "evaluator": "RouteUsabilityEvaluator",
           "evaluator_version": "1.0.0",
           "subject_ids": [
@@ -15202,10 +15106,10 @@
         },
         {
           "metric": "entrance_route_length_m",
-          "value": null,
+          "value": 17.044,
           "unit": "m",
-          "method": "no_measurable_portal_path",
-          "status": "not_checked",
+          "method": "net_floor_visibility_graph_point_path",
+          "status": "measured",
           "evaluator": "RouteUsabilityEvaluator",
           "evaluator_version": "1.0.0",
           "subject_ids": [
@@ -15860,48 +15764,6 @@
       ],
       "findings": [
         {
-          "id": "u-73f8ba35884efe871c4a",
-          "constraint_id": null,
-          "code": "net_wall_basis_incomplete",
-          "strength": "soft",
-          "message": "Net area subtracts modelled walls only; wall thickness is missing on edges.",
-          "subject_ids": [
-            "sp-corridor-b0"
-          ],
-          "status": "inferred",
-          "evaluator": "NetAreaEvaluator",
-          "method": "polygon_intersection",
-          "assumption_basis": "docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption)"
-        },
-        {
-          "id": "u-90a904bdbda43d1f4bda",
-          "constraint_id": null,
-          "code": "net_wall_basis_incomplete",
-          "strength": "soft",
-          "message": "Net area subtracts modelled walls only; wall thickness is missing on edges.",
-          "subject_ids": [
-            "sp-living"
-          ],
-          "status": "inferred",
-          "evaluator": "NetAreaEvaluator",
-          "method": "polygon_intersection",
-          "assumption_basis": "docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption)"
-        },
-        {
-          "id": "u-cf73f9c11e104ca63333",
-          "constraint_id": null,
-          "code": "dining_no_sampled_fit",
-          "strength": "soft",
-          "message": "No arrangement in the declared discrete template search; continuous infeasibility has not been proved.",
-          "subject_ids": [
-            "sp-dining"
-          ],
-          "status": "inferred",
-          "evaluator": "FurnitureUsabilityEvaluator",
-          "method": "0_1m_four_rotation_polygon_packing",
-          "assumption_basis": "docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption)"
-        },
-        {
           "id": "u-9bee180f6924f340ca8e",
           "constraint_id": null,
           "code": "kitchen_no_sampled_fit",
@@ -15912,63 +15774,7 @@
           ],
           "status": "inferred",
           "evaluator": "FurnitureUsabilityEvaluator",
-          "method": "0_1m_four_rotation_polygon_packing",
-          "assumption_basis": "docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption)"
-        },
-        {
-          "id": "u-9051c83285c9c1862d82",
-          "constraint_id": null,
-          "code": "bed_double_no_sampled_fit",
-          "strength": "soft",
-          "message": "No arrangement in the declared discrete template search; continuous infeasibility has not been proved.",
-          "subject_ids": [
-            "sp-bed-main"
-          ],
-          "status": "inferred",
-          "evaluator": "FurnitureUsabilityEvaluator",
-          "method": "0_1m_four_rotation_polygon_packing",
-          "assumption_basis": "docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption)"
-        },
-        {
-          "id": "u-084210b2a9192212fe2c",
-          "constraint_id": null,
-          "code": "bed_double_no_sampled_fit",
-          "strength": "soft",
-          "message": "No arrangement in the declared discrete template search; continuous infeasibility has not been proved.",
-          "subject_ids": [
-            "sp-bed-child-1"
-          ],
-          "status": "inferred",
-          "evaluator": "FurnitureUsabilityEvaluator",
-          "method": "0_1m_four_rotation_polygon_packing",
-          "assumption_basis": "docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption)"
-        },
-        {
-          "id": "u-39de98b306cbdc29de94",
-          "constraint_id": null,
-          "code": "bed_double_no_sampled_fit",
-          "strength": "soft",
-          "message": "No arrangement in the declared discrete template search; continuous infeasibility has not been proved.",
-          "subject_ids": [
-            "sp-bed-child-2"
-          ],
-          "status": "inferred",
-          "evaluator": "FurnitureUsabilityEvaluator",
-          "method": "0_1m_four_rotation_polygon_packing",
-          "assumption_basis": "docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption)"
-        },
-        {
-          "id": "u-613d4893d3b1ad23f335",
-          "constraint_id": null,
-          "code": "laundry_folding_no_sampled_fit",
-          "strength": "soft",
-          "message": "No arrangement in the declared discrete template search; continuous infeasibility has not been proved.",
-          "subject_ids": [
-            "sp-laundry"
-          ],
-          "status": "inferred",
-          "evaluator": "FurnitureUsabilityEvaluator",
-          "method": "0_1m_four_rotation_polygon_packing",
+          "method": "0_1m_four_rotation_room_frame_packing",
           "assumption_basis": "docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption)"
         },
         {
@@ -16089,7 +15895,7 @@
     {
       "id": "dead-end",
       "code": "long_dead_end",
-      "subject": "room",
+      "subject": "corridor",
       "defect_detected": true,
       "clean_twin_passes": true
     }
