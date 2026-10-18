@@ -690,6 +690,70 @@ class _Builder:
                 self.door(lv_a, la, corridor_of[b.id], 1.2, **hall)
             elif link.kind == "row":
                 self.door(lv_a, g if link.gap_dm else la, f"sp-link-{i}b", 1.2, **hall)
+        self._build_relation_doors()
+
+    def _build_relation_doors(self) -> None:
+        """Place doors for connected relations between touching spaces not covered by clusters."""
+        connected_pairs: set[frozenset[str]] = {
+            frozenset(o.connects) for o in self.openings if len(o.connects) == 2
+        }
+        for adj in self.program.adjacencies:
+            if adj.kind is not AdjacencyKind.CONNECTED:
+                continue
+            if adj.a == EXTERIOR or adj.b == EXTERIOR:
+                target = adj.a if adj.b == EXTERIOR else adj.b
+                target_spaces = [s.id for s in self.spaces if s.program_item_id == target]
+                for sid in target_spaces:
+                    if any(sid in o.connects and EXTERIOR in o.connects for o in self.openings):
+                        continue
+                    sp = self.space(sid)
+                    self.place(
+                        sp.level_id,
+                        sid,
+                        None,
+                        OpeningKind.DOOR,
+                        0.9,
+                        min_width_m=0.8,
+                        prefix="d-ext",
+                    )
+                continue
+
+            a_spaces = [s.id for s in self.spaces if s.program_item_id == adj.a]
+            b_spaces = [s.id for s in self.spaces if s.program_item_id == adj.b]
+            for a in a_spaces:
+                for b in b_spaces:
+                    pair = frozenset((a, b))
+                    if pair in connected_pairs:
+                        continue
+                    sa, sb = self.space(a), self.space(b)
+                    if sa.level_id != sb.level_id:
+                        continue
+                    if not self._walls_between(sa.level_id, a, b):
+                        continue
+                    fa, fb = sa.function, sb.function
+                    if fa in OPEN_PLAN_FUNCTIONS and fb in OPEN_PLAN_FUNCTIONS:
+                        door = self.place(
+                            sa.level_id,
+                            a,
+                            b,
+                            OpeningKind.OPENING,
+                            2.4,
+                            min_width_m=0.9,
+                            prefix="o",
+                        )
+                    else:
+                        dep = b if fb in DEPENDENT_FUNCTIONS else a
+                        door = self.place(
+                            sa.level_id,
+                            a,
+                            b,
+                            OpeningKind.DOOR,
+                            0.8,
+                            min_width_m=0.7,
+                            opens_into=dep,
+                        )
+                    if door is not None:
+                        connected_pairs.add(pair)
 
     def build_windows(self) -> None:
         big = {S.LIVING, S.FAMILY, S.RECEPTION, S.DINING, S.KITCHEN}

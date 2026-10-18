@@ -22,6 +22,9 @@ OP_RETHINK: str = "rethink"
 OP_STRATEGY: str = "strategy"
 OP_ORIENTATION: str = "orientation"
 OP_DAYLIGHT: str = "daylight"
+OP_STAIR: str = "stair"
+OP_OUTDOOR: str = "outdoor"
+OP_PROPOSAL: str = "proposal"
 
 SUPPORTED_REVISION_OPS: tuple[str, ...] = (
     OP_AREA,
@@ -34,6 +37,9 @@ SUPPORTED_REVISION_OPS: tuple[str, ...] = (
     OP_STRATEGY,
     OP_ORIENTATION,
     OP_DAYLIGHT,
+    OP_STAIR,
+    OP_OUTDOOR,
+    OP_PROPOSAL,
 )
 
 # Epistemic status values
@@ -125,4 +131,3 @@ TOOL_INKSCAPE: str = "inkscape"
 # Visual critique filenames and schema version
 VISUAL_CRITIQUE_FILENAME: str = "visual_critique.json"
 VISUAL_CRITIQUE_SCHEMA_VERSION: str = "1.0.0"
-

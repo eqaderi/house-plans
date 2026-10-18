@@ -22,10 +22,15 @@ from house_ai.constants.evaluations import (
     METRIC_FILL_VOLUME,
     METRIC_MAX_CUT,
     METRIC_MAX_FILL,
+    METRIC_ROOM_TERRACE_DOOR_COUNT,
+    METRIC_ROOM_TERRACE_LEVEL_DELTA,
+    METRIC_TERRACE_GROUND_DELTA,
     VIOLATION_ELEVATED_FLOOR_SUPPORT,
     VIOLATION_ELONGATED_ROOM,
     VIOLATION_EXTERIOR_ACCESS_LEVEL,
     VIOLATION_REQUIRED_DAYLIGHT_NO_WINDOW,
+    VIOLATION_TERRACE_NO_DOOR,
+    VIOLATION_TERRACE_STEP_TOO_HIGH,
     VIOLATION_TERRAIN_COVERAGE_INCOMPLETE,
 )
 from house_ai.domain.base import EXTERIOR
@@ -41,6 +46,7 @@ from house_ai.domain.program import (
     SpaceFunction,
     Strength,
 )
+from house_ai.domain.relations import hops_between, is_relation_satisfied, shared_wall_length
 from house_ai.domain.site import PointGeometry, PolygonGeometry, PolylineGeometry, SiteFeatureKind
 from house_ai.domain.terrain import elevation_at, site_surface
 
@@ -137,22 +143,11 @@ def _privacy(model: HouseModel) -> dict[str, Privacy]:
 
 
 def _hops(graph: dict[str, set[str]], origin: str) -> dict[str, int]:
-    dist, queue = {origin: 0}, deque([origin])
-    while queue:
-        n = queue.popleft()
-        for m in sorted(graph.get(n, ())):
-            if m not in dist:
-                dist[m] = dist[n] + 1
-                queue.append(m)
-    return dist
+    return hops_between(graph, origin)
 
 
 def _shared_length(model: HouseModel, a: str, b: str) -> float:
-    sa, sb = model.space(a), model.space(b)
-    if sa.level_id != sb.level_id:
-        return 0.0
-    inter = sa.boundary.to_shapely().boundary.intersection(sb.boundary.to_shapely().boundary)
-    return float(inter.length)
+    return shared_wall_length(model, a, b)
 
 
 def _spaces_for(model: HouseModel, item_id: str) -> list[str]:
@@ -482,11 +477,6 @@ class AdjacencyEvaluator:
             if i.function in OUTDOOR or i.level_preference in ("outdoor", "roof")
         }
         for adj in program.adjacencies:
-            if outdoor & {adj.a, adj.b}:
-                out.metric(
-                    "adjacency_satisfied", None, "outdoor_item_not_placed", NC, subjects=[adj.id]
-                )
-                continue
 
             def ends(item_id: str) -> list[str]:
                 if item_id == EXTERIOR:
@@ -494,16 +484,17 @@ class AdjacencyEvaluator:
                 return _spaces_for(model, item_id)
 
             a_s, b_s = ends(adj.a), ends(adj.b)
-            ok = self._satisfied(adj.kind, model, graph, a_s, b_s)
+            if outdoor & {adj.a, adj.b} and (not a_s or not b_s):
+                out.metric(
+                    "adjacency_satisfied", None, "outdoor_item_not_placed", NC, subjects=[adj.id]
+                )
+                continue
+
+            ok, method = is_relation_satisfied(adj.kind, model, graph, a_s, b_s)
             subjects = [adj.id, *a_s, *b_s]
             if ok is None:
                 out.metric("adjacency_satisfied", None, "not_evaluated", NC, subjects=subjects)
                 continue
-            method = (
-                "graph_analysis"
-                if adj.kind in (AdjacencyKind.CONNECTED, AdjacencyKind.NEAR)
-                else "shared_boundary"
-            )
             out.metric("adjacency_satisfied", ok, method, subjects=subjects)
             if adj.strength is Strength.HARD:
                 hard_n += 1
@@ -538,25 +529,8 @@ class AdjacencyEvaluator:
 
     @staticmethod
     def _satisfied(kind, model, graph, a_s, b_s) -> bool | None:
-        if not a_s or not b_s:
-            return False
-        K = AdjacencyKind
-        if kind is K.CONNECTED:
-            return any(b in graph.get(a, set()) for a in a_s for b in b_s)
-        if kind is K.VISUAL:
-            return None
-        pairs = [(a, b) for a in a_s for b in b_s if EXTERIOR not in (a, b)]
-        if kind is K.ADJACENT:
-            return any(_shared_length(model, a, b) >= SHARED_WALL_M for a, b in pairs)
-        if kind is K.NEAR:
-            return any(_hops(graph, a).get(b, 99) <= 2 for a in a_s for b in b_s)
-        if kind is K.SEPARATED:
-            return not any(
-                b in graph.get(a, set()) or _shared_length(model, a, b) > 0.1 for a, b in pairs
-            )
-        if kind is K.ACOUSTIC_SEPARATION:
-            return not any(_shared_length(model, a, b) > 0.1 for a, b in pairs)
-        return None
+        ok, _ = is_relation_satisfied(kind, model, graph, a_s, b_s)
+        return ok
 
 
 # ------------------------------------------------------------------ circulation
@@ -992,6 +966,71 @@ class SiteEvaluator:
                     [door.id],
                     INF,
                 )
+
+        # Indoor/outdoor relationships and room-to-terrace connections (S7-20)
+        terrace_spaces = [s for s in model.spaces if s.function in OUTDOOR]
+        for t_space in terrace_spaces:
+            t_level = model.level(t_space.level_id)
+            t_doors = [d for d in model.openings if d.is_passable and t_space.id in d.connects]
+            out.metric(
+                METRIC_ROOM_TERRACE_DOOR_COUNT,
+                len(t_doors),
+                "doors_connecting_to_terrace",
+                INF,
+                unit="count",
+                subjects=[t_space.id],
+            )
+            if not t_doors:
+                out.violation(
+                    VIOLATION_TERRACE_NO_DOOR,
+                    Strength.SOFT,
+                    f"Terrace {t_space.id} has no direct door connection to an interior room",
+                    [t_space.id],
+                    INF,
+                )
+            for d in t_doors:
+                other_id = next(
+                    (sid for sid in d.connects if sid != t_space.id and sid != EXTERIOR),
+                    None,
+                )
+                if other_id:
+                    other_sp = model.space(other_id)
+                    other_level = model.level(other_sp.level_id)
+                    level_delta = round(other_level.elevation_m - t_level.elevation_m, 3)
+                    out.metric(
+                        METRIC_ROOM_TERRACE_LEVEL_DELTA,
+                        level_delta,
+                        "room_terrace_elevation_difference",
+                        INF,
+                        unit="m",
+                        subjects=[t_space.id, other_id, d.id],
+                    )
+                    if abs(level_delta) > 0.3:
+                        out.violation(
+                            VIOLATION_TERRACE_STEP_TOO_HIGH,
+                            Strength.SOFT,
+                            f"Step between {other_id} and terrace {t_space.id} through {d.id} "
+                            f"is {level_delta:+.2f} m (> 0.30 m)",
+                            [t_space.id, other_id, d.id],
+                            INF,
+                        )
+
+            # Terrace ground delta
+            pts = t_space.boundary.outer
+            if pts:
+                cx = sum(p[0] for p in pts) / len(pts)
+                cy = sum(p[1] for p in pts) / len(pts)
+                t_ground = z_of((cx, cy))
+                t_delta = round(t_level.elevation_m - t_ground, 3) if t_ground is not None else None
+                out.metric(
+                    METRIC_TERRACE_GROUND_DELTA,
+                    t_delta,
+                    "tin_at_terrace_centroid",
+                    INF if t_ground is not None else NC,
+                    unit="m",
+                    subjects=[t_space.id],
+                )
+
         if ground_seen:
             span = max(math.dist(a, b) for a in _vertices(foot) for b in _vertices(foot))
             out.metric(

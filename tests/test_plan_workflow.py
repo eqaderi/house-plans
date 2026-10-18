@@ -187,7 +187,7 @@ def test_unsupported_revision_kinds_are_refused(generated):
     store, _ = generated
     with pytest.raises(PlanWorkflowError, match="not supported"):
         PlanService(store).revise(
-            "concept-compact", "Combine A and B", AGENT, kind=ChangeRequestKind.COMBINE
+            "concept-compact", "Generate alternatives", AGENT, kind=ChangeRequestKind.ALTERNATIVES
         )
 
 

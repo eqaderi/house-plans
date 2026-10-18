@@ -47,6 +47,20 @@ class Space(StrictModel):
         return self.boundary.area_m2
 
 
+class CompositeSpace(StrictModel):
+    """One physical open room, partitioned into non-overlapping functional Space zones.
+
+    Child polygons retain program IDs and furniture studies. Their union is this
+    physical boundary; shared partitions are full-width/full-height open apertures.
+    """
+
+    id: Id
+    name: str
+    level_id: Id
+    boundary: Polygon2D
+    space_ids: list[Id] = Field(min_length=2)
+
+
 class WallKind(StrEnum):
     EXTERIOR = "exterior"
     INTERIOR = "interior"
@@ -282,6 +296,7 @@ class HouseModel(StrictModel):
     program_ref: ArtifactRef | None = None
     levels: list[Level] = Field(min_length=1)
     spaces: list[Space] = Field(default_factory=list)
+    composite_spaces: list[CompositeSpace] = Field(default_factory=list)
     walls: list[Wall] = Field(default_factory=list)
     openings: list[Opening] = Field(default_factory=list)
     slabs: list[Slab] = Field(default_factory=list)
@@ -299,7 +314,7 @@ class HouseModel(StrictModel):
     @model_serializer(mode="wrap")
     def _legacy_hash_compatible(self, handler):
         data = handler(self)
-        for field in ("furniture", "clearance_zones"):
+        for field in ("furniture", "clearance_zones", "composite_spaces"):
             if not getattr(self, field):
                 data.pop(field, None)
         return data
@@ -318,6 +333,7 @@ class HouseModel(StrictModel):
         groups = (
             self.levels,
             self.spaces,
+            self.composite_spaces,
             self.walls,
             self.openings,
             self.slabs,

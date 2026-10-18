@@ -61,6 +61,20 @@ class RoomSpec:
     space_id: str
     item: ProgramItem
     index: int
+    effective_min_area_m2: float | None = None
+    effective_min_width_m: float | None = None
+
+    @property
+    def min_area_m2(self) -> float | None:
+        if self.effective_min_area_m2 is not None:
+            return max(self.item.min_area_m2 or 0.0, self.effective_min_area_m2)
+        return self.item.min_area_m2
+
+    @property
+    def min_width_m(self) -> float | None:
+        if self.effective_min_width_m is not None:
+            return max(self.item.min_width_m or 0.0, self.effective_min_width_m)
+        return self.item.min_width_m
 
     @property
     def function(self) -> SpaceFunction:
@@ -153,7 +167,11 @@ def is_indoor(item: ProgramItem) -> bool:
     )
 
 
-def expand_program(program: SpaceProgram) -> ProgramRooms:
+def expand_program(
+    program: SpaceProgram,
+    hard_min_areas: dict[str, float] | None = None,
+    hard_min_widths: dict[str, float] | None = None,
+) -> ProgramRooms:
     rooms: list[RoomSpec] = []
     skipped: list[tuple[str, str]] = []
     hall_item = stair_item = None
@@ -169,8 +187,16 @@ def expand_program(program: SpaceProgram) -> ProgramRooms:
         if item.function in CIRCULATION_FUNCTIONS and hall_item is None:
             hall_item = item
             continue
+        min_a = (hard_min_areas or {}).get(item.id)
+        min_w = (hard_min_widths or {}).get(item.id)
         for k in range(1, item.quantity + 1):
-            spec = RoomSpec(space_id_for(item, k), item, k)
+            spec = RoomSpec(
+                space_id_for(item, k),
+                item,
+                k,
+                effective_min_area_m2=min_a,
+                effective_min_width_m=min_w,
+            )
             rooms.append(spec)
             first_space.setdefault(item.id, spec.space_id)
     hall_key = hall_item.id if hall_item else None
@@ -184,11 +210,7 @@ def expand_program(program: SpaceProgram) -> ProgramRooms:
             continue
         if hall_key in (a_id, b_id):
             other = b_id if a_id == hall_key else a_id
-            if (
-                adj.kind is AdjacencyKind.CONNECTED
-                and adj.strength is Strength.HARD
-                and other in first_space
-            ):
+            if adj.kind is AdjacencyKind.CONNECTED and other in first_space:
                 hall_connected.add(first_space[other])
             continue
         if a_id not in first_space or b_id not in first_space:

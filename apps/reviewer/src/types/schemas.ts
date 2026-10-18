@@ -62,7 +62,7 @@ export interface AreaChange {
 }
 
 /** Kinds of versioned artifacts kept in a project store. */
-export type ArtifactKind = "source_document" | "cad_import" | "site" | "design_brief" | "space_program" | "assumptions" | "open_questions" | "constraint_set" | "codepack" | "plan" | "evaluation_report" | "revision_report" | "build_record" | "interview_session" | "owner_statements";
+export type ArtifactKind = "source_document" | "cad_import" | "site" | "design_brief" | "space_program" | "assumptions" | "open_questions" | "constraint_set" | "codepack" | "plan" | "evaluation_report" | "revision_report" | "build_record" | "interview_session" | "owner_statements" | "concept_proposal";
 
 /** Pointer to one immutable version of an artifact, pinned by content hash. */
 export interface ArtifactRef {
@@ -202,6 +202,18 @@ export interface ComplianceStatement {
 }
 
 export type ComplianceStatus = "not_checked" | "conceptual_best_practice_only" | "checked_against_codepack";
+
+/** One physical open room, partitioned into non-overlapping functional Space zones.
+
+Child polygons retain program IDs and furniture studies. Their union is this
+physical boundary; shared partitions are full-width/full-height open apertures. */
+export interface CompositeSpace {
+  boundary: Polygon2D;
+  id: string;
+  level_id: string;
+  name: string;
+  space_ids: string[];
+}
 
 /** Status of a fact that must come from a source document or a human.
 
@@ -365,6 +377,7 @@ export interface HouseModel {
   assumptions?: Assumption[];
   ceilings?: Ceiling[];
   clearance_zones?: ClearanceZone[];
+  composite_spaces?: CompositeSpace[];
   coordinate_system_id: string;
   fixtures?: Fixture[];
   furniture?: Furniture[];
@@ -545,6 +558,14 @@ export interface OpeningsOnWallsRule {
 
 export type Operation = "none" | "swing_left" | "swing_right" | "double_swing" | "sliding" | "fixed" | "casement" | "tilt_turn";
 
+/** Proposed connection between an interior space and an outdoor feature. */
+export interface OutdoorLinkProposal {
+  id: string;
+  kind?: string;
+  notes?: string | null;
+  program_item_id: string;
+}
+
 /** Something the owner said about the project, in their words, and who wrote it down.
 
 A statement is evidence, not a confirmation: it changes no confirmation status and
@@ -614,6 +635,31 @@ export interface ProgramZone {
   id: string;
   name: string;
   privacy: Privacy;
+}
+
+/** Adjacency or connection relationship proposed between two spaces. */
+export interface ProposalAdjacency {
+  a: string;
+  b: string;
+  id: string;
+  kind?: AdjacencyKind;
+  rationale?: string | null;
+  strength?: Strength;
+  weight?: number | null;
+}
+
+/** Assignment of a program item to a specific storey or elevation tier. */
+export interface ProposalLevelAssignment {
+  level_id: string;
+  program_item_id: string;
+}
+
+/** A thematic functional zone grouping spaces in a concept proposal. */
+export interface ProposalZone {
+  id: string;
+  name: string;
+  privacy?: Privacy | null;
+  program_item_ids?: string[];
 }
 
 export interface Provenance {
@@ -823,6 +869,15 @@ export interface Stair {
   width_m: number;
 }
 
+/** Proposed vertical circulation core and its target location. */
+export interface StairCoreProposal {
+  connects_levels: string[];
+  id: string;
+  near_program_item_ids?: string[];
+  notes?: string | null;
+  position?: string;
+}
+
 export type StairKind = "straight" | "l_shaped" | "u_shaped" | "spiral" | "other";
 
 export type Strength = "hard" | "soft";
@@ -1019,6 +1074,25 @@ export interface CodePack {
   verification_status?: CodePackVerification;
   verified_at?: string | null;
   verified_by?: Actor | null;
+}
+
+/** A typed topology proposal submitted by an agent or human.
+
+Specifies high-level architectural intentions without hard-coded coordinates,
+allowing the solver to explore and optimize physical placement. */
+export interface ConceptProposal {
+  adjacency_graph?: ProposalAdjacency[];
+  id: string;
+  intent: string;
+  level_assignments?: ProposalLevelAssignment[];
+  name: string;
+  outdoor_links?: OutdoorLinkProposal[];
+  project_id: string;
+  provenance?: Provenance | null;
+  schema_version?: string;
+  stair_cores?: StairCoreProposal[];
+  target_strategy?: string | null;
+  zones?: ProposalZone[];
 }
 
 export interface ConstraintSet {

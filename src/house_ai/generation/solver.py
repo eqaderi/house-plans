@@ -78,6 +78,14 @@ class SolverOptions:
     bar_hints: dict[str, int] = field(default_factory=dict)
     #: Objective scales from the constraint set (objective name -> weight).
     objective_weights: dict[str, float] = field(default_factory=dict)
+    #: Stair position override ("entry", "perimeter", "central", "rear") (S7-16, S7-21).
+    stair_position: str | None = None
+    #: Outdoor links (space_id, kind) (S7-19, S7-21).
+    outdoor_links: list[tuple[str, str]] = field(default_factory=list)
+    #: Force 2D placement solver (S7-10).
+    force_2d: bool = False
+    min_areas: dict[str, float] = field(default_factory=dict)
+    min_widths: dict[str, float] = field(default_factory=dict)
 
 
 @dataclass
@@ -130,10 +138,10 @@ def stair_risers(rise_m: float) -> tuple[int, float, float]:
 
 
 def split_depth(row_depth: int, inner: RoomSpec, outer: RoomSpec) -> int | None:
-    t_in = inner.item.target_area_m2 or inner.item.min_area_m2 or 4.0
-    t_out = outer.item.target_area_m2 or outer.item.min_area_m2 or 4.0
-    lo_in = max(MIN_SLOT_DM, math.ceil((inner.item.min_width_m or 0) * 10 - 1e-9))
-    lo_out = max(MIN_SLOT_DM, math.ceil((outer.item.min_width_m or 0) * 10 - 1e-9))
+    t_in = inner.item.target_area_m2 or inner.min_area_m2 or 4.0
+    t_out = outer.item.target_area_m2 or outer.min_area_m2 or 4.0
+    lo_in = max(MIN_SLOT_DM, math.ceil((inner.min_width_m or 0) * 10 - 1e-9))
+    lo_out = max(MIN_SLOT_DM, math.ceil((outer.min_width_m or 0) * 10 - 1e-9))
     d = round(row_depth * t_in / (t_in + t_out))
     d = max(lo_in, min(row_depth - lo_out, d))
     if d < lo_in or row_depth - d < lo_out:
@@ -158,13 +166,15 @@ def _slot_bounds(
     wmin, wmax = MIN_SLOT_DM, None
     for room, depth in pieces:
         it = room.item
-        if it.min_width_m is not None and depth < _ceil(it.min_width_m * 10):
+        min_w = room.min_width_m
+        min_a = room.min_area_m2
+        if min_w is not None and depth < _ceil(min_w * 10):
             return None
         if room.function is SpaceFunction.GARAGE and depth < GARAGE_DEPTH_DM:
             return None
-        wmin = max(wmin, _ceil((it.min_width_m or 0) * 10))
-        if it.min_area_m2 is not None:
-            wmin = max(wmin, _ceil(it.min_area_m2 * 100 / depth))
+        wmin = max(wmin, _ceil((min_w or 0) * 10))
+        if min_a is not None:
+            wmin = max(wmin, _ceil(min_a * 100 / depth))
         cap = MAX_ASPECT * depth
         target = targets.get(room.space_id, it.target_area_m2)
         if target is not None:
@@ -261,13 +271,13 @@ def build_units(m: Massing, rooms: ProgramRooms) -> tuple[list[Unit], list[str]]
 
 def _level_penalty(pref: str | None, bar: Bar, m: Massing) -> int:
     z, entry = bar.elevation_m, m.entry_elevation_m
-    if pref in ("entry", "ground"):
+    if pref in ("entry", "ground", "lv-entry", "lv-0"):
         return W_LEVEL if abs(z - entry) > 1e-6 else 0
-    if pref == "not_entry":
+    if pref in ("not_entry",):
         return W_LEVEL if m.level_count > 1 and abs(z - entry) < 1e-6 else 0
-    if pref == "upper":
+    if pref in ("upper", "lv-upper", "lv-1", "1"):
         return W_LEVEL if z <= entry + 1e-6 else 0
-    if pref == "lower":
+    if pref in ("lower", "lv-lower", "lv-basement", "-1"):
         return W_LEVEL if z >= entry - 1e-6 else 0
     return 0
 
@@ -354,7 +364,7 @@ def solve(m: Massing, rooms: ProgramRooms, opts: SolverOptions) -> Solution:
                             and row.side == "front"
                             and room_group(room) in HABITABLE_GROUPS
                         ):
-                            pen += W_ROAD_SIDE
+                            pen += int(W_ROAD_SIDE * w("site_response"))
                         hint = opts.hints.get(room.space_id)
                         if hint is not None and hint[0] != rid:
                             pen += W_STABILITY
@@ -395,7 +405,7 @@ def solve(m: Massing, rooms: ProgramRooms, opts: SolverOptions) -> Solution:
         md.AddNoOverlap(intervals[rid])
         md.Add(sum(widths_in_row[rid]) + f_w == length[bar.id])
         filler[rid] = (f_on, f_st, f_w)
-        obj.append(W_FILLER * rows[rid].depth_dm * f_w)
+        obj.append(int(W_FILLER * w("circulation_efficiency")) * rows[rid].depth_dm * f_w)
 
     # Rooms: hard minimum area is in the slot bounds; soft deviation from target.
     for room in rooms.rooms:
@@ -404,8 +414,8 @@ def solve(m: Massing, rooms: ProgramRooms, opts: SolverOptions) -> Solution:
             continue
         area = sum(d * v for d, v in terms)
         target = opts.targets.get(room.space_id, room.item.target_area_m2)
-        if room.item.min_area_m2 is not None:
-            md.Add(area >= _ceil(room.item.min_area_m2 * 100))
+        if room.min_area_m2 is not None:
+            md.Add(area >= _ceil(room.min_area_m2 * 100))
         if room.item.max_area_m2 is not None:
             md.Add(area <= int(room.item.max_area_m2 * 100))
         if target is not None:
