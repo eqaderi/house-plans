@@ -1,6 +1,8 @@
 import React, { useState, useRef } from "react";
 import type { HouseModel, Site, Space, Wall, Opening, Stair } from "../types/schemas";
 import { computeBoundingBox, formatDimM, distanceM } from "../lib/geometry";
+import { getSpacePrivacyColor } from "../lib/styling";
+import { DATA_ATTRS } from "../constants";
 
 interface PlanCanvasProps {
   model: HouseModel;
@@ -13,6 +15,9 @@ interface PlanCanvasProps {
   showPrivacy?: boolean;
   showSite?: boolean;
   highlightedIds?: string[];
+  scale?: number;
+  pan?: { x: number; y: number };
+  onTransformChange?: (scale: number, pan: { x: number; y: number }) => void;
 }
 
 export const PlanCanvas: React.FC<PlanCanvasProps> = ({
@@ -26,11 +31,34 @@ export const PlanCanvas: React.FC<PlanCanvasProps> = ({
   showPrivacy = false,
   showSite = true,
   highlightedIds = [],
+  scale: controlledScale,
+  pan: controlledPan,
+  onTransformChange,
 }) => {
-  const [scale, setScale] = useState<number>(30); // pixels per metre
-  const [pan, setPan] = useState<{ x: number; y: number }>({ x: 200, y: 200 });
+  const [internalScale, setInternalScale] = useState<number>(30); // pixels per metre
+  const [internalPan, setInternalPan] = useState<{ x: number; y: number }>({ x: 200, y: 200 });
   const [isDragging, setIsDragging] = useState<boolean>(false);
   const dragStart = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
+
+  const currentScale = controlledScale !== undefined ? controlledScale : internalScale;
+  const currentPan = controlledPan !== undefined ? controlledPan : internalPan;
+
+  const setScale = (updater: number | ((prev: number) => number)) => {
+    const nextVal = typeof updater === "function" ? updater(currentScale) : updater;
+    const clamped = Math.max(10, Math.min(100, nextVal));
+    if (controlledScale === undefined) {
+      setInternalScale(clamped);
+    }
+    onTransformChange?.(clamped, currentPan);
+  };
+
+  const setPan = (updater: { x: number; y: number } | ((prev: { x: number; y: number }) => { x: number; y: number })) => {
+    const nextVal = typeof updater === "function" ? updater(currentPan) : updater;
+    if (controlledPan === undefined) {
+      setInternalPan(nextVal);
+    }
+    onTransformChange?.(currentScale, nextVal);
+  };
 
   // Filter entities by active level
   const spaces = (model.spaces || []).filter(
@@ -55,7 +83,7 @@ export const PlanCanvas: React.FC<PlanCanvasProps> = ({
   const handleMouseDown = (e: React.MouseEvent) => {
     if (e.button === 0) {
       setIsDragging(true);
-      dragStart.current = { x: e.clientX - pan.x, y: e.clientY - pan.y };
+      dragStart.current = { x: e.clientX - currentPan.x, y: e.clientY - currentPan.y };
     }
   };
 
@@ -73,8 +101,8 @@ export const PlanCanvas: React.FC<PlanCanvasProps> = ({
     setScale((prev) => Math.max(10, Math.min(100, prev * factor)));
   };
 
-  const toPx = (m: number) => m * scale;
-  const toYPx = (m: number) => -m * scale;
+  const toPx = (m: number) => m * currentScale;
+  const toYPx = (m: number) => -m * currentScale;
 
   return (
     <div
@@ -166,12 +194,12 @@ export const PlanCanvas: React.FC<PlanCanvasProps> = ({
         style={{ width: "100%", height: "100%" }}
         data-testid="plan-svg"
       >
-        <g transform={`translate(${pan.x}, ${pan.y})`}>
+        <g transform={`translate(${currentPan.x}, ${currentPan.y})`}>
           {/* Site boundary overlay */}
           {showSite && site?.boundary?.outer && (
             <polygon
               data-id="site-parcel-boundary"
-              data-kind="parcel"
+              data-kind={DATA_ATTRS.KINDS.PARCEL}
               points={(site.boundary.outer as [number, number][]).map(([x, y]) => `${toPx(x)},${toYPx(y)}`).join(" ")}
               fill="rgba(56, 189, 248, 0.03)"
               stroke="#38bdf8"
@@ -180,6 +208,25 @@ export const PlanCanvas: React.FC<PlanCanvasProps> = ({
             />
           )}
 
+          {/* Site buildable envelope overlay */}
+          {showSite &&
+            (() => {
+              const envOuter = (site?.buildable_envelope?.polygon?.outer ||
+                (site?.buildable_envelope as any)?.outer) as [number, number][] | undefined;
+              if (!envOuter || envOuter.length === 0) return null;
+              return (
+                <polygon
+                  data-id="site-buildable-envelope"
+                  data-kind={DATA_ATTRS.KINDS.ENVELOPE}
+                  points={envOuter.map(([x, y]) => `${toPx(x)},${toYPx(y)}`).join(" ")}
+                  fill="rgba(234, 179, 8, 0.04)"
+                  stroke="#eab308"
+                  strokeWidth="1.5"
+                  strokeDasharray="6 3"
+                />
+              );
+            })()}
+
           {/* Spaces / Rooms */}
           {spaces.map((sp: Space) => {
             const isSelected = selectedId === sp.id;
@@ -187,18 +234,10 @@ export const PlanCanvas: React.FC<PlanCanvasProps> = ({
             const polyPoints = (sp.boundary?.outer || []) as [number, number][];
             const bbox = polyPoints.length > 0 ? computeBoundingBox(polyPoints) : null;
 
-            // Zone color
-            let fillColor = "rgba(71, 85, 105, 0.25)";
-            if (showPrivacy) {
-              const nameLower = (sp.name || "").toLowerCase();
-              if (nameLower.includes("bed") || nameLower.includes("bath")) {
-                fillColor = "rgba(168, 85, 247, 0.25)";
-              } else if (nameLower.includes("liv") || nameLower.includes("din") || nameLower.includes("entry")) {
-                fillColor = "rgba(34, 197, 94, 0.25)";
-              } else {
-                fillColor = "rgba(234, 179, 8, 0.25)";
-              }
-            }
+            // Zone / Privacy color
+            const fillColor = showPrivacy
+              ? getSpacePrivacyColor(sp)
+              : "rgba(71, 85, 105, 0.25)";
 
             return (
               <g

@@ -15,8 +15,11 @@ ATTR_DATA_KIND: str = "data-kind"
 OP_AREA: str = "area"
 OP_SEPARATE: str = "separate"
 OP_CONNECT: str = "connect"
+OP_ADJACENT: str = "adjacent"
+OP_NEAR: str = "near"
 OP_LEVEL: str = "level"
 OP_RETHINK: str = "rethink"
+OP_STRATEGY: str = "strategy"
 OP_ORIENTATION: str = "orientation"
 OP_DAYLIGHT: str = "daylight"
 
@@ -24,8 +27,11 @@ SUPPORTED_REVISION_OPS: tuple[str, ...] = (
     OP_AREA,
     OP_SEPARATE,
     OP_CONNECT,
+    OP_ADJACENT,
+    OP_NEAR,
     OP_LEVEL,
     OP_RETHINK,
+    OP_STRATEGY,
     OP_ORIENTATION,
     OP_DAYLIGHT,
 )

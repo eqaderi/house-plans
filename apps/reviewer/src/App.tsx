@@ -50,6 +50,42 @@ const DEMO_BUNDLE: ReviewerBundle = {
       description: "Requires human approval of 3D Blender/BIM model.",
     },
   },
+  site: {
+    id: "site-demo",
+    name: "Demo Site",
+    project_id: "synthetic-hillside",
+    classification: "synthetic",
+    provenance: {
+      created_at: "2026-10-17T12:00:00Z",
+      created_by: { kind: "agent", id: "agent:demo" },
+      method: "demo",
+    },
+    boundary: {
+      outer: [
+        [-2, -2],
+        [15, -2],
+        [15, 12],
+        [-2, 12],
+      ],
+    },
+    buildable_envelope: {
+      basis: "Setback 1.5m",
+      status: "verified_fact",
+      polygon: {
+        outer: [
+          [-0.5, -0.5],
+          [13.5, -0.5],
+          [13.5, 10.5],
+          [-0.5, 10.5],
+        ],
+      },
+    },
+    coordinates: {
+      horizontal_crs: {
+        status: "user_confirmed",
+      },
+    },
+  },
   plans: [
     {
       option_id: "concept-compact",
@@ -549,7 +585,7 @@ export const App: React.FC = () => {
               />
             )}
             {activeTab === "metrics" && <MetricMatrix evaluation={activePlanEntry?.evaluation} />}
-            {activeTab === "section" && <TerrainSection model={activeModel} />}
+            {activeTab === "section" && <TerrainSection model={activeModel} site={bundle.site} />}
             {activeTab === "history" && (
               <div>
                 <RevisionTimeline

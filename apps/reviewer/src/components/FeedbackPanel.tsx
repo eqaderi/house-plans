@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import type { RevisionOpsFile, RevisionOp, RevisionComment } from "../types/schemas";
+import { REVISION_OPS } from "../constants";
 
 interface FeedbackPanelProps {
   projectName: string;
@@ -195,6 +196,7 @@ export const FeedbackPanel: React.FC<FeedbackPanelProps> = ({
         </div>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr auto", gap: 6, alignItems: "center" }}>
           <select
+            data-testid="op-type-select"
             value={opType}
             onChange={(e) => setOpType(e.target.value)}
             style={{
@@ -205,11 +207,11 @@ export const FeedbackPanel: React.FC<FeedbackPanelProps> = ({
               borderRadius: 4,
             }}
           >
-            <option value="area">--area</option>
-            <option value="separate">--separate</option>
-            <option value="adjacent">--adjacent</option>
-            <option value="level">--level</option>
-            <option value="rethink">--rethink</option>
+            {REVISION_OPS.map((op) => (
+              <option key={op.value} value={op.value}>
+                {op.label}
+              </option>
+            ))}
           </select>
           <input
             type="text"

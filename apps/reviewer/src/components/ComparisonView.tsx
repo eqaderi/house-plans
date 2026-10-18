@@ -12,6 +12,13 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({ plans, site }) =
   const [rightOptionIdx, setRightOptionIdx] = useState<number>(plans.length > 1 ? 1 : 0);
   const [activeLevelId, setActiveLevelId] = useState<string>("lvl-ground");
   const [viewMode, setViewMode] = useState<"side-by-side" | "table">("side-by-side");
+  const [scale, setScale] = useState<number>(30);
+  const [pan, setPan] = useState<{ x: number; y: number }>({ x: 200, y: 200 });
+
+  const handleTransformChange = (newScale: number, newPan: { x: number; y: number }) => {
+    setScale(newScale);
+    setPan(newPan);
+  };
 
   if (plans.length === 0) {
     return <div style={{ padding: 24, color: "#94a3b8" }}>No plans available for comparison.</div>;
@@ -169,6 +176,9 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({ plans, site }) =
               activeLevelId={activeLevelId}
               selectedId={null}
               onSelectElement={() => {}}
+              scale={scale}
+              pan={pan}
+              onTransformChange={handleTransformChange}
             />
           </div>
           <div style={{ position: "relative" }}>
@@ -194,6 +204,9 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({ plans, site }) =
               activeLevelId={activeLevelId}
               selectedId={null}
               onSelectElement={() => {}}
+              scale={scale}
+              pan={pan}
+              onTransformChange={handleTransformChange}
             />
           </div>
         </div>

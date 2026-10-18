@@ -3,8 +3,8 @@
 from __future__ import annotations
 
 import argparse
+import functools
 import http.server
-import os
 import socketserver
 from pathlib import Path
 
@@ -60,8 +60,7 @@ def cmd_reviewer_serve(args: argparse.Namespace) -> int:
     _out(f"Bundle: {bundle_file}")
     _out("Press Ctrl+C to stop.")
 
-    os.chdir(out_bundle_dir)
-    handler = http.server.SimpleHTTPRequestHandler
+    handler = functools.partial(http.server.SimpleHTTPRequestHandler, directory=str(out_bundle_dir))
     with socketserver.TCPServer(("127.0.0.1", port), handler) as httpd:
         try:
             httpd.serve_forever()

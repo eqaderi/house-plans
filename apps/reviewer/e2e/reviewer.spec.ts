@@ -42,6 +42,13 @@ test.describe("House AI Plan Reviewer - Local 2D Reviewer E2E", () => {
     const walls = page.locator('svg line[data-kind="wall"]');
     const wallCount = await walls.count();
     expect(wallCount).toBeGreaterThan(0);
+
+    // Check parcel boundary and buildable envelope overlays
+    const parcel = page.locator('svg polygon[data-kind="parcel"]');
+    await expect(parcel).toHaveAttribute("data-id", "site-parcel-boundary");
+
+    const envelope = page.locator('svg polygon[data-kind="envelope"]');
+    await expect(envelope).toHaveAttribute("data-id", "site-buildable-envelope");
   });
 
   test("Element selection inspects canonical attributes in PropertyPanel (S4-09)", async ({
@@ -108,6 +115,24 @@ test.describe("House AI Plan Reviewer - Local 2D Reviewer E2E", () => {
     await page
       .locator('[data-testid="verbatim-request-input"]')
       .fill("Make the kitchen larger and add pantry");
+
+    // Verify all supported revision CLI ops are available in dropdown
+    const opSelect = page.locator('[data-testid="op-type-select"]');
+    const options = await opSelect.locator("option").allTextContents();
+    expect(options).toEqual(
+      expect.arrayContaining([
+        "--area",
+        "--separate",
+        "--adjacent",
+        "--near",
+        "--level",
+        "--rethink",
+        "--strategy",
+        "--connect",
+        "--orientation",
+        "--daylight",
+      ])
+    );
 
     // Add structured revision op
     await page.locator('[data-testid="op-target-input"]').fill("pi-kitchen");
