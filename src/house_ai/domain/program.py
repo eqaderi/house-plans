@@ -4,11 +4,12 @@ from __future__ import annotations
 
 from enum import StrEnum
 
-from pydantic import Field, model_validator
+from pydantic import Field, model_serializer, model_validator
 
 from .base import EXTERIOR, SCHEMA_VERSION, Id, StrictModel
 from .brief import Money, Priority
 from .provenance import ArtifactRef, Provenance
+from .usability import UsabilityRequirements
 
 
 class SpaceFunction(StrEnum):
@@ -150,7 +151,15 @@ class SpaceProgram(StrictModel):
     #: Site version the program was checked against, and whether it was approved.
     site_ref: ArtifactRef | None = None
     site_verified: bool = False
+    usability: UsabilityRequirements = Field(default_factory=UsabilityRequirements)
     provenance: Provenance
+
+    @model_serializer(mode="wrap")
+    def _legacy_hash_compatible(self, handler):
+        data = handler(self)
+        if self.usability == UsabilityRequirements():
+            data.pop("usability", None)
+        return data
 
     @model_validator(mode="after")
     def _references_resolve(self) -> SpaceProgram:
@@ -158,11 +167,18 @@ class SpaceProgram(StrictModel):
             [i.id for i in self.items]
             + [z.id for z in self.zones]
             + [a.id for a in self.adjacencies]
+            + [v.id for v in self.usability.vehicles or []]
         )
         dupes = {i for i in ids if ids.count(i) > 1}
         if dupes:
             raise ValueError(f"duplicate ids in program: {sorted(dupes)}")
         item_ids = {i.id for i in self.items}
+        double = set(self.usability.double_bed_program_item_ids)
+        single = set(self.usability.single_bed_program_item_ids)
+        if not (double | single) <= item_ids:
+            raise ValueError("bed usability requirements reference unknown program items")
+        if double & single:
+            raise ValueError("bed variants must not conflict for the same program item")
         zone_ids = {z.id for z in self.zones}
         for item in self.items:
             if item.zone_id and item.zone_id not in zone_ids:

@@ -177,6 +177,15 @@ def _check_references(
     for f in model.fixtures:
         need(f.id, "space_id", f.space_id, spaces)
         need(f.id, "material_id", f.material_id, materials)
+    for f in model.furniture:
+        need(f.id, "space_id", f.space_id, spaces)
+    for zone in model.clearance_zones:
+        need(zone.id, "space_id", zone.space_id, spaces)
+        clearable = {
+            e.id for group in (model.furniture, model.fixtures, model.openings, model.stairs)
+            for e in group
+        }
+        need(zone.id, "element_id", zone.element_id, clearable)
     for r in model.relationships:
         need(r.id, "a", r.a, spaces)
         need(r.id, "b", r.b, spaces)
@@ -354,7 +363,7 @@ def _check_openings(model: HouseModel) -> list[IntegrityFinding]:
 def _check_fixtures(model: HouseModel) -> list[IntegrityFinding]:
     out: list[IntegrityFinding] = []
     by_space: dict[str, list[tuple[str, object]]] = {}
-    for f in model.fixtures:
+    for f in [*model.fixtures, *model.furniture]:
         space_poly = model.space(f.space_id).boundary.to_shapely().buffer(EPS_M)
         fx_poly = f.footprint_polygon().to_shapely()
         if not space_poly.covers(fx_poly):

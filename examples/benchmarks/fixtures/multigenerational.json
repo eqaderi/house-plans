@@ -2216,15 +2216,17 @@
       "id": "turning-clearance",
       "category": "practical_usability",
       "target": "step-free-graph",
-      "source": "future",
+      "source": "evaluation",
       "metric": "accessible_turning_space",
       "code": null,
-      "subject_ids": [],
-      "value": null,
-      "status": "not_checked",
+      "subject_ids": [
+        "sp-bath"
+      ],
+      "value": true,
+      "status": "inferred",
       "tolerance": 1e-6,
-      "pending_stage": "S6",
-      "basis": "door graph cannot prove wheelchair usability"
+      "pending_stage": null,
+      "basis": "unfurnished 2x3m bathroom contains assumed 1.5m circle"
     }
   ]
 }

@@ -1,0 +1,97 @@
+{
+  "$defs": {
+    "DimensionAssumption": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "maxLength": 64,
+          "minLength": 1,
+          "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "rationale": {
+          "minLength": 1,
+          "title": "Rationale",
+          "type": "string"
+        },
+        "source": {
+          "minLength": 1,
+          "title": "Source",
+          "type": "string"
+        },
+        "status": {
+          "const": "assumption",
+          "default": "assumption",
+          "title": "Status",
+          "type": "string"
+        },
+        "unit": {
+          "const": "m",
+          "title": "Unit",
+          "type": "string"
+        },
+        "value": {
+          "minimum": 0,
+          "title": "Value",
+          "type": "number"
+        }
+      },
+      "required": [
+        "id",
+        "value",
+        "unit",
+        "source",
+        "rationale"
+      ],
+      "title": "DimensionAssumption",
+      "type": "object"
+    }
+  },
+  "$id": "https://house-ai.local/schemas/furniture_template.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "back": {
+      "$ref": "#/$defs/DimensionAssumption"
+    },
+    "depth": {
+      "$ref": "#/$defs/DimensionAssumption"
+    },
+    "description": {
+      "title": "Description",
+      "type": "string"
+    },
+    "front": {
+      "$ref": "#/$defs/DimensionAssumption"
+    },
+    "id": {
+      "maxLength": 64,
+      "minLength": 1,
+      "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+      "title": "Id",
+      "type": "string"
+    },
+    "left": {
+      "$ref": "#/$defs/DimensionAssumption"
+    },
+    "right": {
+      "$ref": "#/$defs/DimensionAssumption"
+    },
+    "width": {
+      "$ref": "#/$defs/DimensionAssumption"
+    }
+  },
+  "required": [
+    "id",
+    "width",
+    "depth",
+    "left",
+    "right",
+    "front",
+    "back",
+    "description"
+  ],
+  "title": "FurnitureTemplate",
+  "type": "object"
+}

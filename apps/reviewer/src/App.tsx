@@ -567,6 +567,7 @@ export const App: React.FC = () => {
               <RoomSchedule
                 model={activeModel}
                 program={bundle.program}
+                evaluation={activePlanEntry?.evaluation}
                 onSelectSpace={(id) => {
                   setSelectedId(id);
                   setSelectedKind("space");

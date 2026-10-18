@@ -23111,6 +23111,13 @@
     },
     "site_verified": false,
     "target_gross_area_m2": null,
+    "usability": {
+      "arrival_path": null,
+      "double_bed_program_item_ids": [],
+      "household_seats": 4,
+      "single_bed_program_item_ids": [],
+      "vehicles": null
+    },
     "zones": [
       {
         "id": "z-day",

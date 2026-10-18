@@ -239,6 +239,61 @@
       "title": "Ceiling",
       "type": "object"
     },
+    "ClearanceZone": {
+      "additionalProperties": false,
+      "properties": {
+        "basis": {
+          "minLength": 1,
+          "title": "Basis",
+          "type": "string"
+        },
+        "boundary": {
+          "$ref": "#/$defs/Polygon2D"
+        },
+        "element_id": {
+          "maxLength": 64,
+          "minLength": 1,
+          "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+          "title": "Element Id",
+          "type": "string"
+        },
+        "id": {
+          "maxLength": 64,
+          "minLength": 1,
+          "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "purpose": {
+          "minLength": 1,
+          "title": "Purpose",
+          "type": "string"
+        },
+        "space_id": {
+          "maxLength": 64,
+          "minLength": 1,
+          "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+          "title": "Space Id",
+          "type": "string"
+        },
+        "status": {
+          "const": "assumption",
+          "default": "assumption",
+          "title": "Status",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "element_id",
+        "space_id",
+        "boundary",
+        "purpose",
+        "basis"
+      ],
+      "title": "ClearanceZone",
+      "type": "object"
+    },
     "Epistemic": {
       "description": "Epistemic status of a statement about the project.",
       "enum": [
@@ -329,6 +384,71 @@
         "depth_m"
       ],
       "title": "Fixture",
+      "type": "object"
+    },
+    "Furniture": {
+      "additionalProperties": false,
+      "properties": {
+        "depth_m": {
+          "exclusiveMinimum": 0,
+          "title": "Depth M",
+          "type": "number"
+        },
+        "id": {
+          "maxLength": 64,
+          "minLength": 1,
+          "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "position": {
+          "maxItems": 2,
+          "minItems": 2,
+          "prefixItems": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            }
+          ],
+          "title": "Position",
+          "type": "array"
+        },
+        "rotation_deg": {
+          "default": 0,
+          "title": "Rotation Deg",
+          "type": "number"
+        },
+        "space_id": {
+          "maxLength": 64,
+          "minLength": 1,
+          "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+          "title": "Space Id",
+          "type": "string"
+        },
+        "template_id": {
+          "maxLength": 64,
+          "minLength": 1,
+          "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+          "title": "Template Id",
+          "type": "string"
+        },
+        "width_m": {
+          "exclusiveMinimum": 0,
+          "title": "Width M",
+          "type": "number"
+        }
+      },
+      "required": [
+        "id",
+        "space_id",
+        "template_id",
+        "position",
+        "width_m",
+        "depth_m"
+      ],
+      "title": "Furniture",
       "type": "object"
     },
     "Issue": {
@@ -1098,6 +1218,32 @@
           "default": null,
           "title": "Tread Depth M"
         },
+        "walking_line": {
+          "anyOf": [
+            {
+              "items": {
+                "maxItems": 2,
+                "minItems": 2,
+                "prefixItems": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "number"
+                  }
+                ],
+                "type": "array"
+              },
+              "minItems": 2,
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Walking Line"
+        },
         "width_m": {
           "exclusiveMinimum": 0,
           "title": "Width M",
@@ -1315,6 +1461,13 @@
       "title": "Ceilings",
       "type": "array"
     },
+    "clearance_zones": {
+      "items": {
+        "$ref": "#/$defs/ClearanceZone"
+      },
+      "title": "Clearance Zones",
+      "type": "array"
+    },
     "coordinate_system_id": {
       "maxLength": 64,
       "minLength": 1,
@@ -1327,6 +1480,13 @@
         "$ref": "#/$defs/Fixture"
       },
       "title": "Fixtures",
+      "type": "array"
+    },
+    "furniture": {
+      "items": {
+        "$ref": "#/$defs/Furniture"
+      },
+      "title": "Furniture",
       "type": "array"
     },
     "id": {

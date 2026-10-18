@@ -251,6 +251,18 @@
     "MetricClaim": {
       "additionalProperties": false,
       "properties": {
+        "assumption_basis": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Assumption Basis"
+        },
         "evaluator": {
           "title": "Evaluator",
           "type": "string"
@@ -401,6 +413,18 @@
     "Violation": {
       "additionalProperties": false,
       "properties": {
+        "assumption_basis": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Assumption Basis"
+        },
         "code": {
           "pattern": "^[a-z][a-z0-9_]*$",
           "title": "Code",
@@ -435,6 +459,18 @@
         "message": {
           "title": "Message",
           "type": "string"
+        },
+        "method": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Method"
         },
         "status": {
           "$ref": "#/$defs/ClaimStatus"

@@ -14,7 +14,7 @@ detail is in the code and the generated schemas.
 | Time | Timezone-aware, stored in UTC. Naive timestamps are rejected. |
 | Strictness | Unknown fields, NaN and infinity are rejected everywhere. |
 | Unknown values | `null`, or an explicit status of `unknown`. Never a plausible default. |
-| Areas | Milestone A space polygons are drawn to wall centerlines, so areas are centerline areas. Net areas are a later derived quantity. |
+| Areas | Space polygons and SVG labels use wall centreline areas. S6 derives net floor by subtracting modelled wall solids, allowing floor-level doorway recesses; missing wall edges are reported. Explicit floor slabs exclude unsupported floor and voids. Net dimension metrics are enclosing extents. |
 
 ## Epistemic status
 
@@ -71,7 +71,7 @@ Every claim says how it is known.
 - `Terrain`: status, spot elevations and contours in the local frame, each
   with a `source_ref`, and an optional `TinSurface` (Delaunay triangles over
   surveyed vertices only; nothing is extrapolated outside their hull).
-- `SiteFeature`: roads, easements, structures, utilities, trees, water,
+- `SiteFeature`: roads, driveways, easements, structures, utilities, trees, water,
   access points and `frontage` (boundary pieces within 0.5 m of a road,
   always an `inference`), each with point, polyline or polygon geometry.
 - `site_verification_blockers(site)` lists every reason the site cannot be
@@ -229,3 +229,42 @@ the surveyed hull.
 - `RevisionOpsFile` (`revision_ops.schema.json`): Structured operations (`--area`, `--separate`, `--adjacent`, `--near`, `--level`, `--rethink`, `--strategy`, `--connect`, `--orientation`, `--daylight`) and entity-linked comments exported from the 2D reviewer UI or authored by agents, replayed via `house-ai plan revise-from-file`.
 - `VisualCritiqueFile` (`visual_critique.schema.json`): Agent visual review records. Contains `VisualClaim` observations with element IDs grounded in a specific plan version, screenshot hash, claim text, epistemic status `ai_judgment`, severity, and suggested revision operations.
 
+
+## Usability placements and derived checks (S6)
+
+[ADR 0019](adr/0019-usability-geometry-and-assumptions.md) defines the geometry,
+assumption sources and limits.
+
+- `HouseModel.furniture`: explicit `Furniture` placements with stable ID, space,
+  template ID, position, rotation and actual width/depth in metres. Fixed fixtures
+  remain `Fixture`. Both participate in reference, footprint and overlap integrity
+  checks. Proposed template fits are derived studies and never inserted in a plan.
+- `HouseModel.clearance_zones`: explicit polygons referencing an element and space,
+  with a purpose, basis and assumption status. They remain distinct from solids.
+- `Stair.walking_line`: optional bottom-to-top 2D path. Its absence leaves run,
+  landings, headroom and stair-dependent metric routes unmeasured. Slab openings
+  remain polygon holes. Headroom uses a linearly rising pitch line, not detailed
+  geometry for intermediate landings of complex stairs.
+- `SpaceProgram.usability`: optional household seats, vehicle envelopes, arrival
+  path and bed variants by program item. Vehicle dimensions, side-door access and
+  source are explicit; turning radius may be unknown. The program builder only
+  derives household seats when adult and child counts are both supplied.
+- `FurnitureTemplate`: individually cited `DimensionAssumption` records for body
+  width/depth and four access margins. Front means local negative Y. Templates
+  are exported as `furniture_template.schema.json`; library version 1.0.0.
+- `MetricClaim.assumption_basis`, `Violation.method` and `Violation.assumption_basis`
+  expose how a usability result was obtained. Usability findings are soft. Checked
+  geometry and assumption-based feasibility retain separate claim statuses.
+
+The eight added evaluators are `NetAreaEvaluator`, `DoorClearanceEvaluator`,
+`StairUsabilityEvaluator`, `FurnitureUsabilityEvaluator`, `RouteUsabilityEvaluator`,
+`PrivacyUsabilityEvaluator`, `DaylightOpportunityEvaluator` and
+`VehicleArrivalEvaluator`. They run in normal evaluation reports and the benchmark
+runner alongside the existing six evaluators. Full solar/daylight simulation and
+life-safety/accessibility certification remain not run. Unknown inputs produce
+null, not-checked metrics. The old straight-line walking estimate is replaced in
+reports by a visibility-graph point route through actual room polygons and portals.
+
+Empty/absent new fields are omitted during canonical serialization to retain
+pre-S6 immutable hashes. Populated fields affect hashes normally; old project
+artifacts and approvals are never rewritten.

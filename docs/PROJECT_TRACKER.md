@@ -6,8 +6,7 @@ No other TODO, roadmap or stage-status file is kept. Format and update rules
 are in [§P](#p-rules-for-updating-the-tracker); `python tools/check_tracker.py`
 checks them.
 
-Last updated: 2026-10-17, stage consolidation (DEC-08) after T0.1 closed,
-by `agent:claude-code`.
+Last updated: 2026-10-18, Stage S6 implementation by `agent:codex`.
 
 ## A. Mission and immediate objective
 
@@ -117,13 +116,13 @@ to reopen A–D):
 
 | | |
 |---|---|
-| **Current stage** | none (S5 closed; next: S6) |
+| **Current stage** | S6 Usability critics (IN_PROGRESS) |
 | **Awaiting review** | none |
-| **Next eligible stage** | S6 Usability critics (S3 done) |
+| **Next eligible stage** | S6 active; S7 after S6 review and closure |
 | **Path to good floor plans** | S1 (done) → S2 (done) → S3 (done) → S4 (done) → S5 (done) → S6 → S7 → S8 → S9 (9 stages) |
 | **Blocked** | H1 site facts (owner or surveyor input); program gate (needs site gate); H3 real design (needs S9 and approvals) |
 | **Human parallel tracks** | H1 site verification with the owner any time; H2 interview any time (S1-09 closed) |
-| **`main` health** | S5 closed; 652 tests pass; CI green on `b79595e` (run 39109025338) |
+| **`main` health** | S5 closed; CI green on `bdf471d` (run 39109327742) |
 | **Homeowner gates on `my-house`** | site: not approved (5 blockers) · program: none · plan: none · model: none |
 
 
@@ -987,7 +986,7 @@ rejected.
 | Field | Value |
 |---|---|
 | Kind | implementation |
-| Status | NOT_STARTED |
+| Status | IN_PROGRESS |
 | Review | NOT_REQUESTED |
 | Branch | `stage/S6-usability-critics` |
 | Depends on | S3 |
@@ -999,7 +998,7 @@ rejected.
 | Demonstration | Critic report for synthetic-hillside concepts |
 | Artifacts | `domain/` extension and ADR, `evaluation/` critics, templates, fixtures |
 | Review requirements | Reviewer hand-checks one net area, one route length and one infeasible furniture verdict |
-| Evidence | — |
+| Evidence | ADR 0019; `tests/benchmarks/test_usability.py`; `examples/usability/demonstration/report.md`; required checks recorded under §N |
 
 Proven geometric checks, not vague AI scores. "Usable" means a room can
 hold its furniture with clearances and doors that swing freely, not only
@@ -1009,152 +1008,152 @@ supplies it. Critics report per-element findings with method and status.
 
 #### Model foundations for usability checks
 
-- [ ] **S6-01** Net usable area from wall thickness and openings — `NOT_STARTED` · P1 · deps: none
+- [ ] **S6-01** Net usable area from wall thickness and openings — `IN_PROGRESS` · P1 · deps: none
   - Accept: per-space net area and net dimensions; gross and net both reported with basis
   - Verify: analytical test: 4.0×3.0 m centreline room with 0.15 m partitions gives the hand-computed net area
-  - Evidence: pending — today areas are centreline only (PROFESSIONAL_HANDOFF "Areas")
-- [ ] **S6-02** ADR and domain extension for furniture and clearance zones — `NOT_STARTED` · P1 · deps: none
+  - Evidence: `evaluation/usability_geometry.py::net_floor`; `test_net_area_analytical_partition_room_and_door_recess`; reviewer `RoomSchedule.test.tsx`
+- [ ] **S6-02** ADR and domain extension for furniture and clearance zones — `IN_PROGRESS` · P1 · deps: none
   - Accept: decision whether furniture is a canonical element or a derived check; stable IDs; schema exported
   - Verify: `schemas check`; owner reads the ADR
-  - Evidence: pending — no furniture entity in `domain/model.py`
-- [ ] **S6-03** Door-swing and clearance polygon geometry helpers — `NOT_STARTED` · P1 · deps: none
+  - Evidence: ADR 0019; `domain/usability.py`; `domain/model.py`; `test_furniture_integrity_ids_references_overlap_and_round_trip`; 26 schemas exported
+- [ ] **S6-03** Door-swing and clearance polygon geometry helpers — `IN_PROGRESS` · P1 · deps: none
   - Accept: swing arc, leaf, approach zones per door side; sliding doors handled
   - Verify: analytical tests
-  - Evidence: pending
-- [ ] **S6-04** Furniture and fixture template library with cited dimensions — `NOT_STARTED` · P1 · deps: S6-02
+  - Evidence: `evaluation/usability_geometry.py::door_geometry`; `test_door_geometry_area_handing_leaf_and_both_approaches`
+- [ ] **S6-04** Furniture and fixture template library with cited dimensions — `IN_PROGRESS` · P1 · deps: S6-02
   - Accept: bed, wardrobe, desk, chair, dining set, sofa group, kitchen run, appliances, WC, basin, shower, bath, vehicle; each dimension an assumption with source
   - Verify: template schema test
-  - Evidence: pending
+  - Evidence: `evaluation/templates.py`; `furniture_template.schema.json`; `test_templates_are_cited_assumptions_and_schema_valid`
 
 #### Door and stair critics
 
-- [ ] **S6-05** Door swing clearance and conflicts — `NOT_STARTED` · P1 · deps: none
+- [ ] **S6-05** Door swing clearance and conflicts — `IN_PROGRESS` · P1 · deps: none
   - Accept: door vs door, door vs wall end, door vs fixture or furniture zone, door vs stair top
   - Verify: seeded-defect test
-  - Evidence: pending
-- [ ] **S6-06** Stair rise, going, width, run length and landing checks — `NOT_STARTED` · P1 · deps: none
+  - Evidence: `DoorClearanceEvaluator`; seeded door-bed twin; `test_door_wall_door_conflict_and_unknown_swing`; `test_stair_thresholds_configurable_and_landings_hit_by_doors`
+- [ ] **S6-06** Stair rise, going, width, run length and landing checks — `IN_PROGRESS` · P1 · deps: none
   - Accept: configurable thresholds as assumptions; finds stairs whose run does not fit their footprint
   - Verify: analytical test
-  - Evidence: pending
-- [ ] **S6-07** Stair headroom against the slab above — `NOT_STARTED` · P1 · deps: S6-06
+  - Evidence: `StairUsabilityEvaluator`; `test_stair_analytical_headroom_and_unknown_orientation`; short-run twin; configurable policy in `templates.py`
+- [ ] **S6-07** Stair headroom against the slab above — `IN_PROGRESS` · P1 · deps: S6-06
   - Accept: headroom along the walking line using slab openings and floor-to-floor heights
   - Verify: seeded low-headroom fixture
-  - Evidence: pending
-- [ ] **S6-08** Stair arrival and departure clearances — `NOT_STARTED` · P1 · deps: S6-06
+  - Evidence: `StairUsabilityEvaluator._headroom`; headroom twin; `test_stair_analytical_headroom_and_unknown_orientation` (2.157 m analytical result)
+- [ ] **S6-08** Stair arrival and departure clearances — `IN_PROGRESS` · P1 · deps: S6-06
   - Accept: clear zone at top and bottom, no door swinging into it
   - Verify: seeded fixture
-  - Evidence: pending
+  - Evidence: arrival twin; `test_stair_thresholds_configurable_and_landings_hit_by_doors`; arrival/departure polygons from ordered endpoints
 
 #### Furniture feasibility critics
 
-- [ ] **S6-09** Bed and wardrobe placement with clearances — `NOT_STARTED` · P1 · deps: none
+- [ ] **S6-09** Bed and wardrobe placement with clearances — `IN_PROGRESS` · P1 · deps: none
   - Accept: double and single bed variants; access sides; wardrobe door or drawer clearance
   - Verify: a 2.6 m wide room fails a double bed with two-side access; a 3.4 m room passes
-  - Evidence: pending
-- [ ] **S6-10** Desk and chair clearances — `NOT_STARTED` · P2 · deps: none
+  - Evidence: bed-width twin; `FurnitureUsabilityEvaluator`; double/single bed plus wardrobe studies, 2.6 m fails and 3.4 m passes
+- [ ] **S6-10** Desk and chair clearances — `IN_PROGRESS` · P2 · deps: none
   - Accept: chair pull-out zone kept clear of door swing
   - Verify: synthetic tests
-  - Evidence: pending
-- [ ] **S6-11** Dining table and chairs — `NOT_STARTED` · P1 · deps: none
+  - Evidence: `test_wardrobe_and_desk_pullout_conflict_with_door_and_clean_move`; study-room sampled-fit twin
+- [ ] **S6-11** Dining table and chairs — `IN_PROGRESS` · P1 · deps: none
   - Accept: table size from household size in the program; chair zones and passage
   - Verify: synthetic tests
-  - Evidence: pending
-- [ ] **S6-12** Living-room arrangement — `NOT_STARTED` · P1 · deps: none
+  - Evidence: `test_dining_size_depends_on_household_seats_and_unknown_is_explicit`; `test_program_builder_seats_need_both_counts_and_keep_unknown_children`
+- [ ] **S6-12** Living-room arrangement — `IN_PROGRESS` · P1 · deps: none
   - Accept: seating group with circulation not crossing the group
   - Verify: synthetic tests
-  - Evidence: pending
-- [ ] **S6-13** Kitchen counters, appliances, work zones and circulation conflicts — `NOT_STARTED` · P1 · deps: none
+  - Evidence: living sampled-fit twin; `test_through_kitchen_and_seating_zone_clean_twin_with_one_door`
+- [ ] **S6-13** Kitchen counters, appliances, work zones and circulation conflicts — `IN_PROGRESS` · P1 · deps: none
   - Accept: counter run length, appliance clearances, aisle widths, through-traffic crossing the work zone flagged
   - Verify: seeded heavy-cooking fixture (S3-18)
-  - Evidence: pending
+  - Evidence: kitchen sampled-fit twin; `test_kitchen_actual_run_length_and_appliance_access`; through-traffic test; heavy-cooking R2 checks
 
 #### Wet rooms, storage and garage critics
 
-- [ ] **S6-14** Bathroom fixture placement and WC, shower and basin clearances — `NOT_STARTED` · P1 · deps: none
+- [ ] **S6-14** Bathroom fixture placement and WC, shower and basin clearances — `IN_PROGRESS` · P1 · deps: none
   - Accept: fixtures fit with front clearances and the door does not hit them
   - Verify: seeded fixtures
-  - Evidence: pending
-- [ ] **S6-15** Storage and service-space usability — `NOT_STARTED` · P2 · deps: none
+  - Evidence: WC-front twin; bathroom sampled-fit twin; placed fixture access polygons and door-object conflicts
+- [ ] **S6-15** Storage and service-space usability — `IN_PROGRESS` · P2 · deps: none
   - Accept: shelf depth and access zone; laundry appliance and folding space
   - Verify: synthetic tests
-  - Evidence: pending
-- [ ] **S6-16** Garage vehicle envelopes, vehicle door and pedestrian door clearances — `NOT_STARTED` · P1 · deps: none
+  - Evidence: storage and laundry sampled-fit twins; shelf and laundry/folding templates in `templates.py`
+- [ ] **S6-16** Garage vehicle envelopes, vehicle door and pedestrian door clearances — `IN_PROGRESS` · P1 · deps: none
   - Accept: vehicle count and size from the program; car doors can open; pedestrian route to the house door
   - Verify: seeded garage fixture
-  - Evidence: pending
-- [ ] **S6-17** Vehicle arrival and turning where the road and drive are modelled — `NOT_STARTED` · P2 · deps: S6-16
+  - Evidence: `test_garage_uses_vehicle_count_size_and_door_space`; `FurnitureUsabilityEvaluator._garage_route`; explicit vehicle envelopes
+- [ ] **S6-17** Vehicle arrival and turning where the road and drive are modelled — `IN_PROGRESS` · P2 · deps: S6-16
   - Accept: swept path or reported "not checked" when the road geometry is unknown
   - Verify: synthetic road fixture
-  - Evidence: pending
+  - Evidence: `VehicleArrivalEvaluator`; `test_vehicle_arrival_conservative_sweep_and_missing_road`; conservative circle sweep/curvature proxy with missing-data nulls
 
 #### Circulation and privacy critics
 
-- [ ] **S6-18** Excess corridor and residual-space detection — `NOT_STARTED` · P1 · deps: none
+- [ ] **S6-18** Excess corridor and residual-space detection — `IN_PROGRESS` · P1 · deps: none
   - Accept: circulation share, dead-end length, filler space reported per level
   - Verify: seeded poor-corridor fixture (S6-29)
-  - Evidence: pending
-- [ ] **S6-19** Path-based route measurement through doors — `NOT_STARTED` · P1 · deps: none
+  - Evidence: dead-end twin; `test_residual_space_excess_corridor_and_policy_threshold`; per-level ratio and per-space residual/dead-end metrics
+- [ ] **S6-19** Path-based route measurement through doors — `IN_PROGRESS` · P1 · deps: none
   - Accept: shortest walkable path including stairs; replaces the straight-line `max_walk_from_entrance_m` (`inferred` today)
   - Verify: analytical L-shaped route test
-  - Evidence: pending
-- [ ] **S6-20** Daily routes between garage, kitchen, entrance and family areas — `NOT_STARTED` · P1 · deps: S6-19
+  - Evidence: `evaluation/routes.py`; `test_l_shaped_geodesic_and_obstacle_paths_hand_computed` (2√10 m); stacked-level tests; old straight-line helper delegates to new engine
+- [ ] **S6-20** Daily routes between garage, kitchen, entrance and family areas — `IN_PROGRESS` · P1 · deps: S6-19
   - Accept: route lengths, level changes and rooms crossed for each named route
   - Verify: synthetic tests
-  - Evidence: pending
-- [ ] **S6-21** Guest versus family-private circulation — `NOT_STARTED` · P1 · deps: S6-19
+  - Evidence: `RouteNetwork.daily_routes`; `test_daily_routes_and_private_crossing_name_rooms`; route lengths, level changes and rooms crossed
+- [ ] **S6-21** Guest versus family-private circulation — `IN_PROGRESS` · P1 · deps: S6-19
   - Accept: guest routes that pass private rooms flagged with the rooms named
   - Verify: family-privacy fixture (S3-16)
-  - Evidence: pending
-- [ ] **S6-22** Bedroom acoustic and privacy separation including vertical stacking — `NOT_STARTED` · P1 · deps: none
+  - Evidence: `test_daily_routes_and_private_crossing_name_rooms`; family-privacy R2 guest-route expectation now implemented
+- [ ] **S6-22** Bedroom acoustic and privacy separation including vertical stacking — `IN_PROGRESS` · P1 · deps: none
   - Accept: noisy rooms above, below or beside bedrooms flagged (today only same row or level is considered)
   - Verify: seeded stacked fixture
-  - Evidence: pending
-- [ ] **S6-23** Bathroom entrance privacy — `NOT_STARTED` · P2 · deps: none
+  - Evidence: `PrivacyUsabilityEvaluator`; `test_vertical_acoustic_stack_and_clean_shift`; contact/stack warnings explicitly do not predict sound performance
+- [ ] **S6-23** Bathroom entrance privacy — `IN_PROGRESS` · P2 · deps: none
   - Accept: bathroom doors visible from entrance or living areas flagged
   - Verify: synthetic tests
-  - Evidence: pending
+  - Evidence: `test_bathroom_privacy_ray_occluded_by_screen`; wall-occluded open-door sightline checks
 
 #### Daylight and ventilation opportunity
 
-- [ ] **S6-24** Window-capable external wall length and daylight opportunity per room — `NOT_STARTED` · P1 · deps: none
+- [ ] **S6-24** Window-capable external wall length and daylight opportunity per room — `IN_PROGRESS` · P1 · deps: none
   - Accept: exterior, unburied wall length and window area to floor area per habitable room
   - Verify: analytical tests including a retaining wall
-  - Evidence: pending — today `required_daylight_exterior_windows` counts windows only
-- [ ] **S6-25** Cross-ventilation potential — `NOT_STARTED` · P2 · deps: S6-24
+  - Evidence: `DaylightOpportunityEvaluator`; `test_daylight_retaining_buried_windows_cross_ventilation_and_missing_terrain`; inferred TIN exposure and net-area ratios
+- [ ] **S6-25** Cross-ventilation potential — `IN_PROGRESS` · P2 · deps: S6-24
   - Accept: openings on different facades of a space or connected zone, reported as opportunity, not airflow
   - Verify: synthetic tests
-  - Evidence: pending
-- [ ] **S6-26** Architectural quality regression suite over all critics — `NOT_STARTED` · P1 · deps: S6-24
+  - Evidence: same daylight analytical test; operable facade normals checked, reported as opportunity only
+- [ ] **S6-26** Architectural quality regression suite over all critics — `IN_PROGRESS` · P1 · deps: S6-24
   - Accept: every critic runs over the R2 fixtures with expected findings checked in CI
   - Verify: `pytest -q tests/benchmarks`
-  - Evidence: pending
+  - Evidence: `test_all_critics_run_over_r2_cases_and_match_declared_expectations`; all eight critics over every R2 case; no S6 future placeholders remain
 
 #### Defect-seeded scenarios
 
-- [ ] **S6-27** Multi-level stair and headroom defects — `NOT_STARTED` · P1 · deps: none
+- [ ] **S6-27** Multi-level stair and headroom defects — `IN_PROGRESS` · P1 · deps: none
   - Accept: low headroom, short run, blocked arrival
   - Verify: suite
-  - Evidence: pending
-- [ ] **S6-28** Furniture and door-clearance conflicts — `NOT_STARTED` · P1 · deps: none
+  - Evidence: `examples/usability/scenarios.py::stair_model`; seeded headroom, run, arrival and height twins
+- [ ] **S6-28** Furniture and door-clearance conflicts — `IN_PROGRESS` · P1 · deps: none
   - Accept: door hitting bed, wardrobe blocked, WC clearance missing
   - Verify: suite
-  - Evidence: pending
-- [ ] **S6-29** Poor corridor efficiency — `NOT_STARTED` · P1 · deps: none
+  - Evidence: door-bed, WC-front and bed-width twins; wardrobe/desk and declared clearance-zone regressions
+- [ ] **S6-29** Poor corridor efficiency — `IN_PROGRESS` · P1 · deps: none
   - Accept: long dead-end corridor and residual spaces
   - Verify: suite
-  - Evidence: pending
-- [ ] **S6-30** Wrong entrance and garage relationships — `NOT_STARTED` · P1 · deps: none
+  - Evidence: dead-end twin and residual/excess-circulation analytical test
+- [ ] **S6-30** Wrong entrance and garage relationships — `IN_PROGRESS` · P1 · deps: none
   - Accept: garage far from kitchen; entrance through a private room
   - Verify: suite
-  - Evidence: pending
-- [ ] **S6-31** Windows facing buried walls — `NOT_STARTED` · P1 · deps: none
+  - Evidence: `test_daily_routes_and_private_crossing_name_rooms`; missing-garage R2 route remains explicitly not checked
+- [ ] **S6-31** Windows facing buried walls — `IN_PROGRESS` · P1 · deps: none
   - Accept: window on a face with ground above sill
   - Verify: suite
-  - Evidence: pending
-- [ ] **S6-32** Outdoor doors above or below grade and inconsistent floor-to-floor connections — `NOT_STARTED` · P1 · deps: none
+  - Evidence: `test_daylight_retaining_buried_windows_cross_ventilation_and_missing_terrain`; per-window canonical citations
+- [ ] **S6-32** Outdoor doors above or below grade and inconsistent floor-to-floor connections — `IN_PROGRESS` · P1 · deps: none
   - Accept: door 1.5 m above ground; stair connecting levels whose heights disagree
   - Verify: suite
-  - Evidence: pending
+  - Evidence: `test_outdoor_door_1_5m_above_and_below_grade_and_clean_twin`; height twin and reversed-level test
 
 ### Stage S7 — Flexible plan generation
 
@@ -2108,6 +2107,8 @@ changed), **decision** (owner must choose), **risk**.
 | ISS-21 | CP-SAT output differs slightly across platforms | risk | milestones/D.md "Known limitations" | Tests assert properties, not bytes | S7-13 |
 | ISS-22 | MASTER_SPEC "How to work" step 1 says "write docs/PRODUCT_SPEC.md"; the owner had that summary removed | conflict | `MASTER_SPEC.md:896`; T0.1-08 | Treat as a completed bootstrap instruction; MASTER_SPEC text not edited | none (owner decided) |
 | ISS-23 | §O lists `ruff check … tools` but CI lints only `src tests examples` | risk | `.github/workflows/ci.yml` | Resolved in S1: `tools` added to `ruff check` in CI workflow | S1 |
+| ISS-24 | S6 furniture/clear-zone geometry is canonical, but the SVG/reviewer does not yet draw or pick these new element kinds; complex stair flights and branching corridor dead ends remain unmeasured | risk | ADR 0019; `evaluation/usability.py`; `examples/usability/demonstration/report.md` | Expose these limitations; add visualization and richer flight/route geometry as generation evolves | S7, S8 |
+| ISS-25 | R2 `flat-simple/plan-visual` still names S5 as future work even though S5 is closed | stale doc | `examples/benchmarks/fixtures/flat-simple.json`; benchmark runner reports NOT_CHECKED | Replace this old probe with an actual visual regression expectation at readiness validation; S6 changes only its own probes | S9 |
 
 ## L. Decisions
 
@@ -2180,6 +2181,46 @@ Closure record template:
 - CI on main: <run id, result>
 - Closed by: <agent:tool> on the owner's "Close stage <ID>"
 ```
+
+### S6 records
+
+#### S6 implementation complete (2026-10-18)
+
+- Branch: `stage/S6-usability-critics`; implementer: `agent:codex`.
+- Canonical additions: furniture, explicit clearance zones, ordered stair walking
+  lines, program usability requirements and driveway features. ADR 0019 records
+  dimension sources, algorithms, limits and serializers preserving old hashes.
+- Eight critics added to normal plan evaluation and the R2 runner: net area,
+  door clearances, stairs/headroom, furniture/fixtures, routes, privacy, daylight
+  opportunity and conservative vehicle arrival. Every usability finding has
+  canonical subjects, method, claim status and an assumption basis.
+- Net floor respects modelled walls, floor-level openings and explicit slab
+  support/voids. Polygonal visibility routes replace the old straight-line walk
+  estimate; unknown/complex stairs and incomplete routes remain not checked.
+- Room Schedule displays gross and modelled net values from the evaluation,
+  flags incomplete wall models and labels absent measurements. Schema-derived
+  reviewer types and affected synthetic fixtures/bundle were regenerated.
+- Local validation: `.venv/bin/python -m pytest -q` **700 passed in 125.01s**;
+  `.venv/bin/ruff check src tests examples tools` clean; **26 schemas up to date**;
+  tracker consistency clean (**20 stages, 262 tasks**); leak scan clean.
+- Reviewer validation: typecheck and build pass; **14 Vitest tests pass**;
+  **7 Playwright E2E tests pass** (3.9s), including the net-column fallback.
+- R2 runner: **90 PASS, 0 FAIL, 5 NOT_CHECKED**; no S6 future placeholders.
+  The remaining S5 placeholder is recorded as ISS-25; S7/S8 probes remain future work.
+- Demonstration executed: `.venv/bin/python -m examples.usability.make_report
+  --out examples/usability/demonstration`. Three solver-backed hillside concepts
+  pass canonical integrity while exposing 17/21/12 usability findings; all eight
+  defect/clean pairs pass. Full geometry, input hashes, metrics, sources and
+  assumptions are in `report.json`; readable report in `report.md`.
+- `my-house` unchanged; read-only verification: **intact: 13 events, 10 artifact
+  versions**. No human gate or confirmation was performed on the owner project.
+- Review must independently recompute 10.9725 m² net area, the 2√10 m L-shaped
+  route, and the narrow double-bed verdict; instructions in `examples/usability/README.md`.
+- Limits: finite furniture sampling; point routes; straight-flight pitch-line
+  headroom; single-portal dead-end heuristic; sampled terrain exposure; no solar,
+  airflow or acoustic-performance simulation. Vehicle sweep is a conservative
+  bound and curvature proxy. New furniture/zone SVG picking remains ISS-24.
+- CI and review-request metadata will be recorded after the implementation push.
 
 ### S5 records
 
@@ -2668,18 +2709,15 @@ homeowner approval of any site, program, plan or model.
 
 ### Current handoff note
 
-- Stage S5 implementation complete on branch `stage/S5-visual-review` (review PENDING):
-  - Agent browser setup in `docs/AGENT_BROWSER_SETUP.md` and offline capture tool in `apps/reviewer/scripts/capture.js` with SHA-256 hashing.
-  - Semantic SVG elements with accessible `role` and `aria-label` attributes (`PlanCanvas.tsx`, `reviewer.spec.ts`).
-  - Static plan rasterization module in `src/house_ai/render2d/rasterize.py` (`test_rasterize.py`).
-  - `VisualCritique` schema and domain model in `src/house_ai/domain/visual_critique.py` (`schemas/visual_critique.schema.json`, `DOMAIN_MODEL.md`).
-  - Grounding validator in `src/house_ai/validation/grounding.py` enforcing canonical element ID citations and rejecting ungrounded measurable assertions (`test_grounding.py`).
-  - Seeded visual defect fixtures and detectors in `src/house_ai/validation/defect_detectors.py` (`test_seeded_defects.py`).
-  - Semantic ID-map extraction and regression diff module in `src/house_ai/validation/semantic_map.py` (`test_visual_regression.py`, `reviewer.spec.ts`).
-  - Visual review loop and fix verification in `src/house_ai/orchestration/visual_review.py` strictly rejecting fake fixes (`test_visual_review_loop.py`).
-  - Canonical `visual-review` skill authored in `skills/visual-review/SKILL.md` with symlinks in `.agents/skills` and `.claude/skills`, drift tests in `tests/test_skills.py`, and E2E workflow test in `tests/test_skills_workflows.py`.
-  - Documented synthetic demonstration in `examples/reviewer/demonstration/` (`before.svg`, `before.png`, `visual_critique.json`, `revision_ops.json`, `after.svg`, `after.png`, `revision_report.json`, `README.md`, `make_demonstration.py`) with tests in `tests/test_visual_demonstration.py`.
-  - Quality suite clean: 652 pytest tests pass, 7 Playwright E2E tests pass, 12 Vitest tests pass, 25 schemas checked, leak scan clean, `project verify my-house` intact (13 events, 10 artifact versions). Ready for review.
+- S6 implementation on `stage/S6-usability-critics`, by `agent:codex`.
+- Eight usability critics run in normal plan evaluation and the R2 benchmark runner.
+  Domain additions and hash compatibility are described in ADR 0019.
+- Demonstration: `.venv/bin/python -m examples.usability.make_report --out /tmp/house-usability`.
+  Captured output: `examples/usability/demonstration/report.md` and `report.json`.
+- Review must hand-check net area 10.9725 m², L-shaped point route 2√10 m,
+  and the 2.6 m / 3.4 m double-bed room twins. See `examples/usability/README.md`.
+- Read the S6 implementation record under §N for required-check and CI evidence.
+  Do not merge before an independent APPROVED review and owner-authorized closure.
 
 ## P. Rules for updating the tracker
 

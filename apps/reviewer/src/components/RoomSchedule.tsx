@@ -1,14 +1,15 @@
 import React from "react";
-import type { HouseModel, SpaceProgram, Space } from "../types/schemas";
+import type { HouseModel, SpaceProgram, Space, EvaluationReport } from "../types/schemas";
 import { computePolygonAreaM2, formatAreaM2 } from "../lib/geometry";
 
 interface RoomScheduleProps {
   model: HouseModel;
   program?: SpaceProgram | null;
+  evaluation?: EvaluationReport | null;
   onSelectSpace?: (id: string) => void;
 }
 
-export const RoomSchedule: React.FC<RoomScheduleProps> = ({ model, program, onSelectSpace }) => {
+export const RoomSchedule: React.FC<RoomScheduleProps> = ({ model, program, evaluation, onSelectSpace }) => {
   const spaces = model.spaces || [];
 
   // Group spaces by level_id
@@ -30,6 +31,19 @@ export const RoomSchedule: React.FC<RoomScheduleProps> = ({ model, program, onSe
   }
 
   let totalGrossAreaM2 = 0;
+  const netAreas = new Map<string, number>();
+  const incomplete = new Set<string>();
+  for (const metric of evaluation?.metrics || []) {
+    if (metric.evaluator !== "NetAreaEvaluator" || metric.subject_ids?.length !== 1) continue;
+    if (metric.metric === "net_area_m2" && metric.status === "measured" && typeof metric.value === "number") {
+      netAreas.set(metric.subject_ids[0], metric.value);
+    }
+    if (metric.metric === "net_wall_basis_complete" && metric.value === false) {
+      incomplete.add(metric.subject_ids[0]);
+    }
+  }
+  const netComplete = spaces.length > 0 && spaces.every((sp) => netAreas.has(sp.id));
+  const totalNet = spaces.reduce((sum, sp) => sum + (netAreas.get(sp.id) || 0), 0);
 
   return (
     <div
@@ -43,7 +57,7 @@ export const RoomSchedule: React.FC<RoomScheduleProps> = ({ model, program, onSe
       }}
     >
       <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 12, color: "#38bdf8" }}>
-        Room Schedule (Centreline Gross Area)
+        Room Schedule (Centreline Gross and Modelled Net)
       </div>
 
       {Object.entries(spacesByLevel).map(([lvlId, lvlSpaces]) => {
@@ -60,6 +74,7 @@ export const RoomSchedule: React.FC<RoomScheduleProps> = ({ model, program, onSe
                   <th style={{ padding: "4px 8px" }}>ID</th>
                   <th style={{ padding: "4px 8px" }}>Name</th>
                   <th style={{ padding: "4px 8px" }}>Gross Area</th>
+                  <th style={{ padding: "4px 8px" }}>Net Area</th>
                   <th style={{ padding: "4px 8px" }}>Program Target</th>
                   <th style={{ padding: "4px 8px" }}>Delta</th>
                 </tr>
@@ -67,7 +82,8 @@ export const RoomSchedule: React.FC<RoomScheduleProps> = ({ model, program, onSe
               <tbody>
                 {lvlSpaces.map((sp: Space) => {
                   const poly = (sp.boundary?.outer || []) as [number, number][];
-                  const area = poly.length > 0 ? computePolygonAreaM2(poly) : 0;
+                  const area = (poly.length > 0 ? computePolygonAreaM2(poly) : 0)
+                    - (sp.boundary.holes || []).reduce((sum, ring) => sum + computePolygonAreaM2(ring as [number, number][]), 0);
                   levelAreaM2 += area;
                   totalGrossAreaM2 += area;
 
@@ -88,6 +104,10 @@ export const RoomSchedule: React.FC<RoomScheduleProps> = ({ model, program, onSe
                       <td style={{ padding: "4px 8px", fontFamily: "monospace", color: "#38bdf8" }}>{sp.id}</td>
                       <td style={{ padding: "4px 8px" }}>{sp.name || "—"}</td>
                       <td style={{ padding: "4px 8px", fontWeight: 600 }}>{formatAreaM2(area)}</td>
+                      <td style={{ padding: "4px 8px" }} title={incomplete.has(sp.id) ? "Incomplete wall model; net area subtracts modelled walls only" : "From net-area evaluation; includes floor-level doorway recesses"}>
+                        {netAreas.has(sp.id) ? formatAreaM2(netAreas.get(sp.id)!) : "not checked"}
+                        {incomplete.has(sp.id) ? " *" : ""}
+                      </td>
                       <td style={{ padding: "4px 8px", color: "#94a3b8" }}>{target ? formatAreaM2(target) : "—"}</td>
                       <td
                         style={{
@@ -104,7 +124,9 @@ export const RoomSchedule: React.FC<RoomScheduleProps> = ({ model, program, onSe
               <tfoot>
                 <tr style={{ fontWeight: 600, color: "#cbd5e1", borderTop: "1px solid #475569" }}>
                   <td colSpan={2} style={{ padding: "6px 8px" }}>Level Total</td>
-                  <td colSpan={3} style={{ padding: "6px 8px" }}>{formatAreaM2(levelAreaM2)}</td>
+                  <td style={{ padding: "6px 8px" }}>{formatAreaM2(levelAreaM2)}</td>
+                  <td style={{ padding: "6px 8px" }}>{lvlSpaces.every((sp) => netAreas.has(sp.id)) ? formatAreaM2(lvlSpaces.reduce((sum, sp) => sum + netAreas.get(sp.id)!, 0)) : "not checked"}</td>
+                  <td colSpan={2} />
                 </tr>
               </tfoot>
             </table>
@@ -124,6 +146,10 @@ export const RoomSchedule: React.FC<RoomScheduleProps> = ({ model, program, onSe
       >
         <span>Total Building Gross Area:</span>
         <span style={{ color: "#38bdf8" }}>{formatAreaM2(totalGrossAreaM2)}</span>
+      </div>
+      <div style={{ paddingTop: 8 }}>
+        Total Modelled Net Area: {netComplete ? formatAreaM2(totalNet) : "not checked"}
+        {incomplete.size > 0 && <div>* Incomplete wall model; see net-area findings.</div>}
       </div>
     </div>
   );

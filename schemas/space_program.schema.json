@@ -543,6 +543,142 @@
       ],
       "title": "Strength",
       "type": "string"
+    },
+    "UsabilityRequirements": {
+      "additionalProperties": false,
+      "properties": {
+        "arrival_path": {
+          "anyOf": [
+            {
+              "items": {
+                "maxItems": 2,
+                "minItems": 2,
+                "prefixItems": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "number"
+                  }
+                ],
+                "type": "array"
+              },
+              "minItems": 2,
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Arrival Path"
+        },
+        "double_bed_program_item_ids": {
+          "items": {
+            "maxLength": 64,
+            "minLength": 1,
+            "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+            "type": "string"
+          },
+          "title": "Double Bed Program Item Ids",
+          "type": "array"
+        },
+        "household_seats": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Household Seats"
+        },
+        "single_bed_program_item_ids": {
+          "items": {
+            "maxLength": 64,
+            "minLength": 1,
+            "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+            "type": "string"
+          },
+          "title": "Single Bed Program Item Ids",
+          "type": "array"
+        },
+        "vehicles": {
+          "anyOf": [
+            {
+              "items": {
+                "$ref": "#/$defs/VehicleEnvelope"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Vehicles"
+        }
+      },
+      "title": "UsabilityRequirements",
+      "type": "object"
+    },
+    "VehicleEnvelope": {
+      "additionalProperties": false,
+      "description": "Requested vehicle size; not a turning-radius or swept-path model.",
+      "properties": {
+        "door_side_clearance_m": {
+          "exclusiveMinimum": 0,
+          "title": "Door Side Clearance M",
+          "type": "number"
+        },
+        "id": {
+          "maxLength": 64,
+          "minLength": 1,
+          "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "length_m": {
+          "exclusiveMinimum": 0,
+          "title": "Length M",
+          "type": "number"
+        },
+        "source": {
+          "minLength": 1,
+          "title": "Source",
+          "type": "string"
+        },
+        "turning_radius_m": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Turning Radius M"
+        },
+        "width_m": {
+          "exclusiveMinimum": 0,
+          "title": "Width M",
+          "type": "number"
+        }
+      },
+      "required": [
+        "id",
+        "width_m",
+        "length_m",
+        "door_side_clearance_m",
+        "source"
+      ],
+      "title": "VehicleEnvelope",
+      "type": "object"
     }
   },
   "$id": "https://house-ai.local/schemas/space_program.schema.json",
@@ -664,6 +800,9 @@
       ],
       "default": null,
       "title": "Target Gross Area M2"
+    },
+    "usability": {
+      "$ref": "#/$defs/UsabilityRequirements"
     },
     "zones": {
       "items": {

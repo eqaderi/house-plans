@@ -2223,16 +2223,16 @@
     {
       "id": "guest-paths",
       "category": "privacy",
-      "target": "site",
-      "source": "future",
-      "metric": "guest_private_crossings",
+      "target": "separated",
+      "source": "evaluation",
+      "metric": "guest_routes_crossing_private_count",
       "code": null,
       "subject_ids": [],
-      "value": null,
-      "status": "not_checked",
+      "value": 0,
+      "status": "measured",
       "tolerance": 1e-6,
-      "pending_stage": "S6",
-      "basis": "distinct guest and family destinations need the S6 privacy critic"
+      "pending_stage": null,
+      "basis": "shortest measured route to living crosses hall, no private bedroom"
     }
   ]
 }

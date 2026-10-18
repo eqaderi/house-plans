@@ -282,12 +282,14 @@ def households():
                     target="entry-bedroom-doors",
                     basis="two existing bedroom doors connect to hall reclassified as entry",
                 ),
-                future(
+                metric(
                     "guest-paths",
                     "privacy",
-                    "guest_private_crossings",
-                    "S6",
-                    basis="distinct guest and family destinations need the S6 privacy critic",
+                    "guest_routes_crossing_private_count",
+                    0,
+                    source="evaluation",
+                    target="separated",
+                    basis="shortest measured route to living crosses hall, no private bedroom",
                 ),
             ],
         )
@@ -338,13 +340,16 @@ def households():
                     subjects=["sp-bath"],
                     basis="graph-only step-free check has no path to bathroom",
                 ),
-                future(
+                metric(
                     "turning-clearance",
                     "practical_usability",
                     "accessible_turning_space",
-                    "S6",
+                    True,
+                    source="evaluation",
                     target="step-free-graph",
-                    basis="door graph cannot prove wheelchair usability",
+                    subjects=["sp-bath"],
+                    status="inferred",
+                    basis="unfurnished 2x3m bathroom contains assumed 1.5m circle",
                 ),
             ],
         )
@@ -431,13 +436,15 @@ def households():
                     subjects=["pi-garage"],
                     basis="golden bungalow has no garage",
                 ),
-                future(
+                metric(
                     "grocery-route",
                     "circulation",
-                    "garage_kitchen_walk_m",
-                    "S6",
+                    "garage_to_kitchen_length_m",
+                    None,
+                    source="evaluation",
                     target="missing-service",
-                    basis="route cannot be measured until service rooms exist",
+                    status="not_checked",
+                    basis="missing garage: route is explicitly not checked",
                 ),
             ],
         )
@@ -713,7 +720,8 @@ def fixtures():
             ],
         )
     )
-    f = terrain_fixture("unknown-north", dx=0.1)
+    f = terrain_fixture("unknown-north", width=32, depth=34, dx=0.1)
+    f["cases"] = [case("unoriented", model_doc(f["site"], f["program"]))]
     f["expectations"].extend(
         [
             metric(
@@ -736,12 +744,15 @@ def fixtures():
                 )
                 for i in range(1, 5)
             ],
-            future(
+            metric(
                 "daylight",
                 "unknowns",
                 "daylight_orientation",
-                "S6",
-                basis="orientation-dependent daylight cannot be claimed without north",
+                None,
+                source="evaluation",
+                target="unoriented",
+                status="not_checked",
+                basis="orientation simulation is not performed; north is unknown",
             ),
         ]
     )

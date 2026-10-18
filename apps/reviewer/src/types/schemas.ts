@@ -168,6 +168,16 @@ export type ChangeRequestKind = "modify" | "alternatives" | "restart_from_progra
 /** How an evaluator produced a reported value. */
 export type ClaimStatus = "measured" | "inferred" | "simulated" | "ai_judgment" | "not_checked";
 
+export interface ClearanceZone {
+  basis: string;
+  boundary: Polygon2D;
+  element_id: string;
+  id: string;
+  purpose: string;
+  space_id: string;
+  status?: string;
+}
+
 export type CodePackVerification = "unverified" | "verified_by_professional" | "verified_by_authority";
 
 export interface CodeRule {
@@ -238,6 +248,15 @@ export type DataClassification = "private" | "synthetic" | "public";
 
 export type DaylightNeed = "required" | "preferred" | "not_needed";
 
+export interface DimensionAssumption {
+  id: string;
+  rationale: string;
+  source: string;
+  status?: string;
+  unit: string;
+  value: number;
+}
+
 export interface DoorsConnectValidSpacesRule {
   kind?: string;
 }
@@ -295,6 +314,16 @@ export interface Fixture {
   width_m: number;
 }
 
+export interface Furniture {
+  depth_m: number;
+  id: string;
+  position: any[];
+  rotation_deg?: number;
+  space_id: string;
+  template_id: string;
+  width_m: number;
+}
+
 /** The four things a human must explicitly approve. */
 export type Gate = "site" | "program" | "plan" | "model";
 
@@ -335,8 +364,10 @@ export interface HorizontalCRS {
 export interface HouseModel {
   assumptions?: Assumption[];
   ceilings?: Ceiling[];
+  clearance_zones?: ClearanceZone[];
   coordinate_system_id: string;
   fixtures?: Fixture[];
+  furniture?: Furniture[];
   id: string;
   issues?: Issue[];
   levels: Level[];
@@ -443,6 +474,7 @@ export interface MetricChange {
 }
 
 export interface MetricClaim {
+  assumption_basis?: string | null;
   evaluator: string;
   evaluator_version: string;
   method: string;
@@ -713,7 +745,7 @@ export interface SiteFeature {
   status?: Epistemic;
 }
 
-export type SiteFeatureKind = "road" | "easement" | "existing_structure" | "utility" | "tree" | "water" | "access_point" | "frontage" | "other";
+export type SiteFeatureKind = "road" | "driveway" | "easement" | "existing_structure" | "utility" | "tree" | "water" | "access_point" | "frontage" | "other";
 
 export interface Slab {
   boundary: Polygon2D;
@@ -756,6 +788,7 @@ export interface SpaceProgram {
   site_ref?: ArtifactRef | null;
   site_verified?: boolean;
   target_gross_area_m2?: number | null;
+  usability?: UsabilityRequirements;
   zones?: ProgramZone[];
 }
 
@@ -786,6 +819,7 @@ export interface Stair {
   to_level_id: string;
   top_space_id: string;
   tread_depth_m?: number | null;
+  walking_line?: any[][] | null;
   width_m: number;
 }
 
@@ -843,8 +877,26 @@ export interface UnitDeclaration {
   unit?: LengthUnit | null;
 }
 
+export interface UsabilityRequirements {
+  arrival_path?: any[][] | null;
+  double_bed_program_item_ids?: string[];
+  household_seats?: number | null;
+  single_bed_program_item_ids?: string[];
+  vehicles?: VehicleEnvelope[] | null;
+}
+
 export interface ValidGeometryRule {
   kind?: string;
+}
+
+/** Requested vehicle size; not a turning-radius or swept-path model. */
+export interface VehicleEnvelope {
+  door_side_clearance_m: number;
+  id: string;
+  length_m: number;
+  source: string;
+  turning_radius_m?: number | null;
+  width_m: number;
 }
 
 export interface VerticalDatum {
@@ -854,11 +906,13 @@ export interface VerticalDatum {
 }
 
 export interface Violation {
+  assumption_basis?: string | null;
   code: string;
   constraint_id?: string | null;
   evaluator: string;
   id: string;
   message: string;
+  method?: string | null;
   status: ClaimStatus;
   strength: Strength;
   subject_ids?: string[];
@@ -997,6 +1051,17 @@ export interface EvaluationReport {
   provenance: Provenance;
   schema_version?: string;
   violations?: Violation[];
+}
+
+export interface FurnitureTemplate {
+  back: DimensionAssumption;
+  depth: DimensionAssumption;
+  description: string;
+  front: DimensionAssumption;
+  id: string;
+  left: DimensionAssumption;
+  right: DimensionAssumption;
+  width: DimensionAssumption;
 }
 
 export interface InterviewSession {

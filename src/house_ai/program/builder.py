@@ -36,6 +36,7 @@ from house_ai.domain.records import (
     OpenQuestion,
     OpenQuestionsFile,
 )
+from house_ai.domain.usability import UsabilityRequirements
 
 TOOL_ACTOR = Actor(kind=ActorKind.SYSTEM, id="house-ai-program")
 
@@ -535,6 +536,11 @@ def build_program(
         budget=budget,
         site_ref=site.site_ref if site else None,
         site_verified=bool(site and site.verified),
+        usability=UsabilityRequirements(
+            household_seats=(b.f.get("adults") + b.f.get("children"))
+            if type(b.f.get("adults")) is int and type(b.f.get("children")) is int
+            and b.f.get("adults") + b.f.get("children") > 0 else None,
+        ),
         provenance=provenance,
     )
     assumptions = [

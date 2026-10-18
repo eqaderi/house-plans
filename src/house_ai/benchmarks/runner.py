@@ -21,6 +21,7 @@ from house_ai.domain.program import SpaceFunction
 from house_ai.domain.site import Site
 from house_ai.evaluation.base import EvaluationContext
 from house_ai.evaluation.evaluators import REQUIRED
+from house_ai.evaluation.usability import USABILITY_EVALUATORS
 from house_ai.geospatial.terrain import build_tin
 from house_ai.geospatial.validation import validate_site
 from house_ai.storage.hashing import content_hash
@@ -139,7 +140,7 @@ def _observations(fixture: BenchmarkFixture):
             if ref.id != doc.id or ref.version != 1 or ref.sha256 != content_hash(doc):
                 raise ValueError(f"{case.id}: stale or mismatched benchmark input reference")
         ctx = EvaluationContext(case.model, fixture.site, fixture.program, None, False)
-        results = [e.evaluate(ctx) for e in REQUIRED]
+        results = [e.evaluate(ctx) for e in [*REQUIRED, *USABILITY_EVALUATORS]]
         failed = [r.run.name for r in results if r.run.status.value != "ran"]
         if failed:
             raise ValueError(f"evaluators did not run for {case.id}: {failed}")

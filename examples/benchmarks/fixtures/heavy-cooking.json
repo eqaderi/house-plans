@@ -1397,15 +1397,15 @@
       "id": "grocery-route",
       "category": "circulation",
       "target": "missing-service",
-      "source": "future",
-      "metric": "garage_kitchen_walk_m",
+      "source": "evaluation",
+      "metric": "garage_to_kitchen_length_m",
       "code": null,
       "subject_ids": [],
       "value": null,
       "status": "not_checked",
       "tolerance": 1e-6,
-      "pending_stage": "S6",
-      "basis": "route cannot be measured until service rooms exist"
+      "pending_stage": null,
+      "basis": "missing garage: route is explicitly not checked"
     }
   ]
 }

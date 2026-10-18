@@ -74,7 +74,7 @@ the orchestration layer.
 | `house_ai.program` | C | Brief → space program, adjacencies, zones, assumptions (including steep-hillside engineering assumptions) and open questions; program validation (missing information, unconfirmed interpretations, conflicts, sizes, totals, site fit); review sheet |
 | `house_ai.constraints` | D | Program + brief + site + CodePack → HARD/SOFT `ConstraintSet`; CodePack rules it cannot express are reported as not checked |
 | `house_ai.generation` | D | Design frame and envelope fitting, program → rooms and hard-connected clusters, six massing strategies (compact, split_level, linear, two_wing, courtyard, split_walkout), OR-Tools CP-SAT layout, canonical model assembly (walls derived from space edges, openings, stairs, slabs), `CpSatPlanGenerator` ([ADR 0013](adr/0013-solver-backed-plan-generation.md)) |
-| `house_ai.evaluation` | D | Geometry, Program, Adjacency, Circulation, Privacy and Site evaluators; evaluation report, plain-language explanation, comparison and revision diff |
+| `house_ai.evaluation` | D, S6 | Six baseline evaluators plus eight usability critics; finish-face net floor, door sweeps, cited furniture studies, stairs/slab headroom, portal visibility routes, privacy, sampled daylight opportunity and conservative vehicle arrival (ADR 0019); reports, explanation, comparison and revision diff |
 | `house_ai.blender` | F | Deterministic canonical-plan → Blender scripts (planned, stage F) |
 | `house_ai.unreal` | G | FBX + `scene_manifest.json` → Unreal importer (planned, stage G) |
 | `house_ai.bim` | later | IFC mapping via IfcOpenShell (planned) |

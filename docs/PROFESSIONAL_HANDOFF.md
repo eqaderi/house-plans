@@ -41,7 +41,10 @@ They are not professional approvals.
    such as setbacks and wall thicknesses are placeholders until a
    professional confirms them.
 3. **Open questions and issues.** Unresolved items are listed, not hidden.
-4. **Areas.** In this version, room areas are measured to wall centerlines.
+4. **Areas.** Room polygons and SVG labels use wall centreline areas. S6 reports
+   derived net areas from the actual wall thicknesses and floor-level openings;
+   incomplete wall models are flagged. Net bounding dimensions do not prove
+   furniture fits a concave room.
 
 ## Exporting for review
 

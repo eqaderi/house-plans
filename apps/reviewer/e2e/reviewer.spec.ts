@@ -108,6 +108,8 @@ test.describe("House AI Plan Reviewer - Local 2D Reviewer E2E", () => {
     await expect(schedule).toBeVisible();
     await expect(schedule).toContainText("Program Target");
     await expect(schedule).toContainText("Gross Area");
+    await expect(schedule).toContainText("Net Area");
+    await expect(schedule).toContainText("not checked"); // Older bundles have no S6 evaluation.
 
     // 2. Findings Tab (S4-13)
     await page.locator('[data-testid="tab-findings"]').click();

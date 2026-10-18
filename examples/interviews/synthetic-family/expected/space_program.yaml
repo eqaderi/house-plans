@@ -482,6 +482,12 @@ site_ref:
   version: 2
   sha256: 8e88070011e84b47d1b6019d38f81b521b5a817b2c41a42ec79ba10fd6bc24ab
 site_verified: true
+usability:
+  household_seats: 4
+  vehicles: null
+  arrival_path: null
+  double_bed_program_item_ids: []
+  single_bed_program_item_ids: []
 provenance:
   created_at: '2026-10-17T09:02:03Z'
   created_by:
