@@ -116,13 +116,13 @@ to reopen A–D):
 
 | | |
 |---|---|
-| **Current stage** | S7 Flexible plan generation (review pending) |
-| **Awaiting review** | S7 |
+| **Current stage** | S8 Hillside geometry |
+| **Awaiting review** | none |
 | **Next eligible stage** | S8 Hillside geometry |
 | **Path to good floor plans** | S1 (done) → S2 (done) → S3 (done) → S4 (done) → S5 (done) → S6 (done) → S7 (done) → S8 → S9 (9 stages) |
 | **Blocked** | H1 site facts (owner or surveyor input); program gate (needs site gate); H3 real design (needs S9 and approvals) |
 | **Human parallel tracks** | H1 site verification with the owner any time; H2 interview any time (S1-09 closed) |
-| **`main` health** | S6 closed; CI green on `5ed8743` (run 39119646883) |
+| **`main` health** | S7 closed; CI green on `b126e19` (run 39171542421) |
 | **Homeowner gates on `my-house`** | site: not approved (5 blockers) · program: none · plan: none · model: none |
 
 
@@ -1192,7 +1192,7 @@ supplies it. Critics report per-element findings with method and status.
 | Field | Value |
 |---|---|
 | Kind | implementation |
-| Status | IN_PROGRESS |
+| Status | DONE |
 | Review | APPROVED |
 | Branch | `stage/S7-flexible-generation` |
 | Depends on | S3, S6 |
@@ -1204,7 +1204,7 @@ supplies it. Critics report per-element findings with method and status.
 | Demonstration | Corridor-free, L-shaped and courtyard concepts on the synthetic steep fixture with a diversity report |
 | Artifacts | ADR on relation semantics, `ConceptProposal` schema, new generator path, tests |
 | Review requirements | Reviewer runs the agreement and performance tests and builds two near-identical concepts to check they are flagged |
-| Evidence | `tests/test_relation_semantics.py`, `tests/test_concept_proposal.py`, `tests/test_placement_2d.py`, `tests/test_plan_provenance_revisions.py`, `tests/test_plan_evaluation.py`; 40 targeted tests pass in 105s; all 25 S7 tasks verified |
+| Evidence | merge `b126e19`; CI run 39171542421; reviewed commit `e9f4ea0` (CI run 39170548369); ADRs 0020, 0021; schemas; 788 tests pass |
 
 The AI proposes spatial ideas; the geometry engine constructs and validates
 them. Raw LLM coordinates never replace the canonical model.
@@ -1215,22 +1215,27 @@ them. Raw LLM coordinates never replace the canonical model.
   - Accept: ADR defines ADJACENT, CONNECTED, NEAR, SEPARATED, ACOUSTIC_SEPARATION, VISUAL, hall and EXTERIOR pairs; both sides import it
   - Verify: owner reads ADR; agreement test
   - Evidence: `docs/adr/0020-relation-semantics-between-solver-and-evaluator.md`, `src/house_ai/constants/relations.py`, `src/house_ai/domain/relations.py`, `tests/test_relation_semantics.py::test_relation_semantics_adr_0020_exists_and_covers_requirements`
+  - Notes: closed with merge `b126e19`
 - [x] **S7-02** Solver enforces compiled hard constraints from the ConstraintSet — `DONE` · P1 · deps: S7-01
   - Accept: CodePack min area and width rules enforced in the solver, not only checked afterwards
   - Verify: test with a CodePack minimum the old solver violated
   - Evidence: `src/house_ai/generation/rooms.py`, `src/house_ai/generation/solver.py`, `src/house_ai/generation/generator.py`, `tests/test_relation_semantics.py::test_solver_enforces_compiled_codepack_hard_constraints`
+  - Notes: closed with merge `b126e19`
 - [x] **S7-03** Wire or explicitly report the ignored soft objectives — `DONE` · P1 · deps: S7-01
   - Accept: circulation efficiency, site response, views, cross-ventilation, indoor/outdoor, kitchen functionality, storage are optimised or reported as `not_optimised` in the explanation
   - Verify: test over the compiled objective list
   - Evidence: `src/house_ai/generation/solver.py`, `src/house_ai/evaluation/explain.py`, `tests/test_relation_semantics.py::test_soft_objectives_reported_in_explanation`
+  - Notes: closed with merge `b126e19`
 - [x] **S7-04** Soft CONNECTED relations produce doors when satisfied — `DONE` · P1 · deps: S7-01
   - Accept: touching rooms with a soft CONNECTED request get a door or the relation is reported unmet consistently
   - Verify: agreement test
   - Evidence: `src/house_ai/generation/assemble.py`, `tests/test_relation_semantics.py::test_soft_connected_produces_doors_when_touching`
+  - Notes: closed with merge `b126e19`
 - [x] **S7-05** Agreement regression tests across all strategies — `DONE` · P0 · deps: S7-02, S7-03, S7-04
   - Accept: zero disagreements on synthetic fixtures
   - Verify: `pytest -q`
   - Evidence: `tests/test_relation_semantics.py::test_solver_evaluator_agreement_across_all_strategies`; 10/10 tests passing in `tests/test_relation_semantics.py`
+  - Notes: closed with merge `b126e19`
 
 #### Typed topology proposals
 
@@ -1238,14 +1243,17 @@ them. Raw LLM coordinates never replace the canonical model.
   - Accept: zones, adjacency graph, level assignment, stair-core position, outdoor links, intent text
   - Verify: `schemas check`
   - Evidence: `src/house_ai/domain/proposal.py`, `src/house_ai/constants/proposals.py`, `schemas/concept_proposal.schema.json`, `tests/test_concept_proposal.py`
+  - Notes: closed with merge `b126e19`
 - [x] **S7-07** Formal validation of topology proposals — `DONE` · P1 · deps: S7-06
   - Accept: program coverage, connectivity, hard adjacencies, level feasibility checked before solving
   - Verify: negative tests
   - Evidence: `src/house_ai/validation/topology.py`, 11/11 tests passing in `tests/test_concept_proposal.py`
+  - Notes: closed with merge `b126e19`
 - [x] **S7-08** CLI to submit a proposal and generate from it — `DONE` · P1 · deps: S7-07
   - Accept: `plan propose` (or equivalent) records the proposal and runs generation; exploratory mode supported
   - Verify: workflow test
   - Evidence: `src/house_ai/cli/plan_cmds.py` (`house-ai plan propose`), `src/house_ai/orchestration/plans.py`, `src/house_ai/generation/generator.py`, 4/4 tests passing in `tests/test_plan_propose.py`
+  - Notes: closed with merge `b126e19`
 
 #### Two-dimensional placement engine
 
@@ -1253,22 +1261,27 @@ them. Raw LLM coordinates never replace the canonical model.
   - Accept: benchmark on synthetic programs: solve time, optimality gap, determinism; decision recorded
   - Verify: benchmark script and results in the stage evidence
   - Evidence: `tools/benchmark_nooverlap2d.py`, `docs/adr/0021-2d-placement-formulation.md`
+  - Notes: closed with merge `b126e19`
 - [x] **S7-10** 2D room placement with topology constraints — `DONE` · P1 · deps: S7-09
   - Accept: rooms placed in x and y; adjacency by shared wall length; canonical model assembled and `check_model` clean
   - Verify: generation tests
   - Evidence: `src/house_ai/generation/solver2d.py`, `src/house_ai/generation/assemble2d.py`, `src/house_ai/generation/generator.py`, `tests/test_placement_2d.py::test_2d_placement_basic_and_check_model_clean`
+  - Notes: closed with merge `b126e19`
 - [x] **S7-11** Corridor-free and compact circulation patterns — `DONE` · P1 · deps: S7-10
   - Accept: circulation only where needed; circulation share reported lower than the bar strategies on the same program
   - Verify: comparison test
   - Evidence: `src/house_ai/generation/solver2d.py`, `tests/test_placement_2d.py::test_corridor_free_circulation_pattern`
+  - Notes: closed with merge `b126e19`
 - [x] **S7-12** Meaningful open-plan arrangements — `DONE` · P1 · deps: S7-10
   - Accept: living, kitchen and dining as zones of one composite space with furniture feasibility (S6) passing
   - Verify: synthetic tests
   - Evidence: `src/house_ai/generation/solver2d.py`, `src/house_ai/generation/assemble2d.py`, `tests/test_placement_2d.py::test_open_plan_living_arrangement`
+  - Notes: closed with merge `b126e19`
 - [x] **S7-13** Solver performance and reproducibility budget — `DONE` · P2 · deps: S7-10
   - Accept: time limit, seed and platform recorded; tests assert properties, not bytes
   - Verify: performance test
   - Evidence: `src/house_ai/generation/solver2d.py`, `tests/test_placement_2d.py::test_solver_reproducibility_budget`
+  - Notes: closed with merge `b126e19`
 
 #### Massing and organisation variety
 
@@ -1276,22 +1289,27 @@ them. Raw LLM coordinates never replace the canonical model.
   - Accept: wings at free positions, not a fixed offset behind the entry bar
   - Verify: generation tests
   - Evidence: `src/house_ai/generation/solver2d.py` (`_apply_two_wing_constraints`), `tests/test_placement_2d.py::test_two_wing_l_shaped_arrangement_free_positioning`
+  - Notes: closed with merge `b126e19`
 - [x] **S7-15** Courtyard geometry with an open court — `DONE` · P2 · deps: none
   - Accept: polygon with a hole or enclosing wings; court as an outdoor space
   - Verify: generation tests
   - Evidence: `src/house_ai/generation/solver2d.py` (`_apply_courtyard_constraints`), `src/house_ai/generation/assemble2d.py`, `tests/test_placement_2d.py::test_courtyard_geometry_with_open_court`
+  - Notes: closed with merge `b126e19`
 - [x] **S7-16** Alternative stair-core locations and floor organisations — `DONE` · P1 · deps: none
   - Accept: stair position is a variable or a proposal input; floors organised by zone (day, night, guest)
   - Verify: tests
   - Evidence: `src/house_ai/generation/solver2d.py` (`_apply_stair_constraints`), `src/house_ai/generation/assemble2d.py`, `tests/test_placement_2d.py::test_multi_level_alternative_stair_cores`
+  - Notes: closed with merge `b126e19`
 - [x] **S7-17** Privacy-driven zoning — `DONE` · P1 · deps: none
   - Accept: guest, family and service zones separated per program priorities
   - Verify: family-privacy fixture
   - Evidence: `src/house_ai/generation/solver2d.py` (`_apply_zoning_objectives`, `is_privacy_separated`), `tests/test_placement_2d.py::test_privacy_driven_zoning`
+  - Notes: closed with merge `b126e19`
 - [x] **S7-18** Non-rectangular and composite spaces where justified — `DONE` · P3 · deps: none
   - Accept: L-shaped rooms or composite open-plan spaces pass `check_model`
   - Verify: tests
   - Evidence: `src/house_ai/generation/solver2d.py` (`PlacedRoom2D.sub_rects`), `src/house_ai/generation/assemble2d.py`, `tests/test_placement_2d.py::test_non_rectangular_l_shaped_space`
+  - Notes: closed with merge `b126e19`
 
 #### Outdoor and terrace integration
 
@@ -1299,10 +1317,12 @@ them. Raw LLM coordinates never replace the canonical model.
   - Accept: TERRACE slabs and parapets populated with levels and edges
   - Verify: generation tests
   - Evidence: `src/house_ai/generation/assemble2d.py`, `tests/test_placement_2d.py::test_terrace_geometry_and_placement_s7_19`
+  - Notes: closed with merge `b126e19`
 - [x] **S7-20** Indoor/outdoor relationships evaluated — `DONE` · P1 · deps: S7-19
   - Accept: room-to-terrace door connections and level differences measured
   - Verify: evaluation tests
   - Evidence: `src/house_ai/evaluation/evaluators.py` (`SiteEvaluator._terrain`, `AdjacencyEvaluator`), `tests/test_placement_2d.py::test_indoor_outdoor_relationships_evaluated_s7_20`
+  - Notes: closed with merge `b126e19`
 
 #### Topology revisions and diversity
 
@@ -1310,22 +1330,27 @@ them. Raw LLM coordinates never replace the canonical model.
   - Accept: revise accepts a topology proposal delta; history preserved
   - Verify: revision tests
   - Evidence: `PlanService.revise` supports `--connect`, `--stair`, `--outdoor`, and `--proposal` (validates `ConceptProposal`, stores `CONCEPT_PROPOSAL` artifact, wires to solver and generator); `tests/test_plan_provenance_revisions.py::test_topology_revision_connect_stair_outdoor`
+  - Notes: closed with merge `b126e19`
 - [x] **S7-22** Combine compatible features from alternatives — `DONE` · P2 · deps: S7-21
   - Accept: `combine` no longer refused; feature mapping explicit and owner-confirmed
   - Verify: combine test
   - Evidence: `house-ai plan combine` and `PlanService.combine` implemented with `base_versions` resolution (>= 2 bases) and merged prior operations; `tests/test_plan_provenance_revisions.py::test_combine_compatible_features_from_alternatives`
+  - Notes: closed with merge `b126e19`
 - [x] **S7-23** Preserve owner design intent across revisions — `DONE` · P1 · deps: S7-21
   - Accept: earlier owner requests are re-checked on every new version; regressions reported
   - Verify: multi-step revision test
   - Evidence: `PlanService.revise` tracks inherited requests across multi-version revisions, detects regressions in area, level elevations, and separation, and reports them in `RevisionReport.new_violations`; `tests/test_plan_provenance_revisions.py::test_preserve_owner_design_intent_across_multi_step_revisions`
+  - Notes: closed with merge `b126e19`
 - [x] **S7-24** Quantitative diversity metrics and superficial-variant detection — `DONE` · P1 · deps: none
   - Accept: topology graph distance, zoning, level assignment and footprint overlap; threshold flags near-duplicates
   - Verify: test with a mirrored or shifted duplicate
   - Evidence: `topology_distance`, `room_aspect_ratio_variance`, `detect_near_duplicates` with centroid and IoU checking, `comparison_markdown` warnings and table columns; `tests/test_plan_evaluation.py::test_diversity_metrics_and_superficial_variant_detection`
+  - Notes: closed with merge `b126e19`
 - [x] **S7-25** Adversarial generation tests — `DONE` · P2 · deps: none
   - Accept: contradictory, oversized, undersized and pathological programs fail clearly without invalid models
   - Verify: `pytest -q`
   - Evidence: contradictory hard adjacencies, 20x oversized program, impossible minimum width dimensions fail cleanly with `Infeasible` / `Solve2DFailed` and infeasible candidate without crashing; `tests/test_placement_2d.py::test_adversarial_generation_s7_25`
+  - Notes: closed with merge `b126e19`
 
 ### Stage S8 — Hillside geometry
 
@@ -2166,12 +2191,13 @@ ingestion pipeline · 0007 site review corrections · 0008 owner interview and
 space program · 0009 personal-first project folders · 0010 Claude adapter
 for the interview · 0011 agent-first interview interface · 0012 site metric
 scope · 0013 solver-backed plan generation · 0014 project tracker and stage
-lifecycle · 0015 agent skills canonical location and discovery · 0016 event-head anchor integrity · 0017 synthetic benchmark contract · 0018 reviewer architecture · 0019 canonical placements and derived usability studies.
+lifecycle · 0015 agent skills canonical location and discovery · 0016 event-head anchor integrity · 0017 synthetic benchmark contract · 0018 reviewer architecture · 0019 canonical placements and derived usability studies · 0020 relation semantics between solver and evaluator · 0021 2D placement formulation.
 
 ## M. Recently completed
 
 | Date | What | Evidence |
 |---|---|---|
+| 2026-10-18 | Stage S7 closed: flexible plan generation (NoOverlap2D solver, ADRs 0020 & 0021, typed topology proposals ConceptProposal, composite spaces, corridor-free and open plans, two-wing and courtyard massing, multi-level alternative stair cores, terrace and outdoor links, feature-mapped combine revisions, intent regression detection, quantitative diversity metrics) | merge `b126e19`; CI run 39171542421 |
 | 2026-10-18 | Stage S6 closed: usability critics (net usable area, door clearances and swings, stair rise/going/headroom/landing, furniture templates and bounded fit search, path-based route visibility network, privacy/crossings, daylight opportunity, conservative vehicle arrival, 8 critics over 17 R2 benchmarks, synthetic hillside demonstration) | merge `5ed8743`; CI run 39119646883 |
 | 2026-10-18 | Stage S5 closed: agent visual review loop (browser setup in `AGENT_BROWSER_SETUP.md`, offline capture script in `capture.js`, semantic SVG tags and accessibility tree snapshot, static rasterization, `VisualCritique` schema, grounding validator, seeded visual defects detectors, fix verification loop, `visual-review` skill, synthetic hillside demonstration) | merge `b79595e`; CI run 39109025338 |
 | 2026-10-18 | Stage S4 closed: local 2D plan reviewer (React 19 + TypeScript + Vite, ADR 0018), semantic SVG renderer, read-only bundle export, revision ops domain model & CLI replay (`plan revise-from-file`), E2E Playwright regression suite, CI reviewer job; post-review polish (buildable envelope overlay, comparison sync zoom/pan, cwd safety, constants, styling helpers) | merge `e49f3c4`, polish `af54194`; CI runs 39088912116, 39089691291 |
@@ -2218,6 +2244,11 @@ Closure record template:
 ```
 
 ### S7 records
+
+#### S7 closure
+- Merged: `stage/S7-flexible-generation` at `e9f4ea0` (reviewed commit; branch head `1aa7083` adds only review tracker records) into `main` as `b126e19` on 2026-10-18
+- CI on main: run 39171542421, success on Python 3.11 and 3.13, Vitest & Playwright
+- Closed by: agent:gemini on the owner's "Close stage S7"
 
 #### S7 review 2 — APPROVED
 - Reviewed commit: e9f4ea0d9b74fedd5ff657d663b7ff785c2a2977
@@ -3044,10 +3075,10 @@ homeowner approval of any site, program, plan or model.
 
 ### Current handoff note
 
-- S6 Usability critics closed on `main` (merge commit `5ed8743`; CI run 39119646883 green).
-- Next eligible stage is **S7 Flexible plan generation** (depends on S3 and S6, both DONE).
-- S7 scope: variable room shapes beyond rigid rectangular bars, `NoOverlap2D`, CodePack soft objectives, relation semantics alignment, and combine revisions.
-- Owner can trigger "Next stage" to begin S7 on branch `stage/S7-flexible-plan-generation`.
+- S7 Flexible plan generation closed on `main` (merge commit `b126e19`; CI run 39171542421 green).
+- Next eligible stage is **S8 Hillside geometry** (depends on S3 and S7, both DONE).
+- S8 scope: robust 2.5D geometry and volume validation, true sections/elevations, multi-level joint optimization with terrain, earthworks, sectional strategies, terrace foundations, garage access, terrain risk register.
+- Owner can trigger "Next stage" to begin S8 on branch `stage/S8-hillside-geometry`.
 
 ## P. Rules for updating the tracker
 
