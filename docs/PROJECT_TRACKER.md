@@ -117,7 +117,7 @@ to reopen A–D):
 | | |
 |---|---|
 | **Current stage** | S6 Usability critics (IN_PROGRESS) |
-| **Awaiting review** | none |
+| **Awaiting review** | S6 (PENDING) |
 | **Next eligible stage** | S6 active; S7 after S6 review and closure |
 | **Path to good floor plans** | S1 (done) → S2 (done) → S3 (done) → S4 (done) → S5 (done) → S6 → S7 → S8 → S9 (9 stages) |
 | **Blocked** | H1 site facts (owner or surveyor input); program gate (needs site gate); H3 real design (needs S9 and approvals) |
@@ -987,7 +987,7 @@ rejected.
 |---|---|
 | Kind | implementation |
 | Status | IN_PROGRESS |
-| Review | NOT_REQUESTED |
+| Review | PENDING |
 | Branch | `stage/S6-usability-critics` |
 | Depends on | S3 |
 | Tasks | S6-01, S6-02, S6-03, S6-04, S6-05, S6-06, S6-07, S6-08, S6-09, S6-10, S6-11, S6-12, S6-13, S6-14, S6-15, S6-16, S6-17, S6-18, S6-19, S6-20, S6-21, S6-22, S6-23, S6-24, S6-25, S6-26, S6-27, S6-28, S6-29, S6-30, S6-31, S6-32 |
@@ -998,7 +998,7 @@ rejected.
 | Demonstration | Critic report for synthetic-hillside concepts |
 | Artifacts | `domain/` extension and ADR, `evaluation/` critics, templates, fixtures |
 | Review requirements | Reviewer hand-checks one net area, one route length and one infeasible furniture verdict |
-| Evidence | ADR 0019; `tests/benchmarks/test_usability.py`; `examples/usability/demonstration/report.md`; required checks recorded under §N |
+| Evidence | ADR 0019; `tests/benchmarks/test_usability.py`; `examples/usability/demonstration/report.md`; implementation `7a429fe`; CI run 39111567306; required checks under §N |
 
 Proven geometric checks, not vague AI scores. "Usable" means a room can
 hold its furniture with clearances and doors that swing freely, not only
@@ -2220,7 +2220,11 @@ Closure record template:
   headroom; single-portal dead-end heuristic; sampled terrain exposure; no solar,
   airflow or acoustic-performance simulation. Vehicle sweep is a conservative
   bound and curvature proxy. New furniture/zone SVG picking remains ISS-24.
-- CI and review-request metadata will be recorded after the implementation push.
+- Implementation commit: `7a429fe` (pushed). CI dispatched for that commit:
+  [run 39111567306](https://github.com/eqaderi/house-plans/actions/runs/39111567306).
+  A fresh CI run is also dispatched for the tracker-only review-request head.
+- Review requested: **PENDING**. No independent review has been performed;
+  stage and tasks remain IN_PROGRESS. Do not merge until owner-authorized closure.
 
 ### S5 records
 
@@ -2709,7 +2713,7 @@ homeowner approval of any site, program, plan or model.
 
 ### Current handoff note
 
-- S6 implementation on `stage/S6-usability-critics`, by `agent:codex`.
+- S6 implementation complete on `stage/S6-usability-critics`, by `agent:codex`; review **PENDING**.
 - Eight usability critics run in normal plan evaluation and the R2 benchmark runner.
   Domain additions and hash compatibility are described in ADR 0019.
 - Demonstration: `.venv/bin/python -m examples.usability.make_report --out /tmp/house-usability`.
