@@ -6,7 +6,7 @@ No other TODO, roadmap or stage-status file is kept. Format and update rules
 are in [§P](#p-rules-for-updating-the-tracker); `python tools/check_tracker.py`
 checks them.
 
-Last updated: 2026-10-19, Stage S8 review requested by `agent:claude-code` (implementation by `agent:codex`).
+Last updated: 2026-10-19, Stage S8 review 1 CHANGES_REQUESTED by `agent:gemini` (commit `fc57aa9`).
 
 ## A. Mission and immediate objective
 
@@ -117,8 +117,8 @@ to reopen A–D):
 | | |
 |---|---|
 | **Current stage** | S8 Hillside geometry — IN_PROGRESS |
-| **Awaiting review** | S8 Hillside geometry (review PENDING) |
-| **Next eligible stage** | none until S8 review |
+| **Awaiting review** | none (S8 review CHANGES_REQUESTED) |
+| **Next eligible stage** | none until S8 closed |
 | **Path to good floor plans** | S1 (done) → S2 (done) → S3 (done) → S4 (done) → S5 (done) → S6 (done) → S7 (done) → S8 → S9 (9 stages) |
 | **Blocked** | H1 site facts (owner or surveyor input); program gate (needs site gate); H3 real design (needs S9 and approvals) |
 | **Human parallel tracks** | H1 site verification with the owner any time; H2 interview any time (S1-09 closed) |
@@ -1358,7 +1358,7 @@ them. Raw LLM coordinates never replace the canonical model.
 |---|---|
 | Kind | implementation |
 | Status | IN_PROGRESS |
-| Review | PENDING |
+| Review | CHANGES_REQUESTED |
 | Branch | `stage/S8-hillside-geometry` |
 | Depends on | S3, S7 |
 | Tasks | S8-01, S8-02, S8-03, S8-04, S8-05, S8-06, S8-07, S8-08, S8-09, S8-10, S8-11, S8-12, S8-13, S8-14, S8-15, S8-16, S8-17, S8-18, S8-19, S8-20, S8-21, S8-22 |
@@ -2242,6 +2242,33 @@ Closure record template:
 - CI on main: <run id, result>
 - Closed by: <agent:tool> on the owner's "Close stage <ID>"
 ```
+
+### S8 records
+
+#### S8 review 1 — CHANGES_REQUESTED
+- Reviewed commit: fc57aa92671fbeb2e53fd36177bf20db9469286e
+- Reviewer: agent:gemini, Gemini 3.8 Flash (implementer was agent:codex; review requested by agent:claude-code)
+- Date: 2026-10-19
+- Checks run:
+  - CI: branch run 39174630794 on `fc57aa9` failed on Python 3.11 (10m38s) and Python 3.13 (13m18s) with exit 1; Reviewer App passed (42s).
+  - Pytest: `.venv/bin/python -m pytest -q` -> 823 passed in 389.35s on macOS arm64.
+  - Linter: `.venv/bin/ruff check src tests examples tools` -> clean (All checks passed!).
+  - Schema check: `.venv/bin/house-ai schemas check` -> clean (29 schemas up to date).
+  - Tracker check: `.venv/bin/python tools/check_tracker.py --summary` -> clean (20 stages, 262 tasks).
+  - Store verification: `.venv/bin/house-ai project verify my-house` -> intact (13 events, 10 artifact versions).
+  - Leak scan: `.venv/bin/python tools/leak_scan.py` -> clean (0 leaks).
+  - Reviewer app: typecheck clean, Vitest 16 passed, Playwright 7 e2e tests passed.
+  - Demonstration: `examples/hillside/run_demo.py` ran clean; 5 sectional alternatives generated, `comparison.md`, `comparison.json`, SVGs, and risk registers generated.
+  - Analytical recomputations:
+    - Planar slope analytical volume: for z(x,y)=2+0.2x on 10x6 m footprint with floor plane z0=3 m, cut volume is analytically 1/2*5*1*6 = 15.0 m³ and underfloor void is 1/2*5*1*6 = 15.0 m³; pyramid cut is 10.0 m³ and void is 50.0 m³. Code matches exact closed-form down to 1e-7 m³.
+    - Section cut height: in `test_section_cuts_only_intersected_geometry_and_preserves_apertures`, cut along X=5 passes through door aperture in `wall-south` (Z in [3, 6], door head 5.1, sill 3). Wall polygon cuts from Z=5.1 to 6.0 m (0.9 m height); floor slab cuts from Z=2.8 to 3.0 m (0.2 m thickness). Matches code output.
+    - Deep excavation check: confirmed no cut/fill penalty in CP-SAT solver objective (`src/house_ai/generation/terrain_levels.py`); `large_underfloor_void` trigger is configurable (default 4 m) and only flags empty voids; risks are reported as requiring a professional without single ranking or excavation bias (DEC-04).
+- Artifacts and screenshots inspected: `src/house_ai/geospatial/earthworks.py`, `src/house_ai/geospatial/hillside.py`, `src/house_ai/geospatial/mesh.py`, `src/house_ai/geospatial/sections.py`, `src/house_ai/evaluation/hillside.py`, `src/house_ai/generation/terrain_levels.py`, `src/house_ai/domain/hillside.py`, `docs/adr/0022-hillside-geometry-and-level-decisions.md`, `docs/PROFESSIONAL_HANDOFF.md`, `examples/hillside/run_demo.py`, `tests/test_hillside_earthworks.py`, `tests/test_hillside_levels.py`, `tests/test_hillside_views.py`, generated demonstration SVGs and markdown.
+- Findings:
+  1. `tests/test_plan_architectural_review.py:56` (BLOCKING / CI FAILURE): `assert metrics["split_walkout"][METRIC_MAX_FILL] < metrics["split_level"][METRIC_MAX_FILL]` failed on both Python 3.11 and Python 3.13 on Linux runners in CI run 39174630794 (`assert 4.793 < 4.767`). The exact clipped-TIN evaluation yields max void heights of ~4.77-4.85 m on both strategies depending on solver bar placement across architectures. Asserting strict inequality on maximum void height between the two strategies is fragile and architecturally not guaranteed; the intended architectural trade-off is total void volume reduction and positive excavation.
+  2. `docs/PROJECT_TRACKER.md:120,1361` (TRACKER DISCREPANCY): Review status was set to PENDING before CI completed and passed; with the CI failure, Review must be CHANGES_REQUESTED.
+- Tracker accuracy: Task statuses correctly remain `IN_PROGRESS` (`[ ]`) with evidence references; evidence references are accurate; but the claim in commit `fc57aa9` that tests all passed was inaccurate due to the Linux CI failure.
+- Verdict: CHANGES_REQUESTED
 
 ### S7 records
 
