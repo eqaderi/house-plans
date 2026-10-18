@@ -6,7 +6,7 @@ No other TODO, roadmap or stage-status file is kept. Format and update rules
 are in [§P](#p-rules-for-updating-the-tracker); `python tools/check_tracker.py`
 checks them.
 
-Last updated: 2026-10-19, Stage S8 review 1 CHANGES_REQUESTED by `agent:gemini` (commit `fc57aa9`).
+Last updated: 2026-10-19, Stage S8 review 2 requested by `agent:claude-code` after review 1 fixes (`dd8565b`, CI 39176355571).
 
 ## A. Mission and immediate objective
 
@@ -117,7 +117,7 @@ to reopen A–D):
 | | |
 |---|---|
 | **Current stage** | S8 Hillside geometry — IN_PROGRESS |
-| **Awaiting review** | none (S8 review CHANGES_REQUESTED) |
+| **Awaiting review** | S8 Hillside geometry (review 2 PENDING) |
 | **Next eligible stage** | none until S8 closed |
 | **Path to good floor plans** | S1 (done) → S2 (done) → S3 (done) → S4 (done) → S5 (done) → S6 (done) → S7 (done) → S8 → S9 (9 stages) |
 | **Blocked** | H1 site facts (owner or surveyor input); program gate (needs site gate); H3 real design (needs S9 and approvals) |
@@ -1358,7 +1358,7 @@ them. Raw LLM coordinates never replace the canonical model.
 |---|---|
 | Kind | implementation |
 | Status | IN_PROGRESS |
-| Review | CHANGES_REQUESTED |
+| Review | PENDING |
 | Branch | `stage/S8-hillside-geometry` |
 | Depends on | S3, S7 |
 | Tasks | S8-01, S8-02, S8-03, S8-04, S8-05, S8-06, S8-07, S8-08, S8-09, S8-10, S8-11, S8-12, S8-13, S8-14, S8-15, S8-16, S8-17, S8-18, S8-19, S8-20, S8-21, S8-22 |
@@ -1369,7 +1369,7 @@ them. Raw LLM coordinates never replace the canonical model.
 | Demonstration | Sections, sectional-strategy comparison and risk register for the synthetic steep fixture |
 | Artifacts | Geometry adapter, section generator, solver and evaluator changes |
 | Review requirements | Reviewer recomputes one analytical volume and one section height, confirms deep excavation is not penalised by default |
-| Evidence | `tests/test_hillside_earthworks.py`, `tests/test_hillside_views.py`, `tests/test_hillside_levels.py`; full suite 823 passed; reviewer typecheck, Vitest (16) and Playwright (7) pass; internal standards and spec reviews done and their findings fixed. ADR 0022; `examples/hillside/run_demo.py`. |
+| Evidence | `tests/test_hillside_earthworks.py`, `tests/test_hillside_views.py`, `tests/test_hillside_levels.py`; full suite 823 passed; CI run 39176355571 green on `dd8565b` (Python 3.11, 3.13, reviewer app); reviewer typecheck, Vitest (16) and Playwright (7) pass; internal standards and spec reviews done and their findings fixed. ADR 0022; `examples/hillside/run_demo.py`. |
 
 Homeowner requirement (DEC-04): deep excavation, including more than 4 m,
 is an acceptable design option; minimising excavation is not automatically
@@ -3110,7 +3110,7 @@ homeowner approval of any site, program, plan or model.
 - Internal standards/spec reviews (agent:codex) found: unknown door/retaining totals reported as zero, floor/terrace slab extensions missing from earthworks, waterproofing risk missing for some concepts, incomplete architectural comparison. Fixed in the review-request commit (agent:claude-code resumed after Codex hit its usage limit); golden `plan-a.svg`, reviewer bundle and generated TS types refreshed for the true section.
 - First CI run 39174630794 on `fc57aa9` failed on Python only: `split_walkout` vs `split_level` strict max-fill ordering in a Milestone-D regression compared tied CP-SAT optima that differ between arm64 and x86 (ISS-28). S8 review 1 (agent:gemini) recorded this as finding 1, and finding 2 for setting Review PENDING before CI passed. Fix: assertion replaced by a reported-value check; fill-volume and excavation comparisons kept (hold for seeds 0–5). Review goes back to PENDING only in a tracker-only commit after CI passes on the fix.
 - Required checks pass locally: pytest 823 passed, ruff, schemas check, tracker check, `project verify my-house` intact, leak scan clean, reviewer typecheck/Vitest/Playwright.
-- Review **CHANGES_REQUESTED** (review 1); both findings addressed on this branch, awaiting CI before requesting review 2.
+- Both review 1 findings addressed in `dd8565b`; CI run 39176355571 green on it (Python 3.11, 3.13, reviewer app). Review 2 **PENDING** on the following tracker-only commit.
 - Known bounds: free 2D sectional intents explicitly refused; U-shaped stair flight/landing geometry without canonical walking lines stays unknown in cuts; facade projections do not resolve occlusion.
 - Resume this branch and complete checks/fixes before requesting independent S8 review. No approvals or `my-house` data modified.
 
