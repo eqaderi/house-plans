@@ -1,0 +1,1585 @@
+{
+  "brief": {
+    "budget": {
+      "amount": 280000.0,
+      "currency": "EUR"
+    },
+    "contradictions": [],
+    "facts": [
+      {
+        "id": "f-single-storey",
+        "key": "single_storey",
+        "priority": "must",
+        "source": {
+          "interview_round": 1,
+          "kind": "owner_answer",
+          "ref": "q-levels"
+        },
+        "statement": "Everything on one level; a grandparent visits for weeks at a time.",
+        "status": "preference",
+        "topic": "accessibility",
+        "value": true
+      },
+      {
+        "id": "f-open-kitchen",
+        "key": "kitchen_layout",
+        "priority": "should",
+        "source": {
+          "interview_round": 1,
+          "kind": "owner_answer",
+          "ref": "q-kitchen"
+        },
+        "statement": "Kitchen open to the living room, but cooking smells should not reach bedrooms.",
+        "status": "preference",
+        "topic": "kitchen_type",
+        "value": "open_to_living"
+      },
+      {
+        "id": "f-bedrooms",
+        "key": "bedroom_count",
+        "priority": "must",
+        "source": {
+          "interview_round": 1,
+          "kind": "owner_answer",
+          "ref": "q-rooms"
+        },
+        "statement": "Two bedrooms now; the children share one.",
+        "status": "verified_fact",
+        "topic": "bedrooms_bathrooms",
+        "value": 2
+      },
+      {
+        "id": "f-quiet-bedrooms",
+        "key": "bedrooms_away_from_road",
+        "priority": "should",
+        "source": {
+          "interview_round": 2,
+          "kind": "owner_answer",
+          "ref": "q-noise"
+        },
+        "statement": "Bedrooms should face away from the road.",
+        "status": "preference",
+        "topic": "noise",
+        "value": true
+      },
+      {
+        "id": "f-guest-sleep-living",
+        "key": "guest_sleeping",
+        "priority": null,
+        "source": {
+          "interview_round": 2,
+          "kind": "agent_inference",
+          "ref": "round-2-summary"
+        },
+        "statement": "Visiting grandparent can sleep in the living room for now (inferred from budget answers).",
+        "status": "inference",
+        "topic": "long_term_guests",
+        "value": "living_room_sofa_bed"
+      }
+    ],
+    "household": [
+      {
+        "age_years": 41,
+        "id": "hh-adult-1",
+        "label": "Parent 1",
+        "needs": [],
+        "role": "adult"
+      },
+      {
+        "age_years": 39,
+        "id": "hh-adult-2",
+        "label": "Parent 2",
+        "needs": [],
+        "role": "adult"
+      },
+      {
+        "age_years": 9,
+        "id": "hh-child-1",
+        "label": "Child 1",
+        "needs": [],
+        "role": "child"
+      },
+      {
+        "age_years": null,
+        "id": "hh-child-2",
+        "label": "Child 2",
+        "needs": [],
+        "role": "child"
+      }
+    ],
+    "id": "brief",
+    "interview_rounds_completed": 2,
+    "project_id": "synthetic-bungalow",
+    "provenance": {
+      "created_at": "2026-10-17T12:00:00Z",
+      "created_by": {
+        "display_name": null,
+        "id": "example-author",
+        "kind": "human",
+        "model": null,
+        "provider": null
+      },
+      "inputs": [],
+      "method": "hand_authored",
+      "notes": "Synthetic stand-in for the output of two interview rounds.",
+      "tool": null,
+      "tool_version": null
+    },
+    "schema_version": "0.1.0",
+    "target_gross_area_m2": 120.0
+  },
+  "comparison_markdown": "# Plan concepts compared\n\nEach column is one concept; values are individual metrics, not a combined score. Status in brackets when not measured exactly.\n\n| Metric |  |\n|---|\n| Strategy |  |\n| Hard violations |  |\n| Soft violations |  |\n\nThese are design explorations. None is reviewed, engineered or checked against a building code; see docs/PROFESSIONAL_HANDOFF.md.\n",
+  "gates": {
+    "model": {
+      "approve_command": "house-ai workflow approve synthetic-bungalow model --id <model-id> --approver <your-name>",
+      "approved": false,
+      "approved_at": "2026-10-17T12:00:00Z",
+      "approved_by": null,
+      "artifact": null,
+      "description": "Requires human approval of 3D Blender/BIM model.",
+      "name": "Model Gate"
+    },
+    "plan": {
+      "approve_command": "house-ai workflow approve synthetic-bungalow plan --id <option-id> --version <version> --approver <your-name>",
+      "approved": false,
+      "approved_at": "2026-10-17T12:00:00Z",
+      "approved_by": null,
+      "artifact": null,
+      "description": "Requires human approval of a specific evaluated plan version.",
+      "name": "Plan Gate"
+    },
+    "program": {
+      "approve_command": "house-ai workflow approve synthetic-bungalow program --id program --approver <your-name>",
+      "approved": true,
+      "approved_at": "2026-10-17T12:00:00Z",
+      "approved_by": "example-owner",
+      "artifact": {
+        "id": "program",
+        "kind": "space_program",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "version": 1
+      },
+      "description": "Requires human review of space program and architectural brief.",
+      "name": "Program Gate"
+    },
+    "site": {
+      "approve_command": "house-ai workflow approve synthetic-bungalow site --id site --approver <your-name>",
+      "approved": true,
+      "approved_at": "2026-10-17T12:00:00Z",
+      "approved_by": "example-owner",
+      "artifact": {
+        "id": "site",
+        "kind": "site",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "version": 1
+      },
+      "confirm_command": "house-ai site confirm synthetic-bungalow --crs EPSG:XXXX --vertical-datum <datum> --confirmer <your-name>",
+      "description": "Requires human confirmation of horizontal/vertical CRS and human approval.",
+      "name": "Site Gate"
+    }
+  },
+  "plans": [
+    {
+      "evaluation": null,
+      "is_exploratory": false,
+      "label": "Option A: compact bar, bedrooms north",
+      "option_id": "plan-a",
+      "plan": {
+        "change_request": null,
+        "generation": null,
+        "label": "Option A: compact bar, bedrooms north",
+        "model": {
+          "assumptions": [
+            {
+              "affects": [
+                "sp-living",
+                "sp-kitchen"
+              ],
+              "basis": "Milestone A convention",
+              "confirm_with": null,
+              "id": "as-plan-centerlines",
+              "made_by": null,
+              "statement": "Room areas are measured to wall centerlines.",
+              "status": "assumption"
+            }
+          ],
+          "ceilings": [
+            {
+              "height_m": 2.7,
+              "id": "ceil-living",
+              "material_id": "m-plaster",
+              "space_id": "sp-living"
+            },
+            {
+              "height_m": 2.7,
+              "id": "ceil-kitchen",
+              "material_id": "m-plaster",
+              "space_id": "sp-kitchen"
+            },
+            {
+              "height_m": 2.7,
+              "id": "ceil-hall",
+              "material_id": "m-plaster",
+              "space_id": "sp-hall"
+            },
+            {
+              "height_m": 2.7,
+              "id": "ceil-bed-parents",
+              "material_id": "m-plaster",
+              "space_id": "sp-bed-parents"
+            },
+            {
+              "height_m": 2.7,
+              "id": "ceil-bath",
+              "material_id": "m-plaster",
+              "space_id": "sp-bath"
+            },
+            {
+              "height_m": 2.7,
+              "id": "ceil-bed-children",
+              "material_id": "m-plaster",
+              "space_id": "sp-bed-children"
+            }
+          ],
+          "coordinate_system_id": "lcs-site",
+          "fixtures": [
+            {
+              "depth_m": 0.65,
+              "fixture_type": "wc",
+              "id": "fx-wc",
+              "material_id": null,
+              "position": [
+                14.6,
+                21.4
+              ],
+              "rotation_deg": 180.0,
+              "space_id": "sp-bath",
+              "width_m": 0.4
+            },
+            {
+              "depth_m": 0.45,
+              "fixture_type": "basin",
+              "id": "fx-basin",
+              "material_id": null,
+              "position": [
+                15.6,
+                21.6
+              ],
+              "rotation_deg": 180.0,
+              "space_id": "sp-bath",
+              "width_m": 0.6
+            },
+            {
+              "depth_m": 0.9,
+              "fixture_type": "shower",
+              "id": "fx-shower",
+              "material_id": null,
+              "position": [
+                16.4,
+                19.6
+              ],
+              "rotation_deg": 0.0,
+              "space_id": "sp-bath",
+              "width_m": 0.9
+            },
+            {
+              "depth_m": 0.6,
+              "fixture_type": "kitchen_sink",
+              "id": "fx-kitchen-sink",
+              "material_id": null,
+              "position": [
+                21.4,
+                14.5
+              ],
+              "rotation_deg": 90.0,
+              "space_id": "sp-kitchen",
+              "width_m": 0.8
+            },
+            {
+              "depth_m": 2.0,
+              "fixture_type": "bed_double",
+              "id": "fx-bed-parents",
+              "material_id": null,
+              "position": [
+                12.0,
+                20.7
+              ],
+              "rotation_deg": 0.0,
+              "space_id": "sp-bed-parents",
+              "width_m": 1.6
+            }
+          ],
+          "id": "house-a",
+          "issues": [
+            {
+              "description": null,
+              "id": "iss-guest",
+              "raised_by": null,
+              "severity": "warning",
+              "status": "open",
+              "subject_ids": [
+                "sp-living"
+              ],
+              "title": "No guest room; visiting grandparent sleeps in the living room"
+            }
+          ],
+          "levels": [
+            {
+              "elevation_m": 0.6,
+              "floor_to_floor_m": 3.1,
+              "id": "l0",
+              "name": "Ground floor"
+            }
+          ],
+          "materials": [
+            {
+              "base_color_hex": "#EDE8DF",
+              "category": "wall",
+              "id": "m-render",
+              "library": null,
+              "metallic": null,
+              "name": "Exterior render, off-white",
+              "roughness": null,
+              "texture_scale_m": null,
+              "uri": null
+            },
+            {
+              "base_color_hex": "#F4F4F2",
+              "category": "wall",
+              "id": "m-plaster",
+              "library": null,
+              "metallic": null,
+              "name": "Interior plaster, white",
+              "roughness": null,
+              "texture_scale_m": null,
+              "uri": null
+            },
+            {
+              "base_color_hex": "#B98E5A",
+              "category": "floor",
+              "id": "m-oak",
+              "library": null,
+              "metallic": null,
+              "name": "Oak floorboards",
+              "roughness": null,
+              "texture_scale_m": null,
+              "uri": null
+            },
+            {
+              "base_color_hex": "#9A9A96",
+              "category": "floor",
+              "id": "m-concrete",
+              "library": null,
+              "metallic": null,
+              "name": "Concrete",
+              "roughness": null,
+              "texture_scale_m": null,
+              "uri": null
+            },
+            {
+              "base_color_hex": null,
+              "category": "glazing",
+              "id": "m-glass",
+              "library": null,
+              "metallic": null,
+              "name": "Clear double glazing",
+              "roughness": null,
+              "texture_scale_m": null,
+              "uri": null
+            }
+          ],
+          "name": "Synthetic bungalow, option A",
+          "openings": [
+            {
+              "connects": [
+                "exterior",
+                "sp-hall"
+              ],
+              "height_m": 2.1,
+              "host_wall_id": "w-ext-w",
+              "id": "d-front",
+              "kind": "door",
+              "material_id": null,
+              "offset_m": 3.8,
+              "opens_into": null,
+              "operation": "swing_left",
+              "sill_m": 0.0,
+              "width_m": 1.0
+            },
+            {
+              "connects": [
+                "sp-hall",
+                "sp-living"
+              ],
+              "height_m": 2.1,
+              "host_wall_id": "w-hall-s",
+              "id": "d-hall-living",
+              "kind": "door",
+              "material_id": null,
+              "offset_m": 2.0,
+              "opens_into": null,
+              "operation": "swing_left",
+              "sill_m": 0.0,
+              "width_m": 0.9
+            },
+            {
+              "connects": [
+                "sp-hall",
+                "sp-kitchen"
+              ],
+              "height_m": 2.1,
+              "host_wall_id": "w-hall-s",
+              "id": "d-hall-kitchen",
+              "kind": "door",
+              "material_id": null,
+              "offset_m": 7.0,
+              "opens_into": null,
+              "operation": "swing_left",
+              "sill_m": 0.0,
+              "width_m": 0.9
+            },
+            {
+              "connects": [
+                "sp-hall",
+                "sp-bed-parents"
+              ],
+              "height_m": 2.1,
+              "host_wall_id": "w-hall-n",
+              "id": "d-hall-bed-parents",
+              "kind": "door",
+              "material_id": null,
+              "offset_m": 1.5,
+              "opens_into": null,
+              "operation": "swing_left",
+              "sill_m": 0.0,
+              "width_m": 0.9
+            },
+            {
+              "connects": [
+                "sp-hall",
+                "sp-bath"
+              ],
+              "height_m": 2.1,
+              "host_wall_id": "w-hall-n",
+              "id": "d-hall-bath",
+              "kind": "door",
+              "material_id": null,
+              "offset_m": 4.8,
+              "opens_into": null,
+              "operation": "swing_left",
+              "sill_m": 0.0,
+              "width_m": 0.8
+            },
+            {
+              "connects": [
+                "sp-hall",
+                "sp-bed-children"
+              ],
+              "height_m": 2.1,
+              "host_wall_id": "w-hall-n",
+              "id": "d-hall-bed-children",
+              "kind": "door",
+              "material_id": null,
+              "offset_m": 8.5,
+              "opens_into": null,
+              "operation": "swing_left",
+              "sill_m": 0.0,
+              "width_m": 0.9
+            },
+            {
+              "connects": [
+                "sp-living",
+                "sp-kitchen"
+              ],
+              "height_m": 2.1,
+              "host_wall_id": "w-living-kitchen",
+              "id": "o-living-kitchen",
+              "kind": "opening",
+              "material_id": null,
+              "offset_m": 1.5,
+              "opens_into": null,
+              "operation": "none",
+              "sill_m": 0.0,
+              "width_m": 1.6
+            },
+            {
+              "connects": [
+                "sp-living",
+                "exterior"
+              ],
+              "height_m": 2.1,
+              "host_wall_id": "w-ext-s",
+              "id": "win-living-s",
+              "kind": "window",
+              "material_id": "m-glass",
+              "offset_m": 2.0,
+              "opens_into": null,
+              "operation": "tilt_turn",
+              "sill_m": 0.0,
+              "width_m": 2.0
+            },
+            {
+              "connects": [
+                "sp-living",
+                "exterior"
+              ],
+              "height_m": 1.2,
+              "host_wall_id": "w-ext-w",
+              "id": "win-living-w",
+              "kind": "window",
+              "material_id": "m-glass",
+              "offset_m": 6.5,
+              "opens_into": null,
+              "operation": "tilt_turn",
+              "sill_m": 0.9,
+              "width_m": 1.5
+            },
+            {
+              "connects": [
+                "sp-kitchen",
+                "exterior"
+              ],
+              "height_m": 1.2,
+              "host_wall_id": "w-ext-s",
+              "id": "win-kitchen-s",
+              "kind": "window",
+              "material_id": "m-glass",
+              "offset_m": 8.0,
+              "opens_into": null,
+              "operation": "tilt_turn",
+              "sill_m": 0.9,
+              "width_m": 1.5
+            },
+            {
+              "connects": [
+                "sp-kitchen",
+                "exterior"
+              ],
+              "height_m": 1.2,
+              "host_wall_id": "w-ext-e",
+              "id": "win-kitchen-e",
+              "kind": "window",
+              "material_id": "m-glass",
+              "offset_m": 1.5,
+              "opens_into": null,
+              "operation": "tilt_turn",
+              "sill_m": 0.9,
+              "width_m": 1.2
+            },
+            {
+              "connects": [
+                "sp-bed-parents",
+                "exterior"
+              ],
+              "height_m": 1.2,
+              "host_wall_id": "w-ext-n",
+              "id": "win-bed-parents-n",
+              "kind": "window",
+              "material_id": "m-glass",
+              "offset_m": 9.0,
+              "opens_into": null,
+              "operation": "tilt_turn",
+              "sill_m": 0.9,
+              "width_m": 1.5
+            },
+            {
+              "connects": [
+                "sp-bath",
+                "exterior"
+              ],
+              "height_m": 0.6,
+              "host_wall_id": "w-ext-n",
+              "id": "win-bath-n",
+              "kind": "window",
+              "material_id": "m-glass",
+              "offset_m": 5.4,
+              "opens_into": null,
+              "operation": "tilt_turn",
+              "sill_m": 1.5,
+              "width_m": 0.6
+            },
+            {
+              "connects": [
+                "sp-bed-children",
+                "exterior"
+              ],
+              "height_m": 1.2,
+              "host_wall_id": "w-ext-n",
+              "id": "win-bed-children-n",
+              "kind": "window",
+              "material_id": "m-glass",
+              "offset_m": 1.5,
+              "opens_into": null,
+              "operation": "tilt_turn",
+              "sill_m": 0.9,
+              "width_m": 1.5
+            }
+          ],
+          "program_ref": {
+            "id": "program",
+            "kind": "space_program",
+            "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+            "version": 1
+          },
+          "relationships": [
+            {
+              "a": "sp-living",
+              "b": "sp-kitchen",
+              "id": "rel-living-kitchen",
+              "kind": "connected",
+              "requirement_id": "adj-living-kitchen"
+            }
+          ],
+          "schema_version": "0.1.0",
+          "site_ref": {
+            "id": "site",
+            "kind": "site",
+            "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+            "version": 1
+          },
+          "slabs": [
+            {
+              "boundary": {
+                "holes": [],
+                "outer": [
+                  [
+                    10.0,
+                    12.0
+                  ],
+                  [
+                    22.0,
+                    12.0
+                  ],
+                  [
+                    22.0,
+                    22.0
+                  ],
+                  [
+                    10.0,
+                    22.0
+                  ]
+                ]
+              },
+              "id": "slab-l0",
+              "kind": "floor",
+              "level_id": "l0",
+              "material_id": "m-concrete",
+              "thickness_m": 0.25,
+              "top_offset_m": 0.0
+            },
+            {
+              "boundary": {
+                "holes": [],
+                "outer": [
+                  [
+                    9.5,
+                    11.5
+                  ],
+                  [
+                    22.5,
+                    11.5
+                  ],
+                  [
+                    22.5,
+                    22.5
+                  ],
+                  [
+                    9.5,
+                    22.5
+                  ]
+                ]
+              },
+              "id": "slab-roof",
+              "kind": "roof",
+              "level_id": "l0",
+              "material_id": "m-concrete",
+              "thickness_m": 0.3,
+              "top_offset_m": 3.1
+            }
+          ],
+          "spaces": [
+            {
+              "boundary": {
+                "holes": [],
+                "outer": [
+                  [
+                    10.0,
+                    12.0
+                  ],
+                  [
+                    16.0,
+                    12.0
+                  ],
+                  [
+                    16.0,
+                    17.0
+                  ],
+                  [
+                    10.0,
+                    17.0
+                  ]
+                ]
+              },
+              "floor_material_id": "m-oak",
+              "function": "living",
+              "id": "sp-living",
+              "level_id": "l0",
+              "name": "Living",
+              "program_item_id": "pi-living",
+              "zone_id": "z-day"
+            },
+            {
+              "boundary": {
+                "holes": [],
+                "outer": [
+                  [
+                    16.0,
+                    12.0
+                  ],
+                  [
+                    22.0,
+                    12.0
+                  ],
+                  [
+                    22.0,
+                    17.0
+                  ],
+                  [
+                    16.0,
+                    17.0
+                  ]
+                ]
+              },
+              "floor_material_id": "m-oak",
+              "function": "kitchen",
+              "id": "sp-kitchen",
+              "level_id": "l0",
+              "name": "Kitchen and dining",
+              "program_item_id": "pi-kitchen",
+              "zone_id": "z-day"
+            },
+            {
+              "boundary": {
+                "holes": [],
+                "outer": [
+                  [
+                    10.0,
+                    17.0
+                  ],
+                  [
+                    22.0,
+                    17.0
+                  ],
+                  [
+                    22.0,
+                    18.5
+                  ],
+                  [
+                    10.0,
+                    18.5
+                  ]
+                ]
+              },
+              "floor_material_id": "m-oak",
+              "function": "hall",
+              "id": "sp-hall",
+              "level_id": "l0",
+              "name": "Hall",
+              "program_item_id": "pi-hall",
+              "zone_id": "z-circulation"
+            },
+            {
+              "boundary": {
+                "holes": [],
+                "outer": [
+                  [
+                    10.0,
+                    18.5
+                  ],
+                  [
+                    14.0,
+                    18.5
+                  ],
+                  [
+                    14.0,
+                    22.0
+                  ],
+                  [
+                    10.0,
+                    22.0
+                  ]
+                ]
+              },
+              "floor_material_id": "m-oak",
+              "function": "bedroom",
+              "id": "sp-bed-parents",
+              "level_id": "l0",
+              "name": "Parents' bedroom",
+              "program_item_id": "pi-bed-parents",
+              "zone_id": "z-night"
+            },
+            {
+              "boundary": {
+                "holes": [],
+                "outer": [
+                  [
+                    14.0,
+                    18.5
+                  ],
+                  [
+                    17.0,
+                    18.5
+                  ],
+                  [
+                    17.0,
+                    22.0
+                  ],
+                  [
+                    14.0,
+                    22.0
+                  ]
+                ]
+              },
+              "floor_material_id": "m-oak",
+              "function": "bathroom",
+              "id": "sp-bath",
+              "level_id": "l0",
+              "name": "Bathroom",
+              "program_item_id": "pi-bath",
+              "zone_id": "z-night"
+            },
+            {
+              "boundary": {
+                "holes": [],
+                "outer": [
+                  [
+                    17.0,
+                    18.5
+                  ],
+                  [
+                    22.0,
+                    18.5
+                  ],
+                  [
+                    22.0,
+                    22.0
+                  ],
+                  [
+                    17.0,
+                    22.0
+                  ]
+                ]
+              },
+              "floor_material_id": "m-oak",
+              "function": "bedroom",
+              "id": "sp-bed-children",
+              "level_id": "l0",
+              "name": "Children's bedroom",
+              "program_item_id": "pi-bed-children",
+              "zone_id": "z-night"
+            }
+          ],
+          "stairs": [],
+          "units": "m",
+          "walls": [
+            {
+              "base_offset_m": 0.0,
+              "end": [
+                22.0,
+                12.0
+              ],
+              "height_m": 2.8,
+              "id": "w-ext-s",
+              "kind": "exterior",
+              "left_material_id": null,
+              "level_id": "l0",
+              "material_id": "m-render",
+              "right_material_id": null,
+              "start": [
+                10.0,
+                12.0
+              ],
+              "thickness_m": 0.3
+            },
+            {
+              "base_offset_m": 0.0,
+              "end": [
+                22.0,
+                22.0
+              ],
+              "height_m": 2.8,
+              "id": "w-ext-e",
+              "kind": "exterior",
+              "left_material_id": null,
+              "level_id": "l0",
+              "material_id": "m-render",
+              "right_material_id": null,
+              "start": [
+                22.0,
+                12.0
+              ],
+              "thickness_m": 0.3
+            },
+            {
+              "base_offset_m": 0.0,
+              "end": [
+                10.0,
+                22.0
+              ],
+              "height_m": 2.8,
+              "id": "w-ext-n",
+              "kind": "exterior",
+              "left_material_id": null,
+              "level_id": "l0",
+              "material_id": "m-render",
+              "right_material_id": null,
+              "start": [
+                22.0,
+                22.0
+              ],
+              "thickness_m": 0.3
+            },
+            {
+              "base_offset_m": 0.0,
+              "end": [
+                10.0,
+                12.0
+              ],
+              "height_m": 2.8,
+              "id": "w-ext-w",
+              "kind": "exterior",
+              "left_material_id": null,
+              "level_id": "l0",
+              "material_id": "m-render",
+              "right_material_id": null,
+              "start": [
+                10.0,
+                22.0
+              ],
+              "thickness_m": 0.3
+            },
+            {
+              "base_offset_m": 0.0,
+              "end": [
+                16.0,
+                17.0
+              ],
+              "height_m": 2.8,
+              "id": "w-living-kitchen",
+              "kind": "interior",
+              "left_material_id": null,
+              "level_id": "l0",
+              "material_id": "m-plaster",
+              "right_material_id": null,
+              "start": [
+                16.0,
+                12.0
+              ],
+              "thickness_m": 0.15
+            },
+            {
+              "base_offset_m": 0.0,
+              "end": [
+                22.0,
+                17.0
+              ],
+              "height_m": 2.8,
+              "id": "w-hall-s",
+              "kind": "interior",
+              "left_material_id": null,
+              "level_id": "l0",
+              "material_id": "m-plaster",
+              "right_material_id": null,
+              "start": [
+                10.0,
+                17.0
+              ],
+              "thickness_m": 0.15
+            },
+            {
+              "base_offset_m": 0.0,
+              "end": [
+                22.0,
+                18.5
+              ],
+              "height_m": 2.8,
+              "id": "w-hall-n",
+              "kind": "interior",
+              "left_material_id": null,
+              "level_id": "l0",
+              "material_id": "m-plaster",
+              "right_material_id": null,
+              "start": [
+                10.0,
+                18.5
+              ],
+              "thickness_m": 0.15
+            },
+            {
+              "base_offset_m": 0.0,
+              "end": [
+                14.0,
+                22.0
+              ],
+              "height_m": 2.8,
+              "id": "w-bed-bath",
+              "kind": "interior",
+              "left_material_id": null,
+              "level_id": "l0",
+              "material_id": "m-plaster",
+              "right_material_id": null,
+              "start": [
+                14.0,
+                18.5
+              ],
+              "thickness_m": 0.15
+            },
+            {
+              "base_offset_m": 0.0,
+              "end": [
+                17.0,
+                22.0
+              ],
+              "height_m": 2.8,
+              "id": "w-bath-bed",
+              "kind": "interior",
+              "left_material_id": null,
+              "level_id": "l0",
+              "material_id": "m-plaster",
+              "right_material_id": null,
+              "start": [
+                17.0,
+                18.5
+              ],
+              "thickness_m": 0.15
+            }
+          ],
+          "zones": [
+            {
+              "id": "z-day",
+              "name": "Day zone",
+              "privacy": "public",
+              "space_ids": [
+                "sp-living",
+                "sp-kitchen"
+              ]
+            },
+            {
+              "id": "z-night",
+              "name": "Night zone",
+              "privacy": "private",
+              "space_ids": [
+                "sp-bed-parents",
+                "sp-bath",
+                "sp-bed-children"
+              ]
+            },
+            {
+              "id": "z-circulation",
+              "name": "Circulation",
+              "privacy": "semi_private",
+              "space_ids": [
+                "sp-hall"
+              ]
+            }
+          ]
+        },
+        "option_id": "plan-a",
+        "parent": null,
+        "provenance": {
+          "created_at": "2026-10-17T12:00:00Z",
+          "created_by": {
+            "display_name": null,
+            "id": "example-author",
+            "kind": "human",
+            "model": null,
+            "provider": null
+          },
+          "inputs": [
+            {
+              "id": "site",
+              "kind": "site",
+              "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+              "version": 1
+            },
+            {
+              "id": "program",
+              "kind": "space_program",
+              "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+              "version": 1
+            }
+          ],
+          "method": "hand_authored",
+          "notes": "Golden synthetic plan for Milestone A tests; not generated by a solver.",
+          "tool": null,
+          "tool_version": null
+        },
+        "schema_version": "0.1.0",
+        "strategy": "hand_authored"
+      },
+      "plan_ref": {
+        "id": "plan-a",
+        "kind": "plan",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "version": 1
+      },
+      "revision": null,
+      "strategy": "hand_authored",
+      "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"1120.00\" height=\"922.00\" viewBox=\"0 0 1120.00 922.00\" font-family=\"Helvetica, Arial, sans-serif\"><defs><marker id=\"arrow\" markerWidth=\"8\" markerHeight=\"8\" refX=\"4\" refY=\"4\" orient=\"auto\"><path d=\"M0,0 L8,4 L0,8 z\" fill=\"#000\"/></marker></defs><rect width=\"1120.00\" height=\"922.00\" fill=\"#ffffff\"/><text x=\"16.00\" y=\"24.00\" font-size=\"15.00\" text-anchor=\"start\" fill=\"#222\" font-weight=\"bold\">plan-a v1 — Option A: compact bar, bedrooms north</text><text x=\"16.00\" y=\"42.00\" font-size=\"10.00\" text-anchor=\"start\" fill=\"#b00020\" font-weight=\"normal\">Hand-authored design exploration. Not reviewed, not engineered; no permit or code status.</text><path d=\"M1080.00,50.00 L1080.00,26.00\" stroke=\"#000\" stroke-width=\"1.6\" marker-end=\"url(#arrow)\"/><text x=\"1080.00\" y=\"18.00\" font-size=\"10.00\" text-anchor=\"middle\" fill=\"#222\" font-weight=\"bold\">GN</text><clipPath id=\"clip-l0\"><rect x=\"4.00\" y=\"94.00\" width=\"552.00\" height=\"556.00\"/></clipPath><g id=\"level-l0\" clip-path=\"url(#clip-l0)\"><path d=\"M4.72,684.82 L530.26,684.82 L530.26,584.72 L4.72,584.72 Z\" fill=\"#e3e3e3\" stroke=\"none\"/><circle cx=\"267.49\" cy=\"584.72\" r=\"3\" fill=\"#c0392b\"/><path d=\"M67.28,584.72 L467.69,584.72 L467.69,159.28 L67.28,159.28 Z\" fill=\"none\" stroke=\"#111\" stroke-width=\"1.2\"/><path d=\"M117.33,534.67 L417.64,534.67 L417.64,209.33 L117.33,209.33 Z\" fill=\"none\" stroke=\"#2980b9\" stroke-width=\"1\" stroke-dasharray=\"6,4\"/><path d=\"M192.41,434.56 L267.49,434.56 L267.49,372.00 L192.41,372.00 Z\" fill=\"#f6e7c8\" stroke=\"none\"/><path d=\"M267.49,434.56 L342.56,434.56 L342.56,372.00 L267.49,372.00 Z\" fill=\"#f6e7c8\" stroke=\"none\"/><path d=\"M192.41,372.00 L342.56,372.00 L342.56,353.23 L192.41,353.23 Z\" fill=\"#e9eef3\" stroke=\"none\"/><path d=\"M192.41,353.23 L242.46,353.23 L242.46,309.44 L192.41,309.44 Z\" fill=\"#dcebdc\" stroke=\"none\"/><path d=\"M242.46,353.23 L280.00,353.23 L280.00,309.44 L242.46,309.44 Z\" fill=\"#dcebdc\" stroke=\"none\"/><path d=\"M280.00,353.23 L342.56,353.23 L342.56,309.44 L280.00,309.44 Z\" fill=\"#dcebdc\" stroke=\"none\"/><path d=\"M192.41,432.69 L342.56,432.69 L342.56,436.44 L192.41,436.44 Z\" fill=\"#3a3a3a\"/><path d=\"M340.69,434.56 L340.69,309.44 L344.44,309.44 L344.44,434.56 Z\" fill=\"#3a3a3a\"/><path d=\"M342.56,311.31 L192.41,311.31 L192.41,307.56 L342.56,307.56 Z\" fill=\"#3a3a3a\"/><path d=\"M194.29,309.44 L194.29,434.56 L190.53,434.56 L190.53,309.44 Z\" fill=\"#3a3a3a\"/><path d=\"M266.55,434.56 L266.55,372.00 L268.43,372.00 L268.43,434.56 Z\" fill=\"#7a7a7a\"/><path d=\"M192.41,371.06 L342.56,371.06 L342.56,372.94 L192.41,372.94 Z\" fill=\"#7a7a7a\"/><path d=\"M192.41,352.29 L342.56,352.29 L342.56,354.17 L192.41,354.17 Z\" fill=\"#7a7a7a\"/><path d=\"M241.52,353.23 L241.52,309.44 L243.40,309.44 L243.40,353.23 Z\" fill=\"#7a7a7a\"/><path d=\"M279.06,353.23 L279.06,309.44 L280.94,309.44 L280.94,353.23 Z\" fill=\"#7a7a7a\"/><path d=\"M194.41,356.98 L194.41,369.50 L190.41,369.50 L190.41,356.98 Z\" fill=\"#ffffff\" stroke=\"none\"/><path d=\"M192.41,356.98 L204.92,356.98\" stroke=\"#222\" stroke-width=\"1\"/><path d=\"M204.92,356.98 A12.51,12.51 0 0 0 192.41,369.50\" fill=\"none\" stroke=\"#666\" stroke-width=\"0.6\" stroke-dasharray=\"2,2\"/><path d=\"M217.44,370.94 L228.70,370.94 L228.70,373.06 L217.44,373.06 Z\" fill=\"#ffffff\" stroke=\"none\"/><path d=\"M217.44,372.00 L217.44,360.74\" stroke=\"#222\" stroke-width=\"1\"/><path d=\"M217.44,360.74 A11.26,11.26 0 0 0 228.70,372.00\" fill=\"none\" stroke=\"#666\" stroke-width=\"0.6\" stroke-dasharray=\"2,2\"/><path d=\"M280.00,370.94 L291.26,370.94 L291.26,373.06 L280.00,373.06 Z\" fill=\"#ffffff\" stroke=\"none\"/><path d=\"M280.00,372.00 L280.00,360.74\" stroke=\"#222\" stroke-width=\"1\"/><path d=\"M280.00,360.74 A11.26,11.26 0 0 0 291.26,372.00\" fill=\"none\" stroke=\"#666\" stroke-width=\"0.6\" stroke-dasharray=\"2,2\"/><path d=\"M211.18,352.17 L222.44,352.17 L222.44,354.29 L211.18,354.29 Z\" fill=\"#ffffff\" stroke=\"none\"/><path d=\"M211.18,353.23 L211.18,341.97\" stroke=\"#222\" stroke-width=\"1\"/><path d=\"M211.18,341.97 A11.26,11.26 0 0 0 222.44,353.23\" fill=\"none\" stroke=\"#666\" stroke-width=\"0.6\" stroke-dasharray=\"2,2\"/><path d=\"M252.47,352.17 L262.48,352.17 L262.48,354.29 L252.47,354.29 Z\" fill=\"#ffffff\" stroke=\"none\"/><path d=\"M252.47,353.23 L252.47,343.22\" stroke=\"#222\" stroke-width=\"1\"/><path d=\"M252.47,343.22 A10.01,10.01 0 0 0 262.48,353.23\" fill=\"none\" stroke=\"#666\" stroke-width=\"0.6\" stroke-dasharray=\"2,2\"/><path d=\"M298.77,352.17 L310.03,352.17 L310.03,354.29 L298.77,354.29 Z\" fill=\"#ffffff\" stroke=\"none\"/><path d=\"M298.77,353.23 L298.77,341.97\" stroke=\"#222\" stroke-width=\"1\"/><path d=\"M298.77,341.97 A11.26,11.26 0 0 0 310.03,353.23\" fill=\"none\" stroke=\"#666\" stroke-width=\"0.6\" stroke-dasharray=\"2,2\"/><path d=\"M266.42,415.79 L266.42,395.77 L268.55,395.77 L268.55,415.79 Z\" fill=\"#ffffff\" stroke=\"none\"/><path d=\"M267.49,415.79 L267.49,395.77\" stroke=\"#999\" stroke-width=\"0.6\"/><path d=\"M217.44,432.56 L242.46,432.56 L242.46,436.57 L217.44,436.57 Z\" fill=\"#ffffff\" stroke=\"none\"/><path d=\"M217.44,435.97 L242.46,435.97\" stroke=\"#2a6fb0\" stroke-width=\"0.8\"/><path d=\"M217.44,434.56 L242.46,434.56\" stroke=\"#2a6fb0\" stroke-width=\"0.8\"/><path d=\"M217.44,433.16 L242.46,433.16\" stroke=\"#2a6fb0\" stroke-width=\"0.8\"/><path d=\"M194.41,390.77 L194.41,409.54 L190.41,409.54 L190.41,390.77 Z\" fill=\"#ffffff\" stroke=\"none\"/><path d=\"M191.01,390.77 L191.01,409.54\" stroke=\"#2a6fb0\" stroke-width=\"0.8\"/><path d=\"M192.41,390.77 L192.41,409.54\" stroke=\"#2a6fb0\" stroke-width=\"0.8\"/><path d=\"M193.81,390.77 L193.81,409.54\" stroke=\"#2a6fb0\" stroke-width=\"0.8\"/><path d=\"M292.51,432.56 L311.28,432.56 L311.28,436.57 L292.51,436.57 Z\" fill=\"#ffffff\" stroke=\"none\"/><path d=\"M292.51,435.97 L311.28,435.97\" stroke=\"#2a6fb0\" stroke-width=\"0.8\"/><path d=\"M292.51,434.56 L311.28,434.56\" stroke=\"#2a6fb0\" stroke-width=\"0.8\"/><path d=\"M292.51,433.16 L311.28,433.16\" stroke=\"#2a6fb0\" stroke-width=\"0.8\"/><path d=\"M340.56,415.79 L340.56,400.78 L344.57,400.78 L344.57,415.79 Z\" fill=\"#ffffff\" stroke=\"none\"/><path d=\"M343.97,415.79 L343.97,400.78\" stroke=\"#2a6fb0\" stroke-width=\"0.8\"/><path d=\"M342.56,415.79 L342.56,400.78\" stroke=\"#2a6fb0\" stroke-width=\"0.8\"/><path d=\"M341.16,415.79 L341.16,400.78\" stroke=\"#2a6fb0\" stroke-width=\"0.8\"/><path d=\"M229.95,311.44 L211.18,311.44 L211.18,307.43 L229.95,307.43 Z\" fill=\"#ffffff\" stroke=\"none\"/><path d=\"M229.95,308.03 L211.18,308.03\" stroke=\"#2a6fb0\" stroke-width=\"0.8\"/><path d=\"M229.95,309.44 L211.18,309.44\" stroke=\"#2a6fb0\" stroke-width=\"0.8\"/><path d=\"M229.95,310.84 L211.18,310.84\" stroke=\"#2a6fb0\" stroke-width=\"0.8\"/><path d=\"M274.99,311.44 L267.49,311.44 L267.49,307.43 L274.99,307.43 Z\" fill=\"#ffffff\" stroke=\"none\"/><path d=\"M274.99,308.03 L267.49,308.03\" stroke=\"#2a6fb0\" stroke-width=\"0.8\"/><path d=\"M274.99,309.44 L267.49,309.44\" stroke=\"#2a6fb0\" stroke-width=\"0.8\"/><path d=\"M274.99,310.84 L267.49,310.84\" stroke=\"#2a6fb0\" stroke-width=\"0.8\"/><path d=\"M323.79,311.44 L305.03,311.44 L305.03,307.43 L323.79,307.43 Z\" fill=\"#ffffff\" stroke=\"none\"/><path d=\"M323.79,308.03 L305.03,308.03\" stroke=\"#2a6fb0\" stroke-width=\"0.8\"/><path d=\"M323.79,309.44 L305.03,309.44\" stroke=\"#2a6fb0\" stroke-width=\"0.8\"/><path d=\"M323.79,310.84 L305.03,310.84\" stroke=\"#2a6fb0\" stroke-width=\"0.8\"/><path d=\"M192.41,363.24 L267.49,362.62\" stroke=\"#d0342c\" stroke-width=\"0.9\" stroke-dasharray=\"4,3\" fill=\"none\" opacity=\"0.8\"/><path d=\"M257.48,353.23 L261.23,331.33\" stroke=\"#d0342c\" stroke-width=\"0.9\" stroke-dasharray=\"4,3\" fill=\"none\" opacity=\"0.8\"/><path d=\"M267.49,362.62 L257.48,353.23\" stroke=\"#d0342c\" stroke-width=\"0.9\" stroke-dasharray=\"4,3\" fill=\"none\" opacity=\"0.8\"/><path d=\"M304.40,353.23 L311.28,331.33\" stroke=\"#d0342c\" stroke-width=\"0.9\" stroke-dasharray=\"4,3\" fill=\"none\" opacity=\"0.8\"/><path d=\"M267.49,362.62 L304.40,353.23\" stroke=\"#d0342c\" stroke-width=\"0.9\" stroke-dasharray=\"4,3\" fill=\"none\" opacity=\"0.8\"/><path d=\"M216.81,353.23 L217.44,331.33\" stroke=\"#d0342c\" stroke-width=\"0.9\" stroke-dasharray=\"4,3\" fill=\"none\" opacity=\"0.8\"/><path d=\"M267.49,362.62 L216.81,353.23\" stroke=\"#d0342c\" stroke-width=\"0.9\" stroke-dasharray=\"4,3\" fill=\"none\" opacity=\"0.8\"/><path d=\"M285.63,372.00 L305.03,403.28\" stroke=\"#d0342c\" stroke-width=\"0.9\" stroke-dasharray=\"4,3\" fill=\"none\" opacity=\"0.8\"/><path d=\"M267.49,362.62 L285.63,372.00\" stroke=\"#d0342c\" stroke-width=\"0.9\" stroke-dasharray=\"4,3\" fill=\"none\" opacity=\"0.8\"/><path d=\"M223.07,372.00 L229.95,403.28\" stroke=\"#d0342c\" stroke-width=\"0.9\" stroke-dasharray=\"4,3\" fill=\"none\" opacity=\"0.8\"/><path d=\"M267.49,362.62 L223.07,372.00\" stroke=\"#d0342c\" stroke-width=\"0.9\" stroke-dasharray=\"4,3\" fill=\"none\" opacity=\"0.8\"/><text x=\"229.95\" y=\"399.28\" font-size=\"9.00\" text-anchor=\"middle\" fill=\"#222\" font-weight=\"bold\">Living</text><text x=\"229.95\" y=\"410.28\" font-size=\"8.00\" text-anchor=\"middle\" fill=\"#222\" font-weight=\"normal\">30.0 m²</text><text x=\"229.95\" y=\"420.28\" font-size=\"7.00\" text-anchor=\"middle\" fill=\"#555\" font-weight=\"normal\">6.00 × 5.00</text><text x=\"305.03\" y=\"399.28\" font-size=\"9.00\" text-anchor=\"middle\" fill=\"#222\" font-weight=\"bold\">Kitchen and dining</text><text x=\"305.03\" y=\"410.28\" font-size=\"8.00\" text-anchor=\"middle\" fill=\"#222\" font-weight=\"normal\">30.0 m²</text><text x=\"305.03\" y=\"420.28\" font-size=\"7.00\" text-anchor=\"middle\" fill=\"#555\" font-weight=\"normal\">6.00 × 5.00</text><text x=\"267.49\" y=\"358.62\" font-size=\"9.00\" text-anchor=\"middle\" fill=\"#222\" font-weight=\"bold\">Hall</text><text x=\"267.49\" y=\"369.62\" font-size=\"8.00\" text-anchor=\"middle\" fill=\"#222\" font-weight=\"normal\">18.0 m²</text><text x=\"267.49\" y=\"379.62\" font-size=\"7.00\" text-anchor=\"middle\" fill=\"#555\" font-weight=\"normal\">12.00 × 1.50</text><text x=\"217.44\" y=\"327.33\" font-size=\"7.00\" text-anchor=\"middle\" fill=\"#222\" font-weight=\"bold\">Parents'</text><text x=\"217.44\" y=\"338.33\" font-size=\"8.00\" text-anchor=\"middle\" fill=\"#222\" font-weight=\"normal\">14.0 m²</text><text x=\"217.44\" y=\"348.33\" font-size=\"7.00\" text-anchor=\"middle\" fill=\"#555\" font-weight=\"normal\">4.00 × 3.50</text><text x=\"261.23\" y=\"327.33\" font-size=\"7.00\" text-anchor=\"middle\" fill=\"#222\" font-weight=\"bold\">Bathroom</text><text x=\"261.23\" y=\"338.33\" font-size=\"8.00\" text-anchor=\"middle\" fill=\"#222\" font-weight=\"normal\">10.5 m²</text><text x=\"261.23\" y=\"348.33\" font-size=\"7.00\" text-anchor=\"middle\" fill=\"#555\" font-weight=\"normal\">3.50 × 3.00</text><text x=\"311.28\" y=\"327.33\" font-size=\"7.00\" text-anchor=\"middle\" fill=\"#222\" font-weight=\"bold\">Children's</text><text x=\"311.28\" y=\"338.33\" font-size=\"8.00\" text-anchor=\"middle\" fill=\"#222\" font-weight=\"normal\">17.5 m²</text><text x=\"311.28\" y=\"348.33\" font-size=\"7.00\" text-anchor=\"middle\" fill=\"#555\" font-weight=\"normal\">5.00 × 3.50</text><path d=\"M174.89,434.56 L174.89,309.44\" stroke=\"#444\" stroke-width=\"0.7\"/><path d=\"M192.41,434.56 L174.89,434.56\" stroke=\"#888\" stroke-width=\"0.5\"/><circle cx=\"174.89\" cy=\"434.56\" r=\"1.6\" fill=\"#444\"/><path d=\"M192.41,309.44 L174.89,309.44\" stroke=\"#888\" stroke-width=\"0.5\"/><circle cx=\"174.89\" cy=\"309.44\" r=\"1.6\" fill=\"#444\"/><text x=\"174.89\" y=\"369.00\" font-size=\"9.00\" text-anchor=\"middle\" fill=\"#222\" font-weight=\"normal\" transform=\"rotate(-90.00 174.89 369.00)\">10.00 m</text><path d=\"M192.41,291.92 L342.56,291.92\" stroke=\"#444\" stroke-width=\"0.7\"/><path d=\"M192.41,309.44 L192.41,291.92\" stroke=\"#888\" stroke-width=\"0.5\"/><circle cx=\"192.41\" cy=\"291.92\" r=\"1.6\" fill=\"#444\"/><path d=\"M342.56,309.44 L342.56,291.92\" stroke=\"#888\" stroke-width=\"0.5\"/><circle cx=\"342.56\" cy=\"291.92\" r=\"1.6\" fill=\"#444\"/><text x=\"267.49\" y=\"288.92\" font-size=\"9.00\" text-anchor=\"middle\" fill=\"#222\" font-weight=\"normal\" transform=\"rotate(0.00 267.49 288.92)\">12.00 m</text><text x=\"10.00\" y=\"110.00\" font-size=\"12.00\" text-anchor=\"start\" fill=\"#222\" font-weight=\"bold\">Ground floor — FFL +0.60 m (local)</text></g><rect x=\"4.00\" y=\"94.00\" width=\"552.00\" height=\"556.00\" fill=\"none\" stroke=\"#ddd\"/><g id=\"section\"><text x=\"10.00\" y=\"678.00\" font-size=\"11.00\" text-anchor=\"start\" fill=\"#222\" font-weight=\"bold\">Schematic section from the road through the house (terrain interpolated from survey points; vertical scale = horizontal)</text><polyline points=\"50.00,835.86 67.33,835.59 84.67,835.32 102.00,835.05 119.33,834.78 136.67,834.51 154.00,834.25 171.33,833.98 188.67,833.71 206.00,833.44 223.33,833.17 240.67,832.90 258.00,832.63 275.33,832.36 292.67,832.10 310.00,831.83 327.33,831.56 344.67,831.29 362.00,831.02 379.33,830.75 396.67,830.48 414.00,830.22 431.33,829.95 448.67,829.68 466.00,829.41 483.33,829.14 500.67,828.87 518.00,828.60 535.33,828.33 552.67,828.07 570.00,827.80 587.33,827.46 604.67,827.13 622.00,826.79 639.33,826.45 656.67,826.12 674.00,825.78 691.33,825.45 708.67,825.11 726.00,824.77 743.33,824.44 760.67,824.10 778.00,823.77 795.33,823.43 812.67,823.10 830.00,822.76 847.33,822.42 864.67,822.09 882.00,821.75 899.33,821.42 916.67,821.08 934.00,820.74 951.33,820.41 968.67,820.07 986.00,819.74 1003.33,819.40 1020.67,819.07 1038.00,818.73 1055.33,818.39 1072.67,818.06 1090.00,817.72\" fill=\"none\" stroke=\"#6b4a2b\" stroke-width=\"1.6\"/><rect x=\"333.64\" y=\"728.14\" width=\"472.73\" height=\"96.54\" fill=\"#f6e7c8\" fill-opacity=\"0.55\" stroke=\"#333\" stroke-width=\"1\"/><text x=\"337.64\" y=\"819.68\" font-size=\"9.00\" text-anchor=\"start\" fill=\"#222\" font-weight=\"normal\">Ground floor +0.60</text><text x=\"50.00\" y=\"881.00\" font-size=\"9.00\" text-anchor=\"start\" fill=\"#666\" font-weight=\"normal\">road side</text><text x=\"1090.00\" y=\"881.00\" font-size=\"9.00\" text-anchor=\"end\" fill=\"#666\" font-weight=\"normal\">into the site</text></g><text x=\"16.00\" y=\"910.00\" font-size=\"9.00\" text-anchor=\"start\" fill=\"#555\" font-weight=\"normal\">Walls: dark = exterior, brown = retaining (earth side), grey = partition · red dashed = circulation from the front door · blue dashed = buildable envelope</text></svg>\n",
+      "version": 1
+    }
+  ],
+  "program": {
+    "adjacencies": [
+      {
+        "a": "pi-hall",
+        "b": "exterior",
+        "id": "adj-entry",
+        "kind": "connected",
+        "rationale": "Front door opens into the hall",
+        "source_fact_ids": [],
+        "strength": "hard",
+        "weight": null
+      },
+      {
+        "a": "pi-living",
+        "b": "pi-kitchen",
+        "id": "adj-living-kitchen",
+        "kind": "connected",
+        "rationale": null,
+        "source_fact_ids": [
+          "f-open-kitchen"
+        ],
+        "strength": "hard",
+        "weight": null
+      },
+      {
+        "a": "pi-hall",
+        "b": "pi-bath",
+        "id": "adj-hall-bath",
+        "kind": "connected",
+        "rationale": null,
+        "source_fact_ids": [],
+        "strength": "hard",
+        "weight": null
+      },
+      {
+        "a": "pi-kitchen",
+        "b": "pi-bed-children",
+        "id": "adj-kitchen-beds",
+        "kind": "acoustic_separation",
+        "rationale": null,
+        "source_fact_ids": [
+          "f-open-kitchen"
+        ],
+        "strength": "soft",
+        "weight": 2.0
+      }
+    ],
+    "brief_ref": null,
+    "budget": null,
+    "circulation_factor": 0.15,
+    "id": "program",
+    "items": [
+      {
+        "accessible": false,
+        "daylight": "preferred",
+        "function": "hall",
+        "id": "pi-hall",
+        "level_preference": null,
+        "max_area_m2": null,
+        "min_area_m2": 12.0,
+        "min_width_m": 1.2,
+        "name": "Hall",
+        "notes": null,
+        "priority": "must",
+        "privacy": "semi_private",
+        "quantity": 1,
+        "source_fact_ids": [],
+        "target_area_m2": 18.0,
+        "zone_id": "z-circulation"
+      },
+      {
+        "accessible": false,
+        "daylight": "required",
+        "function": "living",
+        "id": "pi-living",
+        "level_preference": null,
+        "max_area_m2": null,
+        "min_area_m2": 24.0,
+        "min_width_m": 3.6,
+        "name": "Living",
+        "notes": null,
+        "priority": "must",
+        "privacy": "public",
+        "quantity": 1,
+        "source_fact_ids": [
+          "f-open-kitchen"
+        ],
+        "target_area_m2": 30.0,
+        "zone_id": "z-day"
+      },
+      {
+        "accessible": false,
+        "daylight": "required",
+        "function": "kitchen",
+        "id": "pi-kitchen",
+        "level_preference": null,
+        "max_area_m2": null,
+        "min_area_m2": 20.0,
+        "min_width_m": 3.0,
+        "name": "Kitchen and dining",
+        "notes": null,
+        "priority": "must",
+        "privacy": "public",
+        "quantity": 1,
+        "source_fact_ids": [
+          "f-open-kitchen"
+        ],
+        "target_area_m2": 30.0,
+        "zone_id": "z-day"
+      },
+      {
+        "accessible": false,
+        "daylight": "required",
+        "function": "bedroom",
+        "id": "pi-bed-parents",
+        "level_preference": null,
+        "max_area_m2": null,
+        "min_area_m2": 12.0,
+        "min_width_m": 3.0,
+        "name": "Parents' bedroom",
+        "notes": null,
+        "priority": "must",
+        "privacy": "private",
+        "quantity": 1,
+        "source_fact_ids": [
+          "f-bedrooms",
+          "f-quiet-bedrooms"
+        ],
+        "target_area_m2": 14.0,
+        "zone_id": "z-night"
+      },
+      {
+        "accessible": false,
+        "daylight": "required",
+        "function": "bedroom",
+        "id": "pi-bed-children",
+        "level_preference": null,
+        "max_area_m2": null,
+        "min_area_m2": 14.0,
+        "min_width_m": 3.0,
+        "name": "Children's bedroom",
+        "notes": null,
+        "priority": "must",
+        "privacy": "private",
+        "quantity": 1,
+        "source_fact_ids": [
+          "f-bedrooms",
+          "f-quiet-bedrooms"
+        ],
+        "target_area_m2": 17.5,
+        "zone_id": "z-night"
+      },
+      {
+        "accessible": false,
+        "daylight": "preferred",
+        "function": "bathroom",
+        "id": "pi-bath",
+        "level_preference": null,
+        "max_area_m2": null,
+        "min_area_m2": 6.0,
+        "min_width_m": 2.0,
+        "name": "Bathroom",
+        "notes": null,
+        "priority": "must",
+        "privacy": "private",
+        "quantity": 1,
+        "source_fact_ids": [],
+        "target_area_m2": 10.5,
+        "zone_id": "z-night"
+      }
+    ],
+    "levels": null,
+    "project_id": "synthetic-bungalow",
+    "provenance": {
+      "created_at": "2026-10-17T12:00:00Z",
+      "created_by": {
+        "display_name": null,
+        "id": "example-author",
+        "kind": "human",
+        "model": null,
+        "provider": null
+      },
+      "inputs": [],
+      "method": "hand_authored",
+      "notes": null,
+      "tool": null,
+      "tool_version": null
+    },
+    "schema_version": "0.1.0",
+    "site_ref": null,
+    "site_verified": false,
+    "target_gross_area_m2": 120.0,
+    "zones": [
+      {
+        "id": "z-day",
+        "name": "Day zone",
+        "privacy": "public"
+      },
+      {
+        "id": "z-night",
+        "name": "Night zone",
+        "privacy": "private"
+      },
+      {
+        "id": "z-circulation",
+        "name": "Circulation",
+        "privacy": "semi_private"
+      }
+    ]
+  },
+  "project": {
+    "manifest": {
+      "classification": "synthetic",
+      "created_at": "2026-10-17T12:00:00Z",
+      "created_by": {
+        "display_name": null,
+        "id": "example-owner",
+        "kind": "human",
+        "model": null,
+        "provider": null
+      },
+      "description": null,
+      "id": "synthetic-bungalow",
+      "name": "example: synthetic-bungalow",
+      "schema_version": "0.1.0"
+    },
+    "name": "synthetic-bungalow",
+    "state": "PROGRAM_APPROVED"
+  },
+  "schema_version": "1.0.0",
+  "site": {
+    "assumptions": [],
+    "boundary": {
+      "holes": [],
+      "outer": [
+        [
+          0.0,
+          0.0
+        ],
+        [
+          32.0,
+          0.0
+        ],
+        [
+          32.0,
+          34.0
+        ],
+        [
+          0.0,
+          34.0
+        ]
+      ]
+    },
+    "boundary_source_ref": null,
+    "boundary_status": "verified_fact",
+    "buildable_envelope": {
+      "basis": "4 m setback on all sides assumed for the synthetic example; not a zoning rule",
+      "max_height_m": 9.0,
+      "polygon": {
+        "holes": [],
+        "outer": [
+          [
+            4.0,
+            4.0
+          ],
+          [
+            28.0,
+            4.0
+          ],
+          [
+            28.0,
+            30.0
+          ],
+          [
+            4.0,
+            30.0
+          ]
+        ]
+      },
+      "status": "assumption"
+    },
+    "cad_imports": [],
+    "classification": "synthetic",
+    "coordinates": {
+      "elevation_units": {
+        "status": "user_confirmed",
+        "unit": "m"
+      },
+      "horizontal_crs": {
+        "declared_epsg": null,
+        "epsg": 32632,
+        "name": "WGS 84 / UTM zone 32N (synthetic coordinates)",
+        "status": "user_confirmed"
+      },
+      "local": {
+        "grid_to_true_north_deg": null,
+        "id": "lcs-site",
+        "name": "Plot frame, origin at the south-west boundary corner",
+        "origin": [
+          500000.0,
+          5400000.0,
+          100.0
+        ],
+        "rotation_deg": 0.0
+      },
+      "source_units": {
+        "status": "user_confirmed",
+        "unit": "m"
+      },
+      "vertical_datum": {
+        "epsg": null,
+        "name": "synthetic benchmark BM1 (elevation 100.00)",
+        "status": "local_only_confirmed"
+      }
+    },
+    "features": [
+      {
+        "geometry": {
+          "polygon": {
+            "holes": [],
+            "outer": [
+              [
+                -5.0,
+                -8.0
+              ],
+              [
+                37.0,
+                -8.0
+              ],
+              [
+                37.0,
+                0.0
+              ],
+              [
+                -5.0,
+                0.0
+              ]
+            ]
+          },
+          "type": "polygon"
+        },
+        "id": "road-south",
+        "kind": "road",
+        "name": "Synthetic access road",
+        "notes": null,
+        "source_ref": null,
+        "status": "verified_fact"
+      },
+      {
+        "geometry": {
+          "type": "point",
+          "xy": [
+            27.0,
+            31.5
+          ]
+        },
+        "id": "tree-ne",
+        "kind": "tree",
+        "name": "Existing walnut tree (synthetic)",
+        "notes": null,
+        "source_ref": null,
+        "status": "verified_fact"
+      },
+      {
+        "geometry": {
+          "type": "point",
+          "xy": [
+            16.0,
+            0.0
+          ]
+        },
+        "id": "access-south",
+        "kind": "access_point",
+        "name": null,
+        "notes": null,
+        "source_ref": null,
+        "status": "verified_fact"
+      }
+    ],
+    "id": "site",
+    "issues": [],
+    "name": "Synthetic level-ish corner plot",
+    "project_id": "synthetic-bungalow",
+    "provenance": {
+      "created_at": "2026-10-17T12:00:00Z",
+      "created_by": {
+        "display_name": null,
+        "id": "example-author",
+        "kind": "human",
+        "model": null,
+        "provider": null
+      },
+      "inputs": [],
+      "method": "hand_authored",
+      "notes": "Synthetic fixture for Milestone A tests.",
+      "tool": null,
+      "tool_version": null
+    },
+    "schema_version": "0.1.0",
+    "terrain": {
+      "contours": [],
+      "spot_elevations": [
+        {
+          "id": "spot-sw",
+          "source_ref": null,
+          "xy": [
+            0.0,
+            0.0
+          ],
+          "z_m": 0.0
+        },
+        {
+          "id": "spot-se",
+          "source_ref": null,
+          "xy": [
+            32.0,
+            0.0
+          ],
+          "z_m": 0.2
+        },
+        {
+          "id": "spot-ne",
+          "source_ref": null,
+          "xy": [
+            32.0,
+            34.0
+          ],
+          "z_m": 1.1
+        },
+        {
+          "id": "spot-nw",
+          "source_ref": null,
+          "xy": [
+            0.0,
+            34.0
+          ],
+          "z_m": 0.9
+        },
+        {
+          "id": "spot-mid",
+          "source_ref": null,
+          "xy": [
+            16.0,
+            17.0
+          ],
+          "z_m": 0.5
+        }
+      ],
+      "status": "surveyed_points",
+      "surface": null,
+      "surface_ref": null
+    }
+  }
+}

@@ -217,6 +217,86 @@ def cmd_plan_export(args: argparse.Namespace) -> int:
     return EXIT_OK
 
 
+def cmd_plan_export_bundle(args: argparse.Namespace) -> int:
+    from house_ai.orchestration.reviewer_bundle import export_reviewer_bundle
+
+    store = ProjectStore(resolve_project_dir(args.dir))
+    concepts_dir = (
+        Path(args.concepts_dir)
+        if args.concepts_dir
+        else (
+            store.root / "design" / "concepts"
+            if (store.root / "design" / "concepts").exists()
+            else None
+        )
+    )
+    bundle_file = export_reviewer_bundle(
+        store,
+        Path(args.out),
+        concepts_dir=concepts_dir,
+        exploratory=args.exploratory,
+    )
+    _out(f"wrote reviewer bundle to {bundle_file}")
+    return EXIT_OK
+
+
+def cmd_plan_revise_from_file(args: argparse.Namespace) -> int:
+    from house_ai.domain.revision_ops import RevisionOpsFile
+
+    store = ProjectStore(resolve_project_dir(args.dir))
+    out = Path(args.out) if args.out else _default_out(store, False)
+    ops_path = Path(args.file)
+    if not ops_path.exists():
+        _out(f"file not found: {args.file}")
+        return EXIT_FAIL
+    try:
+        data = json.loads(ops_path.read_text(encoding="utf-8"))
+        ops_file = RevisionOpsFile.model_validate(data)
+    except Exception as exc:
+        _out(f"invalid revision ops file: {exc}")
+        return EXIT_FAIL
+
+    option = getattr(args, "option", None) or ops_file.option
+    ops = ops_file.to_cli_ops()
+    try:
+        res = PlanService(store).revise(
+            option,
+            ops_file.verbatim_request,
+            args.actor,
+            ops=ops,
+            version=ops_file.plan_version,
+            out_dir=out,
+        )
+    except PlanWorkflowError as exc:
+        _out(f"refused: {exc}")
+        return EXIT_FAIL
+    rev, ref = res.revision, res.option.plan_ref
+    assert ref is not None and res.option.report is not None
+    if getattr(args, "json", False):
+        _out(
+            json.dumps(
+                {
+                    "plan_ref": ref.model_dump(mode="json"),
+                    "revision": rev.model_dump(mode="json"),
+                    "export_dir": str(res.export_dir),
+                },
+                indent=2,
+                ensure_ascii=False,
+            )
+        )
+        return EXIT_OK
+    _out(f"stored {ref.id} v{ref.version} (parent v{rev.from_version.version})")
+    _out(f"rooms changed: {', '.join(rev.rooms_changed) or 'none'}")
+    for c in rev.area_changes:
+        _out(f"  {c.space_id}: {c.before_m2} -> {c.after_m2} m²")
+    for v in rev.new_violations:
+        _out(f"new violation: {v}")
+    for v in rev.resolved_violations:
+        _out(f"resolved: {v}")
+    _out(f"files: {res.export_dir}")
+    return EXIT_OK
+
+
 def cmd_plan_ground(args: argparse.Namespace) -> int:
     from house_ai.evaluation.grounding import (
         collect_canonical_ids,
@@ -341,3 +421,23 @@ def register(sub, actor_arg: Callable[[argparse.ArgumentParser], None]) -> None:
     s.add_argument("--version", type=int)
     actor_arg(s)
     s.set_defaults(func=cmd_plan_review)
+
+    s = pl.add_parser("export-bundle", help="export read-only concept reviewer bundle")
+    s.add_argument("dir", help="project directory or name")
+    s.add_argument("--out", required=True, help="output directory for bundle.json")
+    s.add_argument("--concepts-dir", help="optional directory with exploratory concepts")
+    s.add_argument(
+        "--exploratory",
+        action="store_true",
+        help="include exploratory concepts",
+    )
+    s.set_defaults(func=cmd_plan_export_bundle)
+
+    s = pl.add_parser("revise-from-file", help="replay revision operations from an exported file")
+    s.add_argument("dir", help="project directory or name")
+    s.add_argument("file", help="path to revision ops JSON file")
+    s.add_argument("--option", help="override target plan option")
+    s.add_argument("--out", help="export folder for the revised concept")
+    s.add_argument("--json", action="store_true")
+    actor_arg(s)
+    s.set_defaults(func=cmd_plan_revise_from_file)
