@@ -106,11 +106,13 @@ def hillside_report(
     risk("structure", "Concept load paths, lateral stability and support systems unresolved")
     risk("foundations", "Bearing capacity, settlement and footing depths unverified")
     risk("slope_stability", "Survey TIN does not establish geotechnical or slope stability")
+    retaining_assessment_complete = surface is not None
     for wall in model.walls:
         if wall.kind not in {WallKind.EXTERIOR, WallKind.RETAINING}:
             continue
         floor = model.level(wall.level_id).elevation_m + wall.base_offset_m
         face = retained_face(surface, wall.start, wall.end, floor)
+        retaining_assessment_complete &= face["known_length_m"] >= wall.length_m - 1e-7
         if wall.kind is WallKind.RETAINING or (face["max_retained_height_m"] or 0) > 0.6:
             retaining.append(
                 {
@@ -297,6 +299,15 @@ def hillside_report(
             "Terrace supports, edge protection and garden approach unresolved",
             [space.id],
         )
+    for discipline, trigger in (
+        ("retaining", "Retaining requirements have not been professionally assessed"),
+        ("drainage", "Surface/subsoil drainage and safe discharge unverified"),
+        ("waterproofing", "Building-ground moisture details unverified"),
+    ):
+        if not any(r["discipline"] == discipline for r in risks):
+            risk(discipline, trigger)
+    unknown_doors = sum(d["outside_level_change_needed"] is None for d in doors)
+    known_changes = sum(d["outside_level_change_needed"] is True for d in doors)
     return {
         "earthworks": works,
         "retaining_candidates": retaining,
@@ -304,7 +315,10 @@ def hillside_report(
         "garages": garages,
         "terraces": terraces,
         "buried_habitable_faces": buried,
-        "outdoor_level_changes_count": sum(d["outside_level_change_needed"] is True for d in doors),
+        "outdoor_level_changes_count": known_changes if not unknown_doors else None,
+        "known_outdoor_level_changes_count": known_changes,
+        "unchecked_exterior_doors_count": unknown_doors,
+        "retaining_assessment_complete": retaining_assessment_complete,
         "indoor_stairs_count": len(model.stairs),
         "terrain_quality": triangle_quality(surface, settings) if surface else [],
         "risks": risks,

@@ -307,3 +307,39 @@ def test_invalid_pads_are_gate_errors_and_reports_remain_inspectable():
     report = hillside_report(m, site_for(surface()))
     assert report["geometry_error"]
     assert report["earthworks"]["excavation_volume_m3"] is None
+
+
+def test_unknown_access_and_retaining_totals_are_not_reported_as_zero():
+    from house_ai.evaluation.base import EvaluationContext
+    from house_ai.evaluation.evaluators import _Out
+    from house_ai.evaluation.hillside import terrain_metrics
+
+    m = house_with_elements()
+    report = hillside_report(m, None)
+    assert report["outdoor_level_changes_count"] is None
+    assert report["unchecked_exterior_doors_count"] == 1
+    out = _Out("SiteEvaluator")
+    terrain_metrics(EvaluationContext(m, None, None, None), out)
+    metrics = {r.metric: r for r in out.metrics}
+    for key in (
+        "outdoor_level_changes_requiring_design",
+        "retaining_wall_length_m",
+        "retaining_wall_face_area_m2",
+    ):
+        assert metrics[key].value is None
+        assert metrics[key].status.value == "not_checked"
+    assert metrics["unchecked_exterior_doors_count"].value == 1
+
+
+def test_buried_garage_keeps_all_required_professional_disciplines():
+    m = house_with_elements()
+    m.spaces[0].function = SpaceFunction.GARAGE
+    report = hillside_report(m, site_for(surface((9, 9, 9, 9))))
+    assert {
+        "structure",
+        "foundations",
+        "retaining",
+        "drainage",
+        "waterproofing",
+        "slope_stability",
+    } <= {r["discipline"] for r in report["risks"]}

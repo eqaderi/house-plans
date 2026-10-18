@@ -17,7 +17,6 @@ def terrain_metrics(ctx, out):
             ClaimStatus.MEASURED,
         )
     inf, nc, measured = ClaimStatus.INFERRED, ClaimStatus.NOT_CHECKED, ClaimStatus.MEASURED
-    status = inf if works["known_area_m2"] else nc
     method = works["method"]
     for name, unit in (
         ("excavation_volume_m3", "m3"),
@@ -83,18 +82,19 @@ def terrain_metrics(ctx, out):
         )
     retaining = report["retaining_candidates"]
     total_area = sum(r["face_area_m2"] or 0 for r in retaining)
-    known_retaining = any(r["known_length_m"] > 0 for r in retaining)
+    retaining_complete = report["retaining_assessment_complete"]
     out.metric(
         "retaining_wall_length_m",
         sum(r["length_m"] for r in retaining),
         "earth_contact_candidate_wall_lengths",
+        inf if retaining_complete else nc,
         unit="m",
     )
     out.metric(
         "retaining_wall_face_area_m2",
         total_area,
         method,
-        inf if known_retaining or not retaining and status is not nc else nc,
+        inf if retaining_complete else nc,
         unit="m2",
     )
     for r in retaining:
@@ -140,7 +140,21 @@ def terrain_metrics(ctx, out):
         "outdoor_level_changes_requiring_design",
         report["outdoor_level_changes_count"],
         "exterior_threshold_trigger_count",
+        inf if report["outdoor_level_changes_count"] is not None else nc,
+        unit="count",
+    )
+    out.metric(
+        "known_outdoor_level_changes_requiring_design",
+        report["known_outdoor_level_changes_count"],
+        "known_threshold_trigger_count",
         inf,
+        unit="count",
+    )
+    out.metric(
+        "unchecked_exterior_doors_count",
+        report["unchecked_exterior_doors_count"],
+        "unknown_threshold_coverage_count",
+        measured,
         unit="count",
     )
     out.metric(

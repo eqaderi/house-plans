@@ -136,6 +136,11 @@ def floor_regions(model: HouseModel):
     for level in sorted(model.levels, key=lambda lv: (lv.elevation_m, lv.id)):
         shape = unary_union(
             [s.boundary.to_shapely() for s in model.spaces if s.level_id == level.id]
+            + [
+                s.boundary.to_shapely()
+                for s in model.slabs
+                if s.level_id == level.id and s.kind in {SlabKind.FLOOR, SlabKind.TERRACE}
+            ]
         )
         region = shape.difference(covered)
         if region.area > EPS:
@@ -231,6 +236,7 @@ def earthworks(model: HouseModel, surface: TinSurface | None) -> dict:
         fill += r.below_plane_m3 or 0
         outside = integrate(surface, hit.difference(building), pad.elevation_m)
         cut += outside.cut_m3 or 0
+        max_cut = max(max_cut, outside.max_cut_m or 0)
     return {
         "method": "exact_clipped_tin_affine_integration",
         "status": "inferred" if known > EPS else "not_checked",

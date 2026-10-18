@@ -160,6 +160,30 @@ def test_overlapping_tin_is_explicitly_rejected_instead_of_double_counted():
         integrate(tin, box(0, 0, 10, 6), 3)
 
 
+def test_slab_extensions_contribute_volume_and_unknown_coverage():
+    from house_ai.domain.geometry import Polygon2D
+    from house_ai.domain.model import Slab
+
+    m = model(5)
+    m.slabs = [
+        Slab(
+            id="extended",
+            level_id="entry",
+            kind="floor",
+            thickness_m=0.2,
+            boundary=Polygon2D.rectangle(0, 0, 12, 6),
+        )
+    ]
+    tin = surface((2, 2, 2, 2))
+    tin.vertices = [(x * 1.2, y, z) for x, y, z in tin.vertices]
+    r = earthworks(m, tin)
+    assert r["footprint_area_m2"] == 72
+    assert r["underfloor_void_volume_m3"] == pytest.approx(201.6)
+    r = earthworks(m, surface((2, 2, 2, 2)))
+    assert r["known_area_m2"] == 60
+    assert r["unknown_area_m2"] == 12
+
+
 def test_overlapping_or_above_floor_pads_fail_clearly():
     m = model()
     pad = EarthworkPad(id="pad", boundary=m.spaces[0].boundary, elevation_m=4, basis="synthetic")

@@ -86,6 +86,22 @@ def test_sectional_alternatives_are_solver_generated_and_compared(tmp_path):
     assert all(r["engineered_fill_m3"] is None for r in produced)
     assert all((tmp_path / r["sectional_strategy"] / "sections.svg").is_file() for r in produced)
     assert "no excavation/elevation preference" in (tmp_path / "comparison.md").read_text().lower()
+    for row in produced:
+        dimensions = row["architectural_comparison"]
+        assert set(dimensions) == {
+            "comfort",
+            "function",
+            "beauty",
+            "circulation",
+            "daylight",
+            "construction_complexity",
+            "engineering_risk",
+        }
+        assert dimensions["comfort"]["status"] == "not_checked"
+        assert dimensions["beauty"]["status"] == "not_checked"
+        assert dimensions["circulation"]["metrics"]
+        assert dimensions["daylight"]["metrics"]
+    assert len({r["architectural_comparison"]["circulation"]["stair_count"] for r in produced}) > 1
 
 
 @pytest.mark.parametrize("gradient", [-3.0, 3.0])
