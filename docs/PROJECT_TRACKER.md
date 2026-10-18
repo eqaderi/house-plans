@@ -771,7 +771,7 @@ No private coordinates or site data are copied.
 | Demonstration | Inspect, compare and comment on synthetic-hillside concepts, export ops, revise, see the new version |
 | Artifacts | `apps/reviewer/`, export bundle command, op-file schema, CI job, ADR |
 | Review requirements | Reviewer checks five elements against `plan.json`, does the feedback round trip, confirms nothing writes to the store |
-| Evidence | merge `e49f3c4`; ADR 0018 (`docs/adr/0018-reviewer-architecture.md`); local reviewer app in `apps/reviewer/` (React 19 + TypeScript + Vite); 24 JSON schemas checked clean; 5 E2E Playwright tests passing; 9 Vitest unit tests passing; 7 reviewer pytest tests passing in `tests/test_reviewer_*.py`; CI run 39074052082 (branch) and 39088912116 (main) green |
+| Evidence | merge `e49f3c4` + polish `af54194`; ADR 0018 (`docs/adr/0018-reviewer-architecture.md`); local reviewer app in `apps/reviewer/` (React 19 + TypeScript + Vite); 24 JSON schemas checked clean; 5 E2E Playwright tests passing; 12 Vitest unit tests passing; 7 reviewer pytest tests passing in `tests/test_reviewer_*.py`; CI runs 39074052082 (branch), 39088912116 (main), and 39089691291 (polish on main) green |
 
 The reviewer is local-first, read-only on the project store, and draws only
 what the canonical model contains: every door, window, stair or terrace on
@@ -2125,7 +2125,7 @@ lifecycle · 0015 agent skills canonical location and discovery · 0016 event-he
 
 | Date | What | Evidence |
 |---|---|---|
-| 2026-10-18 | Stage S4 closed: local 2D plan reviewer (React 19 + TypeScript + Vite, ADR 0018), semantic SVG renderer, read-only bundle export, revision ops domain model & CLI replay (`plan revise-from-file`), E2E Playwright regression suite, CI reviewer job | merge `e49f3c4`; CI run 39088912116 |
+| 2026-10-18 | Stage S4 closed: local 2D plan reviewer (React 19 + TypeScript + Vite, ADR 0018), semantic SVG renderer, read-only bundle export, revision ops domain model & CLI replay (`plan revise-from-file`), E2E Playwright regression suite, CI reviewer job; post-review polish (buildable envelope overlay, comparison sync zoom/pan, cwd safety, constants, styling helpers) | merge `e49f3c4`, polish `af54194`; CI runs 39088912116, 39089691291 |
 | 2026-10-17 | Stage S3 closed: tool decisions recorded (ADAPT trimesh/archlang/anatomy, ADOPT playwright/manifold/intake gate); synthetic benchmark contract (ADR 0017), 17 fixtures, runner reporting across 10 categories, 611 tests pass | merge `efcf8f9` |
 | 2026-10-17 | Stage S1 audit follow-up closed: four findings fixed, 569 tests, branch/main CI green | merge `f4e7727` |
 | 2026-10-17 | Stage S2 closed: four canonical agent skills with `.claude/skills` and `.agents/skills` symlinks (ADR 0015), `house-ai plan ground`, skill drift/command tests; discovery in Claude Code, Codex and Antigravity | merge `4a7efca` |
@@ -2173,6 +2173,7 @@ Closure record template:
 #### S4 closure
 - Merged: `stage/S4-plan-viewer` at `4f6350e` (reviewed commit; branch head `5bfb783` adds only the review 1 tracker record) into `main` as `e49f3c4` on 2026-10-18
 - CI on main: run 39088912116, success on Python 3.11 and 3.13, Vitest & Playwright
+- Polish: commit `af54194` applied reviewer polish improvements (envelope overlay, comparison lockstep zoom/pan, serve cwd safety, constants, styling helpers); CI run 39089691291 green on Python 3.11, 3.13, Vitest & Playwright
 - Closed by: agent:gemini on the owner's "Close stage S4"
 
 #### S4 review 1 — APPROVED
