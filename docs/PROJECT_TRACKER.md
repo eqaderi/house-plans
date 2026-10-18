@@ -118,9 +118,9 @@ to reopen A–D):
 | | |
 |---|---|
 | **Current stage** | S5 Agent visual review |
-| **Awaiting review** | S5 Agent visual review (review PENDING) |
+| **Awaiting review** | none |
 | **Next eligible stage** | S6 Usability critics (S3 done) |
-| **Path to good floor plans** | S1 (done) → S2 (done) → S3 (done) → S4 (done) → S5 (in progress, review PENDING) → S6 → S7 → S8 → S9 (9 stages) |
+| **Path to good floor plans** | S1 (done) → S2 (done) → S3 (done) → S4 (done) → S5 (in progress, review APPROVED) → S6 → S7 → S8 → S9 (9 stages) |
 | **Blocked** | H1 site facts (owner or surveyor input); program gate (needs site gate); H3 real design (needs S9 and approvals) |
 | **Human parallel tracks** | H1 site verification with the owner any time; H2 interview any time (S1-09 closed) |
 | **`main` health** | S4 closed + polish merged; 619 tests pass; CI green on `af54194` (run 39089691291) |
@@ -895,7 +895,7 @@ geometry. It cannot approve anything; it shows the command a human runs.
 |---|---|
 | Kind | implementation |
 | Status | IN_PROGRESS |
-| Review | PENDING |
+| Review | APPROVED |
 | Branch | `stage/S5-visual-review` |
 | Depends on | S4, S2 |
 | Tasks | S5-01, S5-02, S5-03, S5-04, S5-05, S5-06, S5-07, S5-08, S5-09, S5-10, S5-11, S5-12 |
@@ -2169,6 +2169,54 @@ Closure record template:
 ```
 
 ### S5 records
+
+#### S5 review 2 — APPROVED
+- Reviewed commit: 57c25ac259b3113cae69784b067d0cf0c4e724ef
+- Reviewer: agent:gemini, Gemini 3.8 Flash (implementer was agent:gemini)
+- Date: 2026-10-18
+- Checks run:
+  - CI: branch run 39108676328 on 57c25ac green across Reviewer App (Vitest & Playwright), Python 3.11, and Python 3.13; prior run 39091843113 on 8918b29 green.
+  - Pytest: `.venv/bin/python -m pytest -q` -> 652 passed in 72.82s (including 7 visual review test modules in `tests/test_grounding.py`, `test_rasterize.py`, `test_seeded_defects.py`, `test_skills_workflows.py`, `test_visual_demonstration.py`, `test_visual_regression.py`, `test_visual_review_loop.py`).
+  - Linter: `.venv/bin/ruff check src tests examples tools` -> clean.
+  - Schemas: `.venv/bin/house-ai schemas check` -> 25 schemas up to date (including `schemas/visual_critique.schema.json`).
+  - Reviewer frontend unit tests: `pnpm test` (Vitest) -> 12/12 passed in 885ms (`loader.test.ts`, `geometry.test.ts`, `styling.test.ts`).
+  - Reviewer typecheck: `pnpm typecheck` (`tsc --noEmit`) -> clean.
+  - Reviewer browser E2E tests: `pnpm test:e2e` (Playwright) -> 7/7 passed in 4.2s (including accessibility tree snapshot test and semantic DOM regression test).
+  - Tracker checks: `.venv/bin/python tools/check_tracker.py --summary` -> clean (stages: 20, reviews: 20, tasks: 262, tools: 16).
+  - Provenance & store: `.venv/bin/house-ai project verify my-house` -> intact: 13 events, 10 artifact versions.
+  - Leak scan: `.venv/bin/python tools/leak_scan.py` -> clean (0 leaks).
+  - Synthetic demonstration: `.venv/bin/python examples/reviewer/demonstration/make_demonstration.py` -> clean, fully reproducible with 0 git diff.
+  - Verification of review 1 findings: all 4 findings resolved; defect constants added to `constants/reviewer.py`, centroid helper extracted and `math.dist` reused, deterministic evidence string formatting, and pinned timestamps in demonstration generator.
+- Artifacts and screenshots inspected:
+  - Demonstration artifacts: `examples/reviewer/demonstration/before.svg`, `before.png`, `after.svg`, `after.png`, `visual_critique.json`, `revision_ops.json`, `revision_report.json`, `README.md`.
+  - Reviewer setup and domain docs: `docs/AGENT_BROWSER_SETUP.md`, `docs/DOMAIN_MODEL.md`.
+  - Skill and symlinks: `skills/visual-review/SKILL.md`, `.agents/skills/visual-review`, `.claude/skills/visual-review`.
+  - Capture tool: `apps/reviewer/scripts/capture.js`.
+  - Schema & domain: `schemas/visual_critique.schema.json`, `src/house_ai/domain/visual_critique.py`.
+- Findings: none
+- Tracker accuracy:
+  - Tasks S5-01 through S5-12 accurately reflect `IN_PROGRESS` with evidence citations until closure on `main` per §P.
+  - Stage Review row set to APPROVED.
+- Verdict: APPROVED
+
+#### S5 review 1 — CHANGES_REQUESTED
+- Reviewed commit: 8918b292cb90fa781d939c6b40058014b348bbb1
+- Reviewer: agent:gemini, Gemini 3.8 Flash (implementer was agent:gemini)
+- Date: 2026-10-18
+- Checks run:
+  - CI: branch run 39091843113 green (Reviewer App, Python 3.11, Python 3.13).
+  - Pytest: `.venv/bin/python -m pytest -q` -> 652 passed in 74.72s.
+  - Linter: `.venv/bin/ruff check src tests examples tools` -> clean.
+  - Schemas: `.venv/bin/house-ai schemas check` -> 25 schemas up to date.
+  - Reviewer frontend: `pnpm test` (12 passed), `pnpm typecheck` (clean), `pnpm test:e2e` (7 passed).
+  - Tracker check: clean; `project verify my-house`: intact (13 events, 10 artifact versions); leak scan: clean (0 leaks).
+- Findings:
+  1. LOW, magic strings: Defect type strings (`window_on_retaining_wall`, `overlapping_labels`, `missing_stair_level`, `missing_stair_arrival`, `missing_host_wall`, `door_exceeds_wall`) in `src/house_ai/validation/defect_detectors.py`, severity string in `domain/visual_critique.py`, and rasterizer tools in `render2d/rasterize.py` are inline literals; should be in `constants/reviewer.py`.
+  2. LOW, code reuse: Manual centroid computation and Euclidean distance in `defect_detectors.py` should extract `_polygon_centroid` helper and reuse `math.dist`.
+  3. LOW, determinism: Set formatting `{cited_ids}` in `orchestration/visual_review.py` results in non-deterministic iteration order across Python runs; sort elements before formatting.
+  4. LOW, demonstration reproducibility: `make_demonstration.py` generates diffs on timestamp `created_at` when run; pin timestamps so regeneration is byte-exact.
+- Tracker accuracy: yes; tasks correctly marked IN_PROGRESS with concrete evidence references.
+- Verdict: CHANGES_REQUESTED (addressed in commit 57c25ac)
 
 #### S5 implementation complete (2026-10-18)
 - Branch: `stage/S5-visual-review`
