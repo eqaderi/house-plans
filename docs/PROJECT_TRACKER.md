@@ -117,13 +117,13 @@ to reopen A–D):
 
 | | |
 |---|---|
-| **Current stage** | none |
+| **Current stage** | S5 Agent visual review |
 | **Awaiting review** | none |
-| **Next eligible stage** | S5 Agent visual review (S2 and S4 done) |
-| **Path to good floor plans** | S1 (done) → S2 (done) → S3 (done) → S4 (done) → S5 → S6 → S7 → S8 → S9 (9 stages) |
+| **Next eligible stage** | S6 Usability critics (S3 done) |
+| **Path to good floor plans** | S1 (done) → S2 (done) → S3 (done) → S4 (done) → S5 (in progress) → S6 → S7 → S8 → S9 (9 stages) |
 | **Blocked** | H1 site facts (owner or surveyor input); program gate (needs site gate); H3 real design (needs S9 and approvals) |
 | **Human parallel tracks** | H1 site verification with the owner any time; H2 interview any time (S1-09 closed) |
-| **`main` health** | S4 merged; 619 tests pass locally; CI green on `e49f3c4` (run 39088912116) |
+| **`main` health** | S4 closed + polish merged; 619 tests pass; CI green on `af54194` (run 39089691291) |
 | **Homeowner gates on `my-house`** | site: not approved (5 blockers) · program: none · plan: none · model: none |
 
 
@@ -894,7 +894,7 @@ geometry. It cannot approve anything; it shows the command a human runs.
 | Field | Value |
 |---|---|
 | Kind | implementation |
-| Status | NOT_STARTED |
+| Status | IN_PROGRESS |
 | Review | NOT_REQUESTED |
 | Branch | `stage/S5-visual-review` |
 | Depends on | S4, S2 |
