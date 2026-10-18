@@ -998,7 +998,7 @@ rejected.
 | Demonstration | Critic report for synthetic-hillside concepts |
 | Artifacts | `domain/` extension and ADR, `evaluation/` critics, templates, fixtures |
 | Review requirements | Reviewer hand-checks one net area, one route length and one infeasible furniture verdict |
-| Evidence | ADR 0019; `tests/benchmarks/test_usability.py`; `examples/usability/demonstration/report.md`; implementation `7a429fe`; CI run 39111567306; review-1 fixes under §N; required checks under §N |
+| Evidence | ADR 0019; `tests/benchmarks/test_usability.py`; `examples/usability/demonstration/report.md`; implementation `7a429fe`; CI run 39111567306; review-1 fixes `a419de1`, `aa17a1e` (CI run 39117818532 on `b34b5b3`, success); review-1 fixes under §N; required checks under §N |
 
 Proven geometric checks, not vague AI scores. "Usable" means a room can
 hold its furniture with clearances and doors that swing freely, not only
@@ -2253,6 +2253,10 @@ Closure record template:
   - `build_plan.py --check`, `make_fixtures --check`, `make_fixture.py --check` and
     `make_bundles.py --check` are all current.
   - Reviewer: `tsc` clean; **Vitest 16/16**; **Playwright 7/7**.
+- Fix commits `a419de1` and `aa17a1e`; tracker commits `d42290e` and `b34b5b3`. CI run
+  [39117818532](https://github.com/eqaderi/house-plans/actions/runs/39117818532) on `b34b5b3`:
+  success on Python 3.11 and 3.13, and in the reviewer app (Vitest and Playwright). Earlier
+  run 39117333982 on `d42290e`: success.
 - No human gate, confirmation or `my-house` change. Stage and tasks remain IN_PROGRESS;
   Review PENDING.
 
