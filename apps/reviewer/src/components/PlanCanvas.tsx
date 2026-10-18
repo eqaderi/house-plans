@@ -200,6 +200,8 @@ export const PlanCanvas: React.FC<PlanCanvasProps> = ({
             <polygon
               data-id="site-parcel-boundary"
               data-kind={DATA_ATTRS.KINDS.PARCEL}
+              role="region"
+              aria-label="Site parcel boundary"
               points={(site.boundary.outer as [number, number][]).map(([x, y]) => `${toPx(x)},${toYPx(y)}`).join(" ")}
               fill="rgba(56, 189, 248, 0.03)"
               stroke="#38bdf8"
@@ -218,6 +220,8 @@ export const PlanCanvas: React.FC<PlanCanvasProps> = ({
                 <polygon
                   data-id="site-buildable-envelope"
                   data-kind={DATA_ATTRS.KINDS.ENVELOPE}
+                  role="region"
+                  aria-label="Site buildable envelope"
                   points={envOuter.map(([x, y]) => `${toPx(x)},${toYPx(y)}`).join(" ")}
                   fill="rgba(234, 179, 8, 0.04)"
                   stroke="#eab308"
@@ -244,6 +248,8 @@ export const PlanCanvas: React.FC<PlanCanvasProps> = ({
                 key={sp.id}
                 data-id={sp.id}
                 data-kind="space"
+                role="region"
+                aria-label={`Space ${sp.name || sp.id}`}
                 style={{ cursor: "pointer" }}
                 onClick={(e) => {
                   e.stopPropagation();
@@ -254,6 +260,7 @@ export const PlanCanvas: React.FC<PlanCanvasProps> = ({
                   <polygon
                     data-id={sp.id}
                     data-kind="space"
+                    aria-label={`Space outline ${sp.id}`}
                     points={polyPoints.map(([x, y]) => `${toPx(x)},${toYPx(y)}`).join(" ")}
                     fill={isSelected ? "rgba(56, 189, 248, 0.4)" : isHighlighted ? "rgba(239, 68, 68, 0.35)" : fillColor}
                     stroke={isSelected ? "#38bdf8" : isHighlighted ? "#ef4444" : "#94a3b8"}
@@ -303,6 +310,8 @@ export const PlanCanvas: React.FC<PlanCanvasProps> = ({
                 key={w.id}
                 data-id={w.id}
                 data-kind="wall"
+                role="img"
+                aria-label={`Wall ${w.id} (${w.kind})`}
                 x1={toPx(w.start[0])}
                 y1={toYPx(w.start[1])}
                 x2={toPx(w.end[0])}
@@ -349,6 +358,8 @@ export const PlanCanvas: React.FC<PlanCanvasProps> = ({
                 key={o.id}
                 data-id={o.id}
                 data-kind={isDoor ? "door" : "window"}
+                role="img"
+                aria-label={`${isDoor ? "Door" : "Window"} ${o.id}`}
                 style={{ cursor: "pointer" }}
                 onClick={(e) => {
                   e.stopPropagation();
@@ -380,6 +391,8 @@ export const PlanCanvas: React.FC<PlanCanvasProps> = ({
                 key={st.id}
                 data-id={st.id}
                 data-kind="stair"
+                role="region"
+                aria-label={`Stairs ${st.id}`}
                 style={{ cursor: "pointer" }}
                 onClick={(e) => {
                   e.stopPropagation();

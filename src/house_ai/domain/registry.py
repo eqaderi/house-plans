@@ -27,6 +27,7 @@ from .provenance import ArtifactKind, SourceDocument
 from .records import AssumptionsFile, OpenQuestionsFile, OwnerStatementsFile
 from .revision_ops import RevisionOpsFile
 from .site import CadImportProvenance, Site
+from .visual_critique import VisualCritiqueFile
 from .workflow import Approval, ProjectManifest, WorkflowEvent
 
 ARTIFACT_MODELS: dict[ArtifactKind, type[BaseModel]] = {
@@ -58,6 +59,7 @@ SCHEMAS: dict[str, type[BaseModel]] = {
     "agent_roster": AgentRoster,
     "benchmark_fixture": BenchmarkFixture,
     "revision_ops": RevisionOpsFile,
+    "visual_critique": VisualCritiqueFile,
 }
 
 

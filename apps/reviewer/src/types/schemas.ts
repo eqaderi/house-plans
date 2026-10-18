@@ -864,6 +864,18 @@ export interface Violation {
   subject_ids?: string[];
 }
 
+/** A visual observation made by an agent inspecting a rendered plan. */
+export interface VisualClaim {
+  bounding_box?: number[] | null;
+  claim_text: string;
+  element_ids: string[];
+  id: string;
+  screenshot_hash?: string | null;
+  severity?: string;
+  status?: ClaimStatus;
+  suggested_ops?: RevisionOp[];
+}
+
 /** A straight wall defined by its centerline on a level. */
 export interface Wall {
   base_offset_m?: number;
@@ -1101,6 +1113,20 @@ export interface SourceDocument {
   sha256: string;
   size_bytes: number;
   stored_path: string;
+}
+
+/** File recording visual review critiques by an agent against a plan version. */
+export interface VisualCritiqueFile {
+  author: string;
+  claims?: VisualClaim[];
+  created_at?: string;
+  option: string;
+  plan_version: number;
+  project: string;
+  schema_version?: string;
+  screenshot_hash: string;
+  screenshot_path?: string | null;
+  verified?: boolean;
 }
 
 /** One line of events.jsonl. ``hash`` chains each event to the previous one. */

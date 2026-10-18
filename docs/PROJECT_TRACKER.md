@@ -117,13 +117,13 @@ to reopen A–D):
 
 | | |
 |---|---|
-| **Current stage** | none |
+| **Current stage** | S5 Agent visual review |
 | **Awaiting review** | none |
-| **Next eligible stage** | S5 Agent visual review (S2 and S4 done) |
-| **Path to good floor plans** | S1 (done) → S2 (done) → S3 (done) → S4 (done) → S5 → S6 → S7 → S8 → S9 (9 stages) |
+| **Next eligible stage** | S6 Usability critics (S3 done) |
+| **Path to good floor plans** | S1 (done) → S2 (done) → S3 (done) → S4 (done) → S5 (in progress, review APPROVED) → S6 → S7 → S8 → S9 (9 stages) |
 | **Blocked** | H1 site facts (owner or surveyor input); program gate (needs site gate); H3 real design (needs S9 and approvals) |
 | **Human parallel tracks** | H1 site verification with the owner any time; H2 interview any time (S1-09 closed) |
-| **`main` health** | S4 merged; 619 tests pass locally; CI green on `e49f3c4` (run 39088912116) |
+| **`main` health** | S4 closed + polish merged; 619 tests pass; CI green on `af54194` (run 39089691291) |
 | **Homeowner gates on `my-house`** | site: not approved (5 blockers) · program: none · plan: none · model: none |
 
 
@@ -771,7 +771,7 @@ No private coordinates or site data are copied.
 | Demonstration | Inspect, compare and comment on synthetic-hillside concepts, export ops, revise, see the new version |
 | Artifacts | `apps/reviewer/`, export bundle command, op-file schema, CI job, ADR |
 | Review requirements | Reviewer checks five elements against `plan.json`, does the feedback round trip, confirms nothing writes to the store |
-| Evidence | merge `e49f3c4`; ADR 0018 (`docs/adr/0018-reviewer-architecture.md`); local reviewer app in `apps/reviewer/` (React 19 + TypeScript + Vite); 24 JSON schemas checked clean; 5 E2E Playwright tests passing; 9 Vitest unit tests passing; 7 reviewer pytest tests passing in `tests/test_reviewer_*.py`; CI run 39074052082 (branch) and 39088912116 (main) green |
+| Evidence | merge `e49f3c4` + polish `af54194`; ADR 0018 (`docs/adr/0018-reviewer-architecture.md`); local reviewer app in `apps/reviewer/` (React 19 + TypeScript + Vite); 24 JSON schemas checked clean; 5 E2E Playwright tests passing; 12 Vitest unit tests passing; 7 reviewer pytest tests passing in `tests/test_reviewer_*.py`; CI runs 39074052082 (branch), 39088912116 (main), and 39089691291 (polish on main) green |
 
 The reviewer is local-first, read-only on the project store, and draws only
 what the canonical model contains: every door, window, stair or terrace on
@@ -894,8 +894,8 @@ geometry. It cannot approve anything; it shows the command a human runs.
 | Field | Value |
 |---|---|
 | Kind | implementation |
-| Status | NOT_STARTED |
-| Review | NOT_REQUESTED |
+| Status | IN_PROGRESS |
+| Review | APPROVED |
 | Branch | `stage/S5-visual-review` |
 | Depends on | S4, S2 |
 | Tasks | S5-01, S5-02, S5-03, S5-04, S5-05, S5-06, S5-07, S5-08, S5-09, S5-10, S5-11, S5-12 |
@@ -906,7 +906,7 @@ geometry. It cannot approve anything; it shows the command a human runs.
 | Demonstration | Seeded synthetic defect found, revised, re-rendered and verified |
 | Artifacts | Browser config, `VisualCritique` schema, validator, `skills/visual-review/` |
 | Review requirements | Reviewer submits an ungrounded critique and a fake fix and sees both rejected |
-| Evidence | — |
+| Evidence | pending review; see §N "S5 implementation complete" |
 
 Visual review supplements deterministic checks; it never replaces them
 (MASTER_SPEC "Blender" visual-review loop, applied here to 2D). Every
@@ -915,60 +915,60 @@ rejected.
 
 #### Agent browser inspection setup
 
-- [ ] **S5-01** Configure the chosen browser tool for coding agents — `NOT_STARTED` · P1 · deps: none
+- [ ] **S5-01** Configure the chosen browser tool for coding agents — `IN_PROGRESS` · P1 · deps: none
   - Accept: setup documented; works offline against the local reviewer; MCP only if S3-01 justified it
   - Verify: fresh-session run by an agent
-  - Evidence: pending
-- [ ] **S5-02** Screenshot capture of reviewer views on stable synthetic fixtures — `NOT_STARTED` · P1 · deps: S5-01
+  - Evidence: `docs/AGENT_BROWSER_SETUP.md`
+- [ ] **S5-02** Screenshot capture of reviewer views on stable synthetic fixtures — `IN_PROGRESS` · P1 · deps: S5-01
   - Accept: deterministic viewport, fonts and data; output paths and hashes recorded
   - Verify: repeated capture gives identical or within-tolerance images
-  - Evidence: pending
-- [ ] **S5-03** Semantic SVG and DOM identifiers readable by agents — `NOT_STARTED` · P1 · deps: none
+  - Evidence: `apps/reviewer/scripts/capture.js`
+- [ ] **S5-03** Semantic SVG and DOM identifiers readable by agents — `IN_PROGRESS` · P1 · deps: none
   - Accept: accessible names and `data-id` expose element kind and canonical ID
   - Verify: accessibility-tree snapshot test
-  - Evidence: pending
-- [ ] **S5-04** Static plan rasterisation with rsvg-convert or Inkscape — `NOT_STARTED` · P2 · deps: none
+  - Evidence: `apps/reviewer/src/components/PlanCanvas.tsx`; `apps/reviewer/e2e/reviewer.spec.ts`
+- [ ] **S5-04** Static plan rasterisation with rsvg-convert or Inkscape — `IN_PROGRESS` · P2 · deps: none
   - Accept: `plan.svg` to PNG without a browser for quick inspection; optional when tools are missing
   - Verify: test skipped without the tool
-  - Evidence: pending — rsvg-convert 2.60.0 and Inkscape 1.4.4 installed (2026-10-17); not yet used by the project
+  - Evidence: `src/house_ai/render2d/rasterize.py`; `tests/test_rasterize.py`
 
 #### Grounded visual critique records
 
-- [ ] **S5-05** VisualCritique schema — `NOT_STARTED` · P1 · deps: none
+- [ ] **S5-05** VisualCritique schema — `IN_PROGRESS` · P1 · deps: none
   - Accept: element IDs, plan version, screenshot hash, claim text, status `ai_judgment`, suggested revise ops; exported schema and DOMAIN_MODEL updated
   - Verify: `schemas check`; schema tests
-  - Evidence: pending
-- [ ] **S5-06** Grounding validator for critiques — `NOT_STARTED` · P0 · deps: S5-05
+  - Evidence: `src/house_ai/domain/visual_critique.py`; `schemas/visual_critique.schema.json`; `apps/reviewer/src/types/schemas.ts`; `docs/DOMAIN_MODEL.md`
+- [ ] **S5-06** Grounding validator for critiques — `IN_PROGRESS` · P0 · deps: S5-05
   - Accept: every referenced ID exists in the stated plan version; measurable claims must cite a metric or are rejected
   - Verify: negative tests
-  - Evidence: pending
-- [ ] **S5-07** Seeded visual-defect fixtures and detection tests — `NOT_STARTED` · P1 · deps: S5-05
+  - Evidence: `src/house_ai/validation/grounding.py`; `tests/test_grounding.py`
+- [ ] **S5-07** Seeded visual-defect fixtures and detection tests — `IN_PROGRESS` · P1 · deps: S5-05
   - Accept: fixtures with overlapping labels, door into wall, window on retaining wall, missing stair arrival; tests assert detection by deterministic or visual checks with correct IDs
   - Verify: `pytest -q`
-  - Evidence: pending
-- [ ] **S5-08** Screenshot and semantic regression tests — `NOT_STARTED` · P2 · deps: none
+  - Evidence: `src/house_ai/validation/defect_detectors.py`; `tests/test_seeded_defects.py`
+- [ ] **S5-08** Screenshot and semantic regression tests — `IN_PROGRESS` · P2 · deps: none
   - Accept: screenshot diffs and ID-map diffs fail on unintended changes
   - Verify: CI run
-  - Evidence: pending
+  - Evidence: `src/house_ai/validation/semantic_map.py`; `tests/test_visual_regression.py`; `apps/reviewer/e2e/reviewer.spec.ts`
 
 #### Inspect, critique, revise, re-render loop
 
-- [ ] **S5-09** Loop procedure from critique to revise operations to re-render — `NOT_STARTED` · P1 · deps: none
+- [ ] **S5-09** Loop procedure from critique to revise operations to re-render — `IN_PROGRESS` · P1 · deps: none
   - Accept: critiques map to explicit `plan revise` ops; new version re-captured
   - Verify: loop test
-  - Evidence: pending
-- [ ] **S5-10** Fix verification — `NOT_STARTED` · P0 · deps: S5-09
+  - Evidence: `src/house_ai/orchestration/visual_review.py`; `tests/test_visual_review_loop.py`
+- [ ] **S5-10** Fix verification — `IN_PROGRESS` · P0 · deps: S5-09
   - Accept: each "fixed" claim is checked by the evaluator or a new capture; unverified claims stay open
   - Verify: test where a fake fix is rejected
-  - Evidence: pending
-- [ ] **S5-11** visual-review skill — `NOT_STARTED` · P1 · deps: S5-09
+  - Evidence: `src/house_ai/orchestration/visual_review.py`; `tests/test_visual_review_loop.py`
+- [ ] **S5-11** visual-review skill — `IN_PROGRESS` · P1 · deps: S5-09
   - Accept: follows the S2 template; forbids ungrounded claims
   - Verify: skill drift and workflow tests
-  - Evidence: pending
-- [ ] **S5-12** Documented synthetic demonstration — `NOT_STARTED` · P1 · deps: S5-10
+  - Evidence: `skills/visual-review/SKILL.md`; `.agents/skills/visual-review`; `.claude/skills/visual-review`; `tests/test_skills.py`; `tests/test_skills_workflows.py`
+- [ ] **S5-12** Documented synthetic demonstration — `IN_PROGRESS` · P1 · deps: S5-10
   - Accept: before/after screenshots, critique records and revision report for synthetic-hillside
   - Verify: reviewer replays it
-  - Evidence: pending
+  - Evidence: `examples/reviewer/demonstration/` (`before.svg`, `before.png`, `visual_critique.json`, `revision_ops.json`, `after.svg`, `after.png`, `revision_report.json`, `README.md`, `make_demonstration.py`); `tests/test_visual_demonstration.py`
 
 ### Stage S6 — Usability critics
 
@@ -2125,7 +2125,7 @@ lifecycle · 0015 agent skills canonical location and discovery · 0016 event-he
 
 | Date | What | Evidence |
 |---|---|---|
-| 2026-10-18 | Stage S4 closed: local 2D plan reviewer (React 19 + TypeScript + Vite, ADR 0018), semantic SVG renderer, read-only bundle export, revision ops domain model & CLI replay (`plan revise-from-file`), E2E Playwright regression suite, CI reviewer job | merge `e49f3c4`; CI run 39088912116 |
+| 2026-10-18 | Stage S4 closed: local 2D plan reviewer (React 19 + TypeScript + Vite, ADR 0018), semantic SVG renderer, read-only bundle export, revision ops domain model & CLI replay (`plan revise-from-file`), E2E Playwright regression suite, CI reviewer job; post-review polish (buildable envelope overlay, comparison sync zoom/pan, cwd safety, constants, styling helpers) | merge `e49f3c4`, polish `af54194`; CI runs 39088912116, 39089691291 |
 | 2026-10-17 | Stage S3 closed: tool decisions recorded (ADAPT trimesh/archlang/anatomy, ADOPT playwright/manifold/intake gate); synthetic benchmark contract (ADR 0017), 17 fixtures, runner reporting across 10 categories, 611 tests pass | merge `efcf8f9` |
 | 2026-10-17 | Stage S1 audit follow-up closed: four findings fixed, 569 tests, branch/main CI green | merge `f4e7727` |
 | 2026-10-17 | Stage S2 closed: four canonical agent skills with `.claude/skills` and `.agents/skills` symlinks (ADR 0015), `house-ai plan ground`, skill drift/command tests; discovery in Claude Code, Codex and Antigravity | merge `4a7efca` |
@@ -2168,11 +2168,80 @@ Closure record template:
 - Closed by: <agent:tool> on the owner's "Close stage <ID>"
 ```
 
+### S5 records
+
+#### S5 review 2 — APPROVED
+- Reviewed commit: 57c25ac259b3113cae69784b067d0cf0c4e724ef
+- Reviewer: agent:gemini, Gemini 3.8 Flash (implementer was agent:gemini)
+- Date: 2026-10-18
+- Checks run:
+  - CI: branch run 39108676328 on 57c25ac green across Reviewer App (Vitest & Playwright), Python 3.11, and Python 3.13; prior run 39091843113 on 8918b29 green.
+  - Pytest: `.venv/bin/python -m pytest -q` -> 652 passed in 72.82s (including 7 visual review test modules in `tests/test_grounding.py`, `test_rasterize.py`, `test_seeded_defects.py`, `test_skills_workflows.py`, `test_visual_demonstration.py`, `test_visual_regression.py`, `test_visual_review_loop.py`).
+  - Linter: `.venv/bin/ruff check src tests examples tools` -> clean.
+  - Schemas: `.venv/bin/house-ai schemas check` -> 25 schemas up to date (including `schemas/visual_critique.schema.json`).
+  - Reviewer frontend unit tests: `pnpm test` (Vitest) -> 12/12 passed in 885ms (`loader.test.ts`, `geometry.test.ts`, `styling.test.ts`).
+  - Reviewer typecheck: `pnpm typecheck` (`tsc --noEmit`) -> clean.
+  - Reviewer browser E2E tests: `pnpm test:e2e` (Playwright) -> 7/7 passed in 4.2s (including accessibility tree snapshot test and semantic DOM regression test).
+  - Tracker checks: `.venv/bin/python tools/check_tracker.py --summary` -> clean (stages: 20, reviews: 20, tasks: 262, tools: 16).
+  - Provenance & store: `.venv/bin/house-ai project verify my-house` -> intact: 13 events, 10 artifact versions.
+  - Leak scan: `.venv/bin/python tools/leak_scan.py` -> clean (0 leaks).
+  - Synthetic demonstration: `.venv/bin/python examples/reviewer/demonstration/make_demonstration.py` -> clean, fully reproducible with 0 git diff.
+  - Verification of review 1 findings: all 4 findings resolved; defect constants added to `constants/reviewer.py`, centroid helper extracted and `math.dist` reused, deterministic evidence string formatting, and pinned timestamps in demonstration generator.
+- Artifacts and screenshots inspected:
+  - Demonstration artifacts: `examples/reviewer/demonstration/before.svg`, `before.png`, `after.svg`, `after.png`, `visual_critique.json`, `revision_ops.json`, `revision_report.json`, `README.md`.
+  - Reviewer setup and domain docs: `docs/AGENT_BROWSER_SETUP.md`, `docs/DOMAIN_MODEL.md`.
+  - Skill and symlinks: `skills/visual-review/SKILL.md`, `.agents/skills/visual-review`, `.claude/skills/visual-review`.
+  - Capture tool: `apps/reviewer/scripts/capture.js`.
+  - Schema & domain: `schemas/visual_critique.schema.json`, `src/house_ai/domain/visual_critique.py`.
+- Findings: none
+- Tracker accuracy:
+  - Tasks S5-01 through S5-12 accurately reflect `IN_PROGRESS` with evidence citations until closure on `main` per §P.
+  - Stage Review row set to APPROVED.
+- Verdict: APPROVED
+
+#### S5 review 1 — CHANGES_REQUESTED
+- Reviewed commit: 8918b292cb90fa781d939c6b40058014b348bbb1
+- Reviewer: agent:gemini, Gemini 3.8 Flash (implementer was agent:gemini)
+- Date: 2026-10-18
+- Checks run:
+  - CI: branch run 39091843113 green (Reviewer App, Python 3.11, Python 3.13).
+  - Pytest: `.venv/bin/python -m pytest -q` -> 652 passed in 74.72s.
+  - Linter: `.venv/bin/ruff check src tests examples tools` -> clean.
+  - Schemas: `.venv/bin/house-ai schemas check` -> 25 schemas up to date.
+  - Reviewer frontend: `pnpm test` (12 passed), `pnpm typecheck` (clean), `pnpm test:e2e` (7 passed).
+  - Tracker check: clean; `project verify my-house`: intact (13 events, 10 artifact versions); leak scan: clean (0 leaks).
+- Findings:
+  1. LOW, magic strings: Defect type strings (`window_on_retaining_wall`, `overlapping_labels`, `missing_stair_level`, `missing_stair_arrival`, `missing_host_wall`, `door_exceeds_wall`) in `src/house_ai/validation/defect_detectors.py`, severity string in `domain/visual_critique.py`, and rasterizer tools in `render2d/rasterize.py` are inline literals; should be in `constants/reviewer.py`.
+  2. LOW, code reuse: Manual centroid computation and Euclidean distance in `defect_detectors.py` should extract `_polygon_centroid` helper and reuse `math.dist`.
+  3. LOW, determinism: Set formatting `{cited_ids}` in `orchestration/visual_review.py` results in non-deterministic iteration order across Python runs; sort elements before formatting.
+  4. LOW, demonstration reproducibility: `make_demonstration.py` generates diffs on timestamp `created_at` when run; pin timestamps so regeneration is byte-exact.
+- Tracker accuracy: yes; tasks correctly marked IN_PROGRESS with concrete evidence references.
+- Verdict: CHANGES_REQUESTED (addressed in commit 57c25ac)
+
+#### S5 implementation complete (2026-10-18)
+- Branch: `stage/S5-visual-review`
+- Implementer: `agent:gemini`
+- CI: run 39091843113 on `stage/S5-visual-review`
+- Changes:
+  - S5-01: Agent browser tool configuration in `docs/AGENT_BROWSER_SETUP.md` (headless Chromium, loopback-only isolation, deterministic 1280x800 viewport, font settling, CLI usage).
+  - S5-02: Deterministic screenshot capture script in `apps/reviewer/scripts/capture.js` with SHA-256 hash output, JSON mode, and ephemeral loopback server. Tested on synthetic bungalow with byte-exact reproducible captures.
+  - S5-03: Semantic SVG elements with accessible `role` and `aria-label` attributes across all entities in `apps/reviewer/src/components/PlanCanvas.tsx`; Playwright accessibility tree snapshot test in `apps/reviewer/e2e/reviewer.spec.ts`.
+  - S5-04: Static SVG plan rasterization module in `src/house_ai/render2d/rasterize.py` supporting `rsvg-convert` and `inkscape` with tests in `tests/test_rasterize.py`.
+  - S5-05: Grounded `VisualCritique` schema and domain model in `src/house_ai/domain/visual_critique.py` (`VisualClaim`, `VisualCritiqueFile`), exported schema `schemas/visual_critique.schema.json` (25 schemas up to date), regenerated TypeScript types in `apps/reviewer/src/types/schemas.ts`, and updated `docs/DOMAIN_MODEL.md`.
+  - S5-06: Grounding validator in `src/house_ai/validation/grounding.py` verifying cited element IDs exist in stated plan version, verifying suggested revision op targets, and rejecting ungrounded measurable numeric claims (`tests/test_grounding.py`).
+  - S5-07: Seeded visual defect fixtures and detectors in `src/house_ai/validation/defect_detectors.py` (window on retaining wall, label overlaps, door-into-wall clashes, missing stair arrivals) with tests in `tests/test_seeded_defects.py`.
+  - S5-08: Screenshot and semantic ID-map regression module in `src/house_ai/validation/semantic_map.py` (`build_semantic_id_map()`, `extract_svg_semantic_id_map()`, `diff_semantic_id_maps()`, `compare_image_bytes()`) with unit tests in `tests/test_visual_regression.py` and Playwright E2E regression test in `apps/reviewer/e2e/reviewer.spec.ts`.
+  - S5-09 & S5-10: Review loop procedure and fix verification in `src/house_ai/orchestration/visual_review.py` (`verify_visual_critique_fixes()`, `apply_visual_critique_loop()`) strictly rejecting fake fixes with `VisualFixVerificationError` (`tests/test_visual_review_loop.py`).
+  - S5-11: Canonical `visual-review` skill authored in `skills/visual-review/SKILL.md` with provider symlinks in `.agents/skills` and `.claude/skills`, skill drift tests in `tests/test_skills.py`, and E2E workflow test in `tests/test_skills_workflows.py`.
+  - S5-12: Documented synthetic demonstration in `examples/reviewer/demonstration/` (`before.svg`, `before.png`, `visual_critique.json`, `revision_ops.json`, `after.svg`, `after.png`, `revision_report.json`, `README.md`, `make_demonstration.py`) with tests in `tests/test_visual_demonstration.py`.
+- Status: Stage S5 implementation complete; review requested: **PENDING**.
+
 ### S4 records
 
 #### S4 closure
 - Merged: `stage/S4-plan-viewer` at `4f6350e` (reviewed commit; branch head `5bfb783` adds only the review 1 tracker record) into `main` as `e49f3c4` on 2026-10-18
 - CI on main: run 39088912116, success on Python 3.11 and 3.13, Vitest & Playwright
+- Polish: commit `af54194` applied reviewer polish improvements (envelope overlay, comparison lockstep zoom/pan, serve cwd safety, constants, styling helpers); CI run 39089691291 green on Python 3.11, 3.13, Vitest & Playwright
 - Closed by: agent:gemini on the owner's "Close stage S4"
 
 #### S4 review 1 — APPROVED
@@ -2581,17 +2650,18 @@ homeowner approval of any site, program, plan or model.
 
 ### Current handoff note
 
-- Stage S4 implementation complete on branch `stage/S4-plan-viewer` (review PENDING):
-  - Architecture ADR 0018 (`docs/adr/0018-reviewer-architecture.md`) recorded covering local-first React 19 + TypeScript + Vite, SVG computed from canonical model, strict D3 boundary, offline delivery, epistemic status labels, and human gate boundaries.
-  - Read-only export bundle CLI commands (`house-ai reviewer export`, `house-ai plan export-bundle`) implemented with store immutability verification.
-  - Revision ops domain model & schema (`schemas/revision_ops.schema.json`) with round-trip CLI execution (`house-ai plan revise-from-file`).
-  - Synthetic demonstration bundles generated with `--check` mode (`examples/reviewer/make_bundles.py`).
-  - TypeScript types generated from all 24 JSON Schemas with CI drift check (`tools/generate_reviewer_types.py`, `apps/reviewer/src/types/schemas.ts`).
-  - Desktop reviewer app in `apps/reviewer/` with semantic SVG (`data-id`, `data-kind`), room dimensions, floor switcher, gross area schedule, epistemic status badges (`measured`, `inferred`, `simulated`, `ai_judgment`), findings panel, terrain section, synchronized comparison, revision timeline, and feedback export.
-  - GateBanner displaying human approval gate CLI commands without any approval buttons (S4-23).
-  - Headless browser regression tests with Playwright (5/5 passing) and Vitest (9/9 passing).
-  - CI reviewer job added to `.github/workflows/ci.yml` (run 39073591376 green across Python 3.11/3.13, Vitest and Playwright).
-  - Quality suite clean: 624 pytest tests pass, leak scan clean, schemas check clean, ruff clean, `project verify my-house` intact (13 events, 10 artifact versions). Ready for review.
+- Stage S5 implementation complete on branch `stage/S5-visual-review` (review PENDING):
+  - Agent browser setup in `docs/AGENT_BROWSER_SETUP.md` and offline capture tool in `apps/reviewer/scripts/capture.js` with SHA-256 hashing.
+  - Semantic SVG elements with accessible `role` and `aria-label` attributes (`PlanCanvas.tsx`, `reviewer.spec.ts`).
+  - Static plan rasterization module in `src/house_ai/render2d/rasterize.py` (`test_rasterize.py`).
+  - `VisualCritique` schema and domain model in `src/house_ai/domain/visual_critique.py` (`schemas/visual_critique.schema.json`, `DOMAIN_MODEL.md`).
+  - Grounding validator in `src/house_ai/validation/grounding.py` enforcing canonical element ID citations and rejecting ungrounded measurable assertions (`test_grounding.py`).
+  - Seeded visual defect fixtures and detectors in `src/house_ai/validation/defect_detectors.py` (`test_seeded_defects.py`).
+  - Semantic ID-map extraction and regression diff module in `src/house_ai/validation/semantic_map.py` (`test_visual_regression.py`, `reviewer.spec.ts`).
+  - Visual review loop and fix verification in `src/house_ai/orchestration/visual_review.py` strictly rejecting fake fixes (`test_visual_review_loop.py`).
+  - Canonical `visual-review` skill authored in `skills/visual-review/SKILL.md` with symlinks in `.agents/skills` and `.claude/skills`, drift tests in `tests/test_skills.py`, and E2E workflow test in `tests/test_skills_workflows.py`.
+  - Documented synthetic demonstration in `examples/reviewer/demonstration/` (`before.svg`, `before.png`, `visual_critique.json`, `revision_ops.json`, `after.svg`, `after.png`, `revision_report.json`, `README.md`, `make_demonstration.py`) with tests in `tests/test_visual_demonstration.py`.
+  - Quality suite clean: 652 pytest tests pass, 7 Playwright E2E tests pass, 12 Vitest tests pass, 25 schemas checked, leak scan clean, `project verify my-house` intact (13 events, 10 artifact versions). Ready for review.
 
 ## P. Rules for updating the tracker
 
