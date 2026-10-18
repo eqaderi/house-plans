@@ -1015,7 +1015,7 @@ supplies it. Critics report per-element findings with method and status.
 - [ ] **S6-02** ADR and domain extension for furniture and clearance zones — `IN_PROGRESS` · P1 · deps: none
   - Accept: decision whether furniture is a canonical element or a derived check; stable IDs; schema exported
   - Verify: `schemas check`; owner reads the ADR
-  - Evidence: ADR 0019; `domain/usability.py`; `domain/model.py`; `test_furniture_integrity_ids_references_overlap_and_round_trip`; 26 schemas exported; front = local −Y for templates, fixtures and furniture (ADR 0019); owner reading of ADR 0019 still pending
+  - Evidence: ADR 0019; `domain/usability.py`; `domain/model.py`; `test_furniture_integrity_ids_references_overlap_and_round_trip`; 26 schemas exported; front = local −Y for templates, fixtures and furniture (ADR 0019); owner read ADR 0019 on 2026-10-18 ("I read 0019-usability-geometry-and-assumptions.md"), no changes requested
 - [ ] **S6-03** Door-swing and clearance polygon geometry helpers — `IN_PROGRESS` · P1 · deps: none
   - Accept: swing arc, leaf, approach zones per door side; sliding doors handled
   - Verify: analytical tests
@@ -2855,7 +2855,7 @@ homeowner approval of any site, program, plan or model.
   Captured output: `examples/usability/demonstration/report.md` and `report.json`.
 - Review must hand-check net area 10.9725 m², L-shaped point route 2√10 m, and the
   2.6 m / 3.4 m double-bed room twins, now also on rotated rooms. See `examples/usability/README.md`.
-- Owner action outstanding: read ADR 0019 (task S6-02).
+- Owner read ADR 0019 on 2026-10-18 (task S6-02); no changes requested.
 - Do not merge before an independent APPROVED review and owner-authorized closure.
 
 ## P. Rules for updating the tracker

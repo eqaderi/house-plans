@@ -1,7 +1,8 @@
 # ADR 0019 — Canonical placements and derived usability studies
 
-Date: 2026-10-18. Status: proposed for S6; revised after S6 review 1. Acceptance awaits
-the owner reading this ADR (task S6-02).
+Date: 2026-10-18. Status: accepted for S6; revised after S6 review 1. The owner read
+this ADR on 2026-10-18 ("I read 0019-usability-geometry-and-assumptions.md") and
+requested no changes (task S6-02).
 
 ## Decision
 
