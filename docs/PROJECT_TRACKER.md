@@ -116,9 +116,9 @@ to reopen A–D):
 
 | | |
 |---|---|
-| **Current stage** | none; S9 Floor-plan readiness gate is `BLOCKED` on S10 (assessment NOT MET, 6 of 13 FAIL; DEC-11) |
+| **Current stage** | S10 Readiness remediation, `IN_PROGRESS` on `stage/S10-readiness-remediation`; S9 is `BLOCKED` on it (DEC-11) |
 | **Awaiting review** | none |
-| **Next eligible stage** | S10 Readiness remediation (branch from the S9 head, §O handoff note) |
+| **Next eligible stage** | none while S10 is in progress |
 | **Path to good floor plans** | S1 (done) → S2 (done) → S3 (done) → S4 (done) → S5 (done) → S6 (done) → S7 (done) → S8 (done) → S10 → S9 (10 stages) |
 | **Blocked** | S9 and its tasks (S10 first, then a re-run of S9-01/S9-02 and the owner's S9-03 words); H1 site facts (owner or surveyor input); program gate (needs site gate); H3 real design (needs S9 and approvals) |
 | **Human parallel tracks** | H1 site verification with the owner any time; H2 interview any time (S1-09 closed) |
@@ -1515,13 +1515,13 @@ claimed without a recorded professional verification.
 | Field | Value |
 |---|---|
 | Kind | implementation |
-| Status | NOT_STARTED |
+| Status | IN_PROGRESS |
 | Review | NOT_REQUESTED |
 | Branch | `stage/S10-readiness-remediation` |
 | Depends on | S4, S5, S6, S7, S8 |
 | Tasks | S10-01, S10-02, S10-03, S10-04, S10-05, S10-06, S10-07, S10-08, S10-09, S10-10, S10-11, S10-12, S10-13, S10-14, S10-15, S10-16, S10-17, S10-18 |
 | Objective | Fix the defects behind the six S9 FAILs (DEC-11) so the readiness gate can be re-assessed |
-| Scope | In: ISS-25 and ISS-29 to ISS-35, using `examples/readiness/` as the regression harness. Out: ISS-28 (S9), the re-assessment itself (S9), `my-house`. The branch starts from the S9 head `3278620`, so merging S10 also brings the S9 assessment and demonstration commits (`2732a99`, `3278620`) to `main` |
+| Scope | In: ISS-25 and ISS-29 to ISS-35, using `examples/readiness/` as the regression harness. Out: ISS-28 (S9), the re-assessment itself (S9), `my-house`. The branch starts from the S9 head `123bd0d`, so merging S10 also brings the S9 commits (`2732a99`, `3278620`, `123bd0d`) to `main` |
 | Acceptance | Every task's measured criterion holds in tests and in a re-run of `examples/readiness/run_demo.py`; no clearance, threshold or tolerance is loosened, and no declared value relabelled, to silence a critic without a stated basis; DEC-04 still holds (no automatic preference for excavation or elevation) |
 | Tests | Full suite; `python -m house_ai.benchmarks.runner examples/benchmarks/fixtures --require-complete`; `tests/test_readiness_demo.py`; reviewer typecheck, Vitest and Playwright |
 | Demonstration | Re-run of the readiness demonstration showing the S9 defects gone or explicitly reported, with before and after counts |
@@ -1531,14 +1531,14 @@ claimed without a recorded professional verification.
 
 #### Reviewer and revision fixes
 
-- [ ] **S10-01** `house-ai reviewer serve` works and is tested — `NOT_STARTED` · P0 · deps: none
+- [ ] **S10-01** `house-ai reviewer serve` works and is tested — `IN_PROGRESS` · P0 · deps: none
   - Accept: `reviewer serve` starts on a synthetic project without error (ISS-32)
   - Verify: CLI test
-  - Evidence: pending
-- [ ] **S10-02** Reviewer initial view fits the plan — `NOT_STARTED` · P1 · deps: none
+  - Evidence: `src/house_ai/cli/reviewer_cmds.py` (`store.manifest().name`; prints `?bundle=bundle.json`, which the app needs to load a bundle; includes `design/concepts` like `export`; refuses with build instructions when `dist/index.html` is missing instead of serving an empty folder); `tests/test_reviewer_bundle.py::test_cli_reviewer_serve_exports_bundle_and_prints_loadable_url`, `::test_cli_reviewer_serve_refuses_without_built_app`; live: `reviewer serve project-data/s9-demo/project --port 5199`, index and bundle HTTP 200, `capture.js --url` of the printed URL shows the demo project
+- [ ] **S10-02** Reviewer initial view fits the plan — `IN_PROGRESS` · P1 · deps: none
   - Accept: on the readiness demo bundle, the plan and comparison tabs show every room of the selected level inside the viewport on first load (ISS-32)
   - Verify: Playwright test; `capture.js` screenshots
-  - Evidence: pending
+  - Evidence: causes were a fixed 30 px/m transform with pan (200, 200), also used by Reset, and a comparison level `lvl-ground` that no plan has (so comparison panes drew no rooms, also on the bungalow's `l0`). Fix: `apps/reviewer/src/lib/geometry.ts` (`fitTransform`, `spacesBoundingBox`, `unionBoundingBox`), `PlanCanvas.tsx` fits all levels' spaces on load, on a new model and on Reset, `ComparisonView.tsx` starts on `lv-entry` or the first level and fits both panes to their union. Vitest `geometry.test.ts` "Fit the plan into the viewport" (35.2 px/m and pan (-304, 1180) for a 20 × 10 m box in 800 × 600 px); Playwright `reviewer.spec.ts` S10-02 (every room inside the canvas on load, after Reset, and in both comparison panes, synthetic-hillside bundle); `capture.js` plan and comparison tabs of the S9 demo bundle show all rooms
 - [ ] **S10-03** A revision checks its own request; "not met" differs from "regression" — `NOT_STARTED` · P1 · deps: none
   - Accept: the 25 m² living-room case reports the request not met with the achieved area on v2 and v3; only a request that was met and later lost is a regression (ISS-31 a, b)
   - Verify: revision tests with ground-truth areas
@@ -3394,7 +3394,7 @@ homeowner approval of any site, program, plan or model.
 ### Current handoff note
 
 - The owner chose option A (DEC-11): Stage S10 Readiness remediation fixes ISS-25 and ISS-29 to ISS-35 before S9 continues. S9 is `BLOCKED` on S10; its assessment is in §H and §N "S9 handoff 1".
-- Start S10 on `stage/S10-readiness-remediation`, branched from the S9 head (`3278620`) because S10 uses `examples/readiness/` as its regression harness. Do the small fixes first (S10-01, S10-03, S10-04), then stairs and levels.
+- Start S10 on `stage/S10-readiness-remediation`, branched from the S9 head (`123bd0d`) because S10 uses `examples/readiness/` as its regression harness. Do the small fixes first (S10-01, S10-03, S10-04), then stairs and levels.
 - After S10 closes: bring S9 up to date with `main`, re-run S9-01 and S9-02, ask for the owner's S9-03 words, then request S9 review. ISS-28 stays with S9.
 
 ## P. Rules for updating the tracker

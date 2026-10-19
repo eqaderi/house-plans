@@ -1,6 +1,15 @@
-import React, { useState, useRef } from "react";
+import React, { useLayoutEffect, useState, useRef } from "react";
 import type { HouseModel, Site, Space, Wall, Opening, Stair } from "../types/schemas";
-import { computeBoundingBox, formatDimM, distanceM } from "../lib/geometry";
+import {
+  computeBoundingBox,
+  formatDimM,
+  distanceM,
+  fitTransform,
+  spacesBoundingBox,
+  MAX_SCALE_PX_PER_M,
+  MIN_SCALE_PX_PER_M,
+  type BoundingBox,
+} from "../lib/geometry";
 import { getSpacePrivacyColor } from "../lib/styling";
 import { DATA_ATTRS } from "../constants";
 
@@ -18,6 +27,8 @@ interface PlanCanvasProps {
   scale?: number;
   pan?: { x: number; y: number };
   onTransformChange?: (scale: number, pan: { x: number; y: number }) => void;
+  /** Model box to fit on load and on Reset; defaults to every space of the model. */
+  fitBounds?: BoundingBox | null;
 }
 
 export const PlanCanvas: React.FC<PlanCanvasProps> = ({
@@ -34,18 +45,20 @@ export const PlanCanvas: React.FC<PlanCanvasProps> = ({
   scale: controlledScale,
   pan: controlledPan,
   onTransformChange,
+  fitBounds,
 }) => {
   const [internalScale, setInternalScale] = useState<number>(30); // pixels per metre
   const [internalPan, setInternalPan] = useState<{ x: number; y: number }>({ x: 200, y: 200 });
   const [isDragging, setIsDragging] = useState<boolean>(false);
   const dragStart = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const currentScale = controlledScale !== undefined ? controlledScale : internalScale;
   const currentPan = controlledPan !== undefined ? controlledPan : internalPan;
 
   const setScale = (updater: number | ((prev: number) => number)) => {
     const nextVal = typeof updater === "function" ? updater(currentScale) : updater;
-    const clamped = Math.max(10, Math.min(100, nextVal));
+    const clamped = Math.max(MIN_SCALE_PX_PER_M, Math.min(MAX_SCALE_PX_PER_M, nextVal));
     if (controlledScale === undefined) {
       setInternalScale(clamped);
     }
@@ -59,6 +72,25 @@ export const PlanCanvas: React.FC<PlanCanvasProps> = ({
     }
     onTransformChange?.(currentScale, nextVal);
   };
+
+  const setTransform = (scale: number, pan: { x: number; y: number }) => {
+    if (controlledScale === undefined) setInternalScale(scale);
+    if (controlledPan === undefined) setInternalPan(pan);
+    onTransformChange?.(scale, pan);
+  };
+
+  // Fit the whole building (all levels) into the viewport on load, on a new model, and on Reset.
+  const bounds = fitBounds !== undefined ? fitBounds : spacesBoundingBox(model.spaces || []);
+  const boundsKey = bounds ? [bounds.minX, bounds.minY, bounds.maxX, bounds.maxY].join(",") : "";
+  const fitToView = () => {
+    const el = containerRef.current;
+    if (!el || !bounds) return;
+    const { width, height } = el.getBoundingClientRect();
+    if (width <= 0 || height <= 0) return;
+    const t = fitTransform(bounds, width, height);
+    setTransform(t.scale, t.pan);
+  };
+  useLayoutEffect(fitToView, [boundsKey]);
 
   // Filter entities by active level
   const spaces = (model.spaces || []).filter(
@@ -98,7 +130,7 @@ export const PlanCanvas: React.FC<PlanCanvasProps> = ({
   const handleWheel = (e: React.WheelEvent) => {
     e.preventDefault();
     const factor = e.deltaY < 0 ? 1.1 : 0.9;
-    setScale((prev) => Math.max(10, Math.min(100, prev * factor)));
+    setScale((prev) => prev * factor);
   };
 
   const toPx = (m: number) => m * currentScale;
@@ -106,6 +138,7 @@ export const PlanCanvas: React.FC<PlanCanvasProps> = ({
 
   return (
     <div
+      ref={containerRef}
       data-testid="plan-canvas"
       style={{
         position: "relative",
@@ -137,22 +170,19 @@ export const PlanCanvas: React.FC<PlanCanvasProps> = ({
         }}
       >
         <button
-          onClick={() => setScale((s) => Math.min(100, s * 1.2))}
+          onClick={() => setScale((s) => s * 1.2)}
           style={{ padding: "4px 8px", cursor: "pointer", background: "#334155", color: "#fff", border: "none", borderRadius: 4 }}
         >
           +
         </button>
         <button
-          onClick={() => setScale((s) => Math.max(10, s * 0.8))}
+          onClick={() => setScale((s) => s * 0.8)}
           style={{ padding: "4px 8px", cursor: "pointer", background: "#334155", color: "#fff", border: "none", borderRadius: 4 }}
         >
           -
         </button>
         <button
-          onClick={() => {
-            setScale(30);
-            setPan({ x: 200, y: 200 });
-          }}
+          onClick={fitToView}
           style={{ padding: "4px 8px", cursor: "pointer", background: "#334155", color: "#fff", border: "none", borderRadius: 4 }}
         >
           Reset

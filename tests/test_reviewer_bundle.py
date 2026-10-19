@@ -238,3 +238,62 @@ def test_cli_plan_revise_from_file_round_trip(tmp_path: Path) -> None:
         c.space_id in ("sp-kitchen", "sp-kitchen-1") and c.after_m2 is not None
         for c in rev_report.area_changes
     )
+
+
+class _FakeServer:
+    """Stands in for the TCP server: records the directory served, then stops like Ctrl+C."""
+
+    served: list[str] = []
+
+    def __init__(self, address, handler) -> None:
+        _FakeServer.served.append(handler.keywords["directory"])
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *exc) -> None:
+        return None
+
+    def serve_forever(self) -> None:
+        raise KeyboardInterrupt
+
+
+def test_cli_reviewer_serve_exports_bundle_and_prints_loadable_url(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
+    """S10-01 (ISS-32): `reviewer serve` names the project and links to its bundle."""
+    import house_ai.cli.reviewer_cmds as reviewer_cmds
+
+    project = tmp_path / "proj"
+    load = ["example", "load", str(project), "--name", "synthetic-hillside"]
+    assert main([*load, "--project-id", "synthetic-hillside", "--actor", "agent:test"]) == 0
+    dist = tmp_path / "dist"
+    dist.mkdir()
+    (dist / "index.html").write_text("<!doctype html>", encoding="utf-8")
+    monkeypatch.setattr(reviewer_cmds.socketserver, "TCPServer", _FakeServer)
+    _FakeServer.served = []
+
+    assert main(["reviewer", "serve", str(project), "--dist", str(dist), "--port", "5199"]) == 0
+    out = capsys.readouterr().out
+    assert "for project example: synthetic-hillside at" in out
+    assert "http://127.0.0.1:5199/?bundle=bundle.json" in out
+    assert _FakeServer.served == [str(dist)]
+    data = json.loads((dist / REVIEWER_BUNDLE_FILENAME).read_text(encoding="utf-8"))
+    assert data["project"]["name"] == "synthetic-hillside"
+
+
+def test_cli_reviewer_serve_refuses_without_built_app(tmp_path: Path, monkeypatch, capsys) -> None:
+    """S10-01: without a built reviewer there is nothing to serve; say how to build it."""
+    import house_ai.cli.reviewer_cmds as reviewer_cmds
+
+    project = tmp_path / "proj"
+    load = ["example", "load", str(project), "--name", "synthetic-hillside"]
+    assert main([*load, "--project-id", "synthetic-hillside", "--actor", "agent:test"]) == 0
+    monkeypatch.setattr(reviewer_cmds.socketserver, "TCPServer", _FakeServer)
+    _FakeServer.served = []
+
+    empty = tmp_path / "no-dist"
+    assert main(["reviewer", "serve", str(project), "--dist", str(empty)]) == 1
+    assert "pnpm install && pnpm build" in capsys.readouterr().out
+    assert _FakeServer.served == []
+    assert not empty.exists()

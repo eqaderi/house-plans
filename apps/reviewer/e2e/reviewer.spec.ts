@@ -246,4 +246,40 @@ test.describe("House AI Plan Reviewer - Local 2D Reviewer E2E", () => {
     expect(screenshotBuffer[2]).toBe(0x4e);
     expect(screenshotBuffer[3]).toBe(0x47);
   });
+  test("Plan and comparison views fit every room into the viewport on load (S10-02)", async ({
+    page,
+  }) => {
+    const insideCanvas = async (canvas: import("@playwright/test").Locator) => {
+      const frame = (await canvas.boundingBox())!;
+      const rooms = canvas.locator('svg polygon[data-kind="space"]');
+      const count = await rooms.count();
+      expect(count).toBeGreaterThan(0);
+      for (let i = 0; i < count; i++) {
+        const box = (await rooms.nth(i).boundingBox())!;
+        const id = await rooms.nth(i).getAttribute("data-id");
+        expect(box.x, `${id} left`).toBeGreaterThanOrEqual(frame.x);
+        expect(box.y, `${id} top`).toBeGreaterThanOrEqual(frame.y);
+        expect(box.x + box.width, `${id} right`).toBeLessThanOrEqual(frame.x + frame.width);
+        expect(box.y + box.height, `${id} bottom`).toBeLessThanOrEqual(frame.y + frame.height);
+      }
+      return count;
+    };
+
+    // The rotated steep hillside drew above the viewport before S10-02.
+    await page.goto("/?bundle=/bundles/synthetic-hillside/bundle.json");
+    await expect(page.locator("header")).toContainText("synthetic-hillside");
+    await insideCanvas(page.locator('[data-testid="plan-canvas"]'));
+
+    // Reset returns to the fitted view after zooming in.
+    for (let i = 0; i < 5; i++) await page.locator('button:has-text("+")').first().click();
+    await page.locator('button:has-text("Reset")').first().click();
+    await insideCanvas(page.locator('[data-testid="plan-canvas"]'));
+
+    // Both comparison panes start on a real level and show their rooms.
+    await page.locator('[data-testid="tab-comparison"]').click();
+    const panes = page.locator('[data-testid="comparison-view"] [data-testid="plan-canvas"]');
+    await expect(panes).toHaveCount(2);
+    await insideCanvas(panes.nth(0));
+    await insideCanvas(panes.nth(1));
+  });
 });
