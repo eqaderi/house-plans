@@ -251,28 +251,11 @@ def test_detects_s9_concept_two_wing_defects():
     1. Stair st-0 through slab-roof-down-450 without a void (vc-stair-through-slab).
     2. Overlapping labels on lower level tight rooms (vc-lower-labels-overlap).
     """
-    import json
-    from pathlib import Path
-
-    demo_plan_file = (
-        Path(__file__).parents[1]
-        / "project-data"
-        / "s9-demo"
-        / "concepts"
-        / "concept-two-wing"
-        / "v0001"
-        / "plan.json"
-    )
-
-    if demo_plan_file.is_file():
-        with open(demo_plan_file) as f:
-            model = HouseModel.model_validate(json.load(f)["model"])
-    else:
-        # Self-contained representation of the S9 concept-two-wing v1 geometry
-        model = HouseModel(
-            id="concept-two-wing-v1",
-            name="Two Wing v1",
-            coordinate_system_id="local",
+    # Self-contained representation of the S9 concept-two-wing v1 geometry with seeded defects
+    model = HouseModel(
+        id="concept-two-wing-v1",
+        name="Two Wing v1",
+        coordinate_system_id="local",
             levels=[
                 Level(id="lv-down-450", name="Lower", elevation_m=7.13),
                 Level(id="lv-entry", name="Entry", elevation_m=11.63),
