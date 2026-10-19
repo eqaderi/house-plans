@@ -14,6 +14,39 @@ import math
 SECTIONAL_STRATEGIES = ("walkout", "split_level", "stepped", "elevated", "hybrid")
 
 
+def placement_level_variables(md, levels, entry_x, entry_xe, front_dm, env_width_dm, ground):
+    """Stacked 2D levels coupled to the solved road-side entry, at 1 cm Z resolution.
+
+    The entry midpoint varies with horizontal placement. As for bars, sample the TIN
+    0.5 m roadward of its front face. Stacked links retain their 3 m rise; no cut/void
+    objective or preference for excavation/elevation is introduced (DEC-04).
+    """
+    if ground.surface is None:
+        return {}
+    values, known = [], []
+    for c in range(2 * env_width_dm + 1):
+        z = ground.at(c / 20, front_dm / 10 - 0.5)
+        values.append(round(z * 100) if z is not None else 0)
+        known.append(int(z is not None))
+    if not any(known):
+        from .solver2d import Solve2DFailed
+
+        raise Solve2DFailed("surveyed terrain does not cover the road-side entry band")
+    index = md.NewIntVar(0, 2 * env_width_dm, "entry_terrain_center2")
+    md.Add(index == entry_x + entry_xe)
+    entry = md.NewIntVar(min(values), max(values), "entry_z_cm")
+    md.AddElement(index, values, entry)
+    md.AddElement(index, known, 1)
+    offsets = {"lv-entry": 0, "lv-lower": -300, "lv-upper": 300}
+    out = {}
+    for lv in levels:
+        offset = offsets[lv]
+        z = md.NewIntVar(min(values) + offset, max(values) + offset, f"level_z_cm_{lv}")
+        md.Add(z == entry + offset)
+        out[lv] = z
+    return out
+
+
 def configure_section(m, mode):
     """Set link topology before room/stair eligibility is compiled."""
     if mode is None:

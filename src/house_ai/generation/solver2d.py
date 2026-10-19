@@ -63,7 +63,7 @@ from house_ai.domain.program import (
 )
 from house_ai.domain.proposal import ConceptProposal
 from house_ai.domain.site import Site
-from house_ai.generation.frame import DesignFrame
+from house_ai.generation.frame import ENVELOPE_MARGIN_M, DesignFrame, Ground
 from house_ai.generation.rooms import garage_dims_dm, space_id_for
 from house_ai.generation.solver import SolverOptions
 from house_ai.generation.stairs import u_core_fits
@@ -189,6 +189,8 @@ class Solution2D:
     zone_definitions: list[ProgramZone] = field(default_factory=list)
     exterior_connections: list[str] = field(default_factory=list)
     optimised_objectives: list[str] = field(default_factory=list)
+    level_elevations_m: dict[str, float] = field(default_factory=dict)
+    road_front_dm: int | None = None
 
 
 def compute_candidate_dimensions(
@@ -622,7 +624,10 @@ def solve_2d_placement(
     if not rooms:
         raise Solve2DFailed("no rooms to place in space program")
     poly = frame.polygon_to_design(limit_polygon(site)[0])
-    _, _, xmax, ymax = poly.bounds
+    _, ymin, xmax, ymax = poly.bounds
+    # Same road-side band as bar massings. An entry is a hard access requirement,
+    # rather than merely a weak preference for low y (S10-13).
+    road_front = math.ceil((ymin + 2 * ENVELOPE_MARGIN_M) * 10 - 1e-9)
     env_w, env_h = math.floor(xmax * 10 + 1e-7), math.floor(ymax * 10 + 1e-7)
     if min(env_w, env_h) < MIN_ROOM_DIM_DM:
         raise Solve2DFailed("envelope is too narrow for a layout")
@@ -901,6 +906,14 @@ def solve_2d_placement(
         (r for r in rooms if r.function is SpaceFunction.ENTRY),
         next((r for r in rooms if r.function is SpaceFunction.HALL), rooms[0]),
     )
+    md.Add(y[entry.space_id] == road_front)
+    for r in rooms:
+        md.Add(y[r.space_id] >= road_front)
+    from .terrain_levels import placement_level_variables
+
+    elevations = placement_level_variables(
+        md, levels, x[entry.space_id], xe[entry.space_id], road_front, env_w, Ground(site, frame)
+    )
     ext_ids = {entry.space_id}
     for req in requirements:
         if EXTERIOR in (req.a, req.b) and req.kind in (
@@ -918,7 +931,7 @@ def solve_2d_placement(
                 for i, (expr, inv) in enumerate(
                     [
                         (x[sid] == 0, x[sid] != 0),
-                        (y[sid] == 0, y[sid] != 0),
+                        (y[sid] == road_front, y[sid] != road_front),
                         (xe[sid] == max_x, xe[sid] != max_x),
                         (ye[sid] == max_y, ye[sid] != max_y),
                     ]
@@ -1123,4 +1136,6 @@ def solve_2d_placement(
             "site_response",
             "daylight_opportunity",
         ],
+        level_elevations_m={lv: solver.Value(z) / 100 for lv, z in elevations.items()},
+        road_front_dm=road_front,
     )

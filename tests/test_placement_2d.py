@@ -655,9 +655,12 @@ def test_non_rectangular_l_shaped_space():
         sol, site, frame, ground, prog, ACTOR, site_ref=site_ref, program_ref=program_ref
     )
 
-    # Verify L-shaped space boundary has 6 vertices in its outer ring
+    # Verify the six corners and 16 m² L shape. Collinear shared-edge nodes are
+    # intentional (S10-13); their storage count is not the room's shape.
     living_space = model.space("sp-living")
-    assert len(living_space.boundary.outer) == 6
+    shape = living_space.boundary.to_shapely()
+    assert len(shape.simplify(1e-6).exterior.coords) - 1 == 6
+    assert shape.area == pytest.approx(16.0)
 
     # Verify no interior wall divides the two sub-rectangles of the living space
     dividing_walls = [

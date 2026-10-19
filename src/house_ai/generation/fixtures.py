@@ -107,16 +107,22 @@ def layout_fixtures(model: HouseModel) -> tuple[list[Fixture], list[str]]:
     missed: list[str] = []
     for space in model.spaces:
         ids = FIXTURE_SETS.get(space.function)
-        if ids is None or space.boundary.holes or len(space.boundary.outer) != 4:
+        if ids is None or space.boundary.holes:
             continue
         poly = space.boundary.to_shapely()
+        # Rectangles may carry shared-edge T-junction vertices after the 2D grid
+        # is rotated to LOCAL. Simplify only those sub-micrometre collinear nodes
+        # for wall-side candidates; the actual net floor below stays unchanged.
+        corners = poly.simplify(1e-6)
+        if len(corners.exterior.coords) != 5:
+            continue
         walls = [w for w in model.walls if w.level_id == space.level_id]
         solids = unary_union(
             [LineString([w.start, w.end]).buffer(w.thickness_m / 2, cap_style=2) for w in walls]
         )
         floor = poly.difference(solids).buffer(1e-6)
         c = poly.centroid
-        pts = list(space.boundary.outer)
+        pts = list(corners.exterior.coords)[:-1]
         sides = []
         for (ax, ay), (bx, by) in zip(pts, pts[1:] + pts[:1], strict=True):
             length = math.dist((ax, ay), (bx, by))

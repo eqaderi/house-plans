@@ -10,8 +10,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
+from shapely.geometry import Point, box
 from shapely.geometry import Polygon as ShapelyPolygon
-from shapely.geometry import box
 from shapely.ops import unary_union
 
 from house_ai.constants.placement2d import (
@@ -35,6 +35,7 @@ from house_ai.constants.placement2d import (
 from house_ai.constants.strategies import STRATEGY_OPEN_PLAN
 from house_ai.domain.base import EXTERIOR
 from house_ai.domain.geometry import Polygon2D
+from house_ai.domain.integrity import OPENING_END_INSET_M, PROBE_BEYOND_FACE_M
 from house_ai.domain.model import (
     Ceiling,
     CompositeSpace,
@@ -169,16 +170,56 @@ class Builder2D:
             Level(
                 id=lv,
                 name=lv.removeprefix("lv-").title() + " level",
-                elevation_m=offsets[lv],
+                elevation_m=sol.level_elevations_m.get(lv, offsets[lv]),
                 floor_to_floor_m=STOREY_HEIGHT_M,
             )
             for lv in sol.levels
         ]
         self.elevation_basis = "Terrain unknown: entry uses local z=0 as an explicit assumption."
+        if sol.level_elevations_m:
+            self.elevation_basis = (
+                "Levels solved jointly with placement: entry follows surveyed terrain "
+                "0.5 m roadward of its front face (5 cm XY / 1 cm Z lookup); "
+                "stacked levels retain 3 m rises. Terrain interpolation is inferred."
+            )
 
         self.walls: list[WallSegment2D] = []
         self.openings: list[Opening] = []
         self.issues: list[Issue] = []
+
+    def _space_boundary(self, room, all_rooms):
+        """Node shared grid edges before rotating/rounding them into LOCAL coordinates.
+
+        Every shared segment then has exactly the same endpoints on both sides,
+        including T-junctions; no sub-micrometre wedge can split an open-plan room.
+        """
+        rects = room.sub_rects or [(room.u0, room.v0, room.u1, room.v1)]
+        shape = unary_union([box(*r) for r in rects])
+        vertices = {
+            p
+            for r in all_rooms
+            if r.level_id == room.level_id
+            for a, b, c, d in (r.sub_rects or [(r.u0, r.v0, r.u1, r.v1)])
+            for p in ((a, b), (c, b), (c, d), (a, d))
+        }
+
+        def ring(coords):
+            out = []
+            for a, b in zip(coords, coords[1:], strict=False):
+                points = {a, b} | {
+                    p
+                    for p in vertices
+                    if (a[0] == b[0] == p[0] and min(a[1], b[1]) <= p[1] <= max(a[1], b[1]))
+                    or (a[1] == b[1] == p[1] and min(a[0], b[0]) <= p[0] <= max(a[0], b[0]))
+                }
+                ordered = sorted(points, key=lambda p: (p[0] - a[0]) ** 2 + (p[1] - a[1]) ** 2)
+                out.extend(self.frame.to_local(*p) for p in ordered[:-1])
+            return out
+
+        return Polygon2D(
+            outer=ring(list(shape.exterior.coords)),
+            holes=[ring(list(r.coords)) for r in shape.interiors],
+        )
 
     def build_walls(self) -> None:
         all_rooms = [*self.sol.rooms, *self.sol.circulation_rooms]
@@ -295,8 +336,11 @@ class Builder2D:
         operation: Operation = Operation.NONE,
         material: str | None = None,
         prefix: str = "d",
+        road_facing: bool = False,
     ) -> Opening | None:
         walls = self._walls_between(a, b)
+        if road_facing:
+            walls = [w for w in walls if w.orient == "h" and w.c == self.sol.road_front_dm]
         if b is None:
             rooms = [
                 r
@@ -323,6 +367,11 @@ class Builder2D:
             if any(off_dm + width_dm > u0 and off_dm < u1 for u0, u1 in seg.used):
                 continue
 
+            # A narrow crevice can have a room just beyond the nominal exterior side.
+            # Use the same side probes as canonical integrity before choosing a host.
+            if b is None and not self._exterior_span_is_clear(seg, off_dm, width_dm, a):
+                continue
+
             seg.used.append((off_dm, off_dm + width_dm))
             connects = (a, b) if b is not None else (a, EXTERIOR)
             op_id = f"{prefix}-{_short(seg.id)}-{len(self.openings) + 1:02d}"
@@ -343,6 +392,33 @@ class Builder2D:
             return op
         return None
 
+    def _exterior_span_is_clear(self, seg, offset_dm, width_dm, space_id):
+        rooms = [
+            r for r in [*self.sol.rooms, *self.sol.circulation_rooms] if r.level_id == seg.level_id
+        ]
+        reach = (seg.thickness_m / 2 + PROBE_BEYOND_FACE_M) * 10
+        inset = min(OPENING_END_INSET_M * 10, width_dm * 0.1)
+        for t in (offset_dm + inset, offset_dm + width_dm / 2, offset_dm + width_dm - inset):
+            sides = []
+            for sign in (1, -1):
+                pt = (
+                    (seg.a + t, seg.c + sign * reach)
+                    if seg.orient == "h"
+                    else (seg.c + sign * reach, seg.a + t)
+                )
+                hits = [
+                    r.space_id
+                    for r in rooms
+                    if any(
+                        box(*rect).contains(Point(pt))
+                        for rect in (r.sub_rects or [(r.u0, r.v0, r.u1, r.v1)])
+                    )
+                ]
+                sides.append(hits[0] if len(hits) == 1 else EXTERIOR if not hits else None)
+            if set(sides) != {space_id, EXTERIOR}:
+                return False
+        return True
+
     def build_openings(self) -> None:
         all_rooms = [*self.sol.rooms, *self.sol.circulation_rooms]
         room_by_id = {r.space_id: r for r in all_rooms}
@@ -360,6 +436,7 @@ class Builder2D:
                 width_m=0.9,
                 operation=Operation.SWING_RIGHT,
                 prefix="d-ext",
+                road_facing=sid == entry_room.space_id and self.sol.road_front_dm is not None,
             )
 
         # 2. Door / cased openings along shared walls
@@ -508,57 +585,10 @@ class Builder2D:
     ) -> HouseModel:
         self.build_walls()
         self.build_openings()
-        entry = next(
-            (r for r in self.sol.rooms if r.function is SpaceFunction.ENTRY),
-            next(
-                (r for r in self.sol.rooms if r.function is SpaceFunction.HALL), self.sol.rooms[0]
-            ),
-        )
-        door = next(
-            (
-                o
-                for o in self.openings
-                if o.is_passable and entry.space_id in o.connects and EXTERIOR in o.connects
-            ),
-            None,
-        )
-        if door:
-            wall = next(w for w in self.walls if w.id == door.host_wall_id)
-            a, b = self._seg_points(wall)
-            ground = self.ground.at((a[0] + b[0]) / 20, (a[1] + b[1]) / 20)
-            if ground is not None:
-                base = round(ground, 3)
-                self.levels = [
-                    lv.model_copy(update={"elevation_m": lv.elevation_m + base})
-                    for lv in self.levels
-                ]
-                self.elevation_basis = (
-                    f"Entry anchored to surveyed terrain at the entrance wall "
-                    f"({base:g} m LOCAL, inferred from the TIN)."
-                )
-
         all_rooms = [*self.sol.rooms, *self.sol.circulation_rooms]
         spaces: list[Space] = []
         for r in all_rooms:
-            if r.sub_rects:
-                u = unary_union([box(sr[0], sr[1], sr[2], sr[3]) for sr in r.sub_rects]).simplify(
-                    0.001
-                )
-                u_poly = max(list(u.geoms), key=lambda g: g.area) if hasattr(u, "geoms") else u
-                outer_pts = [
-                    self.frame.to_local(int(round(pt[0])), int(round(pt[1])))
-                    for pt in u_poly.exterior.coords[:-1]
-                ]
-                poly = Polygon2D(outer=outer_pts)
-            else:
-                poly = Polygon2D(
-                    outer=[
-                        self.frame.to_local(r.u0, r.v0),
-                        self.frame.to_local(r.u1, r.v0),
-                        self.frame.to_local(r.u1, r.v1),
-                        self.frame.to_local(r.u0, r.v1),
-                    ]
-                )
+            poly = self._space_boundary(r, all_rooms)
             prog_item_id = (
                 r.program_item_id
                 if any(it.id == r.program_item_id for it in self.program.items)
@@ -601,9 +631,17 @@ class Builder2D:
                     if sp.level_id == level.id and sp.function in OPEN_PLAN_FUNCTIONS
                 ]
                 if len(children) >= 2:
-                    union = unary_union([sp.boundary.to_shapely() for sp in children]).simplify(
-                        1e-7
-                    )
+                    # Union on the exact solver grid. Rounding rotated LOCAL coordinates
+                    # first can separate a shared edge by fractions of a micrometre.
+                    child_ids = {sp.id for sp in children}
+                    union = unary_union(
+                        [
+                            box(*rect)
+                            for r in all_rooms
+                            if r.space_id in child_ids
+                            for rect in (r.sub_rects or [(r.u0, r.v0, r.u1, r.v1)])
+                        ]
+                    ).simplify(0)
                     if union.geom_type != "Polygon":
                         # The 2D solver does not guarantee contiguity: report, do not group.
                         self.issues.append(
@@ -626,8 +664,14 @@ class Builder2D:
                             level_id=level.id,
                             space_ids=[sp.id for sp in children],
                             boundary=Polygon2D(
-                                outer=list(union.exterior.coords)[:-1],
-                                holes=[list(r.coords)[:-1] for r in union.interiors],
+                                outer=[
+                                    self.frame.to_local(x, y)
+                                    for x, y in list(union.exterior.coords)[:-1]
+                                ],
+                                holes=[
+                                    [self.frame.to_local(x, y) for x, y in list(r.coords)[:-1]]
+                                    for r in union.interiors
+                                ],
                             ),
                         )
                     )
