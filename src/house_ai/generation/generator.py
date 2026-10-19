@@ -10,6 +10,7 @@ cannot be laid out at all is reported with the reason.
 
 from __future__ import annotations
 
+import hashlib
 from dataclasses import dataclass, field
 from datetime import datetime
 
@@ -85,8 +86,20 @@ def _patterns(strategy: str, rooms: ProgramRooms) -> list[tuple[int, int]]:
     return [*base, deep] if need and deep not in base else base
 
 
-def option_id_for(strategy: str) -> str:
-    return "concept-" + strategy.replace("_", "-")
+def option_id_for(strategy: str, proposal_id: str | None = None) -> str:
+    """Option of a concept; a topology proposal gets its own (S10-04, ISS-31).
+
+    Proposal concepts never become a new version of the strategy's concept, so they cannot
+    replace a generated or owner-revised version as its latest.
+    """
+    option = "concept-" + strategy.replace("_", "-")
+    if proposal_id is None:
+        return option
+    full = f"{option}-{proposal_id}"
+    if len(full) <= 64:
+        return full
+    digest = hashlib.sha256(proposal_id.encode()).hexdigest()[:8]
+    return f"{full[: 64 - len(digest) - 1].rstrip('-')}-{digest}"
 
 
 @dataclass
@@ -206,12 +219,13 @@ class CpSatPlanGenerator:
                     update={"adjacencies": [*program.adjacencies, *extra_adj]}
                 )
         rooms = expand_program(program, hard_min_areas=hard_areas, hard_min_widths=hard_widths)
+        proposal_id = req.proposal.id if req.proposal is not None else None
         try:
             frame = design_frame(req.site)
             limit = frame.polygon_to_design(limit_polygon(req.site)[0])
         except FrameError as exc:
             return [
-                Candidate(s, req.option_id or option_id_for(s), "infeasible", str(exc))
+                Candidate(s, req.option_id or option_id_for(s, proposal_id), "infeasible", str(exc))
                 for s in (req.strategies or STRATEGY_ORDER)
             ]
         ground = Ground(req.site, frame)
@@ -237,7 +251,9 @@ class CpSatPlanGenerator:
         return out
 
     def _strategy(self, strategy, ctx, rooms, frame, ground, req, opts) -> Candidate:
-        option = req.option_id or option_id_for(strategy)
+        option = req.option_id or option_id_for(
+            strategy, req.proposal.id if req.proposal is not None else None
+        )
         if req.sectional_strategy and req.option_id is None:
             option += "-" + req.sectional_strategy.replace("_", "-")
         cand = Candidate(strategy, option, "infeasible")

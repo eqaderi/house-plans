@@ -64,7 +64,7 @@ def test_readiness_demonstration_end_to_end(tmp_path):
     (two_wing,) = rec["concepts"]
     assert two_wing["option"] == "concept-two-wing" and two_wing["feasible"]
     assert two_wing["soft"] > 0 and "not_checked" in two_wing
-    assert rec["proposal"][0]["option"] == "concept-open-plan"
+    assert rec["proposal"][0]["option"] == "concept-open-plan-prop-day-up-night-down"
 
     # Visual review: program and space IDs in the critique exist in the plan.
     vr = rec["visual_review"]
@@ -74,5 +74,9 @@ def test_readiness_demonstration_end_to_end(tmp_path):
     # Revisions keep the owner's words and ops and add versions 2 and 3.
     assert [(r["words"], r["ops"]) for r in rec["revisions"]] == REVISIONS
     assert [r["version"] for r in rec["revisions"]] == [2, 3]
+    # S10-03: an unmet request is reported by the revision that makes it.
+    first = rec["revisions"][0]
+    assert first["unmet_request_reported"] is (not first["request_met"])
+    assert not [v for v in rec["revisions"][1]["new_violations"] if v.startswith("regression:")]
     assert (out / rec["bundle"]["path"]).is_file()
     assert (out / rec["comparison"]).is_file()

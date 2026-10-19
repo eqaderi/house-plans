@@ -1539,14 +1539,15 @@ claimed without a recorded professional verification.
   - Accept: on the readiness demo bundle, the plan and comparison tabs show every room of the selected level inside the viewport on first load (ISS-32)
   - Verify: Playwright test; `capture.js` screenshots
   - Evidence: causes were a fixed 30 px/m transform with pan (200, 200), also used by Reset, and a comparison level `lvl-ground` that no plan has (so comparison panes drew no rooms, also on the bungalow's `l0`). Fix: `apps/reviewer/src/lib/geometry.ts` (`fitTransform`, `spacesBoundingBox`, `unionBoundingBox`), `PlanCanvas.tsx` fits all levels' spaces on load, on a new model and on Reset, `ComparisonView.tsx` starts on `lv-entry` or the first level and fits both panes to their union. Vitest `geometry.test.ts` "Fit the plan into the viewport" (35.2 px/m and pan (-304, 1180) for a 20 × 10 m box in 800 × 600 px); Playwright `reviewer.spec.ts` S10-02 (every room inside the canvas on load, after Reset, and in both comparison panes, synthetic-hillside bundle); `capture.js` plan and comparison tabs of the S9 demo bundle show all rooms
-- [ ] **S10-03** A revision checks its own request; "not met" differs from "regression" — `NOT_STARTED` · P1 · deps: none
+- [ ] **S10-03** A revision checks its own request; "not met" differs from "regression" — `IN_PROGRESS` · P1 · deps: none
   - Accept: the 25 m² living-room case reports the request not met with the achieved area on v2 and v3; only a request that was met and later lost is a regression (ISS-31 a, b)
   - Verify: revision tests with ground-truth areas
-  - Evidence: pending
-- [ ] **S10-04** Proposals never replace an owner-revised version — `NOT_STARTED` · P1 · deps: none
+  - Evidence: `PlanService.request_findings` and `_unmet_request` in `src/house_ai/orchestration/plans.py` check every area, level and separation request the new version carries, new and inherited; `regression:` only when the base carried and met it, else `request not met:` (`REQUEST_NOT_MET_PREFIX`); the 2.0 m² area tolerance is unchanged, now `REQUESTED_AREA_TOLERANCE_M2`. Tests: `tests/test_plan_provenance_revisions.py::test_preserve_owner_design_intent_across_multi_step_revisions` (30 m² kitchen reported not met on v5 with its area, still not met and no regression on v6), `::test_request_findings_separate_unmet_from_lost` (kitchen shrunk about its centroid by exactly 3.0 m² is a regression; a new request is not met); `tests/test_readiness_demo.py` asserts the demo's first request is reported exactly when unmet and v3 shows no regression
+  - Notes: adjacency, nearness, connection, stair and outdoor requests are still not re-checked after a revision
+- [ ] **S10-04** Proposals never replace an owner-revised version — `IN_PROGRESS` · P1 · deps: none
   - Accept: `plan propose` with a target strategy whose option has revisions stores a new option or is refused; the revised version stays latest of its option (ISS-31 c)
   - Verify: workflow test
-  - Evidence: pending
+  - Evidence: `option_id_for(strategy, proposal_id)` in `src/house_ai/generation/generator.py`: proposal concepts get their own option `concept-<strategy>-<proposal id>` (shortened with an 8-character hash past 64 characters); revisions of a proposal concept keep its option. Tests: `tests/test_plan_propose.py::test_proposal_never_replaces_an_owner_revised_concept` (revised `concept-linear` v2 stays latest; proposal stored as `concept-linear-prop-linear-day-night` v1), `::test_proposal_option_ids_stay_valid_and_distinct`; exploratory output path updated in `::test_plan_propose_exploratory_mode`
 
 #### Stairs, levels and plan review
 

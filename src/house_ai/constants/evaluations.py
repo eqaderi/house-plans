@@ -31,6 +31,10 @@ DIVERSITY_IOU_THRESHOLD = 0.85
 DIVERSITY_TOPOLOGY_THRESHOLD = 0.15
 FLAG_NEAR_DUPLICATE = "⚠️ Near-duplicate"
 
-#: Preserved design intent regression prefix (S7-23)
+#: Preserved design intent regression prefix (S7-23): a request met before and lost now
 REGRESSION_VIOLATION_PREFIX = "regression: earlier request "
+#: A request this version carries that is not met and was not met before (S10-03)
+REQUEST_NOT_MET_PREFIX = "request not met: "
+#: Shortfall allowed before an owner's area request counts as unmet (S7-23 value, kept)
+REQUESTED_AREA_TOLERANCE_M2 = 2.0
 
