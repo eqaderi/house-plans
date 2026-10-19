@@ -603,7 +603,7 @@ def test_all_critics_run_over_r2_cases_and_match_declared_expectations():
     from house_ai.domain.benchmark import BenchmarkFixture
 
     paths = sorted((Path(__file__).parents[2] / "examples/benchmarks/fixtures").glob("*.json"))
-    assert len(paths) == 17
+    assert len(paths) == 18
     count = 0
     covered, positive = set(), set()
     for path in paths:

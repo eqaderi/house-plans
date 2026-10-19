@@ -1605,10 +1605,10 @@ claimed without a recorded professional verification.
 
 #### Verification infrastructure
 
-- [ ] **S10-14** Replace the five stale benchmark probes — `NOT_STARTED` · P1 · deps: S10-15
+- [ ] **S10-14** Replace the five stale benchmark probes — `IN_PROGRESS` · P1 · deps: S10-15
   - Accept: `house_ai.benchmarks.runner examples/benchmarks/fixtures --require-complete` passes (ISS-34, ISS-25)
   - Verify: benchmark runner
-  - Evidence: pending
+  - Evidence: `src/house_ai/benchmarks/probes.py` (`model_observations`, `rendered_areas_match`, `revision_observation`) replaces the 5 stale future placeholders (`flat-simple/plan-visual`, `flat-simple/revision-history`, `large-terrace/terrace-support`, `breakline-noise/retaining-breakline`, `sliver-tin/sliver-reported`) with active measured metrics; `breakline-clean` added for 30 m constrained edge coverage; `runner.py` measures edge coverage, sliver triggers and model observations; `examples/benchmarks/make_fixtures.py` produces 18 fixtures; `tests/benchmarks/test_usability.py` asserts 18 fixtures; `tests/test_benchmarks.py` asserts `--require-complete` passes on the 18 fixtures and fails on incomplete fixtures; `house_ai.benchmarks.runner examples/benchmarks/fixtures --require-complete` passes (117 PASS, 0 FAIL, 0 NOT_CHECKED).
 - [ ] **S10-15** Semantic IDs in `plan.svg` and stairs in its section panel — `NOT_STARTED` · P2 · deps: none
   - Accept: every canonical space, wall, opening and stair ID appears as a semantic attribute in `plan.svg`; the section panel draws cut stairs (ISS-34)
   - Verify: SVG tests and goldens
@@ -3411,7 +3411,7 @@ homeowner approval of any site, program, plan or model.
 - The owner chose option A (DEC-11): Stage S10 Readiness remediation fixes ISS-25 and ISS-29 to ISS-35 before S9 continues. S9 is `BLOCKED` on S10; its assessment is in §H and §N "S9 handoff 1".
 - Start S10 on `stage/S10-readiness-remediation`, branched from the S9 head (`123bd0d`) because S10 uses `examples/readiness/` as its regression harness. Do the small fixes first (S10-01, S10-03, S10-04), then stairs and levels.
 - After S10 closes: bring S9 up to date with `main`, re-run S9-01 and S9-02, ask for the owner's S9-03 words, then request S9 review. ISS-28 stays with S9.
-- S10 state (2026-10-19): S10-01 to S10-11 and S10-19 built on the branch with evidence (`IN_PROGRESS` until closure). S10-12 and S10-13 are also implemented with evidence (S10-12 commit `dd53964`; S10-13 validation: 858 passed, 2 xfailed). Next in tracker order: S10-14, S10-15, S10-16, S10-17, then the DEC-13 fixture-placement follow-up and S10-18; then CI on the branch, the S10 handoff and a review request. The owner chose option (c) for ISS-37, recorded verbatim in DEC-13: support L-shaped or opposite-wall fixture arrangements. Implement that choice before S10-18; retain approved program areas and existing fixture clearances; the two strict xfails remain until fixed.
+- S10 state (2026-10-19): S10-01 to S10-14 and S10-19 built on the branch with evidence (`IN_PROGRESS` until closure). Next in tracker order: S10-15, S10-16, S10-17, then the DEC-13 fixture-placement follow-up and S10-18; then CI on the branch, the S10 handoff and a review request. The owner chose option (c) for ISS-37, recorded verbatim in DEC-13: support L-shaped or opposite-wall fixture arrangements. Implement that choice before S10-18; retain approved program areas and existing fixture clearances; the two strict xfails remain until fixed.
 
 ## P. Rules for updating the tracker
 

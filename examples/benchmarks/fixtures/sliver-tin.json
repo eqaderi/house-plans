@@ -428,15 +428,15 @@
       "id": "sliver-reported",
       "category": "terrain_compatibility",
       "target": "site",
-      "source": "future",
+      "source": "site",
       "metric": "sliver_triangle_count",
       "code": null,
       "subject_ids": [],
-      "value": null,
-      "status": "not_checked",
+      "value": 1,
+      "status": "measured",
       "tolerance": 1e-6,
-      "pending_stage": "S8",
-      "basis": "surface quality acceptance remains an S8 task"
+      "pending_stage": null,
+      "basis": "the 0.001 m2 triangle along the 20 m road edge is below the configured quality trigger"
     }
   ]
 }
