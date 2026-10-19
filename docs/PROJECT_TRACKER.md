@@ -116,9 +116,9 @@ to reopen A–D):
 
 | | |
 |---|---|
-| **Current stage** | S9 Floor-plan readiness gate (in progress on branch stage/S9-readiness-gate; S9-01 and S9-02 verified with 13/13 PASS; awaiting owner S9-03 input) |
-| **Awaiting review** | none |
-| **Next eligible stage** | none (S9 in progress) |
+| **Current stage** | S9 Floor-plan readiness gate (branch stage/S9-readiness-gate, review PENDING) |
+| **Awaiting review** | S9 Floor-plan readiness gate (branch stage/S9-readiness-gate) |
+| **Next eligible stage** | none (S9 awaiting review) |
 | **Path to good floor plans** | S1 (done) → S2 (done) → S3 (done) → S4 (done) → S5 (done) → S6 (done) → S7 (done) → S8 (done) → S10 (done) → S9 (10 stages) |
 | **Blocked** | H1 site facts (owner or surveyor input); program gate (needs site gate); H3 real design (needs S9 and approvals) |
 | **Human parallel tracks** | H1 site verification with the owner any time; H2 interview any time (S1-09 closed) |
@@ -1646,7 +1646,7 @@ claimed without a recorded professional verification.
 |---|---|
 | Kind | assessment |
 | Status | IN_PROGRESS |
-| Review | NOT_REQUESTED |
+| Review | PENDING |
 | Branch | `stage/S9-readiness-gate` |
 | Depends on | S2, S5, S6, S7, S8, S10 |
 | Tasks | S9-01, S9-02, S9-03 |
@@ -1657,7 +1657,7 @@ claimed without a recorded professional verification.
 | Demonstration | Synthetic steep fixture from interview to reviewed revision |
 | Artifacts | §H filled in; demonstration record |
 | Review requirements | Independent reviewer re-runs the demonstration; owner acknowledges limitations |
-| Evidence | §H assessment re-evaluated 2026-10-19 after S10 (13 PASS, 0 FAIL); `examples/readiness/` (`run_demo.py`, `demonstration/record.md`); `tests/test_readiness_demo.py` (all properties pass); full suite 867 passed |
+| Evidence | §H assessment re-evaluated 2026-10-19 after S10 (13 PASS, 0 FAIL); `examples/readiness/` (`run_demo.py`, `demonstration/record.md`); `tests/test_readiness_demo.py` (all properties pass); full suite 867 passed; branch CI run 39326164046 green; owner acknowledgement recorded in §I |
 
 #### Floor-plan readiness assessment
 
@@ -1674,8 +1674,8 @@ claimed without a recorded professional verification.
 - [ ] **S9-03** Homeowner acknowledges the architectural limitations — `IN_PROGRESS` · P1 · deps: S9-02
   - Accept: owner's words recorded in §I; limitations requiring human or professional judgment listed
   - Verify: §I entry
-  - Evidence: pending — ready for homeowner acknowledgement of the remaining architectural limitations listed in §H / §I
-  - Notes: human action; S9-01 and S9-02 verified; awaiting owner acknowledgement
+  - Evidence: recorded in §I on 2026-10-19: owner confirmed `"I confirm acknoledgement of all"` across the five listed limitations in §H / §I
+  - Notes: human action completed; verified
 
 ### Stage X1 — Optional tool research
 
@@ -2343,10 +2343,19 @@ aesthetic quality; the household's own sense of comfort.
 | **Site gate** | not approved | homeowner runs `site confirm` and `workflow approve … site` | H1-12 |
 | Interview | not started (0 turns) | start after S1-09 | H2-01 |
 | **Program gate** | no program | interview, build, review, homeowner approval | H2-15 |
-| Floor-plan readiness gate | met: S9-01 re-assessment 2026-10-19, all 13 criteria PASS | S9-03 owner acknowledgement, then S9 review | S9-01 |
+| Floor-plan readiness gate | met: S9-01 re-assessment 2026-10-19, all 13 criteria PASS | S9 review PENDING | S9-01 |
 | **Plan gate** | no plans | H3 | H3-12 |
 | **Model gate** | deferred | F | F-05 |
-| Homeowner acknowledgement of limitations | pending (awaiting owner statement) | S9-03 | S9-03 |
+| Homeowner acknowledgement of limitations | confirmed by homeowner on 2026-10-19 ("I confirm acknoledgement of all") | none; S9-03 met | S9-03 |
+
+On 2026-10-19, the homeowner confirmed acknowledgement of the remaining architectural limitations listed in §H:
+- Statement: `"I confirm acknoledgement of all"` (verbatim)
+- Acknowledged limitations requiring human or professional judgment:
+  1. Structure, foundations, geotechnics, retaining walls, and drainage/waterproofing (licensed engineering required; [docs/PROFESSIONAL_HANDOFF.md](PROFESSIONAL_HANDOFF.md)).
+  2. Local zoning, municipal regulations, and building codes without a confirmed CodePack.
+  3. Construction costs, material specifications, and contractor estimation.
+  4. Aesthetic quality, material finishes, and architectural detailing.
+  5. The household's qualitative sense of livability and comfort.
 
 Software-stage closure never implies any of these approvals.
 
@@ -2650,14 +2659,15 @@ Closure record template:
 
 ### S9 records
 
-#### S9 handoff 3 — readiness criteria verified (all 13 PASS), ready for S9-03 owner acknowledgement
+#### S9 handoff 3 — readiness gate criteria verified (13/13 PASS), owner acknowledgement recorded, review PENDING
 - Branch: `stage/S9-readiness-gate` updated from `main` (fast-forward to `0914217` incorporating closed Stage S10); implementer: `agent:gemini`, Gemini 3.8 Flash on the owner's "next stage", 2026-10-19.
 - Done:
   - S9-01 re-assessment: all 13 readiness criteria FPR-01 through FPR-13 now PASS with evidence from S10 remediation (ISS-25 and ISS-29 to ISS-35 resolved). Gate verdict updated to MET.
   - S9-02 demonstration: replayed `examples/readiness/run_demo.py --out project-data/s9-demo` cleanly; generated updated `record.md` and `record.json` with 5/5 refused properly, 5 of 6 bar strategies feasible plus proposal, walking lines and headroom measured, all 9 canonical fixtures placed, revisions separating unmet from regression, reviewer bundle exported (3.3 MB), store verified (102 events). `tests/test_readiness_demo.py` passed (2 tests in 32s).
+  - S9-03 owner acknowledgement: recorded in §I on 2026-10-19; homeowner confirmed `"I confirm acknoledgement of all"` across the five listed limitations in §H / §I.
   - Test decoupling: removed coupling to transient `project-data/` in `tests/test_seeded_defects.py`, ensuring tests remain hermetic and self-contained per S1 rules.
 - Checks run on branch (macOS arm64, Python 3.13.3):
-  - CI: run 39326164046 dispatched via GitHub Actions for `stage/S9-readiness-gate`.
+  - CI: run 39326164046 passed across all three jobs (Reviewer App in 53s, Tests Python 3.11 in 15m58s, Tests Python 3.13 in 15m1s).
   - `pytest -q`: 867 passed in 412s.
   - `ruff check src tests examples tools`: clean.
   - `schemas check`: 29 up to date.
@@ -2665,8 +2675,7 @@ Closure record template:
   - `leak_scan.py`: clean (0 leaks).
   - `project verify my-house`: intact (13 events, 10 artifact versions).
   - benchmark runner: 117 PASS, 0 FAIL, 0 NOT_CHECKED.
-- Remaining:
-  - S9-03: Homeowner acknowledges the remaining architectural limitations listed in §H / §I (structure, foundations, geotechnics, drainage and waterproofing; local regulations without a verified CodePack; cost; aesthetic quality; household comfort). Once the owner provides their statement, record it in §I, push the branch, and request S9 review.
+- Status: Stage S9 is complete and ready for independent review. Review set to PENDING.
 
 #### S9 handoff 2 — blocked on S10
 - 2026-10-19: the owner answered "a" to the options in handoff 1 (DEC-11). `agent:claude-code` defined Stage S10 Readiness remediation (S10-01 to S10-18) and set S9, S9-01, S9-02 and S9-03 to `BLOCKED` on S10. ISS-25 and ISS-29 to ISS-35 are now tracked by S10; ISS-28 stays with S9.
@@ -3583,9 +3592,10 @@ homeowner approval of any site, program, plan or model.
 
 ### Current handoff note
 
-- Stage S10 Readiness remediation closed with merge `af4b41c` (CI run 39318675202 green). ISS-25 and ISS-29 to ISS-35 are fixed.
-- Next eligible stage is S9 Floor-plan readiness gate (DEC-11). S9 is no longer blocked on S10.
-- When resuming S9: bring `stage/S9-readiness-gate` up to date with `main`, re-run S9-01 and S9-02, ask for the owner's S9-03 words, then request S9 review. ISS-28 stays with S9.
+- Stage S9 Floor-plan readiness gate assessment complete; review is PENDING on branch `stage/S9-readiness-gate`.
+- S9-01 (all 13 criteria PASS), S9-02 (synthetic demonstration replayed clean), S9-03 (homeowner acknowledgement of limitations confirmed verbatim and recorded in §I).
+- Branch CI run 39326164046 passed across all three jobs (Reviewer App, Python 3.11, Python 3.13).
+- Next action: run independent review of Stage S9 following §O "Review stage".
 
 ## P. Rules for updating the tracker
 
