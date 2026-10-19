@@ -4,7 +4,7 @@
     "deterministic_time_limit": 4.0,
     "generator": "house-ai-cpsat-bars",
     "generator_version": "0.2.0",
-    "objective": 22168.0,
+    "objective": 22468.0,
     "parameters": {
       "b0_length_m": 10.0,
       "b0_start_m": 0.1,
@@ -13,7 +13,8 @@
       "back_row_depth_m": 4.8,
       "corridor_width_m": 1.2,
       "front_row_depth_m": 5.4,
-      "level_elevations_m": "8.70, 11.70",
+      "level_elevations_m": "8.49, 11.49",
+      "level_solver": "joint_cpsat_terrain_lookup_5cm_xy_1cm_z",
       "levels": 2,
       "strategy": "compact"
     },
@@ -58,25 +59,25 @@
         "bar_id": "b1",
         "row_id": "b1-back",
         "space_id": "sp-bath-ensuite",
-        "start_m": 0.0
+        "start_m": 5.4
       },
       {
         "bar_id": "b1",
         "row_id": "b1-back",
         "space_id": "sp-bed-main",
-        "start_m": 1.6
+        "start_m": 7.0
       },
       {
         "bar_id": "b1",
         "row_id": "b1-back",
         "space_id": "sp-bed-child-1",
-        "start_m": 4.6
+        "start_m": 0.0
       },
       {
         "bar_id": "b1",
         "row_id": "b1-back",
         "space_id": "sp-bed-child-2",
-        "start_m": 7.3
+        "start_m": 2.7
       },
       {
         "bar_id": "b1",
@@ -100,13 +101,13 @@
         "bar_id": "b1",
         "row_id": "b1-front",
         "space_id": "sp-laundry",
-        "start_m": 4.0
+        "start_m": 2.5
       },
       {
         "bar_id": "b1",
         "row_id": "b1-front",
         "space_id": "sp-mechanical",
-        "start_m": 2.5
+        "start_m": 4.3
       },
       {
         "bar_id": "b0",
@@ -208,7 +209,7 @@
           "model": null,
           "provider": null
         },
-        "statement": "Entry level set at the mean surveyed ground along the road-side face (11.70 m local), interpolated from the survey TIN (inferred).",
+        "statement": "Initial entry reference from the mean surveyed ground along the road-side face (11.70 m local), interpolated from the survey TIN (inferred).",
         "status": "assumption"
       },
       {
@@ -227,6 +228,24 @@
           "provider": null
         },
         "statement": "The site falls away from the road, so the other levels sit below the entry level (walk-out).",
+        "status": "assumption"
+      },
+      {
+        "affects": [
+          "lv-down-300",
+          "lv-entry"
+        ],
+        "basis": "massing strategy",
+        "confirm_with": null,
+        "id": "asm-gen-note-3",
+        "made_by": {
+          "display_name": null,
+          "id": "house-ai-plan-generator",
+          "kind": "system",
+          "model": null,
+          "provider": null
+        },
+        "statement": "Floor elevations and bar positions/lengths solved jointly with TIN lookup; sectional contact bands and circulation/daylight objectives, no excavation/void penalty. Earthworks evaluated exactly afterward.",
         "status": "assumption"
       },
       {
@@ -388,7 +407,125 @@
       }
     ],
     "coordinate_system_id": "lcs-site",
-    "fixtures": [],
+    "fixtures": [
+      {
+        "depth_m": 0.6,
+        "fixture_type": "kitchen_run",
+        "id": "fx-kitchen-1",
+        "material_id": null,
+        "position": [
+          1.404652,
+          15.275862
+        ],
+        "rotation_deg": 12.000053,
+        "space_id": "sp-kitchen",
+        "width_m": 3.0
+      },
+      {
+        "depth_m": 0.6,
+        "fixture_type": "appliance",
+        "id": "fx-kitchen-2",
+        "material_id": null,
+        "position": [
+          -0.356014,
+          14.901619
+        ],
+        "rotation_deg": 12.000053,
+        "space_id": "sp-kitchen",
+        "width_m": 0.6
+      },
+      {
+        "depth_m": 0.9,
+        "fixture_type": "shower",
+        "id": "fx-bath-ensuite-1",
+        "material_id": null,
+        "position": [
+          5.299521,
+          15.950394
+        ],
+        "rotation_deg": 12.000047,
+        "space_id": "sp-bath-ensuite",
+        "width_m": 0.9
+      },
+      {
+        "depth_m": 0.5,
+        "fixture_type": "basin",
+        "id": "fx-bath-ensuite-2",
+        "material_id": null,
+        "position": [
+          4.925151,
+          14.4651
+        ],
+        "rotation_deg": 102.000053,
+        "space_id": "sp-bath-ensuite",
+        "width_m": 0.6
+      },
+      {
+        "depth_m": 0.7,
+        "fixture_type": "wc",
+        "id": "fx-bath-ensuite-3",
+        "material_id": null,
+        "position": [
+          5.355626,
+          12.920856
+        ],
+        "rotation_deg": 102.000053,
+        "space_id": "sp-bath-ensuite",
+        "width_m": 0.4
+      },
+      {
+        "depth_m": 0.9,
+        "fixture_type": "shower",
+        "id": "fx-bath-1-1",
+        "material_id": null,
+        "position": [
+          8.200028,
+          5.551197
+        ],
+        "rotation_deg": -77.999947,
+        "space_id": "sp-bath-1",
+        "width_m": 0.9
+      },
+      {
+        "depth_m": 0.5,
+        "fixture_type": "basin",
+        "id": "fx-bath-1-2",
+        "material_id": null,
+        "position": [
+          8.239723,
+          6.32639
+        ],
+        "rotation_deg": -77.999947,
+        "space_id": "sp-bath-1",
+        "width_m": 0.6
+      },
+      {
+        "depth_m": 0.7,
+        "fixture_type": "wc",
+        "id": "fx-bath-1-3",
+        "material_id": null,
+        "position": [
+          7.99637,
+          6.990302
+        ],
+        "rotation_deg": -77.999947,
+        "space_id": "sp-bath-1",
+        "width_m": 0.4
+      },
+      {
+        "depth_m": 0.65,
+        "fixture_type": "laundry",
+        "id": "fx-laundry-1",
+        "material_id": null,
+        "position": [
+          3.513316,
+          7.51979
+        ],
+        "rotation_deg": 102.000053,
+        "space_id": "sp-laundry",
+        "width_m": 1.8
+      }
+    ],
     "id": "house-compact",
     "issues": [
       {
@@ -418,13 +555,13 @@
     ],
     "levels": [
       {
-        "elevation_m": 8.7,
+        "elevation_m": 8.49,
         "floor_to_floor_m": 3.0,
         "id": "lv-down-300",
         "name": "Level -3.00 m from entry"
       },
       {
-        "elevation_m": 11.7,
+        "elevation_m": 11.49,
         "floor_to_floor_m": 3.0,
         "id": "lv-entry",
         "name": "Entry level"
@@ -601,7 +738,7 @@
         "id": "o-kitchen-dining",
         "kind": "opening",
         "material_id": null,
-        "offset_m": 1.3,
+        "offset_m": 0.3,
         "opens_into": null,
         "operation": "none",
         "sill_m": 0.0,
@@ -613,7 +750,7 @@
           "sp-corridor-b1"
         ],
         "height_m": 2.1,
-        "host_wall_id": "w-down-300-012",
+        "host_wall_id": "w-down-300-014",
         "id": "d-bed-main-corridor-b1",
         "kind": "door",
         "material_id": "m-door",
@@ -629,7 +766,7 @@
           "sp-bath-ensuite"
         ],
         "height_m": 2.1,
-        "host_wall_id": "w-down-300-022",
+        "host_wall_id": "w-down-300-027",
         "id": "d-bed-main-bath-ensuite",
         "kind": "door",
         "material_id": "m-door",
@@ -645,7 +782,7 @@
           "sp-corridor-b1"
         ],
         "height_m": 2.1,
-        "host_wall_id": "w-down-300-013",
+        "host_wall_id": "w-down-300-011",
         "id": "d-bed-child-1-corridor-b1",
         "kind": "door",
         "material_id": "m-door",
@@ -661,7 +798,7 @@
           "sp-corridor-b1"
         ],
         "height_m": 2.1,
-        "host_wall_id": "w-down-300-014",
+        "host_wall_id": "w-down-300-012",
         "id": "d-bed-child-2-corridor-b1",
         "kind": "door",
         "material_id": "m-door",
@@ -741,7 +878,7 @@
           "sp-corridor-b1"
         ],
         "height_m": 2.1,
-        "host_wall_id": "w-down-300-008",
+        "host_wall_id": "w-down-300-007",
         "id": "d-laundry-corridor-b1",
         "kind": "door",
         "material_id": "m-door",
@@ -757,7 +894,7 @@
           "sp-corridor-b1"
         ],
         "height_m": 2.1,
-        "host_wall_id": "w-down-300-007",
+        "host_wall_id": "w-down-300-008",
         "id": "d-mechanical-corridor-b1",
         "kind": "door",
         "material_id": "m-door",
@@ -933,11 +1070,11 @@
           "exterior"
         ],
         "height_m": 0.6,
-        "host_wall_id": "w-down-300-021",
+        "host_wall_id": "w-down-300-017",
         "id": "win-bath-ensuite-ext",
         "kind": "window",
         "material_id": "m-glass",
-        "offset_m": 2.4,
+        "offset_m": 0.5,
         "opens_into": null,
         "operation": "tilt_turn",
         "sill_m": 1.5,
@@ -949,40 +1086,8 @@
           "exterior"
         ],
         "height_m": 1.4,
-        "host_wall_id": "w-down-300-016",
-        "id": "win-bed-main-ext",
-        "kind": "window",
-        "material_id": "m-glass",
-        "offset_m": 0.9,
-        "opens_into": null,
-        "operation": "tilt_turn",
-        "sill_m": 0.9,
-        "width_m": 1.2
-      },
-      {
-        "connects": [
-          "sp-bed-child-1",
-          "exterior"
-        ],
-        "height_m": 1.4,
-        "host_wall_id": "w-down-300-017",
-        "id": "win-bed-child-1-ext",
-        "kind": "window",
-        "material_id": "m-glass",
-        "offset_m": 0.8,
-        "opens_into": null,
-        "operation": "tilt_turn",
-        "sill_m": 0.9,
-        "width_m": 1.1
-      },
-      {
-        "connects": [
-          "sp-bed-child-2",
-          "exterior"
-        ],
-        "height_m": 1.4,
         "host_wall_id": "w-down-300-031",
-        "id": "win-bed-child-2-ext",
+        "id": "win-bed-main-ext",
         "kind": "window",
         "material_id": "m-glass",
         "offset_m": 1.8,
@@ -990,6 +1095,38 @@
         "operation": "tilt_turn",
         "sill_m": 0.9,
         "width_m": 1.8
+      },
+      {
+        "connects": [
+          "sp-bed-child-1",
+          "exterior"
+        ],
+        "height_m": 1.4,
+        "host_wall_id": "w-down-300-021",
+        "id": "win-bed-child-1-ext",
+        "kind": "window",
+        "material_id": "m-glass",
+        "offset_m": 1.8,
+        "opens_into": null,
+        "operation": "tilt_turn",
+        "sill_m": 0.9,
+        "width_m": 1.8
+      },
+      {
+        "connects": [
+          "sp-bed-child-2",
+          "exterior"
+        ],
+        "height_m": 1.4,
+        "host_wall_id": "w-down-300-016",
+        "id": "win-bed-child-2-ext",
+        "kind": "window",
+        "material_id": "m-glass",
+        "offset_m": 0.8,
+        "opens_into": null,
+        "operation": "tilt_turn",
+        "sill_m": 0.9,
+        "width_m": 1.1
       },
       {
         "connects": [
@@ -1011,7 +1148,7 @@
     "program_ref": {
       "id": "program",
       "kind": "space_program",
-      "sha256": "aaebe10f8491be667220a6bee4753f53c123540b4ea93ded30fc0ae3c236d6f1",
+      "sha256": "9dd9270f641b930a432de0deda27841b401a0c9848f4e54cdf67801ddd974cc7",
       "version": 1
     },
     "relationships": [
@@ -1114,20 +1251,20 @@
           "holes": [
             [
               [
-                2.86311,
-                8.173897
+                2.765296,
+                8.153106
               ],
               [
-                0.613371,
-                7.695699
+                0.711186,
+                7.71649
               ],
               [
-                1.486604,
-                3.587479
+                1.563628,
+                3.706085
               ],
               [
-                3.736343,
-                4.065678
+                3.617737,
+                4.142702
               ]
             ]
           ],
@@ -1373,20 +1510,20 @@
           "holes": [],
           "outer": [
             [
-              0.037358,
-              9.924646
+              5.319354,
+              11.047374
             ],
             [
-              1.602393,
-              10.257306
+              6.884389,
+              11.380034
             ],
             [
-              0.479666,
-              15.539302
+              5.761662,
+              16.66203
             ],
             [
-              -1.08537,
-              15.206642
+              4.196626,
+              16.32937
             ]
           ]
         },
@@ -1403,20 +1540,20 @@
           "holes": [],
           "outer": [
             [
-              1.602393,
-              10.257306
+              6.884389,
+              11.380034
             ],
             [
-              4.536836,
-              10.881044
+              9.818832,
+              12.003772
             ],
             [
-              3.414108,
-              16.16304
+              8.696104,
+              17.285768
             ],
             [
-              0.479666,
-              15.539302
+              5.761662,
+              16.66203
             ]
           ]
         },
@@ -1433,20 +1570,20 @@
           "holes": [],
           "outer": [
             [
-              4.536836,
-              10.881044
+              0.037358,
+              9.924646
             ],
             [
-              7.177834,
-              11.442408
+              2.678356,
+              10.48601
             ],
             [
-              6.055106,
-              16.724404
+              1.555628,
+              15.768006
             ],
             [
-              3.414108,
-              16.16304
+              -1.08537,
+              15.206642
             ]
           ]
         },
@@ -1463,20 +1600,20 @@
           "holes": [],
           "outer": [
             [
-              7.177834,
-              11.442408
+              2.678356,
+              10.48601
             ],
             [
-              9.818832,
-              12.003772
+              5.319354,
+              11.047374
             ],
             [
-              8.696104,
-              17.285768
+              4.196626,
+              16.32937
             ],
             [
-              6.055106,
-              16.724404
+              1.555628,
+              15.768006
             ]
           ]
         },
@@ -1583,20 +1720,20 @@
           "holes": [],
           "outer": [
             [
-              5.32217,
-              4.300524
+              3.854949,
+              3.988655
             ],
             [
-              7.082836,
-              4.674766
+              5.615614,
+              4.362897
             ],
             [
-              5.960108,
-              9.956762
+              4.492887,
+              9.644893
             ],
             [
-              4.199442,
-              9.58252
+              2.732221,
+              9.270651
             ]
           ]
         },
@@ -1613,20 +1750,20 @@
           "holes": [],
           "outer": [
             [
-              3.854949,
-              3.988655
+              5.615614,
+              4.362897
             ],
             [
-              5.32217,
-              4.300524
+              7.082836,
+              4.674766
             ],
             [
-              4.199442,
-              9.58252
+              5.960108,
+              9.956762
             ],
             [
-              2.732221,
-              9.270651
+              4.492887,
+              9.644893
             ]
           ]
         },
@@ -1706,32 +1843,53 @@
           "holes": [],
           "outer": [
             [
-              1.486604,
-              3.587479
+              1.563628,
+              3.706085
             ],
             [
-              3.736343,
-              4.065678
+              3.617737,
+              4.142702
             ],
             [
-              2.655198,
-              9.152045
+              2.765296,
+              8.153106
             ],
             [
-              0.405459,
-              8.673846
+              0.711186,
+              7.71649
             ]
           ]
         },
         "from_level_id": "lv-down-300",
         "id": "st-0",
         "kind": "u_shaped",
+        "landing_segments": [
+          1
+        ],
         "riser_count": 17,
         "riser_height_m": 0.1765,
         "to_level_id": "lv-entry",
         "top_space_id": "sp-stair-0a",
         "tread_depth_m": 0.28,
-        "width_m": 1.1
+        "walking_line": [
+          [
+            1.224713,
+            7.825644
+          ],
+          [
+            1.702912,
+            5.575905
+          ],
+          [
+            2.729967,
+            5.794213
+          ],
+          [
+            2.251768,
+            8.043952
+          ]
+        ],
+        "width_m": 1.05
       }
     ],
     "units": "m",
@@ -1758,8 +1916,8 @@
       {
         "base_offset_m": 0.0,
         "end": [
-          5.32217,
-          4.300524
+          5.615614,
+          4.362897
         ],
         "height_m": 2.8,
         "id": "w-down-300-002",
@@ -1788,8 +1946,8 @@
         "material_id": "m-retaining",
         "right_material_id": null,
         "start": [
-          5.32217,
-          4.300524
+          5.615614,
+          4.362897
         ],
         "thickness_m": 0.3
       },
@@ -1853,8 +2011,8 @@
       {
         "base_offset_m": 0.0,
         "end": [
-          4.199442,
-          9.58252
+          4.492887,
+          9.644893
         ],
         "height_m": 2.8,
         "id": "w-down-300-007",
@@ -1883,8 +2041,8 @@
         "material_id": "m-int-wall",
         "right_material_id": null,
         "start": [
-          4.199442,
-          9.58252
+          4.492887,
+          9.644893
         ],
         "thickness_m": 0.15
       },
@@ -1929,8 +2087,8 @@
       {
         "base_offset_m": 0.0,
         "end": [
-          1.602393,
-          10.257306
+          2.678356,
+          10.48601
         ],
         "height_m": 2.8,
         "id": "w-down-300-011",
@@ -1948,8 +2106,8 @@
       {
         "base_offset_m": 0.0,
         "end": [
-          4.536836,
-          10.881044
+          5.319354,
+          11.047374
         ],
         "height_m": 2.8,
         "id": "w-down-300-012",
@@ -1959,16 +2117,16 @@
         "material_id": "m-int-wall",
         "right_material_id": null,
         "start": [
-          1.602393,
-          10.257306
+          2.678356,
+          10.48601
         ],
         "thickness_m": 0.15
       },
       {
         "base_offset_m": 0.0,
         "end": [
-          7.177834,
-          11.442408
+          6.884389,
+          11.380034
         ],
         "height_m": 2.8,
         "id": "w-down-300-013",
@@ -1978,8 +2136,8 @@
         "material_id": "m-int-wall",
         "right_material_id": null,
         "start": [
-          4.536836,
-          10.881044
+          5.319354,
+          11.047374
         ],
         "thickness_m": 0.15
       },
@@ -1997,16 +2155,16 @@
         "material_id": "m-int-wall",
         "right_material_id": null,
         "start": [
-          7.177834,
-          11.442408
+          6.884389,
+          11.380034
         ],
         "thickness_m": 0.15
       },
       {
         "base_offset_m": 0.0,
         "end": [
-          0.479666,
-          15.539302
+          1.555628,
+          15.768006
         ],
         "height_m": 2.8,
         "id": "w-down-300-015",
@@ -2024,8 +2182,8 @@
       {
         "base_offset_m": 0.0,
         "end": [
-          3.414108,
-          16.16304
+          4.196626,
+          16.32937
         ],
         "height_m": 2.8,
         "id": "w-down-300-016",
@@ -2035,16 +2193,16 @@
         "material_id": "m-ext-wall",
         "right_material_id": null,
         "start": [
-          0.479666,
-          15.539302
+          1.555628,
+          15.768006
         ],
         "thickness_m": 0.3
       },
       {
         "base_offset_m": 0.0,
         "end": [
-          6.055106,
-          16.724404
+          5.761662,
+          16.66203
         ],
         "height_m": 2.8,
         "id": "w-down-300-017",
@@ -2054,8 +2212,8 @@
         "material_id": "m-ext-wall",
         "right_material_id": null,
         "start": [
-          3.414108,
-          16.16304
+          4.196626,
+          16.32937
         ],
         "thickness_m": 0.3
       },
@@ -2073,8 +2231,8 @@
         "material_id": "m-ext-wall",
         "right_material_id": null,
         "start": [
-          6.055106,
-          16.724404
+          5.761662,
+          16.66203
         ],
         "thickness_m": 0.3
       },
@@ -2138,30 +2296,11 @@
       {
         "base_offset_m": 0.0,
         "end": [
-          0.479666,
-          15.539302
-        ],
-        "height_m": 2.8,
-        "id": "w-down-300-022",
-        "kind": "interior",
-        "left_material_id": null,
-        "level_id": "lv-down-300",
-        "material_id": "m-int-wall",
-        "right_material_id": null,
-        "start": [
-          1.602393,
-          10.257306
-        ],
-        "thickness_m": 0.15
-      },
-      {
-        "base_offset_m": 0.0,
-        "end": [
           2.732221,
           9.270651
         ],
         "height_m": 2.8,
-        "id": "w-down-300-023",
+        "id": "w-down-300-022",
         "kind": "interior",
         "left_material_id": null,
         "level_id": "lv-down-300",
@@ -2176,8 +2315,27 @@
       {
         "base_offset_m": 0.0,
         "end": [
-          4.199442,
-          9.58252
+          1.555628,
+          15.768006
+        ],
+        "height_m": 2.8,
+        "id": "w-down-300-023",
+        "kind": "interior",
+        "left_material_id": null,
+        "level_id": "lv-down-300",
+        "material_id": "m-int-wall",
+        "right_material_id": null,
+        "start": [
+          2.678356,
+          10.48601
+        ],
+        "thickness_m": 0.15
+      },
+      {
+        "base_offset_m": 0.0,
+        "end": [
+          4.492887,
+          9.644893
         ],
         "height_m": 2.8,
         "id": "w-down-300-024",
@@ -2187,16 +2345,16 @@
         "material_id": "m-int-wall",
         "right_material_id": null,
         "start": [
-          5.32217,
-          4.300524
+          5.615614,
+          4.362897
         ],
         "thickness_m": 0.15
       },
       {
         "base_offset_m": 0.0,
         "end": [
-          3.414108,
-          16.16304
+          4.196626,
+          16.32937
         ],
         "height_m": 2.8,
         "id": "w-down-300-025",
@@ -2206,8 +2364,8 @@
         "material_id": "m-int-wall",
         "right_material_id": null,
         "start": [
-          4.536836,
-          10.881044
+          5.319354,
+          11.047374
         ],
         "thickness_m": 0.15
       },
@@ -2233,8 +2391,8 @@
       {
         "base_offset_m": 0.0,
         "end": [
-          6.055106,
-          16.724404
+          5.761662,
+          16.66203
         ],
         "height_m": 2.8,
         "id": "w-down-300-027",
@@ -2244,8 +2402,8 @@
         "material_id": "m-int-wall",
         "right_material_id": null,
         "start": [
-          7.177834,
-          11.442408
+          6.884389,
+          11.380034
         ],
         "thickness_m": 0.15
       },
@@ -2795,7 +2953,7 @@
   "option_id": "concept-compact",
   "parent": null,
   "provenance": {
-    "created_at": "2026-10-18T09:48:08.590069Z",
+    "created_at": "2026-10-19T09:25:29.416769Z",
     "created_by": {
       "display_name": null,
       "id": "house-ai-plan-generator",
@@ -2813,7 +2971,7 @@
       {
         "id": "program",
         "kind": "space_program",
-        "sha256": "aaebe10f8491be667220a6bee4753f53c123540b4ea93ded30fc0ae3c236d6f1",
+        "sha256": "9dd9270f641b930a432de0deda27841b401a0c9848f4e54cdf67801ddd974cc7",
         "version": 1
       }
     ],

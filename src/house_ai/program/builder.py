@@ -36,7 +36,7 @@ from house_ai.domain.records import (
     OpenQuestion,
     OpenQuestionsFile,
 )
-from house_ai.domain.usability import UsabilityRequirements
+from house_ai.domain.usability import UsabilityRequirements, VehicleEnvelope
 
 TOOL_ACTOR = Actor(kind=ActorKind.SYSTEM, id="house-ai-program")
 
@@ -500,6 +500,28 @@ ZONES = [
 ]
 
 
+#: Typical car envelope when the owner has not given a size (S10-10): an assumption, with
+#: an open question asking for the real vehicle.
+TYPICAL_CAR = {"width_m": 1.8, "length_m": 4.5, "door_side_clearance_m": 0.6}
+TYPICAL_CAR_SOURCE = "typical car envelope (assumption until the owner gives the car size)"
+
+
+def _usability(b: _Builder) -> UsabilityRequirements:
+    """Seats, beds and vehicles the usability studies test the plan against (S10-10)."""
+    ids = {i.id for i in b.items}
+    cars = int(b.f.get("cars", 0) or 0) if "pi-garage" in ids else 0
+    return UsabilityRequirements(
+        household_seats=_household_seats(b.f),
+        vehicles=[
+            VehicleEnvelope(id=f"car-{n}", source=TYPICAL_CAR_SOURCE, **TYPICAL_CAR)
+            for n in range(1, cars + 1)
+        ]
+        or None,
+        double_bed_program_item_ids=[i for i in ("pi-bed-main",) if i in ids],
+        single_bed_program_item_ids=sorted(i for i in ids if i.startswith("pi-bed-child")),
+    )
+
+
 def _household_seats(f: Facts) -> int | None:
     """Dining seats for everyone the program plans bedrooms for.
 
@@ -548,7 +570,7 @@ def build_program(
         budget=budget,
         site_ref=site.site_ref if site else None,
         site_verified=bool(site and site.verified),
-        usability=UsabilityRequirements(household_seats=_household_seats(b.f)),
+        usability=_usability(b),
         provenance=provenance,
     )
     assumptions = [
@@ -616,7 +638,44 @@ def build_program(
                 confirm_with="engineer",
             )
         )
+    if program.usability.vehicles:
+        assumptions.append(
+            Assumption(
+                id="asm-car-size",
+                statement=(
+                    "Each car is taken as {width_m} m wide and {length_m} m long, with "
+                    "{door_side_clearance_m} m to open its doors, to test the garage."
+                ).format(**TYPICAL_CAR),
+                basis=TYPICAL_CAR_SOURCE,
+                affects=["pi-garage"],
+                confirm_with="owner",
+            )
+        )
+    if program.usability.double_bed_program_item_ids:
+        assumptions.append(
+            Assumption(
+                id="asm-beds",
+                statement="The main bedroom is tested for a double bed and children's "
+                "bedrooms for single beds.",
+                basis="Who sleeps where, from the household answers.",
+                affects=[
+                    *program.usability.double_bed_program_item_ids,
+                    *program.usability.single_bed_program_item_ids,
+                ],
+                confirm_with="owner",
+            )
+        )
     questions = _open_questions(b.f, open_prompts, site)
+    if program.usability.vehicles:
+        questions.append(
+            OpenQuestion(
+                id="oq-car-size",
+                question="Which car(s) will you park? Their size tests the garage.",
+                topic="cars",
+                why_it_matters="the garage is checked against a typical car until then",
+                blocking=False,
+            )
+        )
     return ProgramResult(
         program=program,
         assumptions=AssumptionsFile(

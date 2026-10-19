@@ -432,10 +432,25 @@ site_ref:
 site_verified: false
 usability:
   household_seats: 4
-  vehicles: null
+  vehicles:
+  - id: car-1
+    width_m: 1.8
+    length_m: 4.5
+    door_side_clearance_m: 0.6
+    turning_radius_m: null
+    source: typical car envelope (assumption until the owner gives the car size)
+  - id: car-2
+    width_m: 1.8
+    length_m: 4.5
+    door_side_clearance_m: 0.6
+    turning_radius_m: null
+    source: typical car envelope (assumption until the owner gives the car size)
   arrival_path: null
-  double_bed_program_item_ids: []
-  single_bed_program_item_ids: []
+  double_bed_program_item_ids:
+  - pi-bed-main
+  single_bed_program_item_ids:
+  - pi-bed-child-1
+  - pi-bed-child-2
 provenance:
   created_at: '2026-10-17T10:00:00Z'
   created_by:

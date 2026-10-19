@@ -1519,7 +1519,7 @@ claimed without a recorded professional verification.
 | Review | NOT_REQUESTED |
 | Branch | `stage/S10-readiness-remediation` |
 | Depends on | S4, S5, S6, S7, S8 |
-| Tasks | S10-01, S10-02, S10-03, S10-04, S10-05, S10-06, S10-07, S10-08, S10-09, S10-10, S10-11, S10-12, S10-13, S10-14, S10-15, S10-16, S10-17, S10-18 |
+| Tasks | S10-01, S10-02, S10-03, S10-04, S10-05, S10-06, S10-07, S10-08, S10-09, S10-10, S10-11, S10-12, S10-13, S10-19, S10-14, S10-15, S10-16, S10-17, S10-18 |
 | Objective | Fix the defects behind the six S9 FAILs (DEC-11) so the readiness gate can be re-assessed |
 | Scope | In: ISS-25 and ISS-29 to ISS-35, using `examples/readiness/` as the regression harness. Out: ISS-28 (S9), the re-assessment itself (S9), `my-house`. The branch starts from the S9 head `123bd0d`, so merging S10 also brings the S9 commits (`2732a99`, `3278620`, `123bd0d`) to `main` |
 | Acceptance | Every task's measured criterion holds in tests and in a re-run of `examples/readiness/run_demo.py`; no clearance, threshold or tolerance is loosened, and no declared value relabelled, to silence a critic without a stated basis; DEC-04 still holds (no automatic preference for excavation or elevation) |
@@ -1576,10 +1576,10 @@ claimed without a recorded professional verification.
   - Verify: usability tests; demo re-run
   - Evidence: cause was door placement, not kitchen size: doors were centred on walls, and the pantry door split the 6.6 m wall into two 2.9 m pieces, too short for the 3.0 m run. Passable openings into a kitchen now go nearest a wall end (`generation/assemble.py::_fit`, `ends`). Clearances unchanged (3.0 m run, 0.6 m deep, 1.219 m front). Demo re-run: `kitchen_no_sampled_fit` 6 → 0 (all six concepts, 2D included, before fixtures); with S10-08 fixtures the counter run is measured at 3.0 m (`tests/test_generated_fixtures.py::test_critics_measure_the_placed_fixtures`)
   - Notes: generated kitchens are single runs, so the aisle claim stays `not_checked` with method `no_facing_counter_pair` (no facing runs to measure); a two-run layout is not generated
-- [ ] **S10-10** Double-bed rooms and vehicle size in the program — `NOT_STARTED` · P2 · deps: none
+- [ ] **S10-10** Double-bed rooms and vehicle size in the program — `IN_PROGRESS` · P2 · deps: none
   - Accept: the program designates the main bedroom for a double bed and the garage for a stated vehicle size; the corresponding fit studies are measured (ISS-30, ISS-27)
   - Verify: program and usability tests
-  - Evidence: pending
+  - Evidence: `program/builder.py::_usability` designates `pi-bed-main` for a double bed and children's bedrooms for single beds, and gives one typical car envelope (1.8 × 4.5 m, 0.6 m door clearance) per parked car, as assumption `asm-car-size` with non-blocking open question `oq-car-size`; `asm-beds` records the bed rule. Example fixtures, the hillside exploratory concept preview (it pins the program hash) and the reviewer bundles regenerated; `apps/reviewer/public/bundles/synthetic-hillside` is re-synced with `examples/reviewer/bundles` (it was an exact copy; the public bungalow copy already differed before S10 and is left as found). Tests: `tests/test_program_usability.py` (1 car for synthetic-family, 2 for the hillside example; `bed_double_sampled_fit` and `garage_sampled_fit` no longer `not_checked` on a generated plan). Demo: double bed fits in 4 bar concepts (split-walkout: search budget exhausted, `not_checked`); the 2D proposal fails it (S10-13). Every generated garage fails its car study: that is a sizing defect, ISS-36, task S10-19
 
 #### Owner intent and terrain in generation
 
@@ -1596,6 +1596,12 @@ claimed without a recorded professional verification.
   - Verify: placement tests; demo re-run
   - Evidence: pending
   - Notes: also fix two 2D defects seen in S10-06 runs: a window placed on an interior wall (`opening_sides_mismatch` on the demo proposal), and open-plan rooms the solver leaves non-contiguous (now a warning issue)
+
+- [ ] **S10-19** Garages hold their cars — `NOT_STARTED` · P1 · deps: S10-10
+  - Accept: every generated garage holds the program's cars with the vehicle template's clearances unchanged (`garage_sampled_fit` True), or the concept states why it cannot (ISS-36)
+  - Verify: generation and usability tests; demo re-run
+  - Evidence: pending
+  - Notes: owner decision needed on the trade-off in ISS-36 before implementing
 
 #### Verification infrastructure
 
@@ -2404,6 +2410,7 @@ changed), **decision** (owner must choose), **risk**.
 | ISS-33 | Generation ignores owner intent the program carries. Bar strategies never place program terraces or gardens (`outdoor_item_placed: not_placed_by_generator` on all 5), so "kitchen next to the terrace" stays unchecked. The linear concept drops the requested second storey and the stair. The 2D proposal path anchors levels at wherever the solver put the entrance door and keeps fixed 3 m storeys: `concept-open-plan` has its entry at FFL 8.64 m against 11.46 to 11.84 m for the bar concepts, 2 hard violations, 13 buried habitable faces and 6 buried windows | defect | demo record; `generation/assemble2d.py:440-466`; `evaluation/evaluators.py:278` | Place outdoor program items in bar strategies; tie the 2D path's entry to the road access and solve its levels against the terrain as S8 does for bars | S10 |
 | ISS-34 | Visual and benchmark verification has gaps. 5 benchmark probes still say future work for closed stages (`flat-simple/plan-visual` S5, `flat-simple/revision-history` S7, `large-terrace/terrace-support`, `breakline-noise/retaining-breakline`, `sliver-tin/sliver-reported` S8). The static `plan.svg` has no semantic IDs, so the ISS-25 probe needs renderer work. The S5 automated detectors found nothing on `concept-two-wing` v1, where an agent found 4 grounded problems. The section panel in `plan.svg` shows no stair | stale doc | `python -m house_ai.benchmarks.runner examples/benchmarks/fixtures` (114 PASS, 0 FAIL, 5 NOT_CHECKED); `render2d/plan_svg.py`; demo record "Visual review" | Replace the five probes with real observations; add semantic IDs to `plan.svg`; strengthen the detectors for stair/slab and label collisions (extends ISS-25) | S10 |
 | ISS-35 | The hand-written steep fixture `examples/projects/synthetic-hillside/site.yaml` has no TIN surface and no FRONTAGE features, and `validate_site` only reads stored ones. Slope and frontage therefore reach the interview as unknown although 35 spot heights and a road polygon exist. `apps/reviewer/README.md` still says "Nothing is implemented yet" | stale doc | `geospatial/validation.py:416`; `orchestration/site_context.py:15-40`; demo record "Site" | Regenerate the fixture through ingestion, or derive TIN and frontage when absent; update the reviewer README | S10 |
+| ISS-36 | Generated garages cannot hold their cars. The bar generator assumes 5.4 m garage depth (`generation/massing.py::GARAGE_DEPTH_DM`); a typical car (4.5 m) with the vehicle template's 0.9 m front and 0.3 m back clearance needs 5.7 m clear, about 5.93 m between wall centrelines, and the person door's 0.9 m approach on the back wall cannot overlap the car. With the S10-10 program cars, `garage_sampled_fit` is False on every demo concept. Sizing garages from the program's cars (6.0 m deep, 3.3 m wide for one car) makes the 2D garage (3.3 × 6.1 m) pass, but on the synthetic hillside the deeper entry row makes split-level and split-walkout infeasible ("no room behind the entry bar for a lower split level") and bar garages still fail because of the back-wall door approach | decision | demo re-runs 2026-10-19 (S10-10); trial resize not committed | Owner chooses: (a) correct garages, fewer concepts where the envelope is too shallow, with the infeasibility stated; (b) keep split concepts, each reporting its undersized garage; (c) a separate road-level garage volume or carport. Any resize also puts the garage person door at a corner, like the kitchen fix (S10-09) | S10-19 |
 
 ## L. Decisions
 
