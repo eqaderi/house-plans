@@ -1622,10 +1622,10 @@ claimed without a recorded professional verification.
   - Accept: the demo's interview site context reports slope and frontage; dependent goldens regenerated; `apps/reviewer/README.md` describes the implemented app (ISS-35)
   - Verify: fixture `--check` scripts; interview site-context test
   - Evidence: `src/house_ai/geospatial/validation.py` derives `surface = site_surface(site)` when unstored and `frontage = derive_frontage(site.boundary, site.features)` when unstored; `site_context_for` reports derived `mean_slope_pct` (36.65%) and `frontage_m` (24.0 m) on `synthetic-hillside`; `apps/reviewer/README.md` updated to document the implemented desktop concept reviewer application; `examples/reviewer/make_bundles.py` regenerated bundles with current `plan.svg` fixtures; `--check` scripts pass (`make_fixture.py --check`, `make_bundles.py --check`, `make_fixtures.py --check`); `tests/test_site_review_fixes.py::test_site_context_and_validation_derive_terrain_and_frontage_when_unstored`.
-- [ ] **S10-18** Demonstration record turned into assertions — `NOT_STARTED` · P1 · deps: S10-03, S10-05, S10-06, S10-09, S10-11, S10-13
+- [ ] **S10-18** Demonstration record turned into assertions — `IN_PROGRESS` · P1 · deps: S10-03, S10-05, S10-06, S10-09, S10-11, S10-13
   - Accept: `tests/test_readiness_demo.py` asserts the fixed properties (request checking, consistent stairs, kitchen fit, terrace placement, road-level 2D entry); demonstration output refreshed
   - Verify: test; reviewer replay
-  - Evidence: pending
+  - Evidence: `tests/test_readiness_demo.py` asserts all S10 fixed properties (request checking separates unmet from regression; consistent stairs with walking lines and no clashes; soft envelope findings in attention; all 9 canonical fixtures placed and counter run measured; road-level 2D proposal entry with terrain-derived levels; S5 detectors report label collisions; site context reports slope and frontage with `unknown: []`); `examples/readiness/demonstration/` refreshed with full-strategy demo run (`record.md`, `record.json`, `comparison.md`, renders); `examples/readiness/visual_critique.json` hash updated to match current render.
 
 ### Stage S9 — Floor-plan readiness gate
 

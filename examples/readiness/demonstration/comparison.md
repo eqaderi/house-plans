@@ -2,51 +2,56 @@
 
 Each column is one concept; values are individual metrics, not a combined score. Status in brackets when not measured exactly.
 
-| Metric | concept-compact v1 | concept-split-level v1 | concept-linear v2 | concept-two-wing v3 | concept-split-walkout v1 | concept-open-plan v1 |
+| Metric | concept-compact v1 | concept-split-level v1 | concept-linear v2 | concept-two-wing v3 | concept-split-walkout v1 | concept-open-plan-prop-day-up-night-down v1 |
 |---|---|---|---|---|---|---|
 | Strategy | compact | split_level | linear | two_wing | split_walkout | open_plan |
-| Hard violations | 0 | 0 | 0 | 0 | 0 | 2 |
-| Soft violations | 54 | 35 | 42 | 34 | 51 | 181 |
-| Gross floor area (centreline) | 264.00 m² | 231.84 m² | 225.72 m² | 227.28 m² | 314.58 m² | 184.47 m² |
-| Footprint | 132.00 m² | 231.84 m² | 225.72 m² | 227.28 m² | 203.70 m² | 119.75 m² |
+| Hard violations | 0 | 0 | 0 | 0 | 0 | 0 |
+| Soft violations | 55 | 38 | 41 | 43 | 53 | 105 |
+| Gross floor area (centreline) | 259.53 m² | 255.48 m² | 228.92 m² | 252.60 m² | 330.36 m² | 202.55 m² |
+| Footprint | 148.65 m² | 242.11 m² | 228.92 m² | 235.53 m² | 217.56 m² | 131.81 m² |
 | Floor levels | 2 | 2 | 1 | 2 | 3 | 2 |
-| Programmed room area | 240.00 m² | 208.80 m² | 205.20 m² | 196.26 m² | 232.32 m² | 156.26 m² |
-| Flexible area not in the program | 0 m² | 0 m² | 0 m² | 8.10 m² | 51.18 m² | 0 m² |
-| Circulation share | 0.25 | 0.24 | 0.13 | 0.20 | 0.31 | 0.09 |
+| Programmed room area | 222.24 m² | 199.26 m² | 183.42 m² | 193.44 m² | 230.04 m² | 163.56 m² |
+| Flexible area not in the program | 0 m² | 9.12 m² | 9.90 m² | 12.60 m² | 51.48 m² | 0 m² |
+| Circulation share | 0.22 | 0.25 | 0.11 | 0.21 | 0.29 | 0.13 |
 | Hard adjacencies met | 6 | 6 | 6 | 6 | 6 | 6 |
-| Soft adjacency score (0-1) | 0.91 | 1.00 | 0.91 | 1.00 | 0.83 | 0.82 |
+| Soft adjacency score (0-1) | 1.00 | 1.00 | 0.94 | 1.00 | 0.88 | 0.58 |
 | Level preferences met | 10 | 10 | 10 | 10 | 10 | 10 |
-| Longest walk from the front door | 34.95 m (inferred) | 32.96 m | 26.63 m | 29.62 m | 43.69 m (inferred) | 27.14 m (inferred) |
+| Longest walk from the front door | 26.48 m | 32.25 m | 22.04 m | 21.94 m | 38.21 m | 28.77 m |
 | Routes to shared rooms through private rooms | 0 | 0 | 0 | 0 | 0 | 0 |
-| Walls between private and public rooms | 0 | 0 | 3 | 0 | 1 | 0 |
-| Footprint compactness (1 = circle) | 0.77 | 0.17 | 0.30 | 0.16 | 0.42 | 0.40 |
-| Excavation below floors | 127.22 m³ (inferred) | 0.54 m³ (inferred) | 1.18 m³ (inferred) | 0.56 m³ (inferred) | 119.56 m³ (inferred) | 445.42 m³ (inferred) |
-| Underfloor void (support unspecified) | 41.03 m³ (inferred) | 523.36 m³ (inferred) | 504.27 m³ (inferred) | 489.22 m³ (inferred) | 243.13 m³ (inferred) | 0.00 m³ (inferred) |
+| Walls between private and public rooms | 0 | 0 | 0 | 0 | 1 | 0 |
+| Footprint compactness (1 = circle) | 0.44 | 0.26 | 0.28 | 0.15 | 0.22 | 0.46 |
+| Excavation below floors | 125.42 m³ (inferred) | 4.14 m³ (inferred) | 1.00 m³ (inferred) | 4.19 m³ (inferred) | 120.36 m³ (inferred) | 101.54 m³ (inferred) |
+| Underfloor void (support unspecified) | 139.77 m³ (inferred) | 515.30 m³ (inferred) | 490.76 m³ (inferred) | 410.49 m³ (inferred) | 275.79 m³ (inferred) | 153.72 m³ (inferred) |
 | Proposed engineered fill (explicit pads only) | not checked | not checked | not checked | not checked | not checked | not checked |
-| Maximum underfloor gap (see slab basis) | 5.31 m (inferred) | 5.35 m (inferred) | 5.45 m (inferred) | 5.31 m (inferred) | 5.28 m (inferred) | 0.00 m (inferred) |
-| Deepest cut | 3.30 m (inferred) | 0.34 m (inferred) | 0.44 m (inferred) | 0.34 m (inferred) | 3.27 m (inferred) | 6.10 m (inferred) |
-| Retaining wall length | 29.80 m (inferred) | 0 m (inferred) | 0 m (inferred) | 0 m (inferred) | 28.20 m (inferred) | 115.10 m (inferred) |
-| Retained earth face | 52.65 m² (inferred) | 0 m² (inferred) | 0 m² (inferred) | 0 m² (inferred) | 47.98 m² (inferred) | 397.73 m² (inferred) |
-| Closest approach to the envelope edge | 0.10 m | 0.10 m | 0.10 m | 0.10 m | 0.10 m | 0.00 m |
+| Maximum underfloor gap (see slab basis) | 6.25 m (inferred) | 6.37 m (inferred) | 5.71 m (inferred) | 5.63 m (inferred) | 6.36 m (inferred) | 6.08 m (inferred) |
+| Deepest cut | 3.27 m (inferred) | 1.53 m (inferred) | 0.42 m (inferred) | 1.38 m (inferred) | 3.27 m (inferred) | 3.04 m (inferred) |
+| Retaining wall length | 28.00 m (inferred) | 8.20 m (inferred) | 0 m (inferred) | 8.00 m (inferred) | 27.60 m (inferred) | 45.20 m (inferred) |
+| Retained earth face | 39.18 m² (inferred) | 5.46 m² (inferred) | 0 m² (inferred) | 4.30 m² (inferred) | 38.03 m² (inferred) | 74.23 m² (inferred) |
+| Closest approach to the envelope edge | 0.10 m | 0.10 m | 0.10 m | 0.10 m | 0.10 m | 0.10 m |
+
+## Requested storeys
+
+- **concept-linear**: Requested storeys: 2; generated floor levels: 1. The linear strategy places all rooms in one bar on a single level. The requested storey count is not enforced by this strategy; owner review needed.
+- **concept-split-walkout**: Requested storeys: 2; generated floor levels: 3. This strategy derives its floor levels from the massing and terrain; split floor levels need not represent full stacked storeys. The requested storey count is not enforced by this strategy; owner review needed.
 
 ## How different the concepts are (measured)
 
 | Pair | Footprint IoU | Topology dist | Diff level | Levels/stairs | Assessment |
 |---|---:|---:|---:|---|---|
-| concept-compact / concept-split-level | 0.09 | 0.51 | 56% | 2/1 vs 2/1 | Distinct |
-| concept-compact / concept-linear | 0.58 | 0.74 | 53% | 2/1 vs 1/0 | Distinct |
-| concept-compact / concept-two-wing | 0.33 | 0.59 | 56% | 2/1 vs 2/1 | Distinct |
-| concept-compact / concept-split-walkout | 0.49 | 0.58 | 50% | 2/1 vs 3/2 | Distinct |
-| concept-compact / concept-open-plan | 0.41 | 0.83 | 6% | 2/1 vs 2/1 | Distinct |
-| concept-split-level / concept-linear | 0.37 | 0.61 | 33% | 2/1 vs 1/0 | Distinct |
-| concept-split-level / concept-two-wing | 0.28 | 0.51 | 12% | 2/1 vs 2/1 | Distinct |
-| concept-split-level / concept-split-walkout | 0.02 | 0.59 | 25% | 2/1 vs 3/2 | Distinct |
-| concept-split-level / concept-open-plan | 0.22 | 0.87 | 56% | 2/1 vs 2/1 | Distinct |
-| concept-linear / concept-two-wing | 0.55 | 0.72 | 40% | 1/0 vs 2/1 | Distinct |
-| concept-linear / concept-split-walkout | 0.35 | 0.77 | 60% | 1/0 vs 3/2 | Distinct |
-| concept-linear / concept-open-plan | 0.53 | 0.83 | 53% | 1/0 vs 2/1 | Distinct |
-| concept-two-wing / concept-split-walkout | 0.35 | 0.62 | 25% | 2/1 vs 3/2 | Distinct |
-| concept-two-wing / concept-open-plan | 0.39 | 0.84 | 50% | 2/1 vs 2/1 | Distinct |
-| concept-split-walkout / concept-open-plan | 0.23 | 0.88 | 50% | 3/2 vs 2/1 | Distinct |
+| concept-compact / concept-split-level | 0.61 | 0.58 | 47% | 2/1 vs 2/1 | Distinct |
+| concept-compact / concept-linear | 0.52 | 0.71 | 44% | 2/1 vs 1/0 | Distinct |
+| concept-compact / concept-two-wing | 0.46 | 0.56 | 47% | 2/1 vs 2/1 | Distinct |
+| concept-compact / concept-split-walkout | 0.65 | 0.67 | 47% | 2/1 vs 3/2 | Distinct |
+| concept-compact / concept-open-plan-prop-day-up-night-down | 0.68 | 0.87 | 12% | 2/1 vs 2/1 | Distinct |
+| concept-split-level / concept-linear | 0.53 | 0.64 | 31% | 2/1 vs 1/0 | Distinct |
+| concept-split-level / concept-two-wing | 0.50 | 0.38 | 6% | 2/1 vs 2/1 | Distinct |
+| concept-split-level / concept-split-walkout | 0.86 | 0.64 | 24% | 2/1 vs 3/2 | Distinct |
+| concept-split-level / concept-open-plan-prop-day-up-night-down | 0.43 | 0.84 | 53% | 2/1 vs 2/1 | Distinct |
+| concept-linear / concept-two-wing | 0.59 | 0.69 | 31% | 1/0 vs 2/1 | Distinct |
+| concept-linear / concept-split-walkout | 0.43 | 0.78 | 50% | 1/0 vs 3/2 | Distinct |
+| concept-linear / concept-open-plan-prop-day-up-night-down | 0.40 | 0.87 | 50% | 1/0 vs 2/1 | Distinct |
+| concept-two-wing / concept-split-walkout | 0.41 | 0.66 | 29% | 2/1 vs 3/2 | Distinct |
+| concept-two-wing / concept-open-plan-prop-day-up-night-down | 0.32 | 0.88 | 47% | 2/1 vs 2/1 | Distinct |
+| concept-split-walkout / concept-open-plan-prop-day-up-night-down | 0.47 | 0.88 | 41% | 3/2 vs 2/1 | Distinct |
 
 These are design explorations. None is reviewed, engineered or checked against a building code; see docs/PROFESSIONAL_HANDOFF.md.
