@@ -44,13 +44,12 @@ from house_ai.constants.strategies import (
 from house_ai.domain.program import Privacy, SpaceFunction, SpaceProgram
 
 from .frame import ENVELOPE_MARGIN_M, DesignFrame, Ground, best_interval_dm, from_dm
-from .rooms import ProgramRooms, RoomSpec
+from .rooms import ProgramRooms, RoomSpec, garage_dims_dm
 
 #: Typical values for a first layout; recorded as plan assumptions, not rules.
 FLOOR_TO_FLOOR_M = 3.0
 HALF_STOREY_M = 1.5
 CORRIDOR_DM = 12
-GARAGE_DEPTH_DM = 54
 MIN_BAR_LENGTH_DM = 60
 #: A bar face with ground more than this above its floor is against the earth.
 BURIED_FACE_M = 1.0
@@ -126,6 +125,8 @@ class Massing:
     compactness: int
     params: dict[str, float | int | str | bool] = field(default_factory=dict)
     notes: list[str] = field(default_factory=list)
+    #: Road-front rectangle (u0, v0, u1, v1, dm) kept for the separate garage (DEC-12).
+    garage: tuple[int, int, int, int] | None = None
 
     def bar(self, bar_id: str) -> Bar:
         return next(b for b in self.bars if b.id == bar_id)
@@ -189,11 +190,9 @@ def _front_v(ctx: MassingContext) -> int:
 
 
 def _entry_depths(ctx: MassingContext, depths: tuple[int, int]) -> tuple[int, int]:
-    """The entry bar's rows: deep enough for a garage on the road side and, on the
-    garden side, for the day rooms' stacked slots (open living-kitchen-dining)."""
+    """The entry bar's rows: on the garden side deep enough for the day rooms' stacked
+    slots (open living-kitchen-dining). The garage is a separate volume (DEC-12)."""
     front, back = depths
-    if any(r.function is SpaceFunction.GARAGE for r in ctx.rooms.rooms):
-        front = max(front, GARAGE_DEPTH_DM)
     for cl in ctx.rooms.clusters:
         if any(room_group(r) == "day" for r in cl.members):
             for slot in cl.slots:
@@ -281,6 +280,46 @@ def _levels_note(m: Massing) -> None:
     m.params["level_elevations_m"] = ", ".join(f"{z:.2f}" for z in elevations)
 
 
+def _reserve_garage(ctx: MassingContext, m: Massing) -> None:
+    """Keep a road-front strip at one end of the entry bar for the garage (DEC-12, S10-19).
+
+    The garage is its own volume at road level, deep enough for its cars and as wide as
+    them side by side. The end away from other bars comes first, so wings and links stay
+    where they were; the entry bar gives up that length.
+    """
+    item = ctx.rooms.garage_item
+    if item is None:
+        return
+    depth, width = garage_dims_dm(ctx.program)
+    bar = next(b for b in m.bars if b.entry)
+    if bar.axis != "u":
+        raise Infeasible("the garage needs the entry bar to run along the road")
+    front = bar.cross0_dm
+    ival = best_interval_dm(ctx.limit, front, front + depth, "u")
+    # Wings running back from the entry bar occupy a span of it along the road.
+    others = [(b.cross0_dm, b.cross1_dm) for b in m.bars if b is not bar and b.axis == "v"]
+    ends = []
+    for s0 in (bar.start_lo_dm, bar.start_hi_dm - width):
+        s1 = s0 + width
+        rest = (s1, bar.start_hi_dm) if s0 == bar.start_lo_dm else (bar.start_lo_dm, s0)
+        if ival is None or s0 < ival[0] or s1 > ival[1] or rest[1] - rest[0] < MIN_BAR_LENGTH_DM:
+            continue
+        clash = any(lo < s1 and s0 < hi for lo, hi in others)
+        ends.append((clash, s0, s1, rest))
+    if not ends:
+        raise Infeasible(
+            f"no {from_dm(width):g} m wide, {from_dm(depth):g} m deep road-front strip beside "
+            "the entry bar for the separate garage"
+        )
+    _, s0, s1, rest = min(ends, key=lambda e: e[0])
+    bar.start_lo_dm, bar.start_hi_dm = rest
+    m.garage = (s0, front, s1, front + depth)
+    m.notes.append(
+        f"Garage: separate road-level volume {from_dm(s1 - s0):g} × {from_dm(depth):g} m "
+        "beside the entry bar (DEC-12)."
+    )
+
+
 def build_massing(strategy: str, ctx: MassingContext, depths: tuple[int, int]) -> Massing:
     builder = {
         STRATEGY_LINEAR: _linear,
@@ -293,6 +332,7 @@ def build_massing(strategy: str, ctx: MassingContext, depths: tuple[int, int]) -
     if builder is None:
         raise Infeasible(f"unknown strategy {strategy!r}; known: {', '.join(STRATEGY_ORDER)}")
     m = builder(ctx, depths)
+    _reserve_garage(ctx, m)
     m.params.update(
         {
             "strategy": strategy,

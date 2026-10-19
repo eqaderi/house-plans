@@ -55,7 +55,6 @@ from .fixtures import with_fixtures
 from .frame import DesignFrame, Ground, from_dm, limit_polygon
 from .massing import (
     FLOOR_TO_FLOOR_M,
-    GARAGE_DEPTH_DM,
     HALF_STOREY_M,
     Bar,
     Massing,
@@ -65,6 +64,7 @@ from .rooms import (
     OPEN_PLAN_FUNCTIONS,
     ProgramRooms,
     RoomSpec,
+    garage_dims_dm,
     is_dependent,
     space_id_for,
     touches_corridor,
@@ -586,9 +586,14 @@ class _Builder:
         require_direction: bool = False,
     ) -> Opening | None:
         walls = [host] if host is not None else self._walls_between(level, a, b)
-        # Passable openings keep to the corners of a kitchen's walls (S10-09).
-        ends = kind is not OpeningKind.WINDOW and any(
-            sid is not None and self.space(sid).function is S.KITCHEN for sid in (a, b)
+        # Person doors keep to the corners of a kitchen's or garage's walls (S10-09, S10-19).
+        ends = (
+            kind is not OpeningKind.WINDOW
+            and not (b is None and self.space(a).function is S.GARAGE)
+            and any(
+                sid is not None and self.space(sid).function in (S.KITCHEN, S.GARAGE)
+                for sid in (a, b)
+            )
         )
         if prefer is not None:
             if require_direction:
@@ -722,30 +727,6 @@ class _Builder:
                     else:
                         dep = b if fb in DEPENDENT_FUNCTIONS else a
                         self.door(lv, a, b, 0.8, opens_into=dep)
-                for room in cl.members:
-                    if room.function is S.GARAGE:
-                        bays = max(1, round(pu.widths[0] / 30))
-                        made = self.place(
-                            lv,
-                            room.space_id,
-                            None,
-                            OpeningKind.DOOR,
-                            2.6 * bays,
-                            min_width_m=2.4,
-                            operation=Operation.SLIDING,
-                            height_m=2.2,
-                            prefer=road,
-                            require_direction=True,
-                            material="m-door",
-                            prefix="d-garage",
-                        )
-                        if made is None:
-                            self._issue(
-                                f"iss-garage-access-{_short(room.space_id)}",
-                                "No vehicle opening fits on the garage's road-facing wall",
-                                Severity.BLOCKING,
-                                [room.space_id],
-                            )
             else:
                 sid = f"sp-{u.kind}-{u.link_index}{u.side}"
                 self.door(lv, sid, corr, 1.2, kind=OpeningKind.OPENING, min_width_m=0.8, prefix="o")
@@ -765,6 +746,7 @@ class _Builder:
             elif link.kind == "row":
                 self.door(lv_a, g if link.gap_dm else la, f"sp-link-{i}b", 1.2, **hall)
         self.open_stairwells()
+        self._garage_doors(road, corridor_of[entry_bar.id])
         for terrace, host in self.terrace_hosts.items():
             self.door(
                 self.space(host).level_id,
@@ -1052,6 +1034,69 @@ class _Builder:
                         [o.id for o in taken],
                     )
 
+    def add_garage(self) -> None:
+        """The garage as its own road-level volume beside the entry bar (DEC-12, S10-19)."""
+        item = self.rooms.garage_item
+        if item is None or self.m.garage is None:
+            return
+        bar = next(b for b in self.m.bars if b.entry)
+        self.add_space(
+            SpaceInfo(
+                id=space_id_for(item, 1),
+                name=item.name,
+                function=S.GARAGE,
+                level_id=self.level_of(bar),
+                rect=Rect(*self.m.garage),
+                kind="garage",
+                bar_id=bar.id,
+                program_item_id=item.id,
+                zone_id=item.zone_id,
+            )
+        )
+
+    def _garage_doors(self, road: tuple[int, int], corridor: str) -> None:
+        """A vehicle door to the road and a person door at a corner into the house."""
+        garage = next((s for s in self.spaces if s.kind == "garage"), None)
+        if garage is None:
+            return
+        bays = max(1, len(self.program.usability.vehicles or []))
+        made = self.place(
+            garage.level_id,
+            garage.id,
+            None,
+            OpeningKind.DOOR,
+            2.6 * bays,
+            min_width_m=2.4,
+            operation=Operation.SLIDING,
+            height_m=2.2,
+            prefer=road,
+            require_direction=True,
+            material="m-door",
+            prefix="d-garage",
+        )
+        if made is None:
+            self._issue(
+                f"iss-garage-access-{_short(garage.id)}",
+                "No vehicle opening fits on the garage's road-facing wall",
+                Severity.BLOCKING,
+                [garage.id],
+            )
+        inside = [corridor] + [
+            s.id
+            for s in self.spaces
+            if s.level_id == garage.level_id and s.id != corridor and s.kind in ("room", "corridor")
+        ]
+        for other in inside:
+            if self._walls_between(garage.level_id, garage.id, other):
+                self.door(garage.level_id, garage.id, other, 0.9, opens_into=other)
+                return
+        self._issue(
+            f"iss-garage-house-door-{_short(garage.id)}",
+            "The garage has no wall shared with the house for a person door",
+            Severity.WARNING,
+            [garage.id],
+        )
+
     def add_terraces(self) -> None:
         """Place program terraces outside the room they belong to (S10-11, ISS-33).
 
@@ -1229,6 +1274,7 @@ class _Builder:
         self.build_spaces()
         self.build_stairs()
         self.add_stairwell_spaces()
+        self.add_garage()
         self.add_terraces()
         self.build_walls()
         self.build_openings()
@@ -1501,12 +1547,14 @@ class _Builder:
                     )
                 )
         if any(s.function is S.GARAGE for s in self.spaces):
+            depth, width = garage_dims_dm(self.program)
             out.append(
                 A(
                     id="asm-gen-garage-depth",
-                    statement=f"A garage needs at least "
-                    f"{from_dm(GARAGE_DEPTH_DM):g} m depth for a car.",
-                    basis="typical car length plus clearance; not in the program",
+                    statement=f"The garage is a separate road-level volume, {from_dm(width):g} m "
+                    f"wide and {from_dm(depth):g} m deep for its cars (DEC-12).",
+                    basis="program cars (or a typical car) with the vehicle template's "
+                    "clearances and walls (S10-19)",
                     confirm_with="owner",
                     made_by=self.actor,
                 )

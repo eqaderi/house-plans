@@ -64,7 +64,7 @@ from house_ai.domain.program import (
 from house_ai.domain.proposal import ConceptProposal
 from house_ai.domain.site import Site
 from house_ai.generation.frame import DesignFrame
-from house_ai.generation.rooms import space_id_for
+from house_ai.generation.rooms import garage_dims_dm, space_id_for
 from house_ai.generation.solver import SolverOptions
 from house_ai.generation.stairs import u_core_fits
 
@@ -107,6 +107,8 @@ class PlacementRoom:
     accessible: bool = False
     priority_weight: int = 1
     max_area_m2: float | None = None
+    #: Longer side (dm) the room needs: a garage's car length (S10-19).
+    min_long_dm: int | None = None
 
     @property
     def target_area_dm2(self) -> int:
@@ -214,6 +216,8 @@ def compute_candidate_dimensions(
             for h in range(h0, h1 + 1, 2):
                 if max(w / h, h / w) <= MAX_ASPECT_RATIO:
                     pairs.append((w, h))
+    if r.min_long_dm is not None:
+        pairs = [(w, h) for w, h in pairs if max(w, h) >= r.min_long_dm]
     if r.function is SpaceFunction.STAIR:
         # A core must hold its U-shaped flight (S10-06, ADR 0023): 16 risers per storey.
         pairs = [
@@ -243,9 +247,14 @@ def extract_placement_rooms(
 ) -> list[PlacementRoom]:
     """Expand every program instance with the same IDs used by revisions/evaluation."""
     rooms = []
+    garage_depth, garage_width = garage_dims_dm(program)
     for item in program.items:
+        is_garage = item.function is SpaceFunction.GARAGE
         for index in range(1, item.quantity + 1):
             minimum = max(item.min_area_m2 or 0, (min_areas or {}).get(item.id, 0))
+            if is_garage:
+                # Sized for the program's cars, as in the bar path (S10-19).
+                minimum = max(minimum, garage_depth * garage_width / 100)
             rooms.append(
                 PlacementRoom(
                     space_id=space_id_for(item, index),
@@ -256,8 +265,13 @@ def extract_placement_rooms(
                     level_pref=item.level_preference or "entry",
                     target_area_m2=max(item.target_area_m2 or minimum or 10, minimum),
                     min_area_m2=minimum or None,
-                    min_width_m=max(item.min_width_m or 0, (min_widths or {}).get(item.id, 0))
+                    min_width_m=max(
+                        item.min_width_m or 0,
+                        (min_widths or {}).get(item.id, 0),
+                        garage_width / 10 if is_garage else 0,
+                    )
                     or None,
+                    min_long_dm=garage_depth if is_garage else None,
                     max_area_m2=item.max_area_m2,
                     daylight_required=item.daylight.value == "required",
                     accessible=item.accessible,

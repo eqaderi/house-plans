@@ -161,7 +161,9 @@ def ground_planes(model: HouseModel):
             key=lambda s: s.top_offset_m - s.thickness_m,
         )
         for slab in slabs:
-            hit = region.intersection(slab.boundary.to_shapely()).difference(covered)
+            # A slab touching the region along an edge also returns that line; keep the area.
+            hit = unary_union(parts(region.intersection(slab.boundary.to_shapely())))
+            hit = hit.difference(covered)
             if hit.area > EPS:
                 z = level.elevation_m + slab.top_offset_m - slab.thickness_m
                 yield level.id, z, hit, f"underside:{slab.id}"

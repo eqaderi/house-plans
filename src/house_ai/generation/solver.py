@@ -31,7 +31,7 @@ from ortools.sat.python import cp_model
 
 from house_ai.domain.program import AdjacencyKind, SpaceFunction, Strength
 
-from .massing import GARAGE_DEPTH_DM, Bar, Massing, MassingContext, Row, room_group
+from .massing import Bar, Massing, MassingContext, Row, room_group
 from .rooms import Cluster, ProgramRooms, Relation, RoomSpec, Slot
 from .terrain_levels import joint_level_variables
 
@@ -167,8 +167,6 @@ def _slot_bounds(
         min_a = room.min_area_m2
         if min_w is not None and depth < _ceil(min_w * 10):
             return None
-        if room.function is SpaceFunction.GARAGE and depth < GARAGE_DEPTH_DM:
-            return None
         wmin = max(wmin, _ceil((min_w or 0) * 10))
         if min_a is not None:
             wmin = max(wmin, _ceil(min_a * 100 / depth))
@@ -212,11 +210,6 @@ def build_units(m: Massing, rooms: ProgramRooms) -> tuple[list[Unit], list[str]]
                     r.item.accessible or r.function is SpaceFunction.LIFT for r in cl.members
                 )
                 if needs_entry_level and not same_level:
-                    continue
-                # Cars arrive from the road: a garage sits in the entry bar's road-side row.
-                if any(r.function is SpaceFunction.GARAGE for r in cl.members) and not (
-                    bar.entry and row.side == "front"
-                ):
                     continue
                 # A room that must open off the hall stays beside the entry bar's corridor.
                 if not bar.entry and any(r.space_id in rooms.hall_connected for r in cl.members):
@@ -303,6 +296,13 @@ def solve(m: Massing, rooms: ProgramRooms, opts: SolverOptions) -> Solution:
             start[b.id] = md.NewIntVar(b.start_lo_dm, b.start_hi_dm, f"S_{b.id}")
         length[b.id] = md.NewIntVar(min(60, hi_len), hi_len, f"L_{b.id}")
         md.Add(start[b.id] + length[b.id] <= b.start_hi_dm)
+    if m.garage is not None:
+        # The entry bar meets the separate garage beside it (DEC-12, S10-19).
+        e = next(b for b in m.bars if b.entry)
+        if m.garage[2] <= e.start_lo_dm:
+            md.Add(start[e.id] == m.garage[2])
+        else:
+            md.Add(start[e.id] + length[e.id] == m.garage[0])
 
     obj: list = []
     level_vars, buried_vars, level_objective = joint_level_variables(

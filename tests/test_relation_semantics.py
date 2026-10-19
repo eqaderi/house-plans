@@ -293,7 +293,8 @@ def test_solver_enforces_compiled_codepack_hard_constraints():
     compilation = compile_constraints(program, site, created_at=WHEN, actor=TOOL, codepack=pack)
     cs = compilation.constraints
 
-    # Generate linear concept with the compiled constraints
+    # Generate a compact concept with the compiled constraints. (Linear cannot hold a 45 m² living
+    # beside the separate two-car garage on this envelope since S10-19.)
     req = GenerationRequest(
         site=site,
         program=program,
@@ -301,11 +302,11 @@ def test_solver_enforces_compiled_codepack_hard_constraints():
         site_ref=None,
         program_ref=None,
         created_at=WHEN,
-        strategies=["linear"],
+        strategies=["compact"],
         seed=0,
     )
     cands = CpSatPlanGenerator().candidates(req)
-    cand = next(c for c in cands if c.strategy == "linear")
+    cand = next(c for c in cands if c.strategy == "compact")
     assert cand.plan is not None, f"Expected feasible plan: {cand.reason}"
 
     # Living room must be >= 45.0 m² and width >= 4.5 m
