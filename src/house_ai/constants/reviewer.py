@@ -125,6 +125,7 @@ MARGIN: float = 36.0
 DEFAULT_MIN_LABEL_DISTANCE_M: float = 1.5
 DEFAULT_LABEL_PADDING_PX: float = 4.0
 MIN_SLAB_INTERSECTION_AREA_M2: float = 0.05
+DOOR_APPROACH_CLEAR_DM: int = 9
 
 # Visual critique severities
 SEVERITY_BLOCKING: str = "blocking"

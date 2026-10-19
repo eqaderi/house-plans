@@ -67,38 +67,76 @@ def _doors(model: HouseModel, space: Space, poly: Polygon):
     return unary_union(swings), unary_union(approaches)
 
 
-def _place(floor, sides, template, envelopes, bodies, swings, approaches):
-    """First wall position (longest side first) that keeps the rules above."""
-    w, d = template.width.value, template.depth.value
-    left, right = template.left.value, template.right.value
-    front, back = template.front.value, template.back.value
-    for (ax, ay), (ux, uy), (nx, ny), length, face in sides:
-        s = face + left
-        while s + w + right <= length - face + 1e-9:
+def _place_set(
+    floor: Polygon,
+    sides: list,
+    templates: list,
+    swings: Polygon,
+    approaches: Polygon,
+) -> list[tuple[Polygon, Polygon, tuple[float, float], float]] | None:
+    """Find a non-conflicting layout for all templates in a room (DEC-13).
 
-            def at(t, k, ax=ax, ay=ay, ux=ux, uy=uy, nx=nx, ny=ny):
-                return (ax + ux * t + nx * k, ay + uy * t + ny * k)
+    Supports linear, opposite-wall, and L-shaped fixture configurations by
+    searching candidate wall positions without altering room sizes or clearances.
+    """
 
-            base = face + back
-            body = Polygon([at(s, base), at(s + w, base), at(s + w, base + d), at(s, base + d)])
-            env = Polygon(
-                [
-                    at(s - left, face),
-                    at(s + w + right, face),
-                    at(s + w + right, base + d + front),
-                    at(s - left, base + d + front),
-                ]
-            )
-            if (
-                floor.covers(env)
-                and env.intersection(swings).area < 1e-6
-                and body.intersection(approaches).area < 1e-6
-                and env.intersection(bodies).area < 1e-6
-                and body.intersection(envelopes).area < 1e-6
-            ):
-                return body, env, at(s + w / 2, base + d / 2), math.degrees(math.atan2(nx, -ny))
-            s += STEP_M
-    return None
+    def search(
+        idx: int,
+        bodies: Polygon,
+        envelopes: Polygon,
+        placed: list[tuple[Polygon, Polygon, tuple[float, float], float]],
+    ) -> list[tuple[Polygon, Polygon, tuple[float, float], float]] | None:
+        if idx == len(templates):
+            return placed
+        t = templates[idx]
+        w, d = t.width.value, t.depth.value
+        left, right = t.left.value, t.right.value
+        front, back = t.front.value, t.back.value
+        for (ax, ay), (ux, uy), (nx, ny), length, face in sides:
+            s = face + left
+            while s + w + right <= length - face + 1e-9:
+
+                def at(off: float, dist: float, ax=ax, ay=ay, ux=ux, uy=uy, nx=nx, ny=ny):
+                    return (ax + ux * off + nx * dist, ay + uy * off + ny * dist)
+
+                base = face + back
+                body = Polygon(
+                    [
+                        at(s, base),
+                        at(s + w, base),
+                        at(s + w, base + d),
+                        at(s, base + d),
+                    ]
+                )
+                env = Polygon(
+                    [
+                        at(s - left, face),
+                        at(s + w + right, face),
+                        at(s + w + right, base + d + front),
+                        at(s - left, base + d + front),
+                    ]
+                )
+                if (
+                    floor.covers(env)
+                    and env.intersection(swings).area < 1e-6
+                    and body.intersection(approaches).area < 1e-6
+                    and env.intersection(bodies).area < 1e-6
+                    and body.intersection(envelopes).area < 1e-6
+                ):
+                    centre = at(s + w / 2, base + d / 2)
+                    rotation = math.degrees(math.atan2(nx, -ny))
+                    res = search(
+                        idx + 1,
+                        bodies.union(body),
+                        envelopes.union(env),
+                        placed + [(body, env, centre, rotation)],
+                    )
+                    if res is not None:
+                        return res
+                s += STEP_M
+        return None
+
+    return search(0, Polygon(), Polygon(), [])
 
 
 def layout_fixtures(model: HouseModel) -> tuple[list[Fixture], list[str]]:
@@ -141,28 +179,23 @@ def layout_fixtures(model: HouseModel) -> tuple[list[Fixture], list[str]]:
             sides.append(((ax, ay), (ux, uy), (nx, ny), length, face))
         sides.sort(key=lambda side: -side[3])
         swings, approaches = _doors(model, space, poly)
-        placed: list[Fixture] = []
-        bodies = envelopes = Polygon()
-        for n, ident in enumerate(ids, start=1):
-            t = TEMPLATES[ident]
-            spot = _place(floor, sides, t, envelopes, bodies, swings, approaches)
-            if spot is None:
-                break
-            body, env, centre, rotation = spot
-            bodies, envelopes = bodies.union(body), envelopes.union(env)
-            placed.append(
-                Fixture(
-                    id=f"fx-{space.id.removeprefix('sp-')}-{n}"[:64],
-                    space_id=space.id,
-                    fixture_type=ident.replace("-", "_"),
-                    position=(round(centre[0], 6), round(centre[1], 6)),
-                    rotation_deg=round(rotation, 6),
-                    width_m=t.width.value,
-                    depth_m=t.depth.value,
+        templates = [TEMPLATES[ident] for ident in ids]
+        spots = _place_set(floor, sides, templates, swings, approaches)
+        if spots is not None:
+            for n, (_body, _env, centre, rotation) in enumerate(spots, start=1):
+                ident = ids[n - 1]
+                t = templates[n - 1]
+                fixtures.append(
+                    Fixture(
+                        id=f"fx-{space.id.removeprefix('sp-')}-{n}"[:64],
+                        space_id=space.id,
+                        fixture_type=ident.replace("-", "_"),
+                        position=(round(centre[0], 6), round(centre[1], 6)),
+                        rotation_deg=round(rotation, 6),
+                        width_m=t.width.value,
+                        depth_m=t.depth.value,
+                    )
                 )
-            )
-        if len(placed) == len(ids):
-            fixtures.extend(placed)
         else:
             missed.append(space.id)
     return fixtures, missed

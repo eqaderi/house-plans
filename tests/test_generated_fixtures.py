@@ -18,9 +18,8 @@ from house_ai.orchestration.plans import PlanService
 from .conftest import AGENT
 from .test_plan_workflow import _approve_site_and_program, _load
 
-# ISS-37: beside the separate garage (S10-19) the compact kitchen is 4.1 × 2.4 m, too small
-# for its run and appliance; sizing rooms for their fixture sets awaits a decision (S10-09).
-ISS_37 = pytest.mark.xfail(strict=True, reason="ISS-37: compact kitchen too small for its set")
+# DEC-13 (ISS-37): support linear, opposite-wall, and L-shaped fixture arrangements
+# with approved program areas and existing fixture clearances unchanged.
 
 
 @pytest.fixture(scope="module")
@@ -32,7 +31,6 @@ def compact(tmp_path_factory):
     return opt.candidate.plan.model, svc.inputs(exploratory=True)
 
 
-@ISS_37
 def test_kitchens_and_wet_rooms_get_their_template_sets(compact):
     model, inp = compact
     assert not errors(check_model(model, inp.site, inp.program))
@@ -51,7 +49,6 @@ def test_kitchens_and_wet_rooms_get_their_template_sets(compact):
             assert space.boundary.to_shapely().covers(f.footprint_polygon().to_shapely())
 
 
-@ISS_37
 def test_critics_measure_the_placed_fixtures(compact):
     model, inp = compact
     result = FurnitureUsabilityEvaluator().evaluate(
@@ -85,3 +82,13 @@ def test_a_room_that_cannot_hold_its_set_gets_none():
     assert missed == [] and len(fixtures) == 3
     for f in fixtures:
         assert math.isclose(f.rotation_deg % 90, 0, abs_tol=1e-6)
+
+
+def test_l_shaped_and_opposite_wall_arrangements_pass_and_clear(compact):
+    """DEC-13: ensuite places fixtures across perpendicular and opposite walls."""
+    model, _ = compact
+    ensuite_fx = [f for f in model.fixtures if f.space_id == "sp-bath-ensuite"]
+    assert len(ensuite_fx) == 3
+    rots = {round(f.rotation_deg % 360, 1) for f in ensuite_fx}
+    # Multiple distinct wall orientations are used (L-shaped and opposite-wall).
+    assert len(rots) >= 2

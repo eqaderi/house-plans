@@ -23,6 +23,7 @@ from house_ai.constants.placement2d import (
     TERRACE_DOOR_DEFAULT_WIDTH_M,
     TERRACE_SLAB_THICKNESS_M,
 )
+from house_ai.constants.reviewer import DOOR_APPROACH_CLEAR_DM
 from house_ai.domain.base import EXTERIOR
 from house_ai.domain.epistemics import Epistemic
 from house_ai.domain.geometry import Polygon2D
@@ -604,6 +605,11 @@ class _Builder:
         for seg in walls:
             width = round(width_m * 10)
             clear = round(clear_m * 10)
+            if ends and seg.length - clear - width < DOOR_APPROACH_CLEAR_DM:
+                target_w = seg.length - clear - DOOR_APPROACH_CLEAR_DM
+                min_w = round(min_width_m * 10)
+                if target_w >= min_w:
+                    width = target_w
             off = self._fit(seg, width, clear, ends)
             while off is None and width > round(min_width_m * 10):
                 width -= 1
