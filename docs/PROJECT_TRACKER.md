@@ -6,7 +6,7 @@ No other TODO, roadmap or stage-status file is kept. Format and update rules
 are in [§P](#p-rules-for-updating-the-tracker); `python tools/check_tracker.py`
 checks them.
 
-Last updated: 2026-10-19, S10 review 2 remediation verified; CI run 39309391824 green; independent review requested; S9 blocked on S10.
+Last updated: 2026-10-19, Stage S10 review 3 APPROVED; awaiting owner's "Close stage S10"; S9 blocked on S10.
 
 ## A. Mission and immediate objective
 
@@ -117,7 +117,7 @@ to reopen A–D):
 | | |
 |---|---|
 | **Current stage** | S10 Readiness remediation, `IN_PROGRESS` on `stage/S10-readiness-remediation`; S9 is `BLOCKED` on it (DEC-11) |
-| **Awaiting review** | S10, `PENDING` after review 2 remediation; CI run 39309391824 green |
+| **Awaiting review** | none (S10 review 3 APPROVED, awaiting closure) |
 | **Next eligible stage** | none while S10 is in progress |
 | **Path to good floor plans** | S1 (done) → S2 (done) → S3 (done) → S4 (done) → S5 (done) → S6 (done) → S7 (done) → S8 (done) → S10 → S9 (10 stages) |
 | **Blocked** | S9 and its tasks (S10 first, then a re-run of S9-01/S9-02 and the owner's S9-03 words); H1 site facts (owner or surveyor input); program gate (needs site gate); H3 real design (needs S9 and approvals) |
@@ -1516,7 +1516,7 @@ claimed without a recorded professional verification.
 |---|---|
 | Kind | implementation |
 | Status | IN_PROGRESS |
-| Review | PENDING |
+| Review | APPROVED |
 | Branch | `stage/S10-readiness-remediation` |
 | Depends on | S4, S5, S6, S7, S8 |
 | Tasks | S10-01, S10-02, S10-03, S10-04, S10-05, S10-06, S10-07, S10-08, S10-09, S10-10, S10-11, S10-12, S10-13, S10-19, S10-14, S10-15, S10-16, S10-17, S10-18 |
@@ -2492,6 +2492,37 @@ Closure record template:
 ```
 
 ### S10 records
+
+#### S10 review 3 — APPROVED
+- Reviewed commit: 298847aea2b0fc2ca217948b4d40ef625e257001
+- Reviewer: agent:gemini, Gemini 3.8 Flash (implementer was agent:codex)
+- Date: 2026-10-19
+- Checks run:
+  - CI: branch run 39309391824 on code commit `93bf85f` passed across all jobs: Tests (Python 3.11) in 7m50s, Tests (Python 3.13) in 10m53s, Reviewer App (Vitest & Playwright) in 58s. Diff from `93bf85f` to reviewed commit `298847a` touches only `docs/PROJECT_TRACKER.md`.
+  - Pytest: `.venv/bin/python -m pytest -q` -> 867 passed in 409.72s on macOS arm64.
+  - Linter: `.venv/bin/ruff check src tests examples tools` -> clean (All checks passed!).
+  - Schema check: `.venv/bin/house-ai schemas check` -> clean (29 schemas up to date).
+  - Tracker check: `.venv/bin/python tools/check_tracker.py --summary` -> clean (21 stages, 281 tasks).
+  - Store verification: `.venv/bin/house-ai project verify my-house` -> intact (13 events, 10 artifact versions).
+  - Leak scan: `.venv/bin/python tools/leak_scan.py` -> clean (0 leaks).
+  - Benchmark runner: `.venv/bin/python -m house_ai.benchmarks.runner examples/benchmarks/fixtures --require-complete` -> 117 PASS, 0 FAIL, 0 NOT_CHECKED.
+  - Reviewer app: typecheck clean (`pnpm typecheck`), Vitest 19 passed, Playwright 8 e2e tests passed.
+  - Demonstration: `.venv/bin/python examples/readiness/run_demo.py --out project-data/s10-review-check` ran clean; 5 of 6 bar concepts feasible plus the 2D proposal (all 0 hard violations); walking lines and headroom measured; 9 canonical fixtures placed; revisions v2/v3 separate unmet from regression; plan review 0 open reasons, non-blocking attention recorded; store verified (102 events); all synthetic approvals.
+- Artifacts and screenshots inspected:
+  - `git diff main...HEAD` in full across all 166 changed files.
+  - `docs/adr/0023-stairs-between-split-levels.md` and `docs/adr/0024-unbuildable-findings-at-the-plan-gate.md`.
+  - `tests/test_readiness_demo.py` and `tests/test_hillside_levels.py`.
+  - `examples/readiness/demonstration/` (`record.md`, `record.json`, `comparison.md`, `concept-two-wing-v1.png`, `concept-two-wing-v3.png`).
+  - `.github/workflows/ci.yml`.
+  - `src/house_ai/domain/` (`model.py`, `usability_templates.py`).
+  - `src/house_ai/evaluation/` (`evaluators.py`, `routes.py`, `templates.py`, `usability.py`, `usability_geometry.py`).
+  - `src/house_ai/generation/` (`assemble.py`, `assemble2d.py`, `fixtures.py`, `generator.py`, `massing.py`, `rooms.py`, `solver.py`, `solver2d.py`, `stairs.py`, `terrain_levels.py`).
+  - `src/house_ai/orchestration/` (`plans.py`, `workflow.py`).
+  - `src/house_ai/validation/defect_detectors.py`.
+  - `apps/reviewer/` (`PlanCanvas.tsx`, `ComparisonView.tsx`, `geometry.ts`, `README.md`).
+- Findings: none.
+- Tracker accuracy: All 19 tasks (S10-01 through S10-19) are verified and substantiated by code and deterministic tests. Tasks remain correctly `IN_PROGRESS` (`[ ]`) until stage closure on `main`. No critic was quietened by loosening or relabelling; DEC-04, DEC-12, DEC-13 and ADRs 0023-0024 are fully respected.
+- Verdict: APPROVED
 
 #### S10 handoff 3 — review 2 remediation verified, ready for review
 - Branch: `stage/S10-readiness-remediation`
@@ -3522,7 +3553,7 @@ homeowner approval of any site, program, plan or model.
 - The owner chose option A (DEC-11): Stage S10 Readiness remediation fixes ISS-25 and ISS-29 to ISS-35 before S9 continues. S9 is `BLOCKED` on S10; its assessment is in §H and §N "S9 handoff 1".
 - Start S10 on `stage/S10-readiness-remediation`, branched from the S9 head (`123bd0d`) because S10 uses `examples/readiness/` as its regression harness. Do the small fixes first (S10-01, S10-03, S10-04), then stairs and levels.
 - After S10 closes: bring S9 up to date with `main`, re-run S9-01 and S9-02, ask for the owner's S9-03 words, then request S9 review. ISS-28 stays with S9.
-- S10 state (2026-10-19): `agent:codex` addressed review 2 on the existing branch (3c12c3e, 93bf85f). Full local pytest 867 passed; benchmark runner 117 PASS; reviewer checks green; CI run 39309391824 **success** on Python 3.11/3.13 and Reviewer App. Review is `PENDING`; see S10 handoff 3. S9 stays blocked until S10 closes.
+- S10 state (2026-10-19): Stage S10 review 3 is `APPROVED` on head commit `298847a` (CI run 39309391824 green). Awaiting the owner's "Close stage S10". S9 stays blocked until S10 closes.
 
 ## P. Rules for updating the tracker
 
