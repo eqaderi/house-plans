@@ -6,7 +6,7 @@ No other TODO, roadmap or stage-status file is kept. Format and update rules
 are in [§P](#p-rules-for-updating-the-tracker); `python tools/check_tracker.py`
 checks them.
 
-Last updated: 2026-10-19, S10 review 2 remediation resumed; cross-platform rendering assertion corrected, verification in progress; S9 blocked on S10.
+Last updated: 2026-10-19, S10 review 2 remediation verified; CI run 39309391824 green; independent review requested; S9 blocked on S10.
 
 ## A. Mission and immediate objective
 
@@ -117,7 +117,7 @@ to reopen A–D):
 | | |
 |---|---|
 | **Current stage** | S10 Readiness remediation, `IN_PROGRESS` on `stage/S10-readiness-remediation`; S9 is `BLOCKED` on it (DEC-11) |
-| **Awaiting review** | none (S10 review 2 requested changes) |
+| **Awaiting review** | S10, `PENDING` after review 2 remediation; CI run 39309391824 green |
 | **Next eligible stage** | none while S10 is in progress |
 | **Path to good floor plans** | S1 (done) → S2 (done) → S3 (done) → S4 (done) → S5 (done) → S6 (done) → S7 (done) → S8 (done) → S10 → S9 (10 stages) |
 | **Blocked** | S9 and its tasks (S10 first, then a re-run of S9-01/S9-02 and the owner's S9-03 words); H1 site facts (owner or surveyor input); program gate (needs site gate); H3 real design (needs S9 and approvals) |
@@ -1516,7 +1516,7 @@ claimed without a recorded professional verification.
 |---|---|
 | Kind | implementation |
 | Status | IN_PROGRESS |
-| Review | CHANGES_REQUESTED |
+| Review | PENDING |
 | Branch | `stage/S10-readiness-remediation` |
 | Depends on | S4, S5, S6, S7, S8 |
 | Tasks | S10-01, S10-02, S10-03, S10-04, S10-05, S10-06, S10-07, S10-08, S10-09, S10-10, S10-11, S10-12, S10-13, S10-19, S10-14, S10-15, S10-16, S10-17, S10-18 |
@@ -1527,7 +1527,7 @@ claimed without a recorded professional verification.
 | Demonstration | Re-run of the readiness demonstration showing the S9 defects gone or explicitly reported, with before and after counts |
 | Artifacts | Updated `examples/readiness/demonstration/`; ADR for plan-review handling of unbuildable findings; schema and `DOMAIN_MODEL.md` updates where the model changes |
 | Review requirements | Reviewer reads `git diff main...stage/S10-readiness-remediation` in full, including the S9 commits, re-runs the demonstration, and checks that no critic was quietened by loosening or relabelling |
-| Evidence | All 19 tasks implemented and committed (dd83d9b through f94f4e0); review 1 findings addressed; ADR 0023, ADR 0024, DEC-12, DEC-13; pytest 866 passed; benchmark runner 117 PASS; reviewer typecheck, Vitest (19) and Playwright (8) pass; leak scan and linter clean; schemas current; demonstration asserted in tests/test_readiness_demo.py |
+| Evidence | All 19 tasks implemented and committed (dd83d9b through f94f4e0); review 1/2 findings addressed (c31d3b3, 3c12c3e, 93bf85f); ADR 0023, ADR 0024, DEC-12, DEC-13; pytest 867 passed; benchmark runner 117 PASS; reviewer typecheck, Vitest (19) and Playwright (8) pass; leak scan and linter clean; 29 schemas current; demonstration asserted in tests/test_readiness_demo.py; CI run 39309391824 green on Python 3.11/3.13 and Reviewer App |
 
 #### Reviewer and revision fixes
 
@@ -2493,7 +2493,7 @@ Closure record template:
 
 ### S10 records
 
-#### S10 handoff 3 — review 2 remediation, verification in progress
+#### S10 handoff 3 — review 2 remediation verified, ready for review
 - Branch: `stage/S10-readiness-remediation`
 - Implementer: `agent:codex`
 - Date: 2026-10-19
@@ -2503,7 +2503,8 @@ Closure record template:
 - Local checks: full pytest **867 passed in 434.82s**; targeted readiness tests **2 passed in 35.11s**; benchmark runner **117 PASS, 0 FAIL, 0 NOT_CHECKED**; lint clean; 29 schemas current; tracker clean; leak scan clean; homeowner store intact (13 events, 10 artifact versions); reviewer typecheck/build clean, Vitest **19 passed**, Playwright **8 passed**.
 - Full demonstration: `.venv/bin/python examples/readiness/run_demo.py --out project-data/s10-review2-replay` completed; 5 of 6 bar concepts feasible plus the 2D proposal (0 hard findings), revisions v2/v3, no store verification problems. Inspected `record.md` and the two-wing v1 PNG; critique hash matches on this macOS run. Remaining design limitations are still reported and belong to the S9 reassessment, not a software-stage approval.
 - CI: replacement run **39307134835** on `3c12c3e`: Reviewer App and Python 3.11 passed; Python 3.13 reported **865 passed, 2 skipped in 864.73s**, then the job was cancelled for exceeding 15m0s (confirmed check annotation). The run is `cancelled`, not green. A new run with the 20-minute Python job limit is required.
-- Remaining: wait for replacement CI and request independent review only if it passes. No merge, stage closure or homeowner gate action.
+- Timeout follow-up: `93bf85f1725c54f737857852423e94442c9d9d31` pushed; run **39309391824** on that commit **success**: Python 3.11, Python 3.13 and Reviewer App all passed. This supersedes the cancelled run above; both review 2 findings are addressed.
+- Status: Review `PENDING`; independent review requested. No merge, stage closure or homeowner gate action. Reviewer follows §O and reviews the full S10 branch (including its S9 ancestry), not just these follow-up commits.
 
 #### S10 review 2 — CHANGES_REQUESTED
 - Reviewed commit: f3936d4c0e8bf128cf7d35ce865998b24fa13acb
@@ -3521,7 +3522,7 @@ homeowner approval of any site, program, plan or model.
 - The owner chose option A (DEC-11): Stage S10 Readiness remediation fixes ISS-25 and ISS-29 to ISS-35 before S9 continues. S9 is `BLOCKED` on S10; its assessment is in §H and §N "S9 handoff 1".
 - Start S10 on `stage/S10-readiness-remediation`, branched from the S9 head (`123bd0d`) because S10 uses `examples/readiness/` as its regression harness. Do the small fixes first (S10-01, S10-03, S10-04), then stairs and levels.
 - After S10 closes: bring S9 up to date with `main`, re-run S9-01 and S9-02, ask for the owner's S9-03 words, then request S9 review. ISS-28 stays with S9.
-- S10 state (2026-10-19): review 2 requested changes after CI run 39278241032 failed. `agent:codex` resumed the existing branch and corrected the cross-platform screenshot assertion; see S10 handoff 3. Review stays `CHANGES_REQUESTED` while verification runs. S9 stays blocked.
+- S10 state (2026-10-19): `agent:codex` addressed review 2 on the existing branch (3c12c3e, 93bf85f). Full local pytest 867 passed; benchmark runner 117 PASS; reviewer checks green; CI run 39309391824 **success** on Python 3.11/3.13 and Reviewer App. Review is `PENDING`; see S10 handoff 3. S9 stays blocked until S10 closes.
 
 ## P. Rules for updating the tracker
 
