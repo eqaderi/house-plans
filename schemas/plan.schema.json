@@ -1677,6 +1677,13 @@
         "kind": {
           "$ref": "#/$defs/StairKind"
         },
+        "landing_segments": {
+          "items": {
+            "type": "integer"
+          },
+          "title": "Landing Segments",
+          "type": "array"
+        },
         "riser_count": {
           "anyOf": [
             {

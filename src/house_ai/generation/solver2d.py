@@ -29,6 +29,7 @@ from house_ai.constants.placement2d import (
     OPEN_PLAN_SHARED_WALL_MIN_M,
     STAIR_CORE_DEFAULT_DEPTH_DM,
     STAIR_CORE_DEFAULT_WIDTH_DM,
+    STAIR_CORE_RISERS,
     STAIR_CORE_SPACE_ID_ENTRY,
     STAIR_CORE_SPACE_ID_UPPER,
     ZONE_FAMILY,
@@ -65,6 +66,7 @@ from house_ai.domain.site import Site
 from house_ai.generation.frame import DesignFrame
 from house_ai.generation.rooms import space_id_for
 from house_ai.generation.solver import SolverOptions
+from house_ai.generation.stairs import u_core_fits
 
 SHARED_WALL_MIN_DM = int(round(SHARED_WALL_MIN_M * 10))
 OPEN_PLAN_WALL_MIN_DM = int(round(OPEN_PLAN_SHARED_WALL_MIN_M * 10))
@@ -212,6 +214,13 @@ def compute_candidate_dimensions(
             for h in range(h0, h1 + 1, 2):
                 if max(w / h, h / w) <= MAX_ASPECT_RATIO:
                     pairs.append((w, h))
+    if r.function is SpaceFunction.STAIR:
+        # A core must hold its U-shaped flight (S10-06, ADR 0023): 16 risers per storey.
+        pairs = [
+            (w, h)
+            for w, h in pairs
+            if u_core_fits(min(w, h), max(w, h), STAIR_CORE_RISERS)
+        ]
     pairs = [
         (w, h)
         for w, h in pairs

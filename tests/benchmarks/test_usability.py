@@ -673,17 +673,59 @@ def test_kitchen_actual_run_length():
     }
 
 
-def test_complex_stair_pitch_is_unknown_and_reversed_levels_are_flagged():
+def test_stair_without_walking_line_is_unknown_and_reversed_levels_are_flagged():
     doc = stair_model().model_dump(mode="json")
     doc["stairs"][0]["kind"] = "u_shaped"
+    doc["stairs"][0]["walking_line"] = None
     result = StairUsabilityEvaluator().evaluate(ctx(doc))
     assert metric(result, "stair_min_headroom_m").status == ClaimStatus.NOT_CHECKED
     assert RouteNetwork(ctx(doc).model).between("room", "upper-room").estimated
+    doc["stairs"][0]["walking_line"] = [(2.5, 1.5), (2.5, 5.7)]
     doc["stairs"][0]["kind"] = "straight"
     doc["levels"][1]["elevation_m"] = -3
     assert "stair_nonascending_levels" in {
         v.code for v in StairUsabilityEvaluator().evaluate(ctx(doc)).violations
     }
+
+
+def _u_stair_doc(hole_y1: float):
+    """A U-shaped flight, 3.0 m rise in 16 risers: two 2.0 m flights joined by a 1.3 m level
+    half landing (ADR 0023). The upper floor is open over y 2..``hole_y1``."""
+    doc = stair_model().model_dump(mode="json")
+    doc["stairs"][0].update(
+        kind="u_shaped",
+        footprint=rectangle(1, 2, 3.4, 6),
+        width_m=1.1,
+        walking_line=[(1.55, 6), (1.55, 4), (2.85, 4), (2.85, 6)],
+        landing_segments=[1],
+    )
+    doc["slabs"][0]["boundary"]["holes"] = [rectangle(1, 2, 3.4, hole_y1)["outer"]]
+    return doc
+
+
+def test_u_shaped_flight_is_measured_along_its_walking_line():
+    doc = _u_stair_doc(6)
+    house = HouseModel.model_validate(doc)
+    assert house.stairs[0].vertex_heights(3.0) == [0.0, 1.5, 1.5, 3.0]
+    result = StairUsabilityEvaluator().evaluate(ctx(doc))
+    # (16 risers - 2 flights) x 0.28 m = 3.92 m of going within 4.0 m of flights.
+    assert metric(result, "stair_required_run_m").value == pytest.approx(3.92)
+    assert metric(result, "stair_run_fit").value is True
+    # Open over the whole footprint: nothing overhead within the storey.
+    assert metric(result, "stair_min_headroom_m").status == ClaimStatus.NOT_CHECKED
+    net = RouteNetwork(ctx(doc).model)
+    assert not net.between("room", "upper-room").estimated
+    # Flights 2 x hypot(2.0, 1.5) = 5.0 m plus the 1.3 m level landing.
+    stair_edges = {round(x, 9) for edges in net.edges.values() for _, x, s, _ in edges if s}
+    assert stair_edges == {6.3}
+
+
+def test_u_shaped_flight_headroom_follows_the_landing():
+    # The upper floor covers y 5.5..6 over both flights' corridor ends.
+    result = StairUsabilityEvaluator().evaluate(ctx(_u_stair_doc(5.5)))
+    # Flight 2 reaches 3.0 m at y 6 under the 0.2 m slab at 3.0 m: 2.8 - 3.0 = -0.2 m.
+    assert metric(result, "stair_min_headroom_m").value == pytest.approx(-0.2)
+    assert "stair_low_headroom" in {v.code for v in result.violations}
 
 
 def test_maximum_vehicle_id_and_bed_requirement_references():

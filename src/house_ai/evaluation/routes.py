@@ -20,7 +20,7 @@ from shapely.geometry import LineString, Point
 from shapely.ops import nearest_points
 
 from house_ai.domain.base import EXTERIOR
-from house_ai.domain.model import HouseModel, StairKind
+from house_ai.domain.model import HouseModel
 from house_ai.domain.program import SpaceFunction
 
 from .usability_geometry import EPS, free_floor, opening_segment
@@ -134,11 +134,7 @@ class RouteNetwork:
             elif o.id in entrances:
                 self.entrances.extend(ends)
         for st in model.stairs:
-            if (
-                st.walking_line is None
-                or st.kind != StairKind.STRAIGHT
-                or len(st.walking_line) != 2
-            ):
+            if st.walking_line is None:
                 self._estimated_stair(st, node, floors)
                 continue
             line = LineString(st.walking_line)
@@ -159,7 +155,16 @@ class RouteNetwork:
                 and line.is_simple
                 and st.footprint.to_shapely().buffer(EPS).covers(line)
             ):
-                self.link(*ends, math.hypot(line.length, rise), stair=True)
+                # Pitch-line 3D length: flights rise, landings stay level (ADR 0023).
+                zs = st.vertex_heights(rise)
+                pts = st.walking_line
+                length = sum(
+                    math.hypot(math.dist(a, b), z1 - z0)
+                    for (a, b), z0, z1 in zip(
+                        zip(pts, pts[1:], strict=False), zs, zs[1:], strict=False
+                    )
+                )
+                self.link(*ends, length, stair=True)
             else:
                 self.unknown_stairs.append(st.id)
         by_space = {}

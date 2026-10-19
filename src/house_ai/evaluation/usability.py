@@ -16,7 +16,7 @@ from shapely.ops import unary_union
 
 from house_ai.domain.base import EXTERIOR
 from house_ai.domain.epistemics import ClaimStatus
-from house_ai.domain.model import Operation, StairKind, WallKind
+from house_ai.domain.model import Operation, WallKind
 from house_ai.domain.program import Privacy, SpaceFunction, Strength
 from house_ai.domain.terrain import elevation_at, site_surface
 
@@ -283,13 +283,9 @@ class StairUsabilityEvaluator(Critic):
                         f"Stair {field} is outside conceptual range.",
                         basis=basis,
                     )
-            if (
-                st.walking_line is None
-                or st.kind != StairKind.STRAIGHT
-                or len(st.walking_line) != 2
-            ):
+            if st.walking_line is None:
                 for name in ("stair_run_fit", "stair_min_headroom_m", "stair_landing_clear"):
-                    out.claim(name, None, ids, "missing_line_or_unsupported_complex_flight", NC)
+                    out.claim(name, None, ids, "missing_walking_line", NC)
                 continue
             line = LineString(st.walking_line)
             if not line.is_simple or line.length < EPS:
@@ -300,11 +296,13 @@ class StairUsabilityEvaluator(Critic):
                 )
                 continue
             footprint = st.footprint.to_shapely()
-            fits_width = footprint.buffer(EPS).covers(line.buffer(st.width_m / 2, cap_style=2))
+            strip = line.buffer(st.width_m / 2, cap_style=2, join_style=2)
+            fits_width = footprint.buffer(EPS).covers(strip)
             if st.riser_count and st.tread_depth_m:
-                needed = (st.riser_count - 1) * st.tread_depth_m
+                # Each flight has one tread fewer than its risers (ADR 0023).
+                needed = (st.riser_count - st.flight_count()) * st.tread_depth_m
                 out.claim("stair_required_run_m", needed, ids, "tread_count_times_going", unit="m")
-                fits = fits_width and line.length + EPS >= needed
+                fits = fits_width and st.flight_length_m() + EPS >= needed
                 out.claim("stair_run_fit", fits, ids, "walking_line_and_footprint_width")
                 if not fits:
                     out.flag(
@@ -376,7 +374,7 @@ class StairUsabilityEvaluator(Critic):
                 d = line.project(pt)
                 if d <= EPS or d >= line.length - EPS:
                     continue
-                pitch = bottom_z + rise * d / line.length
+                pitch = bottom_z + _pitch(st, rise, d)
                 wall_z = model.level(wall.level_id).elevation_m + wall.base_offset_m
                 lo, hi = max(pitch, wall_z), min(pitch + clear, wall_z + wall.height_m)
                 if hi - lo <= EPS:
@@ -427,7 +425,7 @@ class StairUsabilityEvaluator(Critic):
             underside = (
                 model.level(slab.level_id).elevation_m + slab.top_offset_m - slab.thickness_m
             )
-            head = min(underside - bottom_z - rise * d / line.length for d in distances)
+            head = min(underside - bottom_z - _pitch(st, rise, d) for d in distances)
             heads.append(head)
             if head + EPS < self.policy.min_headroom_m:
                 out.flag(
@@ -445,6 +443,20 @@ class StairUsabilityEvaluator(Critic):
             M if heads else NC,
             unit="m",
         )
+
+
+def _pitch(st, rise: float, d: float) -> float:
+    """Pitch-line height above the bottom floor at distance ``d`` along the walking line:
+    rising on flights, level on landings (ADR 0023)."""
+    pts, zs = st.walking_line, st.vertex_heights(rise)
+    run = 0.0
+    for (a, b), z0, z1 in zip(zip(pts, pts[1:], strict=False), zs, zs[1:], strict=False):
+        seg = math.dist(a, b)
+        if d <= run + seg + 1e-12:
+            t = 0.0 if seg <= 0 else min(max((d - run) / seg, 0.0), 1.0)
+            return z0 + (z1 - z0) * t
+        run += seg
+    return zs[-1]
 
 
 def _arrives_over(model, st, level_id: str, landing_m: float) -> bool:

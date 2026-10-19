@@ -20,6 +20,8 @@ from .test_plan_workflow import _approve_site_and_program, _load
 
 #: Strategies whose bars join side by side: split_level by a row link, two_wing by an end link.
 STRATEGIES = ["split_level", "two_wing"]
+#: compact stacks its bars and joins them with a U-shaped flight (S10-06).
+GENERATED = [*STRATEGIES, "compact"]
 
 
 @pytest.fixture(scope="module")
@@ -27,7 +29,7 @@ def concepts(tmp_path_factory):
     store = _load(tmp_path_factory.mktemp("stairs"))
     _approve_site_and_program(store)
     svc = PlanService(store)
-    out = svc.generate(AGENT, strategies=STRATEGIES, exploratory=True)
+    out = svc.generate(AGENT, strategies=GENERATED, exploratory=True)
     inp = svc.inputs(exploratory=True)
     return {o.candidate.strategy: o.candidate.plan for o in out.generated}, inp
 
@@ -86,3 +88,32 @@ def test_stairwell_walls_span_from_floor_to_the_slab_above(concepts):
     assert {round(w.height_m, 4) for w in below} == {round(rise - 0.25, 4)}
     assert {round(w.base_offset_m, 4) for w in above} == {round(3.0 - 0.25 - rise, 4)}
     assert {round(w.base_offset_m + w.height_m, 4) for w in above} == {2.8}
+
+
+def test_u_shaped_flight_has_a_measured_walking_line(concepts):
+    """S10-06 (ISS-29, ADR 0023): the stacked U-shaped flight is laid out and measured."""
+    plans, inp = concepts
+    model = plans["compact"].model
+    (st,) = [s for s in model.stairs if s.kind is StairKind.U_SHAPED]
+    assert len(st.walking_line) == 4 and st.landing_segments == [1]
+    rise = model.level(st.to_level_id).elevation_m - model.level(st.from_level_id).elevation_m
+    heights = st.vertex_heights(rise)
+    # Equal lanes: the half landing sits at half the rise, level across.
+    assert heights[1] == pytest.approx(rise / 2) and heights[2] == pytest.approx(rise / 2)
+    # Both flights meet the corridor-side line: bottom and top ends are side by side.
+    (x0, y0), (x3, y3) = st.walking_line[0], st.walking_line[3]
+    lane_gap = ((x3 - x0) ** 2 + (y3 - y0) ** 2) ** 0.5
+    assert lane_gap == pytest.approx(
+        ((st.walking_line[2][0] - st.walking_line[1][0]) ** 2
+         + (st.walking_line[2][1] - st.walking_line[1][1]) ** 2) ** 0.5
+    )  # fmt: skip
+    result = StairUsabilityEvaluator().evaluate(
+        EvaluationContext(model, inp.site, inp.program, None)
+    )
+    assert _metric(result, "stair_run_fit", st.id).value is True
+    assert _metric(result, "stair_min_headroom_m", st.id).value >= 2.0 + 0.05
+    assert _metric(result, "stair_wall_clashes", st.id).value == 0
+    clear = [
+        m for m in result.metrics if m.metric == "stair_landing_clear" and st.id in m.subject_ids
+    ]
+    assert len(clear) == 2 and all(m.value is True for m in clear)

@@ -86,5 +86,12 @@ are those of ADR 0019.
   appears.
 - The stair hall is a narrow tower over the lower bar's roof. Its form, light
   and structure are a design matter left to the owner and professionals.
-- The wall check follows the straight walking line. Complex flights without a
-  walking line stay `not_checked` until they get one (S10-06).
+- U-shaped flights have walking lines too (S10-06). `Stair.landing_segments`
+  marks level landing segments; the rise is shared among the other segments by
+  length, so headroom, wall clashes, run fit (`(risers − flights) × going`),
+  routes and section risers follow flights and stay level on the landing. The
+  generator lays a U flight out as two lanes kept 0.2 m from the walls, both
+  flights meeting the corridor-side line where the upper landing stays in the
+  floor, turning on a half landing at least a flight's width deep; otherwise
+  the model carries a blocking issue. Only a stair without a walking line stays
+  `not_checked`.

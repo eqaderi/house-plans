@@ -48,8 +48,12 @@ COURTYARD_MIN_AREA_DM2 = 900  # 9.0 m²
 LEVEL_ENTRY = "lv-entry"
 LEVEL_UPPER = "lv-upper"
 LEVEL_LOWER = "lv-lower"
-STAIR_CORE_DEFAULT_WIDTH_DM = 20  # 2.0 m
-STAIR_CORE_DEFAULT_DEPTH_DM = 30  # 3.0 m
+STAIR_CORE_DEFAULT_WIDTH_DM = 24  # 2.4 m: two 1.0 m lanes 0.2 m from the walls
+STAIR_CORE_DEFAULT_DEPTH_DM = 46  # 4.6 m: landing strip, longer flight, half landing
+#: Fixed storey height of 2D placement levels (floor to floor), metres.
+STOREY_HEIGHT_M = 3.0
+#: Risers per storey of a 2D stair core (the assembler's U-shaped flight).
+STAIR_CORE_RISERS = 16
 STAIR_CORE_SPACE_ID_ENTRY = "sp-stair-lv-entry"
 STAIR_CORE_SPACE_ID_UPPER = "sp-stair-lv-upper"
 

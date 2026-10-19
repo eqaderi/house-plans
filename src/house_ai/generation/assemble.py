@@ -62,7 +62,7 @@ from .rooms import (
     touches_corridor,
 )
 from .solver import Solution
-from .stairs import SLAB_M, TREAD_M, stair_risers
+from .stairs import LANDING_STRIP_DM, SLAB_M, TREAD_M, stair_risers, u_layout
 
 S = SpaceFunction
 EXTERIOR_WALL_M = 0.30
@@ -867,11 +867,37 @@ class _Builder:
             if link.kind == "stacked":
                 sa, sb = self.space(f"sp-stair-{i}a"), self.space(f"sp-stair-{i}b")
                 r = sa.rect
-                fp = self.frame.rect(r.u0 + 1, r.v0 + 1, r.u1 - 1, r.v1 - 1)
                 kind = StairKind.U_SHAPED
-                walking_line = None  # A U-shaped flight's line is not modelled.
-                width = min(1.1, (from_dm(r.w if a.axis == "u" else r.h) - 0.2) / 2)
+                # Lanes keep half an exterior wall plus tolerance (0.2 m) from the walls.
+                width = min(1.1, (from_dm(r.w if a.axis == "u" else r.h) - 0.4) / 2)
                 low, high = (sa, sb) if a.elevation_m < b.elevation_m else (sb, sa)
+                # Two lanes run away from the corridor side, where the upper landing stays
+                # in the floor slab, and turn on a half landing (ADR 0023).
+                row = self.m.bar(high.bar_id).row(high.row_id.rsplit("-", 1)[-1])
+                strip, front = LANDING_STRIP_DM, row.side == "front"
+                if a.axis == "u":
+                    lo, hi, c0, c1 = r.v0 + 2, r.v1 - 2, r.u0 + 2, r.u1 - 2
+                    near = r.v1 - strip if front else r.v0 + strip
+                else:
+                    lo, hi, c0, c1 = r.u0 + 2, r.u1 - 2, r.v0 + 2, r.v1 - 2
+                    near = r.u1 - strip if front else r.u0 + strip
+                far = lo if front else hi
+                pts, fits = u_layout(near, far, c0, c1, width * 10, n)
+                if not fits:
+                    self._issue(
+                        f"iss-stair-landing-{i}",
+                        f"Stair {i} has no room for a {width:.2f} m half landing",
+                        Severity.BLOCKING,
+                        [],
+                    )
+                lo, hi = sorted((near, far))
+                if a.axis == "u":
+                    fp = self.frame.rect(c0, lo, c1, hi)
+                    walking_line = [self.frame.to_local(c, x) for x, c in pts]
+                else:
+                    fp = self.frame.rect(lo, c0, hi, c1)
+                    walking_line = [self.frame.to_local(x, c) for x, c in pts]
+                landing_segments = [1]
             else:
                 if link.kind == "end":
                     top_space = self.space(f"sp-stair-{i}a")
@@ -908,6 +934,7 @@ class _Builder:
                     fp = self.frame.rect(lo, s0 + inset, hi, s1 - inset)
                 kind = StairKind.STRAIGHT
                 width = from_dm((s1 - s0) - 2 * inset)
+                landing_segments = []
                 low, high = (
                     (top_space, other) if a.elevation_m < b.elevation_m else (other, top_space)
                 )
@@ -950,6 +977,7 @@ class _Builder:
                     riser_height_m=round(riser, 4),
                     tread_depth_m=TREAD_M,
                     walking_line=walking_line,
+                    landing_segments=landing_segments,
                 )
             )
 
