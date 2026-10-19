@@ -34,6 +34,10 @@ data.
   `.venv/bin/python examples/surveys/synthetic/make_expected.py` (the tests
   run it with `--check`).
 
+- `readiness/`: the S9 end-to-end demonstration on the synthetic hillside,
+  from site gate to an approved revised plan, with a synthetic owner; see
+  `readiness/README.md`. `readiness/demonstration/` is illustrative output.
+
 Load the bungalow into a project store:
 
 ```bash

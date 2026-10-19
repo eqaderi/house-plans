@@ -1,0 +1,1053 @@
+{
+  "synthetic": true,
+  "python": "3.13.3",
+  "platform": "Darwin arm64",
+  "strategies_requested": "all",
+  "site": {
+    "ref": {
+      "kind": "site",
+      "id": "site",
+      "version": 1,
+      "sha256": "c2d20667c325c8445e908b63c4dfb81c404d4b5b621c06f39fa2fef3f8e9d29f"
+    },
+    "blockers": [],
+    "relief_m": 10.38,
+    "parcel_area_m2": 737.503,
+    "unknown": [
+      "frontage_m",
+      "mean_slope_pct"
+    ]
+  },
+  "interview": {
+    "turns": 27,
+    "answers_scripted": 26,
+    "answers_recorded_verbatim": 26,
+    "turn_actors": [
+      "agent:claude-code"
+    ],
+    "slot_methods": {
+      "parser": 37,
+      "agent:claude-code": 2
+    },
+    "inferences_before_confirmation": 39,
+    "unconfirmed_after_confirmation": [],
+    "budget_history": [
+      "About 500k EUR.",
+      "Sorry, the budget is closer to 550k EUR."
+    ],
+    "budget_value": "550000 EUR",
+    "outdoor_value": [
+      "terrace",
+      "garden"
+    ],
+    "open_contradictions": 0
+  },
+  "program": {
+    "ref": {
+      "kind": "space_program",
+      "id": "program",
+      "version": 1,
+      "sha256": "e793631f5a81234a87310b7813084878046ac331813d509d9461af6dde4d60a0"
+    },
+    "items": [
+      {
+        "id": "pi-entry",
+        "function": "entry",
+        "target_m2": 6.0
+      },
+      {
+        "id": "pi-living",
+        "function": "living",
+        "target_m2": 25.0
+      },
+      {
+        "id": "pi-kitchen",
+        "function": "kitchen",
+        "target_m2": 13.799999999999999
+      },
+      {
+        "id": "pi-dining",
+        "function": "dining",
+        "target_m2": 14.0
+      },
+      {
+        "id": "pi-pantry",
+        "function": "pantry",
+        "target_m2": 4.0
+      },
+      {
+        "id": "pi-bed-main",
+        "function": "bedroom",
+        "target_m2": 15.0
+      },
+      {
+        "id": "pi-bed-child-1",
+        "function": "bedroom",
+        "target_m2": 11.0
+      },
+      {
+        "id": "pi-bed-child-2",
+        "function": "bedroom",
+        "target_m2": 11.0
+      },
+      {
+        "id": "pi-bath-ensuite",
+        "function": "bathroom",
+        "target_m2": 5.0
+      },
+      {
+        "id": "pi-bath-1",
+        "function": "bathroom",
+        "target_m2": 6.0
+      },
+      {
+        "id": "pi-study-1",
+        "function": "study",
+        "target_m2": 9.0
+      },
+      {
+        "id": "pi-garage",
+        "function": "garage",
+        "target_m2": 18.0
+      },
+      {
+        "id": "pi-laundry",
+        "function": "laundry",
+        "target_m2": 6.0
+      },
+      {
+        "id": "pi-storage",
+        "function": "storage",
+        "target_m2": 5.0
+      },
+      {
+        "id": "pi-mechanical",
+        "function": "mechanical",
+        "target_m2": 4.0
+      },
+      {
+        "id": "pi-stair",
+        "function": "stair",
+        "target_m2": 10.0
+      },
+      {
+        "id": "pi-terrace",
+        "function": "terrace",
+        "target_m2": 16.0
+      },
+      {
+        "id": "pi-garden",
+        "function": "other",
+        "target_m2": null
+      }
+    ],
+    "target_gross_area_m2": 170.0,
+    "findings": [
+      "budget_not_checked"
+    ],
+    "assumptions": 4,
+    "open_questions": 0
+  },
+  "concepts": [
+    {
+      "option": "concept-compact",
+      "strategy": "compact",
+      "feasible": true,
+      "version": 1,
+      "sha256": "8c8c4ba4d1e407deb1c7a8e650ea33e4e42c1bdea88d9ee316cfa75ea874597a",
+      "levels": {
+        "lv-down-300": 8.49,
+        "lv-entry": 11.49
+      },
+      "stairs": [
+        {
+          "id": "st-0",
+          "kind": "u_shaped",
+          "walking_line": false
+        }
+      ],
+      "furniture": 0,
+      "fixtures": 0,
+      "hard": 0,
+      "soft": 54,
+      "hard_codes": [],
+      "defects": [
+        {
+          "code": "large_underfloor_void",
+          "subjects": [],
+          "message": "Void clear height 5.31 m exceeds configured 4 m concept-review trigger."
+        },
+        {
+          "code": "buried_habitable_face",
+          "subjects": [
+            "w-down-300-031",
+            "sp-bed-main"
+          ],
+          "message": "Buried face reduces daylight capability; waterproofing needs professional."
+        },
+        {
+          "code": "kitchen_no_sampled_fit",
+          "subjects": [
+            "sp-kitchen"
+          ],
+          "message": "No arrangement in the declared discrete template search; continuous infeasibility has not been proved."
+        }
+      ],
+      "codes": {
+        "bedroom_noise_stacking": 3,
+        "buried_habitable_face": 1,
+        "elevated_floor_support_unresolved": 1,
+        "elongated_room": 2,
+        "garage_ramp_grade_review": 1,
+        "kitchen_no_sampled_fit": 1,
+        "kitchen_through_traffic": 4,
+        "large_underfloor_void": 1,
+        "living_through_traffic": 1,
+        "low_daylight_opportunity": 1,
+        "needs_professional_drainage": 12,
+        "needs_professional_foundations": 1,
+        "needs_professional_retaining": 10,
+        "needs_professional_slope_stability": 1,
+        "needs_professional_structure": 2,
+        "needs_professional_vehicle_access": 1,
+        "needs_professional_waterproofing": 1,
+        "outdoor_door_grade_mismatch": 1,
+        "soft_adjacency_unmet": 1,
+        "terrain_triangle_review": 8
+      },
+      "not_checked": [
+        "adjacency_satisfied",
+        "daylight_orientation",
+        "dead_end_length_m",
+        "engineered_fill_volume_m3",
+        "entry_to_family_length_m",
+        "garage_sampled_fit",
+        "kitchen_aisle_width_m",
+        "kitchen_counter_run_m",
+        "kitchen_to_family_length_m",
+        "outdoor_item_placed",
+        "stair_landing_clear",
+        "stair_min_headroom_m",
+        "stair_run_fit",
+        "vehicle_swept_path"
+      ]
+    },
+    {
+      "option": "concept-split-level",
+      "strategy": "split_level",
+      "feasible": true,
+      "version": 1,
+      "sha256": "bab853fb1a357cffb16c59b0b2e95ca7736b5a7a8b7e60f6093cad233d0367b7",
+      "levels": {
+        "lv-down-450": 7.34,
+        "lv-entry": 11.84
+      },
+      "stairs": [
+        {
+          "id": "st-0",
+          "kind": "straight",
+          "walking_line": true
+        }
+      ],
+      "furniture": 0,
+      "fixtures": 0,
+      "hard": 0,
+      "soft": 35,
+      "hard_codes": [],
+      "defects": [
+        {
+          "code": "large_underfloor_void",
+          "subjects": [],
+          "message": "Void clear height 5.35 m exceeds configured 4 m concept-review trigger."
+        },
+        {
+          "code": "height_limit_exceeded",
+          "subjects": [],
+          "message": "Height 12.04 m exceeds envelope 10 m."
+        },
+        {
+          "code": "floor_connection_height_mismatch",
+          "subjects": [
+            "st-0",
+            "lv-down-450",
+            "lv-entry"
+          ],
+          "message": "Declared floor-to-floor height disagrees with stair connection."
+        },
+        {
+          "code": "stair_low_headroom",
+          "subjects": [
+            "st-0",
+            "slab-roof-down-450"
+          ],
+          "message": "Pitch-line headroom 0.500 m under slab."
+        },
+        {
+          "code": "kitchen_no_sampled_fit",
+          "subjects": [
+            "sp-kitchen"
+          ],
+          "message": "No arrangement in the declared discrete template search; continuous infeasibility has not been proved."
+        }
+      ],
+      "codes": {
+        "elevated_floor_support_unresolved": 1,
+        "elongated_room": 1,
+        "excess_circulation": 1,
+        "floor_connection_height_mismatch": 1,
+        "garage_ramp_grade_review": 1,
+        "height_limit_exceeded": 1,
+        "kitchen_no_sampled_fit": 1,
+        "kitchen_through_traffic": 4,
+        "large_underfloor_void": 1,
+        "living_through_traffic": 1,
+        "low_daylight_opportunity": 1,
+        "needs_professional_drainage": 3,
+        "needs_professional_foundations": 1,
+        "needs_professional_retaining": 1,
+        "needs_professional_slope_stability": 1,
+        "needs_professional_structure": 2,
+        "needs_professional_vehicle_access": 1,
+        "needs_professional_waterproofing": 1,
+        "outdoor_door_grade_mismatch": 1,
+        "required_daylight_no_exterior_window": 1,
+        "stair_low_headroom": 1,
+        "terrain_triangle_review": 8
+      },
+      "not_checked": [
+        "adjacency_satisfied",
+        "daylight_orientation",
+        "dead_end_length_m",
+        "engineered_fill_volume_m3",
+        "entry_to_family_length_m",
+        "garage_sampled_fit",
+        "kitchen_aisle_width_m",
+        "kitchen_counter_run_m",
+        "kitchen_to_family_length_m",
+        "outdoor_item_placed",
+        "vehicle_swept_path"
+      ]
+    },
+    {
+      "option": "concept-linear",
+      "strategy": "linear",
+      "feasible": true,
+      "version": 1,
+      "sha256": "b5ea9dd112cd526bd9460ff4242fbc1e2c810d7ae24218596b5cc51fdadd6e9a",
+      "levels": {
+        "lv-entry": 11.63
+      },
+      "stairs": [],
+      "furniture": 0,
+      "fixtures": 0,
+      "hard": 0,
+      "soft": 42,
+      "hard_codes": [],
+      "defects": [
+        {
+          "code": "program_item_missing",
+          "subjects": [
+            "pi-stair"
+          ],
+          "message": "Stair (pi-stair): 0 of 1 placed; not needed in a one-level concept"
+        },
+        {
+          "code": "level_count_differs",
+          "subjects": [],
+          "message": "the program asks for 2 storey(s); this concept has 1 floor level(s)"
+        },
+        {
+          "code": "large_underfloor_void",
+          "subjects": [],
+          "message": "Void clear height 5.45 m exceeds configured 4 m concept-review trigger."
+        },
+        {
+          "code": "kitchen_no_sampled_fit",
+          "subjects": [
+            "sp-kitchen"
+          ],
+          "message": "No arrangement in the declared discrete template search; continuous infeasibility has not been proved."
+        }
+      ],
+      "codes": {
+        "bedroom_noise_adjacency": 2,
+        "daily_route_long": 2,
+        "elevated_floor_support_unresolved": 1,
+        "elongated_room": 3,
+        "exterior_access_level_unresolved": 1,
+        "garage_ramp_grade_review": 1,
+        "kitchen_no_sampled_fit": 1,
+        "kitchen_through_traffic": 4,
+        "large_underfloor_void": 1,
+        "level_count_differs": 1,
+        "living_through_traffic": 1,
+        "low_daylight_opportunity": 2,
+        "needs_professional_drainage": 3,
+        "needs_professional_foundations": 1,
+        "needs_professional_retaining": 1,
+        "needs_professional_slope_stability": 1,
+        "needs_professional_structure": 2,
+        "needs_professional_vehicle_access": 1,
+        "needs_professional_waterproofing": 1,
+        "outdoor_door_grade_mismatch": 2,
+        "program_item_missing": 1,
+        "soft_adjacency_unmet": 1,
+        "terrain_triangle_review": 8
+      },
+      "not_checked": [
+        "adjacency_satisfied",
+        "daylight_orientation",
+        "dead_end_length_m",
+        "engineered_fill_volume_m3",
+        "entry_to_family_length_m",
+        "garage_sampled_fit",
+        "kitchen_aisle_width_m",
+        "kitchen_counter_run_m",
+        "kitchen_to_family_length_m",
+        "outdoor_item_placed",
+        "vehicle_swept_path"
+      ]
+    },
+    {
+      "option": "concept-two-wing",
+      "strategy": "two_wing",
+      "feasible": true,
+      "version": 1,
+      "sha256": "bcf513f3f0ea7fa9f35e343e870b13babc1a304dd8c872cd39998d2350ab6629",
+      "levels": {
+        "lv-down-450": 7.13,
+        "lv-entry": 11.63
+      },
+      "stairs": [
+        {
+          "id": "st-0",
+          "kind": "straight",
+          "walking_line": true
+        }
+      ],
+      "furniture": 0,
+      "fixtures": 0,
+      "hard": 0,
+      "soft": 34,
+      "hard_codes": [],
+      "defects": [
+        {
+          "code": "large_underfloor_void",
+          "subjects": [],
+          "message": "Void clear height 5.28 m exceeds configured 4 m concept-review trigger."
+        },
+        {
+          "code": "height_limit_exceeded",
+          "subjects": [],
+          "message": "Height 11.22 m exceeds envelope 10 m."
+        },
+        {
+          "code": "floor_connection_height_mismatch",
+          "subjects": [
+            "st-0",
+            "lv-down-450",
+            "lv-entry"
+          ],
+          "message": "Declared floor-to-floor height disagrees with stair connection."
+        },
+        {
+          "code": "stair_low_headroom",
+          "subjects": [
+            "st-0",
+            "slab-roof-down-450"
+          ],
+          "message": "Pitch-line headroom 0.500 m under slab."
+        },
+        {
+          "code": "kitchen_no_sampled_fit",
+          "subjects": [
+            "sp-kitchen"
+          ],
+          "message": "No arrangement in the declared discrete template search; continuous infeasibility has not been proved."
+        }
+      ],
+      "codes": {
+        "bedroom_noise_adjacency": 1,
+        "elevated_floor_support_unresolved": 1,
+        "elongated_room": 1,
+        "floor_connection_height_mismatch": 1,
+        "garage_ramp_grade_review": 1,
+        "height_limit_exceeded": 1,
+        "kitchen_no_sampled_fit": 1,
+        "kitchen_through_traffic": 4,
+        "large_underfloor_void": 1,
+        "living_through_traffic": 1,
+        "low_daylight_opportunity": 1,
+        "needs_professional_drainage": 3,
+        "needs_professional_foundations": 1,
+        "needs_professional_retaining": 1,
+        "needs_professional_slope_stability": 1,
+        "needs_professional_structure": 2,
+        "needs_professional_vehicle_access": 1,
+        "needs_professional_waterproofing": 1,
+        "outdoor_door_grade_mismatch": 1,
+        "stair_low_headroom": 1,
+        "terrain_triangle_review": 8
+      },
+      "not_checked": [
+        "adjacency_satisfied",
+        "daylight_orientation",
+        "dead_end_length_m",
+        "engineered_fill_volume_m3",
+        "entry_to_family_length_m",
+        "garage_sampled_fit",
+        "kitchen_aisle_width_m",
+        "kitchen_counter_run_m",
+        "kitchen_to_family_length_m",
+        "outdoor_item_placed",
+        "vehicle_swept_path"
+      ]
+    },
+    {
+      "option": "concept-courtyard",
+      "strategy": "courtyard",
+      "feasible": false,
+      "reason": "rows 4.8/4.2 m: no room for a second pavilion behind a garden court: no 6 m long strip of the envelope is 10.2 m deep at 18.3 m from the road edge; rows 4.2/4.2 m: no room for a second pavilion behind a garden court: no 6 m long strip of the envelope is 9.6 m deep at 18.3 m from the road edge; rows 6.6/6.6 m: no room for a second pavilion behind a garden court: no 6 m long strip of the envelope is 14.4 m deep at 19.5 m from the road edge"
+    },
+    {
+      "option": "concept-split-walkout",
+      "strategy": "split_walkout",
+      "feasible": true,
+      "version": 1,
+      "sha256": "f82696db70879806a9460d27e9036337821ae86aedc5bbf3d22f6c4a6347cf21",
+      "levels": {
+        "lv-down-450": 6.96,
+        "lv-down-300": 8.46,
+        "lv-entry": 11.46
+      },
+      "stairs": [
+        {
+          "id": "st-0",
+          "kind": "u_shaped",
+          "walking_line": false
+        },
+        {
+          "id": "st-1",
+          "kind": "straight",
+          "walking_line": true
+        }
+      ],
+      "furniture": 0,
+      "fixtures": 0,
+      "hard": 0,
+      "soft": 51,
+      "hard_codes": [],
+      "defects": [
+        {
+          "code": "level_count_differs",
+          "subjects": [],
+          "message": "the program asks for 2 storey(s); this concept has 3 floor level(s)"
+        },
+        {
+          "code": "large_underfloor_void",
+          "subjects": [],
+          "message": "Void clear height 5.28 m exceeds configured 4 m concept-review trigger."
+        },
+        {
+          "code": "height_limit_exceeded",
+          "subjects": [],
+          "message": "Height 12.02 m exceeds envelope 10 m."
+        },
+        {
+          "code": "floor_connection_height_mismatch",
+          "subjects": [
+            "st-1",
+            "lv-down-450",
+            "lv-down-300"
+          ],
+          "message": "Declared floor-to-floor height disagrees with stair connection."
+        },
+        {
+          "code": "kitchen_no_sampled_fit",
+          "subjects": [
+            "sp-kitchen"
+          ],
+          "message": "No arrangement in the declared discrete template search; continuous infeasibility has not been proved."
+        }
+      ],
+      "codes": {
+        "bedroom_noise_adjacency": 1,
+        "elevated_floor_support_unresolved": 1,
+        "elongated_room": 1,
+        "excess_circulation": 1,
+        "floor_connection_height_mismatch": 1,
+        "garage_ramp_grade_review": 1,
+        "height_limit_exceeded": 1,
+        "kitchen_no_sampled_fit": 1,
+        "kitchen_through_traffic": 4,
+        "large_underfloor_void": 1,
+        "level_count_differs": 1,
+        "living_through_traffic": 1,
+        "needs_professional_drainage": 11,
+        "needs_professional_foundations": 1,
+        "needs_professional_retaining": 9,
+        "needs_professional_slope_stability": 1,
+        "needs_professional_structure": 2,
+        "needs_professional_vehicle_access": 1,
+        "needs_professional_waterproofing": 1,
+        "soft_adjacency_unmet": 2,
+        "terrain_triangle_review": 8
+      },
+      "not_checked": [
+        "adjacency_satisfied",
+        "bed_double_sampled_fit",
+        "daylight_orientation",
+        "dead_end_length_m",
+        "engineered_fill_volume_m3",
+        "entry_to_family_length_m",
+        "garage_sampled_fit",
+        "kitchen_aisle_width_m",
+        "kitchen_counter_run_m",
+        "kitchen_to_family_length_m",
+        "outdoor_item_placed",
+        "stair_landing_clear",
+        "stair_min_headroom_m",
+        "stair_run_fit",
+        "vehicle_swept_path"
+      ]
+    }
+  ],
+  "concepts_pin_approved_inputs": true,
+  "diversity": [
+    {
+      "pair": [
+        "concept-compact",
+        "concept-linear"
+      ],
+      "footprint_iou": 0.58,
+      "topology_distance": 0.74,
+      "near_duplicate": false
+    },
+    {
+      "pair": [
+        "concept-compact",
+        "concept-split-level"
+      ],
+      "footprint_iou": 0.09,
+      "topology_distance": 0.51,
+      "near_duplicate": false
+    },
+    {
+      "pair": [
+        "concept-compact",
+        "concept-split-walkout"
+      ],
+      "footprint_iou": 0.49,
+      "topology_distance": 0.58,
+      "near_duplicate": false
+    },
+    {
+      "pair": [
+        "concept-compact",
+        "concept-two-wing"
+      ],
+      "footprint_iou": 0.36,
+      "topology_distance": 0.57,
+      "near_duplicate": false
+    },
+    {
+      "pair": [
+        "concept-linear",
+        "concept-split-level"
+      ],
+      "footprint_iou": 0.37,
+      "topology_distance": 0.61,
+      "near_duplicate": false
+    },
+    {
+      "pair": [
+        "concept-linear",
+        "concept-split-walkout"
+      ],
+      "footprint_iou": 0.35,
+      "topology_distance": 0.77,
+      "near_duplicate": false
+    },
+    {
+      "pair": [
+        "concept-linear",
+        "concept-two-wing"
+      ],
+      "footprint_iou": 0.48,
+      "topology_distance": 0.7,
+      "near_duplicate": false
+    },
+    {
+      "pair": [
+        "concept-split-level",
+        "concept-split-walkout"
+      ],
+      "footprint_iou": 0.02,
+      "topology_distance": 0.59,
+      "near_duplicate": false
+    },
+    {
+      "pair": [
+        "concept-split-level",
+        "concept-two-wing"
+      ],
+      "footprint_iou": 0.22,
+      "topology_distance": 0.48,
+      "near_duplicate": false
+    },
+    {
+      "pair": [
+        "concept-split-walkout",
+        "concept-two-wing"
+      ],
+      "footprint_iou": 0.37,
+      "topology_distance": 0.6,
+      "near_duplicate": false
+    }
+  ],
+  "proposal": [
+    {
+      "option": "concept-open-plan",
+      "strategy": "open_plan",
+      "feasible": true,
+      "version": 1,
+      "sha256": "56593e959a77067bf2c1715be373e90cbe9302f5afbca4cf78fb3bda9ea0bcee",
+      "levels": {
+        "lv-lower": 5.64,
+        "lv-entry": 8.64
+      },
+      "stairs": [
+        {
+          "id": "stair-main",
+          "kind": "u_shaped",
+          "walking_line": false
+        }
+      ],
+      "furniture": 0,
+      "fixtures": 0,
+      "hard": 2,
+      "soft": 181,
+      "hard_codes": [
+        "min_area_violation",
+        "min_dimension_violation"
+      ],
+      "defects": [
+        {
+          "code": "buried_habitable_face",
+          "subjects": [
+            "w-lower-001",
+            "sp-bed-child-1"
+          ],
+          "message": "Buried face reduces daylight capability; waterproofing needs professional."
+        },
+        {
+          "code": "buried_habitable_face",
+          "subjects": [
+            "w-lower-002",
+            "sp-bed-child-2"
+          ],
+          "message": "Buried face reduces daylight capability; waterproofing needs professional."
+        },
+        {
+          "code": "buried_habitable_face",
+          "subjects": [
+            "w-lower-004",
+            "sp-bed-child-1"
+          ],
+          "message": "Buried face reduces daylight capability; waterproofing needs professional."
+        },
+        {
+          "code": "buried_habitable_face",
+          "subjects": [
+            "w-lower-019",
+            "sp-bed-main"
+          ],
+          "message": "Buried face reduces daylight capability; waterproofing needs professional."
+        },
+        {
+          "code": "buried_habitable_face",
+          "subjects": [
+            "w-lower-023",
+            "sp-bed-child-2"
+          ],
+          "message": "Buried face reduces daylight capability; waterproofing needs professional."
+        },
+        {
+          "code": "buried_habitable_face",
+          "subjects": [
+            "w-lower-024",
+            "sp-bed-main"
+          ],
+          "message": "Buried face reduces daylight capability; waterproofing needs professional."
+        },
+        {
+          "code": "buried_habitable_face",
+          "subjects": [
+            "w-lower-033",
+            "sp-bed-child-1"
+          ],
+          "message": "Buried face reduces daylight capability; waterproofing needs professional."
+        },
+        {
+          "code": "buried_habitable_face",
+          "subjects": [
+            "w-entry-048",
+            "sp-kitchen"
+          ],
+          "message": "Buried face reduces daylight capability; waterproofing needs professional."
+        },
+        {
+          "code": "buried_habitable_face",
+          "subjects": [
+            "w-entry-049",
+            "sp-study-1"
+          ],
+          "message": "Buried face reduces daylight capability; waterproofing needs professional."
+        },
+        {
+          "code": "buried_habitable_face",
+          "subjects": [
+            "w-entry-066",
+            "sp-living"
+          ],
+          "message": "Buried face reduces daylight capability; waterproofing needs professional."
+        },
+        {
+          "code": "buried_habitable_face",
+          "subjects": [
+            "w-entry-068",
+            "sp-dining"
+          ],
+          "message": "Buried face reduces daylight capability; waterproofing needs professional."
+        },
+        {
+          "code": "buried_habitable_face",
+          "subjects": [
+            "w-entry-083",
+            "sp-study-1"
+          ],
+          "message": "Buried face reduces daylight capability; waterproofing needs professional."
+        },
+        {
+          "code": "kitchen_no_sampled_fit",
+          "subjects": [
+            "sp-kitchen"
+          ],
+          "message": "No arrangement in the declared discrete template search; continuous infeasibility has not been proved."
+        },
+        {
+          "code": "window_buried",
+          "subjects": [
+            "win-entry-066-27",
+            "w-entry-066",
+            "sp-living"
+          ],
+          "message": "Terrain/retaining face obscures part or all of this window."
+        },
+        {
+          "code": "window_buried",
+          "subjects": [
+            "win-entry-048-28",
+            "w-entry-048",
+            "sp-kitchen"
+          ],
+          "message": "Terrain/retaining face obscures part or all of this window."
+        },
+        {
+          "code": "window_buried",
+          "subjects": [
+            "win-lower-024-30",
+            "w-lower-024",
+            "sp-bed-main"
+          ],
+          "message": "Terrain/retaining face obscures part or all of this window."
+        },
+        {
+          "code": "window_buried",
+          "subjects": [
+            "win-lower-001-31",
+            "w-lower-001",
+            "sp-bed-child-1"
+          ],
+          "message": "Terrain/retaining face obscures part or all of this window."
+        },
+        {
+          "code": "window_buried",
+          "subjects": [
+            "win-lower-023-32",
+            "w-lower-023",
+            "sp-bed-child-2"
+          ],
+          "message": "Terrain/retaining face obscures part or all of this window."
+        },
+        {
+          "code": "window_buried",
+          "subjects": [
+            "win-entry-049-33",
+            "w-entry-049",
+            "sp-study-1"
+          ],
+          "message": "Terrain/retaining face obscures part or all of this window."
+        }
+      ],
+      "codes": {
+        "bedroom_noise_stacking": 4,
+        "buried_habitable_face": 12,
+        "garage_ramp_grade_review": 1,
+        "kitchen_no_sampled_fit": 1,
+        "kitchen_through_traffic": 6,
+        "living_through_traffic": 1,
+        "low_daylight_opportunity": 6,
+        "min_area_violation": 1,
+        "min_dimension_violation": 1,
+        "needs_professional_drainage": 59,
+        "needs_professional_foundations": 2,
+        "needs_professional_retaining": 58,
+        "needs_professional_slope_stability": 1,
+        "needs_professional_structure": 1,
+        "needs_professional_vehicle_access": 1,
+        "needs_professional_waterproofing": 12,
+        "soft_adjacency_unmet": 2,
+        "terrain_triangle_review": 8,
+        "window_buried": 6
+      },
+      "not_checked": [
+        "daylight_orientation",
+        "door_swing_checked",
+        "engineered_fill_volume_m3",
+        "entry_to_family_length_m",
+        "garage_sampled_fit",
+        "kitchen_aisle_width_m",
+        "kitchen_counter_run_m",
+        "kitchen_to_family_length_m",
+        "outdoor_item_placed",
+        "stair_landing_clear",
+        "stair_min_headroom_m",
+        "stair_run_fit",
+        "vehicle_swept_path"
+      ]
+    }
+  ],
+  "visual_review": {
+    "critique_author": "agent:claude-code",
+    "claims": [
+      {
+        "id": "vc-stair-through-slab",
+        "status": "ai_judgment",
+        "elements": [
+          "st-0",
+          "slab-roof-down-450",
+          "lv-down-450",
+          "lv-entry"
+        ],
+        "text": "Stair st-0 is drawn outside both wing outlines on both plans and climbs 4.5 m between lv-down-450 and lv-entry, while the night wing is drawn 3.0 m tall: the flight passes the night wing's roof slab slab-roof-down-450, so it cannot be walked as drawn."
+      },
+      {
+        "id": "vc-night-wing-floats",
+        "status": "ai_judgment",
+        "elements": [
+          "lv-down-450",
+          "slab-floor-down-450"
+        ],
+        "text": "In the true section the night wing floor slab-floor-down-450 hangs several metres above the terrain line, and the day wing also stands clear of the ground: both wings sit on large unsupported voids rather than stepping down the slope."
+      },
+      {
+        "id": "vc-living-too-small",
+        "status": "ai_judgment",
+        "elements": [
+          "sp-living",
+          "pi-living"
+        ],
+        "text": "The living room sp-living is drawn as the smallest day room, well below the program target for pi-living; the dining room next to it is about as large."
+      },
+      {
+        "id": "vc-lower-labels-overlap",
+        "status": "ai_judgment",
+        "elements": [
+          "sp-bed-child-1",
+          "sp-bed-child-2",
+          "sp-corridor-b1",
+          "sp-mechanical"
+        ],
+        "text": "On the lower level the labels of the child bedrooms, the corridor sp-corridor-b1 and the plant room sp-mechanical overlap and cannot be read at the default zoom."
+      }
+    ],
+    "ungrounded_ids": {},
+    "png_sha256": "bdb758e37a4f2a5b571acfb4bcd70ff90edf3fbaa0fd2f7a93425fa9aa7e2ad3",
+    "critique_made_on_this_rendering": true,
+    "detector_findings": []
+  },
+  "revisions": [
+    {
+      "words": "The living room is too small for us. Please make it about 25 m2.",
+      "ops": [
+        "area:pi-living=25"
+      ],
+      "version": 2,
+      "rooms_changed": [
+        "sp-corridor-b0",
+        "sp-dining",
+        "sp-kitchen",
+        "sp-living",
+        "sp-pantry"
+      ],
+      "new_violations": [],
+      "resolved_violations": [],
+      "living_area_m2": 21.96,
+      "request_met": false,
+      "unmet_request_reported": false
+    },
+    {
+      "words": "Keep the study away from the garage, it gets noisy when the car comes in.",
+      "ops": [
+        "separate:pi-study-1,pi-garage"
+      ],
+      "version": 3,
+      "rooms_changed": [],
+      "new_violations": [
+        "regression: earlier request 'area:pi-living=25' is no longer satisfied (sp-living area 22.0 m² < requested 25 m²)"
+      ],
+      "resolved_violations": [],
+      "living_area_m2": 21.96
+    }
+  ],
+  "unapproved_program": {
+    "written_version": 2,
+    "approved_version": 1,
+    "new_plans_pin_program_versions": [
+      1
+    ]
+  },
+  "comparison": "concepts/comparison.md",
+  "plan_gate": {
+    "requested": {
+      "kind": "plan",
+      "id": "concept-two-wing",
+      "version": 3,
+      "sha256": "55dea244da64f6b9c7b475b232f35fadd939cb15161ea8c731c549e05564e233"
+    },
+    "open_reasons": []
+  },
+  "refusals": {
+    "plan_generate_before_gates": "plan generation needs the owner's approved site and program (PROGRAM_APPROVED or later); the project is in SITE_INGESTION.",
+    "agent_approves_site": "agent 'claude-code' cannot approve the site gate; only a human can",
+    "agent_approves_program": "agent 'claude-code' cannot approve the program gate; only a human can",
+    "agent_approves_plan": "agent 'claude-code' cannot approve the plan gate; only a human can",
+    "revise_after_plan_approval": "plans can be revised during concept generation or review; the project is in PLAN_APPROVED. An approved plan is frozen: a human must reopen the plan gate (`house-ai workflow reopen <dir> plan`)."
+  },
+  "bundle": {
+    "path": "bundle/bundle.json",
+    "bytes": 3073983
+  },
+  "provenance": {
+    "store_verify_problems": [],
+    "events": 102,
+    "state": "PLAN_APPROVED",
+    "approvals": {
+      "site": "human:example-owner",
+      "program": "human:example-owner",
+      "plan": "human:example-owner"
+    },
+    "approved_program_is_the_built_one": true
+  }
+}

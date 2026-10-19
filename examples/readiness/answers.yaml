@@ -1,0 +1,38 @@
+# SYNTHETIC interview for a fictional family on the synthetic steep hillside
+# (examples/projects/synthetic-hillside). Each entry is the checklist question
+# the interview is expected to ask next and the fictional owner's answer,
+# verbatim. An agent records every answer (agent-first interface, ADR 0011);
+# `set` holds the agent's own interpretation of an answer the deterministic
+# parser cannot read (here a Persian answer). Used by run_demo.py.
+answers:
+  - {question: q-household, answer: "We are two adults and two children, 7 and 11."}
+  - {question: q-children-rooms, answer: "Each child gets their own room."}
+  - {question: q-bedrooms, answer: "Three bedrooms."}
+  - {question: q-bathrooms, answer: "Two bathrooms, with an en-suite for us."}
+  - {question: q-floors, answer: "Two floors."}
+  - {question: q-slope, answer: "Let the house step down the slope with a garden level below."}
+  - {question: q-entry, answer: "Yes, entrance and parking at the road."}
+  - {question: q-living, answer: "One open space for living, dining and kitchen."}
+  - {question: q-kitchen, answer: "We cook every day; smells in the living room are fine with a good hood. A pantry would be nice."}
+  - {question: q-guests, answer: "Guests rarely stay, the sofa is enough."}
+  - {question: q-office, answer: "One of us works from home and needs quiet for calls."}
+  - {question: q-parking, answer: "One car in a closed garage. No EV charger."}
+  - {question: q-storage, answer: "Yes to a laundry room, and a store room."}
+  - question: q-outdoor
+    answer: "یک تراس کنار آشپزخانه و یک باغ می‌خواهیم."
+    set: {outdoor: "terrace,garden"}
+  - {question: q-accessibility, answer: "No, nobody needs that."}
+  - {question: q-privacy, answer: "Privacy is very important, and the bedrooms should be away from the living room."}
+  - {question: q-relationships, answer: "Kitchen next to the terrace."}
+  - {question: q-light, answer: "Morning sun in the kitchen. Cross ventilation yes."}
+  - {question: q-sizes, answer: "Usual is fine."}
+  - {question: q-practices, answer: "No."}
+  - {question: q-style, answer: "Modern, with wood and white plaster."}
+  - {question: q-budget, answer: "About 500k EUR."}
+  - {question: q-area, answer: "Around 170 m2."}
+  - {question: q-priorities, answer: "Daylight, a good kitchen, privacy."}
+  - {question: q-expansion, answer: "No."}
+# The owner corrects one earlier answer later in the conversation; the first
+# answer stays in the history.
+revision: {question: q-budget, answer: "Sorry, the budget is closer to 550k EUR.", set: {budget: "550000 EUR"}}
+confirmation: "Yes, that is all correct."

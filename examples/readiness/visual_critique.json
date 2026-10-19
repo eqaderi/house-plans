@@ -1,0 +1,42 @@
+{
+  "schema_version": "0.1.0",
+  "project": "synthetic-hillside",
+  "option": "concept-two-wing",
+  "plan_version": 1,
+  "author": "agent:claude-code",
+  "screenshot_hash": "bdb758e37a4f2a5b571acfb4bcd70ff90edf3fbaa0fd2f7a93425fa9aa7e2ad3",
+  "screenshot_path": "renders/concept-two-wing-v1.png",
+  "created_at": "2026-10-19T09:00:00Z",
+  "claims": [
+    {
+      "id": "vc-stair-through-slab",
+      "element_ids": ["st-0", "slab-roof-down-450", "lv-down-450", "lv-entry"],
+      "claim_text": "Stair st-0 is drawn outside both wing outlines on both plans and climbs 4.5 m between lv-down-450 and lv-entry, while the night wing is drawn 3.0 m tall: the flight passes the night wing's roof slab slab-roof-down-450, so it cannot be walked as drawn.",
+      "status": "ai_judgment",
+      "severity": "blocking"
+    },
+    {
+      "id": "vc-night-wing-floats",
+      "element_ids": ["lv-down-450", "slab-floor-down-450"],
+      "claim_text": "In the true section the night wing floor slab-floor-down-450 hangs several metres above the terrain line, and the day wing also stands clear of the ground: both wings sit on large unsupported voids rather than stepping down the slope.",
+      "status": "ai_judgment",
+      "severity": "warning"
+    },
+    {
+      "id": "vc-living-too-small",
+      "element_ids": ["sp-living", "pi-living"],
+      "claim_text": "The living room sp-living is drawn as the smallest day room, well below the program target for pi-living; the dining room next to it is about as large.",
+      "status": "ai_judgment",
+      "severity": "warning",
+      "suggested_ops": [{"op_type": "area", "target": "pi-living", "value": "25"}]
+    },
+    {
+      "id": "vc-lower-labels-overlap",
+      "element_ids": ["sp-bed-child-1", "sp-bed-child-2", "sp-corridor-b1", "sp-mechanical"],
+      "claim_text": "On the lower level the labels of the child bedrooms, the corridor sp-corridor-b1 and the plant room sp-mechanical overlap and cannot be read at the default zoom.",
+      "status": "ai_judgment",
+      "severity": "info"
+    }
+  ],
+  "verified": false
+}
