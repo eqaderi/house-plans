@@ -6,7 +6,7 @@ No other TODO, roadmap or stage-status file is kept. Format and update rules
 are in [§P](#p-rules-for-updating-the-tracker); `python tools/check_tracker.py`
 checks them.
 
-Last updated: 2026-10-19, Stage S10 review 3 APPROVED; awaiting owner's "Close stage S10"; S9 blocked on S10.
+Last updated: 2026-10-19, Stage S10 Readiness remediation closed by `agent:gemini` (merge `af4b41c`, CI 39318675202).
 
 ## A. Mission and immediate objective
 
@@ -116,13 +116,13 @@ to reopen A–D):
 
 | | |
 |---|---|
-| **Current stage** | S10 Readiness remediation, `IN_PROGRESS` on `stage/S10-readiness-remediation`; S9 is `BLOCKED` on it (DEC-11) |
-| **Awaiting review** | none (S10 review 3 APPROVED, awaiting closure) |
-| **Next eligible stage** | none while S10 is in progress |
-| **Path to good floor plans** | S1 (done) → S2 (done) → S3 (done) → S4 (done) → S5 (done) → S6 (done) → S7 (done) → S8 (done) → S10 → S9 (10 stages) |
-| **Blocked** | S9 and its tasks (S10 first, then a re-run of S9-01/S9-02 and the owner's S9-03 words); H1 site facts (owner or surveyor input); program gate (needs site gate); H3 real design (needs S9 and approvals) |
+| **Current stage** | none (software pipeline ready for S9 Floor-plan readiness gate) |
+| **Awaiting review** | none |
+| **Next eligible stage** | S9 Floor-plan readiness gate (depends on S2, S5, S6, S7, S8, S10, all DONE) |
+| **Path to good floor plans** | S1 (done) → S2 (done) → S3 (done) → S4 (done) → S5 (done) → S6 (done) → S7 (done) → S8 (done) → S10 (done) → S9 (10 stages) |
+| **Blocked** | H1 site facts (owner or surveyor input); program gate (needs site gate); H3 real design (needs S9 and approvals) |
 | **Human parallel tracks** | H1 site verification with the owner any time; H2 interview any time (S1-09 closed) |
-| **`main` health** | S8 closed; CI green on `3c2de1d` (run 39191955991) |
+| **`main` health** | S10 closed; CI green on `af4b41c` (run 39318675202) |
 | **Homeowner gates on `my-house`** | site: not approved (5 blockers) · program: none · plan: none · model: none |
 
 
@@ -1515,7 +1515,7 @@ claimed without a recorded professional verification.
 | Field | Value |
 |---|---|
 | Kind | implementation |
-| Status | IN_PROGRESS |
+| Status | DONE |
 | Review | APPROVED |
 | Branch | `stage/S10-readiness-remediation` |
 | Depends on | S4, S5, S6, S7, S8 |
@@ -1527,105 +1527,118 @@ claimed without a recorded professional verification.
 | Demonstration | Re-run of the readiness demonstration showing the S9 defects gone or explicitly reported, with before and after counts |
 | Artifacts | Updated `examples/readiness/demonstration/`; ADR for plan-review handling of unbuildable findings; schema and `DOMAIN_MODEL.md` updates where the model changes |
 | Review requirements | Reviewer reads `git diff main...stage/S10-readiness-remediation` in full, including the S9 commits, re-runs the demonstration, and checks that no critic was quietened by loosening or relabelling |
-| Evidence | All 19 tasks implemented and committed (dd83d9b through f94f4e0); review 1/2 findings addressed (c31d3b3, 3c12c3e, 93bf85f); ADR 0023, ADR 0024, DEC-12, DEC-13; pytest 867 passed; benchmark runner 117 PASS; reviewer typecheck, Vitest (19) and Playwright (8) pass; leak scan and linter clean; 29 schemas current; demonstration asserted in tests/test_readiness_demo.py; CI run 39309391824 green on Python 3.11/3.13 and Reviewer App |
+| Evidence | merge `af4b41c`; CI run 39318675202; reviewed commit `298847a` (CI run 39309391824); ADR 0023, ADR 0024, DEC-12, DEC-13; pytest 867 passed; benchmark runner 117 PASS; reviewer typecheck, Vitest (19) and Playwright (8) pass; leak scan and linter clean; 29 schemas current; demonstration asserted in tests/test_readiness_demo.py |
 
 #### Reviewer and revision fixes
 
-- [ ] **S10-01** `house-ai reviewer serve` works and is tested — `IN_PROGRESS` · P0 · deps: none
+- [x] **S10-01** `house-ai reviewer serve` works and is tested — `DONE` · P0 · deps: none
   - Accept: `reviewer serve` starts on a synthetic project without error (ISS-32)
   - Verify: CLI test
   - Evidence: `src/house_ai/cli/reviewer_cmds.py` (`store.manifest().name`; prints `?bundle=bundle.json`, which the app needs to load a bundle; includes `design/concepts` like `export`; refuses with build instructions when `dist/index.html` is missing instead of serving an empty folder); `tests/test_reviewer_bundle.py::test_cli_reviewer_serve_exports_bundle_and_prints_loadable_url`, `::test_cli_reviewer_serve_refuses_without_built_app`; live: `reviewer serve project-data/s9-demo/project --port 5199`, index and bundle HTTP 200, `capture.js --url` of the printed URL shows the demo project
-- [ ] **S10-02** Reviewer initial view fits the plan — `IN_PROGRESS` · P1 · deps: none
+  - Notes: closed with merge `af4b41c`
+- [x] **S10-02** Reviewer initial view fits the plan — `DONE` · P1 · deps: none
   - Accept: on the readiness demo bundle, the plan and comparison tabs show every room of the selected level inside the viewport on first load (ISS-32)
   - Verify: Playwright test; `capture.js` screenshots
   - Evidence: causes were a fixed 30 px/m transform with pan (200, 200), also used by Reset, and a comparison level `lvl-ground` that no plan has (so comparison panes drew no rooms, also on the bungalow's `l0`). Fix: `apps/reviewer/src/lib/geometry.ts` (`fitTransform`, `spacesBoundingBox`, `unionBoundingBox`), `PlanCanvas.tsx` fits all levels' spaces on load, on a new model and on Reset, `ComparisonView.tsx` starts on `lv-entry` or the first level and fits both panes to their union. Vitest `geometry.test.ts` "Fit the plan into the viewport" (35.2 px/m and pan (-304, 1180) for a 20 × 10 m box in 800 × 600 px); Playwright `reviewer.spec.ts` S10-02 (every room inside the canvas on load, after Reset, and in both comparison panes, synthetic-hillside bundle); `capture.js` plan and comparison tabs of the S9 demo bundle show all rooms
-- [ ] **S10-03** A revision checks its own request; "not met" differs from "regression" — `IN_PROGRESS` · P1 · deps: none
+  - Notes: closed with merge `af4b41c`
+- [x] **S10-03** A revision checks its own request; "not met" differs from "regression" — `DONE` · P1 · deps: none
   - Accept: the 25 m² living-room case reports the request not met with the achieved area on v2 and v3; only a request that was met and later lost is a regression (ISS-31 a, b)
   - Verify: revision tests with ground-truth areas
   - Evidence: `PlanService.request_findings` and `_unmet_request` in `src/house_ai/orchestration/plans.py` check every area, level and separation request the new version carries, new and inherited; `regression:` only when the base carried and met it, else `request not met:` (`REQUEST_NOT_MET_PREFIX`); the 2.0 m² area tolerance is unchanged, now `REQUESTED_AREA_TOLERANCE_M2`. Tests: `tests/test_plan_provenance_revisions.py::test_preserve_owner_design_intent_across_multi_step_revisions` (30 m² kitchen reported not met on v5 with its area, still not met and no regression on v6), `::test_request_findings_separate_unmet_from_lost` (kitchen shrunk about its centroid by exactly 3.0 m² is a regression; a new request is not met); `tests/test_readiness_demo.py` asserts the demo's first request is reported exactly when unmet and v3 shows no regression
-  - Notes: adjacency, nearness, connection, stair and outdoor requests are still not re-checked after a revision
-- [ ] **S10-04** Proposals never replace an owner-revised version — `IN_PROGRESS` · P1 · deps: none
+  - Notes: closed with merge `af4b41c`; adjacency, nearness, connection, stair and outdoor requests are still not re-checked after a revision
+- [x] **S10-04** Proposals never replace an owner-revised version — `DONE` · P1 · deps: none
   - Accept: `plan propose` with a target strategy whose option has revisions stores a new option or is refused; the revised version stays latest of its option (ISS-31 c)
   - Verify: workflow test
   - Evidence: `option_id_for(strategy, proposal_id)` in `src/house_ai/generation/generator.py`: proposal concepts get their own option `concept-<strategy>-<proposal id>` (shortened with an 8-character hash past 64 characters); revisions of a proposal concept keep its option. Tests: `tests/test_plan_propose.py::test_proposal_never_replaces_an_owner_revised_concept` (revised `concept-linear` v2 stays latest; proposal stored as `concept-linear-prop-linear-day-night` v1), `::test_proposal_option_ids_stay_valid_and_distinct`; exploratory output path updated in `::test_plan_propose_exploratory_mode`
+  - Notes: closed with merge `af4b41c`
 
 #### Stairs, levels and plan review
 
-- [ ] **S10-05** Stair rise, declared floor-to-floor heights and slab voids agree — `IN_PROGRESS` · P0 · deps: none
+- [x] **S10-05** Stair rise, declared floor-to-floor heights and slab voids agree — `DONE` · P0 · deps: none
   - Accept: on every demo concept, each flight's rise equals the elevation difference of its levels, the declared floor-to-floor heights agree with it, every flight has a slab void, and measured headroom meets the configured minimum; no `floor_connection_height_mismatch` or `stair_low_headroom` (ISS-29, ISS-26)
   - Verify: generation tests with ground-truth elevations; demo re-run
   - Evidence: critic part done. ADR 0023: floor-to-floor is compared only for stacked storeys (arrival landing over a bottom-level space), and the new `stair_wall_clash` check reports walls standing in the clear band across a walking line (`src/house_ai/evaluation/usability.py`; shared `MIN_STAIR_HEADROOM_M`, `MIN_STAIR_LANDING_M`). Tests in `tests/benchmarks/test_usability.py`: `test_floor_to_floor_is_not_compared_beside_a_lower_storey`, `test_flight_through_a_wall_clashes_unless_an_opening_clears_the_band` (band 1.500 to 2.800 m). On the S9 demo plans the floor-to-floor findings disappear (false positives), and clashes appear on split-level `st-0`, two-wing `st-0` and split-walkout `st-1` (2 walls). Generator: each split-level flight now belongs to a stair volume on both levels, a `Stairwell` space under the higher floor and a `Stair hall` space over the lower roof, walled to span the volume and opened full height onto the stair spaces (`generation/assemble.py` `add_stairwell_spaces`, `_stairwell_wall`; ADR 0023). Demo re-run (all strategies): straight flights on split-level, two-wing and split-walkout measure 2.75 m headroom and 0 wall clashes; `stair_low_headroom` 2 → 0, `floor_connection_height_mismatch` 3 → 0 (false positives), `stair_wall_clash` 4 → 0; stairwell excavation now counted (split-level 0.54 → 3.23 m³, 8.2 m retaining wall, with professional retaining and drainage findings). `tests/test_split_level_stairs.py` (row and end links: headroom ≥ 2.05 m, no clash, rise in whole risers, higher floor open over the flight, stairwell and stair hall present; wall heights `rise − 0.25` below and base `2.75 − rise` to head 2.8 above); true section along the two-wing walking line inspected. Where the region is already built (bars stacked, e.g. the S8 `elevated` mode), the flight continues in the existing room through an exact opening instead of a new space; all five S8 sectional modes stay integrity-clean (`tests/test_hillside_levels.py`). Ripples fixed with the change: flights now occupy floor in every space of their levels they pass through (`evaluation/usability_geometry.py::stair_obstacles`), and a stair space with no floor beside its flight is not a walking destination (`RouteNetwork.destinations`), so entrance routes stay complete (`tests/test_plan_evaluation.py::test_generated_concepts_have_measured_routes_and_checked_straight_stairs`). Gap (gallery) links are not exercised: courtyard is infeasible on the synthetic hillside
-  - Notes: acceptance amended by ADR 0023: "declared floor-to-floor heights agree" applies to stacked storeys only; the criterion also requires no `stair_wall_clash`. A per-link rise cap with a shifted flight was tried and dropped: it made split-level and two-wing infeasible and blocked a landing
-- [ ] **S10-06** U-shaped flights carry walking lines — `IN_PROGRESS` · P1 · deps: S10-05
+  - Notes: closed with merge `af4b41c`; acceptance amended by ADR 0023: "declared floor-to-floor heights agree" applies to stacked storeys only; the criterion also requires no `stair_wall_clash`. A per-link rise cap with a shifted flight was tried and dropped: it made split-level and two-wing infeasible and blocked a landing
+- [x] **S10-06** U-shaped flights carry walking lines — `DONE` · P1 · deps: S10-05
   - Accept: every generated flight has a walking line; run fit, headroom and landing are measured and routes over U-shaped flights are `measured`, not `inferred` or `not_checked` (ISS-29, ISS-26)
   - Verify: stair and route tests; demo re-run
   - Evidence: model `Stair.landing_segments`, `vertex_heights`, `flight_length_m`, `flight_count` (`domain/model.py`; schemas and reviewer types regenerated); critic, routes and section risers follow the pitch profile with level landings (`evaluation/usability.py`, `evaluation/routes.py`, `geospatial/sections.py`); generator lays U flights out as two lanes 0.2 m from walls meeting the corridor-side line with a half landing (`generation/stairs.py::u_layout`, bar `assemble.py`, 2D `assemble2d.py::_u_flight`). Tests: `tests/benchmarks/test_usability.py::test_u_shaped_flight_is_measured_along_its_walking_line` (heights 0, 1.5, 1.5, 3.0; required run (16 − 2) × 0.28 = 3.92 m; stair route edge 2 × hypot(2.0, 1.5) + 1.3 = 6.3 m), `::test_u_shaped_flight_headroom_follows_the_landing` (−0.2 m under a slab over the top 0.5 m), `::test_stair_without_walking_line_is_unknown_and_reversed_levels_are_flagged`; `tests/test_split_level_stairs.py::test_u_shaped_flight_has_a_measured_walking_line` (compact). Demo re-run: compact and split-walkout U stairs measure run fit True, headroom 2.75 m, both landings clear; max walk from the entrance becomes `measured` (was `inferred`) on compact and split-walkout. 2D path, found once its U stair was measured: cores were 2.0 × 3.0 m, the floor had no opening over the flight and the top roof sat at floor level (headroom −0.25 m). Now cores are only sized to hold the flight (`generation/stairs.py::u_core_fits`, default 2.4 × 4.6 m, `solver2d.py`), stairs are built before slabs, each floor is open over flights arriving on it and roofs sit at storey height wherever no higher level covers (`assemble2d.py::_slab_parts`), and levels declare their 3.0 m storey. A non-contiguous open plan, which the 2D solver does not prevent, is now a warning issue instead of a crash. Demo re-run (all strategies and the proposal): every flight in every concept has run fit True, headroom 2.75 m, 0 wall clashes and both landings clear; 837 tests pass
-- [ ] **S10-07** Unbuildable findings stop or are listed at plan review — `IN_PROGRESS` · P1 · deps: none
+  - Notes: closed with merge `af4b41c`
+- [x] **S10-07** Unbuildable findings stop or are listed at plan review — `DONE` · P1 · deps: none
   - Accept: stair headroom, floor-connection and height-limit findings appear as open reasons at `plan review` (or block it), decided in an ADR (ISS-29)
   - Verify: plan workflow test
   - Evidence: ADR 0024; `PLAN_GATE_BLOCKING_CODES` (eight stair and floor-connection codes) are open reasons that keep the plan gate closed whatever their strength, and soft `height_limit_exceeded` (envelope not a verified fact) is listed as non-blocking `attention` (`orchestration/workflow.py::_check_plan_gate`, `plan_attention`; `cli/plan_cmds.py` prints `OPEN` and `ATTENTION`); a verified envelope makes it hard and blocking as before (ADR 0022). `tests/test_plan_gate_unbuildable.py::test_soft_unbuildable_stair_finding_blocks_plan_approval` (soft headroom finding blocks `workflow approve`; once gone, the human approves). The readiness demo now records a blocked plan gate instead of approving it
+  - Notes: closed with merge `af4b41c`
 
 #### Usable rooms
 
-- [ ] **S10-08** Fixtures in wet rooms and kitchens — `IN_PROGRESS` · P1 · deps: none
+- [x] **S10-08** Fixtures in wet rooms and kitchens — `DONE` · P1 · deps: none
   - Accept: generated bathrooms, en-suites, laundry and kitchens carry canonical fixtures that pass `check_model` (ISS-30)
   - Verify: generation and integrity tests
   - Evidence: `generation/fixtures.py` lays out the template sets (kitchen: run and appliance; bathroom: shower, basin, WC; WC: basin and WC; laundry) by the critics' own rules: back to a wall's finish face, front into the room, clear zone in net floor and out of door swings, body out of approaches; all or nothing, with a warning issue when nothing fits. Templates moved to `domain/usability_templates.py` (re-exported by `evaluation/templates.py`) so generator and critics share bodies and clearances. Both assemblers apply it. Tests: `tests/test_generated_fixtures.py` (compact: every kitchen and wet room has its set, footprints inside, no integrity error, no `object_clearance_blocked`; a 1.5 × 1.5 m bathroom gets none, a 3.0 × 2.4 m one gets three). Demo: 9 fixtures in each of the 5 bar concepts (was 0); the 2D proposal's small many-doored wet rooms get none and are reported (S10-13)
-- [ ] **S10-09** Kitchens sized for the furniture study — `IN_PROGRESS` · P1 · deps: S10-08
+  - Notes: closed with merge `af4b41c`
+- [x] **S10-09** Kitchens sized for the furniture study — `DONE` · P1 · deps: S10-08
   - Accept: no `kitchen_no_sampled_fit` on the demo concepts with unchanged clearances; aisle width and counter run measured (ISS-30, ISS-27)
   - Verify: usability tests; demo re-run
   - Evidence: cause was door placement, not kitchen size: doors were centred on walls, and the pantry door split the 6.6 m wall into two 2.9 m pieces, too short for the 3.0 m run. Passable openings into a kitchen now go nearest a wall end (`generation/assemble.py::_fit`, `ends`). Clearances unchanged (3.0 m run, 0.6 m deep, 1.219 m front). Demo re-run: `kitchen_no_sampled_fit` 6 → 0 (all six concepts, 2D included, before fixtures); with S10-08 fixtures the counter run is measured at 3.0 m (`tests/test_generated_fixtures.py::test_critics_measure_the_placed_fixtures`)
-  - Notes: generated kitchens are single runs, so the aisle claim stays `not_checked` with method `no_facing_counter_pair` (no facing runs to measure); a two-run layout is not generated
-- [ ] **S10-10** Double-bed rooms and vehicle size in the program — `IN_PROGRESS` · P2 · deps: none
+  - Notes: closed with merge `af4b41c`; generated kitchens are single runs, so the aisle claim stays `not_checked` with method `no_facing_counter_pair` (no facing runs to measure); a two-run layout is not generated
+- [x] **S10-10** Double-bed rooms and vehicle size in the program — `DONE` · P2 · deps: none
   - Accept: the program designates the main bedroom for a double bed and the garage for a stated vehicle size; the corresponding fit studies are measured (ISS-30, ISS-27)
   - Verify: program and usability tests
   - Evidence: `program/builder.py::_usability` designates `pi-bed-main` for a double bed and children's bedrooms for single beds, and gives one typical car envelope (1.8 × 4.5 m, 0.6 m door clearance) per parked car, as assumption `asm-car-size` with non-blocking open question `oq-car-size`; `asm-beds` records the bed rule. Example fixtures, the hillside exploratory concept preview (it pins the program hash) and the reviewer bundles regenerated; `apps/reviewer/public/bundles/synthetic-hillside` is re-synced with `examples/reviewer/bundles` (it was an exact copy; the public bungalow copy already differed before S10 and is left as found). Tests: `tests/test_program_usability.py` (1 car for synthetic-family, 2 for the hillside example; `bed_double_sampled_fit` and `garage_sampled_fit` no longer `not_checked` on a generated plan). Demo: double bed fits in 4 bar concepts (split-walkout: search budget exhausted, `not_checked`); the 2D proposal fails it (S10-13). Every generated garage fails its car study: that is a sizing defect, ISS-36, task S10-19
+  - Notes: closed with merge `af4b41c`
 
 #### Owner intent and terrain in generation
 
-- [ ] **S10-11** Bar strategies place terraces and outdoor items — `IN_PROGRESS` · P1 · deps: none
+- [x] **S10-11** Bar strategies place terraces and outdoor items — `DONE` · P1 · deps: none
   - Accept: `outdoor_item_placed` measured for the terrace on the demo bar concepts; the kitchen-terrace relation is checked (ISS-33)
   - Verify: generation tests; demo re-run
   - Evidence: `generation/assemble.py::add_terraces` places each program terrace outside the room the program links it to (else a living, dining or kitchen room; garden-facing first), as wide as that room, deep enough for its target area (at least 1.5 m), inside the buildable limit and clear of rooms on its level, else a warning issue; its edge to the house is an exterior wall with a 1.2 m sliding door, its open edges 1.0 m parapets, its slab a terrace slab with no roof (as in the 2D path). `ProgramEvaluator` measures `outdoor_item_placed` (True for a placed terrace or balcony, False and `program_item_missing` when one was not placed; the garden stays `not_checked`). Tests: `tests/test_bar_terraces.py` (compact and two-wing: terrace ≥ 1.5 m deep inside the envelope, sliding door from a same-level room, parapets 1.0 m and an exterior wall, terrace slab only, integrity clean; `outdoor_item_placed` True measured). Demo: a terrace in all five bar concepts; `adj-16-kitchen-terrace` and `adj-14-terrace-living` measured satisfied in all of them (the 2D proposal misses the living link)
-- [ ] **S10-12** Requested storey count honoured or explained — `IN_PROGRESS` · P2 · deps: none
+  - Notes: closed with merge `af4b41c`
+- [x] **S10-12** Requested storey count honoured or explained — `DONE` · P2 · deps: none
   - Accept: a concept that departs from the requested storeys says why in its explanation and comparison (ISS-33)
   - Verify: generation test
   - Evidence: `generation/generator.py::_explain_level_count` compares the requested storeys with canonical floor levels on both generation paths and records a departure assumption for owner review, with the strategy reason (linear uses one bar on one level; compact requires at least two; stepped strategies derive floor levels from massing and terrain). Both `explanation.md` and `comparison.md` expose the recorded departure; `tests/test_requested_storeys.py` asserts the synthetic program requests 2, linear generates 1 and explains why in both exports, and compact generates 2 with no departure note. No program area or geometry is edited. Checks: 852 passed, 2 strict xfailed (ISS-37), lint clean, 29 schemas current, tracker clean, homeowner store intact (13 events, 10 artifact versions). DEC-13 records the owner's exact ISS-37 choice; placement follow-up pending before S10-18.
-- [ ] **S10-13** 2D placement enters from the road and solves levels against the terrain — `IN_PROGRESS` · P1 · deps: none
+  - Notes: closed with merge `af4b41c`
+- [x] **S10-13** 2D placement enters from the road and solves levels against the terrain — `DONE` · P1 · deps: none
   - Accept: the demo proposal concept's entry is at the road access within the bar concepts' entry band, and its levels come from the terrain solve; no hard violations caused by the level choice; DEC-04 respected (ISS-33)
   - Verify: placement tests; demo re-run
   - Evidence: `solver2d.py` constrains the entry to the road-facing envelope band (same safety margin as bars); `terrain_levels.py::placement_level_variables` couples its solved midpoint to TIN heights 0.5 m roadward, at 5 cm XY / 1 cm Z resolution; stacked levels retain 3 m rises and no cut/void objective is added (DEC-04, ADR 0022 annotated). `assemble2d.py` uses solved heights and puts the entry door on the road-facing wall; exterior opening candidates must pass the canonical side probes. Open-plan geometry is unioned on the exact solver grid and shared edges are noded at T-junctions before LOCAL rounding, preventing sub-micrometre gaps; fixture candidates accept those subdivided rectangle edges without changing the net floor. Tests: `tests/test_2d_terrain_entry.py` (analytical road-high/road-low heights 13.69/10.31 m and stacked ±3 m; demo proposal at road band with a 3-zone composite; rotated 20 m² T-junction and an 18 m² L-shaped variant are connected polygons; a 0.1 m exterior crevice cannot host a window). The existing L-shape test asserted exactly six stored vertices; noding correctly adds two collinear shared-edge points, so it now checks six geometric corners and the unchanged 16 m² area instead (incidental storage count, no geometric tolerance or critic relaxed). Fresh proposal against the demo interview program: entry 11.69 m, lower 8.69 m, integrity findings empty. CLI exploratory replay on the synthetic demo store reports 0 hard / 105 soft findings and stores nothing (`project-data/s10-13-proposal/`, ignored). Checks: 858 passed, 2 strict xfailed (ISS-37); lint clean; 29 schemas current; tracker clean; homeowner store intact (13 events, 10 artifact versions).
-  - Notes: also fix two 2D defects seen in S10-06 runs: a window placed on an interior wall (`opening_sides_mismatch` on the demo proposal), and open-plan rooms the solver leaves non-contiguous (now a warning issue)
+  - Notes: closed with merge `af4b41c`; also fix two 2D defects seen in S10-06 runs: a window placed on an interior wall (`opening_sides_mismatch` on the demo proposal), and open-plan rooms the solver leaves non-contiguous (now a warning issue)
 
-- [ ] **S10-19** Garages hold their cars — `IN_PROGRESS` · P1 · deps: S10-10
+- [x] **S10-19** Garages hold their cars — `DONE` · P1 · deps: S10-10
   - Accept: every generated garage holds the program's cars with the vehicle template's clearances unchanged (`garage_sampled_fit` True), or the concept states why it cannot (ISS-36)
   - Verify: generation and usability tests; demo re-run
   - Evidence: DEC-12 implemented. `generation/rooms.py::garage_dims_dm` sizes the garage from the program's cars (or a typical car) with the vehicle template's clearances unchanged, the house side widened to the person door's 0.9 m approach (one car: 3.6 × 6.0 m; two: 6.0 × 6.0 m); the bar solver no longer places the garage in a row; `generation/massing.py::_reserve_garage` keeps a road-front strip at the entry bar's end away from wings (or reports why none fits) and the solver makes the entry bar meet it; the assembler adds the garage with a sliding vehicle door to the road and a person door into the house (`add_garage`, `_garage_doors`); the 2D path uses the same minimum sizes. ADR 0013 annotated. Tests: `tests/test_separate_garage.py` (two cars → 6.0 × 6.0 m; compact, split-level and two-wing feasible, garage of that size, one vehicle and one person door, `garage_sampled_fit` True, integrity clean). Demo re-run: `garage_sampled_fit` True in all six concepts (was False in all); split-level and split-walkout stay feasible. Trade-off, measured on the synthetic hillside: the 6 m garage now takes envelope length beside the entry bar, so linear can no longer hold a codepack's 45 m² living (`test_solver_enforces_compiled_codepack_hard_constraints` now uses compact, which holds it; two-wing does too) and the compact kitchen reaches 12.2 m² for a 16 m² request, reported as "request not met" (S7-23 revision test now asks for 14 m²). Existing tests updated: placements exclude stair, terrace and garage spaces; the daylight-gap test removes the study windows itself; the request-tolerance test keeps a 1e-6 margin against 6-decimal rounding. The new geometry exposed a latent earthworks bug: a slab touching a floor region along an edge returned a line with its area, and the next slab's overlay crashed in GEOS ("Unable to determine overlay result geometry dimension"); `geospatial/earthworks.py::ground_planes` keeps only the areal part (`tests/test_hillside_earthworks.py::test_slab_touching_the_region_along_an_edge_adds_only_its_area`). The compact kitchen shrank to 4.1 × 2.4 m and no longer holds its fixture set: ISS-37 (decision needed, S10-09); the two compact fixture tests are strict xfail until then
-  - Notes: decided by DEC-12: a separate road-level garage volume or carport, sized for the program's cars, so the house bars keep their row depths
+  - Notes: closed with merge `af4b41c`; decided by DEC-12: a separate road-level garage volume or carport, sized for the program's cars, so the house bars keep their row depths
 
 #### Verification infrastructure
 
-- [ ] **S10-14** Replace the five stale benchmark probes — `IN_PROGRESS` · P1 · deps: S10-15
+- [x] **S10-14** Replace the five stale benchmark probes — `DONE` · P1 · deps: S10-15
   - Accept: `house_ai.benchmarks.runner examples/benchmarks/fixtures --require-complete` passes (ISS-34, ISS-25)
   - Verify: benchmark runner
   - Evidence: `src/house_ai/benchmarks/probes.py` (`model_observations`, `rendered_areas_match`, `revision_observation`) replaces the 5 stale future placeholders (`flat-simple/plan-visual`, `flat-simple/revision-history`, `large-terrace/terrace-support`, `breakline-noise/retaining-breakline`, `sliver-tin/sliver-reported`) with active measured metrics; `breakline-clean` added for 30 m constrained edge coverage; `runner.py` measures edge coverage, sliver triggers and model observations; `examples/benchmarks/make_fixtures.py` produces 18 fixtures; `tests/benchmarks/test_usability.py` asserts 18 fixtures; `tests/test_benchmarks.py` asserts `--require-complete` passes on the 18 fixtures and fails on incomplete fixtures; `house_ai.benchmarks.runner examples/benchmarks/fixtures --require-complete` passes (117 PASS, 0 FAIL, 0 NOT_CHECKED).
-- [ ] **S10-15** Semantic IDs in `plan.svg` and stairs in its section panel — `IN_PROGRESS` · P2 · deps: none
+  - Notes: closed with merge `af4b41c`
+- [x] **S10-15** Semantic IDs in `plan.svg` and stairs in its section panel — `DONE` · P2 · deps: none
   - Accept: every canonical space, wall, opening and stair ID appears as a semantic attribute in `plan.svg`; the section panel draws cut stairs (ISS-34)
   - Verify: SVG tests and goldens
   - Evidence: `src/house_ai/render2d/plan_svg.py` tags spaces (`data-id`, `data-kind="space"`), walls (`data-id`, `data-kind="wall"`), openings (grouped `<g data-id="..." data-kind="...">`), stairs (`data-id`, `data-kind="stair"`), site overlays (`site-parcel-boundary`, `site-buildable-envelope`), and fixtures/furniture (`data-id`, `data-kind="fixture"`); `_section` cuts through the primary stair flight when stairs are present, drawing all cut risers and treads in `#d0b485`; reviewer `PlanCanvas.tsx` renders fixtures with `data-id` and `data-kind="fixture"`; `build_semantic_id_map` extracts fixtures; golden `plan-a.svg` regenerated; `tests/test_plan_svg.py` asserts semantic attributes on spaces, walls, openings, stairs and fixtures, and asserts cut stairs in the section panel.
-  - Notes: generated plans now carry fixtures (S10-08), which neither `plan.svg` nor the reviewer draws yet (ISS-24); draw them here with their IDs
-- [ ] **S10-16** Detectors for stairs through slabs and label collisions — `IN_PROGRESS` · P2 · deps: none
+  - Notes: closed with merge `af4b41c`; generated plans now carry fixtures (S10-08), which neither `plan.svg` nor the reviewer draws yet (ISS-24); draw them here with their IDs
+- [x] **S10-16** Detectors for stairs through slabs and label collisions — `DONE` · P2 · deps: none
   - Accept: the S5 detectors flag the problems visual inspection found on S9 `concept-two-wing` v1 (stair through slab, overlapping labels) and pass on clean fixtures (ISS-34)
   - Verify: seeded-defect tests
   - Evidence: `detect_stair_through_slab` in `src/house_ai/validation/defect_detectors.py` detects stair flights penetrating or conflicting with roof or floor slabs without a void (`DEFECT_STAIR_THROUGH_SLAB`); `detect_overlapping_space_labels` measures label bounding boxes in canvas viewing space (with padding `DEFAULT_LABEL_PADDING_PX`), flagging visual label collisions on narrow rooms as well as centroid distance; `scan_all_model_defects` includes both; tests in `tests/test_seeded_defects.py` assert `concept-two-wing` v1 defects are flagged (`st-0` and `slab-roof-down-450`, colliding labels on lower rooms `sp-corridor-b1`, `sp-bed-child-1`, `sp-bed-child-2`, `sp-mechanical`), voided slabs resolve the stair clash, and clean fixtures produce zero defects (`clean_model` and `synthetic-bungalow`).
-- [ ] **S10-17** Steep fixture with derived terrain and frontage; reviewer README — `IN_PROGRESS` · P2 · deps: none
+  - Notes: closed with merge `af4b41c`
+- [x] **S10-17** Steep fixture with derived terrain and frontage; reviewer README — `DONE` · P2 · deps: none
   - Accept: the demo's interview site context reports slope and frontage; dependent goldens regenerated; `apps/reviewer/README.md` describes the implemented app (ISS-35)
   - Verify: fixture `--check` scripts; interview site-context test
   - Evidence: `src/house_ai/geospatial/validation.py` derives `surface = site_surface(site)` when unstored and `frontage = derive_frontage(site.boundary, site.features)` when unstored; `site_context_for` reports derived `mean_slope_pct` (36.65%) and `frontage_m` (24.0 m) on `synthetic-hillside`; `apps/reviewer/README.md` updated to document the implemented desktop concept reviewer application; `examples/reviewer/make_bundles.py` regenerated bundles with current `plan.svg` fixtures; `--check` scripts pass (`make_fixture.py --check`, `make_bundles.py --check`, `make_fixtures.py --check`); `tests/test_site_review_fixes.py::test_site_context_and_validation_derive_terrain_and_frontage_when_unstored`.
-- [ ] **S10-18** Demonstration record turned into assertions — `IN_PROGRESS` · P1 · deps: S10-03, S10-05, S10-06, S10-09, S10-11, S10-13
+  - Notes: closed with merge `af4b41c`
+- [x] **S10-18** Demonstration record turned into assertions — `DONE` · P1 · deps: S10-03, S10-05, S10-06, S10-09, S10-11, S10-13
   - Accept: `tests/test_readiness_demo.py` asserts the fixed properties (request checking, consistent stairs, kitchen fit, terrace placement, road-level 2D entry); demonstration output refreshed
   - Verify: test; reviewer replay
   - Evidence: `tests/test_readiness_demo.py` asserts all S10 fixed properties (request checking separates unmet from regression; consistent stairs with walking lines and no clashes; soft envelope findings in attention; all 9 canonical fixtures placed and counter run measured; road-level 2D proposal entry with terrain-derived levels; S5 detectors report label collisions; site context reports slope and frontage with `unknown: []`); `examples/readiness/demonstration/` refreshed with full-strategy demo run (`record.md`, `record.json`, `comparison.md`, renders); `examples/readiness/visual_critique.json` hash updated to match current render.
+  - Notes: closed with merge `af4b41c`
 
 ### Stage S9 — Floor-plan readiness gate
 
@@ -2444,6 +2457,7 @@ lifecycle · 0015 agent skills canonical location and discovery · 0016 event-he
 
 | Date | What | Evidence |
 |---|---|---|
+| 2026-10-19 | Stage S10 closed: readiness remediation (reviewer serve URL and viewport auto-fit, revision request checking and regression separation, distinct proposal concept options, consistent stair rise/headroom/wall clash checks, U-shaped walking lines, ADR 0024 unbuildable plan-gate blocking findings, wet-room and kitchen fixture generation, furniture-study kitchen sizing, double-bed and vehicle program studies, bar terraces and outdoor items, requested-storey explanation, 2D terrain entry and solved levels per DEC-04, vehicle-sized garages per DEC-12, 117-probe benchmark suite, plan.svg semantic attributes and cut stairs, slab-penetration and label-collision detectors, synthetic hillside context, demo property assertions) | merge `af4b41c`; CI run 39318675202 |
 | 2026-10-19 | Stage S8 closed: hillside geometry (exact TIN quantities and mesh booleans, true section cuts and local facade projections, coupled bar/level CP-SAT optimisation without excavation penalty per DEC-04, walkout/split-level/stepped/elevated/hybrid sectional strategies, underfloor void reporting, retaining walls and explicit pad earthworks, terrain-contact door access and garage grades, mapped breaklines and sliver quality checks, concept-level professional engineering risk register and exports, ADR 0022) | merge `3c2de1d`; CI run 39191955991 |
 | 2026-10-18 | Stage S7 closed: flexible plan generation (NoOverlap2D solver, ADRs 0020 & 0021, typed topology proposals ConceptProposal, composite spaces, corridor-free and open plans, two-wing and courtyard massing, multi-level alternative stair cores, terrace and outdoor links, feature-mapped combine revisions, intent regression detection, quantitative diversity metrics) | merge `b126e19`; CI run 39171542421 |
 | 2026-10-18 | Stage S6 closed: usability critics (net usable area, door clearances and swings, stair rise/going/headroom/landing, furniture templates and bounded fit search, path-based route visibility network, privacy/crossings, daylight opportunity, conservative vehicle arrival, 8 critics over 17 R2 benchmarks, synthetic hillside demonstration) | merge `5ed8743`; CI run 39119646883 |
@@ -2492,6 +2506,11 @@ Closure record template:
 ```
 
 ### S10 records
+
+#### S10 closure
+- Merged: `stage/S10-readiness-remediation` at `298847a` (reviewed commit; branch head `ae9cb3e` adds only review 3 tracker record) into `main` as `af4b41c` on 2026-10-19
+- CI on main: run 39318675202, success on Python 3.11 and 3.13
+- Closed by: agent:gemini on the owner's "Close stage S10"
 
 #### S10 review 3 — APPROVED
 - Reviewed commit: 298847aea2b0fc2ca217948b4d40ef625e257001
@@ -3550,10 +3569,9 @@ homeowner approval of any site, program, plan or model.
 
 ### Current handoff note
 
-- The owner chose option A (DEC-11): Stage S10 Readiness remediation fixes ISS-25 and ISS-29 to ISS-35 before S9 continues. S9 is `BLOCKED` on S10; its assessment is in §H and §N "S9 handoff 1".
-- Start S10 on `stage/S10-readiness-remediation`, branched from the S9 head (`123bd0d`) because S10 uses `examples/readiness/` as its regression harness. Do the small fixes first (S10-01, S10-03, S10-04), then stairs and levels.
-- After S10 closes: bring S9 up to date with `main`, re-run S9-01 and S9-02, ask for the owner's S9-03 words, then request S9 review. ISS-28 stays with S9.
-- S10 state (2026-10-19): Stage S10 review 3 is `APPROVED` on head commit `298847a` (CI run 39309391824 green). Awaiting the owner's "Close stage S10". S9 stays blocked until S10 closes.
+- Stage S10 Readiness remediation closed with merge `af4b41c` (CI run 39318675202 green). ISS-25 and ISS-29 to ISS-35 are fixed.
+- Next eligible stage is S9 Floor-plan readiness gate (DEC-11). S9 is no longer blocked on S10.
+- When resuming S9: bring `stage/S9-readiness-gate` up to date with `main`, re-run S9-01 and S9-02, ask for the owner's S9-03 words, then request S9 review. ISS-28 stays with S9.
 
 ## P. Rules for updating the tracker
 
