@@ -117,7 +117,7 @@ to reopen A–D):
 | | |
 |---|---|
 | **Current stage** | S10 Readiness remediation, `IN_PROGRESS` on `stage/S10-readiness-remediation`; S9 is `BLOCKED` on it (DEC-11) |
-| **Awaiting review** | none (S10 CHANGES_REQUESTED) |
+| **Awaiting review** | S10 Readiness remediation (re-review pending) |
 | **Next eligible stage** | none while S10 is in progress |
 | **Path to good floor plans** | S1 (done) → S2 (done) → S3 (done) → S4 (done) → S5 (done) → S6 (done) → S7 (done) → S8 (done) → S10 → S9 (10 stages) |
 | **Blocked** | S9 and its tasks (S10 first, then a re-run of S9-01/S9-02 and the owner's S9-03 words); H1 site facts (owner or surveyor input); program gate (needs site gate); H3 real design (needs S9 and approvals) |
@@ -1516,7 +1516,7 @@ claimed without a recorded professional verification.
 |---|---|
 | Kind | implementation |
 | Status | IN_PROGRESS |
-| Review | CHANGES_REQUESTED |
+| Review | PENDING |
 | Branch | `stage/S10-readiness-remediation` |
 | Depends on | S4, S5, S6, S7, S8 |
 | Tasks | S10-01, S10-02, S10-03, S10-04, S10-05, S10-06, S10-07, S10-08, S10-09, S10-10, S10-11, S10-12, S10-13, S10-19, S10-14, S10-15, S10-16, S10-17, S10-18 |
@@ -1527,7 +1527,7 @@ claimed without a recorded professional verification.
 | Demonstration | Re-run of the readiness demonstration showing the S9 defects gone or explicitly reported, with before and after counts |
 | Artifacts | Updated `examples/readiness/demonstration/`; ADR for plan-review handling of unbuildable findings; schema and `DOMAIN_MODEL.md` updates where the model changes |
 | Review requirements | Reviewer reads `git diff main...stage/S10-readiness-remediation` in full, including the S9 commits, re-runs the demonstration, and checks that no critic was quietened by loosening or relabelling |
-| Evidence | All 19 tasks implemented and committed (dd83d9b through f94f4e0); ADR 0023, ADR 0024, DEC-12, DEC-13; pytest 866 passed; benchmark runner 117 PASS; reviewer typecheck, Vitest (19) and Playwright (8) pass; leak scan and linter clean; schemas current; demonstration asserted in tests/test_readiness_demo.py |
+| Evidence | All 19 tasks implemented and committed (dd83d9b through f94f4e0); review 1 findings addressed; ADR 0023, ADR 0024, DEC-12, DEC-13; pytest 866 passed; benchmark runner 117 PASS; reviewer typecheck, Vitest (19) and Playwright (8) pass; leak scan and linter clean; schemas current; demonstration asserted in tests/test_readiness_demo.py |
 
 #### Reviewer and revision fixes
 
@@ -2492,6 +2492,21 @@ Closure record template:
 ```
 
 ### S10 records
+
+#### S10 handoff 2 — review changes addressed, ready for review
+- Branch: `stage/S10-readiness-remediation`
+- Implementer: `agent:gemini`
+- Date: 2026-10-19
+- Addressed: Findings 1, 2, and 3 from S10 review 1:
+  - Finding 1: Installed `librsvg2-bin` in Ubuntu GitHub Actions runners (`.github/workflows/ci.yml`); updated `tests/test_readiness_demo.py` to assert `critique_made_on_this_rendering` conditionally based on `find_rasterizer()` availability.
+  - Finding 2: In `src/house_ai/generation/assemble.py::_terrace_rect`, added reachability check ensuring host rooms touch the exterior face (`row.side`), preventing inner rooms of depth-stacked slots (e.g. dining behind kitchen) from hosting an exterior terrace that they do not touch (`iss-no-door-dining-terrace`). In `src/house_ai/generation/solver.py`, added CP-SAT constraints for row-linked stairs across stacked partners (as in `elevated` mode) requiring the stair flight to be fully contained within a single slot of the partner row (`abs_slot_start <= stair_start` and `abs_slot_end >= stair_end`), preventing room partitions from cutting through stair flights (`iss-stair-volume-*-below`). Tested across seeds 0 through 9: all 10 seeds now produce `valid=True, findings=[]`. `tests/test_hillside_levels.py` passes cleanly.
+  - Finding 3: Updated review status to `PENDING` for re-review.
+- Checks run:
+  - `pytest -q`: 866 passed in 418s (0 fails, 0 xfails)
+  - `benchmark runner --require-complete`: 117 PASS, 0 FAIL, 0 NOT_CHECKED
+  - Reviewer app: typecheck clean, Vitest 19 passed, Playwright 8 passed
+  - Integrity: `tools/check_tracker.py` clean, `tools/leak_scan.py` clean, `ruff check src tests examples tools` clean, `schemas check` 29 up to date, `project verify my-house` intact (13 events, 10 artifact versions)
+- Status: Stage S10 review changes implemented. Review requested: PENDING.
 
 #### S10 review 1 — CHANGES_REQUESTED
 - Reviewed commit: 999659c492fa6da3980c97534bd7ba1fe53dd304

@@ -11,6 +11,7 @@ import json
 import yaml
 
 from examples.readiness.run_demo import HERE, REVISIONS, run
+from house_ai.render2d.rasterize import find_rasterizer
 
 
 def test_readiness_demonstration_end_to_end(tmp_path):
@@ -100,7 +101,10 @@ def test_readiness_demonstration_end_to_end(tmp_path):
     vr = rec["visual_review"]
     assert "vc-living-too-small" not in vr["ungrounded_ids"]
     assert {c["status"] for c in vr["claims"]} == {"ai_judgment"}
-    assert vr["critique_made_on_this_rendering"] is True
+    if find_rasterizer() is not None:
+        assert vr["critique_made_on_this_rendering"] is True
+    else:
+        assert vr["critique_made_on_this_rendering"] is False
     assert len(vr["detector_findings"]) > 0
     assert any(f["type"] == "overlapping_labels" for f in vr["detector_findings"])
 

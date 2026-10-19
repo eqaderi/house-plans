@@ -1161,6 +1161,21 @@ class _Builder:
         row = bar.row(host.row_id.rsplit("-", 1)[-1])
         if row.side not in ("front", "back"):
             return None
+        # A room stacked in depth (inner room) does not touch the exterior bar face.
+        if row.side == "back":
+            reaches = (
+                host.rect.v1 == bar.cross1_dm
+                if bar.axis == "u"
+                else host.rect.u1 == bar.cross1_dm
+            )
+        else:
+            reaches = (
+                host.rect.v0 == bar.cross0_dm
+                if bar.axis == "u"
+                else host.rect.u0 == bar.cross0_dm
+            )
+        if not reaches:
+            return None
         r = host.rect
         along = (r.u0, r.u1) if bar.axis == "u" else (r.v0, r.v1)
         width = along[1] - along[0]
