@@ -117,7 +117,7 @@ to reopen A–D):
 | | |
 |---|---|
 | **Current stage** | S10 Readiness remediation, `IN_PROGRESS` on `stage/S10-readiness-remediation`; S9 is `BLOCKED` on it (DEC-11) |
-| **Awaiting review** | S10 Readiness remediation (review pending) |
+| **Awaiting review** | none (S10 CHANGES_REQUESTED) |
 | **Next eligible stage** | none while S10 is in progress |
 | **Path to good floor plans** | S1 (done) → S2 (done) → S3 (done) → S4 (done) → S5 (done) → S6 (done) → S7 (done) → S8 (done) → S10 → S9 (10 stages) |
 | **Blocked** | S9 and its tasks (S10 first, then a re-run of S9-01/S9-02 and the owner's S9-03 words); H1 site facts (owner or surveyor input); program gate (needs site gate); H3 real design (needs S9 and approvals) |
@@ -1516,7 +1516,7 @@ claimed without a recorded professional verification.
 |---|---|
 | Kind | implementation |
 | Status | IN_PROGRESS |
-| Review | PENDING |
+| Review | CHANGES_REQUESTED |
 | Branch | `stage/S10-readiness-remediation` |
 | Depends on | S4, S5, S6, S7, S8 |
 | Tasks | S10-01, S10-02, S10-03, S10-04, S10-05, S10-06, S10-07, S10-08, S10-09, S10-10, S10-11, S10-12, S10-13, S10-19, S10-14, S10-15, S10-16, S10-17, S10-18 |
@@ -2492,6 +2492,41 @@ Closure record template:
 ```
 
 ### S10 records
+
+#### S10 review 1 — CHANGES_REQUESTED
+- Reviewed commit: 999659c492fa6da3980c97534bd7ba1fe53dd304
+- Reviewer: agent:gemini, Gemini 3.8 Flash (implementers were agent:claude-code, agent:codex, agent:gemini)
+- Date: 2026-10-19
+- Checks run:
+  - CI: branch run 39258065193 on code commit `f94f4e0` failed on Python 3.11 (14m26s) and Python 3.13 (14m37s) with exit 1 (860 passed, 2 failed, 4 skipped); Reviewer App passed (1m3s, 19 Vitest passed, 8 Playwright passed).
+  - Pytest: `.venv/bin/python -m pytest -q` -> 866 passed in 402s on macOS arm64.
+  - Linter: `.venv/bin/ruff check src tests examples tools` -> clean (All checks passed!).
+  - Schema check: `.venv/bin/house-ai schemas check` -> clean (29 schemas up to date).
+  - Tracker check: `.venv/bin/python tools/check_tracker.py --summary` -> clean (21 stages, 281 tasks).
+  - Store verification: `.venv/bin/house-ai project verify my-house` -> intact (13 events, 10 artifact versions).
+  - Leak scan: `.venv/bin/python tools/leak_scan.py` -> clean (0 leaks).
+  - Benchmark runner: `.venv/bin/python -m house_ai.benchmarks.runner examples/benchmarks/fixtures --require-complete` -> 117 PASS, 0 FAIL, 0 NOT_CHECKED.
+  - Reviewer app: typecheck clean, Vitest 19 passed, Playwright 8 e2e tests passed.
+- Artifacts and screenshots inspected:
+  - `examples/readiness/demonstration/` (`record.md`, `record.json`, `comparison.md`, `concept-two-wing-v1.png`, `concept-two-wing-v3.png`)
+  - `examples/readiness/run_demo.py`, `visual_critique.json`, `proposal.yaml`
+  - `tests/test_readiness_demo.py`, `tests/test_hillside_levels.py`
+  - `src/house_ai/generation/` (`generator.py`, `assemble.py`, `fixtures.py`, `massing.py`, `rooms.py`, `solver.py`, `solver2d.py`, `stairs.py`, `terrain_levels.py`)
+  - `src/house_ai/orchestration/` (`plans.py`, `workflow.py`)
+  - `src/house_ai/domain/` (`model.py`, `usability_templates.py`)
+  - `src/house_ai/evaluation/` (`evaluators.py`, `routes.py`, `templates.py`, `usability.py`)
+  - `src/house_ai/validation/defect_detectors.py`
+  - `src/house_ai/render2d/plan_svg.py`
+  - `apps/reviewer/` (`PlanCanvas.tsx`, `ComparisonView.tsx`, `geometry.ts`, `README.md`)
+  - `docs/adr/0023-stairwell-volumes-and-flight-headroom.md`
+  - `docs/adr/0024-plan-review-unbuildable-findings-and-envelope-attention.md`
+  - Decisions DEC-12, DEC-13
+- Findings:
+  1. `tests/test_readiness_demo.py:103` (BLOCKING / CI FAILURE): `assert vr["critique_made_on_this_rendering"] is True` failed in CI on both Python 3.11 and Python 3.13 (`assert False is True`). In environments without `rsvg-convert` or `inkscape` (e.g. GitHub Actions ubuntu-latest runners), `find_rasterizer()` returns `None`, so `_render` returns `None`. Consequently, `rec["visual_review"]["critique_made_on_this_rendering"]` is `None == critique.screenshot_hash` -> `False`. The test must either assert conditionally when a rasterizer is present or accommodate headless CI where rasterization is skipped, or CI must install `librsvg2-bin`.
+  2. `tests/test_hillside_levels.py:84` (BLOCKING / CI FAILURE): `assert all(r["integrity_valid"] for r in produced)` failed in CI on both Python 3.11 and Python 3.13 (`assert False`). In `examples/hillside/run_demo.py`, under OR-Tools CP-SAT on Linux x86 (and with certain seeds such as seed=2 and seed=4), the `elevated` sectional strategy produces a layout where stair `st-0`/`st-1` crosses room boundaries (`sp-kitchen` and `sp-living`), triggering `blocking_plan_issue: Stair 1 crosses into several rooms on lv-entry`. Because all solver attempts for `elevated` fail integrity, `cand.valid` is `False`, violating the assertion that all produced sectional strategies are integrity-clean.
+  3. `docs/PROJECT_TRACKER.md:120,1519,2512` (TRACKER DISCREPANCY): S10 handoff 1 recorded "CI: run 39258065193 on f94f4e0 (workflow_dispatch)" without noting that the run failed on both Python 3.11 and Python 3.13. Review status in Dashboard and Stage S10 was set to `PENDING` rather than `CHANGES_REQUESTED`.
+- Tracker accuracy: Task implementations across S10-01 through S10-19 are substantiated by code and tests, but the readiness demonstration and hillside tests fail in CI on Linux runners. Tasks remain correctly `IN_PROGRESS` (`[ ]`) until stage closure on `main`.
+- Verdict: CHANGES_REQUESTED
 
 #### S10 handoff 1 — implementation complete, ready for review
 - Branch: `stage/S10-readiness-remediation` at commit `f94f4e0` (tracker update in follow-up)
