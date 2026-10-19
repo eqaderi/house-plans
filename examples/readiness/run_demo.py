@@ -46,7 +46,7 @@ from house_ai.evaluation.grounding import collect_canonical_ids
 from house_ai.orchestration.interview import InterviewService
 from house_ai.orchestration.plans import PlanService, PlanWorkflowError, StoredOption
 from house_ai.orchestration.reviewer_bundle import export_reviewer_bundle
-from house_ai.orchestration.workflow import ApprovalRequiresHuman, Workflow
+from house_ai.orchestration.workflow import ApprovalRequiresHuman, GateBlocked, Workflow
 from house_ai.render2d.rasterize import find_rasterizer, rasterize_svg_to_png
 from house_ai.storage import ProjectStore
 from house_ai.storage.hashing import load_document
@@ -364,15 +364,23 @@ def run(out: Path, strategies: list[str] | None = None, with_proposal: bool = Tr
         refusals["agent_approves_plan"] = _refused(
             lambda: wf.approve(Gate.PLAN, ref, AGENT, "agent tries"), ApprovalRequiresHuman
         )
-        wf.approve(Gate.PLAN, ref, OWNER, "synthetic owner approves to exercise the gate")
-        refusals["revise_after_plan_approval"] = _refused(
-            lambda: plans.revise(
-                VISUAL_OPTION, "a bigger kitchen", AGENT, ops=["area:pi-kitchen=16"]
-            ),
-            PlanWorkflowError,
+        # An unbuildable plan stays closed even for the human (ADR 0024).
+        blocked = _refused(
+            lambda: wf.approve(Gate.PLAN, ref, OWNER, "synthetic owner approves to exercise it"),
+            GateBlocked,
         )
+        if blocked is not None:
+            refusals["human_approves_unbuildable_plan"] = blocked
+        else:
+            refusals["revise_after_plan_approval"] = _refused(
+                lambda: plans.revise(
+                    VISUAL_OPTION, "a bigger kitchen", AGENT, ops=["area:pi-kitchen=16"]
+                ),
+                PlanWorkflowError,
+            )
         rec["plan_gate"] = {"requested": ref.model_dump(mode="json"),
-                            "open_reasons": event.payload["open_reasons"]}  # fmt: skip
+                            "open_reasons": event.payload["open_reasons"],
+                            "attention": event.payload.get("attention", [])}  # fmt: skip
     rec["refusals"] = refusals
 
     # 9. Reviewer bundle and provenance.
@@ -494,7 +502,8 @@ def record_markdown(rec: dict) -> str:
         "",
         "## Plan gate, bundle and provenance",
         "",
-        f"- plan review open reasons: {len(rec.get('plan_gate', {}).get('open_reasons', []))}",
+        f"- plan review open reasons: {len(rec.get('plan_gate', {}).get('open_reasons', []))}; "
+        f"attention: {rec.get('plan_gate', {}).get('attention') or 'none'}",
         f"- approvals: {pv['approvals']}; final state {pv['state']}",
         f"- reviewer bundle {rec['bundle']['path']} ({rec['bundle']['bytes']} bytes)",
         f"- store verify problems: {pv['store_verify_problems'] or 'none'}; {pv['events']} events",

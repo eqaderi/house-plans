@@ -75,6 +75,7 @@ terminal, the gated run stores everything and moves to CONCEPT_REVIEW:
   --kind restart_from_program --actor agent:claude-code
 
 .venv/bin/house-ai plan review <project> concept-split-level --actor agent:claude-code
+# OPEN lines block approval (unbuildable findings, ADR 0024); ATTENTION lines do not.
 # The owner, in their own terminal:
 #   .venv/bin/house-ai workflow approve <project> plan --id concept-split-level --version 2 --approver <name>
 ```
