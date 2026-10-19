@@ -59,3 +59,9 @@ This is a list of spaces and how they relate, for the floor-plan step. It is not
 - Rooms without a size from you use typical sizes for a first layout: Entrance hall 6 m², Kitchen 13.8 m², Dining 14 m², Main bedroom 15 m², Child's bedroom 1 11 m², Child's bedroom 2 11 m², En-suite bathroom 5 m², Bathroom 1 6 m², Study 1 9 m², Carport 18 m², Laundry 6 m², Store room 5 m², Plant / technical room 4 m², Stair 10 m², Terrace 16 m². These are not building-code minimums; no local rules are loaded.
 - Halls, walls and structure add 20% to the room areas.
 - The house has an entrance hall and a small plant / technical room.
+- Each car is taken as 1.8 m wide and 4.5 m long, with 0.6 m to open its doors, to test the garage.
+- The main bedroom is tested for a double bed and children's bedrooms for single beds.
+
+## Open questions
+
+- Which car(s) will you park? Their size tests the garage.

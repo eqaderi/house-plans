@@ -31,7 +31,7 @@ from ortools.sat.python import cp_model
 
 from house_ai.domain.program import AdjacencyKind, SpaceFunction, Strength
 
-from .massing import GARAGE_DEPTH_DM, Bar, Massing, MassingContext, Row, room_group
+from .massing import Bar, Massing, MassingContext, Row, room_group
 from .rooms import Cluster, ProgramRooms, Relation, RoomSpec, Slot
 from .terrain_levels import joint_level_variables
 
@@ -134,12 +134,6 @@ class SolveFailed(Exception):
     pass
 
 
-def stair_risers(rise_m: float) -> tuple[int, float, float]:
-    """(riser count, riser height m, run length m) for a straight flight, typical values."""
-    n = max(2, math.ceil(abs(rise_m) / 0.18 - 1e-9))
-    return n, abs(rise_m) / n, (n - 1) * 0.28
-
-
 def split_depth(row_depth: int, inner: RoomSpec, outer: RoomSpec) -> int | None:
     t_in = inner.item.target_area_m2 or inner.min_area_m2 or 4.0
     t_out = outer.item.target_area_m2 or outer.min_area_m2 or 4.0
@@ -172,8 +166,6 @@ def _slot_bounds(
         min_w = room.min_width_m
         min_a = room.min_area_m2
         if min_w is not None and depth < _ceil(min_w * 10):
-            return None
-        if room.function is SpaceFunction.GARAGE and depth < GARAGE_DEPTH_DM:
             return None
         wmin = max(wmin, _ceil((min_w or 0) * 10))
         if min_a is not None:
@@ -218,11 +210,6 @@ def build_units(m: Massing, rooms: ProgramRooms) -> tuple[list[Unit], list[str]]
                     r.item.accessible or r.function is SpaceFunction.LIFT for r in cl.members
                 )
                 if needs_entry_level and not same_level:
-                    continue
-                # Cars arrive from the road: a garage sits in the entry bar's road-side row.
-                if any(r.function is SpaceFunction.GARAGE for r in cl.members) and not (
-                    bar.entry and row.side == "front"
-                ):
                     continue
                 # A room that must open off the hall stays beside the entry bar's corridor.
                 if not bar.entry and any(r.space_id in rooms.hall_connected for r in cl.members):
@@ -309,6 +296,13 @@ def solve(m: Massing, rooms: ProgramRooms, opts: SolverOptions) -> Solution:
             start[b.id] = md.NewIntVar(b.start_lo_dm, b.start_hi_dm, f"S_{b.id}")
         length[b.id] = md.NewIntVar(min(60, hi_len), hi_len, f"L_{b.id}")
         md.Add(start[b.id] + length[b.id] <= b.start_hi_dm)
+    if m.garage is not None:
+        # The entry bar meets the separate garage beside it (DEC-12, S10-19).
+        e = next(b for b in m.bars if b.entry)
+        if m.garage[2] <= e.start_lo_dm:
+            md.Add(start[e.id] == m.garage[2])
+        else:
+            md.Add(start[e.id] + length[e.id] == m.garage[0])
 
     obj: list = []
     level_vars, buried_vars, level_objective = joint_level_variables(
@@ -485,6 +479,48 @@ def solve(m: Massing, rooms: ProgramRooms, opts: SolverOptions) -> Solution:
                 md.Add(
                     abs_start(ua.id, link.a_row) + width[ua.id, link.a_row] <= link.gallery_hi_dm
                 )
+            for side, bar_id, rid in (("a", link.a, link.a_row), ("b", link.b, link.b_row)):
+                u_stair = pair[side]
+                if u_stair.kind != "stair":
+                    continue
+                other_bar_id = link.b if side == "a" else link.a
+                for sl in m.links:
+                    if sl.kind == "stacked" and bar_id in (sl.a, sl.b):
+                        partner_id = sl.b if sl.a == bar_id else sl.a
+                        partner = m.bar(partner_id)
+                        if abs(partner.elevation_m - m.bar(other_bar_id).elevation_m) < 1e-6:
+                            row_side = m.bar(bar_id).row(rid.rsplit("-", 1)[-1]).side
+                            partner_row = next(
+                                (r for r in partner.rows if r.side == row_side), None
+                            )
+                            if partner_row is None:
+                                continue
+                            eligible = [
+                                u for u in units if partner_row.id in u.rows and u.kind == "cluster"
+                            ]
+                            if eligible:
+                                contains_lits = []
+                                for cu in eligible:
+                                    for j in range(len(cu.slots)):
+                                        bvar = md.NewBoolVar(
+                                            f"stair_contained_{u_stair.id}_{partner_row.id}_{cu.id}_{j}"
+                                        )
+                                        contains_lits.append(bvar)
+                                        md.AddImplication(bvar, x[cu.id, partner_row.id])
+                                        slot_start_expr = abs_start(cu.id, partner_row.id) + sum(
+                                            slot_w[cu.id, partner_row.id, k] for k in range(j)
+                                        )
+                                        slot_end_expr = abs_start(cu.id, partner_row.id) + sum(
+                                            slot_w[cu.id, partner_row.id, k] for k in range(j + 1)
+                                        )
+                                        md.Add(
+                                            slot_start_expr <= abs_start(u_stair.id, rid)
+                                        ).OnlyEnforceIf(bvar)
+                                        md.Add(
+                                            slot_end_expr
+                                            >= abs_start(u_stair.id, rid) + width[u_stair.id, rid]
+                                        ).OnlyEnforceIf(bvar)
+                                md.AddBoolOr(contains_lits)
         else:  # end: the slot meets the other wing's corridor
             b = m.bar(link.b)
             corridor_start = b.cross0_dm + b.row("front").depth_dm

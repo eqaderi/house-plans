@@ -21,7 +21,11 @@ from pathlib import Path
 
 import yaml
 
-from house_ai.constants.evaluations import REGRESSION_VIOLATION_PREFIX
+from house_ai.constants.evaluations import (
+    REGRESSION_VIOLATION_PREFIX,
+    REQUEST_NOT_MET_PREFIX,
+    REQUESTED_AREA_TOLERANCE_M2,
+)
 from house_ai.constants.proposals import (
     OUTDOOR_LINK_TERRACE,
     VALID_OUTDOOR_LINKS,
@@ -33,6 +37,7 @@ from house_ai.domain.brief import DesignBrief
 from house_ai.domain.codepack import CodePack
 from house_ai.domain.constraints import ConstraintSet
 from house_ai.domain.evaluation import EvaluationReport
+from house_ai.domain.model import HouseModel
 from house_ai.domain.plan import (
     ChangeRequest,
     ChangeRequestKind,
@@ -685,79 +690,11 @@ class PlanService:
             ),
         )
 
-        # Preserve owner design intent across revisions: check regressions (S7-23)
-        regressions: list[str] = []
-        prior_effective = [
-            op
-            for op in (base.generation.revision_ops if base.generation else [])
-            if op.partition(":")[0] not in {"rethink", "strategy", "proposal"}
-        ]
-        changed_keys = set()
-        for op in ops:
-            v_tag, _, a_tag = op.partition(":")
-            if v_tag in {"area", "level"}:
-                changed_keys.add((v_tag, a_tag.partition("=")[0]))
-            elif v_tag in {"separate", "adjacent", "near", "connect"}:
-                ra, _, rb = a_tag.partition(",")
-                changed_keys.add(("relation", *sorted((ra, rb))))
-
-        for pop in prior_effective:
-            v_tag, _, a_tag = pop.partition(":")
-            if v_tag == "area":
-                name, _, val = a_tag.partition("=")
-                if (v_tag, name) in changed_keys:
-                    continue
-                target_val = float(val)
-                for sid in self._resolve_spaces(name, inp.program):
-                    sp = next((s for s in plan.model.spaces if s.id == sid), None)
-                    if sp and sp.area_m2 < target_val - 2.0:
-                        regressions.append(
-                            f"{REGRESSION_VIOLATION_PREFIX}'{pop}' is no longer satisfied "
-                            f"({sp.id} area {sp.area_m2:.1f} m² < requested {target_val:g} m²)"
-                        )
-            elif v_tag == "level":
-                name, _, pref = a_tag.partition("=")
-                if (v_tag, name) in changed_keys:
-                    continue
-                for sid in self._resolve_spaces(name, inp.program):
-                    sp = next((s for s in plan.model.spaces if s.id == sid), None)
-                    if sp:
-                        sp_lv = plan.model.level(sp.level_id)
-                        entry_lv = next(
-                            (lv for lv in plan.model.levels if lv.id == "lv-entry"), None
-                        )
-                        entry_elev = entry_lv.elevation_m if entry_lv else 0.0
-                        if pref == "lower" and sp_lv.elevation_m >= entry_elev:
-                            regressions.append(
-                                f"{REGRESSION_VIOLATION_PREFIX}'{pop}' is no longer satisfied"
-                            )
-                        elif pref == "upper" and sp_lv.elevation_m <= entry_elev:
-                            regressions.append(
-                                f"{REGRESSION_VIOLATION_PREFIX}'{pop}' is no longer satisfied"
-                            )
-                        elif pref == "entry" and sp_lv.elevation_m != entry_elev:
-                            regressions.append(
-                                f"{REGRESSION_VIOLATION_PREFIX}'{pop}' is no longer satisfied"
-                            )
-            elif v_tag == "separate":
-                ra, _, rb = a_tag.partition(",")
-                if ("relation", *sorted((ra, rb))) in changed_keys:
-                    continue
-                sids_a = set(self._resolve_spaces(ra, inp.program))
-                sids_b = set(self._resolve_spaces(rb, inp.program))
-                for opn in plan.model.openings:
-                    if opn.connects and len(opn.connects) == 2:
-                        c0, c1 = opn.connects
-                        if (c0 in sids_a and c1 in sids_b) or (c0 in sids_b and c1 in sids_a):
-                            regressions.append(
-                                f"{REGRESSION_VIOLATION_PREFIX}'{pop}' is no longer satisfied "
-                                "(door placed between separated rooms)"
-                            )
-                            break
-
-        if regressions:
+        # Check every request this version carries, new and inherited (S7-23, S10-03).
+        unmet = self.request_findings(effective_ops, plan.model, base, inp.program)
+        if unmet:
             rev = rev.model_copy(
-                update={"new_violations": sorted(set(rev.new_violations) | set(regressions))}
+                update={"new_violations": sorted(set(rev.new_violations) | set(unmet))}
             )
 
         rev_ref = self.store.put(
@@ -778,6 +715,66 @@ class PlanService:
             (export / "revision.json").write_text(pretty_json(rev), encoding="utf-8")
             opt.export_dir = export
         return RevisionOutcome(opt, rev, rev_ref, export)
+
+    def request_findings(
+        self, ops: list[str], model: HouseModel, base: PlanVersion, program: SpaceProgram
+    ) -> list[str]:
+        """Owner requests in ``ops`` that ``model`` does not meet.
+
+        A request is a regression only when ``base`` carried it and met it; otherwise it is
+        reported as not met, including a request made in this very revision.
+        """
+        base_ops = set(base.generation.revision_ops if base.generation else [])
+        out = []
+        for op in ops:
+            detail = self._unmet_request(op, model, program)
+            if detail is None:
+                continue
+            if op in base_ops and self._unmet_request(op, base.model, program) is None:
+                out.append(f"{REGRESSION_VIOLATION_PREFIX}'{op}' is no longer satisfied ({detail})")
+            else:
+                out.append(f"{REQUEST_NOT_MET_PREFIX}'{op}' ({detail})")
+        return out
+
+    def _unmet_request(self, op: str, model: HouseModel, program: SpaceProgram) -> str | None:
+        """Why the owner's area, level or separation request ``op`` is not met in ``model``.
+
+        None when it is met or is a kind of request this check does not cover.
+        """
+        verb, _, arg = op.partition(":")
+        spaces = {s.id: s for s in model.spaces}
+        if verb == "area":
+            name, _, value = arg.partition("=")
+            target = float(value)
+            for sid in self._resolve_spaces(name, program):
+                sp = spaces.get(sid)
+                if sp and sp.area_m2 < target - REQUESTED_AREA_TOLERANCE_M2:
+                    return f"{sp.id} area {sp.area_m2:.1f} m² < requested {target:g} m²"
+        elif verb == "level":
+            name, _, pref = arg.partition("=")
+            entry = next((lv for lv in model.levels if lv.id == "lv-entry"), None)
+            entry_elev = entry.elevation_m if entry else 0.0
+            for sid in self._resolve_spaces(name, program):
+                sp = spaces.get(sid)
+                if sp is None:
+                    continue
+                elev = model.level(sp.level_id).elevation_m
+                if (
+                    (pref == "lower" and elev >= entry_elev)
+                    or (pref == "upper" and elev <= entry_elev)
+                    or (pref == "entry" and elev != entry_elev)
+                ):
+                    return f"{sp.id} is on {sp.level_id}, not the {pref} level"
+        elif verb == "separate":
+            ra, _, rb = arg.partition(",")
+            sids_a = set(self._resolve_spaces(ra, program))
+            sids_b = set(self._resolve_spaces(rb, program))
+            for opn in model.openings:
+                if opn.connects and len(opn.connects) == 2:
+                    c0, c1 = opn.connects
+                    if (c0 in sids_a and c1 in sids_b) or (c0 in sids_b and c1 in sids_a):
+                        return f"door {opn.id} connects the rooms to keep apart"
+        return None
 
     def combine(
         self,

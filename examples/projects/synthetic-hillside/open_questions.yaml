@@ -18,6 +18,14 @@ questions:
   status: open
   answer: null
   asked_in_round: null
+- id: oq-car-size
+  question: Which car(s) will you park? Their size tests the garage.
+  topic: cars
+  why_it_matters: the garage is checked against a typical car until then
+  blocking: false
+  status: open
+  answer: null
+  asked_in_round: null
 provenance:
   created_at: '2026-10-17T10:00:00Z'
   created_by:

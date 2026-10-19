@@ -210,12 +210,29 @@ def test_fixture_rejects_private_sites_unknown_targets_and_duplicate_expectation
         BenchmarkFixture.model_validate(doc)
 
 
-def test_runner_table_all_categories_and_incomplete_gate(capsys):
+def test_runner_table_all_categories_and_incomplete_gate(capsys, tmp_path):
     assert main([str(HERE / "fixtures")]) == 0
     table = capsys.readouterr().out
     assert all(category.value in table for category in AcceptanceCategory)
     assert "NOT_CHECKED" in table
-    assert main([str(HERE / "fixtures"), "--require-complete"]) == 1
+    assert main([str(HERE / "fixtures"), "--require-complete"]) == 0
+    capsys.readouterr()
+    doc = json.loads((HERE / "fixtures/social-cooking.json").read_text())
+    doc["id"] = "synthetic-incomplete"
+    doc["expectations"].append(
+        {
+            "id": "stale-future",
+            "category": "practical_usability",
+            "source": "future",
+            "metric": "future_probe",
+            "value": None,
+            "status": "not_checked",
+            "pending_stage": "S99",
+            "basis": "synthetic future probe",
+        }
+    )
+    (tmp_path / "incomplete.json").write_text(json.dumps(doc))
+    assert main([str(tmp_path), "--require-complete"]) == 1
     capsys.readouterr()
     assert main([str(HERE / "fixtures/social-cooking.json"), "--json"]) == 0
     rows = json.loads(capsys.readouterr().out)

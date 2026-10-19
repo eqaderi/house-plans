@@ -151,7 +151,25 @@
       ],
       "contours": [],
       "surface_ref": null,
-      "surface": null
+      "surface": null,
+      "breaklines": [
+        {
+          "id": "mapped-retaining",
+          "vertices": [
+            [
+              10.0,
+              0.0,
+              0.0
+            ],
+            [
+              10.0,
+              30.0,
+              0.0
+            ]
+          ],
+          "source_ref": "synthetic-3D-trace"
+        }
+      ]
     },
     "features": [
       {
@@ -223,7 +241,7 @@
         },
         "status": "assumption",
         "source_ref": null,
-        "notes": "Discontinuous ground intent; current Delaunay builder is unconstrained"
+        "notes": "Mapped trace; conflicting spot heights must prevent any TIN, including constrained TIN"
       }
     ],
     "cad_imports": [],
@@ -475,15 +493,15 @@
       "id": "retaining-breakline",
       "category": "terrain_compatibility",
       "target": "site",
-      "source": "future",
-      "metric": "breakline_preserved",
+      "source": "site",
+      "metric": "breakline_input_count",
       "code": null,
       "subject_ids": [],
-      "value": null,
-      "status": "not_checked",
+      "value": 1,
+      "status": "measured",
       "tolerance": 1e-6,
-      "pending_stage": "S8",
-      "basis": "current TIN has no constrained breakline support"
+      "pending_stage": null,
+      "basis": "one mapped 3D breakline remains explicit; conflicting spot heights still refuse a TIN"
     }
   ]
 }

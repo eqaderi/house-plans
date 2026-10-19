@@ -379,6 +379,8 @@ def cmd_plan_review(args: argparse.Namespace) -> int:
         return EXIT_FAIL
     for r in ev.payload["open_reasons"]:
         _out(f"OPEN {r}")
+    for r in ev.payload.get("attention", []):
+        _out(f"ATTENTION {r}")
     _out(f"plan review requested for {ref.id} v{ref.version}")
     if not ev.payload["open_reasons"]:
         _out(

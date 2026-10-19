@@ -868,6 +868,7 @@ export interface Stair {
   from_level_id: string;
   id: string;
   kind: StairKind;
+  landing_segments?: number[];
   riser_count?: number | null;
   riser_height_m?: number | null;
   to_level_id: string;

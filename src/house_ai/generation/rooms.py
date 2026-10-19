@@ -11,6 +11,7 @@ living-kitchen-dining triangle, for example).
 
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass, field
 from itertools import permutations
 
@@ -24,6 +25,7 @@ from house_ai.domain.program import (
     SpaceProgram,
     Strength,
 )
+from house_ai.domain.usability_templates import TEMPLATES
 
 S = SpaceFunction
 
@@ -148,6 +150,8 @@ class ProgramRooms:
     #: Rooms with a HARD connection to the hall item: they need a corridor door.
     hall_connected: set[str]
     skipped: list[tuple[str, str]]
+    #: The garage item: a separate road-level volume beside the house (DEC-12, S10-19).
+    garage_item: ProgramItem | None = None
 
     def room(self, space_id: str) -> RoomSpec:
         return next(r for r in self.rooms if r.space_id == space_id)
@@ -167,6 +171,36 @@ def is_indoor(item: ProgramItem) -> bool:
     )
 
 
+#: Wall allowance (m) added to a garage's clear size: half a wall at each end.
+GARAGE_WALLS_M = 0.3
+#: Clear width kept beside the cars on the house side, where the person door's approach
+#: lies (the approach of ADR 0019; S10-19).
+GARAGE_DOOR_APPROACH_M = 0.9
+
+
+def garage_dims_dm(program: SpaceProgram) -> tuple[int, int]:
+    """(depth, width) in dm a garage needs for the program's cars side by side (S10-19).
+
+    Cars and their door clearances come from the program, a typical car when it has
+    none; front and back clearances from the shared vehicle template (ADR 0019), so the
+    generator and the garage study agree. Neighbouring cars share the wider clearance; the
+    side next to the house keeps the person door's approach clear.
+    """
+    typical = TEMPLATES["vehicle"]
+    cars = program.usability.vehicles or []
+    lengths = [v.length_m for v in cars] or [typical.depth.value]
+    widths = [v.width_m for v in cars] or [typical.width.value]
+    doors = [v.door_side_clearance_m for v in cars] or [typical.left.value]
+    gaps = [
+        max(doors[0], GARAGE_DOOR_APPROACH_M),
+        *(max(a, b) for a, b in zip(doors, doors[1:], strict=False)),
+        doors[-1],
+    ]
+    depth = max(lengths) + typical.front.value + typical.back.value + GARAGE_WALLS_M
+    width = sum(widths) + sum(gaps) + GARAGE_WALLS_M
+    return math.ceil(depth * 10 - 1e-9), math.ceil(width * 10 - 1e-9)
+
+
 def expand_program(
     program: SpaceProgram,
     hard_min_areas: dict[str, float] | None = None,
@@ -174,7 +208,7 @@ def expand_program(
 ) -> ProgramRooms:
     rooms: list[RoomSpec] = []
     skipped: list[tuple[str, str]] = []
-    hall_item = stair_item = None
+    hall_item = stair_item = garage_item = None
     first_space: dict[str, str] = {}
     entry_item = next((i for i in program.items if i.function is S.ENTRY), None)
     for item in program.items:
@@ -183,6 +217,10 @@ def expand_program(
             continue
         if item.function is S.STAIR:
             stair_item = stair_item or item
+            continue
+        if item.function is S.GARAGE:
+            garage_item = garage_item or item
+            skipped.append((item.id, "separate road-level garage volume (DEC-12)"))
             continue
         if item.function in CIRCULATION_FUNCTIONS and hall_item is None:
             hall_item = item
@@ -230,6 +268,7 @@ def expand_program(
         relations=relations,
         hall_connected=hall_connected,
         skipped=skipped,
+        garage_item=garage_item,
     )
 
 

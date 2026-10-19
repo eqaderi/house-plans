@@ -79,7 +79,7 @@
         "model": null,
         "provider": null
       },
-      "statement": "Entry level set at the mean surveyed ground along the road-side face (11.70 m local), interpolated from the survey TIN (inferred).",
+      "statement": "Initial entry reference from the mean surveyed ground along the road-side face (11.70 m local), interpolated from the survey TIN (inferred).",
       "status": "assumption"
     },
     {
@@ -98,6 +98,24 @@
         "provider": null
       },
       "statement": "The site falls away from the road, so the other levels sit below the entry level (walk-out).",
+      "status": "assumption"
+    },
+    {
+      "affects": [
+        "lv-down-300",
+        "lv-entry"
+      ],
+      "basis": "massing strategy",
+      "confirm_with": null,
+      "id": "asm-gen-note-3",
+      "made_by": {
+        "display_name": null,
+        "id": "house-ai-plan-generator",
+        "kind": "system",
+        "model": null,
+        "provider": null
+      },
+      "statement": "Floor elevations and bar positions/lengths solved jointly with TIN lookup; sectional contact bands and circulation/daylight objectives, no excavation/void penalty. Earthworks evaluated exactly afterward.",
       "status": "assumption"
     },
     {
@@ -261,6 +279,30 @@
       "id": "asm-hillside-engineering",
       "made_by": null,
       "statement": "Steep hillside terrain requires split-level or stepped massing, road-level access coordination, excavation, retaining walls, slope drainage, and structural engineering review; the full parcel area cannot be assumed buildable.",
+      "status": "assumption"
+    },
+    {
+      "affects": [
+        "pi-garage"
+      ],
+      "basis": "typical car envelope (assumption until the owner gives the car size)",
+      "confirm_with": "owner",
+      "id": "asm-car-size",
+      "made_by": null,
+      "statement": "Each car is taken as 1.8 m wide and 4.5 m long, with 0.6 m to open its doors, to test the garage.",
+      "status": "assumption"
+    },
+    {
+      "affects": [
+        "pi-bed-main",
+        "pi-bed-child-1",
+        "pi-bed-child-2"
+      ],
+      "basis": "Who sleeps where, from the household answers.",
+      "confirm_with": "owner",
+      "id": "asm-beds",
+      "made_by": null,
+      "statement": "The main bedroom is tested for a double bed and children's bedrooms for single beds.",
       "status": "assumption"
     }
   ],

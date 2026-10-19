@@ -87,3 +87,49 @@ export function formatDimM(val: number): string {
 export function formatAreaM2(val: number): string {
   return `${val.toFixed(1)} m²`;
 }
+
+/** Zoom limits of the plan canvas, in pixels per metre. */
+export const MIN_SCALE_PX_PER_M = 10;
+export const MAX_SCALE_PX_PER_M = 100;
+
+/**
+ * Bounding box of every space outline on every level, so switching levels keeps the view.
+ * Returns null when the model has no space outlines.
+ */
+export function spacesBoundingBox(
+  spaces: { boundary?: { outer?: unknown } | null }[]
+): BoundingBox | null {
+  const points = spaces.flatMap((s) => (s.boundary?.outer || []) as [number, number][]);
+  return points.length > 0 ? computeBoundingBox(points) : null;
+}
+
+/** Smallest box containing both boxes (either may be null). */
+export function unionBoundingBox(a: BoundingBox | null, b: BoundingBox | null): BoundingBox | null {
+  if (!a || !b) return a || b;
+  return computeBoundingBox([
+    [a.minX, a.minY],
+    [a.maxX, a.maxY],
+    [b.minX, b.minY],
+    [b.maxX, b.maxY],
+  ]);
+}
+
+/**
+ * Scale and pan that centre `bbox` (model metres, y up) in a viewport of `width` x `height`
+ * pixels, leaving `marginPx` on every side. Screen x = pan.x + x * scale and
+ * screen y = pan.y - y * scale, as drawn by PlanCanvas.
+ */
+export function fitTransform(
+  bbox: BoundingBox,
+  width: number,
+  height: number,
+  marginPx = 48
+): { scale: number; pan: { x: number; y: number } } {
+  const usableW = Math.max(width - 2 * marginPx, 1);
+  const usableH = Math.max(height - 2 * marginPx, 1);
+  const raw = Math.min(usableW / Math.max(bbox.width, 1e-6), usableH / Math.max(bbox.height, 1e-6));
+  const scale = Math.max(MIN_SCALE_PX_PER_M, Math.min(MAX_SCALE_PX_PER_M, raw));
+  const cx = (bbox.minX + bbox.maxX) / 2;
+  const cy = (bbox.minY + bbox.maxY) / 2;
+  return { scale, pan: { x: width / 2 - cx * scale, y: height / 2 + cy * scale } };
+}

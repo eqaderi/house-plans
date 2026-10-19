@@ -93,7 +93,8 @@ reviewer types describe the optional additions.
   coordinate noise, so geometric tolerances are 1e-5 m (a numerical choice).
 - Stored riser heights have four decimals, so the riser total may differ from the
   level rise by up to half a unit per riser before a height mismatch is reported.
-  A level's floor-to-floor height is compared only for a stair to the next level up.
+  A level's floor-to-floor height is compared only for a stair to the next level up
+  that arrives over the lower storey (ADR 0023 narrows this rule).
 - A stair needs `(riser_count − 1) × going` in the declared walking line and a
   width strip contained in its footprint. Arrival/departure strips extend outward
   from the ordered endpoints. Headroom is the minimum separation between a

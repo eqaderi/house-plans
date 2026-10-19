@@ -270,14 +270,15 @@ def test_slope_report_distinguishes_survey_hull_from_clipped_parcel(site):
     # Two planes: 10% over 1 m² and 100% over 4 m². Only 0.75 m² of the
     # first triangle intersects the parcel. No private survey data is used.
     surface = TinSurface(
-        vertices=[(0, 0, 0), (2, 0, 0.2), (0, 1, 0),
-                  (10, 0, 0), (14, 0, 4), (10, 2, 0)],
+        vertices=[(0, 0, 0), (2, 0, 0.2), (0, 1, 0), (10, 0, 0), (14, 0, 4), (10, 2, 0)],
         triangles=[(0, 1, 2), (3, 4, 5)],
     )
-    site = site.model_copy(update={
-        "boundary": Polygon2D(outer=[(0, 0), (1, 0), (1, 1), (0, 1)]),
-        "terrain": Terrain(surface=surface),
-    })
+    site = site.model_copy(
+        update={
+            "boundary": Polygon2D(outer=[(0, 0), (1, 0), (1, 1), (0, 1)]),
+            "terrain": Terrain(surface=surface),
+        }
+    )
     report = validate_site(site)
     assert report.terrain.mean_slope_pct == pytest.approx(82.0)
     assert report.terrain.parcel_mean_slope_pct == pytest.approx(10.0)
@@ -293,11 +294,43 @@ def test_slope_report_distinguishes_survey_hull_from_clipped_parcel(site):
     no_boundary = site.model_copy(update={"boundary": None})
     assert validate_site(no_boundary).terrain.parcel_mean_slope_pct is None
     assert site_context_for(no_boundary, ref, None).mean_slope_pct is None
-    outside = site.model_copy(update={
-        "boundary": Polygon2D(outer=[(20, 0), (21, 0), (21, 1), (20, 1)]),
-    })
+    outside = site.model_copy(
+        update={
+            "boundary": Polygon2D(outer=[(20, 0), (21, 0), (21, 1), (20, 1)]),
+        }
+    )
     assert validate_site(outside).terrain.parcel_mean_slope_pct is None
     assert validate_site(outside).terrain.parcel_tin_area_m2 == 0
+
+
+def test_site_context_and_validation_derive_terrain_and_frontage_when_unstored():
+    import yaml
+
+    from house_ai.domain.provenance import ArtifactKind as K
+    from house_ai.domain.provenance import ArtifactRef
+    from house_ai.domain.site import Site, SiteFeatureKind
+    from house_ai.orchestration.site_context import site_context_for
+
+    site_path = (
+        Path(__file__).parents[1] / "examples" / "projects" / "synthetic-hillside" / "site.yaml"
+    )
+    site = Site.model_validate(yaml.safe_load(site_path.read_text(encoding="utf-8")))
+
+    assert site.terrain.surface is None
+    assert not any(f.kind is SiteFeatureKind.FRONTAGE for f in site.features)
+
+    report = validate_site(site)
+    assert report.terrain.parcel_mean_slope_pct == pytest.approx(36.65, abs=0.01)
+    assert report.frontage.length_m == pytest.approx(24.0, abs=0.01)
+    assert len(report.frontage.segments) == 1
+    assert report.frontage.segments[0][0] == "frontage-e0"
+
+    ref = ArtifactRef(kind=K.SITE, id="site", version=1, sha256="0" * 64)
+    ctx = site_context_for(site, ref, None)
+    assert ctx.mean_slope_pct == pytest.approx(36.65, abs=0.01)
+    assert ctx.frontage_m == pytest.approx(24.0, abs=0.01)
+    assert ctx.relief_m == pytest.approx(10.38, abs=0.01)
+    assert ctx.parcel_area_m2 == pytest.approx(737.503, abs=0.01)
 
 
 def test_source_audit_replays_synthetic_entities_without_writing_store(tmp_path, new_store):
@@ -306,11 +339,14 @@ def test_source_audit_replays_synthetic_entities_without_writing_store(tmp_path,
 
     from .conftest import REPO
 
-    path = _labelled_spots(tmp_path / "audit.dxf", [
-        ((2, 2, 100.0), "A\\P100.000"),
-        ((28, 2, 100.0), "B\\P100.000"),
-        ((15, 18, 108.0), "C\\P108.000"),
-    ])
+    path = _labelled_spots(
+        tmp_path / "audit.dxf",
+        [
+            ((2, 2, 100.0), "A\\P100.000"),
+            ((28, 2, 100.0), "B\\P100.000"),
+            ((15, 18, 108.0), "C\\P108.000"),
+        ],
+    )
     store = new_store("audit-synthetic")
     sid = _add(store, path)
     mapping = LayerMapping(
@@ -618,4 +654,3 @@ def test_multifile_crs_disagreement_includes_rejected_geodata_epsg(tmp_path, new
     issue_ids = {i.id for i in site.issues}
     assert "iss-sources-disagree-crs" in issue_ids
     assert any(i.startswith("iss-geodata-crs-invalid-") for i in issue_ids)
-

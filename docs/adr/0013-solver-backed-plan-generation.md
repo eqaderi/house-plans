@@ -30,7 +30,7 @@ road-level parking and earth-retaining walls. No paid model API may be needed.
    site and steps with it), `courtyard` (two pavilions and a gallery).
 3. **Solver: Google OR-Tools CP-SAT** (`ortools`, Apache-2.0). Integers on a
    10 cm grid. HARD: rows tiled exactly (units plus optional filler), room
-   minimum areas and widths, entry and garage on the road row, step-free
+   minimum areas and widths, entry (and, before DEC-12, the garage) on the road row, step-free
    rooms on the entry level, aligned stairs and links, hard near/separation
    between clusters. SOFT, integer-weighted: target areas (oversizing
    penalised), filler area, level preferences, zone-to-bar fit, daylight for
@@ -74,3 +74,11 @@ road-level parking and earth-retaining walls. No paid model API may be needed.
   supported yet; the CLI refuses them and asks for explicit operations.
 - OR-Tools adds a binary wheel dependency (with protobuf and pandas); it has
   wheels for Python 3.11 and 3.13 on Linux and macOS.
+
+Note (Stage S10, DEC-12): the garage is no longer a room in the road row. It is a
+separate road-level volume beside the entry bar, sized for the program's cars with
+the vehicle template's clearances (house side widened for the person door's
+approach); the massing reserves a road-front strip at the entry bar's end away from
+wings, and the entry bar meets it (`generation/massing.py::_reserve_garage`,
+`generation/rooms.py::garage_dims_dm`).
+

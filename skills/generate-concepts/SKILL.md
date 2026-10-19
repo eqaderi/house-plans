@@ -88,4 +88,5 @@ Guide the agent through generating solver-backed, geometrically checked floor-pl
 ## Failure handling
 - **Infeasible strategy**: quote the solver's reason from `comparison.md` (e.g. not enough envelope depth for a courtyard). Never hide infeasibility.
 - **Refused because gates are not approved**: use `--exploratory` and name the human gate still open.
+- **`OPEN unbuildable …` at plan review**: the plan cannot be approved as drawn (ADR 0024). Do not ask the owner to approve it; explain the finding and revise. Show `ATTENTION …` lines to the owner; they do not block.
 - **Constraint violations**: find the constraint behind each violation and propose explicit revision operations.

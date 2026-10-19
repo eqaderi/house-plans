@@ -247,11 +247,19 @@ assumption sources and limits.
 - `HouseModel.clearance_zones`: explicit polygons referencing an element and space,
   with a purpose, basis and assumption status. They remain distinct from solids.
 - `Stair.walking_line`: optional bottom-to-top 2D path; the generator emits it for
-  straight flights. Its absence leaves run, landings and headroom unmeasured, and
-  routes across the stair become inferred estimates (centroid-to-centroid run).
-  With a walking line the flight footprint is not walkable floor on either level.
-  Slab openings remain polygon holes. Headroom uses a linearly rising pitch line,
-  not detailed geometry for intermediate landings of complex stairs.
+  straight and U-shaped flights. `Stair.landing_segments` lists the segments that
+  are level landings (a U-shaped flight's half landing); the rise is shared among
+  the other segments by length (`Stair.vertex_heights`). Without a walking line,
+  run, landings and headroom stay unmeasured, and routes across the stair become
+  inferred estimates (centroid-to-centroid run). With a walking line the flight
+  footprint is not walkable floor on either level. Slab openings remain polygon
+  holes. Headroom uses that pitch profile, not detailed tread geometry.
+  A flight between bars side by side at different levels belongs to a stair volume
+  on both levels: a `Stairwell` space (lower level, under the higher floor) and a
+  `Stair hall` space (higher level, over the lower roof), each `function: stair`
+  without a program item, walled with `base_offset_m`/`height_m` to span the
+  volume (ADR 0023). A flight is not walkable floor in any space of its two levels
+  it passes through. Walls must stay out of the clear band above a walking line.
 - `SpaceProgram.usability`: optional household seats, vehicle envelopes, arrival
   path and bed variants by program item. Vehicle dimensions, side-door access and
   source are explicit; turning radius may be unknown. The program builder only

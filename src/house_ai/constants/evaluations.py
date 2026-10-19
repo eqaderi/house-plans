@@ -31,6 +31,33 @@ DIVERSITY_IOU_THRESHOLD = 0.85
 DIVERSITY_TOPOLOGY_THRESHOLD = 0.15
 FLAG_NEAR_DUPLICATE = "⚠️ Near-duplicate"
 
-#: Preserved design intent regression prefix (S7-23)
+#: Preserved design intent regression prefix (S7-23): a request met before and lost now
 REGRESSION_VIOLATION_PREFIX = "regression: earlier request "
+#: A request this version carries that is not met and was not met before (S10-03)
+REQUEST_NOT_MET_PREFIX = "request not met: "
+#: Clear height above a stair's pitch line: conceptual assumption shared by generator and
+#: critic (ADR 0019 value).
+MIN_STAIR_HEADROOM_M = 2.0
+#: Clear landing beyond each end of a flight (ADR 0019 value).
+MIN_STAIR_LANDING_M = 0.9
+#: Shortfall allowed before an owner's area request counts as unmet (S7-23 value, kept)
+REQUESTED_AREA_TOLERANCE_M2 = 2.0
 
+
+#: Critic findings that make a plan unbuildable or unwalkable as drawn: they keep the plan
+#: gate closed whatever their strength (ADR 0024).
+PLAN_GATE_BLOCKING_CODES = frozenset(
+    {
+        "stair_low_headroom",
+        "stair_wall_clash",
+        "stair_run_does_not_fit",
+        "stair_height_mismatch",
+        "stair_nonascending_levels",
+        "stair_walking_line_invalid",
+        "stair_landing_blocked",
+        "floor_connection_height_mismatch",
+    }
+)
+#: Soft findings shown to the owner at plan review without blocking it (ADR 0024): a height
+#: above an envelope that is not a verified fact (verified, it is hard and blocks).
+PLAN_REVIEW_ATTENTION_CODES = frozenset({"height_limit_exceeded"})

@@ -120,7 +120,7 @@ def test_plan_propose_exploratory_mode(tmp_path):
 
     # Exported to disk
     assert out.is_dir()
-    plan_file = out / "concept-linear" / "exploratory" / "plan.json"
+    plan_file = out / "concept-linear-prop-linear-day-night" / "exploratory" / "plan.json"
     assert plan_file.is_file()
     plan_data = json.loads(plan_file.read_text(encoding="utf-8"))
     assert plan_data["generation"]["parameters"]["proposal_id"] == "prop-linear-day-night"
@@ -223,3 +223,41 @@ def test_plan_propose_refused_before_program_gate_unless_exploratory(tmp_path):
         ]
     )
     assert code == 1
+
+
+def test_proposal_never_replaces_an_owner_revised_concept(tmp_path):
+    """S10-04 (ISS-31 c): a proposal targeting a revised strategy gets its own option."""
+    from house_ai.orchestration.plans import PlanService
+
+    store = _load_project(tmp_path)
+    _approve_site_and_program(store)
+    svc = PlanService(store)
+    svc.generate(AGENT, strategies=["linear"])
+    revised = svc.revise(
+        "concept-linear", "Bigger kitchen please.", AGENT, ops=["area:pi-kitchen=14"]
+    )
+    assert revised.option.plan_ref.version == 2
+
+    proposal = ConceptProposal.model_validate(
+        yaml.safe_load(_make_valid_proposal(store, tmp_path).read_text(encoding="utf-8"))
+    )
+    res = svc.propose(AGENT, proposal)
+    (opt,) = res.generated
+    assert opt.plan_ref.id == "concept-linear-prop-linear-day-night"
+    assert opt.plan_ref.version == 1
+
+    latest = store.get(store.latest(ArtifactKind.PLAN, "concept-linear"), PlanVersion)
+    assert latest.change_request.text == "Bigger kitchen please."
+    assert "area:pi-kitchen=14" in latest.generation.revision_ops
+    assert store.verify() == []
+
+
+def test_proposal_option_ids_stay_valid_and_distinct():
+    from house_ai.generation.generator import option_id_for
+
+    assert option_id_for("two_wing") == "concept-two-wing"
+    assert option_id_for("two_wing", "prop-a") == "concept-two-wing-prop-a"
+    long_a, long_b = "p-" + "a" * 60, "p-" + "a" * 59 + "b"
+    a, b = option_id_for("corridor_free", long_a), option_id_for("corridor_free", long_b)
+    assert len(a) <= 64 and len(b) <= 64 and a != b
+    assert a.startswith("concept-corridor-free-p-aaa")

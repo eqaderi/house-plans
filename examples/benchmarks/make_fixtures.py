@@ -286,6 +286,59 @@ def case(ident, model, *, defect=False, description=None):
     return dict(id=ident, description=description or ident, model=model, seeded_defect=defect)
 
 
+def terrace_reference(site, program):
+    """Analytical synthetic component: 10 x 6 m terrace, FFL 12, z=12-0.4*y.
+
+    Extend the existing reference house with a terrace in front of living/kitchen;
+    no generated or homeowner plan is edited. All edges are checked by integrity.
+    """
+    model = model_doc(site, program)
+    model["levels"][0]["elevation_m"] = 12.0
+    model["spaces"].append(
+        dict(
+            id="sp-terrace",
+            name="Analytical terrace",
+            function="terrace",
+            level_id="l0",
+            boundary=rect(10, 6, 20, 12),
+            program_item_id="pi-terrace",
+        )
+    )
+    for o in model["openings"]:
+        if o["host_wall_id"] == "w-ext-s":
+            o["connects"] = ["sp-terrace" if v == "exterior" else v for v in o["connects"]]
+            if o["id"] == "win-living-s":
+                o.update(
+                    id="d-living-terrace", kind="door", operation="sliding", height_m=2.1, sill_m=0
+                )
+    for ident, start, end in (
+        ("front", [10, 6], [20, 6]),
+        ("left", [10, 6], [10, 12]),
+        ("right", [20, 6], [20, 12]),
+    ):
+        model["walls"].append(
+            dict(
+                id=f"w-terrace-{ident}",
+                level_id="l0",
+                start=start,
+                end=end,
+                kind="parapet",
+                thickness_m=0.15,
+                height_m=1,
+            )
+        )
+    model["slabs"].append(
+        dict(
+            id="slab-terrace",
+            level_id="l0",
+            kind="terrace",
+            boundary=rect(10, 6, 20, 12),
+            thickness_m=0.25,
+        )
+    )
+    return model
+
+
 def households():
     out = []
     # Existing human-authored synthetic geometry is reused, not newly invented room coordinates.
@@ -673,7 +726,7 @@ def households():
             ],
         )
     )
-    f = terrain_fixture("large-terrace", dy=-0.4, base=12)
+    f = terrain_fixture("large-terrace", width=32, depth=34, dy=-0.4, base=12)
     f["program"]["items"].append(
         dict(
             id="pi-terrace",
@@ -707,14 +760,23 @@ def households():
         )
     )
     f["expectations"].append(
-        future(
+        metric(
             "terrace-support",
             "terrain_compatibility",
-            "terrace_support_geometry",
-            "S8",
-            basis="steep-site terrace geometry and support are not measured by S3",
+            "terrace_max_floor_ground_delta_m",
+            4.8,
+            source="evaluation",
+            target="terrace-reference",
+            subjects=["sp-terrace"],
+            status="inferred",
+            basis=(
+                "10 x 6 m terrace at FFL 12: edge y=12 gives 12-(12-0.4*12)=4.8 m; "
+                "supports unresolved"
+            ),
         )
     )
+    f["cases"] = [case("terrace-reference", terrace_reference(f["site"], f["program"]))]
+    f["ground_truth"] += " Terrace: x=10..20, y=6..12, FFL=12; 60 m2, max edge delta=4.8 m."
     out.append(f)
     return out
 
@@ -826,7 +888,7 @@ def preferences():
 
 def fixtures():
     out = [
-        terrain_fixture("flat-simple"),
+        terrain_fixture("flat-simple", width=32, depth=34),
         terrain_fixture("narrow-deep", width=10, depth=60),
         terrain_fixture("steep-reference", width=19.2, depth=31.25, dy=-0.4, base=12.5),
         terrain_fixture("road-high", dy=-0.5, base=15),
@@ -895,9 +957,19 @@ def fixtures():
             status="assumption",
             name="Retaining wall survey breakline (not a road or contour)",
             geometry=dict(type="polyline", line=dict(points=[[10, 0], [10, 30]])),
-            notes="Discontinuous ground intent; current Delaunay builder is unconstrained",
+            notes=(
+                "Mapped trace; conflicting spot heights must prevent any TIN, "
+                "including constrained TIN"
+            ),
         )
     )
+    s["terrain"]["breaklines"] = [
+        dict(
+            id="mapped-retaining",
+            vertices=[[10, 0, 0], [10, 30, 0]],
+            source_ref="synthetic-3D-trace",
+        )
+    ]
     s["terrain"]["spot_elevations"].extend(
         [
             dict(id="spot-wall-low", xy=[10, 15], z_m=0),
@@ -925,13 +997,36 @@ def fixtures():
                     False,
                     basis="conflicting elevations prevent trustworthy interpolation",
                 ),
-                future(
+                metric(
                     "retaining-breakline",
                     "terrain_compatibility",
-                    "breakline_preserved",
-                    "S8",
-                    basis="current TIN has no constrained breakline support",
+                    "breakline_input_count",
+                    1,
+                    basis=(
+                        "one mapped 3D breakline remains explicit; "
+                        "conflicting spot heights still refuse a TIN"
+                    ),
                 ),
+            ],
+        )
+    )
+    clean = site_doc("breakline-clean")
+    clean["terrain"]["breaklines"] = [
+        dict(id="ridge", vertices=[[10, 0, 0], [10, 30, 1]], source_ref="synthetic-ridge")
+    ]
+    out.append(
+        fixture(
+            "breakline-clean",
+            clean,
+            "Explicit 30 m 3D ridge at x=10 is covered by actual constrained TIN edges.",
+            expectations=[
+                metric(
+                    "constrained-edges",
+                    "terrain_compatibility",
+                    "breakline_edge_coverage_m",
+                    30,
+                    basis="mapped segment from (10,0) to (10,30), Euclidean XY length 30 m",
+                )
             ],
         )
     )
@@ -951,12 +1046,15 @@ def fixtures():
                     True,
                     basis="distinct XY permit triangulation",
                 ),
-                future(
+                metric(
                     "sliver-reported",
                     "terrain_compatibility",
                     "sliver_triangle_count",
-                    "S8",
-                    basis="surface quality acceptance remains an S8 task",
+                    1,
+                    basis=(
+                        "the 0.001 m2 triangle along the 20 m road edge is below "
+                        "the configured quality trigger"
+                    ),
                 ),
             ],
         )
@@ -1029,21 +1127,39 @@ def fixtures():
     out.append(f)
     out.extend(households())
     out.extend(preferences())
-    out[0]["expectations"].extend(
+    flat = out[0]
+    flat["cases"] = [case("reference", model_doc(flat["site"], flat["program"]))]
+    flat["expectations"].extend(
         [
-            future(
+            metric(
                 "plan-visual",
                 "visual_consistency",
                 "svg_model_consistency",
-                "S5",
-                basis="viewer and agent screenshot review are later stages",
+                True,
+                source="evaluation",
+                target="reference",
+                basis="every canonical room area appears exactly once in rendered SVG room labels",
             ),
-            future(
+            metric(
                 "revision-history",
                 "versioned_revisions",
                 "versioned_revision_integrity",
-                "S7",
-                basis="scenario revision checks will exercise the improved solver",
+                True,
+                source="evaluation",
+                target="reference",
+                basis=(
+                    "two immutable semantic label versions retain the original hash, "
+                    "parent and verbatim request"
+                ),
+            ),
+            metric(
+                "revision-count",
+                "versioned_revisions",
+                "revision_version_count",
+                2,
+                source="evaluation",
+                target="reference",
+                basis="original v1 and label revision v2",
             ),
         ]
     )

@@ -1,6 +1,9 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import type { ReviewerPlanEntry, Site } from "../types/schemas";
 import { PlanCanvas } from "./PlanCanvas";
+import { spacesBoundingBox, unionBoundingBox } from "../lib/geometry";
+
+const ENTRY_LEVEL_ID = "lv-entry";
 
 interface ComparisonViewProps {
   plans: ReviewerPlanEntry[];
@@ -10,7 +13,7 @@ interface ComparisonViewProps {
 export const ComparisonView: React.FC<ComparisonViewProps> = ({ plans, site }) => {
   const [leftOptionIdx, setLeftOptionIdx] = useState<number>(0);
   const [rightOptionIdx, setRightOptionIdx] = useState<number>(plans.length > 1 ? 1 : 0);
-  const [activeLevelId, setActiveLevelId] = useState<string>("lvl-ground");
+  const [activeLevelId, setActiveLevelId] = useState<string>("");
   const [viewMode, setViewMode] = useState<"side-by-side" | "table">("side-by-side");
   const [scale, setScale] = useState<number>(30);
   const [pan, setPan] = useState<{ x: number; y: number }>({ x: 200, y: 200 });
@@ -20,6 +23,14 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({ plans, site }) =
     setPan(newPan);
   };
 
+  // Start on the entry level (or the first level) of the left plan, and keep a real level.
+  const leftLevelIds = (plans[leftOptionIdx]?.plan?.model?.levels || []).map((l) => l.id);
+  useEffect(() => {
+    if (leftLevelIds.length > 0 && !leftLevelIds.includes(activeLevelId)) {
+      setActiveLevelId(leftLevelIds.includes(ENTRY_LEVEL_ID) ? ENTRY_LEVEL_ID : leftLevelIds[0]);
+    }
+  }, [leftLevelIds.join(","), activeLevelId]);
+
   if (plans.length === 0) {
     return <div style={{ padding: 24, color: "#94a3b8" }}>No plans available for comparison.</div>;
   }
@@ -27,6 +38,11 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({ plans, site }) =
   const leftPlan = plans[leftOptionIdx] || plans[0];
   const rightPlan = plans[rightOptionIdx] || plans[0];
   const allLevels = leftPlan?.plan?.model?.levels || [];
+  // Both panes share one transform, so fit both buildings together.
+  const fitBounds = unionBoundingBox(
+    spacesBoundingBox(leftPlan?.plan?.model?.spaces || []),
+    spacesBoundingBox(rightPlan?.plan?.model?.spaces || [])
+  );
 
   // Collect all unique metric names across all plans
   const allMetricNames = Array.from(
@@ -179,6 +195,7 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({ plans, site }) =
               scale={scale}
               pan={pan}
               onTransformChange={handleTransformChange}
+              fitBounds={fitBounds}
             />
           </div>
           <div style={{ position: "relative" }}>
@@ -207,6 +224,7 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({ plans, site }) =
               scale={scale}
               pan={pan}
               onTransformChange={handleTransformChange}
+              fitBounds={fitBounds}
             />
           </div>
         </div>

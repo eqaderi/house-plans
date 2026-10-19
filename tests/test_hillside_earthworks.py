@@ -193,3 +193,55 @@ def test_overlapping_or_above_floor_pads_fail_clearly():
     m.earthwork_pads.append(pad.model_copy(update={"id": "pad-2"}))
     with pytest.raises(ValueError, match="overlap"):
         earthworks(m, surface())
+
+
+def test_slab_touching_the_region_along_an_edge_adds_only_its_area():
+    """S10-19: an overlay that also returns an edge line must not break the next slabs."""
+    from house_ai.domain.model import Slab
+    from house_ai.geospatial.earthworks import ground_planes
+
+    m = model(3)
+    lower = Polygon([(0, 0), (5, 0), (5, 6), (10, 6), (10, 8), (0, 8)])
+    m.levels.append(Level(id="down", name="Down", elevation_m=0))
+    m.spaces.append(
+        Space(
+            id="below",
+            name="Below",
+            level_id="down",
+            function=SpaceFunction.STORAGE,
+            boundary={"outer": list(lower.exterior.coords)[:-1]},
+        )
+    )
+    # Overlaps the entry region (x 5..10, y 0..6) only in x 8..10 and touches it along x = 5.
+    hooked = box(3, 0, 5, 2).union(box(3, 0, 4, 7.5)).union(box(3, 6.5, 10, 7.5))
+    hooked = hooked.union(box(8, 0, 10, 7.5))
+    m.slabs = [
+        Slab(
+            id="hooked",
+            level_id="entry",
+            kind="floor",
+            thickness_m=0.5,
+            boundary={"outer": list(hooked.exterior.coords)[:-1]},
+        ),
+        # Over the lower level only: its overlay with the entry region is empty.
+        Slab(
+            id="hidden",
+            level_id="entry",
+            kind="floor",
+            thickness_m=0.3,
+            boundary={"outer": [(0, 0), (2, 0), (2, 2), (0, 2)]},
+        ),
+        Slab(
+            id="plain",
+            level_id="entry",
+            kind="floor",
+            thickness_m=0.2,
+            boundary=m.spaces[0].boundary,
+        ),
+    ]
+    planes = [(lv, z, round(region.area, 9), basis) for lv, z, region, basis in ground_planes(m)]
+    assert planes == [
+        ("down", 0, 50.0, "finished_floor_bound_no_slab"),
+        ("entry", 2.5, 12.0, "underside:hooked"),
+        ("entry", 2.8, 18.0, "underside:plain"),
+    ]

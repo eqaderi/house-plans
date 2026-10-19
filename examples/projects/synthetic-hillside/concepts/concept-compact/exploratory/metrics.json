@@ -196,7 +196,7 @@
       "status": "measured",
       "subject_ids": [],
       "unit": "m",
-      "value": 64.0
+      "value": 44.0
     },
     {
       "evaluator": "GeometryEvaluator",
@@ -206,7 +206,7 @@
       "status": "measured",
       "subject_ids": [],
       "unit": null,
-      "value": 0.368
+      "value": 0.779
     },
     {
       "evaluator": "GeometryEvaluator",
@@ -1216,12 +1216,12 @@
     {
       "evaluator": "CirculationEvaluator",
       "evaluator_version": "0.1.0",
-      "method": "net_floor_visibility_graph_point_path_with_estimated_stair_runs",
+      "method": "net_floor_visibility_graph_point_path",
       "metric": "max_walk_from_entrance_m",
-      "status": "inferred",
+      "status": "measured",
       "subject_ids": [],
       "unit": "m",
-      "value": 35.004
+      "value": 33.618
     },
     {
       "evaluator": "CirculationEvaluator",
@@ -1363,7 +1363,57 @@
     {
       "evaluator": "SiteEvaluator",
       "evaluator_version": "0.1.0",
-      "method": "tin_hull_sampling",
+      "method": "exact_clipped_tin_affine_integration",
+      "metric": "excavation_volume_m3",
+      "status": "inferred",
+      "subject_ids": [],
+      "unit": "m3",
+      "value": 142.559
+    },
+    {
+      "evaluator": "SiteEvaluator",
+      "evaluator_version": "0.1.0",
+      "method": "exact_clipped_tin_affine_integration",
+      "metric": "underfloor_void_volume_m3",
+      "status": "inferred",
+      "subject_ids": [],
+      "unit": "m3",
+      "value": 21.727
+    },
+    {
+      "evaluator": "SiteEvaluator",
+      "evaluator_version": "0.1.0",
+      "method": "exact_clipped_tin_affine_integration",
+      "metric": "engineered_fill_volume_m3",
+      "status": "not_checked",
+      "subject_ids": [],
+      "unit": "m3",
+      "value": null
+    },
+    {
+      "evaluator": "SiteEvaluator",
+      "evaluator_version": "0.1.0",
+      "method": "exact_clipped_tin_affine_integration",
+      "metric": "max_cut_m",
+      "status": "inferred",
+      "subject_ids": [],
+      "unit": "m",
+      "value": 3.299
+    },
+    {
+      "evaluator": "SiteEvaluator",
+      "evaluator_version": "0.1.0",
+      "method": "exact_clipped_tin_affine_integration",
+      "metric": "max_underfloor_void_height_m",
+      "status": "inferred",
+      "subject_ids": [],
+      "unit": "m",
+      "value": 4.803
+    },
+    {
+      "evaluator": "SiteEvaluator",
+      "evaluator_version": "0.1.0",
+      "method": "triangle_union_intersection",
       "metric": "terrain_coverage_pct",
       "status": "measured",
       "subject_ids": [],
@@ -1373,125 +1423,842 @@
     {
       "evaluator": "SiteEvaluator",
       "evaluator_version": "0.1.0",
-      "method": "tin_interpolation_0.5m_grid",
-      "metric": "excavation_volume_m3",
-      "status": "inferred",
+      "method": "footprint_minus_triangle_support",
+      "metric": "unknown_terrain_footprint_m2",
+      "status": "measured",
       "subject_ids": [],
-      "unit": "m3",
-      "value": 104.131
+      "unit": "m2",
+      "value": 0.0
     },
     {
       "evaluator": "SiteEvaluator",
       "evaluator_version": "0.1.0",
-      "method": "tin_interpolation_0.5m_grid",
-      "metric": "fill_volume_m3",
+      "method": "exact_clipped_tin_affine_integration",
+      "metric": "underfloor_area_void_m3",
       "status": "inferred",
-      "subject_ids": [],
+      "subject_ids": [
+        "lv-down-300",
+        "slab-floor-down-300"
+      ],
       "unit": "m3",
-      "value": 39.536
+      "value": 21.727
     },
     {
       "evaluator": "SiteEvaluator",
       "evaluator_version": "0.1.0",
-      "method": "tin_interpolation_0.5m_grid",
-      "metric": "max_cut_m",
+      "method": "exact_clipped_tin_affine_integration",
+      "metric": "underfloor_area_max_clear_height_m",
+      "status": "inferred",
+      "subject_ids": [
+        "lv-down-300",
+        "slab-floor-down-300"
+      ],
+      "unit": "m",
+      "value": 1.553
+    },
+    {
+      "evaluator": "SiteEvaluator",
+      "evaluator_version": "0.1.0",
+      "method": "exact_clipped_tin_affine_integration",
+      "metric": "underfloor_area_void_m3",
+      "status": "inferred",
+      "subject_ids": [
+        "lv-down-300"
+      ],
+      "unit": "m3",
+      "value": 0.0
+    },
+    {
+      "evaluator": "SiteEvaluator",
+      "evaluator_version": "0.1.0",
+      "method": "exact_clipped_tin_affine_integration",
+      "metric": "underfloor_area_max_clear_height_m",
+      "status": "inferred",
+      "subject_ids": [
+        "lv-down-300"
+      ],
+      "unit": "m",
+      "value": 1.403
+    },
+    {
+      "evaluator": "SiteEvaluator",
+      "evaluator_version": "0.1.0",
+      "method": "exact_clipped_tin_affine_integration",
+      "metric": "underfloor_area_void_m3",
+      "status": "inferred",
+      "subject_ids": [
+        "lv-entry"
+      ],
+      "unit": "m3",
+      "value": 0.0
+    },
+    {
+      "evaluator": "SiteEvaluator",
+      "evaluator_version": "0.1.0",
+      "method": "exact_clipped_tin_affine_integration",
+      "metric": "underfloor_area_max_clear_height_m",
+      "status": "inferred",
+      "subject_ids": [
+        "lv-entry"
+      ],
+      "unit": "m",
+      "value": 4.803
+    },
+    {
+      "evaluator": "SiteEvaluator",
+      "evaluator_version": "0.1.0",
+      "method": "earth_contact_candidate_wall_lengths",
+      "metric": "retaining_wall_length_m",
       "status": "inferred",
       "subject_ids": [],
       "unit": "m",
-      "value": 2.735
+      "value": 28.6
     },
     {
       "evaluator": "SiteEvaluator",
       "evaluator_version": "0.1.0",
-      "method": "tin_interpolation_0.5m_grid",
-      "metric": "max_fill_m",
+      "method": "exact_clipped_tin_affine_integration",
+      "metric": "retaining_wall_face_area_m2",
       "status": "inferred",
       "subject_ids": [],
-      "unit": "m",
-      "value": 1.987
+      "unit": "m2",
+      "value": 52.645
     },
     {
       "evaluator": "SiteEvaluator",
       "evaluator_version": "0.1.0",
-      "method": "tin_at_door_midpoint",
+      "method": "piecewise_linear_positive_height_integral",
+      "metric": "retaining_length_m",
+      "status": "inferred",
+      "subject_ids": [
+        "w-down-300-001"
+      ],
+      "unit": "m",
+      "value": 2.5
+    },
+    {
+      "evaluator": "SiteEvaluator",
+      "evaluator_version": "0.1.0",
+      "method": "piecewise_linear_positive_height_integral",
+      "metric": "retaining_known_length_m",
+      "status": "inferred",
+      "subject_ids": [
+        "w-down-300-001"
+      ],
+      "unit": "m",
+      "value": 2.5
+    },
+    {
+      "evaluator": "SiteEvaluator",
+      "evaluator_version": "0.1.0",
+      "method": "piecewise_linear_positive_height_integral",
+      "metric": "retaining_max_retained_height_m",
+      "status": "inferred",
+      "subject_ids": [
+        "w-down-300-001"
+      ],
+      "unit": "m",
+      "value": 2.748
+    },
+    {
+      "evaluator": "SiteEvaluator",
+      "evaluator_version": "0.1.0",
+      "method": "piecewise_linear_positive_height_integral",
+      "metric": "retaining_mean_retained_height_m",
+      "status": "inferred",
+      "subject_ids": [
+        "w-down-300-001"
+      ],
+      "unit": "m",
+      "value": 2.698
+    },
+    {
+      "evaluator": "SiteEvaluator",
+      "evaluator_version": "0.1.0",
+      "method": "piecewise_linear_positive_height_integral",
+      "metric": "retaining_face_area_m2",
+      "status": "inferred",
+      "subject_ids": [
+        "w-down-300-001"
+      ],
+      "unit": "m2",
+      "value": 6.746
+    },
+    {
+      "evaluator": "SiteEvaluator",
+      "evaluator_version": "0.1.0",
+      "method": "piecewise_linear_positive_height_integral",
+      "metric": "retaining_length_m",
+      "status": "inferred",
+      "subject_ids": [
+        "w-down-300-002"
+      ],
+      "unit": "m",
+      "value": 1.8
+    },
+    {
+      "evaluator": "SiteEvaluator",
+      "evaluator_version": "0.1.0",
+      "method": "piecewise_linear_positive_height_integral",
+      "metric": "retaining_known_length_m",
+      "status": "inferred",
+      "subject_ids": [
+        "w-down-300-002"
+      ],
+      "unit": "m",
+      "value": 1.8
+    },
+    {
+      "evaluator": "SiteEvaluator",
+      "evaluator_version": "0.1.0",
+      "method": "piecewise_linear_positive_height_integral",
+      "metric": "retaining_max_retained_height_m",
+      "status": "inferred",
+      "subject_ids": [
+        "w-down-300-002"
+      ],
+      "unit": "m",
+      "value": 2.82
+    },
+    {
+      "evaluator": "SiteEvaluator",
+      "evaluator_version": "0.1.0",
+      "method": "piecewise_linear_positive_height_integral",
+      "metric": "retaining_mean_retained_height_m",
+      "status": "inferred",
+      "subject_ids": [
+        "w-down-300-002"
+      ],
+      "unit": "m",
+      "value": 2.784
+    },
+    {
+      "evaluator": "SiteEvaluator",
+      "evaluator_version": "0.1.0",
+      "method": "piecewise_linear_positive_height_integral",
+      "metric": "retaining_face_area_m2",
+      "status": "inferred",
+      "subject_ids": [
+        "w-down-300-002"
+      ],
+      "unit": "m2",
+      "value": 5.012
+    },
+    {
+      "evaluator": "SiteEvaluator",
+      "evaluator_version": "0.1.0",
+      "method": "piecewise_linear_positive_height_integral",
+      "metric": "retaining_length_m",
+      "status": "inferred",
+      "subject_ids": [
+        "w-down-300-003"
+      ],
+      "unit": "m",
+      "value": 1.5
+    },
+    {
+      "evaluator": "SiteEvaluator",
+      "evaluator_version": "0.1.0",
+      "method": "piecewise_linear_positive_height_integral",
+      "metric": "retaining_known_length_m",
+      "status": "inferred",
+      "subject_ids": [
+        "w-down-300-003"
+      ],
+      "unit": "m",
+      "value": 1.5
+    },
+    {
+      "evaluator": "SiteEvaluator",
+      "evaluator_version": "0.1.0",
+      "method": "piecewise_linear_positive_height_integral",
+      "metric": "retaining_max_retained_height_m",
+      "status": "inferred",
+      "subject_ids": [
+        "w-down-300-003"
+      ],
+      "unit": "m",
+      "value": 2.88
+    },
+    {
+      "evaluator": "SiteEvaluator",
+      "evaluator_version": "0.1.0",
+      "method": "piecewise_linear_positive_height_integral",
+      "metric": "retaining_mean_retained_height_m",
+      "status": "inferred",
+      "subject_ids": [
+        "w-down-300-003"
+      ],
+      "unit": "m",
+      "value": 2.85
+    },
+    {
+      "evaluator": "SiteEvaluator",
+      "evaluator_version": "0.1.0",
+      "method": "piecewise_linear_positive_height_integral",
+      "metric": "retaining_face_area_m2",
+      "status": "inferred",
+      "subject_ids": [
+        "w-down-300-003"
+      ],
+      "unit": "m2",
+      "value": 4.276
+    },
+    {
+      "evaluator": "SiteEvaluator",
+      "evaluator_version": "0.1.0",
+      "method": "piecewise_linear_positive_height_integral",
+      "metric": "retaining_length_m",
+      "status": "inferred",
+      "subject_ids": [
+        "w-down-300-004"
+      ],
+      "unit": "m",
+      "value": 1.8
+    },
+    {
+      "evaluator": "SiteEvaluator",
+      "evaluator_version": "0.1.0",
+      "method": "piecewise_linear_positive_height_integral",
+      "metric": "retaining_known_length_m",
+      "status": "inferred",
+      "subject_ids": [
+        "w-down-300-004"
+      ],
+      "unit": "m",
+      "value": 1.8
+    },
+    {
+      "evaluator": "SiteEvaluator",
+      "evaluator_version": "0.1.0",
+      "method": "piecewise_linear_positive_height_integral",
+      "metric": "retaining_max_retained_height_m",
+      "status": "inferred",
+      "subject_ids": [
+        "w-down-300-004"
+      ],
+      "unit": "m",
+      "value": 2.952
+    },
+    {
+      "evaluator": "SiteEvaluator",
+      "evaluator_version": "0.1.0",
+      "method": "piecewise_linear_positive_height_integral",
+      "metric": "retaining_mean_retained_height_m",
+      "status": "inferred",
+      "subject_ids": [
+        "w-down-300-004"
+      ],
+      "unit": "m",
+      "value": 2.916
+    },
+    {
+      "evaluator": "SiteEvaluator",
+      "evaluator_version": "0.1.0",
+      "method": "piecewise_linear_positive_height_integral",
+      "metric": "retaining_face_area_m2",
+      "status": "inferred",
+      "subject_ids": [
+        "w-down-300-004"
+      ],
+      "unit": "m2",
+      "value": 5.25
+    },
+    {
+      "evaluator": "SiteEvaluator",
+      "evaluator_version": "0.1.0",
+      "method": "piecewise_linear_positive_height_integral",
+      "metric": "retaining_length_m",
+      "status": "inferred",
+      "subject_ids": [
+        "w-down-300-005"
+      ],
+      "unit": "m",
+      "value": 2.4
+    },
+    {
+      "evaluator": "SiteEvaluator",
+      "evaluator_version": "0.1.0",
+      "method": "piecewise_linear_positive_height_integral",
+      "metric": "retaining_known_length_m",
+      "status": "inferred",
+      "subject_ids": [
+        "w-down-300-005"
+      ],
+      "unit": "m",
+      "value": 2.4
+    },
+    {
+      "evaluator": "SiteEvaluator",
+      "evaluator_version": "0.1.0",
+      "method": "piecewise_linear_positive_height_integral",
+      "metric": "retaining_max_retained_height_m",
+      "status": "inferred",
+      "subject_ids": [
+        "w-down-300-005"
+      ],
+      "unit": "m",
+      "value": 3.049
+    },
+    {
+      "evaluator": "SiteEvaluator",
+      "evaluator_version": "0.1.0",
+      "method": "piecewise_linear_positive_height_integral",
+      "metric": "retaining_mean_retained_height_m",
+      "status": "inferred",
+      "subject_ids": [
+        "w-down-300-005"
+      ],
+      "unit": "m",
+      "value": 3.001
+    },
+    {
+      "evaluator": "SiteEvaluator",
+      "evaluator_version": "0.1.0",
+      "method": "piecewise_linear_positive_height_integral",
+      "metric": "retaining_face_area_m2",
+      "status": "inferred",
+      "subject_ids": [
+        "w-down-300-005"
+      ],
+      "unit": "m2",
+      "value": 7.201
+    },
+    {
+      "evaluator": "SiteEvaluator",
+      "evaluator_version": "0.1.0",
+      "method": "piecewise_linear_positive_height_integral",
+      "metric": "retaining_length_m",
+      "status": "inferred",
+      "subject_ids": [
+        "w-down-300-019"
+      ],
+      "unit": "m",
+      "value": 5.4
+    },
+    {
+      "evaluator": "SiteEvaluator",
+      "evaluator_version": "0.1.0",
+      "method": "piecewise_linear_positive_height_integral",
+      "metric": "retaining_known_length_m",
+      "status": "inferred",
+      "subject_ids": [
+        "w-down-300-019"
+      ],
+      "unit": "m",
+      "value": 5.4
+    },
+    {
+      "evaluator": "SiteEvaluator",
+      "evaluator_version": "0.1.0",
+      "method": "piecewise_linear_positive_height_integral",
+      "metric": "retaining_max_retained_height_m",
+      "status": "inferred",
+      "subject_ids": [
+        "w-down-300-019"
+      ],
+      "unit": "m",
+      "value": 2.648
+    },
+    {
+      "evaluator": "SiteEvaluator",
+      "evaluator_version": "0.1.0",
+      "method": "piecewise_linear_positive_height_integral",
+      "metric": "retaining_mean_retained_height_m",
+      "status": "inferred",
+      "subject_ids": [
+        "w-down-300-019"
+      ],
+      "unit": "m",
+      "value": 1.784
+    },
+    {
+      "evaluator": "SiteEvaluator",
+      "evaluator_version": "0.1.0",
+      "method": "piecewise_linear_positive_height_integral",
+      "metric": "retaining_face_area_m2",
+      "status": "inferred",
+      "subject_ids": [
+        "w-down-300-019"
+      ],
+      "unit": "m2",
+      "value": 9.636
+    },
+    {
+      "evaluator": "SiteEvaluator",
+      "evaluator_version": "0.1.0",
+      "method": "piecewise_linear_positive_height_integral",
+      "metric": "retaining_length_m",
+      "status": "inferred",
+      "subject_ids": [
+        "w-down-300-020"
+      ],
+      "unit": "m",
+      "value": 1.2
+    },
+    {
+      "evaluator": "SiteEvaluator",
+      "evaluator_version": "0.1.0",
+      "method": "piecewise_linear_positive_height_integral",
+      "metric": "retaining_known_length_m",
+      "status": "inferred",
+      "subject_ids": [
+        "w-down-300-020"
+      ],
+      "unit": "m",
+      "value": 1.2
+    },
+    {
+      "evaluator": "SiteEvaluator",
+      "evaluator_version": "0.1.0",
+      "method": "piecewise_linear_positive_height_integral",
+      "metric": "retaining_max_retained_height_m",
+      "status": "inferred",
+      "subject_ids": [
+        "w-down-300-020"
+      ],
+      "unit": "m",
+      "value": 0.826
+    },
+    {
+      "evaluator": "SiteEvaluator",
+      "evaluator_version": "0.1.0",
+      "method": "piecewise_linear_positive_height_integral",
+      "metric": "retaining_mean_retained_height_m",
+      "status": "inferred",
+      "subject_ids": [
+        "w-down-300-020"
+      ],
+      "unit": "m",
+      "value": 0.601
+    },
+    {
+      "evaluator": "SiteEvaluator",
+      "evaluator_version": "0.1.0",
+      "method": "piecewise_linear_positive_height_integral",
+      "metric": "retaining_face_area_m2",
+      "status": "inferred",
+      "subject_ids": [
+        "w-down-300-020"
+      ],
+      "unit": "m2",
+      "value": 0.722
+    },
+    {
+      "evaluator": "SiteEvaluator",
+      "evaluator_version": "0.1.0",
+      "method": "piecewise_linear_positive_height_integral",
+      "metric": "retaining_length_m",
+      "status": "inferred",
+      "subject_ids": [
+        "w-down-300-029"
+      ],
+      "unit": "m",
+      "value": 5.4
+    },
+    {
+      "evaluator": "SiteEvaluator",
+      "evaluator_version": "0.1.0",
+      "method": "piecewise_linear_positive_height_integral",
+      "metric": "retaining_known_length_m",
+      "status": "inferred",
+      "subject_ids": [
+        "w-down-300-029"
+      ],
+      "unit": "m",
+      "value": 5.4
+    },
+    {
+      "evaluator": "SiteEvaluator",
+      "evaluator_version": "0.1.0",
+      "method": "piecewise_linear_positive_height_integral",
+      "metric": "retaining_max_retained_height_m",
+      "status": "inferred",
+      "subject_ids": [
+        "w-down-300-029"
+      ],
+      "unit": "m",
+      "value": 3.049
+    },
+    {
+      "evaluator": "SiteEvaluator",
+      "evaluator_version": "0.1.0",
+      "method": "piecewise_linear_positive_height_integral",
+      "metric": "retaining_mean_retained_height_m",
+      "status": "inferred",
+      "subject_ids": [
+        "w-down-300-029"
+      ],
+      "unit": "m",
+      "value": 2.185
+    },
+    {
+      "evaluator": "SiteEvaluator",
+      "evaluator_version": "0.1.0",
+      "method": "piecewise_linear_positive_height_integral",
+      "metric": "retaining_face_area_m2",
+      "status": "inferred",
+      "subject_ids": [
+        "w-down-300-029"
+      ],
+      "unit": "m2",
+      "value": 11.797
+    },
+    {
+      "evaluator": "SiteEvaluator",
+      "evaluator_version": "0.1.0",
+      "method": "piecewise_linear_positive_height_integral",
+      "metric": "retaining_length_m",
+      "status": "inferred",
+      "subject_ids": [
+        "w-down-300-030"
+      ],
+      "unit": "m",
+      "value": 1.2
+    },
+    {
+      "evaluator": "SiteEvaluator",
+      "evaluator_version": "0.1.0",
+      "method": "piecewise_linear_positive_height_integral",
+      "metric": "retaining_known_length_m",
+      "status": "inferred",
+      "subject_ids": [
+        "w-down-300-030"
+      ],
+      "unit": "m",
+      "value": 1.2
+    },
+    {
+      "evaluator": "SiteEvaluator",
+      "evaluator_version": "0.1.0",
+      "method": "piecewise_linear_positive_height_integral",
+      "metric": "retaining_max_retained_height_m",
+      "status": "inferred",
+      "subject_ids": [
+        "w-down-300-030"
+      ],
+      "unit": "m",
+      "value": 1.227
+    },
+    {
+      "evaluator": "SiteEvaluator",
+      "evaluator_version": "0.1.0",
+      "method": "piecewise_linear_positive_height_integral",
+      "metric": "retaining_mean_retained_height_m",
+      "status": "inferred",
+      "subject_ids": [
+        "w-down-300-030"
+      ],
+      "unit": "m",
+      "value": 1.002
+    },
+    {
+      "evaluator": "SiteEvaluator",
+      "evaluator_version": "0.1.0",
+      "method": "piecewise_linear_positive_height_integral",
+      "metric": "retaining_face_area_m2",
+      "status": "inferred",
+      "subject_ids": [
+        "w-down-300-030"
+      ],
+      "unit": "m2",
+      "value": 1.202
+    },
+    {
+      "evaluator": "SiteEvaluator",
+      "evaluator_version": "0.1.0",
+      "method": "piecewise_linear_positive_height_integral",
+      "metric": "retaining_length_m",
+      "status": "inferred",
+      "subject_ids": [
+        "w-down-300-031"
+      ],
+      "unit": "m",
+      "value": 5.4
+    },
+    {
+      "evaluator": "SiteEvaluator",
+      "evaluator_version": "0.1.0",
+      "method": "piecewise_linear_positive_height_integral",
+      "metric": "retaining_known_length_m",
+      "status": "inferred",
+      "subject_ids": [
+        "w-down-300-031"
+      ],
+      "unit": "m",
+      "value": 5.4
+    },
+    {
+      "evaluator": "SiteEvaluator",
+      "evaluator_version": "0.1.0",
+      "method": "piecewise_linear_positive_height_integral",
+      "metric": "retaining_max_retained_height_m",
+      "status": "inferred",
+      "subject_ids": [
+        "w-down-300-031"
+      ],
+      "unit": "m",
+      "value": 0.777
+    },
+    {
+      "evaluator": "SiteEvaluator",
+      "evaluator_version": "0.1.0",
+      "method": "piecewise_linear_positive_height_integral",
+      "metric": "retaining_mean_retained_height_m",
+      "status": "inferred",
+      "subject_ids": [
+        "w-down-300-031"
+      ],
+      "unit": "m",
+      "value": 0.149
+    },
+    {
+      "evaluator": "SiteEvaluator",
+      "evaluator_version": "0.1.0",
+      "method": "piecewise_linear_positive_height_integral",
+      "metric": "retaining_face_area_m2",
+      "status": "inferred",
+      "subject_ids": [
+        "w-down-300-031"
+      ],
+      "unit": "m2",
+      "value": 0.804
+    },
+    {
+      "evaluator": "SiteEvaluator",
+      "evaluator_version": "0.1.0",
+      "method": "tin_0_5m_outside_door",
       "metric": "exterior_door_ground_delta_m",
       "status": "inferred",
       "subject_ids": [
         "d-front-entry-ext"
       ],
       "unit": "m",
-      "value": 0.191
+      "value": -0.171
     },
     {
       "evaluator": "SiteEvaluator",
       "evaluator_version": "0.1.0",
-      "method": "tin_at_door_midpoint",
+      "method": "tin_0_5m_outside_door",
+      "metric": "exterior_door_ground_z_m",
+      "status": "inferred",
+      "subject_ids": [
+        "d-front-entry-ext"
+      ],
+      "unit": "m",
+      "value": 11.661
+    },
+    {
+      "evaluator": "SiteEvaluator",
+      "evaluator_version": "0.1.0",
+      "method": "tin_0_5m_outside_door",
       "metric": "exterior_door_ground_delta_m",
       "status": "inferred",
       "subject_ids": [
         "d-garage-garage-ext"
       ],
       "unit": "m",
-      "value": 0.342
+      "value": -0.021
     },
     {
       "evaluator": "SiteEvaluator",
       "evaluator_version": "0.1.0",
-      "method": "tin_interpolation_0.5m_grid",
-      "metric": "ground_relief_under_footprint_m",
+      "method": "tin_0_5m_outside_door",
+      "metric": "exterior_door_ground_z_m",
       "status": "inferred",
-      "subject_ids": [],
-      "unit": "m",
-      "value": 4.722
-    },
-    {
-      "evaluator": "SiteEvaluator",
-      "evaluator_version": "0.1.0",
-      "method": "tin_interpolation_0.5m_grid",
-      "metric": "footprint_slope_pct",
-      "status": "inferred",
-      "subject_ids": [],
-      "unit": "%",
-      "value": 30.227
-    },
-    {
-      "evaluator": "SiteEvaluator",
-      "evaluator_version": "0.1.0",
-      "method": "tin_interpolation_0.5m_grid",
-      "metric": "height_above_lowest_ground_m",
-      "status": "inferred",
-      "subject_ids": [],
-      "unit": "m",
-      "value": 7.987
-    },
-    {
-      "evaluator": "SiteEvaluator",
-      "evaluator_version": "0.1.0",
-      "method": "wall_kind_sum",
-      "metric": "retaining_wall_length_m",
-      "status": "measured",
       "subject_ids": [
-        "w-down-300-001",
-        "w-down-300-002",
-        "w-down-300-003",
-        "w-down-300-004",
-        "w-down-300-005",
-        "w-down-300-019",
-        "w-down-300-029",
-        "w-down-300-030"
+        "d-garage-garage-ext"
       ],
       "unit": "m",
-      "value": 22.0
+      "value": 11.511
     },
     {
       "evaluator": "SiteEvaluator",
       "evaluator_version": "0.1.0",
-      "method": "tin_interpolation_0.5m_grid",
-      "metric": "retaining_wall_face_area_m2",
+      "method": "exterior_threshold_trigger_count",
+      "metric": "outdoor_level_changes_requiring_design",
       "status": "inferred",
       "subject_ids": [],
-      "unit": "m2",
-      "value": 44.384
+      "unit": "count",
+      "value": 0
+    },
+    {
+      "evaluator": "SiteEvaluator",
+      "evaluator_version": "0.1.0",
+      "method": "known_threshold_trigger_count",
+      "metric": "known_outdoor_level_changes_requiring_design",
+      "status": "inferred",
+      "subject_ids": [],
+      "unit": "count",
+      "value": 0
+    },
+    {
+      "evaluator": "SiteEvaluator",
+      "evaluator_version": "0.1.0",
+      "method": "unknown_threshold_coverage_count",
+      "metric": "unchecked_exterior_doors_count",
+      "status": "measured",
+      "subject_ids": [],
+      "unit": "count",
+      "value": 0
+    },
+    {
+      "evaluator": "SiteEvaluator",
+      "evaluator_version": "0.1.0",
+      "method": "canonical_stair_count",
+      "metric": "indoor_stairs_count",
+      "status": "measured",
+      "subject_ids": [],
+      "unit": "count",
+      "value": 1
+    },
+    {
+      "evaluator": "SiteEvaluator",
+      "evaluator_version": "0.1.0",
+      "method": "straight_candidate_approach_to_nearest_frontage",
+      "metric": "garage_frontage_ground_z_m",
+      "status": "inferred",
+      "subject_ids": [
+        "sp-garage"
+      ],
+      "unit": "m",
+      "value": 12.304
+    },
+    {
+      "evaluator": "SiteEvaluator",
+      "evaluator_version": "0.1.0",
+      "method": "straight_candidate_approach_to_nearest_frontage",
+      "metric": "garage_frontage_delta_m",
+      "status": "inferred",
+      "subject_ids": [
+        "sp-garage"
+      ],
+      "unit": "m",
+      "value": -0.814
+    },
+    {
+      "evaluator": "SiteEvaluator",
+      "evaluator_version": "0.1.0",
+      "method": "straight_candidate_approach_to_nearest_frontage",
+      "metric": "garage_candidate_ramp_run_m",
+      "status": "inferred",
+      "subject_ids": [
+        "sp-garage"
+      ],
+      "unit": "m",
+      "value": 3.1
+    },
+    {
+      "evaluator": "SiteEvaluator",
+      "evaluator_version": "0.1.0",
+      "method": "straight_candidate_approach_to_nearest_frontage",
+      "metric": "garage_candidate_ramp_grade_pct",
+      "status": "inferred",
+      "subject_ids": [
+        "sp-garage"
+      ],
+      "unit": "%",
+      "value": -26.254
     },
     {
       "evaluator": "SiteEvaluator",
@@ -1501,7 +2268,27 @@
       "status": "measured",
       "subject_ids": [],
       "unit": null,
-      "value": "8.70, 11.70"
+      "value": "8.49, 11.49"
+    },
+    {
+      "evaluator": "SiteEvaluator",
+      "evaluator_version": "0.1.0",
+      "method": "exact_clipped_tin_affine_integration",
+      "metric": "ground_relief_under_footprint_m",
+      "status": "inferred",
+      "subject_ids": [],
+      "unit": "m",
+      "value": 4.852
+    },
+    {
+      "evaluator": "SiteEvaluator",
+      "evaluator_version": "0.1.0",
+      "method": "exact_clipped_tin_affine_integration",
+      "metric": "height_above_lowest_ground_m",
+      "status": "inferred",
+      "subject_ids": [],
+      "unit": "m",
+      "value": 7.803
     },
     {
       "evaluator": "NetAreaEvaluator",
@@ -1885,7 +2672,7 @@
         "sp-bath-ensuite"
       ],
       "unit": "m2",
-      "value": 7.176
+      "value": 7.564
     },
     {
       "evaluator": "NetAreaEvaluator",
@@ -1897,7 +2684,7 @@
         "sp-bath-ensuite"
       ],
       "unit": "m",
-      "value": 1.45
+      "value": 1.525
     },
     {
       "evaluator": "NetAreaEvaluator",
@@ -1945,7 +2732,7 @@
         "sp-bed-main"
       ],
       "unit": "m2",
-      "value": 14.876
+      "value": 14.488
     },
     {
       "evaluator": "NetAreaEvaluator",
@@ -1957,7 +2744,7 @@
         "sp-bed-main"
       ],
       "unit": "m",
-      "value": 2.925
+      "value": 2.85
     },
     {
       "evaluator": "NetAreaEvaluator",
@@ -2003,66 +2790,6 @@
       "status": "measured",
       "subject_ids": [
         "sp-bed-child-1"
-      ],
-      "unit": "m2",
-      "value": 13.264
-    },
-    {
-      "evaluator": "NetAreaEvaluator",
-      "evaluator_version": "1.0.0",
-      "method": "net_minimum_rotated_bounds",
-      "metric": "net_extent_short_m",
-      "status": "measured",
-      "subject_ids": [
-        "sp-bed-child-1"
-      ],
-      "unit": "m",
-      "value": 2.55
-    },
-    {
-      "evaluator": "NetAreaEvaluator",
-      "evaluator_version": "1.0.0",
-      "method": "net_minimum_rotated_bounds",
-      "metric": "net_extent_long_m",
-      "status": "measured",
-      "subject_ids": [
-        "sp-bed-child-1"
-      ],
-      "unit": "m",
-      "value": 5.25
-    },
-    {
-      "evaluator": "NetAreaEvaluator",
-      "evaluator_version": "1.0.0",
-      "method": "boundary_wall_coverage",
-      "metric": "net_wall_basis_complete",
-      "status": "measured",
-      "subject_ids": [
-        "sp-bed-child-1"
-      ],
-      "unit": null,
-      "value": true
-    },
-    {
-      "evaluator": "NetAreaEvaluator",
-      "evaluator_version": "1.0.0",
-      "method": "polygon_area_centerline",
-      "metric": "gross_area_m2",
-      "status": "measured",
-      "subject_ids": [
-        "sp-bed-child-2"
-      ],
-      "unit": "m2",
-      "value": 14.58
-    },
-    {
-      "evaluator": "NetAreaEvaluator",
-      "evaluator_version": "1.0.0",
-      "method": "wall_solids_minus_floor_apertures",
-      "metric": "net_area_m2",
-      "status": "measured",
-      "subject_ids": [
-        "sp-bed-child-2"
       ],
       "unit": "m2",
       "value": 12.876
@@ -2074,10 +2801,70 @@
       "metric": "net_extent_short_m",
       "status": "measured",
       "subject_ids": [
-        "sp-bed-child-2"
+        "sp-bed-child-1"
       ],
       "unit": "m",
       "value": 2.475
+    },
+    {
+      "evaluator": "NetAreaEvaluator",
+      "evaluator_version": "1.0.0",
+      "method": "net_minimum_rotated_bounds",
+      "metric": "net_extent_long_m",
+      "status": "measured",
+      "subject_ids": [
+        "sp-bed-child-1"
+      ],
+      "unit": "m",
+      "value": 5.25
+    },
+    {
+      "evaluator": "NetAreaEvaluator",
+      "evaluator_version": "1.0.0",
+      "method": "boundary_wall_coverage",
+      "metric": "net_wall_basis_complete",
+      "status": "measured",
+      "subject_ids": [
+        "sp-bed-child-1"
+      ],
+      "unit": null,
+      "value": true
+    },
+    {
+      "evaluator": "NetAreaEvaluator",
+      "evaluator_version": "1.0.0",
+      "method": "polygon_area_centerline",
+      "metric": "gross_area_m2",
+      "status": "measured",
+      "subject_ids": [
+        "sp-bed-child-2"
+      ],
+      "unit": "m2",
+      "value": 14.58
+    },
+    {
+      "evaluator": "NetAreaEvaluator",
+      "evaluator_version": "1.0.0",
+      "method": "wall_solids_minus_floor_apertures",
+      "metric": "net_area_m2",
+      "status": "measured",
+      "subject_ids": [
+        "sp-bed-child-2"
+      ],
+      "unit": "m2",
+      "value": 13.264
+    },
+    {
+      "evaluator": "NetAreaEvaluator",
+      "evaluator_version": "1.0.0",
+      "method": "net_minimum_rotated_bounds",
+      "metric": "net_extent_short_m",
+      "status": "measured",
+      "subject_ids": [
+        "sp-bed-child-2"
+      ],
+      "unit": "m",
+      "value": 2.55
     },
     {
       "evaluator": "NetAreaEvaluator",
@@ -2425,7 +3212,7 @@
         "sp-stair-0a"
       ],
       "unit": "m2",
-      "value": 2.526
+      "value": 3.253
     },
     {
       "evaluator": "NetAreaEvaluator",
@@ -2797,43 +3584,83 @@
         "st-0"
       ],
       "unit": "m",
-      "value": 1.1
+      "value": 1.05
     },
     {
       "evaluator": "StairUsabilityEvaluator",
       "evaluator_version": "1.0.0",
-      "method": "missing_line_or_unsupported_complex_flight",
+      "method": "tread_count_times_going",
+      "metric": "stair_required_run_m",
+      "status": "measured",
+      "subject_ids": [
+        "st-0"
+      ],
+      "unit": "m",
+      "value": 4.2
+    },
+    {
+      "evaluator": "StairUsabilityEvaluator",
+      "evaluator_version": "1.0.0",
+      "method": "walking_line_and_footprint_width",
       "metric": "stair_run_fit",
-      "status": "not_checked",
+      "status": "measured",
       "subject_ids": [
         "st-0"
       ],
       "unit": null,
-      "value": null
+      "value": true
     },
     {
       "evaluator": "StairUsabilityEvaluator",
       "evaluator_version": "1.0.0",
-      "method": "missing_line_or_unsupported_complex_flight",
+      "method": "slab_intersection_pitchline",
       "metric": "stair_min_headroom_m",
-      "status": "not_checked",
+      "status": "measured",
       "subject_ids": [
         "st-0"
       ],
-      "unit": null,
-      "value": null
+      "unit": "m",
+      "value": 2.75
     },
     {
       "evaluator": "StairUsabilityEvaluator",
       "evaluator_version": "1.0.0",
-      "method": "missing_line_or_unsupported_complex_flight",
-      "metric": "stair_landing_clear",
-      "status": "not_checked",
+      "method": "walking_line_wall_crossing",
+      "metric": "stair_wall_clashes",
+      "status": "measured",
       "subject_ids": [
         "st-0"
       ],
       "unit": null,
-      "value": null
+      "value": 0
+    },
+    {
+      "assumption_basis": "assumption landing_m=0.9; precedent: docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption); not code checked",
+      "evaluator": "StairUsabilityEvaluator",
+      "evaluator_version": "1.0.0",
+      "method": "landing_polygon_containment",
+      "metric": "stair_landing_clear",
+      "status": "measured",
+      "subject_ids": [
+        "st-0",
+        "sp-stair-0b"
+      ],
+      "unit": null,
+      "value": true
+    },
+    {
+      "assumption_basis": "assumption landing_m=0.9; precedent: docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption); not code checked",
+      "evaluator": "StairUsabilityEvaluator",
+      "evaluator_version": "1.0.0",
+      "method": "landing_polygon_containment",
+      "metric": "stair_landing_clear",
+      "status": "measured",
+      "subject_ids": [
+        "st-0",
+        "sp-stair-0a"
+      ],
+      "unit": null,
+      "value": true
     },
     {
       "assumption_basis": "assumption: dining: docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption)",
@@ -2853,12 +3680,13 @@
       "evaluator_version": "1.0.0",
       "method": "placed_counter_width_sum",
       "metric": "kitchen_counter_run_m",
-      "status": "not_checked",
+      "status": "measured",
       "subject_ids": [
-        "sp-kitchen"
+        "sp-kitchen",
+        "fx-kitchen-1"
       ],
       "unit": "m",
-      "value": null
+      "value": 3.0
     },
     {
       "evaluator": "FurnitureUsabilityEvaluator",
@@ -2867,23 +3695,11 @@
       "metric": "kitchen_aisle_width_m",
       "status": "not_checked",
       "subject_ids": [
-        "sp-kitchen"
+        "sp-kitchen",
+        "fx-kitchen-1"
       ],
       "unit": null,
       "value": null
-    },
-    {
-      "assumption_basis": "assumption: kitchen-run: https://media.nkba.org/uploads/2022/05/Kitchen-Planning-Guidelines.pdf; run/depth: docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption); appliance: docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption)",
-      "evaluator": "FurnitureUsabilityEvaluator",
-      "evaluator_version": "1.0.0",
-      "method": "0_1m_four_rotation_room_frame_packing",
-      "metric": "kitchen_sampled_fit",
-      "status": "inferred",
-      "subject_ids": [
-        "sp-kitchen"
-      ],
-      "unit": null,
-      "value": true
     },
     {
       "assumption_basis": "assumption: sofa-group: docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption)",
@@ -2899,19 +3715,6 @@
       "value": true
     },
     {
-      "assumption_basis": "assumption: wc: https://www.access-board.gov/ada/guides/chapter-6-toilet-rooms/; non-accessible illustrative sizes: docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption); basin: docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption); shower: docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption)",
-      "evaluator": "FurnitureUsabilityEvaluator",
-      "evaluator_version": "1.0.0",
-      "method": "search_budget_exhausted_before_decision",
-      "metric": "bathroom_sampled_fit",
-      "status": "not_checked",
-      "subject_ids": [
-        "sp-bath-ensuite"
-      ],
-      "unit": null,
-      "value": null
-    },
-    {
       "assumption_basis": "assumption: bed-double: docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption); wardrobe: docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption)",
       "evaluator": "FurnitureUsabilityEvaluator",
       "evaluator_version": "1.0.0",
@@ -2920,32 +3723,6 @@
       "status": "inferred",
       "subject_ids": [
         "sp-bed-main"
-      ],
-      "unit": null,
-      "value": true
-    },
-    {
-      "assumption_basis": "assumption: bed-single: docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption); wardrobe: docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption)",
-      "evaluator": "FurnitureUsabilityEvaluator",
-      "evaluator_version": "1.0.0",
-      "method": "0_1m_four_rotation_room_frame_packing",
-      "metric": "bed_single_sampled_fit",
-      "status": "inferred",
-      "subject_ids": [
-        "sp-bed-main"
-      ],
-      "unit": null,
-      "value": true
-    },
-    {
-      "assumption_basis": "assumption: bed-double: docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption); wardrobe: docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption)",
-      "evaluator": "FurnitureUsabilityEvaluator",
-      "evaluator_version": "1.0.0",
-      "method": "0_1m_four_rotation_room_frame_packing",
-      "metric": "bed_double_sampled_fit",
-      "status": "inferred",
-      "subject_ids": [
-        "sp-bed-child-1"
       ],
       "unit": null,
       "value": false
@@ -2964,19 +3741,6 @@
       "value": true
     },
     {
-      "assumption_basis": "assumption: bed-double: docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption); wardrobe: docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption)",
-      "evaluator": "FurnitureUsabilityEvaluator",
-      "evaluator_version": "1.0.0",
-      "method": "0_1m_four_rotation_room_frame_packing",
-      "metric": "bed_double_sampled_fit",
-      "status": "inferred",
-      "subject_ids": [
-        "sp-bed-child-2"
-      ],
-      "unit": null,
-      "value": false
-    },
-    {
       "assumption_basis": "assumption: bed-single: docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption); wardrobe: docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption)",
       "evaluator": "FurnitureUsabilityEvaluator",
       "evaluator_version": "1.0.0",
@@ -2985,19 +3749,6 @@
       "status": "inferred",
       "subject_ids": [
         "sp-bed-child-2"
-      ],
-      "unit": null,
-      "value": true
-    },
-    {
-      "assumption_basis": "assumption: wc: https://www.access-board.gov/ada/guides/chapter-6-toilet-rooms/; non-accessible illustrative sizes: docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption); basin: docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption); shower: docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption)",
-      "evaluator": "FurnitureUsabilityEvaluator",
-      "evaluator_version": "1.0.0",
-      "method": "0_1m_four_rotation_room_frame_packing",
-      "metric": "bathroom_sampled_fit",
-      "status": "inferred",
-      "subject_ids": [
-        "sp-bath-1"
       ],
       "unit": null,
       "value": true
@@ -3016,29 +3767,17 @@
       "value": true
     },
     {
+      "assumption_basis": "assumption: vehicle-701cec69f31b804f: typical car envelope (assumption until the owner gives the car size); docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption); vehicle-369d85bd76214ff9: typical car envelope (assumption until the owner gives the car size); docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption)",
       "evaluator": "FurnitureUsabilityEvaluator",
       "evaluator_version": "1.0.0",
-      "method": "vehicle_count_or_size_unknown",
+      "method": "0_1m_four_rotation_room_frame_packing",
       "metric": "garage_sampled_fit",
-      "status": "not_checked",
+      "status": "inferred",
       "subject_ids": [
         "sp-garage"
       ],
       "unit": null,
-      "value": null
-    },
-    {
-      "assumption_basis": "assumption: laundry: docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption)",
-      "evaluator": "FurnitureUsabilityEvaluator",
-      "evaluator_version": "1.0.0",
-      "method": "0_1m_four_rotation_room_frame_packing",
-      "metric": "laundry_folding_sampled_fit",
-      "status": "inferred",
-      "subject_ids": [
-        "sp-laundry"
-      ],
-      "unit": null,
-      "value": true
+      "value": false
     },
     {
       "assumption_basis": "assumption: appliance: docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption)",
@@ -3068,14 +3807,14 @@
     {
       "evaluator": "RouteUsabilityEvaluator",
       "evaluator_version": "1.0.0",
-      "method": "net_floor_visibility_graph_point_path_with_estimated_stair_run",
+      "method": "net_floor_visibility_graph_point_path",
       "metric": "entrance_route_length_m",
-      "status": "inferred",
+      "status": "measured",
       "subject_ids": [
         "sp-corridor-b1"
       ],
       "unit": "m",
-      "value": 28.473
+      "value": 26.134
     },
     {
       "evaluator": "RouteUsabilityEvaluator",
@@ -3111,7 +3850,7 @@
         "sp-kitchen"
       ],
       "unit": "m",
-      "value": 14.629
+      "value": 14.859
     },
     {
       "evaluator": "RouteUsabilityEvaluator",
@@ -3128,74 +3867,74 @@
     {
       "evaluator": "RouteUsabilityEvaluator",
       "evaluator_version": "1.0.0",
-      "method": "net_floor_visibility_graph_point_path_with_estimated_stair_run",
+      "method": "net_floor_visibility_graph_point_path",
       "metric": "entrance_route_length_m",
-      "status": "inferred",
+      "status": "measured",
       "subject_ids": [
         "sp-bath-ensuite"
       ],
       "unit": "m",
-      "value": 30.79
+      "value": 33.618
     },
     {
       "evaluator": "RouteUsabilityEvaluator",
       "evaluator_version": "1.0.0",
-      "method": "net_floor_visibility_graph_point_path_with_estimated_stair_run",
+      "method": "net_floor_visibility_graph_point_path",
       "metric": "entrance_route_length_m",
-      "status": "inferred",
+      "status": "measured",
       "subject_ids": [
         "sp-bed-main"
       ],
       "unit": "m",
-      "value": 29.383
+      "value": 32.196
     },
     {
       "evaluator": "RouteUsabilityEvaluator",
       "evaluator_version": "1.0.0",
-      "method": "net_floor_visibility_graph_point_path_with_estimated_stair_run",
+      "method": "net_floor_visibility_graph_point_path",
       "metric": "entrance_route_length_m",
-      "status": "inferred",
+      "status": "measured",
       "subject_ids": [
         "sp-bed-child-1"
       ],
       "unit": "m",
-      "value": 32.343
+      "value": 26.314
     },
     {
       "evaluator": "RouteUsabilityEvaluator",
       "evaluator_version": "1.0.0",
-      "method": "net_floor_visibility_graph_point_path_with_estimated_stair_run",
+      "method": "net_floor_visibility_graph_point_path",
       "metric": "entrance_route_length_m",
-      "status": "inferred",
+      "status": "measured",
       "subject_ids": [
         "sp-bed-child-2"
       ],
       "unit": "m",
-      "value": 34.99
+      "value": 28.197
     },
     {
       "evaluator": "RouteUsabilityEvaluator",
       "evaluator_version": "1.0.0",
-      "method": "net_floor_visibility_graph_point_path_with_estimated_stair_run",
+      "method": "net_floor_visibility_graph_point_path",
       "metric": "entrance_route_length_m",
-      "status": "inferred",
+      "status": "measured",
       "subject_ids": [
         "sp-bath-1"
       ],
       "unit": "m",
-      "value": 32.955
+      "value": 29.554
     },
     {
       "evaluator": "RouteUsabilityEvaluator",
       "evaluator_version": "1.0.0",
-      "method": "net_floor_visibility_graph_point_path_with_estimated_stair_run",
+      "method": "net_floor_visibility_graph_point_path",
       "metric": "entrance_route_length_m",
-      "status": "inferred",
+      "status": "measured",
       "subject_ids": [
         "sp-study-1"
       ],
       "unit": "m",
-      "value": 35.004
+      "value": 32.665
     },
     {
       "evaluator": "RouteUsabilityEvaluator",
@@ -3212,26 +3951,26 @@
     {
       "evaluator": "RouteUsabilityEvaluator",
       "evaluator_version": "1.0.0",
-      "method": "net_floor_visibility_graph_point_path_with_estimated_stair_run",
+      "method": "net_floor_visibility_graph_point_path",
       "metric": "entrance_route_length_m",
-      "status": "inferred",
+      "status": "measured",
       "subject_ids": [
         "sp-laundry"
       ],
       "unit": "m",
-      "value": 31.105
+      "value": 27.122
     },
     {
       "evaluator": "RouteUsabilityEvaluator",
       "evaluator_version": "1.0.0",
-      "method": "net_floor_visibility_graph_point_path_with_estimated_stair_run",
+      "method": "net_floor_visibility_graph_point_path",
       "metric": "entrance_route_length_m",
-      "status": "inferred",
+      "status": "measured",
       "subject_ids": [
         "sp-mechanical"
       ],
       "unit": "m",
-      "value": 29.456
+      "value": 28.917
     },
     {
       "evaluator": "RouteUsabilityEvaluator",
@@ -3243,19 +3982,19 @@
         "sp-stair-0a"
       ],
       "unit": "m",
-      "value": 17.403
+      "value": 17.304
     },
     {
       "evaluator": "RouteUsabilityEvaluator",
       "evaluator_version": "1.0.0",
-      "method": "net_floor_visibility_graph_point_path_with_estimated_stair_run",
+      "method": "net_floor_visibility_graph_point_path",
       "metric": "entrance_route_length_m",
-      "status": "inferred",
+      "status": "measured",
       "subject_ids": [
         "sp-stair-0b"
       ],
       "unit": "m",
-      "value": 22.133
+      "value": 25.106
     },
     {
       "evaluator": "RouteUsabilityEvaluator",
@@ -3278,7 +4017,7 @@
         "sp-kitchen"
       ],
       "unit": "m",
-      "value": 12.061
+      "value": 12.291
     },
     {
       "evaluator": "RouteUsabilityEvaluator",
@@ -3304,7 +4043,7 @@
         "sp-kitchen"
       ],
       "unit": null,
-      "value": "sp-garage,sp-corridor-b0,sp-living,sp-dining,sp-kitchen"
+      "value": "sp-garage,sp-corridor-b0,sp-living,sp-kitchen"
     },
     {
       "evaluator": "RouteUsabilityEvaluator",
@@ -3317,7 +4056,7 @@
         "sp-kitchen"
       ],
       "unit": "m",
-      "value": 11.891
+      "value": 12.122
     },
     {
       "evaluator": "RouteUsabilityEvaluator",
@@ -3343,7 +4082,7 @@
         "sp-kitchen"
       ],
       "unit": null,
-      "value": "sp-entry,sp-corridor-b0,sp-living,sp-dining,sp-kitchen"
+      "value": "sp-entry,sp-corridor-b0,sp-living,sp-kitchen"
     },
     {
       "evaluator": "RouteUsabilityEvaluator",
@@ -3413,7 +4152,7 @@
         "sp-bath-ensuite"
       ],
       "unit": "m2",
-      "value": 0.187
+      "value": 1.338
     },
     {
       "assumption_basis": "assumption residual_width_m=0.9; precedent: docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption); not code checked",
@@ -3465,7 +4204,7 @@
         "sp-bath-1"
       ],
       "unit": "m2",
-      "value": 0.186
+      "value": 1.006
     },
     {
       "assumption_basis": "assumption residual_width_m=0.9; precedent: docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption); not code checked",
@@ -3491,7 +4230,7 @@
         "sp-laundry"
       ],
       "unit": "m2",
-      "value": 0.18
+      "value": 0.267
     },
     {
       "assumption_basis": "assumption residual_width_m=0.9; precedent: docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption); not code checked",
@@ -3517,7 +4256,7 @@
         "sp-stair-0b"
       ],
       "unit": "m2",
-      "value": 0.187
+      "value": 1.018
     },
     {
       "evaluator": "RouteUsabilityEvaluator",
@@ -3529,7 +4268,7 @@
         "lv-entry"
       ],
       "unit": null,
-      "value": 0.197
+      "value": 0.202
     },
     {
       "assumption_basis": "assumption residual_width_m=0.9; precedent: docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption); not code checked",
@@ -3580,7 +4319,7 @@
         "sp-dining"
       ],
       "unit": "m2",
-      "value": 0.163
+      "value": 0.145
     },
     {
       "assumption_basis": "assumption residual_width_m=0.9; precedent: docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption); not code checked",
@@ -3593,7 +4332,7 @@
         "sp-kitchen"
       ],
       "unit": "m2",
-      "value": 0.164
+      "value": 0.31
     },
     {
       "assumption_basis": "assumption residual_width_m=0.9; precedent: docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption); not code checked",
@@ -3632,7 +4371,7 @@
         "sp-stair-0a"
       ],
       "unit": "m2",
-      "value": 0.291
+      "value": 1.018
     },
     {
       "assumption_basis": "assumption potential_sill_m=0.9; precedent: docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption); not code checked",
@@ -3762,7 +4501,7 @@
         "sp-bed-main"
       ],
       "unit": "m",
-      "value": 3.0
+      "value": 8.4
     },
     {
       "assumption_basis": "assumption min_glazing_ratio=0.1; precedent: docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption); not code checked",
@@ -3775,7 +4514,7 @@
         "sp-bed-main"
       ],
       "unit": null,
-      "value": 0.113
+      "value": 0.174
     },
     {
       "assumption_basis": "assumption min_facade_angle_deg=45; precedent: docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption); not code checked",
@@ -3799,45 +4538,6 @@
       "status": "inferred",
       "subject_ids": [
         "sp-bed-child-1"
-      ],
-      "unit": "m",
-      "value": 2.7
-    },
-    {
-      "assumption_basis": "assumption min_glazing_ratio=0.1; precedent: docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption); not code checked",
-      "evaluator": "DaylightOpportunityEvaluator",
-      "evaluator_version": "1.0.0",
-      "method": "three_point_tin_window_area_ratio",
-      "metric": "unburied_glazing_to_net_area",
-      "status": "inferred",
-      "subject_ids": [
-        "sp-bed-child-1"
-      ],
-      "unit": null,
-      "value": 0.116
-    },
-    {
-      "assumption_basis": "assumption min_facade_angle_deg=45; precedent: docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption); not code checked",
-      "evaluator": "DaylightOpportunityEvaluator",
-      "evaluator_version": "1.0.0",
-      "method": "operable_unburied_different_facades_no_airflow_simulation",
-      "metric": "cross_ventilation_opportunity",
-      "status": "inferred",
-      "subject_ids": [
-        "sp-bed-child-1"
-      ],
-      "unit": null,
-      "value": false
-    },
-    {
-      "assumption_basis": "assumption potential_sill_m=0.9; precedent: docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption); not code checked",
-      "evaluator": "DaylightOpportunityEvaluator",
-      "evaluator_version": "1.0.0",
-      "method": "0_25m_tin_unburied_face_sampling_sill_0_9m",
-      "metric": "window_capable_external_length_m",
-      "status": "inferred",
-      "subject_ids": [
-        "sp-bed-child-2"
       ],
       "unit": "m",
       "value": 8.1
@@ -3850,10 +4550,49 @@
       "metric": "unburied_glazing_to_net_area",
       "status": "inferred",
       "subject_ids": [
-        "sp-bed-child-2"
+        "sp-bed-child-1"
       ],
       "unit": null,
       "value": 0.196
+    },
+    {
+      "assumption_basis": "assumption min_facade_angle_deg=45; precedent: docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption); not code checked",
+      "evaluator": "DaylightOpportunityEvaluator",
+      "evaluator_version": "1.0.0",
+      "method": "operable_unburied_different_facades_no_airflow_simulation",
+      "metric": "cross_ventilation_opportunity",
+      "status": "inferred",
+      "subject_ids": [
+        "sp-bed-child-1"
+      ],
+      "unit": null,
+      "value": false
+    },
+    {
+      "assumption_basis": "assumption potential_sill_m=0.9; precedent: docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption); not code checked",
+      "evaluator": "DaylightOpportunityEvaluator",
+      "evaluator_version": "1.0.0",
+      "method": "0_25m_tin_unburied_face_sampling_sill_0_9m",
+      "metric": "window_capable_external_length_m",
+      "status": "inferred",
+      "subject_ids": [
+        "sp-bed-child-2"
+      ],
+      "unit": "m",
+      "value": 2.7
+    },
+    {
+      "assumption_basis": "assumption min_glazing_ratio=0.1; precedent: docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption); not code checked",
+      "evaluator": "DaylightOpportunityEvaluator",
+      "evaluator_version": "1.0.0",
+      "method": "three_point_tin_window_area_ratio",
+      "metric": "unburied_glazing_to_net_area",
+      "status": "inferred",
+      "subject_ids": [
+        "sp-bed-child-2"
+      ],
+      "unit": null,
+      "value": 0.116
     },
     {
       "assumption_basis": "assumption min_facade_angle_deg=45; precedent: docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption); not code checked",
@@ -3918,7 +4657,7 @@
         "w-entry-003"
       ],
       "unit": "m",
-      "value": 0.13
+      "value": -0.08
     },
     {
       "evaluator": "DaylightOpportunityEvaluator",
@@ -3931,7 +4670,7 @@
         "w-entry-002"
       ],
       "unit": "m",
-      "value": 0.281
+      "value": 0.071
     },
     {
       "evaluator": "DaylightOpportunityEvaluator",
@@ -3957,11 +4696,11 @@
   "plan_ref": {
     "id": "concept-compact",
     "kind": "plan",
-    "sha256": "fabb26efa5e6fd666e8f3ad0c4e564626f52c4641e4e336b923ca94ee35fe256",
+    "sha256": "cf0e8892e39c3c6863d3c170876ed020a954c8d2c5e0079c6c52ad0ad471c324",
     "version": 1
   },
   "provenance": {
-    "created_at": "2026-10-18T09:48:11.912145Z",
+    "created_at": "2026-10-19T09:25:35.213102Z",
     "created_by": {
       "display_name": null,
       "id": "house-ai-evaluation",
@@ -3973,7 +4712,7 @@
       {
         "id": "concept-compact",
         "kind": "plan",
-        "sha256": "fabb26efa5e6fd666e8f3ad0c4e564626f52c4641e4e336b923ca94ee35fe256",
+        "sha256": "cf0e8892e39c3c6863d3c170876ed020a954c8d2c5e0079c6c52ad0ad471c324",
         "version": 1
       },
       {
@@ -3985,7 +4724,7 @@
       {
         "id": "program",
         "kind": "space_program",
-        "sha256": "aaebe10f8491be667220a6bee4753f53c123540b4ea93ded30fc0ae3c236d6f1",
+        "sha256": "9dd9270f641b930a432de0deda27841b401a0c9848f4e54cdf67801ddd974cc7",
         "version": 1
       }
     ],
@@ -4055,17 +4794,370 @@
       "constraint_id": null,
       "evaluator": "SiteEvaluator",
       "id": "v-005-elevated-floor-support-unresolved",
-      "message": "About 39.5 m³ lies between terrain and the lowest floors, up to 1.99 m high. This is underfloor void, not specified engineered fill; supports, lateral stability, foundations and drainage are unresolved. Compare embedded, walk-out and stepped alternatives without assuming that less excavation is preferable",
+      "message": "Underfloor void is 21.7 m³, maximum 4.80 m. This is not specified engineered fill; supports, lateral stability, foundations and drainage unresolved.",
       "status": "inferred",
       "strength": "soft",
       "subject_ids": []
     },
     {
-      "code": "exterior_access_level_unresolved",
+      "code": "large_underfloor_void",
       "constraint_id": null,
       "evaluator": "SiteEvaluator",
-      "id": "v-006-exterior-access-level-unresolved",
-      "message": "d-garage-garage-ext floor differs from existing ground by +0.34 m; an approach, ramp, steps or excavated terrace has not been designed (0.3 m is a conceptual review trigger, not an accessibility rule)",
+      "id": "v-006-large-underfloor-void",
+      "message": "Void clear height 4.80 m exceeds configured 4 m concept-review trigger.",
+      "status": "inferred",
+      "strength": "soft",
+      "subject_ids": []
+    },
+    {
+      "code": "garage_ramp_grade_review",
+      "constraint_id": null,
+      "evaluator": "SiteEvaluator",
+      "id": "v-007-garage-ramp-grade-review",
+      "message": "Straight candidate grade -26.3% exceeds configured concept trigger; no designed ramp or regulatory compliance established.",
+      "status": "inferred",
+      "strength": "soft",
+      "subject_ids": [
+        "sp-garage"
+      ]
+    },
+    {
+      "code": "needs_professional_structure",
+      "constraint_id": null,
+      "evaluator": "SiteEvaluator",
+      "id": "v-008-needs-professional-structure",
+      "message": "Concept load paths, lateral stability and support systems unresolved — needs professional.",
+      "status": "inferred",
+      "strength": "soft",
+      "subject_ids": []
+    },
+    {
+      "code": "needs_professional_foundations",
+      "constraint_id": null,
+      "evaluator": "SiteEvaluator",
+      "id": "v-009-needs-professional-foundations",
+      "message": "Bearing capacity, settlement and footing depths unverified — needs professional.",
+      "status": "inferred",
+      "strength": "soft",
+      "subject_ids": []
+    },
+    {
+      "code": "needs_professional_slope_stability",
+      "constraint_id": null,
+      "evaluator": "SiteEvaluator",
+      "id": "v-010-needs-professional-slope-stability",
+      "message": "Survey TIN does not establish geotechnical or slope stability — needs professional.",
+      "status": "inferred",
+      "strength": "soft",
+      "subject_ids": []
+    },
+    {
+      "code": "needs_professional_retaining",
+      "constraint_id": null,
+      "evaluator": "SiteEvaluator",
+      "id": "v-011-needs-professional-retaining",
+      "message": "Earth-contact wall needs engineered retaining design — needs professional.",
+      "status": "inferred",
+      "strength": "soft",
+      "subject_ids": [
+        "w-down-300-001"
+      ]
+    },
+    {
+      "code": "needs_professional_drainage",
+      "constraint_id": null,
+      "evaluator": "SiteEvaluator",
+      "id": "v-012-needs-professional-drainage",
+      "message": "Uphill earth-contact face: intercept and discharge routes unresolved — needs professional.",
+      "status": "inferred",
+      "strength": "soft",
+      "subject_ids": [
+        "w-down-300-001"
+      ]
+    },
+    {
+      "code": "needs_professional_retaining",
+      "constraint_id": null,
+      "evaluator": "SiteEvaluator",
+      "id": "v-013-needs-professional-retaining",
+      "message": "Earth-contact wall needs engineered retaining design — needs professional.",
+      "status": "inferred",
+      "strength": "soft",
+      "subject_ids": [
+        "w-down-300-002"
+      ]
+    },
+    {
+      "code": "needs_professional_drainage",
+      "constraint_id": null,
+      "evaluator": "SiteEvaluator",
+      "id": "v-014-needs-professional-drainage",
+      "message": "Uphill earth-contact face: intercept and discharge routes unresolved — needs professional.",
+      "status": "inferred",
+      "strength": "soft",
+      "subject_ids": [
+        "w-down-300-002"
+      ]
+    },
+    {
+      "code": "needs_professional_retaining",
+      "constraint_id": null,
+      "evaluator": "SiteEvaluator",
+      "id": "v-015-needs-professional-retaining",
+      "message": "Earth-contact wall needs engineered retaining design — needs professional.",
+      "status": "inferred",
+      "strength": "soft",
+      "subject_ids": [
+        "w-down-300-003"
+      ]
+    },
+    {
+      "code": "needs_professional_drainage",
+      "constraint_id": null,
+      "evaluator": "SiteEvaluator",
+      "id": "v-016-needs-professional-drainage",
+      "message": "Uphill earth-contact face: intercept and discharge routes unresolved — needs professional.",
+      "status": "inferred",
+      "strength": "soft",
+      "subject_ids": [
+        "w-down-300-003"
+      ]
+    },
+    {
+      "code": "needs_professional_retaining",
+      "constraint_id": null,
+      "evaluator": "SiteEvaluator",
+      "id": "v-017-needs-professional-retaining",
+      "message": "Earth-contact wall needs engineered retaining design — needs professional.",
+      "status": "inferred",
+      "strength": "soft",
+      "subject_ids": [
+        "w-down-300-004"
+      ]
+    },
+    {
+      "code": "needs_professional_drainage",
+      "constraint_id": null,
+      "evaluator": "SiteEvaluator",
+      "id": "v-018-needs-professional-drainage",
+      "message": "Uphill earth-contact face: intercept and discharge routes unresolved — needs professional.",
+      "status": "inferred",
+      "strength": "soft",
+      "subject_ids": [
+        "w-down-300-004"
+      ]
+    },
+    {
+      "code": "needs_professional_retaining",
+      "constraint_id": null,
+      "evaluator": "SiteEvaluator",
+      "id": "v-019-needs-professional-retaining",
+      "message": "Earth-contact wall needs engineered retaining design — needs professional.",
+      "status": "inferred",
+      "strength": "soft",
+      "subject_ids": [
+        "w-down-300-005"
+      ]
+    },
+    {
+      "code": "needs_professional_drainage",
+      "constraint_id": null,
+      "evaluator": "SiteEvaluator",
+      "id": "v-020-needs-professional-drainage",
+      "message": "Uphill earth-contact face: intercept and discharge routes unresolved — needs professional.",
+      "status": "inferred",
+      "strength": "soft",
+      "subject_ids": [
+        "w-down-300-005"
+      ]
+    },
+    {
+      "code": "needs_professional_waterproofing",
+      "constraint_id": null,
+      "evaluator": "SiteEvaluator",
+      "id": "v-021-needs-professional-waterproofing",
+      "message": "Buried habitable wall: waterproofing and moisture control — needs professional.",
+      "status": "inferred",
+      "strength": "soft",
+      "subject_ids": [
+        "w-down-300-005",
+        "sp-study-1"
+      ]
+    },
+    {
+      "code": "needs_professional_retaining",
+      "constraint_id": null,
+      "evaluator": "SiteEvaluator",
+      "id": "v-022-needs-professional-retaining",
+      "message": "Earth-contact wall needs engineered retaining design — needs professional.",
+      "status": "inferred",
+      "strength": "soft",
+      "subject_ids": [
+        "w-down-300-019"
+      ]
+    },
+    {
+      "code": "needs_professional_drainage",
+      "constraint_id": null,
+      "evaluator": "SiteEvaluator",
+      "id": "v-023-needs-professional-drainage",
+      "message": "Uphill earth-contact face: intercept and discharge routes unresolved — needs professional.",
+      "status": "inferred",
+      "strength": "soft",
+      "subject_ids": [
+        "w-down-300-019"
+      ]
+    },
+    {
+      "code": "needs_professional_retaining",
+      "constraint_id": null,
+      "evaluator": "SiteEvaluator",
+      "id": "v-024-needs-professional-retaining",
+      "message": "Earth-contact wall needs engineered retaining design — needs professional.",
+      "status": "inferred",
+      "strength": "soft",
+      "subject_ids": [
+        "w-down-300-020"
+      ]
+    },
+    {
+      "code": "needs_professional_drainage",
+      "constraint_id": null,
+      "evaluator": "SiteEvaluator",
+      "id": "v-025-needs-professional-drainage",
+      "message": "Uphill earth-contact face: intercept and discharge routes unresolved — needs professional.",
+      "status": "inferred",
+      "strength": "soft",
+      "subject_ids": [
+        "w-down-300-020"
+      ]
+    },
+    {
+      "code": "needs_professional_retaining",
+      "constraint_id": null,
+      "evaluator": "SiteEvaluator",
+      "id": "v-026-needs-professional-retaining",
+      "message": "Earth-contact wall needs engineered retaining design — needs professional.",
+      "status": "inferred",
+      "strength": "soft",
+      "subject_ids": [
+        "w-down-300-029"
+      ]
+    },
+    {
+      "code": "needs_professional_drainage",
+      "constraint_id": null,
+      "evaluator": "SiteEvaluator",
+      "id": "v-027-needs-professional-drainage",
+      "message": "Uphill earth-contact face: intercept and discharge routes unresolved — needs professional.",
+      "status": "inferred",
+      "strength": "soft",
+      "subject_ids": [
+        "w-down-300-029"
+      ]
+    },
+    {
+      "code": "needs_professional_waterproofing",
+      "constraint_id": null,
+      "evaluator": "SiteEvaluator",
+      "id": "v-028-needs-professional-waterproofing",
+      "message": "Buried habitable wall: waterproofing and moisture control — needs professional.",
+      "status": "inferred",
+      "strength": "soft",
+      "subject_ids": [
+        "w-down-300-029",
+        "sp-study-1"
+      ]
+    },
+    {
+      "code": "needs_professional_retaining",
+      "constraint_id": null,
+      "evaluator": "SiteEvaluator",
+      "id": "v-029-needs-professional-retaining",
+      "message": "Earth-contact wall needs engineered retaining design — needs professional.",
+      "status": "inferred",
+      "strength": "soft",
+      "subject_ids": [
+        "w-down-300-030"
+      ]
+    },
+    {
+      "code": "needs_professional_drainage",
+      "constraint_id": null,
+      "evaluator": "SiteEvaluator",
+      "id": "v-030-needs-professional-drainage",
+      "message": "Uphill earth-contact face: intercept and discharge routes unresolved — needs professional.",
+      "status": "inferred",
+      "strength": "soft",
+      "subject_ids": [
+        "w-down-300-030"
+      ]
+    },
+    {
+      "code": "needs_professional_retaining",
+      "constraint_id": null,
+      "evaluator": "SiteEvaluator",
+      "id": "v-031-needs-professional-retaining",
+      "message": "Earth-contact wall needs engineered retaining design — needs professional.",
+      "status": "inferred",
+      "strength": "soft",
+      "subject_ids": [
+        "w-down-300-031"
+      ]
+    },
+    {
+      "code": "needs_professional_drainage",
+      "constraint_id": null,
+      "evaluator": "SiteEvaluator",
+      "id": "v-032-needs-professional-drainage",
+      "message": "Uphill earth-contact face: intercept and discharge routes unresolved — needs professional.",
+      "status": "inferred",
+      "strength": "soft",
+      "subject_ids": [
+        "w-down-300-031"
+      ]
+    },
+    {
+      "code": "needs_professional_waterproofing",
+      "constraint_id": null,
+      "evaluator": "SiteEvaluator",
+      "id": "v-033-needs-professional-waterproofing",
+      "message": "Buried habitable wall: waterproofing and moisture control — needs professional.",
+      "status": "inferred",
+      "strength": "soft",
+      "subject_ids": [
+        "w-down-300-031",
+        "sp-bed-main"
+      ]
+    },
+    {
+      "code": "needs_professional_structure",
+      "constraint_id": null,
+      "evaluator": "SiteEvaluator",
+      "id": "v-034-needs-professional-structure",
+      "message": "Underfloor clear space exceeds configured 4 m concept trigger; large void needs review — needs professional.",
+      "status": "inferred",
+      "strength": "soft",
+      "subject_ids": []
+    },
+    {
+      "code": "needs_professional_drainage",
+      "constraint_id": null,
+      "evaluator": "SiteEvaluator",
+      "id": "v-035-needs-professional-drainage",
+      "message": "Terrain-contact door: threshold drainage and approach unresolved — needs professional.",
+      "status": "inferred",
+      "strength": "soft",
+      "subject_ids": [
+        "d-front-entry-ext"
+      ]
+    },
+    {
+      "code": "needs_professional_drainage",
+      "constraint_id": null,
+      "evaluator": "SiteEvaluator",
+      "id": "v-036-needs-professional-drainage",
+      "message": "Terrain-contact door: threshold drainage and approach unresolved — needs professional.",
       "status": "inferred",
       "strength": "soft",
       "subject_ids": [
@@ -4073,11 +5165,187 @@
       ]
     },
     {
+      "code": "needs_professional_vehicle_access",
+      "constraint_id": null,
+      "evaluator": "SiteEvaluator",
+      "id": "v-037-needs-professional-vehicle-access",
+      "message": "Garage ramp approach needs design and professional review — needs professional.",
+      "status": "inferred",
+      "strength": "soft",
+      "subject_ids": [
+        "sp-garage",
+        "d-garage-garage-ext"
+      ]
+    },
+    {
+      "code": "buried_habitable_face",
+      "constraint_id": null,
+      "evaluator": "SiteEvaluator",
+      "id": "v-038-buried-habitable-face",
+      "message": "Buried face reduces daylight capability; waterproofing needs professional.",
+      "status": "inferred",
+      "strength": "soft",
+      "subject_ids": [
+        "w-down-300-005",
+        "sp-study-1"
+      ]
+    },
+    {
+      "code": "buried_habitable_face",
+      "constraint_id": null,
+      "evaluator": "SiteEvaluator",
+      "id": "v-039-buried-habitable-face",
+      "message": "Buried face reduces daylight capability; waterproofing needs professional.",
+      "status": "inferred",
+      "strength": "soft",
+      "subject_ids": [
+        "w-down-300-029",
+        "sp-study-1"
+      ]
+    },
+    {
+      "code": "buried_habitable_face",
+      "constraint_id": null,
+      "evaluator": "SiteEvaluator",
+      "id": "v-040-buried-habitable-face",
+      "message": "Buried face reduces daylight capability; waterproofing needs professional.",
+      "status": "inferred",
+      "strength": "soft",
+      "subject_ids": [
+        "w-down-300-031",
+        "sp-bed-main"
+      ]
+    },
+    {
+      "code": "terrain_triangle_review",
+      "constraint_id": null,
+      "evaluator": "SiteEvaluator",
+      "id": "v-041-terrain-triangle-review",
+      "message": "Triangle 2 at (12.153666666666664, 0.5386666666666667): sliver; survey review needed, no smoothing.",
+      "status": "measured",
+      "strength": "soft",
+      "subject_ids": []
+    },
+    {
+      "code": "terrain_triangle_review",
+      "constraint_id": null,
+      "evaluator": "SiteEvaluator",
+      "id": "v-042-terrain-triangle-review",
+      "message": "Triangle 6 at (16.392333333333333, 1.4393333333333334): sliver; survey review needed, no smoothing.",
+      "status": "measured",
+      "strength": "soft",
+      "subject_ids": []
+    },
+    {
+      "code": "terrain_triangle_review",
+      "constraint_id": null,
+      "evaluator": "SiteEvaluator",
+      "id": "v-043-terrain-triangle-review",
+      "message": "Triangle 18 at (-3.4733333333333336, 11.530000000000001): sliver, steep_review; survey review needed, no smoothing.",
+      "status": "measured",
+      "strength": "soft",
+      "subject_ids": []
+    },
+    {
+      "code": "terrain_triangle_review",
+      "constraint_id": null,
+      "evaluator": "SiteEvaluator",
+      "id": "v-044-terrain-triangle-review",
+      "message": "Triangle 28 at (23.761, 8.458333333333334): sliver, steep_review; survey review needed, no smoothing.",
+      "status": "measured",
+      "strength": "soft",
+      "subject_ids": []
+    },
+    {
+      "code": "terrain_triangle_review",
+      "constraint_id": null,
+      "evaluator": "SiteEvaluator",
+      "id": "v-045-terrain-triangle-review",
+      "message": "Triangle 29 at (23.206333333333333, 11.067): sliver, steep_review; survey review needed, no smoothing.",
+      "status": "measured",
+      "strength": "soft",
+      "subject_ids": []
+    },
+    {
+      "code": "terrain_triangle_review",
+      "constraint_id": null,
+      "evaluator": "SiteEvaluator",
+      "id": "v-046-terrain-triangle-review",
+      "message": "Triangle 46 at (20.711333333333336, 22.804333333333332): sliver, steep_review; survey review needed, no smoothing.",
+      "status": "measured",
+      "strength": "soft",
+      "subject_ids": []
+    },
+    {
+      "code": "terrain_triangle_review",
+      "constraint_id": null,
+      "evaluator": "SiteEvaluator",
+      "id": "v-047-terrain-triangle-review",
+      "message": "Triangle 50 at (1.2619999999999998, 30.93866666666667): sliver; survey review needed, no smoothing.",
+      "status": "measured",
+      "strength": "soft",
+      "subject_ids": []
+    },
+    {
+      "code": "terrain_triangle_review",
+      "constraint_id": null,
+      "evaluator": "SiteEvaluator",
+      "id": "v-048-terrain-triangle-review",
+      "message": "Triangle 53 at (5.500333333333333, 31.839333333333336): sliver; survey review needed, no smoothing.",
+      "status": "measured",
+      "strength": "soft",
+      "subject_ids": []
+    },
+    {
+      "assumption_basis": "docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption)",
+      "code": "bed_double_no_sampled_fit",
+      "constraint_id": null,
+      "evaluator": "FurnitureUsabilityEvaluator",
+      "id": "v-049-bed-double-no-sampled-fit",
+      "message": "No arrangement in the declared discrete template search; continuous infeasibility has not been proved.",
+      "method": "0_1m_four_rotation_room_frame_packing",
+      "status": "inferred",
+      "strength": "soft",
+      "subject_ids": [
+        "sp-bed-main"
+      ]
+    },
+    {
+      "assumption_basis": "docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption)",
+      "code": "garage_no_sampled_fit",
+      "constraint_id": null,
+      "evaluator": "FurnitureUsabilityEvaluator",
+      "id": "v-050-garage-no-sampled-fit",
+      "message": "No arrangement in the declared discrete template search; continuous infeasibility has not been proved.",
+      "method": "0_1m_four_rotation_room_frame_packing",
+      "status": "inferred",
+      "strength": "soft",
+      "subject_ids": [
+        "sp-garage"
+      ]
+    },
+    {
+      "assumption_basis": "docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption)",
+      "code": "kitchen_through_traffic",
+      "constraint_id": null,
+      "evaluator": "RouteUsabilityEvaluator",
+      "id": "v-051-kitchen-through-traffic",
+      "message": "Portal desire line crosses a work/seating zone; alternate routes may exist.",
+      "method": "direct_desire_line_zone_intersection",
+      "status": "inferred",
+      "strength": "soft",
+      "subject_ids": [
+        "sp-kitchen",
+        "o-kitchen-living",
+        "o-kitchen-dining"
+      ]
+    },
+    {
       "assumption_basis": "docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption)",
       "code": "living_through_traffic",
       "constraint_id": null,
       "evaluator": "RouteUsabilityEvaluator",
-      "id": "v-007-living-through-traffic",
+      "id": "v-052-living-through-traffic",
       "message": "Portal desire line crosses a work/seating zone; alternate routes may exist.",
       "method": "direct_desire_line_zone_intersection",
       "status": "inferred",
@@ -4093,7 +5361,7 @@
       "code": "living_through_traffic",
       "constraint_id": null,
       "evaluator": "RouteUsabilityEvaluator",
-      "id": "v-008-living-through-traffic",
+      "id": "v-053-living-through-traffic",
       "message": "Portal desire line crosses a work/seating zone; alternate routes may exist.",
       "method": "direct_desire_line_zone_intersection",
       "status": "inferred",
@@ -4109,43 +5377,13 @@
       "code": "bedroom_noise_stacking",
       "constraint_id": null,
       "evaluator": "PrivacyUsabilityEvaluator",
-      "id": "v-009-bedroom-noise-stacking",
+      "id": "v-054-bedroom-noise-stacking",
       "message": "Noisy activity beside/above/below sleeping space; acoustic assembly performance is unknown.",
       "method": "plan_contact_or_stack",
       "status": "inferred",
       "strength": "soft",
       "subject_ids": [
         "sp-bed-main",
-        "sp-kitchen"
-      ]
-    },
-    {
-      "assumption_basis": "docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption)",
-      "code": "bedroom_noise_stacking",
-      "constraint_id": null,
-      "evaluator": "PrivacyUsabilityEvaluator",
-      "id": "v-010-bedroom-noise-stacking",
-      "message": "Noisy activity beside/above/below sleeping space; acoustic assembly performance is unknown.",
-      "method": "plan_contact_or_stack",
-      "status": "inferred",
-      "strength": "soft",
-      "subject_ids": [
-        "sp-bed-child-1",
-        "sp-kitchen"
-      ]
-    },
-    {
-      "assumption_basis": "docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption)",
-      "code": "bedroom_noise_stacking",
-      "constraint_id": null,
-      "evaluator": "PrivacyUsabilityEvaluator",
-      "id": "v-011-bedroom-noise-stacking",
-      "message": "Noisy activity beside/above/below sleeping space; acoustic assembly performance is unknown.",
-      "method": "plan_contact_or_stack",
-      "status": "inferred",
-      "strength": "soft",
-      "subject_ids": [
-        "sp-bed-child-1",
         "sp-living"
       ]
     },
@@ -4154,7 +5392,37 @@
       "code": "bedroom_noise_stacking",
       "constraint_id": null,
       "evaluator": "PrivacyUsabilityEvaluator",
-      "id": "v-012-bedroom-noise-stacking",
+      "id": "v-055-bedroom-noise-stacking",
+      "message": "Noisy activity beside/above/below sleeping space; acoustic assembly performance is unknown.",
+      "method": "plan_contact_or_stack",
+      "status": "inferred",
+      "strength": "soft",
+      "subject_ids": [
+        "sp-bed-child-1",
+        "sp-kitchen"
+      ]
+    },
+    {
+      "assumption_basis": "docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption)",
+      "code": "bedroom_noise_stacking",
+      "constraint_id": null,
+      "evaluator": "PrivacyUsabilityEvaluator",
+      "id": "v-056-bedroom-noise-stacking",
+      "message": "Noisy activity beside/above/below sleeping space; acoustic assembly performance is unknown.",
+      "method": "plan_contact_or_stack",
+      "status": "inferred",
+      "strength": "soft",
+      "subject_ids": [
+        "sp-bed-child-2",
+        "sp-kitchen"
+      ]
+    },
+    {
+      "assumption_basis": "docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption)",
+      "code": "bedroom_noise_stacking",
+      "constraint_id": null,
+      "evaluator": "PrivacyUsabilityEvaluator",
+      "id": "v-057-bedroom-noise-stacking",
       "message": "Noisy activity beside/above/below sleeping space; acoustic assembly performance is unknown.",
       "method": "plan_contact_or_stack",
       "status": "inferred",
@@ -4169,29 +5437,13 @@
       "code": "low_daylight_opportunity",
       "constraint_id": null,
       "evaluator": "DaylightOpportunityEvaluator",
-      "id": "v-013-low-daylight-opportunity",
+      "id": "v-058-low-daylight-opportunity",
       "message": "Unburied glazing ratio is below assumption; no daylight simulation.",
       "method": "glazing_area_ratio",
       "status": "inferred",
       "strength": "soft",
       "subject_ids": [
         "sp-study-1"
-      ]
-    },
-    {
-      "assumption_basis": "assumption max_grade_step_m=0.2; precedent: docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption); not code checked",
-      "code": "outdoor_door_grade_mismatch",
-      "constraint_id": null,
-      "evaluator": "DaylightOpportunityEvaluator",
-      "id": "v-014-outdoor-door-grade-mismatch",
-      "message": "Door threshold is 0.281 m relative to grade; check landing/ramp.",
-      "method": "outside_face_tin_interpolation",
-      "status": "inferred",
-      "strength": "soft",
-      "subject_ids": [
-        "d-garage-garage-ext",
-        "w-entry-002",
-        "sp-garage"
       ]
     }
   ]

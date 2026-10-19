@@ -94,16 +94,31 @@ def cut_section(model: HouseModel, site: Site | None, request: SectionLine) -> d
         high = model.level(stair.to_level_id).elevation_m
         if low > high:
             low, high = high, low
+        # Risers sit on flight segments only; a landing segment is level (ADR 0023).
+        pts, zs = stair.walking_line, stair.vertex_heights(high - low)
+        spans, run = [], 0.0
+        for k, (a, b) in enumerate(zip(pts, pts[1:], strict=False)):
+            spans.append((k, run, run + math.dist(a, b)))
+            run += math.dist(a, b)
+        flights = [(s0, s1) for k, s0, s1 in spans if k not in stair.landing_segments]
+        total = sum(s1 - s0 for s0, s1 in flights)
+
+        footprint = stair.footprint.to_shapely()
         for i in range(stair.riser_count):
             tread = substring(
-                path, path.length * i / stair.riser_count, path.length * (i + 1) / stair.riser_count
+                path,
+                _along(flights, total * i / stair.riser_count),
+                _along(flights, total * (i + 1) / stair.riser_count),
             )
-            tread_shape = tread.buffer(stair.width_m / 2, cap_style=2).intersection(
-                stair.footprint.to_shapely()
-            )
+            tread_shape = tread.buffer(stair.width_m / 2, cap_style=2).intersection(footprint)
             z = low + (high - low) * (i + 1) / stair.riser_count
             for lo, hi in _intervals(line, tread_shape):
                 add(stair.id, "stair", _rectangle(lo, hi, low, z))
+        for k, s0, s1 in spans:
+            if k in stair.landing_segments:
+                landing = substring(path, s0, s1).buffer(stair.width_m / 2, cap_style=2)
+                for lo, hi in _intervals(line, landing.intersection(footprint)):
+                    add(stair.id, "stair", _rectangle(lo, hi, low, low + zs[k]))
     surface = site_surface(site) if _compatible_site(model, site) else None
     return {
         "id": request.id,
@@ -116,6 +131,15 @@ def cut_section(model: HouseModel, site: Site | None, request: SectionLine) -> d
         "note": "True cut, LOCAL metres; terrain interpolated (inferred); "
         "stairs use canonical walking line and risers, no structural thickness specified.",
     }
+
+
+def _along(flights: list[tuple[float, float]], f: float) -> float:
+    """Walking-line distance after ``f`` metres of flight, skipping landings."""
+    for s0, s1 in flights:
+        if f <= s1 - s0 + 1e-12:
+            return s0 + f
+        f -= s1 - s0
+    return flights[-1][1]
 
 
 def standard_sections(model: HouseModel, site: Site | None) -> list[SectionLine]:

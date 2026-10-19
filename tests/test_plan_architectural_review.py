@@ -67,6 +67,16 @@ def test_hybrid_reuses_entry_footprint_and_reports_cut_void_tradeoff(concepts):
 def test_required_daylight_gap_is_visible_without_claiming_daylight_simulation(concepts):
     site, program, plans = concepts
     model = plans["compact"].model
+    # A study with no exterior window, whatever the layout gave it.
+    model = model.model_copy(
+        update={
+            "openings": [
+                o
+                for o in model.openings
+                if not ("sp-study-1" in o.connects and o.kind.value == "window")
+            ]
+        }
+    )
     result = ProgramEvaluator().evaluate(EvaluationContext(model, site, program, None))
     gap = next(
         v

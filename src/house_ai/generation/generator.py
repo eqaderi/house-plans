@@ -10,6 +10,7 @@ cannot be laid out at all is reported with the reason.
 
 from __future__ import annotations
 
+import hashlib
 from dataclasses import dataclass, field
 from datetime import datetime
 
@@ -41,6 +42,7 @@ from house_ai.domain.plan import (
 from house_ai.domain.program import AdjacencyRequirement, SpaceProgram
 from house_ai.domain.proposal import ConceptProposal
 from house_ai.domain.provenance import Actor, ActorKind, ArtifactRef, Provenance
+from house_ai.domain.records import Assumption
 from house_ai.domain.site import Site
 
 from .assemble import assemble
@@ -85,8 +87,20 @@ def _patterns(strategy: str, rooms: ProgramRooms) -> list[tuple[int, int]]:
     return [*base, deep] if need and deep not in base else base
 
 
-def option_id_for(strategy: str) -> str:
-    return "concept-" + strategy.replace("_", "-")
+def option_id_for(strategy: str, proposal_id: str | None = None) -> str:
+    """Option of a concept; a topology proposal gets its own (S10-04, ISS-31).
+
+    Proposal concepts never become a new version of the strategy's concept, so they cannot
+    replace a generated or owner-revised version as its latest.
+    """
+    option = "concept-" + strategy.replace("_", "-")
+    if proposal_id is None:
+        return option
+    full = f"{option}-{proposal_id}"
+    if len(full) <= 64:
+        return full
+    digest = hashlib.sha256(proposal_id.encode()).hexdigest()[:8]
+    return f"{full[: 64 - len(digest) - 1].rstrip('-')}-{digest}"
 
 
 @dataclass
@@ -206,12 +220,13 @@ class CpSatPlanGenerator:
                     update={"adjacencies": [*program.adjacencies, *extra_adj]}
                 )
         rooms = expand_program(program, hard_min_areas=hard_areas, hard_min_widths=hard_widths)
+        proposal_id = req.proposal.id if req.proposal is not None else None
         try:
             frame = design_frame(req.site)
             limit = frame.polygon_to_design(limit_polygon(req.site)[0])
         except FrameError as exc:
             return [
-                Candidate(s, req.option_id or option_id_for(s), "infeasible", str(exc))
+                Candidate(s, req.option_id or option_id_for(s, proposal_id), "infeasible", str(exc))
                 for s in (req.strategies or STRATEGY_ORDER)
             ]
         ground = Ground(req.site, frame)
@@ -237,7 +252,9 @@ class CpSatPlanGenerator:
         return out
 
     def _strategy(self, strategy, ctx, rooms, frame, ground, req, opts) -> Candidate:
-        option = req.option_id or option_id_for(strategy)
+        option = req.option_id or option_id_for(
+            strategy, req.proposal.id if req.proposal is not None else None
+        )
         if req.sectional_strategy and req.option_id is None:
             option += "-" + req.sectional_strategy.replace("_", "-")
         cand = Candidate(strategy, option, "infeasible")
@@ -343,6 +360,7 @@ class CpSatPlanGenerator:
             )
             cand.status = "generated"
             cand.findings = findings
+            _explain_level_count(cand.plan, req.program)
             return cand
 
         best = None
@@ -434,4 +452,33 @@ class CpSatPlanGenerator:
         )
         cand.findings = findings
         cand.status = "generated"
+        _explain_level_count(cand.plan, req.program)
         return cand
+
+
+def _explain_level_count(plan: PlanVersion, program: SpaceProgram) -> None:
+    """Record departures from owner intent alongside the generated geometry (S10-12)."""
+    requested, actual = program.levels, len(plan.model.levels)
+    if requested is None or requested == actual:
+        return
+    if plan.strategy == STRATEGY_LINEAR:
+        reason = "The linear strategy places all rooms in one bar on a single level."
+    elif plan.strategy == STRATEGY_COMPACT:
+        reason = "The compact strategy requires at least two stacked levels."
+    else:
+        reason = (
+            "This strategy derives its floor levels from the massing and terrain; "
+            "split floor levels need not represent full stacked storeys."
+        )
+    plan.model.assumptions.append(
+        Assumption(
+            id="asm-gen-requested-levels",
+            statement=f"Requested storeys: {requested}; generated floor levels: {actual}. "
+            + reason
+            + " The requested storey count is not enforced by this strategy; owner review needed.",
+            basis="program.levels compared with canonical model.levels",
+            made_by=GENERATOR_ACTOR,
+            affects=[lv.id for lv in plan.model.levels],
+            confirm_with="owner",
+        )
+    )

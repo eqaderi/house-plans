@@ -79,6 +79,8 @@ KIND_WALL: str = "wall"
 KIND_DOOR: str = "door"
 KIND_WINDOW: str = "window"
 KIND_STAIR: str = "stair"
+KIND_FIXTURE: str = "fixture"
+KIND_FURNITURE: str = "furniture"
 KIND_PARCEL: str = "parcel"
 KIND_ENVELOPE: str = "envelope"
 KIND_LABEL: str = "label"
@@ -90,6 +92,8 @@ ELEMENT_KINDS: tuple[str, ...] = (
     KIND_DOOR,
     KIND_WINDOW,
     KIND_STAIR,
+    KIND_FIXTURE,
+    KIND_FURNITURE,
     KIND_PARCEL,
     KIND_ENVELOPE,
     KIND_LABEL,
@@ -103,6 +107,7 @@ DEFECT_MISSING_STAIR_LEVEL: str = "missing_stair_level"
 DEFECT_MISSING_STAIR_ARRIVAL: str = "missing_stair_arrival"
 DEFECT_MISSING_HOST_WALL: str = "missing_host_wall"
 DEFECT_DOOR_EXCEEDS_WALL: str = "door_exceeds_wall"
+DEFECT_STAIR_THROUGH_SLAB: str = "stair_through_slab"
 
 DEFECT_TYPES: tuple[str, ...] = (
     DEFECT_WINDOW_ON_RETAINING_WALL,
@@ -111,7 +116,16 @@ DEFECT_TYPES: tuple[str, ...] = (
     DEFECT_MISSING_STAIR_ARRIVAL,
     DEFECT_MISSING_HOST_WALL,
     DEFECT_DOOR_EXCEEDS_WALL,
+    DEFECT_STAIR_THROUGH_SLAB,
 )
+
+# 2D Plan rendering and defect detection geometry constants
+PANEL_W: float = 560.0
+MARGIN: float = 36.0
+DEFAULT_MIN_LABEL_DISTANCE_M: float = 1.5
+DEFAULT_LABEL_PADDING_PX: float = 4.0
+MIN_SLAB_INTERSECTION_AREA_M2: float = 0.05
+DOOR_APPROACH_CLEAR_DM: int = 9
 
 # Visual critique severities
 SEVERITY_BLOCKING: str = "blocking"

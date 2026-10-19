@@ -200,13 +200,54 @@ class Stair(StrictModel):
     tread_depth_m: PositiveFloat | None = None
     #: Ordered bottom-to-top walking line. Missing means orientation is unknown.
     walking_line: list[Point2] | None = Field(default=None, min_length=2)
+    #: Indices of walking-line segments that are level landings (a U-shaped flight's half
+    #: landing); every other segment is a flight that rises (ADR 0023).
+    landing_segments: list[int] = Field(default_factory=list)
 
     @model_serializer(mode="wrap")
     def _legacy_hash_compatible(self, handler):
         data = handler(self)
         if self.walking_line is None:
             data.pop("walking_line", None)
+        if not self.landing_segments:
+            data.pop("landing_segments", None)
         return data
+
+    @model_validator(mode="after")
+    def _landings_on_the_line(self) -> Stair:
+        if not self.landing_segments:
+            return self
+        n = len(self.walking_line or []) - 1
+        if any(not 0 <= i < n for i in self.landing_segments):
+            raise ValueError(f"{self.id}: landing segments must index walking-line segments")
+        if len(set(self.landing_segments)) == n:
+            raise ValueError(f"{self.id}: a walking line needs at least one rising flight")
+        return self
+
+    def vertex_heights(self, rise_m: float) -> list[float]:
+        """Height above the bottom floor at each walking-line vertex: the rise is shared
+        among flight segments by length, and landing segments stay level."""
+        pts = self.walking_line or []
+        lengths = [segment_length(a, b) for a, b in zip(pts, pts[1:], strict=False)]
+        flights = sum(x for i, x in enumerate(lengths) if i not in self.landing_segments)
+        out, z = [0.0], 0.0
+        for i, x in enumerate(lengths):
+            if i not in self.landing_segments and flights > 0:
+                z += rise_m * x / flights
+            out.append(z)
+        return out
+
+    def flight_length_m(self) -> float:
+        """Walking-line length on rising segments."""
+        pts = self.walking_line or []
+        return sum(
+            segment_length(a, b)
+            for i, (a, b) in enumerate(zip(pts, pts[1:], strict=False))
+            if i not in self.landing_segments
+        )
+
+    def flight_count(self) -> int:
+        return max(0, len(self.walking_line or []) - 1 - len(set(self.landing_segments)))
 
     @model_validator(mode="after")
     def _different_levels(self) -> Stair:

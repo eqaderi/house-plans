@@ -16,7 +16,7 @@ from shapely.ops import unary_union
 
 from house_ai.domain.base import EXTERIOR
 from house_ai.domain.epistemics import ClaimStatus
-from house_ai.domain.model import Operation, StairKind, WallKind
+from house_ai.domain.model import Operation, WallKind
 from house_ai.domain.program import Privacy, SpaceFunction, Strength
 from house_ai.domain.terrain import elevation_at, site_surface
 
@@ -243,9 +243,12 @@ class StairUsabilityEvaluator(Critic):
                     )
             above = [lv for lv in model.levels if lv.elevation_m > bottom.elevation_m + EPS]
             adjacent = min(above, key=lambda lv: lv.elevation_m).id == top.id if above else False
-            # Only a stair to the next level up can test the bottom level's floor-to-floor.
+            # Only a stair to the next level up that arrives over the bottom level's own spaces
+            # (stacked storeys) can test the bottom level's floor-to-floor (ADR 0023). Beside
+            # a lower storey, a higher floor says nothing about that storey's height.
             if (
                 adjacent
+                and _arrives_over(model, st, bottom.id, p.landing_m)
                 and bottom.floor_to_floor_m is not None
                 and abs(bottom.floor_to_floor_m - rise) > 1e-4
             ):
@@ -280,13 +283,9 @@ class StairUsabilityEvaluator(Critic):
                         f"Stair {field} is outside conceptual range.",
                         basis=basis,
                     )
-            if (
-                st.walking_line is None
-                or st.kind != StairKind.STRAIGHT
-                or len(st.walking_line) != 2
-            ):
+            if st.walking_line is None:
                 for name in ("stair_run_fit", "stair_min_headroom_m", "stair_landing_clear"):
-                    out.claim(name, None, ids, "missing_line_or_unsupported_complex_flight", NC)
+                    out.claim(name, None, ids, "missing_walking_line", NC)
                 continue
             line = LineString(st.walking_line)
             if not line.is_simple or line.length < EPS:
@@ -297,11 +296,13 @@ class StairUsabilityEvaluator(Critic):
                 )
                 continue
             footprint = st.footprint.to_shapely()
-            fits_width = footprint.buffer(EPS).covers(line.buffer(st.width_m / 2, cap_style=2))
+            strip = line.buffer(st.width_m / 2, cap_style=2, join_style=2)
+            fits_width = footprint.buffer(EPS).covers(strip)
             if st.riser_count and st.tread_depth_m:
-                needed = (st.riser_count - 1) * st.tread_depth_m
+                # Each flight has one tread fewer than its risers (ADR 0023).
+                needed = (st.riser_count - st.flight_count()) * st.tread_depth_m
                 out.claim("stair_required_run_m", needed, ids, "tread_count_times_going", unit="m")
-                fits = fits_width and line.length + EPS >= needed
+                fits = fits_width and st.flight_length_m() + EPS >= needed
                 out.claim("stair_run_fit", fits, ids, "walking_line_and_footprint_width")
                 if not fits:
                     out.flag(
@@ -312,6 +313,7 @@ class StairUsabilityEvaluator(Critic):
             else:
                 out.claim("stair_run_fit", None, ids, "missing_riser_count_or_going", NC)
             self._headroom(out, model, st, line, rise)
+            self._wall_clashes(out, model, st, line, rise)
             for sid, endpoint, neighbour, lv in (
                 (st.bottom_space_id, st.walking_line[0], st.walking_line[1], bottom),
                 (st.top_space_id, st.walking_line[-1], st.walking_line[-2], top),
@@ -352,6 +354,54 @@ class StairUsabilityEvaluator(Critic):
                             )
         return out.result()
 
+    def _wall_clashes(self, out, model, st, line, rise):
+        """Walls the flight would walk through (ADR 0023).
+
+        Where a wall's plan line crosses the walking line, the wall must stay clear of the
+        band from the pitch line to the minimum headroom above it, unless an opening in
+        that wall spans the flight's width and the band.
+        """
+        bottom_z = model.level(st.from_level_id).elevation_m
+        clear = self.policy.min_headroom_m
+        clashes = 0
+        for wall in model.walls:
+            seg = LineString([wall.start, wall.end])
+            hit = line.intersection(seg)
+            if hit.is_empty:
+                continue
+            pts = [Point(c) for g in getattr(hit, "geoms", [hit]) for c in g.coords]
+            for pt in pts:
+                d = line.project(pt)
+                if d <= EPS or d >= line.length - EPS:
+                    continue
+                pitch = bottom_z + _pitch(st, rise, d)
+                wall_z = model.level(wall.level_id).elevation_m + wall.base_offset_m
+                lo, hi = max(pitch, wall_z), min(pitch + clear, wall_z + wall.height_m)
+                if hi - lo <= EPS:
+                    continue
+                along = seg.project(pt)
+                level_z = model.level(wall.level_id).elevation_m
+                if any(
+                    o.host_wall_id == wall.id
+                    and o.offset_m <= along - st.width_m / 2 + EPS
+                    and along + st.width_m / 2 <= o.offset_m + o.width_m + EPS
+                    and level_z + o.sill_m <= lo + EPS
+                    and hi <= level_z + o.sill_m + o.height_m + EPS
+                    for o in model.openings
+                ):
+                    continue
+                clashes += 1
+                out.flag(
+                    "stair_wall_clash",
+                    [st.id, wall.id],
+                    f"Flight passes through {wall.id} between {lo - bottom_z:.3f} and "
+                    f"{hi - bottom_z:.3f} m above its foot, inside the clear band.",
+                    method="walking_line_wall_crossing_with_clear_band",
+                    basis=self.policy.basis("min_headroom_m"),
+                )
+                break
+        out.claim("stair_wall_clashes", clashes, [st.id], "walking_line_wall_crossing")
+
     def _headroom(self, out, model, st, line, rise):
         bottom_z = model.level(st.from_level_id).elevation_m
         heads = []
@@ -375,7 +425,7 @@ class StairUsabilityEvaluator(Critic):
             underside = (
                 model.level(slab.level_id).elevation_m + slab.top_offset_m - slab.thickness_m
             )
-            head = min(underside - bottom_z - rise * d / line.length for d in distances)
+            head = min(underside - bottom_z - _pitch(st, rise, d) for d in distances)
             heads.append(head)
             if head + EPS < self.policy.min_headroom_m:
                 out.flag(
@@ -393,6 +443,42 @@ class StairUsabilityEvaluator(Critic):
             M if heads else NC,
             unit="m",
         )
+
+
+def _pitch(st, rise: float, d: float) -> float:
+    """Pitch-line height above the bottom floor at distance ``d`` along the walking line:
+    rising on flights, level on landings (ADR 0023)."""
+    pts, zs = st.walking_line, st.vertex_heights(rise)
+    run = 0.0
+    for (a, b), z0, z1 in zip(zip(pts, pts[1:], strict=False), zs, zs[1:], strict=False):
+        seg = math.dist(a, b)
+        if d <= run + seg + 1e-12:
+            t = 0.0 if seg <= 0 else min(max((d - run) / seg, 0.0), 1.0)
+            return z0 + (z1 - z0) * t
+        run += seg
+    return zs[-1]
+
+
+def _arrives_over(model, st, level_id: str, landing_m: float) -> bool:
+    """True when the stair arrives over a space on ``level_id`` (stacked storeys, ADR 0023).
+
+    With a walking line, the test area is the arrival landing beyond the top end; without
+    one (such as a U-shaped flight), the whole top space.
+    """
+    if st.walking_line and len(st.walking_line) >= 2:
+        (x0, y0), (x1, y1) = st.walking_line[-2], st.walking_line[-1]
+        d = math.hypot(x1 - x0, y1 - y0)
+        if d < EPS:
+            return False
+        far = (x1 + (x1 - x0) / d * landing_m, y1 + (y1 - y0) / d * landing_m)
+        area = LineString([(x1, y1), far]).buffer(st.width_m / 2, cap_style=2)
+    else:
+        area = model.space(st.top_space_id).boundary.to_shapely()
+    return any(
+        area.intersection(sp.boundary.to_shapely()).area > 1e-4
+        for sp in model.spaces
+        if sp.level_id == level_id
+    )
 
 
 class FurnitureUsabilityEvaluator(Critic):

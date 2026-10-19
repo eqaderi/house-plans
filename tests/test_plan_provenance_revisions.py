@@ -6,6 +6,11 @@ from datetime import timedelta
 from pathlib import Path
 
 from house_ai.cli.main import main
+from house_ai.constants.evaluations import (
+    REGRESSION_VIOLATION_PREFIX,
+    REQUEST_NOT_MET_PREFIX,
+    REQUESTED_AREA_TOLERANCE_M2,
+)
 from house_ai.domain.plan import ChangeRequestKind, PlanVersion
 from house_ai.domain.program import AdjacencyKind, SpaceProgram
 from house_ai.domain.provenance import ArtifactKind
@@ -274,21 +279,20 @@ def test_preserve_owner_design_intent_across_multi_step_revisions(tmp_path):
     """Test S7-23: Preserve owner design intent across multi-version revisions
     and detect regressions.
     """
-    from house_ai.constants.evaluations import REGRESSION_VIOLATION_PREFIX
-
     store = _load(tmp_path)
     _approve_site_and_program(store)
     svc = PlanService(store)
     svc.generate(AGENT, strategies=["compact"])
 
-    # Step 1 -> Step 2: Request larger kitchen (16 m2)
+    # Step 1 -> Step 2: Request larger kitchen (14 m2; met within the 2 m² tolerance). Beside the
+    # separate two-car garage (S10-19) the compact bar cannot reach 16 m² here.
     s2 = svc.revise(
         "concept-compact",
         "Enlarge the kitchen.",
         AGENT,
-        ops=["area:pi-kitchen=16"],
+        ops=["area:pi-kitchen=14"],
     )
-    assert s2.option.candidate.plan.model.space("sp-kitchen").area_m2 >= 14.0
+    assert s2.option.candidate.plan.model.space("sp-kitchen").area_m2 >= 12.0
 
     # Step 2 -> Step 3: Request study on lower level
     s3 = svc.revise(
@@ -298,8 +302,8 @@ def test_preserve_owner_design_intent_across_multi_step_revisions(tmp_path):
         ops=["level:pi-study-1=lower"],
     )
     # Kitchen intent is still preserved in effective ops and geometry
-    assert s3.option.candidate.plan.model.space("sp-kitchen").area_m2 >= 14.0
-    assert "area:pi-kitchen=16" in s3.option.candidate.plan.generation.revision_ops
+    assert s3.option.candidate.plan.model.space("sp-kitchen").area_m2 >= 12.0
+    assert "area:pi-kitchen=14" in s3.option.candidate.plan.generation.revision_ops
 
     # Step 3 -> Step 4: Keep previous intent and add separate relation
     s4 = svc.revise(
@@ -309,31 +313,81 @@ def test_preserve_owner_design_intent_across_multi_step_revisions(tmp_path):
         ops=["separate:pi-living,pi-bed-main"],
     )
     plan_v4 = s4.option.candidate.plan
-    assert "area:pi-kitchen=16" in plan_v4.generation.revision_ops
+    assert "area:pi-kitchen=14" in plan_v4.generation.revision_ops
     assert "level:pi-study-1=lower" in plan_v4.generation.revision_ops
-    assert plan_v4.model.space("sp-kitchen").area_m2 >= 14.0
+    assert plan_v4.model.space("sp-kitchen").area_m2 >= 12.0
     # No regressions reported when design intent is maintained
     regressions = [
         v for v in s4.revision.new_violations if v.startswith(REGRESSION_VIOLATION_PREFIX)
     ]
     assert regressions == []
 
-    # Step 5 & 6: Verify regression detection when an earlier request is not met
-    svc.revise(
+    # Steps 5 and 6: a request never met is reported as not met in the revision that makes it
+    # and in every later one, never as a regression (S10-03, ISS-31).
+    s5 = svc.revise(
         "concept-compact",
         "Make kitchen 30 m2.",
         AGENT,
         ops=["area:pi-kitchen=30"],
     )
+    kitchen = s5.option.candidate.plan.model.space("sp-kitchen").area_m2
+    assert kitchen < 28.0  # the solver cannot reach 30 m² here
+    expected = (
+        f"{REQUEST_NOT_MET_PREFIX}'area:pi-kitchen=30' "
+        f"(sp-kitchen area {kitchen:.1f} m² < requested 30 m²)"
+    )
+    assert expected in s5.revision.new_violations
     s6 = svc.revise(
         "concept-compact",
         "Rethink the study.",
         AGENT,
         ops=["rethink:pi-study-1"],
     )
-    reg_warnings = [
+    not_met = [v for v in s6.revision.new_violations if v.startswith(REQUEST_NOT_MET_PREFIX)]
+    assert len(not_met) == 1 and "sp-kitchen" in not_met[0]
+    assert not [
         v for v in s6.revision.new_violations if v.startswith(REGRESSION_VIOLATION_PREFIX)
     ]
-    assert len(reg_warnings) >= 1
-    assert "sp-kitchen" in reg_warnings[0]
     assert store.verify() == []
+
+
+def test_request_findings_separate_unmet_from_lost(tmp_path):
+    """S10-03: a lost request is a regression; one the base never met is only not met."""
+    store = _load(tmp_path)
+    _approve_site_and_program(store)
+    svc = PlanService(store)
+    svc.generate(AGENT, strategies=["compact"])
+    base = store.get(store.latest(ArtifactKind.PLAN, "concept-compact"), PlanVersion)
+    program = svc.inputs(False).program
+    area = base.model.space("sp-kitchen").area_m2
+    # Target just inside the tolerance edge: met by the base (area >= target - 2 m²). The 1e-6
+    # margin keeps the 6-decimal rounding from pushing the target past the edge.
+    met_op = f"area:pi-kitchen={area + REQUESTED_AREA_TOLERANCE_M2 - 1e-6:.6f}"
+    base = base.model_copy(
+        update={"generation": base.generation.model_copy(update={"revision_ops": [met_op]})}
+    )
+    assert svc.request_findings([met_op], base.model, base, program) == []
+
+    # The kitchen shrinks about its centroid by exactly 3 m² (area scales with k²): lost.
+    sp = base.model.space("sp-kitchen")
+    cx, cy = sp.boundary.to_shapely().centroid.coords[0]
+    k = ((area - 3.0) / area) ** 0.5
+    smaller = sp.boundary.model_copy(
+        update={"outer": [(cx + (x - cx) * k, cy + (y - cy) * k) for x, y in sp.boundary.outer]}
+    )
+    shrunk = base.model.model_copy(
+        update={
+            "spaces": [
+                s.model_copy(update={"boundary": smaller}) if s.id == "sp-kitchen" else s
+                for s in base.model.spaces
+            ]
+        }
+    )
+    lost = svc.request_findings([met_op], shrunk, base, program)
+    assert len(lost) == 1 and lost[0].startswith(REGRESSION_VIOLATION_PREFIX)
+    assert f"sp-kitchen area {area - 3.0:.1f} m²" in lost[0]
+
+    # A new request, or one the base did not meet, is not met rather than lost.
+    new_op = f"area:pi-kitchen={area + 10:.0f}"
+    (finding,) = svc.request_findings([new_op], base.model, base, program)
+    assert finding.startswith(REQUEST_NOT_MET_PREFIX) and new_op in finding

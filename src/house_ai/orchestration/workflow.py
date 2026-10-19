@@ -21,12 +21,13 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
+from house_ai.constants.evaluations import PLAN_GATE_BLOCKING_CODES, PLAN_REVIEW_ATTENTION_CODES
 from house_ai.domain.brief import DesignBrief
 from house_ai.domain.build import BuildRecord, BuildTarget
 from house_ai.domain.evaluation import EvaluationReport
 from house_ai.domain.integrity import check_model, errors
 from house_ai.domain.plan import PlanVersion
-from house_ai.domain.program import SpaceProgram
+from house_ai.domain.program import SpaceProgram, Strength
 from house_ai.domain.provenance import Actor, ActorKind, ArtifactKind, ArtifactRef
 from house_ai.domain.records import OpenQuestionsFile
 from house_ai.domain.site import Site, site_verification_blockers
@@ -340,7 +341,23 @@ class Workflow:
         for report in latest_for_plan.values():
             for v in report.hard_violations:
                 reasons.append(f"hard violation {v.id} ({report.id}): {v.message}")
+            for v in report.violations:
+                # Unbuildable or unwalkable as drawn, whatever its strength (ADR 0024).
+                if v.strength is not Strength.HARD and v.code in PLAN_GATE_BLOCKING_CODES:
+                    reasons.append(f"unbuildable {v.code} ({report.id}): {v.message}")
         return reasons
+
+    def plan_attention(self, ref: ArtifactRef) -> list[str]:
+        """Findings the owner should see at plan review that do not block it (ADR 0024)."""
+        out = []
+        for e_ref in self.store.refs(ArtifactKind.EVALUATION_REPORT):
+            report = self.store.get(e_ref, EvaluationReport)
+            if not _same(report.plan_ref, ref):
+                continue
+            for v in report.violations:
+                if v.strength is not Strength.HARD and v.code in PLAN_REVIEW_ATTENTION_CODES:
+                    out.append(f"{v.code} ({report.id}): {v.message}")
+        return sorted(set(out))
 
     def _check_model_gate(
         self, record: BuildRecord, ref: ArtifactRef, status: WorkflowStatus
@@ -357,15 +374,18 @@ class Workflow:
     def request_approval(self, gate: Gate, ref: ArtifactRef, actor: Actor) -> WorkflowEvent:
         """Ask a human to review; anyone (including an agent) may do this."""
         reasons = self.check_gate(gate, ref)
+        payload = {
+            "gate": gate.value,
+            "artifact": ref.model_dump(mode="json"),
+            "open_reasons": reasons,
+        }
+        if gate is Gate.PLAN:
+            payload["attention"] = self.plan_attention(ref)
         return self.store.append_event(
             EventType.APPROVAL_REQUESTED,
             actor,
             reason=f"{gate.value} ready for human review" if not reasons else "review requested",
-            payload={
-                "gate": gate.value,
-                "artifact": ref.model_dump(mode="json"),
-                "open_reasons": reasons,
-            },
+            payload=payload,
         )
 
     def approve(

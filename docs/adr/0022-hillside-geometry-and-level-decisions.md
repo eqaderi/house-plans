@@ -57,8 +57,12 @@ Circulation rise and window burial can influence the solution. These are
 conceptual design assumptions, not engineered levels or a continuous global
 optimum. Six massings retain their existing topology choices; optional
 walkout, split-level, stepped, elevated and hybrid sectional intents expose
-further comparisons. The free 2D engine retains fixed stacked offsets; it
-explicitly refuses a sectional-intent request rather than silently ignoring it.
+further comparisons. S10-13 extends the free 2D engine with the same coupled road-side entry
+lookup (5 cm XY / 1 cm Z): its entrance is constrained to the road-facing
+envelope band and its stacked levels retain 3 m rises above/below that solved
+entry. It still refuses a sectional-intent request rather than silently
+ignoring it; free stepped 2D levels remain unsupported. Terrain gaps in the
+entry band cause infeasibility, rather than an invented surveyed height.
 
 True sections intersect a configurable vertical plane with wall thickness,
 wall openings, slabs (including holes), stairs with known walking lines and

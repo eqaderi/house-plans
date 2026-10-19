@@ -20,10 +20,11 @@ from house_ai.domain.geometry import Point2, Point3
 from house_ai.domain.provenance import ArtifactRef
 from house_ai.domain.records import IssueStatus, OwnerStatement, Severity
 from house_ai.domain.site import Site, SiteFeatureKind, site_verification_blockers
+from house_ai.domain.terrain import site_surface
 from house_ai.domain.units import UnitDeclaration
 
 from .crs import CrsValidationError, describe_epsg, grid_to_lonlat, inside_area_of_use
-from .parcel import parcel_metrics
+from .parcel import derive_frontage, parcel_metrics
 from .terrain import boundary_coverage, contour_interval, crossing_contours, triangle_slope_pct
 
 
@@ -216,7 +217,7 @@ def _min_angle_deg(a: Point3, b: Point3, c: Point3) -> float:
 
 def steep_triangles(site: Site) -> list[SteepTriangle]:
     """Every TIN triangle steeper than STEEP_SLOPE_PCT, measured, steepest first."""
-    surface = site.terrain.surface
+    surface = site.terrain.surface if site.terrain.surface is not None else site_surface(site)
     if surface is None:
         return []
     spots = {(round(s.xy[0], 6), round(s.xy[1], 6)): s for s in site.terrain.spot_elevations}
@@ -309,7 +310,7 @@ def validate_site(site: Site, site_ref: ArtifactRef | None = None) -> SiteValida
 
     terrain = site.terrain
     zs = [s.z_m for s in terrain.spot_elevations] + [c.z_m for c in terrain.contours]
-    surface = terrain.surface
+    surface = terrain.surface if terrain.surface is not None else site_surface(site)
     slopes: list[tuple[float, float]] = []
     parcel_slopes: list[tuple[float, float]] = []
     parcel_shape = site.boundary.to_shapely() if site.boundary is not None else None
@@ -414,6 +415,8 @@ def validate_site(site: Site, site_ref: ArtifactRef | None = None) -> SiteValida
         )
 
     frontage = [f for f in site.features if f.kind is SiteFeatureKind.FRONTAGE]
+    if not frontage and site.boundary is not None:
+        frontage = derive_frontage(site.boundary, site.features)
     lengths = [(f.id, f.geometry.line.length_m) for f in frontage if f.geometry.type == "polyline"]
     access_on = []
     if frontage:

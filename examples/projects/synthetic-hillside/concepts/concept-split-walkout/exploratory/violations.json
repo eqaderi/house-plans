@@ -8,12 +8,12 @@
       "constraint_id": null,
       "evaluator": "ProgramEvaluator",
       "id": "v-001-required-daylight-no-exterior-window",
-      "message": "sp-bed-child-1 requests daylight but has no exterior window; borrowed light and actual illumination are not checked",
+      "message": "sp-bed-main requests daylight but has no exterior window; borrowed light and actual illumination are not checked",
       "status": "measured",
       "strength": "soft",
       "subject_ids": [
-        "sp-bed-child-1",
-        "pi-bed-child-1"
+        "sp-bed-main",
+        "pi-bed-main"
       ]
     },
     {
@@ -85,17 +85,308 @@
       "constraint_id": null,
       "evaluator": "SiteEvaluator",
       "id": "v-007-elevated-floor-support-unresolved",
-      "message": "About 98.7 m³ lies between terrain and the lowest floors, up to 2.82 m high. This is underfloor void, not specified engineered fill; supports, lateral stability, foundations and drainage are unresolved. Compare embedded, walk-out and stepped alternatives without assuming that less excavation is preferable",
+      "message": "Underfloor void is 131.8 m³, maximum 4.79 m. This is not specified engineered fill; supports, lateral stability, foundations and drainage unresolved.",
       "status": "inferred",
       "strength": "soft",
       "subject_ids": []
     },
     {
-      "code": "exterior_access_level_unresolved",
+      "code": "large_underfloor_void",
       "constraint_id": null,
       "evaluator": "SiteEvaluator",
-      "id": "v-008-exterior-access-level-unresolved",
-      "message": "d-front-entry-ext floor differs from existing ground by +0.53 m; an approach, ramp, steps or excavated terrace has not been designed (0.3 m is a conceptual review trigger, not an accessibility rule)",
+      "id": "v-008-large-underfloor-void",
+      "message": "Void clear height 4.79 m exceeds configured 4 m concept-review trigger.",
+      "status": "inferred",
+      "strength": "soft",
+      "subject_ids": []
+    },
+    {
+      "code": "garage_ramp_grade_review",
+      "constraint_id": null,
+      "evaluator": "SiteEvaluator",
+      "id": "v-009-garage-ramp-grade-review",
+      "message": "Straight candidate grade -25.0% exceeds configured concept trigger; no designed ramp or regulatory compliance established.",
+      "status": "inferred",
+      "strength": "soft",
+      "subject_ids": [
+        "sp-garage"
+      ]
+    },
+    {
+      "code": "needs_professional_structure",
+      "constraint_id": null,
+      "evaluator": "SiteEvaluator",
+      "id": "v-010-needs-professional-structure",
+      "message": "Concept load paths, lateral stability and support systems unresolved — needs professional.",
+      "status": "inferred",
+      "strength": "soft",
+      "subject_ids": []
+    },
+    {
+      "code": "needs_professional_foundations",
+      "constraint_id": null,
+      "evaluator": "SiteEvaluator",
+      "id": "v-011-needs-professional-foundations",
+      "message": "Bearing capacity, settlement and footing depths unverified — needs professional.",
+      "status": "inferred",
+      "strength": "soft",
+      "subject_ids": []
+    },
+    {
+      "code": "needs_professional_slope_stability",
+      "constraint_id": null,
+      "evaluator": "SiteEvaluator",
+      "id": "v-012-needs-professional-slope-stability",
+      "message": "Survey TIN does not establish geotechnical or slope stability — needs professional.",
+      "status": "inferred",
+      "strength": "soft",
+      "subject_ids": []
+    },
+    {
+      "code": "needs_professional_retaining",
+      "constraint_id": null,
+      "evaluator": "SiteEvaluator",
+      "id": "v-013-needs-professional-retaining",
+      "message": "Earth-contact wall needs engineered retaining design — needs professional.",
+      "status": "inferred",
+      "strength": "soft",
+      "subject_ids": [
+        "w-down-300-001"
+      ]
+    },
+    {
+      "code": "needs_professional_drainage",
+      "constraint_id": null,
+      "evaluator": "SiteEvaluator",
+      "id": "v-014-needs-professional-drainage",
+      "message": "Uphill earth-contact face: intercept and discharge routes unresolved — needs professional.",
+      "status": "inferred",
+      "strength": "soft",
+      "subject_ids": [
+        "w-down-300-001"
+      ]
+    },
+    {
+      "code": "needs_professional_retaining",
+      "constraint_id": null,
+      "evaluator": "SiteEvaluator",
+      "id": "v-015-needs-professional-retaining",
+      "message": "Earth-contact wall needs engineered retaining design — needs professional.",
+      "status": "inferred",
+      "strength": "soft",
+      "subject_ids": [
+        "w-down-300-002"
+      ]
+    },
+    {
+      "code": "needs_professional_drainage",
+      "constraint_id": null,
+      "evaluator": "SiteEvaluator",
+      "id": "v-016-needs-professional-drainage",
+      "message": "Uphill earth-contact face: intercept and discharge routes unresolved — needs professional.",
+      "status": "inferred",
+      "strength": "soft",
+      "subject_ids": [
+        "w-down-300-002"
+      ]
+    },
+    {
+      "code": "needs_professional_waterproofing",
+      "constraint_id": null,
+      "evaluator": "SiteEvaluator",
+      "id": "v-017-needs-professional-waterproofing",
+      "message": "Buried habitable wall: waterproofing and moisture control — needs professional.",
+      "status": "inferred",
+      "strength": "soft",
+      "subject_ids": [
+        "w-down-300-002",
+        "sp-bed-child-2"
+      ]
+    },
+    {
+      "code": "needs_professional_retaining",
+      "constraint_id": null,
+      "evaluator": "SiteEvaluator",
+      "id": "v-018-needs-professional-retaining",
+      "message": "Earth-contact wall needs engineered retaining design — needs professional.",
+      "status": "inferred",
+      "strength": "soft",
+      "subject_ids": [
+        "w-down-300-003"
+      ]
+    },
+    {
+      "code": "needs_professional_drainage",
+      "constraint_id": null,
+      "evaluator": "SiteEvaluator",
+      "id": "v-019-needs-professional-drainage",
+      "message": "Uphill earth-contact face: intercept and discharge routes unresolved — needs professional.",
+      "status": "inferred",
+      "strength": "soft",
+      "subject_ids": [
+        "w-down-300-003"
+      ]
+    },
+    {
+      "code": "needs_professional_retaining",
+      "constraint_id": null,
+      "evaluator": "SiteEvaluator",
+      "id": "v-020-needs-professional-retaining",
+      "message": "Earth-contact wall needs engineered retaining design — needs professional.",
+      "status": "inferred",
+      "strength": "soft",
+      "subject_ids": [
+        "w-down-300-004"
+      ]
+    },
+    {
+      "code": "needs_professional_drainage",
+      "constraint_id": null,
+      "evaluator": "SiteEvaluator",
+      "id": "v-021-needs-professional-drainage",
+      "message": "Uphill earth-contact face: intercept and discharge routes unresolved — needs professional.",
+      "status": "inferred",
+      "strength": "soft",
+      "subject_ids": [
+        "w-down-300-004"
+      ]
+    },
+    {
+      "code": "needs_professional_retaining",
+      "constraint_id": null,
+      "evaluator": "SiteEvaluator",
+      "id": "v-022-needs-professional-retaining",
+      "message": "Earth-contact wall needs engineered retaining design — needs professional.",
+      "status": "inferred",
+      "strength": "soft",
+      "subject_ids": [
+        "w-down-300-020"
+      ]
+    },
+    {
+      "code": "needs_professional_drainage",
+      "constraint_id": null,
+      "evaluator": "SiteEvaluator",
+      "id": "v-023-needs-professional-drainage",
+      "message": "Uphill earth-contact face: intercept and discharge routes unresolved — needs professional.",
+      "status": "inferred",
+      "strength": "soft",
+      "subject_ids": [
+        "w-down-300-020"
+      ]
+    },
+    {
+      "code": "needs_professional_retaining",
+      "constraint_id": null,
+      "evaluator": "SiteEvaluator",
+      "id": "v-024-needs-professional-retaining",
+      "message": "Earth-contact wall needs engineered retaining design — needs professional.",
+      "status": "inferred",
+      "strength": "soft",
+      "subject_ids": [
+        "w-down-300-021"
+      ]
+    },
+    {
+      "code": "needs_professional_drainage",
+      "constraint_id": null,
+      "evaluator": "SiteEvaluator",
+      "id": "v-025-needs-professional-drainage",
+      "message": "Uphill earth-contact face: intercept and discharge routes unresolved — needs professional.",
+      "status": "inferred",
+      "strength": "soft",
+      "subject_ids": [
+        "w-down-300-021"
+      ]
+    },
+    {
+      "code": "needs_professional_retaining",
+      "constraint_id": null,
+      "evaluator": "SiteEvaluator",
+      "id": "v-026-needs-professional-retaining",
+      "message": "Earth-contact wall needs engineered retaining design — needs professional.",
+      "status": "inferred",
+      "strength": "soft",
+      "subject_ids": [
+        "w-down-300-031"
+      ]
+    },
+    {
+      "code": "needs_professional_drainage",
+      "constraint_id": null,
+      "evaluator": "SiteEvaluator",
+      "id": "v-027-needs-professional-drainage",
+      "message": "Uphill earth-contact face: intercept and discharge routes unresolved — needs professional.",
+      "status": "inferred",
+      "strength": "soft",
+      "subject_ids": [
+        "w-down-300-031"
+      ]
+    },
+    {
+      "code": "needs_professional_retaining",
+      "constraint_id": null,
+      "evaluator": "SiteEvaluator",
+      "id": "v-028-needs-professional-retaining",
+      "message": "Earth-contact wall needs engineered retaining design — needs professional.",
+      "status": "inferred",
+      "strength": "soft",
+      "subject_ids": [
+        "w-down-300-032"
+      ]
+    },
+    {
+      "code": "needs_professional_drainage",
+      "constraint_id": null,
+      "evaluator": "SiteEvaluator",
+      "id": "v-029-needs-professional-drainage",
+      "message": "Uphill earth-contact face: intercept and discharge routes unresolved — needs professional.",
+      "status": "inferred",
+      "strength": "soft",
+      "subject_ids": [
+        "w-down-300-032"
+      ]
+    },
+    {
+      "code": "needs_professional_retaining",
+      "constraint_id": null,
+      "evaluator": "SiteEvaluator",
+      "id": "v-030-needs-professional-retaining",
+      "message": "Earth-contact wall needs engineered retaining design — needs professional.",
+      "status": "inferred",
+      "strength": "soft",
+      "subject_ids": [
+        "w-down-300-033"
+      ]
+    },
+    {
+      "code": "needs_professional_drainage",
+      "constraint_id": null,
+      "evaluator": "SiteEvaluator",
+      "id": "v-031-needs-professional-drainage",
+      "message": "Uphill earth-contact face: intercept and discharge routes unresolved — needs professional.",
+      "status": "inferred",
+      "strength": "soft",
+      "subject_ids": [
+        "w-down-300-033"
+      ]
+    },
+    {
+      "code": "needs_professional_structure",
+      "constraint_id": null,
+      "evaluator": "SiteEvaluator",
+      "id": "v-032-needs-professional-structure",
+      "message": "Underfloor clear space exceeds configured 4 m concept trigger; large void needs review — needs professional.",
+      "status": "inferred",
+      "strength": "soft",
+      "subject_ids": []
+    },
+    {
+      "code": "needs_professional_drainage",
+      "constraint_id": null,
+      "evaluator": "SiteEvaluator",
+      "id": "v-033-needs-professional-drainage",
+      "message": "Terrain-contact door: threshold drainage and approach unresolved — needs professional.",
       "status": "inferred",
       "strength": "soft",
       "subject_ids": [
@@ -103,11 +394,11 @@
       ]
     },
     {
-      "code": "exterior_access_level_unresolved",
+      "code": "needs_professional_drainage",
       "constraint_id": null,
       "evaluator": "SiteEvaluator",
-      "id": "v-009-exterior-access-level-unresolved",
-      "message": "d-garage-garage-ext floor differs from existing ground by +0.39 m; an approach, ramp, steps or excavated terrace has not been designed (0.3 m is a conceptual review trigger, not an accessibility rule)",
+      "id": "v-034-needs-professional-drainage",
+      "message": "Terrain-contact door: threshold drainage and approach unresolved — needs professional.",
       "status": "inferred",
       "strength": "soft",
       "subject_ids": [
@@ -115,28 +406,149 @@
       ]
     },
     {
+      "code": "needs_professional_vehicle_access",
+      "constraint_id": null,
+      "evaluator": "SiteEvaluator",
+      "id": "v-035-needs-professional-vehicle-access",
+      "message": "Garage ramp approach needs design and professional review — needs professional.",
+      "status": "inferred",
+      "strength": "soft",
+      "subject_ids": [
+        "sp-garage",
+        "d-garage-garage-ext"
+      ]
+    },
+    {
+      "code": "buried_habitable_face",
+      "constraint_id": null,
+      "evaluator": "SiteEvaluator",
+      "id": "v-036-buried-habitable-face",
+      "message": "Buried face reduces daylight capability; waterproofing needs professional.",
+      "status": "inferred",
+      "strength": "soft",
+      "subject_ids": [
+        "w-down-300-002",
+        "sp-bed-child-2"
+      ]
+    },
+    {
+      "code": "terrain_triangle_review",
+      "constraint_id": null,
+      "evaluator": "SiteEvaluator",
+      "id": "v-037-terrain-triangle-review",
+      "message": "Triangle 2 at (12.153666666666664, 0.5386666666666667): sliver; survey review needed, no smoothing.",
+      "status": "measured",
+      "strength": "soft",
+      "subject_ids": []
+    },
+    {
+      "code": "terrain_triangle_review",
+      "constraint_id": null,
+      "evaluator": "SiteEvaluator",
+      "id": "v-038-terrain-triangle-review",
+      "message": "Triangle 6 at (16.392333333333333, 1.4393333333333334): sliver; survey review needed, no smoothing.",
+      "status": "measured",
+      "strength": "soft",
+      "subject_ids": []
+    },
+    {
+      "code": "terrain_triangle_review",
+      "constraint_id": null,
+      "evaluator": "SiteEvaluator",
+      "id": "v-039-terrain-triangle-review",
+      "message": "Triangle 18 at (-3.4733333333333336, 11.530000000000001): sliver, steep_review; survey review needed, no smoothing.",
+      "status": "measured",
+      "strength": "soft",
+      "subject_ids": []
+    },
+    {
+      "code": "terrain_triangle_review",
+      "constraint_id": null,
+      "evaluator": "SiteEvaluator",
+      "id": "v-040-terrain-triangle-review",
+      "message": "Triangle 28 at (23.761, 8.458333333333334): sliver, steep_review; survey review needed, no smoothing.",
+      "status": "measured",
+      "strength": "soft",
+      "subject_ids": []
+    },
+    {
+      "code": "terrain_triangle_review",
+      "constraint_id": null,
+      "evaluator": "SiteEvaluator",
+      "id": "v-041-terrain-triangle-review",
+      "message": "Triangle 29 at (23.206333333333333, 11.067): sliver, steep_review; survey review needed, no smoothing.",
+      "status": "measured",
+      "strength": "soft",
+      "subject_ids": []
+    },
+    {
+      "code": "terrain_triangle_review",
+      "constraint_id": null,
+      "evaluator": "SiteEvaluator",
+      "id": "v-042-terrain-triangle-review",
+      "message": "Triangle 46 at (20.711333333333336, 22.804333333333332): sliver, steep_review; survey review needed, no smoothing.",
+      "status": "measured",
+      "strength": "soft",
+      "subject_ids": []
+    },
+    {
+      "code": "terrain_triangle_review",
+      "constraint_id": null,
+      "evaluator": "SiteEvaluator",
+      "id": "v-043-terrain-triangle-review",
+      "message": "Triangle 50 at (1.2619999999999998, 30.93866666666667): sliver; survey review needed, no smoothing.",
+      "status": "measured",
+      "strength": "soft",
+      "subject_ids": []
+    },
+    {
+      "code": "terrain_triangle_review",
+      "constraint_id": null,
+      "evaluator": "SiteEvaluator",
+      "id": "v-044-terrain-triangle-review",
+      "message": "Triangle 53 at (5.500333333333333, 31.839333333333336): sliver; survey review needed, no smoothing.",
+      "status": "measured",
+      "strength": "soft",
+      "subject_ids": []
+    },
+    {
       "code": "height_limit_exceeded",
       "constraint_id": null,
       "evaluator": "SiteEvaluator",
-      "id": "v-010-height-limit-exceeded",
-      "message": "about 11.8 m above the lowest ground under the house; the envelope allows 10 m (assumption)",
+      "id": "v-045-height-limit-exceeded",
+      "message": "Height 11.60 m exceeds envelope 10 m.",
       "status": "inferred",
       "strength": "soft",
       "subject_ids": []
     },
     {
-      "assumption_basis": "assumption min_headroom_m=2; precedent: https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/996860/Approved_Document_K.pdf; not code checked",
-      "code": "stair_low_headroom",
+      "assumption_basis": "docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption)",
+      "code": "garage_no_sampled_fit",
       "constraint_id": null,
-      "evaluator": "StairUsabilityEvaluator",
-      "id": "v-011-stair-low-headroom",
-      "message": "Pitch-line headroom 1.250 m under slab.",
-      "method": "slab_intersection_piecewise_linear_pitchline",
+      "evaluator": "FurnitureUsabilityEvaluator",
+      "id": "v-046-garage-no-sampled-fit",
+      "message": "No arrangement in the declared discrete template search; continuous infeasibility has not been proved.",
+      "method": "0_1m_four_rotation_room_frame_packing",
       "status": "inferred",
       "strength": "soft",
       "subject_ids": [
-        "st-1",
-        "slab-roof-down-600"
+        "sp-garage"
+      ]
+    },
+    {
+      "assumption_basis": "docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption)",
+      "code": "kitchen_through_traffic",
+      "constraint_id": null,
+      "evaluator": "RouteUsabilityEvaluator",
+      "id": "v-047-kitchen-through-traffic",
+      "message": "Portal desire line crosses a work/seating zone; alternate routes may exist.",
+      "method": "direct_desire_line_zone_intersection",
+      "status": "inferred",
+      "strength": "soft",
+      "subject_ids": [
+        "sp-kitchen",
+        "o-kitchen-living",
+        "o-kitchen-dining"
       ]
     },
     {
@@ -144,7 +556,7 @@
       "code": "living_through_traffic",
       "constraint_id": null,
       "evaluator": "RouteUsabilityEvaluator",
-      "id": "v-012-living-through-traffic",
+      "id": "v-048-living-through-traffic",
       "message": "Portal desire line crosses a work/seating zone; alternate routes may exist.",
       "method": "direct_desire_line_zone_intersection",
       "status": "inferred",
@@ -160,7 +572,7 @@
       "code": "living_through_traffic",
       "constraint_id": null,
       "evaluator": "RouteUsabilityEvaluator",
-      "id": "v-013-living-through-traffic",
+      "id": "v-049-living-through-traffic",
       "message": "Portal desire line crosses a work/seating zone; alternate routes may exist.",
       "method": "direct_desire_line_zone_intersection",
       "status": "inferred",
@@ -176,8 +588,8 @@
       "code": "daily_route_long",
       "constraint_id": null,
       "evaluator": "RouteUsabilityEvaluator",
-      "id": "v-014-daily-route-long",
-      "message": "entry_to_kitchen: 16.075 m point route.",
+      "id": "v-050-daily-route-long",
+      "message": "entry_to_kitchen: 16.324 m point route.",
       "method": "visibility_graph",
       "status": "measured",
       "strength": "soft",
@@ -187,8 +599,7 @@
         "sp-entry",
         "d-entry-corridor-b0",
         "d-living-corridor-b0",
-        "o-dining-living",
-        "o-kitchen-dining",
+        "o-kitchen-living",
         "sp-kitchen"
       ]
     },
@@ -197,15 +608,16 @@
       "code": "excess_circulation",
       "constraint_id": null,
       "evaluator": "RouteUsabilityEvaluator",
-      "id": "v-015-excess-circulation",
+      "id": "v-051-excess-circulation",
       "message": "Circulation share exceeds the conceptual assumption.",
       "method": "polygon_intersection",
       "status": "inferred",
       "strength": "soft",
       "subject_ids": [
-        "lv-down-600",
+        "lv-down-450",
         "sp-corridor-b1",
-        "sp-stair-1b"
+        "sp-stair-1b",
+        "sp-stairwell-1"
       ]
     },
     {
@@ -213,7 +625,7 @@
       "code": "excess_circulation",
       "constraint_id": null,
       "evaluator": "RouteUsabilityEvaluator",
-      "id": "v-016-excess-circulation",
+      "id": "v-052-excess-circulation",
       "message": "Circulation share exceeds the conceptual assumption.",
       "method": "polygon_intersection",
       "status": "inferred",
@@ -222,7 +634,8 @@
         "lv-down-300",
         "sp-corridor-b-walkout",
         "sp-stair-0b",
-        "sp-stair-1a"
+        "sp-stair-1a",
+        "sp-stair-hall-1"
       ]
     },
     {
@@ -230,7 +643,7 @@
       "code": "bedroom_noise_stacking",
       "constraint_id": null,
       "evaluator": "PrivacyUsabilityEvaluator",
-      "id": "v-017-bedroom-noise-stacking",
+      "id": "v-053-bedroom-noise-stacking",
       "message": "Noisy activity beside/above/below sleeping space; acoustic assembly performance is unknown.",
       "method": "plan_contact_or_stack",
       "status": "inferred",
@@ -245,14 +658,29 @@
       "code": "bedroom_noise_stacking",
       "constraint_id": null,
       "evaluator": "PrivacyUsabilityEvaluator",
-      "id": "v-018-bedroom-noise-stacking",
+      "id": "v-054-bedroom-noise-stacking",
+      "message": "Noisy activity beside/above/below sleeping space; acoustic assembly performance is unknown.",
+      "method": "plan_contact_or_stack",
+      "status": "inferred",
+      "strength": "soft",
+      "subject_ids": [
+        "sp-bed-main",
+        "sp-living"
+      ]
+    },
+    {
+      "assumption_basis": "docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption)",
+      "code": "bedroom_noise_adjacency",
+      "constraint_id": null,
+      "evaluator": "PrivacyUsabilityEvaluator",
+      "id": "v-055-bedroom-noise-adjacency",
       "message": "Noisy activity beside/above/below sleeping space; acoustic assembly performance is unknown.",
       "method": "plan_contact_or_stack",
       "status": "inferred",
       "strength": "soft",
       "subject_ids": [
         "sp-bed-child-1",
-        "sp-garage"
+        "sp-mechanical"
       ]
     },
     {
@@ -260,7 +688,7 @@
       "code": "bedroom_noise_stacking",
       "constraint_id": null,
       "evaluator": "PrivacyUsabilityEvaluator",
-      "id": "v-019-bedroom-noise-stacking",
+      "id": "v-056-bedroom-noise-stacking",
       "message": "Noisy activity beside/above/below sleeping space; acoustic assembly performance is unknown.",
       "method": "plan_contact_or_stack",
       "status": "inferred",
@@ -271,17 +699,18 @@
       ]
     },
     {
-      "assumption_basis": "assumption min_glazing_ratio=0.1; precedent: docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption); not code checked",
-      "code": "low_daylight_opportunity",
+      "assumption_basis": "docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption)",
+      "code": "bedroom_noise_adjacency",
       "constraint_id": null,
-      "evaluator": "DaylightOpportunityEvaluator",
-      "id": "v-020-low-daylight-opportunity",
-      "message": "Unburied glazing ratio is below assumption; no daylight simulation.",
-      "method": "glazing_area_ratio",
+      "evaluator": "PrivacyUsabilityEvaluator",
+      "id": "v-057-bedroom-noise-adjacency",
+      "message": "Noisy activity beside/above/below sleeping space; acoustic assembly performance is unknown.",
+      "method": "plan_contact_or_stack",
       "status": "inferred",
       "strength": "soft",
       "subject_ids": [
-        "sp-bed-child-1"
+        "sp-bed-child-2",
+        "sp-laundry"
       ]
     },
     {
@@ -289,7 +718,21 @@
       "code": "low_daylight_opportunity",
       "constraint_id": null,
       "evaluator": "DaylightOpportunityEvaluator",
-      "id": "v-021-low-daylight-opportunity",
+      "id": "v-058-low-daylight-opportunity",
+      "message": "Unburied glazing ratio is below assumption; no daylight simulation.",
+      "method": "glazing_area_ratio",
+      "status": "inferred",
+      "strength": "soft",
+      "subject_ids": [
+        "sp-bed-main"
+      ]
+    },
+    {
+      "assumption_basis": "assumption min_glazing_ratio=0.1; precedent: docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption); not code checked",
+      "code": "low_daylight_opportunity",
+      "constraint_id": null,
+      "evaluator": "DaylightOpportunityEvaluator",
+      "id": "v-059-low-daylight-opportunity",
       "message": "Unburied glazing ratio is below assumption; no daylight simulation.",
       "method": "glazing_area_ratio",
       "status": "inferred",
@@ -303,8 +746,8 @@
       "code": "outdoor_door_grade_mismatch",
       "constraint_id": null,
       "evaluator": "DaylightOpportunityEvaluator",
-      "id": "v-022-outdoor-door-grade-mismatch",
-      "message": "Door threshold is 0.471 m relative to grade; check landing/ramp.",
+      "id": "v-060-outdoor-door-grade-mismatch",
+      "message": "Door threshold is 0.251 m relative to grade; check landing/ramp.",
       "method": "outside_face_tin_interpolation",
       "status": "inferred",
       "strength": "soft",
@@ -312,22 +755,6 @@
         "d-front-entry-ext",
         "w-entry-001",
         "sp-entry"
-      ]
-    },
-    {
-      "assumption_basis": "assumption max_grade_step_m=0.2; precedent: docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption); not code checked",
-      "code": "outdoor_door_grade_mismatch",
-      "constraint_id": null,
-      "evaluator": "DaylightOpportunityEvaluator",
-      "id": "v-023-outdoor-door-grade-mismatch",
-      "message": "Door threshold is 0.329 m relative to grade; check landing/ramp.",
-      "method": "outside_face_tin_interpolation",
-      "status": "inferred",
-      "strength": "soft",
-      "subject_ids": [
-        "d-garage-garage-ext",
-        "w-entry-002",
-        "sp-garage"
       ]
     }
   ]

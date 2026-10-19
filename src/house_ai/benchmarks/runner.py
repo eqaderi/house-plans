@@ -13,18 +13,25 @@ import math
 from dataclasses import asdict, dataclass
 from pathlib import Path
 
+from shapely.geometry import LineString
+from shapely.ops import unary_union
+
 from house_ai.domain.benchmark import AcceptanceCategory, BenchmarkFixture, ExpectedFinding
 from house_ai.domain.epistemics import ClaimStatus
 from house_ai.domain.evaluation import MetricClaim
+from house_ai.domain.hillside import HillsideSettings
 from house_ai.domain.integrity import check_model
 from house_ai.domain.program import SpaceFunction
 from house_ai.domain.site import Site
 from house_ai.evaluation.base import EvaluationContext
 from house_ai.evaluation.evaluators import REQUIRED
 from house_ai.evaluation.usability import USABILITY_EVALUATORS
+from house_ai.geospatial.hillside import triangle_quality
 from house_ai.geospatial.terrain import build_tin
 from house_ai.geospatial.validation import validate_site
 from house_ai.storage.hashing import content_hash
+
+from .probes import model_observations
 
 
 @dataclass
@@ -55,11 +62,23 @@ def _claim(name: str, value, method: str, *, subjects=()) -> MetricClaim:
 
 def _site_claims(site: Site) -> list[MetricClaim]:
     # Rebuild observations instead of trusting a saved successful TIN.
-    tin = build_tin(site.terrain.spot_elevations, site.terrain.contours)
+    tin = build_tin(site.terrain.spot_elevations, site.terrain.contours, site.terrain.breaklines)
     terrain = site.terrain.model_copy(update={"surface": tin.surface})
     report = validate_site(site.model_copy(update={"terrain": terrain}))
     zs = [s.z_m for s in terrain.spot_elevations]
     claims = [
+        _claim(
+            "breakline_input_count", len(site.terrain.breaklines), "canonical_mapped_3D_breaklines"
+        ),
+        _claim(
+            "sliver_triangle_count",
+            sum(
+                "sliver" in t["triggers"] for t in triangle_quality(tin.surface, HillsideSettings())
+            )
+            if tin.surface
+            else None,
+            "hillside_triangle_quality:configured_sliver_trigger",
+        ),
         _claim("parcel_area_m2", report.boundary.area_m2, "validate_site:polygon_area"),
         _claim(
             "envelope_area_m2",
@@ -87,6 +106,28 @@ def _site_claims(site: Site) -> list[MetricClaim]:
             "polygon_covers",
         ),
     ]
+    if site.terrain.breaklines:
+        edges = (
+            unary_union(
+                [
+                    LineString([tin.surface.vertices[a][:2], tin.surface.vertices[b][:2]])
+                    for tri in tin.surface.triangles
+                    for a, b in zip(tri, (*tri[1:], tri[0]), strict=True)
+                ]
+            )
+            if tin.surface
+            else None
+        )
+        mapped = unary_union(
+            [LineString([p[:2] for p in line.vertices]) for line in site.terrain.breaklines]
+        )
+        claims.append(
+            _claim(
+                "breakline_edge_coverage_m",
+                edges.intersection(mapped).length if edges is not None else None,
+                "build_tin:constrained_edge_union",
+            )
+        )
     for spot in site.terrain.spot_elevations:
         claims.append(_claim("spot_elevation_m", spot.z_m, "source_point", subjects=[spot.id]))
     for i, edge in enumerate(report.boundary.edges, 1):
@@ -145,6 +186,19 @@ def _observations(fixture: BenchmarkFixture):
         if failed:
             raise ValueError(f"evaluators did not run for {case.id}: {failed}")
         metrics[("evaluation", case.id)] = [m for r in results for m in r.metrics]
+        wanted = {e.metric for e in fixture.expectations if e.target == case.id}
+        metrics[("evaluation", case.id)].extend(
+            MetricClaim(
+                metric=name,
+                value=value,
+                method=method,
+                status=status,
+                subject_ids=subjects,
+                evaluator="BenchmarkOutputProbe",
+                evaluator_version="1",
+            )
+            for name, value, method, status, subjects in model_observations(fixture, case, wanted)
+        )
         findings[("evaluation", case.id)] = [v for r in results for v in r.violations]
         findings[("integrity", case.id)] = check_model(case.model, fixture.site, fixture.program)
     return metrics, findings

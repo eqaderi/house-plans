@@ -274,9 +274,27 @@ class ProgramEvaluator:
                 or item.level_preference in ("outdoor", "roof")
                 or (item.function is S.OTHER and item.target_area_m2 is None)
             ):
-                out.metric(
-                    "outdoor_item_placed", None, "not_placed_by_generator", NC, subjects=[item.id]
-                )
+                if spaces:
+                    out.metric(
+                        "outdoor_item_placed", True, "space_for_item", subjects=[item.id]
+                    )
+                elif item.function in (S.TERRACE, S.BALCONY):
+                    # The generators place terraces and balconies (S10-11): a missing one is
+                    # a missing program item, not an unknown.
+                    out.metric(
+                        "outdoor_item_placed", False, "space_for_item", subjects=[item.id]
+                    )
+                    out.violation(
+                        "program_item_missing",
+                        Strength.SOFT,
+                        f"{item.name} ({item.id}): not placed",
+                        [item.id],
+                    )
+                else:
+                    out.metric(
+                        "outdoor_item_placed", None, "not_placed_by_generator", NC,
+                        subjects=[item.id],
+                    )  # fmt: skip
                 continue
             want = 1 if item.function in (S.STAIR, S.LIFT) else item.quantity
             if item.function in (S.HALL, S.CORRIDOR) and not spaces:
@@ -593,8 +611,9 @@ class CirculationEvaluator:
         )
         from .routes import RouteNetwork
 
-        routes = RouteNetwork.for_model(model).entrance_routes()
-        complete = bool(routes) and len(routes) == len(model.spaces)
+        network = RouteNetwork.for_model(model)
+        routes = network.entrance_routes()
+        complete = bool(routes) and all(sid in routes for sid in network.destinations)
         estimated = any(r.estimated for r in routes.values())
         out.metric(
             "max_walk_from_entrance_m",

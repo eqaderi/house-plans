@@ -10,9 +10,9 @@ A lower floor under the road-level entry combines an embedded massing with a ste
 
 ## Levels
 
-- **Entry level** (FFL +11.70 m local): Entrance hall, Dining, Kitchen, Living room, Garage, Stair
-- **Level -3.00 m from entry** (FFL +8.70 m local): En-suite bathroom, Main bedroom, Child's bedroom 1, Child's bedroom 2, Stair, Stair, Flexible space (not in program), Flexible space (not in program)
-- **Level -6.00 m from entry** (FFL +5.70 m local): Bathroom 1, Study 1, Laundry, Plant / technical room, Stair, Flexible space (not in program)
+- **Entry level** (FFL +11.48 m local): Entrance hall, Dining, Kitchen, Living room, Garage, Stair
+- **Level -3.00 m from entry** (FFL +8.48 m local): En-suite bathroom, Main bedroom, Child's bedroom 2, Laundry, Stair, Stair, Flexible space (not in program), Flexible space (not in program), Stair hall
+- **Level -4.50 m from entry** (FFL +6.98 m local): Child's bedroom 1, Bathroom 1, Study 1, Plant / technical room, Stair, Flexible space (not in program), Stairwell
 
 ## Rooms
 
@@ -20,78 +20,118 @@ A lower floor under the road-level entry combines an embedded massing with a ste
 |---|---|---:|---:|---:|
 | Corridor | lv-entry | 11.4 | — | — |
 | Corridor | lv-down-300 | 11.4 | — | — |
-| Corridor | lv-down-600 | 7.2 | — | — |
+| Corridor | lv-down-450 | 7.3 | — | — |
 | Entrance hall | lv-entry | 8.1 | 6.0 | 4.0 |
 | Dining | lv-entry | 14.7 | 14.0 | 10.0 |
 | Kitchen | lv-entry | 11.8 | 12.0 | 8.0 |
 | Living room | lv-entry | 24.8 | 25.0 | 16.0 |
 | En-suite bathroom | lv-down-300 | 8.6 | 5.0 | 3.5 |
 | Main bedroom | lv-down-300 | 16.2 | 15.0 | 12.0 |
-| Child's bedroom 1 | lv-down-300 | 14.6 | 11.0 | 9.0 |
+| Child's bedroom 1 | lv-down-450 | 11.8 | 11.0 | 9.0 |
 | Child's bedroom 2 | lv-down-300 | 14.6 | 11.0 | 9.0 |
-| Bathroom 1 | lv-down-600 | 7.6 | 6.0 | 4.0 |
-| Study 1 | lv-down-600 | 11.3 | 9.0 | 6.0 |
+| Bathroom 1 | lv-down-450 | 7.6 | 6.0 | 4.0 |
+| Study 1 | lv-down-450 | 11.5 | 9.0 | 6.0 |
 | Garage | lv-entry | 30.2 | 36.0 | 30.0 |
-| Laundry | lv-down-600 | 8.6 | 6.0 | 4.0 |
-| Plant / technical room | lv-down-600 | 6.3 | 4.0 | 3.0 |
+| Laundry | lv-down-300 | 9.7 | 6.0 | 4.0 |
+| Plant / technical room | lv-down-450 | 6.3 | 4.0 | 3.0 |
 | Stair | lv-entry | 13.0 | 10.0 | 8.0 |
 | Stair | lv-down-300 | 13.0 | 10.0 | 8.0 |
 | Stair | lv-down-300 | 11.9 | 10.0 | 8.0 |
-| Stair | lv-down-600 | 10.6 | 10.0 | 8.0 |
+| Stair | lv-down-450 | 10.6 | 10.0 | 8.0 |
 | Flexible space (not in program) | lv-down-300 | 14.6 | — | — |
-| Flexible space (not in program) | lv-down-300 | 9.2 | — | — |
-| Flexible space (not in program) | lv-down-600 | 9.6 | — | — |
+| Flexible space (not in program) | lv-down-300 | 14.0 | — | — |
+| Flexible space (not in program) | lv-down-450 | 7.2 | — | — |
+| Stairwell | lv-down-450 | 1.7 | — | — |
+| Stair hall | lv-down-300 | 1.7 | — | — |
 
 ## Measured results and trade-offs
 
 Status in brackets when a value is not measured exactly.
 
-- Gross floor area (centreline): 289.20 m²
-- Footprint: 175.20 m²
+- Gross floor area (centreline): 293.58 m²
+- Footprint: 176.22 m²
 - Floor levels: 3
-- Programmed room area: 225.84 m²
-- Flexible area not in the program: 33.36 m²
-- Circulation share: 0.30
+- Programmed room area: 224.28 m²
+- Flexible area not in the program: 35.82 m²
+- Circulation share: 0.31
 - Hard adjacencies met: 5
 - Soft adjacency score (0-1): 0.83
 - Level preferences met: 9
-- Longest walk from the front door: 44.49 m (inferred)
+- Longest walk from the front door: 38.59 m
 - Routes to shared rooms through private rooms: 0
 - Walls between private and public rooms: 0
-- Footprint compactness (1 = circle): 0.28
-- Excavation below floors: 109.91 m³ (inferred)
-- Underfloor void (fill/support unspecified): 98.72 m³ (inferred)
-- Maximum floor height over terrain: 2.82 m (inferred)
-- Deepest cut: 2.73 m (inferred)
-- Retaining wall length: 23.30 m
-- Retained earth face: 44.95 m² (inferred)
+- Footprint compactness (1 = circle): 0.35
+- Excavation below floors: 136.91 m³ (inferred)
+- Underfloor void (support unspecified): 131.85 m³ (inferred)
+- Proposed engineered fill (explicit pads only): not checked
+- Maximum underfloor gap (see slab basis): 4.79 m (inferred)
+- Deepest cut: 3.29 m (inferred)
+- Retaining wall length: 28.10 m (inferred)
+- Retained earth face: 51.20 m² (inferred)
 - Closest approach to the envelope edge: 0.10 m
 
-## Violations (0 hard, 23 soft)
+## Violations (0 hard, 60 soft)
 
-- **soft** `required_daylight_no_exterior_window`: sp-bed-child-1 requests daylight but has no exterior window; borrowed light and actual illumination are not checked
+- **soft** `required_daylight_no_exterior_window`: sp-bed-main requests daylight but has no exterior window; borrowed light and actual illumination are not checked
 - **soft** `required_daylight_no_exterior_window`: sp-bed-child-2 requests daylight but has no exterior window; borrowed light and actual illumination are not checked
 - **soft** `elongated_room`: sp-bath-ensuite has a 3.4:1 aspect ratio; check furniture and clear usable dimensions (3:1 is a conceptual review trigger, not a code limit)
 - **soft** `level_count_differs`: the program asks for 2 storey(s); this concept has 3 floor level(s)
 - **soft** `soft_adjacency_unmet`: adj-10-study-1-entry: pi-study-1 near pi-entry is not met
 - **soft** `soft_adjacency_unmet`: adj-12-laundry-kitchen: pi-laundry near pi-kitchen is not met
-- **soft** `elevated_floor_support_unresolved`: About 98.7 m³ lies between terrain and the lowest floors, up to 2.82 m high. This is underfloor void, not specified engineered fill; supports, lateral stability, foundations and drainage are unresolved. Compare embedded, walk-out and stepped alternatives without assuming that less excavation is preferable
-- **soft** `exterior_access_level_unresolved`: d-front-entry-ext floor differs from existing ground by +0.53 m; an approach, ramp, steps or excavated terrace has not been designed (0.3 m is a conceptual review trigger, not an accessibility rule)
-- **soft** `exterior_access_level_unresolved`: d-garage-garage-ext floor differs from existing ground by +0.39 m; an approach, ramp, steps or excavated terrace has not been designed (0.3 m is a conceptual review trigger, not an accessibility rule)
-- **soft** `height_limit_exceeded`: about 11.8 m above the lowest ground under the house; the envelope allows 10 m (assumption)
-- **soft** `stair_low_headroom`: Pitch-line headroom 1.250 m under slab.
+- **soft** `elevated_floor_support_unresolved`: Underfloor void is 131.8 m³, maximum 4.79 m. This is not specified engineered fill; supports, lateral stability, foundations and drainage unresolved.
+- **soft** `large_underfloor_void`: Void clear height 4.79 m exceeds configured 4 m concept-review trigger.
+- **soft** `garage_ramp_grade_review`: Straight candidate grade -25.0% exceeds configured concept trigger; no designed ramp or regulatory compliance established.
+- **soft** `needs_professional_structure`: Concept load paths, lateral stability and support systems unresolved — needs professional.
+- **soft** `needs_professional_foundations`: Bearing capacity, settlement and footing depths unverified — needs professional.
+- **soft** `needs_professional_slope_stability`: Survey TIN does not establish geotechnical or slope stability — needs professional.
+- **soft** `needs_professional_retaining`: Earth-contact wall needs engineered retaining design — needs professional.
+- **soft** `needs_professional_drainage`: Uphill earth-contact face: intercept and discharge routes unresolved — needs professional.
+- **soft** `needs_professional_retaining`: Earth-contact wall needs engineered retaining design — needs professional.
+- **soft** `needs_professional_drainage`: Uphill earth-contact face: intercept and discharge routes unresolved — needs professional.
+- **soft** `needs_professional_waterproofing`: Buried habitable wall: waterproofing and moisture control — needs professional.
+- **soft** `needs_professional_retaining`: Earth-contact wall needs engineered retaining design — needs professional.
+- **soft** `needs_professional_drainage`: Uphill earth-contact face: intercept and discharge routes unresolved — needs professional.
+- **soft** `needs_professional_retaining`: Earth-contact wall needs engineered retaining design — needs professional.
+- **soft** `needs_professional_drainage`: Uphill earth-contact face: intercept and discharge routes unresolved — needs professional.
+- **soft** `needs_professional_retaining`: Earth-contact wall needs engineered retaining design — needs professional.
+- **soft** `needs_professional_drainage`: Uphill earth-contact face: intercept and discharge routes unresolved — needs professional.
+- **soft** `needs_professional_retaining`: Earth-contact wall needs engineered retaining design — needs professional.
+- **soft** `needs_professional_drainage`: Uphill earth-contact face: intercept and discharge routes unresolved — needs professional.
+- **soft** `needs_professional_retaining`: Earth-contact wall needs engineered retaining design — needs professional.
+- **soft** `needs_professional_drainage`: Uphill earth-contact face: intercept and discharge routes unresolved — needs professional.
+- **soft** `needs_professional_retaining`: Earth-contact wall needs engineered retaining design — needs professional.
+- **soft** `needs_professional_drainage`: Uphill earth-contact face: intercept and discharge routes unresolved — needs professional.
+- **soft** `needs_professional_retaining`: Earth-contact wall needs engineered retaining design — needs professional.
+- **soft** `needs_professional_drainage`: Uphill earth-contact face: intercept and discharge routes unresolved — needs professional.
+- **soft** `needs_professional_structure`: Underfloor clear space exceeds configured 4 m concept trigger; large void needs review — needs professional.
+- **soft** `needs_professional_drainage`: Terrain-contact door: threshold drainage and approach unresolved — needs professional.
+- **soft** `needs_professional_drainage`: Terrain-contact door: threshold drainage and approach unresolved — needs professional.
+- **soft** `needs_professional_vehicle_access`: Garage ramp approach needs design and professional review — needs professional.
+- **soft** `buried_habitable_face`: Buried face reduces daylight capability; waterproofing needs professional.
+- **soft** `terrain_triangle_review`: Triangle 2 at (12.153666666666664, 0.5386666666666667): sliver; survey review needed, no smoothing.
+- **soft** `terrain_triangle_review`: Triangle 6 at (16.392333333333333, 1.4393333333333334): sliver; survey review needed, no smoothing.
+- **soft** `terrain_triangle_review`: Triangle 18 at (-3.4733333333333336, 11.530000000000001): sliver, steep_review; survey review needed, no smoothing.
+- **soft** `terrain_triangle_review`: Triangle 28 at (23.761, 8.458333333333334): sliver, steep_review; survey review needed, no smoothing.
+- **soft** `terrain_triangle_review`: Triangle 29 at (23.206333333333333, 11.067): sliver, steep_review; survey review needed, no smoothing.
+- **soft** `terrain_triangle_review`: Triangle 46 at (20.711333333333336, 22.804333333333332): sliver, steep_review; survey review needed, no smoothing.
+- **soft** `terrain_triangle_review`: Triangle 50 at (1.2619999999999998, 30.93866666666667): sliver; survey review needed, no smoothing.
+- **soft** `terrain_triangle_review`: Triangle 53 at (5.500333333333333, 31.839333333333336): sliver; survey review needed, no smoothing.
+- **soft** `height_limit_exceeded`: Height 11.60 m exceeds envelope 10 m.
+- **soft** `garage_no_sampled_fit`: No arrangement in the declared discrete template search; continuous infeasibility has not been proved.
+- **soft** `kitchen_through_traffic`: Portal desire line crosses a work/seating zone; alternate routes may exist.
 - **soft** `living_through_traffic`: Portal desire line crosses a work/seating zone; alternate routes may exist.
 - **soft** `living_through_traffic`: Portal desire line crosses a work/seating zone; alternate routes may exist.
-- **soft** `daily_route_long`: entry_to_kitchen: 16.075 m point route.
+- **soft** `daily_route_long`: entry_to_kitchen: 16.324 m point route.
 - **soft** `excess_circulation`: Circulation share exceeds the conceptual assumption.
 - **soft** `excess_circulation`: Circulation share exceeds the conceptual assumption.
 - **soft** `bedroom_noise_stacking`: Noisy activity beside/above/below sleeping space; acoustic assembly performance is unknown.
 - **soft** `bedroom_noise_stacking`: Noisy activity beside/above/below sleeping space; acoustic assembly performance is unknown.
+- **soft** `bedroom_noise_adjacency`: Noisy activity beside/above/below sleeping space; acoustic assembly performance is unknown.
 - **soft** `bedroom_noise_stacking`: Noisy activity beside/above/below sleeping space; acoustic assembly performance is unknown.
+- **soft** `bedroom_noise_adjacency`: Noisy activity beside/above/below sleeping space; acoustic assembly performance is unknown.
 - **soft** `low_daylight_opportunity`: Unburied glazing ratio is below assumption; no daylight simulation.
 - **soft** `low_daylight_opportunity`: Unburied glazing ratio is below assumption; no daylight simulation.
-- **soft** `outdoor_door_grade_mismatch`: Door threshold is 0.471 m relative to grade; check landing/ramp.
-- **soft** `outdoor_door_grade_mismatch`: Door threshold is 0.329 m relative to grade; check landing/ramp.
+- **soft** `outdoor_door_grade_mismatch`: Door threshold is 0.251 m relative to grade; check landing/ramp.
 
 Not evaluated (no evaluator yet): DaylightEvaluator, SolarEvaluator, AccessibilityEvaluator, LifeSafetyEvaluator, StructuralConceptEvaluator, MEPConceptEvaluator, CostEvaluator, EnergyEvaluator, CulturalFitEvaluator.
 
@@ -101,8 +141,9 @@ Not evaluated (no evaluator yet): DaylightEvaluator, SolarEvaluator, Accessibili
 - [assumption] Floor-to-floor height 3 m; split levels step in half storeys of 1.5 m; walls 2.8 m high.
 - [assumption] Exterior and retaining walls 0.3 m, partitions 0.15 m thick; no structural design has been done.
 - [assumption] Plan grid: u axis along the parcel edge nearest road road-uphill.
-- [assumption] Entry level set at the mean surveyed ground along the road-side face (11.70 m local), interpolated from the survey TIN (inferred).
+- [assumption] Initial entry reference from the mean surveyed ground along the road-side face (11.70 m local), interpolated from the survey TIN (inferred).
 - [assumption] A full floor below the road-level entry reuses its footprint; the downhill wing steps from that floor toward its own surveyed ground, rather than inheriting the entry bar's terrain offset. The walk-out is a massing intent: exterior doors, terraces, waterproofing, drainage and structural support still need design. There is no excavation-depth limit or preference for minimizing excavation.
+- [assumption] Floor elevations and bar positions/lengths solved jointly with TIN lookup; sectional contact bands and circulation/daylight objectives, no excavation/void penalty. Earthworks evaluated exactly afterward.
 - [assumption] Stair risers at most 0.18 m with 0.28 m goings; typical comfortable geometry, not checked against any code.
 - [assumption] A garage needs at least 5.4 m depth for a car.
 - [assumption] Rows are closed with flexible spaces that are not in the program (storage, or space to give back).
@@ -113,8 +154,21 @@ Not evaluated (no evaluator yet): DaylightEvaluator, SolarEvaluator, Accessibili
 
 - [warning] Retaining walls, excavation, slope drainage and foundations need geotechnical and structural engineering; nothing here is engineered.
 
+## Compiled soft objectives
+
+| Objective | Status | Weight | Detail |
+|---|---|---:|---|
+| `acoustic_zoning` | `optimised` | 2 | optimised in solver: acoustic separation between noisy and quiet zones |
+| `adjacency_quality` | `optimised` | 1 | optimised in solver: weighted adjacency satisfaction |
+| `circulation_efficiency` | `optimised` | 1 | optimised in solver: filler area and circulation penalty |
+| `daylight_opportunity` | `optimised` | 1 | optimised in solver: daylight-facing room requirements and penalties |
+| `envelope_simplicity` | `optimised` | 1 | optimised in solver: bar compactness and envelope perimeter |
+| `indoor_outdoor` | `not_optimised` | 2 | not_optimised in solver: outdoor terrace relationships evaluated downstream |
+| `privacy` | `optimised` | 1 | optimised in solver: weighted separation between private and public zones |
+| `site_response` | `optimised` | 2 | optimised in solver: road-side versus garden-side habitable room placement |
+
 ## How it was produced
 
-- Generator `house-ai-cpsat-bars` 0.2.0, solver ortools-cp-sat 9.15.6755: OPTIMAL, objective 31182, seed 0, deterministic-time budget 4.
-- Parameters: b-walkout_length_m=9.5, b-walkout_start_m=0.1, b0_length_m=9.5, b0_start_m=0.1, b1_length_m=6.0, b1_start_m=4.7, back_row_depth_m=4.2, corridor_width_m=1.2, front_row_depth_m=4.8, hybrid_walkout=True, level_elevations_m=5.70, 8.70, 11.70, levels=3, strategy=split_walkout.
-- Inputs: site/site v1 (c2d20667c325), space_program/program v1 (aaebe10f8491)
+- Generator `house-ai-cpsat-bars` 0.2.0, solver ortools-cp-sat 9.15.6755: OPTIMAL, objective 30999, seed 0, deterministic-time budget 4.
+- Parameters: b-walkout_length_m=9.5, b-walkout_start_m=0.1, b0_length_m=9.5, b0_start_m=0.1, b1_length_m=6.1, b1_start_m=5.0, back_row_depth_m=4.2, corridor_width_m=1.2, front_row_depth_m=4.8, hybrid_walkout=True, level_elevations_m=6.98, 8.48, 11.48, level_solver=joint_cpsat_terrain_lookup_5cm_xy_1cm_z, levels=3, strategy=split_walkout.
+- Inputs: site/site v1 (c2d20667c325), space_program/program v1 (9dd9270f641b)

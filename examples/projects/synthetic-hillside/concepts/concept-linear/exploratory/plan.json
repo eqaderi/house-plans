@@ -4,14 +4,15 @@
     "deterministic_time_limit": 4.0,
     "generator": "house-ai-cpsat-bars",
     "generator_version": "0.2.0",
-    "objective": 14580.0,
+    "objective": 15780.0,
     "parameters": {
       "b0_length_m": 17.5,
       "b0_start_m": 0.1,
       "back_row_depth_m": 4.2,
       "corridor_width_m": 1.2,
       "front_row_depth_m": 4.2,
-      "level_elevations_m": "11.70",
+      "level_elevations_m": "11.64",
+      "level_solver": "joint_cpsat_terrain_lookup_5cm_xy_1cm_z",
       "levels": 1,
       "strategy": "linear"
     },
@@ -26,7 +27,7 @@
         "bar_id": "b0",
         "row_id": "b0-front",
         "space_id": "sp-entry",
-        "start_m": 0.0
+        "start_m": 2.7
       },
       {
         "bar_id": "b0",
@@ -62,19 +63,19 @@
         "bar_id": "b0",
         "row_id": "b0-front",
         "space_id": "sp-bed-child-1",
-        "start_m": 10.9
+        "start_m": 0.0
       },
       {
         "bar_id": "b0",
         "row_id": "b0-front",
         "space_id": "sp-bed-child-2",
-        "start_m": 8.2
+        "start_m": 4.2
       },
       {
         "bar_id": "b0",
         "row_id": "b0-back",
         "space_id": "sp-bath-1",
-        "start_m": 15.7
+        "start_m": 4.6
       },
       {
         "bar_id": "b0",
@@ -86,13 +87,13 @@
         "bar_id": "b0",
         "row_id": "b0-front",
         "space_id": "sp-garage",
-        "start_m": 1.5
+        "start_m": 6.9
       },
       {
         "bar_id": "b0",
         "row_id": "b0-back",
         "space_id": "sp-laundry",
-        "start_m": 4.6
+        "start_m": 15.7
       },
       {
         "bar_id": "b0",
@@ -186,7 +187,24 @@
           "model": null,
           "provider": null
         },
-        "statement": "Entry level set at the mean surveyed ground along the road-side face (11.70 m local), interpolated from the survey TIN (inferred).",
+        "statement": "Initial entry reference from the mean surveyed ground along the road-side face (11.70 m local), interpolated from the survey TIN (inferred).",
+        "status": "assumption"
+      },
+      {
+        "affects": [
+          "lv-entry"
+        ],
+        "basis": "massing strategy",
+        "confirm_with": null,
+        "id": "asm-gen-note-2",
+        "made_by": {
+          "display_name": null,
+          "id": "house-ai-plan-generator",
+          "kind": "system",
+          "model": null,
+          "provider": null
+        },
+        "statement": "Floor elevations and bar positions/lengths solved jointly with TIN lookup; sectional contact bands and circulation/daylight objectives, no excavation/void penalty. Earthworks evaluated exactly afterward.",
         "status": "assumption"
       },
       {
@@ -324,12 +342,122 @@
       }
     ],
     "coordinate_system_id": "lcs-site",
-    "fixtures": [],
+    "fixtures": [
+      {
+        "depth_m": 0.9,
+        "fixture_type": "shower",
+        "id": "fx-bath-ensuite-1",
+        "material_id": null,
+        "position": [
+          0.017525,
+          14.827666
+        ],
+        "rotation_deg": 12.000047,
+        "space_id": "sp-bath-ensuite",
+        "width_m": 0.9
+      },
+      {
+        "depth_m": 0.5,
+        "fixture_type": "basin",
+        "id": "fx-bath-ensuite-2",
+        "material_id": null,
+        "position": [
+          -0.288681,
+          13.38242
+        ],
+        "rotation_deg": 102.000053,
+        "space_id": "sp-bath-ensuite",
+        "width_m": 0.6
+      },
+      {
+        "depth_m": 0.7,
+        "fixture_type": "wc",
+        "id": "fx-bath-ensuite-3",
+        "material_id": null,
+        "position": [
+          0.51143,
+          10.459908
+        ],
+        "rotation_deg": -167.999946,
+        "space_id": "sp-bath-ensuite",
+        "width_m": 0.4
+      },
+      {
+        "depth_m": 0.9,
+        "fixture_type": "shower",
+        "id": "fx-bath-1-1",
+        "material_id": null,
+        "position": [
+          5.487698,
+          12.539993
+        ],
+        "rotation_deg": -77.999947,
+        "space_id": "sp-bath-1",
+        "width_m": 0.9
+      },
+      {
+        "depth_m": 0.5,
+        "fixture_type": "basin",
+        "id": "fx-bath-1-2",
+        "material_id": null,
+        "position": [
+          5.527393,
+          13.315186
+        ],
+        "rotation_deg": -77.999947,
+        "space_id": "sp-bath-1",
+        "width_m": 0.6
+      },
+      {
+        "depth_m": 0.7,
+        "fixture_type": "wc",
+        "id": "fx-bath-1-3",
+        "material_id": null,
+        "position": [
+          5.28404,
+          13.979098
+        ],
+        "rotation_deg": -77.999947,
+        "space_id": "sp-bath-1",
+        "width_m": 0.4
+      },
+      {
+        "depth_m": 0.65,
+        "fixture_type": "laundry",
+        "id": "fx-laundry-1",
+        "material_id": null,
+        "position": [
+          14.886309,
+          17.502527
+        ],
+        "rotation_deg": 102.000053,
+        "space_id": "sp-laundry",
+        "width_m": 1.8
+      }
+    ],
     "id": "house-linear",
-    "issues": [],
+    "issues": [
+      {
+        "description": null,
+        "id": "iss-no-fixtures-kitchen",
+        "raised_by": {
+          "display_name": null,
+          "id": "house-ai-plan-generator",
+          "kind": "system",
+          "model": null,
+          "provider": null
+        },
+        "severity": "warning",
+        "status": "open",
+        "subject_ids": [
+          "sp-kitchen"
+        ],
+        "title": "No fixture layout found for sp-kitchen; the sampled study reports on it"
+      }
+    ],
     "levels": [
       {
-        "elevation_m": 11.7,
+        "elevation_m": 11.64,
         "floor_to_floor_m": 3.0,
         "id": "lv-entry",
         "name": "Entry level"
@@ -422,7 +550,7 @@
           "exterior"
         ],
         "height_m": 2.1,
-        "host_wall_id": "w-entry-001",
+        "host_wall_id": "w-entry-002",
         "id": "d-front-entry-ext",
         "kind": "door",
         "material_id": "m-door",
@@ -438,7 +566,7 @@
           "sp-corridor-b0"
         ],
         "height_m": 2.1,
-        "host_wall_id": "w-entry-007",
+        "host_wall_id": "w-entry-008",
         "id": "d-entry-corridor-b0",
         "kind": "opening",
         "material_id": null,
@@ -506,7 +634,7 @@
         "id": "o-kitchen-dining",
         "kind": "opening",
         "material_id": null,
-        "offset_m": 1.1,
+        "offset_m": 0.3,
         "opens_into": null,
         "operation": "none",
         "sill_m": 0.0,
@@ -534,7 +662,7 @@
           "sp-bath-ensuite"
         ],
         "height_m": 2.1,
-        "host_wall_id": "w-entry-030",
+        "host_wall_id": "w-entry-029",
         "id": "d-bed-main-bath-ensuite",
         "kind": "door",
         "material_id": "m-door",
@@ -550,7 +678,7 @@
           "sp-corridor-b0"
         ],
         "height_m": 2.1,
-        "host_wall_id": "w-entry-010",
+        "host_wall_id": "w-entry-007",
         "id": "d-bed-child-1-corridor-b0",
         "kind": "door",
         "material_id": "m-door",
@@ -582,7 +710,7 @@
           "sp-corridor-b0"
         ],
         "height_m": 2.1,
-        "host_wall_id": "w-entry-018",
+        "host_wall_id": "w-entry-015",
         "id": "d-bath-1-corridor-b0",
         "kind": "door",
         "material_id": "m-door",
@@ -614,7 +742,7 @@
           "sp-corridor-b0"
         ],
         "height_m": 2.1,
-        "host_wall_id": "w-entry-008",
+        "host_wall_id": "w-entry-010",
         "id": "d-garage-corridor-b0",
         "kind": "door",
         "material_id": "m-door",
@@ -630,7 +758,7 @@
           "exterior"
         ],
         "height_m": 2.2,
-        "host_wall_id": "w-entry-002",
+        "host_wall_id": "w-entry-004",
         "id": "d-garage-garage-ext",
         "kind": "door",
         "material_id": "m-door",
@@ -646,7 +774,7 @@
           "sp-corridor-b0"
         ],
         "height_m": 2.1,
-        "host_wall_id": "w-entry-015",
+        "host_wall_id": "w-entry-018",
         "id": "d-laundry-corridor-b0",
         "kind": "door",
         "material_id": "m-door",
@@ -687,22 +815,6 @@
         "operation": "tilt_turn",
         "sill_m": 0.9,
         "width_m": 0.6
-      },
-      {
-        "connects": [
-          "sp-entry",
-          "exterior"
-        ],
-        "height_m": 1.2,
-        "host_wall_id": "w-entry-026",
-        "id": "win-entry-ext",
-        "kind": "window",
-        "material_id": "m-glass",
-        "offset_m": 2.2,
-        "opens_into": null,
-        "operation": "tilt_turn",
-        "sill_m": 0.9,
-        "width_m": 1.0
       },
       {
         "connects": [
@@ -774,15 +886,15 @@
           "exterior"
         ],
         "height_m": 1.4,
-        "host_wall_id": "w-entry-004",
+        "host_wall_id": "w-entry-026",
         "id": "win-bed-child-1-ext",
         "kind": "window",
         "material_id": "m-glass",
-        "offset_m": 0.8,
+        "offset_m": 1.8,
         "opens_into": null,
         "operation": "tilt_turn",
         "sill_m": 0.9,
-        "width_m": 1.1
+        "width_m": 1.8
       },
       {
         "connects": [
@@ -806,11 +918,11 @@
           "exterior"
         ],
         "height_m": 0.6,
-        "host_wall_id": "w-entry-043",
+        "host_wall_id": "w-entry-022",
         "id": "win-bath-1-ext",
         "kind": "window",
         "material_id": "m-glass",
-        "offset_m": 2.4,
+        "offset_m": 0.6,
         "opens_into": null,
         "operation": "tilt_turn",
         "sill_m": 1.5,
@@ -836,7 +948,7 @@
     "program_ref": {
       "id": "program",
       "kind": "space_program",
-      "sha256": "aaebe10f8491be667220a6bee4753f53c123540b4ea93ded30fc0ae3c236d6f1",
+      "sha256": "9dd9270f641b930a432de0deda27841b401a0c9848f4e54cdf67801ddd974cc7",
       "version": 1
     },
     "relationships": [
@@ -1000,20 +1112,20 @@
           "holes": [],
           "outer": [
             [
-              1.409581,
-              3.468873
+              4.050579,
+              4.030237
             ],
             [
-              2.876802,
-              3.780742
+              5.5178,
+              4.342106
             ],
             [
-              1.754074,
-              9.062738
+              4.395072,
+              9.624102
             ],
             [
-              0.286853,
-              8.750869
+              2.927851,
+              9.312233
             ]
           ]
         },
@@ -1180,20 +1292,20 @@
           "holes": [],
           "outer": [
             [
-              12.071387,
-              5.73512
+              1.409581,
+              3.468873
             ],
             [
-              14.712385,
-              6.296484
+              4.050579,
+              4.030237
             ],
             [
-              13.589658,
-              11.57848
+              2.927851,
+              9.312233
             ],
             [
-              10.948659,
-              11.017116
+              0.286853,
+              8.750869
             ]
           ]
         },
@@ -1210,20 +1322,20 @@
           "holes": [],
           "outer": [
             [
-              9.430389,
-              5.173756
+              5.5178,
+              4.342106
             ],
             [
-              12.071387,
-              5.73512
+              8.158798,
+              4.90347
             ],
             [
-              10.948659,
-              11.017116
+              7.03607,
+              10.185466
             ],
             [
-              8.307661,
-              10.455753
+              4.395072,
+              9.624102
             ]
           ]
         },
@@ -1240,20 +1352,20 @@
           "holes": [],
           "outer": [
             [
-              15.394272,
-              13.188874
+              4.536836,
+              10.881044
             ],
             [
-              17.154937,
-              13.563116
+              6.297501,
+              11.255287
             ],
             [
-              16.032209,
-              18.845112
+              5.174773,
+              16.537283
             ],
             [
-              14.271544,
-              18.47087
+              3.414108,
+              16.16304
             ]
           ]
         },
@@ -1300,20 +1412,20 @@
           "holes": [],
           "outer": [
             [
-              2.876802,
-              3.780742
+              8.158798,
+              4.90347
             ],
             [
-              9.430389,
-              5.173756
+              14.712385,
+              6.296484
             ],
             [
-              8.307661,
-              10.455753
+              13.589658,
+              11.57848
             ],
             [
-              1.754074,
-              9.062738
+              7.03607,
+              10.185466
             ]
           ]
         },
@@ -1330,20 +1442,20 @@
           "holes": [],
           "outer": [
             [
-              4.536836,
-              10.881044
+              15.394272,
+              13.188874
             ],
             [
-              6.297501,
-              11.255287
+              17.154937,
+              13.563116
             ],
             [
-              5.174773,
-              16.537283
+              16.032209,
+              18.845112
             ],
             [
-              3.414108,
-              16.16304
+              14.271544,
+              18.47087
             ]
           ]
         },
@@ -1392,8 +1504,8 @@
       {
         "base_offset_m": 0.0,
         "end": [
-          2.876802,
-          3.780742
+          4.050579,
+          4.030237
         ],
         "height_m": 2.8,
         "id": "w-entry-001",
@@ -1411,8 +1523,8 @@
       {
         "base_offset_m": 0.0,
         "end": [
-          9.430389,
-          5.173756
+          5.5178,
+          4.342106
         ],
         "height_m": 2.8,
         "id": "w-entry-002",
@@ -1422,16 +1534,16 @@
         "material_id": "m-ext-wall",
         "right_material_id": null,
         "start": [
-          2.876802,
-          3.780742
+          4.050579,
+          4.030237
         ],
         "thickness_m": 0.3
       },
       {
         "base_offset_m": 0.0,
         "end": [
-          12.071387,
-          5.73512
+          8.158798,
+          4.90347
         ],
         "height_m": 2.8,
         "id": "w-entry-003",
@@ -1441,8 +1553,8 @@
         "material_id": "m-ext-wall",
         "right_material_id": null,
         "start": [
-          9.430389,
-          5.173756
+          5.5178,
+          4.342106
         ],
         "thickness_m": 0.3
       },
@@ -1460,8 +1572,8 @@
         "material_id": "m-ext-wall",
         "right_material_id": null,
         "start": [
-          12.071387,
-          5.73512
+          8.158798,
+          4.90347
         ],
         "thickness_m": 0.3
       },
@@ -1506,8 +1618,8 @@
       {
         "base_offset_m": 0.0,
         "end": [
-          1.754074,
-          9.062738
+          2.927851,
+          9.312233
         ],
         "height_m": 2.8,
         "id": "w-entry-007",
@@ -1525,8 +1637,8 @@
       {
         "base_offset_m": 0.0,
         "end": [
-          8.307661,
-          10.455753
+          4.395072,
+          9.624102
         ],
         "height_m": 2.8,
         "id": "w-entry-008",
@@ -1536,16 +1648,16 @@
         "material_id": "m-int-wall",
         "right_material_id": null,
         "start": [
-          1.754074,
-          9.062738
+          2.927851,
+          9.312233
         ],
         "thickness_m": 0.15
       },
       {
         "base_offset_m": 0.0,
         "end": [
-          10.948659,
-          11.017116
+          7.03607,
+          10.185466
         ],
         "height_m": 2.8,
         "id": "w-entry-009",
@@ -1555,8 +1667,8 @@
         "material_id": "m-int-wall",
         "right_material_id": null,
         "start": [
-          8.307661,
-          10.455753
+          4.395072,
+          9.624102
         ],
         "thickness_m": 0.15
       },
@@ -1574,8 +1686,8 @@
         "material_id": "m-int-wall",
         "right_material_id": null,
         "start": [
-          10.948659,
-          11.017116
+          7.03607,
+          10.185466
         ],
         "thickness_m": 0.15
       },
@@ -1924,30 +2036,11 @@
       {
         "base_offset_m": 0.0,
         "end": [
-          1.754074,
-          9.062738
-        ],
-        "height_m": 2.8,
-        "id": "w-entry-029",
-        "kind": "interior",
-        "left_material_id": null,
-        "level_id": "lv-entry",
-        "material_id": "m-int-wall",
-        "right_material_id": null,
-        "start": [
-          2.876802,
-          3.780742
-        ],
-        "thickness_m": 0.15
-      },
-      {
-        "base_offset_m": 0.0,
-        "end": [
           0.479666,
           15.539302
         ],
         "height_m": 2.8,
-        "id": "w-entry-030",
+        "id": "w-entry-029",
         "kind": "interior",
         "left_material_id": null,
         "level_id": "lv-entry",
@@ -1962,11 +2055,49 @@
       {
         "base_offset_m": 0.0,
         "end": [
+          2.927851,
+          9.312233
+        ],
+        "height_m": 2.8,
+        "id": "w-entry-030",
+        "kind": "interior",
+        "left_material_id": null,
+        "level_id": "lv-entry",
+        "material_id": "m-int-wall",
+        "right_material_id": null,
+        "start": [
+          4.050579,
+          4.030237
+        ],
+        "thickness_m": 0.15
+      },
+      {
+        "base_offset_m": 0.0,
+        "end": [
+          4.395072,
+          9.624102
+        ],
+        "height_m": 2.8,
+        "id": "w-entry-031",
+        "kind": "interior",
+        "left_material_id": null,
+        "level_id": "lv-entry",
+        "material_id": "m-int-wall",
+        "right_material_id": null,
+        "start": [
+          5.5178,
+          4.342106
+        ],
+        "thickness_m": 0.15
+      },
+      {
+        "base_offset_m": 0.0,
+        "end": [
           3.414108,
           16.16304
         ],
         "height_m": 2.8,
-        "id": "w-entry-031",
+        "id": "w-entry-032",
         "kind": "interior",
         "left_material_id": null,
         "level_id": "lv-entry",
@@ -1985,7 +2116,7 @@
           14.189729
         ],
         "height_m": 2.8,
-        "id": "w-entry-032",
+        "id": "w-entry-033",
         "kind": "interior",
         "left_material_id": null,
         "level_id": "lv-entry",
@@ -2004,7 +2135,7 @@
           16.537283
         ],
         "height_m": 2.8,
-        "id": "w-entry-033",
+        "id": "w-entry-034",
         "kind": "interior",
         "left_material_id": null,
         "level_id": "lv-entry",
@@ -2019,27 +2150,8 @@
       {
         "base_offset_m": 0.0,
         "end": [
-          8.307661,
-          10.455753
-        ],
-        "height_m": 2.8,
-        "id": "w-entry-034",
-        "kind": "interior",
-        "left_material_id": null,
-        "level_id": "lv-entry",
-        "material_id": "m-int-wall",
-        "right_material_id": null,
-        "start": [
-          9.430389,
-          5.173756
-        ],
-        "thickness_m": 0.15
-      },
-      {
-        "base_offset_m": 0.0,
-        "end": [
-          10.948659,
-          11.017116
+          7.03607,
+          10.185466
         ],
         "height_m": 2.8,
         "id": "w-entry-035",
@@ -2049,8 +2161,8 @@
         "material_id": "m-int-wall",
         "right_material_id": null,
         "start": [
-          12.071387,
-          5.73512
+          8.158798,
+          4.90347
         ],
         "thickness_m": 0.15
       },
@@ -2255,7 +2367,7 @@
   "option_id": "concept-linear",
   "parent": null,
   "provenance": {
-    "created_at": "2026-10-18T09:48:08.590069Z",
+    "created_at": "2026-10-19T09:25:29.416769Z",
     "created_by": {
       "display_name": null,
       "id": "house-ai-plan-generator",
@@ -2273,7 +2385,7 @@
       {
         "id": "program",
         "kind": "space_program",
-        "sha256": "aaebe10f8491be667220a6bee4753f53c123540b4ea93ded30fc0ae3c236d6f1",
+        "sha256": "9dd9270f641b930a432de0deda27841b401a0c9848f4e54cdf67801ddd974cc7",
         "version": 1
       }
     ],

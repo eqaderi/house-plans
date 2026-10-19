@@ -1,0 +1,41 @@
+# SYNTHETIC agent-authored topology proposal (S7 ConceptProposal) for the
+# readiness demonstration: day rooms at the road, night rooms one level down,
+# kitchen opening to the terrace the owner asked for. No coordinates; the
+# solver places the rooms. Used by run_demo.py.
+schema_version: 0.1.0
+id: prop-day-up-night-down
+project_id: synthetic-hillside
+name: Day level at the road, night level below opening to the garden
+intent: >-
+  Entrance, garage, study, kitchen, dining and living at road level with the
+  kitchen opening to a terrace; bedrooms and bathrooms one level down, away
+  from the living room.
+zones:
+  - {id: z-day, name: Day zone, program_item_ids: [pi-entry, pi-living, pi-dining, pi-kitchen, pi-pantry, pi-garage, pi-study-1]}
+  - {id: z-night, name: Night zone, program_item_ids: [pi-bed-main, pi-bath-ensuite, pi-bed-child-1, pi-bed-child-2, pi-bath-1]}
+level_assignments:
+  - {program_item_id: pi-entry, level_id: lv-entry}
+  - {program_item_id: pi-garage, level_id: lv-entry}
+  - {program_item_id: pi-living, level_id: lv-entry}
+  - {program_item_id: pi-dining, level_id: lv-entry}
+  - {program_item_id: pi-kitchen, level_id: lv-entry}
+  - {program_item_id: pi-pantry, level_id: lv-entry}
+  - {program_item_id: pi-study-1, level_id: lv-entry}
+  - {program_item_id: pi-stair, level_id: lv-entry}
+  - {program_item_id: pi-terrace, level_id: lv-entry}
+  - {program_item_id: pi-bed-main, level_id: lv-lower}
+  - {program_item_id: pi-bath-ensuite, level_id: lv-lower}
+  - {program_item_id: pi-bed-child-1, level_id: lv-lower}
+  - {program_item_id: pi-bed-child-2, level_id: lv-lower}
+  - {program_item_id: pi-bath-1, level_id: lv-lower}
+  - {program_item_id: pi-laundry, level_id: lv-lower}
+  - {program_item_id: pi-storage, level_id: lv-lower}
+  - {program_item_id: pi-mechanical, level_id: lv-lower}
+  - {program_item_id: pi-garden, level_id: lv-lower}
+adjacency_graph:
+  - {id: padj-kitchen-dining, a: pi-kitchen, b: pi-dining, kind: connected, strength: soft, weight: 2.0}
+stair_cores:
+  - {id: sc-main, connects_levels: [lv-entry, lv-lower], near_program_item_ids: [pi-entry]}
+outdoor_links:
+  - {id: ol-kitchen-terrace, program_item_id: pi-kitchen, kind: terrace}
+target_strategy: open_plan
