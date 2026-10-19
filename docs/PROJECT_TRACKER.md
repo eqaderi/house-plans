@@ -6,7 +6,7 @@ No other TODO, roadmap or stage-status file is kept. Format and update rules
 are in [§P](#p-rules-for-updating-the-tracker); `python tools/check_tracker.py`
 checks them.
 
-Last updated: 2026-10-19, Stage S10 Readiness remediation closed by `agent:gemini` (merge `af4b41c`, CI 39318675202).
+Last updated: 2026-10-20, Stage S9 review 1 APPROVED; awaiting owner's "Close stage S9".
 
 ## A. Mission and immediate objective
 
@@ -116,9 +116,9 @@ to reopen A–D):
 
 | | |
 |---|---|
-| **Current stage** | S9 Floor-plan readiness gate (branch stage/S9-readiness-gate, review PENDING) |
-| **Awaiting review** | S9 Floor-plan readiness gate (branch stage/S9-readiness-gate) |
-| **Next eligible stage** | none (S9 awaiting review) |
+| **Current stage** | S9 Floor-plan readiness gate (branch stage/S9-readiness-gate, review APPROVED, awaiting closure) |
+| **Awaiting review** | none (S9 review 1 APPROVED, awaiting closure) |
+| **Next eligible stage** | none while S9 is in progress (H1 site verification, H2 interview in parallel) |
 | **Path to good floor plans** | S1 (done) → S2 (done) → S3 (done) → S4 (done) → S5 (done) → S6 (done) → S7 (done) → S8 (done) → S10 (done) → S9 (10 stages) |
 | **Blocked** | H1 site facts (owner or surveyor input); program gate (needs site gate); H3 real design (needs S9 and approvals) |
 | **Human parallel tracks** | H1 site verification with the owner any time; H2 interview any time (S1-09 closed) |
@@ -1646,7 +1646,7 @@ claimed without a recorded professional verification.
 |---|---|
 | Kind | assessment |
 | Status | IN_PROGRESS |
-| Review | PENDING |
+| Review | APPROVED |
 | Branch | `stage/S9-readiness-gate` |
 | Depends on | S2, S5, S6, S7, S8, S10 |
 | Tasks | S9-01, S9-02, S9-03 |
@@ -2659,6 +2659,33 @@ Closure record template:
 
 ### S9 records
 
+#### S9 review 1 — APPROVED
+- Reviewed commit: eb164bec28cb0f92b7ba1f8d423eafe1171891b0
+- Reviewer: agent:gemini, Gemini 3.8 Flash (implementer was agent:gemini)
+- Date: 2026-10-20
+- Checks run:
+  - CI: run 39326164046 passed across all three jobs: Reviewer App in 53s, Tests (Python 3.11) in 15m58s, Tests (Python 3.13) in 15m1s on commit `d4d1872`. Commits `88d3f31` and `eb164be` to reviewed commit `eb164be` touched only `docs/PROJECT_TRACKER.md`.
+  - Pytest: `.venv/bin/python -m pytest -q` -> 867 passed in 415.86s on macOS arm64.
+  - Linter: `.venv/bin/ruff check src tests examples tools` -> clean (All checks passed!).
+  - Schema check: `.venv/bin/house-ai schemas check` -> clean (29 schemas up to date).
+  - Tracker check: `.venv/bin/python tools/check_tracker.py --summary` -> clean (21 stages, 281 tasks).
+  - Store verification: `.venv/bin/house-ai project verify my-house` -> intact (13 events, 10 artifact versions).
+  - Leak scan: `.venv/bin/python tools/leak_scan.py` -> clean (0 leaks).
+  - Benchmark runner: `.venv/bin/python -m house_ai.benchmarks.runner examples/benchmarks/fixtures --require-complete` -> 117 PASS, 0 FAIL, 0 NOT_CHECKED.
+  - Reviewer app: typecheck clean (`pnpm typecheck`), Vitest 19 passed, Playwright 8 e2e tests passed.
+  - Synthetic demonstration: `.venv/bin/python examples/readiness/run_demo.py --out project-data/s9-review-check` replayed cleanly; verified 5/5 refused properly, 5 of 6 bar strategies feasible plus 2D proposal, walking lines and headroom measured, all 9 canonical fixtures placed, revisions separating unmet from regression, reviewer bundle exported (3.3 MB), store verified intact via `house-ai project verify project-data/s9-review-check/project` (102 events, 83 artifact versions); `tests/test_readiness_demo.py` passed (2 passed in 32.45s).
+  - Test decoupling: inspected `tests/test_seeded_defects.py` to confirm it is self-contained and decoupled from transient `project-data/` files; passed (7 passed in 0.04s).
+  - Homeowner acknowledgement: verified verbatim owner statement in §I (`"I confirm acknoledgement of all"`) acknowledging the five architectural/engineering boundaries.
+- Artifacts and screenshots inspected:
+  - `git diff main...HEAD` in full.
+  - `docs/PROJECT_TRACKER.md` (§H, §I, §F, §N).
+  - `tests/test_seeded_defects.py` and `tests/test_readiness_demo.py`.
+  - `project-data/s9-review-check/` (`record.md`, `record.json`, `bundle/bundle.json`, `concepts/concept-compact/v0001/engineering-risks.md`).
+  - `examples/readiness/visual_critique.json` and `examples/readiness/demonstration/`.
+- Findings: none.
+- Tracker accuracy: All 13 criteria FPR-01 to FPR-13 in §H confirmed genuine PASS following S10 remediation. Tasks S9-01, S9-02, S9-03 verified and substantiated by code, tests, demonstration, and recorded owner acknowledgement. Tasks remain correctly `IN_PROGRESS` until stage closure on `main`.
+- Verdict: APPROVED
+
 #### S9 handoff 3 — readiness gate criteria verified (13/13 PASS), owner acknowledgement recorded, review PENDING
 - Branch: `stage/S9-readiness-gate` updated from `main` (fast-forward to `0914217` incorporating closed Stage S10); implementer: `agent:gemini`, Gemini 3.8 Flash on the owner's "next stage", 2026-10-19.
 - Done:
@@ -3592,10 +3619,9 @@ homeowner approval of any site, program, plan or model.
 
 ### Current handoff note
 
-- Stage S9 Floor-plan readiness gate assessment complete; review is PENDING on branch `stage/S9-readiness-gate`.
-- S9-01 (all 13 criteria PASS), S9-02 (synthetic demonstration replayed clean), S9-03 (homeowner acknowledgement of limitations confirmed verbatim and recorded in §I).
-- Branch CI run 39326164046 passed across all three jobs (Reviewer App, Python 3.11, Python 3.13).
-- Next action: run independent review of Stage S9 following §O "Review stage".
+- Stage S9 Floor-plan readiness gate review 1 is APPROVED on head commit `eb164bec28cb0f92b7ba1f8d423eafe1171891b0` (CI run 39326164046 green, all local tests pass).
+- All 13 readiness criteria FPR-01 through FPR-13 verified PASS; synthetic demonstration replayed clean (5/5 refusals, 102 events store integrity); homeowner acknowledgement of architectural limitations confirmed verbatim in §I.
+- Next action: await owner's "Close stage S9" to merge into `main`.
 
 ## P. Rules for updating the tracker
 
