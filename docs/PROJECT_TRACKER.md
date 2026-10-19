@@ -117,7 +117,7 @@ to reopen A–D):
 | | |
 |---|---|
 | **Current stage** | S10 Readiness remediation, `IN_PROGRESS` on `stage/S10-readiness-remediation`; S9 is `BLOCKED` on it (DEC-11) |
-| **Awaiting review** | none |
+| **Awaiting review** | S10 Readiness remediation (review pending) |
 | **Next eligible stage** | none while S10 is in progress |
 | **Path to good floor plans** | S1 (done) → S2 (done) → S3 (done) → S4 (done) → S5 (done) → S6 (done) → S7 (done) → S8 (done) → S10 → S9 (10 stages) |
 | **Blocked** | S9 and its tasks (S10 first, then a re-run of S9-01/S9-02 and the owner's S9-03 words); H1 site facts (owner or surveyor input); program gate (needs site gate); H3 real design (needs S9 and approvals) |
@@ -1516,7 +1516,7 @@ claimed without a recorded professional verification.
 |---|---|
 | Kind | implementation |
 | Status | IN_PROGRESS |
-| Review | NOT_REQUESTED |
+| Review | PENDING |
 | Branch | `stage/S10-readiness-remediation` |
 | Depends on | S4, S5, S6, S7, S8 |
 | Tasks | S10-01, S10-02, S10-03, S10-04, S10-05, S10-06, S10-07, S10-08, S10-09, S10-10, S10-11, S10-12, S10-13, S10-19, S10-14, S10-15, S10-16, S10-17, S10-18 |
@@ -1527,7 +1527,7 @@ claimed without a recorded professional verification.
 | Demonstration | Re-run of the readiness demonstration showing the S9 defects gone or explicitly reported, with before and after counts |
 | Artifacts | Updated `examples/readiness/demonstration/`; ADR for plan-review handling of unbuildable findings; schema and `DOMAIN_MODEL.md` updates where the model changes |
 | Review requirements | Reviewer reads `git diff main...stage/S10-readiness-remediation` in full, including the S9 commits, re-runs the demonstration, and checks that no critic was quietened by loosening or relabelling |
-| Evidence | — |
+| Evidence | All 19 tasks implemented and committed (dd83d9b through f94f4e0); ADR 0023, ADR 0024, DEC-12, DEC-13; pytest 866 passed; benchmark runner 117 PASS; reviewer typecheck, Vitest (19) and Playwright (8) pass; leak scan and linter clean; schemas current; demonstration asserted in tests/test_readiness_demo.py |
 
 #### Reviewer and revision fixes
 
@@ -2491,6 +2491,27 @@ Closure record template:
 - Closed by: <agent:tool> on the owner's "Close stage <ID>"
 ```
 
+### S10 records
+
+#### S10 handoff 1 — implementation complete, ready for review
+- Branch: `stage/S10-readiness-remediation` at commit `f94f4e0` (tracker update in follow-up)
+- Implementers: `agent:claude-code`, `agent:codex`, `agent:gemini`
+- Date: 2026-10-19
+- Addressed: ISS-25 and ISS-29 to ISS-37 across all 19 tasks (S10-01 through S10-19).
+- Changes:
+  - Reviewer & revisions: `reviewer serve` crash fixed; auto-fit responsive viewport on load; revision intent checking separates unmet from regression; proposal options isolated to prevent overwriting revised lineages (S10-01..S10-04).
+  - Stairs & unbuildable findings: stairwells model 3D enclosed volumes connecting split levels without wall or slab clashes; U-shaped flights carry explicit walking lines with measured run, headroom and landings; ADR 0023; unbuildable stair/connection defects block plan approval via ADR 0024, soft envelope findings listed under attention (S10-05..S10-07).
+  - Usable rooms & fixtures: canonical fixtures placed across bathrooms, ensuites, laundry, and kitchens; counter runs measured at 3.0 m; DEC-13 implements recursive backtracking fixture layout supporting linear, L-shaped, and opposite-wall arrangements without altering room sizes or loosening clearances (S10-08, S10-09); program builder assigns double-bed and vehicle envelopes (S10-10); separate road-level garages sized for vehicles per DEC-12 (S10-19).
+  - Owner intent & 2D terrain: bar strategies place linked terraces/gardens (S10-11); single-storey departures explained in comparison and explanation (S10-12); 2D solver couples road-front access with terrain heights, with T-junction noding for crack-free geometry respecting DEC-04 (S10-13).
+  - Verification & detectors: 5 stale benchmark probes replaced with live model observations, edge coverage and sliver checks; 18 benchmark fixtures all complete (S10-14); semantic data attributes on all SVG elements and cut stairs rendered in section panel (S10-15); S5 automated defect detectors detect stair penetration through unvoided slabs and canvas-space label collisions (S10-16); steep fixture derives terrain TIN and frontage, reviewer README documented (S10-17); demonstration record turned into assertions in `tests/test_readiness_demo.py` and demonstration artifacts refreshed (S10-18).
+- Checks run:
+  - `pytest -q`: 866 passed in 427 s (0 fails, 0 xfails)
+  - `benchmark runner --require-complete`: 117 PASS, 0 FAIL, 0 NOT_CHECKED
+  - Reviewer app: typecheck clean, Vitest 19 passed, Playwright 8 passed
+  - Integrity: `tools/check_tracker.py` clean, `tools/leak_scan.py` clean, `ruff check src tests examples tools` clean, `schemas check` 29 up to date, `project verify my-house` intact (13 events, 10 artifact versions)
+  - CI: run 39258065193 on `f94f4e0` (workflow_dispatch)
+- Status: Stage S10 implementation complete. All 19 tasks have verified evidence. Review requested: PENDING.
+
 ### S9 records
 
 #### S9 handoff 2 — blocked on S10
@@ -3411,7 +3432,7 @@ homeowner approval of any site, program, plan or model.
 - The owner chose option A (DEC-11): Stage S10 Readiness remediation fixes ISS-25 and ISS-29 to ISS-35 before S9 continues. S9 is `BLOCKED` on S10; its assessment is in §H and §N "S9 handoff 1".
 - Start S10 on `stage/S10-readiness-remediation`, branched from the S9 head (`123bd0d`) because S10 uses `examples/readiness/` as its regression harness. Do the small fixes first (S10-01, S10-03, S10-04), then stairs and levels.
 - After S10 closes: bring S9 up to date with `main`, re-run S9-01 and S9-02, ask for the owner's S9-03 words, then request S9 review. ISS-28 stays with S9.
-- S10 state (2026-10-19): S10-01 to S10-16 and S10-19 built on the branch with evidence (`IN_PROGRESS` until closure). Next in tracker order: S10-17, then the DEC-13 fixture-placement follow-up and S10-18; then CI on the branch, the S10 handoff and a review request. The owner chose option (c) for ISS-37, recorded verbatim in DEC-13: support L-shaped or opposite-wall fixture arrangements. Implement that choice before S10-18; retain approved program areas and existing fixture clearances; the two strict xfails remain until fixed.
+- S10 state (2026-10-19): S10-01 to S10-19 and DEC-13 built on the branch with verified evidence across commits dd83d9b through f94f4e0. Pytest 866 passed, benchmark runner 117 PASS, reviewer frontend clean, CI run 39258065193 dispatched. Implementation is complete and ready for independent review.
 
 ## P. Rules for updating the tracker
 
