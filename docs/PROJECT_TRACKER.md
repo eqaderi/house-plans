@@ -6,7 +6,7 @@ No other TODO, roadmap or stage-status file is kept. Format and update rules
 are in [§P](#p-rules-for-updating-the-tracker); `python tools/check_tracker.py`
 checks them.
 
-Last updated: 2026-10-19, owner chose option A (DEC-11): new Stage S10 Readiness remediation before S9 continues; S9 blocked on S10.
+Last updated: 2026-10-19, S10 review 2 remediation resumed; cross-platform rendering assertion corrected, verification in progress; S9 blocked on S10.
 
 ## A. Mission and immediate objective
 
@@ -2493,6 +2493,15 @@ Closure record template:
 
 ### S10 records
 
+#### S10 handoff 3 — review 2 remediation, verification in progress
+- Branch: `stage/S10-readiness-remediation`
+- Implementer: `agent:codex`
+- Date: 2026-10-19
+- Addressed review 2 finding 1: `tests/test_readiness_demo.py` verifies that an available rasterizer produces PNG bytes and records their actual SHA-256, rather than requiring platform-dependent PNG bytes to match the canonical screenshot. The critique applicability flag must still equal the hash comparison. A separate deterministic assertion pins the saved critique to its canonical demonstration screenshot. No geometry, critic thresholds or provenance checks changed.
+- Review 2 finding 2: previous run **39278241032 failed** on both Python versions; handoff 2 recorded dispatch only and did not establish passing CI. Keep Review `CHANGES_REQUESTED` until replacement CI is confirmed green, then request independent review.
+- Verified so far: targeted readiness tests **2 passed in 35.11s**; lint clean; 29 schemas current; tracker clean; leak scan clean; homeowner store intact (13 events, 10 artifact versions); reviewer typecheck clean, Vitest **19 passed**.
+- Remaining: full pytest, benchmark runner, full demonstration replay, reviewer build/Playwright and replacement CI. No merge, stage closure or homeowner gate action.
+
 #### S10 review 2 — CHANGES_REQUESTED
 - Reviewed commit: f3936d4c0e8bf128cf7d35ce865998b24fa13acb
 - Reviewer: agent:gemini, Gemini 3.8 Flash (implementer was agent:gemini)
@@ -3509,7 +3518,7 @@ homeowner approval of any site, program, plan or model.
 - The owner chose option A (DEC-11): Stage S10 Readiness remediation fixes ISS-25 and ISS-29 to ISS-35 before S9 continues. S9 is `BLOCKED` on S10; its assessment is in §H and §N "S9 handoff 1".
 - Start S10 on `stage/S10-readiness-remediation`, branched from the S9 head (`123bd0d`) because S10 uses `examples/readiness/` as its regression harness. Do the small fixes first (S10-01, S10-03, S10-04), then stairs and levels.
 - After S10 closes: bring S9 up to date with `main`, re-run S9-01 and S9-02, ask for the owner's S9-03 words, then request S9 review. ISS-28 stays with S9.
-- S10 state (2026-10-19): S10-01 to S10-19 and DEC-13 built on the branch with verified evidence across commits dd83d9b through f94f4e0. Pytest 866 passed, benchmark runner 117 PASS, reviewer frontend clean, CI run 39258065193 dispatched. Implementation is complete and ready for independent review.
+- S10 state (2026-10-19): review 2 requested changes after CI run 39278241032 failed. `agent:codex` resumed the existing branch and corrected the cross-platform screenshot assertion; see S10 handoff 3. Review stays `CHANGES_REQUESTED` while verification runs. S9 stays blocked.
 
 ## P. Rules for updating the tracker
 

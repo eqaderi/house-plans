@@ -6,11 +6,12 @@ geometry is compared byte for byte.
 
 from __future__ import annotations
 
+import hashlib
 import json
 
 import yaml
 
-from examples.readiness.run_demo import HERE, REVISIONS, run
+from examples.readiness.run_demo import HERE, REVISIONS, VISUAL_OPTION, run
 from house_ai.render2d.rasterize import find_rasterizer
 
 
@@ -102,9 +103,17 @@ def test_readiness_demonstration_end_to_end(tmp_path):
     assert "vc-living-too-small" not in vr["ungrounded_ids"]
     assert {c["status"] for c in vr["claims"]} == {"ai_judgment"}
     if find_rasterizer() is not None:
-        assert vr["critique_made_on_this_rendering"] is True
+        png = out / "renders" / f"{VISUAL_OPTION}-v1.png"
+        assert png.read_bytes().startswith(b"\x89PNG\r\n\x1a\n")
+        assert vr["png_sha256"] == hashlib.sha256(png.read_bytes()).hexdigest()
     else:
-        assert vr["critique_made_on_this_rendering"] is False
+        assert vr["png_sha256"] is None
+    # Fonts and solver output vary across platforms. A replay must report honestly
+    # whether this exact PNG was critiqued; rasterizer availability cannot prove it.
+    critique = json.loads((HERE / "visual_critique.json").read_text("utf-8"))
+    assert vr["critique_made_on_this_rendering"] is (
+        vr["png_sha256"] == critique["screenshot_hash"]
+    )
     assert len(vr["detector_findings"]) > 0
     assert any(f["type"] == "overlapping_labels" for f in vr["detector_findings"])
 
@@ -117,3 +126,9 @@ def test_readiness_demonstration_end_to_end(tmp_path):
     assert not [v for v in rec["revisions"][1]["new_violations"] if v.startswith("regression:")]
     assert (out / rec["bundle"]["path"]).is_file()
     assert (out / rec["comparison"]).is_file()
+
+
+def test_readiness_critique_pins_canonical_screenshot():
+    critique = json.loads((HERE / "visual_critique.json").read_text("utf-8"))
+    png = HERE / "demonstration" / f"{VISUAL_OPTION}-v1.png"
+    assert critique["screenshot_hash"] == hashlib.sha256(png.read_bytes()).hexdigest()
