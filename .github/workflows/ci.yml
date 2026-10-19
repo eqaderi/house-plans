@@ -13,7 +13,9 @@ jobs:
   test:
     name: Tests (Python ${{ matrix.python }})
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    # The full synthetic solver suite takes about 14.5 minutes on Linux,
+    # plus dependency installation and teardown; leave room for runner variance.
+    timeout-minutes: 20
     strategy:
       fail-fast: false
       matrix:
