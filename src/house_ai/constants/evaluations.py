@@ -35,6 +35,11 @@ FLAG_NEAR_DUPLICATE = "⚠️ Near-duplicate"
 REGRESSION_VIOLATION_PREFIX = "regression: earlier request "
 #: A request this version carries that is not met and was not met before (S10-03)
 REQUEST_NOT_MET_PREFIX = "request not met: "
+#: Clear height above a stair's pitch line: conceptual assumption shared by generator and
+#: critic (ADR 0019 value).
+MIN_STAIR_HEADROOM_M = 2.0
+#: Clear landing beyond each end of a flight (ADR 0019 value).
+MIN_STAIR_LANDING_M = 0.9
 #: Shortfall allowed before an owner's area request counts as unmet (S7-23 value, kept)
 REQUESTED_AREA_TOLERANCE_M2 = 2.0
 

@@ -825,6 +825,65 @@ def test_floor_to_floor_is_only_compared_for_a_stair_to_the_next_level():
     }
 
 
+def test_floor_to_floor_is_not_compared_beside_a_lower_storey():
+    """ADR 0023: a split-level stair arriving beside the lower storey says nothing about its
+    height; the same stair arriving over it (stacked) still does."""
+    doc = stair_model().model_dump(mode="json")
+    doc["levels"][0]["floor_to_floor_m"] = 3.2  # stacked: 3.2 m declared, 3.0 m rise
+    assert "floor_connection_height_mismatch" in {
+        v.code for v in StairUsabilityEvaluator().evaluate(ctx(doc)).violations
+    }
+    # The upper room moves beside the lower one (y 8..16) and the flight crosses into it:
+    # it arrives beyond the lower storey, as between split-level bars.
+    upper = next(s for s in doc["spaces"] if s["id"] == "upper-room")
+    upper["boundary"] = rectangle(0, 8, 5, 16)
+    flight = doc["stairs"][0]
+    flight["footprint"] = rectangle(2, 4, 3, 9.2)
+    flight["walking_line"] = [(2.5, 4), (2.5, 9.2)]
+    doc["slabs"] = []
+    codes = {v.code for v in StairUsabilityEvaluator().evaluate(ctx(doc)).violations}
+    assert "floor_connection_height_mismatch" not in codes
+    # Arriving over the lower room (stacked again), the rule still applies.
+    upper["boundary"] = rectangle(0, 0, 5, 16)
+    flight["footprint"] = rectangle(2, 1.5, 3, 5.7)
+    flight["walking_line"] = [(2.5, 1.5), (2.5, 5.7)]
+    codes = {v.code for v in StairUsabilityEvaluator().evaluate(ctx(doc)).violations}
+    assert "floor_connection_height_mismatch" in codes
+    # The rise itself is still checked against the level elevations.
+    doc["stairs"][0]["riser_height_m"] = 0.2
+    codes = {v.code for v in StairUsabilityEvaluator().evaluate(ctx(doc)).violations}
+    assert "stair_height_mismatch" in codes
+
+
+def test_flight_through_a_wall_clashes_unless_an_opening_clears_the_band():
+    """ADR 0023: a wall across the walking line must stay out of the clear band."""
+    doc = stair_model().model_dump(mode="json")
+    # 16 x 0.1875 m over 4.2 m; a wall across y = 3.6 meets the pitch at 1.5 m.
+    doc["walls"].append(
+        dict(id="w-cross", level_id="ground", start=(0, 3.6), end=(5, 3.6),
+             thickness_m=0.15, height_m=2.8, kind="interior")
+    )  # fmt: skip
+    result = StairUsabilityEvaluator().evaluate(ctx(doc))
+    clash = [v for v in result.violations if v.code == "stair_wall_clash"]
+    assert len(clash) == 1 and clash[0].subject_ids == ["stair", "w-cross"]
+    assert "between 1.500 and 2.800 m" in clash[0].message
+    assert metric(result, "stair_wall_clashes").value == 1
+    # A wall that starts above the band (pitch 1.5 + 2.0 = 3.5 m) does not clash.
+    doc["walls"][-1]["base_offset_m"] = 3.6
+    assert "stair_wall_clash" not in {
+        v.code for v in StairUsabilityEvaluator().evaluate(ctx(doc)).violations
+    }
+    # Nor does an opening spanning the flight's 1 m width and the band.
+    doc["walls"][-1]["base_offset_m"] = 0.0
+    doc["openings"].append(
+        dict(id="o-cross", kind="opening", host_wall_id="w-cross", offset_m=1.9,
+             width_m=1.2, height_m=2.8, connects=("room", "exterior"))
+    )  # fmt: skip
+    result = StairUsabilityEvaluator().evaluate(ctx(doc))
+    assert "stair_wall_clash" not in {v.code for v in result.violations}
+    assert metric(result, "stair_wall_clashes").value == 0
+
+
 def test_stair_flight_is_not_walkable_floor_on_either_level():
     doc = stair_model().model_dump(mode="json")
     house = HouseModel.model_validate(doc)

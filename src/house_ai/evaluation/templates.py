@@ -3,6 +3,7 @@
 import math
 from dataclasses import asdict, dataclass
 
+from house_ai.constants.evaluations import MIN_STAIR_HEADROOM_M, MIN_STAIR_LANDING_M
 from house_ai.domain.usability import DimensionAssumption, FurnitureTemplate
 
 VERSION = "1.0.0"
@@ -84,8 +85,8 @@ class UsabilityPolicy:
     max_rise_m: float = 0.22
     min_going_m: float = 0.22
     min_stair_width_m: float = 0.9
-    min_headroom_m: float = 2
-    landing_m: float = 0.9
+    min_headroom_m: float = MIN_STAIR_HEADROOM_M
+    landing_m: float = MIN_STAIR_LANDING_M
     approach_m: float = 0.9
     max_corridor_ratio: float = 0.25
     max_dead_end_m: float = 6

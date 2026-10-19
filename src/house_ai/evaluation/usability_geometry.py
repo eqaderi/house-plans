@@ -82,14 +82,21 @@ def objects_in(model, space_id):
 
 
 def stair_obstacles(model: HouseModel, space_id: str):
-    """Flights with a declared walking line occupy their footprint on both connected floors.
+    """Flights with a declared walking line occupy their footprint on both connected floors,
+    in every space of those floors they pass through: the bottom and top spaces, and a
+    stairwell, stair hall or room a split-level flight crosses into (ADR 0023).
 
     Without a walking line the flight geometry is unknown and is not subtracted.
     """
+    level = model.space(space_id).level_id
     return [
         st.footprint.to_shapely()
         for st in model.stairs
-        if st.walking_line is not None and space_id in {st.bottom_space_id, st.top_space_id}
+        if st.walking_line is not None
+        and (
+            space_id in {st.bottom_space_id, st.top_space_id}
+            or level in {st.from_level_id, st.to_level_id}
+        )
     ]
 
 

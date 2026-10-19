@@ -252,6 +252,12 @@ assumption sources and limits.
   With a walking line the flight footprint is not walkable floor on either level.
   Slab openings remain polygon holes. Headroom uses a linearly rising pitch line,
   not detailed geometry for intermediate landings of complex stairs.
+  A flight between bars side by side at different levels belongs to a stair volume
+  on both levels: a `Stairwell` space (lower level, under the higher floor) and a
+  `Stair hall` space (higher level, over the lower roof), each `function: stair`
+  without a program item, walled with `base_offset_m`/`height_m` to span the
+  volume (ADR 0023). A flight is not walkable floor in any space of its two levels
+  it passes through. Walls must stay out of the clear band above a walking line.
 - `SpaceProgram.usability`: optional household seats, vehicle envelopes, arrival
   path and bed variants by program item. Vehicle dimensions, side-door access and
   source are explicit; turning radius may be unknown. The program builder only

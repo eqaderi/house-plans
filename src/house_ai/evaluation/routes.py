@@ -90,6 +90,13 @@ class RouteNetwork:
         self.unknown_stairs = []
         self.estimated_stairs = []
         floors = {s.id: free_floor(model, s) for s in model.spaces}
+        #: Spaces to walk to. A stair space with no floor beside its flight (a stairwell or
+        #: stair hall, ADR 0023) is walked through on the flight, not walked to.
+        self.destinations = [
+            s.id
+            for s in model.spaces
+            if not (s.function is SpaceFunction.STAIR and floors[s.id].is_empty)
+        ]
 
         def node(key, sid, xy, element):
             if not floors[sid].buffer(EPS).covers(Point(xy)):

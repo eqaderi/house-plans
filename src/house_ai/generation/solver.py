@@ -134,12 +134,6 @@ class SolveFailed(Exception):
     pass
 
 
-def stair_risers(rise_m: float) -> tuple[int, float, float]:
-    """(riser count, riser height m, run length m) for a straight flight, typical values."""
-    n = max(2, math.ceil(abs(rise_m) / 0.18 - 1e-9))
-    return n, abs(rise_m) / n, (n - 1) * 0.28
-
-
 def split_depth(row_depth: int, inner: RoomSpec, outer: RoomSpec) -> int | None:
     t_in = inner.item.target_area_m2 or inner.min_area_m2 or 4.0
     t_out = outer.item.target_area_m2 or outer.min_area_m2 or 4.0

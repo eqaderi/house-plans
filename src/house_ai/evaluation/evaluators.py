@@ -593,8 +593,9 @@ class CirculationEvaluator:
         )
         from .routes import RouteNetwork
 
-        routes = RouteNetwork.for_model(model).entrance_routes()
-        complete = bool(routes) and len(routes) == len(model.spaces)
+        network = RouteNetwork.for_model(model)
+        routes = network.entrance_routes()
+        complete = bool(routes) and all(sid in routes for sid in network.destinations)
         estimated = any(r.estimated for r in routes.values())
         out.metric(
             "max_walk_from_entrance_m",

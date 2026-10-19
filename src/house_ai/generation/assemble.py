@@ -61,7 +61,8 @@ from .rooms import (
     is_dependent,
     touches_corridor,
 )
-from .solver import Solution, stair_risers
+from .solver import Solution
+from .stairs import SLAB_M, TREAD_M, stair_risers
 
 S = SpaceFunction
 EXTERIOR_WALL_M = 0.30
@@ -69,10 +70,8 @@ INTERIOR_WALL_M = 0.15
 WALL_HEIGHT_M = 2.8
 CEILING_M = 2.7
 DOOR_H_M = 2.1
-SLAB_M = 0.25
 #: Ground this far above the floor outside an exterior face makes it a retaining wall.
 RETAINING_M = 0.6
-TREAD_M = 0.28
 
 MATERIALS = [
     MaterialRef(
@@ -157,6 +156,9 @@ class WallSeg:
     party: bool = False
     retained_m: float = 0.0
     used: list[tuple[int, int]] = field(default_factory=list)
+    #: Overrides for stairwell enclosures, which do not span a plain storey (ADR 0023).
+    height_m: float = WALL_HEIGHT_M
+    base_offset_m: float = 0.0
 
     @property
     def length(self) -> int:
@@ -169,6 +171,48 @@ class WallSeg:
         """Direction from the space to the outside, for an exterior segment."""
         sign = -1 if self.neg is None else 1
         return (0, sign) if self.orient == "h" else (sign, 0)
+
+
+@dataclass
+class Stairwell:
+    """A straight flight crossing from one bar into another at a different level."""
+
+    stair_index: int
+    low_level: str
+    high_level: str
+    #: Axis of the flight's run: "v" when it runs along v (bars of axis "u"), else "u".
+    run_axis: str
+    boundary: int
+    lo: int
+    hi: int
+    #: Cross range (dm) of the stairwell: the flight's width plus a wall clearance.
+    c0: int
+    c1: int
+    rise_m: float
+    #: True when the lower bar lies on the ``lo`` side of the boundary.
+    lower_on_lo: bool
+    #: The stair spaces the flight starts and ends in.
+    low_space: str
+    high_space: str
+    #: Space the flight continues in across the boundary, on each level ("below" on the
+    #: lower level, "over" on the higher one): a new stairwell or stair hall, or an
+    #: existing room where that level is already built (stacked bars).
+    joins: dict[str, str] = field(default_factory=dict)
+    #: The stairwell and stair-hall spaces created for this flight.
+    created: set[str] = field(default_factory=set)
+
+    @property
+    def below_id(self) -> str:
+        return f"sp-stairwell-{self.stair_index}"
+
+    @property
+    def over_id(self) -> str:
+        return f"sp-stair-hall-{self.stair_index}"
+
+    def rect(self, p0: int, p1: int) -> Rect:
+        if self.run_axis == "v":
+            return Rect(self.c0, p0, self.c1, p1)
+        return Rect(p0, self.c0, p1, self.c1)
 
 
 @dataclass
@@ -199,6 +243,13 @@ def _bar_rect(bar: Bar, start: int, s0: int, s1: int, c0: int, c1: int) -> Rect:
     return Rect(bar.cross0_dm + c0, start + s0, bar.cross0_dm + c1, start + s1)
 
 
+def _overlap_dm2(a: Rect, b: Rect) -> int:
+    """Area (dm²) shared by two rectangles."""
+    du = min(a.u1, b.u1) - max(a.u0, b.u0)
+    dv = min(a.v1, b.v1) - max(a.v0, b.v0)
+    return du * dv if du > 0 and dv > 0 else 0
+
+
 def _short(sid: str) -> str:
     return sid.removeprefix("sp-") if sid != EXTERIOR else "ext"
 
@@ -222,6 +273,7 @@ class _Builder:
         self.walls: list[WallSeg] = []
         self.openings: list[Opening] = []
         self.stairs: list[Stair] = []
+        self.stairwells: list[Stairwell] = []
         self.issues: list[Issue] = []
         self.notes: list[str] = list(m.notes)
         self._ids: set[str] = set()
@@ -406,6 +458,7 @@ class _Builder:
             for n, seg in enumerate(segs, start=1):
                 seg.id = f"w-{suffix}-{n:03d}"
                 self._classify(seg)
+                self._stairwell_wall(seg)
             self.walls.extend(segs)
 
     def _seg_points(self, seg: WallSeg) -> tuple[tuple[int, int], tuple[int, int]]:
@@ -458,7 +511,8 @@ class _Builder:
             start=self.frame.to_local(u0, v0),
             end=self.frame.to_local(u1, v1),
             thickness_m=seg.thickness,
-            height_m=WALL_HEIGHT_M,
+            height_m=seg.height_m,
+            base_offset_m=seg.base_offset_m,
             kind=seg.kind,
             material_id=material,
         )
@@ -690,6 +744,7 @@ class _Builder:
                 self.door(lv_a, la, corridor_of[b.id], 1.2, **hall)
             elif link.kind == "row":
                 self.door(lv_a, g if link.gap_dm else la, f"sp-link-{i}b", 1.2, **hall)
+        self.open_stairwells()
         self._build_relation_doors()
 
     def _build_relation_doors(self) -> None:
@@ -760,7 +815,11 @@ class _Builder:
         mid = {S.BEDROOM, S.GUEST_SUITE, S.STUDY, S.PLAY, S.GYM, S.PRAYER}
         wet = {S.BATHROOM, S.WC, S.ABLUTION}
         for s in self.spaces:
-            if s.kind == "filler" or s.function in (S.GARAGE, S.MECHANICAL, S.STORAGE):
+            if s.kind in ("filler", "stairwell") or s.function in (
+                S.GARAGE,
+                S.MECHANICAL,
+                S.STORAGE,
+            ):
                 continue
             if s.room is not None and not s.room.wants_daylight:
                 continue
@@ -852,6 +911,23 @@ class _Builder:
                 low, high = (
                     (top_space, other) if a.elevation_m < b.elevation_m else (other, top_space)
                 )
+                self.stairwells.append(
+                    Stairwell(
+                        i,
+                        low.level_id,
+                        high.level_id,
+                        "v" if a.axis == "u" else "u",
+                        boundary,
+                        lo,
+                        hi,
+                        s0 + inset - 1,
+                        s1 - inset + 1,
+                        abs(rise),
+                        a.elevation_m < b.elevation_m,
+                        low.id,
+                        high.id,
+                    )
+                )
                 # Centre line of the flight, ordered bottom to top: top_space lies below
                 # the boundary (the `lo` end), the other space above it (the `hi` end).
                 mid = (s0 + s1) / 2
@@ -877,6 +953,113 @@ class _Builder:
                 )
             )
 
+    def add_stairwell_spaces(self) -> None:
+        """The two parts of each split-level stair volume (ADR 0023).
+
+        Below the higher bar's floor the flight runs in a stairwell on the lower level; over
+        the lower bar it rises in a stair hall on the higher level, whose roof replaces the
+        lower bar's roof there. Where that level is already built over the region (stacked
+        bars), the flight runs in the existing room instead.
+        """
+        for w in self.stairwells:
+            lo_part, hi_part = (w.lo, w.boundary), (w.boundary, w.hi)
+            below, over = (hi_part, lo_part) if w.lower_on_lo else (lo_part, hi_part)
+            for part, sid, name, level, (p0, p1), stair_space in (
+                ("below", w.below_id, "Stairwell", w.low_level, below, w.low_space),
+                ("over", w.over_id, "Stair hall", w.high_level, over, w.high_space),
+            ):
+                r = w.rect(p0, p1)
+                taken = [
+                    o for o in self.spaces if o.level_id == level and _overlap_dm2(o.rect, r) > 0
+                ]
+                if not taken:
+                    self.add_space(
+                        SpaceInfo(
+                            id=sid,
+                            name=name,
+                            function=S.STAIR,
+                            level_id=level,
+                            rect=r,
+                            kind="stairwell",
+                            zone_id=self.space(stair_space).zone_id,
+                        )
+                    )
+                    w.created.add(sid)
+                    w.joins[part] = sid
+                elif len(taken) == 1 and _overlap_dm2(taken[0].rect, r) == _overlap_dm2(r, r):
+                    w.joins[part] = taken[0].id
+                else:
+                    self._issue(
+                        f"iss-stair-volume-{w.stair_index}-{part}",
+                        f"Stair {w.stair_index} crosses into several rooms on {level}",
+                        Severity.BLOCKING,
+                        [o.id for o in taken],
+                    )
+
+    def open_stairwells(self) -> None:
+        """A full-height opening across the bar boundary, exactly over each flight."""
+        across = {"v": "h", "u": "v"}
+        for w in self.stairwells:
+            for part, level, stair_space in (
+                ("below", w.low_level, w.low_space),
+                ("over", w.high_level, w.high_space),
+            ):
+                other = w.joins.get(part)
+                if other is None:
+                    continue
+                seg = next(
+                    (
+                        g
+                        for g in self._walls_between(level, stair_space, other)
+                        if g.orient == across[w.run_axis]
+                        and g.c == w.boundary
+                        and g.a <= w.c0
+                        and w.c1 <= g.b
+                    ),
+                    None,
+                )
+                if seg is None:
+                    self._issue(
+                        f"iss-stair-opening-{w.stair_index}-{part}",
+                        f"No boundary wall to open for stair {w.stair_index} on {level}",
+                        Severity.BLOCKING,
+                        [stair_space, other],
+                    )
+                    continue
+                seg.used.append((w.c0 - seg.a, w.c1 - seg.a))
+                self.openings.append(
+                    Opening(
+                        id=self._new_id(f"o-{_short(stair_space)}-{_short(other)}"),
+                        kind=OpeningKind.OPENING,
+                        host_wall_id=seg.id,
+                        offset_m=from_dm(w.c0 - seg.a),
+                        width_m=from_dm(w.c1 - w.c0),
+                        height_m=seg.height_m,
+                        connects=(stair_space, other),
+                    )
+                )
+
+    def _stairwell_wall(self, seg: WallSeg) -> None:
+        """Height and kind of a stairwell's outer wall: it does not span a plain storey."""
+        w = next((x for x in self.stairwells if {seg.neg, seg.pos} & x.created), None)
+        if w is None or (seg.neg is not None and seg.pos is not None):
+            return
+        z = next(lv.elevation_m for lv in self.levels if lv.id == seg.level_id)
+        if seg.level_id == w.low_level:
+            # From the lower floor to the higher floor slab's underside.
+            seg.base_offset_m, seg.height_m = 0.0, round(w.rise_m - SLAB_M, 4)
+        else:
+            # From the lower roof slab's underside to the higher storey's wall head.
+            seg.base_offset_m = round(FLOOR_TO_FLOOR_M - SLAB_M - w.rise_m, 4)
+            seg.height_m = round(WALL_HEIGHT_M - seg.base_offset_m, 4)
+        (u0, v0), (u1, v1) = self._seg_points(seg)
+        ground = self.ground.mean_line((from_dm(u0), from_dm(v0)), (from_dm(u1), from_dm(v1)))
+        base_z = z + seg.base_offset_m
+        seg.party = False
+        seg.thickness = EXTERIOR_WALL_M
+        seg.retained_m = 0.0 if ground is None else max(0.0, ground - base_z)
+        seg.kind = WallKind.RETAINING if seg.retained_m > RETAINING_M else WallKind.EXTERIOR
+
     # ----------------------------------------------------------------- model
 
     def build(self, model_id: str, name: str, site_ref, program_ref) -> HouseModel:
@@ -891,8 +1074,9 @@ class _Builder:
             for z in elevations
         ]
         self.build_spaces()
-        self.build_walls()
         self.build_stairs()
+        self.add_stairwell_spaces()
+        self.build_walls()
         self.build_openings()
         self.build_windows()
         spaces = [
@@ -980,9 +1164,11 @@ class _Builder:
                     continue
                 # Canonical floor slabs must leave a real opening over the flight.
                 # Retain a landing on the corridor side of a stacked U stair.
+                # Snap back to the decimetre grid the flight was built on: frame round-trip
+                # noise would leave slivers against stairwell edges (ADR 0023).
                 flight = ShapelyPolygon(
                     [
-                        tuple(v * 10 for v in self.frame.to_design(xy))
+                        tuple(round(v * 10) for v in self.frame.to_design(xy))
                         for xy in stair.footprint.outer
                     ]
                 )
