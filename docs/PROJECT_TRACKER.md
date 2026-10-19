@@ -6,7 +6,7 @@ No other TODO, roadmap or stage-status file is kept. Format and update rules
 are in [§P](#p-rules-for-updating-the-tracker); `python tools/check_tracker.py`
 checks them.
 
-Last updated: 2026-10-19, Stage S8 review 2 APPROVED by `agent:gemini` (commit `c27b30d`).
+Last updated: 2026-10-19, Stage S8 Hillside geometry closed by `agent:gemini` (merge `3c2de1d`, CI 39191955991).
 
 ## A. Mission and immediate objective
 
@@ -116,13 +116,13 @@ to reopen A–D):
 
 | | |
 |---|---|
-| **Current stage** | S8 Hillside geometry — IN_PROGRESS |
-| **Awaiting review** | none (S8 review 2 APPROVED; ready for Close stage S8) |
-| **Next eligible stage** | none until S8 closed |
-| **Path to good floor plans** | S1 (done) → S2 (done) → S3 (done) → S4 (done) → S5 (done) → S6 (done) → S7 (done) → S8 → S9 (9 stages) |
+| **Current stage** | none (software pipeline ready for S9 Floor-plan readiness gate) |
+| **Awaiting review** | none |
+| **Next eligible stage** | S9 Floor-plan readiness gate (depends on S2, S5, S6, S7, S8, all DONE) |
+| **Path to good floor plans** | S1 (done) → S2 (done) → S3 (done) → S4 (done) → S5 (done) → S6 (done) → S7 (done) → S8 (done) → S9 (9 stages) |
 | **Blocked** | H1 site facts (owner or surveyor input); program gate (needs site gate); H3 real design (needs S9 and approvals) |
 | **Human parallel tracks** | H1 site verification with the owner any time; H2 interview any time (S1-09 closed) |
-| **`main` health** | S7 closed; CI green on `b126e19` (run 39171542421) |
+| **`main` health** | S8 closed; CI green on `3c2de1d` (run 39191955991) |
 | **Homeowner gates on `my-house`** | site: not approved (5 blockers) · program: none · plan: none · model: none |
 
 
@@ -1357,7 +1357,7 @@ them. Raw LLM coordinates never replace the canonical model.
 | Field | Value |
 |---|---|
 | Kind | implementation |
-| Status | IN_PROGRESS |
+| Status | DONE |
 | Review | APPROVED |
 | Branch | `stage/S8-hillside-geometry` |
 | Depends on | S3, S7 |
@@ -1369,7 +1369,7 @@ them. Raw LLM coordinates never replace the canonical model.
 | Demonstration | Sections, sectional-strategy comparison and risk register for the synthetic steep fixture |
 | Artifacts | Geometry adapter, section generator, solver and evaluator changes |
 | Review requirements | Reviewer recomputes one analytical volume and one section height, confirms deep excavation is not penalised by default |
-| Evidence | `tests/test_hillside_earthworks.py`, `tests/test_hillside_views.py`, `tests/test_hillside_levels.py`; full suite 823 passed; CI run 39176355571 green on `dd8565b` (Python 3.11, 3.13, reviewer app); reviewer typecheck, Vitest (16) and Playwright (7) pass; internal standards and spec reviews done and their findings fixed. ADR 0022; `examples/hillside/run_demo.py`. |
+| Evidence | merge `3c2de1d`; CI run 39191955991; reviewed commit `c27b30d` (CI run 39177342512); ADR 0022; schemas; 823 tests pass |
 
 Homeowner requirement (DEC-04): deep excavation, including more than 4 m,
 is an acceptable design option; minimising excavation is not automatically
@@ -1382,109 +1382,131 @@ claimed without a recorded professional verification.
 
 #### Robust 2.5D geometry and volume validation
 
-- [ ] **S8-01** Analytical terrain and volume fixtures — `IN_PROGRESS` · P1 · deps: none
+- [x] **S8-01** Analytical terrain and volume fixtures — `DONE` · P1 · deps: none
   - Accept: planar slope, wedge, pyramid and stepped pad with closed-form cut and void volumes
   - Verify: fixture tests
   - Evidence: `tests/test_hillside_earthworks.py::test_closed_form_volumes_and_independent_mesh_boolean`, `test_stepped_pad_against_flat_terrain`
-- [ ] **S8-02** TIN-to-mesh and terrain/building intersection — `IN_PROGRESS` · P1 · deps: S8-01
+  - Notes: closed with merge `3c2de1d`
+- [x] **S8-02** TIN-to-mesh and terrain/building intersection — `DONE` · P1 · deps: S8-01
   - Accept: closed meshes, intersection volumes; library chosen in S3-02 or S3-03 behind an adapter, domain untouched
   - Verify: analytical tests
   - Evidence: `src/house_ai/geospatial/mesh.py`; closed TIN/prism, Mesh64 booleans checked against closed-form volumes
-- [ ] **S8-03** Separate cut, engineered fill and underfloor void metrics — `IN_PROGRESS` · P1 · deps: S8-02
+  - Notes: closed with merge `3c2de1d`
+- [x] **S8-03** Separate cut, engineered fill and underfloor void metrics — `DONE` · P1 · deps: S8-02
   - Accept: three distinct metrics with method and status; replaces the 0.5 m grid sampling or proves equivalence
   - Verify: analytical tests within tolerance
   - Evidence: `geospatial/earthworks.py`, `evaluation/hillside.py`; exact clipped-TIN integrals, independent mesh agreement to 1e-7 m³; void and explicit pad fill are separate; `test_slab_extensions_contribute_volume_and_unknown_coverage` (floor/terrace slabs beyond spaces count in void and coverage)
+  - Notes: closed with merge `3c2de1d`
 
 #### True sections and elevations
 
-- [ ] **S8-04** Configurable section lines and true cut sections — `IN_PROGRESS` · P1 · deps: none
+- [x] **S8-04** Configurable section lines and true cut sections — `DONE` · P1 · deps: none
   - Accept: any line across the parcel; walls, slabs, stairs and ground cut and projected
   - Verify: analytical tests
   - Evidence: `geospatial/sections.py::cut_section`, `test_section_cuts_only_intersected_geometry_and_preserves_apertures`, `test_stair_cut_uses_canonical_walking_direction_and_unknown_stays_unknown`
-- [ ] **S8-05** Standard sections: longitudinal, transverse, through stairs, through garage and entrances — `IN_PROGRESS` · P1 · deps: S8-04
+  - Notes: closed with merge `3c2de1d`
+- [x] **S8-05** Standard sections: longitudinal, transverse, through stairs, through garage and entrances — `DONE` · P1 · deps: S8-04
   - Accept: generated automatically per concept
   - Verify: test that each section exists and intersects the named element
   - Evidence: `geospatial/sections.py::standard_sections`; tests verify garage/entrance intersection and canonical stair cuts
-- [ ] **S8-06** Building and platform elevations — `IN_PROGRESS` · P2 · deps: S8-04
+  - Notes: closed with merge `3c2de1d`
+- [x] **S8-06** Building and platform elevations — `DONE` · P2 · deps: S8-04
   - Accept: facade elevations with ground line and openings
   - Verify: tests
   - Evidence: `geospatial/sections.py::facade_elevations`, `test_standard_cuts_intersect_named_elements_and_facades_include_openings`; LOCAL-axis projections labelled without occlusion claims
+  - Notes: closed with merge `3c2de1d`
 
 #### Joint level and terrain optimisation
 
-- [ ] **S8-07** Floor-to-ground relationship model and joint level optimisation — `IN_PROGRESS` · P1 · deps: none
+- [x] **S8-07** Floor-to-ground relationship model and joint level optimisation — `DONE` · P1 · deps: none
   - Accept: level elevations are decision variables bounded by terrain; replaces the ±3.0 m clamp heuristic (`massing.py:251-255`)
   - Verify: tests on road-high and road-low fixtures
   - Evidence: `generation/terrain_levels.py`; `test_joint_levels_follow_road_high_and_road_low_without_three_metre_clamp` jointly constrains bar position/length/Z for ±12 m terrain changes
-- [ ] **S8-08** Embedded and partially buried floors with daylight consequences — `IN_PROGRESS` · P1 · deps: S8-07
+  - Notes: closed with merge `3c2de1d`
+- [x] **S8-08** Embedded and partially buried floors with daylight consequences — `DONE` · P1 · deps: S8-07
   - Accept: buried faces lose window capability (S6-24); habitable rooms on buried faces flagged
   - Verify: tests
   - Evidence: `generation/solver.py` reified burial/daylight; `hillside_report` buried habitable faces; existing `tests/benchmarks/test_usability.py::test_daylight_retaining_buried_windows_cross_ventilation_and_missing_terrain`
-- [ ] **S8-09** Walk-out, split-level, stepped, elevated and hybrid alternatives compared — `IN_PROGRESS` · P1 · deps: S8-07
+  - Notes: closed with merge `3c2de1d`
+- [x] **S8-09** Walk-out, split-level, stepped, elevated and hybrid alternatives compared — `DONE` · P1 · deps: S8-07
   - Accept: each produced where feasible; trade-offs shown per DEC-04 without a default preference
   - Verify: comparison test
   - Evidence: `examples/hillside/run_demo.py`; `test_sectional_alternatives_are_solver_generated_and_compared` generates five intents with distinct comparisons and no earthworks objective; each row carries comfort/function/beauty/circulation/daylight/complexity/risk dimensions with status (comfort and beauty `not_checked`)
-- [ ] **S8-10** Underfloor void reporting with large-void flags — `IN_PROGRESS` · P1 · deps: S8-07
+  - Notes: closed with merge `3c2de1d`
+- [x] **S8-10** Underfloor void reporting with large-void flags — `DONE` · P1 · deps: S8-07
   - Accept: void volume and maximum clear height per elevated area; voids deeper than a configurable height flagged (the owner's 4 m concern)
   - Verify: tests
   - Evidence: `earthworks.py` per-slab/remaining-area void and maximum gap; configurable HillsideSettings trigger; `test_void_to_slab_underside_and_fill_require_known_pad_coverage`
+  - Notes: closed with merge `3c2de1d`
 
 #### Earthworks and retaining walls
 
-- [ ] **S8-11** Retaining-wall candidate geometry with retained height and face area — `IN_PROGRESS` · P1 · deps: none
+- [x] **S8-11** Retaining-wall candidate geometry with retained height and face area — `DONE` · P1 · deps: none
   - Accept: per wall: length, maximum and mean retained height, face area
   - Verify: analytical tests
   - Evidence: `earthworks.py::retained_face`; analytical 10 m wall crossing ground gives 2.5 m² retained face, 1 m maximum and 0.25 m mean height
-- [ ] **S8-12** Excavation and fill estimates — `IN_PROGRESS` · P1 · deps: none
+  - Notes: closed with merge `3c2de1d`
+- [x] **S8-12** Excavation and fill estimates — `DONE` · P1 · deps: none
   - Accept: excavation and engineered fill separated from void; labelled not a construction estimate
   - Verify: analytical tests
   - Evidence: `test_stepped_pad_against_flat_terrain`: cut 30 m³, explicit fill 30 m³, remaining void 120 m³; exports explicitly exclude construction estimating
-- [ ] **S8-13** Drainage and waterproofing conflict flags — `IN_PROGRESS` · P2 · deps: S8-11
+  - Notes: closed with merge `3c2de1d`
+- [x] **S8-13** Drainage and waterproofing conflict flags — `DONE` · P2 · deps: S8-11
   - Accept: buried habitable walls, uphill retaining faces and terrain-contact doors listed as risks needing a professional
   - Verify: tests
   - Evidence: `geospatial/hillside.py` element-linked drainage/waterproofing triggers; `test_deep_excavation_has_no_depth_penalty_and_large_void_is_configurable`, `test_buried_garage_keeps_all_required_professional_disciplines`
+  - Notes: closed with merge `3c2de1d`
 
 #### Access and terrain-contact connections
 
-- [ ] **S8-14** Terrain-contact doors: threshold versus ground — `IN_PROGRESS` · P1 · deps: none
+- [x] **S8-14** Terrain-contact doors: threshold versus ground — `DONE` · P1 · deps: none
   - Accept: per exterior door, ground level outside and difference; steps or ramp needed reported
   - Verify: seeded fixture
   - Evidence: `test_threshold_samples_outside_door_and_garage_frontage_grade`: per-door outside terrain, signed threshold delta and required level-change flag; `test_unknown_access_and_retaining_totals_are_not_reported_as_zero` (unknown door terrain gives a null total plus an unchecked-door count)
-- [ ] **S8-15** Road-level garage access, vehicle ramps and grades — `IN_PROGRESS` · P1 · deps: none
+  - Notes: closed with merge `3c2de1d`
+- [x] **S8-15** Road-level garage access, vehicle ramps and grades — `DONE` · P1 · deps: none
   - Accept: garage floor vs road level at the frontage; ramp grade and length reported
   - Verify: road-high and road-low fixtures
   - Evidence: same seeded test: frontage runs 1 m, deltas ±2 m, candidate grades ±200%; no claim of designed ramp feasibility
-- [ ] **S8-16** Indoor versus outdoor stair requirements — `IN_PROGRESS` · P2 · deps: S8-14
+  - Notes: closed with merge `3c2de1d`
+- [x] **S8-16** Indoor versus outdoor stair requirements — `DONE` · P2 · deps: S8-14
   - Accept: outdoor level changes needing stairs identified and counted
   - Verify: tests
   - Evidence: `hillside_report` distinguishes canonical indoor stair count from exterior level changes requiring steps/ramp design; seeded threshold tests
-- [ ] **S8-17** Outdoor connections and terraces against terrain — `IN_PROGRESS` · P1 · deps: S8-14
+  - Notes: closed with merge `3c2de1d`
+- [x] **S8-17** Outdoor connections and terraces against terrain — `DONE` · P1 · deps: S8-14
   - Accept: terrace edges vs ground; garden access from living levels
   - Verify: large-terrace fixture
   - Evidence: `test_terrace_edge_profiles_expose_void_and_candidate_garden_contacts`; signed per-edge ground profiles and inferred candidate at-grade garden contact
+  - Notes: closed with merge `3c2de1d`
 
 #### Terrain data quality and engineering-risk register
 
-- [ ] **S8-18** Terrain breaklines in the TIN — `IN_PROGRESS` · P2 · deps: none
+- [x] **S8-18** Terrain breaklines in the TIN — `DONE` · P2 · deps: none
   - Accept: constrained edges from survey lines (walls, kerbs, banks) when mapped
   - Verify: breakline fixture
   - Evidence: `cad/layers.py` explicit breakline mapping → 3D extraction → constrained TIN cells; `test_constrained_breakline_changes_ridge_and_keeps_edges`, crossing-height conflict and mapping tests
-- [ ] **S8-19** Suspicious and sliver triangle detection — `IN_PROGRESS` · P1 · deps: none
+  - Notes: closed with merge `3c2de1d`
+- [x] **S8-19** Suspicious and sliver triangle detection — `DONE` · P1 · deps: none
   - Accept: thin or steep-artifact triangles listed with location; extends the existing `steep_triangle` warning
   - Verify: noisy TIN fixture (S3-14)
   - Evidence: `hillside.py::triangle_quality`; `test_sliver_triangle_is_located_and_not_smoothed`, extreme slope tests
-- [ ] **S8-20** Unknown terrain coverage reporting — `IN_PROGRESS` · P1 · deps: none
+  - Notes: closed with merge `3c2de1d`
+- [x] **S8-20** Unknown terrain coverage reporting — `DONE` · P1 · deps: none
   - Accept: footprint and section parts outside surveyed support marked unknown, not interpolated silently
   - Verify: tests
   - Evidence: actual triangle-union coverage, unsupported section intervals, pad coverage and wrong-frame tests in `test_hillside_earthworks.py`, `test_hillside_views.py`; unknown thresholds and partially unsupported retaining faces reported `not_checked`, never zero
-- [ ] **S8-21** Unresolved engineering-risk register per concept — `IN_PROGRESS` · P1 · deps: none
+  - Notes: closed with merge `3c2de1d`
+- [x] **S8-21** Unresolved engineering-risk register per concept — `DONE` · P1 · deps: none
   - Accept: structure, foundations, retaining, drainage, waterproofing, slope stability listed as "needs professional" with triggers
   - Verify: tests; PROFESSIONAL_HANDOFF updated
   - Evidence: `render2d/hillside_export.py` writes per-concept element-linked `engineering-risks.md` and `hillside.json`; ADR 0022; PROFESSIONAL_HANDOFF updated; all six disciplines always listed (`test_buried_garage_keeps_all_required_professional_disciplines`)
-- [ ] **S8-22** Synthetic hillside stress tests — `IN_PROGRESS` · P2 · deps: none
+  - Notes: closed with merge `3c2de1d`
+- [x] **S8-22** Synthetic hillside stress tests — `DONE` · P2 · deps: none
   - Accept: extreme slopes and irregular parcels fail clearly or produce valid output
   - Verify: `pytest -q`
   - Evidence: `test_extreme_slope_quantities_are_finite_and_risks_explicit` ±300% slope; all five sectional intents tested on irregular synthetic hillside; invalid pad/TIN cases explicit
+  - Notes: closed with merge `3c2de1d`
 
 ### Stage S9 — Floor-plan readiness gate
 
@@ -2192,12 +2214,13 @@ ingestion pipeline · 0007 site review corrections · 0008 owner interview and
 space program · 0009 personal-first project folders · 0010 Claude adapter
 for the interview · 0011 agent-first interview interface · 0012 site metric
 scope · 0013 solver-backed plan generation · 0014 project tracker and stage
-lifecycle · 0015 agent skills canonical location and discovery · 0016 event-head anchor integrity · 0017 synthetic benchmark contract · 0018 reviewer architecture · 0019 canonical placements and derived usability studies · 0020 relation semantics between solver and evaluator · 0021 2D placement formulation.
+lifecycle · 0015 agent skills canonical location and discovery · 0016 event-head anchor integrity · 0017 synthetic benchmark contract · 0018 reviewer architecture · 0019 canonical placements and derived usability studies · 0020 relation semantics between solver and evaluator · 0021 2D placement formulation · 0022 hillside geometry and level decisions.
 
 ## M. Recently completed
 
 | Date | What | Evidence |
 |---|---|---|
+| 2026-10-19 | Stage S8 closed: hillside geometry (exact TIN quantities and mesh booleans, true section cuts and local facade projections, coupled bar/level CP-SAT optimisation without excavation penalty per DEC-04, walkout/split-level/stepped/elevated/hybrid sectional strategies, underfloor void reporting, retaining walls and explicit pad earthworks, terrain-contact door access and garage grades, mapped breaklines and sliver quality checks, concept-level professional engineering risk register and exports, ADR 0022) | merge `3c2de1d`; CI run 39191955991 |
 | 2026-10-18 | Stage S7 closed: flexible plan generation (NoOverlap2D solver, ADRs 0020 & 0021, typed topology proposals ConceptProposal, composite spaces, corridor-free and open plans, two-wing and courtyard massing, multi-level alternative stair cores, terrace and outdoor links, feature-mapped combine revisions, intent regression detection, quantitative diversity metrics) | merge `b126e19`; CI run 39171542421 |
 | 2026-10-18 | Stage S6 closed: usability critics (net usable area, door clearances and swings, stair rise/going/headroom/landing, furniture templates and bounded fit search, path-based route visibility network, privacy/crossings, daylight opportunity, conservative vehicle arrival, 8 critics over 17 R2 benchmarks, synthetic hillside demonstration) | merge `5ed8743`; CI run 39119646883 |
 | 2026-10-18 | Stage S5 closed: agent visual review loop (browser setup in `AGENT_BROWSER_SETUP.md`, offline capture script in `capture.js`, semantic SVG tags and accessibility tree snapshot, static rasterization, `VisualCritique` schema, grounding validator, seeded visual defects detectors, fix verification loop, `visual-review` skill, synthetic hillside demonstration) | merge `b79595e`; CI run 39109025338 |
@@ -2245,6 +2268,11 @@ Closure record template:
 ```
 
 ### S8 records
+
+#### S8 closure
+- Merged: `stage/S8-hillside-geometry` at `c27b30d` (reviewed commit; branch head `6518358` adds only review tracker records) into `main` as `3c2de1d` on 2026-10-19
+- CI on main: run 39191955991, success on Python 3.11 and 3.13, Vitest & Playwright
+- Closed by: agent:gemini on the owner's "Close stage S8"
 
 #### S8 review 2 — APPROVED
 - Reviewed commit: c27b30d55c0d7ec18869b614cc9815441dcfb9c7
@@ -3139,11 +3167,10 @@ homeowner approval of any site, program, plan or model.
 
 ### Current handoff note
 
-- S7 Flexible plan generation closed on `main` (merge commit `b126e19`; CI run 39171542421 green).
-- S8 Hillside geometry review 2 is **APPROVED** on `stage/S8-hillside-geometry` at commit `c27b30d` (reviewer: `agent:gemini`; CI runs 39176355571 and 39177342512 green).
-- All 22 tasks (S8-01 through S8-22) implemented and verified. Both review 1 findings addressed. Full test suite (823 passed), lint, schemas, tracker, project store, leak scan, reviewer app (typecheck, Vitest, Playwright), and analytical recomputations verified.
-- Stage S8 is ready for the homeowner's "Close stage S8" instruction per `docs/PROJECT_TRACKER.md §O`.
-- No approvals or `my-house` private data modified.
+- S8 Hillside geometry closed on `main` (merge commit `3c2de1d`; CI run 39191955991 green).
+- Next eligible stage is **S9 Floor-plan readiness gate** (depends on S2, S5, S6, S7, S8, all DONE).
+- S9 scope: decide, with evidence, whether the system is ready to design the real house; evidence per §H criteria, end-to-end synthetic demonstration, owner's acknowledgement of limitations.
+- Owner can trigger "Next stage" to begin S9 on branch `stage/S9-readiness-gate`.
 
 ## P. Rules for updating the tracker
 
