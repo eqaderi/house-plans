@@ -29,6 +29,8 @@ from house_ai.constants.reviewer import (
     KIND_STAIR,
     KIND_WALL,
     KIND_WINDOW,
+    MARGIN,
+    PANEL_W,
 )
 from house_ai.domain.base import EXTERIOR
 from house_ai.domain.epistemics import ConfirmationStatus
@@ -45,8 +47,6 @@ from house_ai.domain.site import (
     SiteFeatureKind,
 )
 
-PANEL_W = 560.0
-MARGIN = 36.0
 HEADER_H = 92.0
 SECTION_H = 230.0
 
