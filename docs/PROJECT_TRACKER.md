@@ -2657,6 +2657,7 @@ Closure record template:
   - S9-02 demonstration: replayed `examples/readiness/run_demo.py --out project-data/s9-demo` cleanly; generated updated `record.md` and `record.json` with 5/5 refused properly, 5 of 6 bar strategies feasible plus proposal, walking lines and headroom measured, all 9 canonical fixtures placed, revisions separating unmet from regression, reviewer bundle exported (3.3 MB), store verified (102 events). `tests/test_readiness_demo.py` passed (2 tests in 32s).
   - Test decoupling: removed coupling to transient `project-data/` in `tests/test_seeded_defects.py`, ensuring tests remain hermetic and self-contained per S1 rules.
 - Checks run on branch (macOS arm64, Python 3.13.3):
+  - CI: run 39326164046 dispatched via GitHub Actions for `stage/S9-readiness-gate`.
   - `pytest -q`: 867 passed in 412s.
   - `ruff check src tests examples tools`: clean.
   - `schemas check`: 29 up to date.
