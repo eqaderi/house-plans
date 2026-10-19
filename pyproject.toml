@@ -14,7 +14,10 @@ requires-python = ">=3.11"
 dependencies = [
   "pydantic>=2.10,<3",
   "PyYAML>=6.0,<7",
-  "shapely>=2.0,<3",
+  "shapely>=2.1,<3",
+  # S8: geometry adapter validated in S3; no vendor types in domain.
+  "trimesh>=5.1,<6",
+  "manifold3d>=3.5,<4",
   # Milestone B: DXF reading, and CRS/datum lookups and transforms (bundles PROJ).
   "ezdxf>=1.4,<2",
   "pyproj>=3.7,<4",

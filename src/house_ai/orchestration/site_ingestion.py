@@ -319,6 +319,7 @@ def _merge(parts: list[tuple[str, SiteExtraction]]) -> SiteExtraction:
     for sid, x in parts:
         out.boundary_candidates += [f"{sid}#{h}" for h in x.boundary_candidates]
         out.contours += x.contours
+        out.breaklines += x.breaklines
         out.spot_elevations += x.spot_elevations
         out.features += x.features
         out.ambiguous += x.ambiguous
@@ -421,6 +422,7 @@ def interpret(
             part.boundary = None
             part.boundary_source_ref = None
             part.contours = []
+            part.breaklines = []
             part.spot_elevations = []
             part.features = []
             per_source_unscaled[sid] = part
@@ -502,12 +504,13 @@ def interpret(
     per_source = {sid: x.extract(ext, transform) for sid, ext, x in extractors}
     if v_unit is None:
         for part in per_source.values():
-            dropped = len(part.spot_elevations) + len(part.contours)
+            dropped = len(part.spot_elevations) + len(part.contours) + len(part.breaklines)
             if dropped:
                 part.warnings.append(
                     f"{dropped} elevation entities not converted: the elevation unit is unknown"
                 )
             part.spot_elevations, part.contours = [], []
+            part.breaklines = []
     site_ext = _merge(list(per_source.items()))
     if v_unit is None and any("elevation unit is unknown" in w for w in site_ext.warnings):
         issues.append(
@@ -557,7 +560,7 @@ def assemble_site(
     (each must exist); ``carry_accepted`` / ``carry_accepted_signatures`` keep
     earlier acceptances that still apply."""
     ext = interp.extraction
-    terrain, tin = terrain_from_survey(ext.spot_elevations, ext.contours)
+    terrain, tin = terrain_from_survey(ext.spot_elevations, ext.contours, ext.breaklines)
     issues = [*extra_issues, *interp.issues]
     for i, conflict in enumerate(tin.conflicts, start=1):
         issues.append(

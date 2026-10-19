@@ -70,6 +70,7 @@ class Row:
     #: The row's exterior face can take windows (not buried, not against another bar).
     daylight_face: bool = True
     buried: bool = False
+    blocked_by_neighbor: bool = False
 
 
 @dataclass
@@ -242,7 +243,7 @@ def _entry_elevation(ctx: MassingContext, bar0: Bar, notes: list[str]) -> float:
         )
         return 0.0
     notes.append(
-        f"Entry level set at the mean surveyed ground along the road-side face "
+        f"Initial entry reference from the mean surveyed ground along the road-side face "
         f"({_snap(z):.2f} m local), interpolated from the survey TIN (inferred)."
     )
     return _snap(z)
@@ -252,7 +253,7 @@ def _step(delta: float | None) -> float:
     if delta is None:
         return 0.0
     q = round(delta / HALF_STOREY_M) * HALF_STOREY_M
-    return max(-FLOOR_TO_FLOOR_M, min(FLOOR_TO_FLOOR_M, q))
+    return q
 
 
 def _mark_faces(ctx: MassingContext, m: Massing) -> None:
@@ -270,7 +271,8 @@ def _mark_faces(ctx: MassingContext, m: Massing) -> None:
         for row in bar.room_rows:
             ground = _face_ground(ctx, bar, row.side)
             row.buried = ground is not None and ground - bar.elevation_m > BURIED_FACE_M
-            row.daylight_face = not row.buried and row.id not in blocked
+            row.blocked_by_neighbor = row.id in blocked
+            row.daylight_face = not row.buried and not row.blocked_by_neighbor
 
 
 def _levels_note(m: Massing) -> None:

@@ -273,6 +273,13 @@ export interface DoorsConnectValidSpacesRule {
   kind?: string;
 }
 
+export interface EarthworkPad {
+  basis: string;
+  boundary: Polygon2D;
+  elevation_m: number;
+  id: string;
+}
+
 /** Epistemic status of a statement about the project. */
 export type Epistemic = "verified_fact" | "inference" | "assumption" | "preference" | "simulation_result" | "professional_approval" | "unknown";
 
@@ -379,6 +386,7 @@ export interface HouseModel {
   clearance_zones?: ClearanceZone[];
   composite_spaces?: CompositeSpace[];
   coordinate_system_id: string;
+  earthwork_pads?: EarthworkPad[];
   fixtures?: Fixture[];
   furniture?: Furniture[];
   id: string;
@@ -883,11 +891,19 @@ export type StairKind = "straight" | "l_shaped" | "u_shaped" | "spiral" | "other
 export type Strength = "hard" | "soft";
 
 export interface Terrain {
+  breaklines?: TerrainBreakline[];
   contours?: Contour[];
   spot_elevations?: SpotElevation[];
   status?: TerrainStatus;
   surface?: TinSurface | null;
   surface_ref?: string | null;
+}
+
+/** Explicitly mapped surveyed 3D line; no inferred elevations or kerb roles. */
+export interface TerrainBreakline {
+  id: string;
+  source_ref?: string | null;
+  vertices: any[][];
 }
 
 export type TerrainStatus = "unknown" | "surveyed_points" | "surface_built" | "assumed_flat";
@@ -897,7 +913,7 @@ export type TerrainStatus = "unknown" | "surveyed_points" | "surface_built" | "a
 It covers the convex hull of the survey data and nothing more: elevations
 outside it are unknown, never extrapolated. */
 export interface TinSurface {
-  method?: string;
+  method?: "delaunay_tin" | "constrained_tin";
   source_ids?: string[];
   triangles: any[][];
   vertices: any[][];
@@ -1138,6 +1154,14 @@ export interface FurnitureTemplate {
   width: DimensionAssumption;
 }
 
+/** Concept review triggers, not jurisdictional or engineering limits. */
+export interface HillsideSettings {
+  access_step_trigger_m?: number;
+  large_void_height_m?: number;
+  sliver_quality_trigger?: number;
+  vehicle_grade_trigger_pct?: number;
+}
+
 export interface InterviewSession {
   brief_id?: string;
   id: string;
@@ -1239,6 +1263,12 @@ export interface SceneManifest {
   provenance: Provenance;
   schema_version?: string;
   units?: LengthUnit;
+}
+
+export interface SectionLine {
+  end: any[];
+  id: string;
+  start: any[];
 }
 
 /** An original input file, preserved byte-for-byte under source/. */

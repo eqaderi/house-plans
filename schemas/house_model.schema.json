@@ -342,6 +342,38 @@
       "title": "CompositeSpace",
       "type": "object"
     },
+    "EarthworkPad": {
+      "additionalProperties": false,
+      "properties": {
+        "basis": {
+          "minLength": 1,
+          "title": "Basis",
+          "type": "string"
+        },
+        "boundary": {
+          "$ref": "#/$defs/Polygon2D"
+        },
+        "elevation_m": {
+          "title": "Elevation M",
+          "type": "number"
+        },
+        "id": {
+          "maxLength": 64,
+          "minLength": 1,
+          "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+          "title": "Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "boundary",
+        "elevation_m",
+        "basis"
+      ],
+      "title": "EarthworkPad",
+      "type": "object"
+    },
     "Epistemic": {
       "description": "Epistemic status of a statement about the project.",
       "enum": [
@@ -1529,6 +1561,13 @@
       "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
       "title": "Coordinate System Id",
       "type": "string"
+    },
+    "earthwork_pads": {
+      "items": {
+        "$ref": "#/$defs/EarthworkPad"
+      },
+      "title": "Earthwork Pads",
+      "type": "array"
     },
     "fixtures": {
       "items": {

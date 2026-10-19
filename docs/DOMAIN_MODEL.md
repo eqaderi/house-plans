@@ -277,3 +277,24 @@ reports by a visibility-graph point route through actual room polygons and porta
 Empty/absent new fields are omitted during canonical serialization to retain
 pre-S6 immutable hashes. Populated fields affect hashes normally; old project
 artifacts and approvals are never rewritten.
+
+## Hillside geometry (S8, ADR 0022)
+
+`HouseModel.earthwork_pads` holds proposed `EarthworkPad` polygons, formation
+elevation in LOCAL metres and an explicit design basis. Pads are never
+survey facts. Integrity checks reject overlaps, pads above finished floors
+and pads outside a known parcel. Quantity evaluation also rejects pads that
+intersect a defined slab underside. Empty pads are omitted when serialized
+so historical project hashes remain stable.
+
+`Terrain.breaklines` holds mapped surveyed 3D `TerrainBreakline` vertices and
+source references. `TinSurface.method` additionally accepts `constrained_tin`.
+Crossing-height conflicts and unenforceable constraints leave no surface;
+queries never silently substitute unconstrained Delaunay when breaklines
+exist. Empty breaklines preserve historical hashes.
+
+`SectionLine` and `HillsideSettings` have exported schemas. Sections, facade
+projections, earthwork integrations and engineering-risk registers are
+derived views retaining canonical IDs. They do not form a competing design
+model. Every numeric terrain relationship is inferred from survey TIN
+interpolation; missing support remains unknown.

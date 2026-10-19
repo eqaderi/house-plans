@@ -20,6 +20,7 @@ from house_ai.domain.site import SiteFeatureKind
 class LayerRole(StrEnum):
     BOUNDARY = "boundary"
     CONTOUR = "contour"
+    BREAKLINE = "breakline"
     SPOT_ELEVATION = "spot_elevation"
     ROAD = "road"
     EASEMENT = "easement"

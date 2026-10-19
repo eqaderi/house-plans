@@ -101,6 +101,7 @@ def check_model(
         # Geometry checks below assume references resolve.
         return findings
     findings += _check_overlaps(model)
+    findings += _check_earthwork_pads(model, site)
     findings += _check_walls(model)
     findings += _check_openings(model)
     findings += _check_fixtures(model)
@@ -110,6 +111,35 @@ def check_model(
         findings += _check_site(model, site)
     if program is not None:
         findings += _check_program(model, program)
+    return findings
+
+
+def _check_earthwork_pads(model: HouseModel, site: Site | None) -> list[IntegrityFinding]:
+    findings = []
+    for a, b in combinations(model.earthwork_pads, 2):
+        if a.boundary.to_shapely().intersection(b.boundary.to_shapely()).area > 1e-8:
+            findings.append(
+                _err("earthwork_pad_overlap", "Proposed earthwork pads overlap", a.id, b.id)
+            )
+    for pad in model.earthwork_pads:
+        polygon = pad.boundary.to_shapely()
+        if site and site.boundary and not site.boundary.to_shapely().buffer(EPS_M).covers(polygon):
+            findings.append(
+                _err("earthwork_pad_outside_site", "Proposed pad outside parcel", pad.id)
+            )
+        for space in model.spaces:
+            if (
+                polygon.intersection(space.boundary.to_shapely()).area > 1e-8
+                and pad.elevation_m > model.level(space.level_id).elevation_m + EPS_M
+            ):
+                findings.append(
+                    _err(
+                        "earthwork_pad_above_floor",
+                        "Proposed formation pad above a floor",
+                        pad.id,
+                        space.id,
+                    )
+                )
     return findings
 
 

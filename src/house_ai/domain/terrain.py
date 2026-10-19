@@ -42,6 +42,9 @@ def site_surface(site: Site) -> TinSurface | None:
     """
     if site.terrain.surface is not None:
         return site.terrain.surface
+    if site.terrain.breaklines:
+        # Never silently substitute an unconstrained surface for mapped constraints.
+        return None
     seen: dict[tuple[int, int], Point3] = {}
     for s in site.terrain.spot_elevations:
         seen.setdefault((round(s.xy[0] * 1e6), round(s.xy[1] * 1e6)), (*s.xy, s.z_m))

@@ -18,6 +18,7 @@ from pydantic import Field, model_serializer, model_validator
 
 from .base import SCHEMA_VERSION, Id, PositiveFloat, StrictModel
 from .geometry import Point2, Polygon2D, segment_length
+from .hillside import EarthworkPad
 from .program import Privacy, SpaceFunction
 from .provenance import ArtifactRef
 from .records import Assumption, Issue
@@ -308,13 +309,14 @@ class HouseModel(StrictModel):
     clearance_zones: list[ClearanceZone] = Field(default_factory=list)
     relationships: list[SpaceRelationship] = Field(default_factory=list)
     materials: list[MaterialRef] = Field(default_factory=list)
+    earthwork_pads: list[EarthworkPad] = Field(default_factory=list)
     assumptions: list[Assumption] = Field(default_factory=list)
     issues: list[Issue] = Field(default_factory=list)
 
     @model_serializer(mode="wrap")
     def _legacy_hash_compatible(self, handler):
         data = handler(self)
-        for field in ("furniture", "clearance_zones", "composite_spaces"):
+        for field in ("furniture", "clearance_zones", "composite_spaces", "earthwork_pads"):
             if not getattr(self, field):
                 data.pop(field, None)
         return data
@@ -345,6 +347,7 @@ class HouseModel(StrictModel):
             self.clearance_zones,
             self.relationships,
             self.materials,
+            self.earthwork_pads,
             self.assumptions,
             self.issues,
         )

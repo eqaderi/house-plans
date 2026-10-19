@@ -13,11 +13,13 @@ import math
 from dataclasses import dataclass, field
 from itertools import combinations
 
-from shapely import MultiPoint, delaunay_triangles
+from shapely import MultiPoint, constrained_delaunay_triangles, delaunay_triangles
+from shapely.geometry import LineString, Point
 from shapely.geometry import Polygon as ShapelyPolygon
+from shapely.ops import split, unary_union
 
 from house_ai.domain.geometry import Point2, Point3, Polygon2D
-from house_ai.domain.site import Contour, SpotElevation, Terrain, TinSurface
+from house_ai.domain.site import Contour, SpotElevation, Terrain, TerrainBreakline, TinSurface
 from house_ai.domain.terrain import elevation_at  # noqa: F401  (re-exported)
 
 from .base import build_terrain
@@ -38,7 +40,11 @@ def _key(xy: Point2) -> tuple[int, int]:
     return (round(xy[0] / VERTEX_TOL_M), round(xy[1] / VERTEX_TOL_M))
 
 
-def build_tin(spots: list[SpotElevation], contours: list[Contour]) -> TinResult:
+def build_tin(
+    spots: list[SpotElevation],
+    contours: list[Contour],
+    breaklines: list[TerrainBreakline] | None = None,
+) -> TinResult:
     result = TinResult(surface=None)
     vertices: dict[tuple[int, int], tuple[Point3, str]] = {}
 
@@ -59,6 +65,9 @@ def build_tin(spots: list[SpotElevation], contours: list[Contour]) -> TinResult:
     for c in contours:
         for p in c.line.points:
             add(p, c.z_m, c.id)
+    for line in breaklines or []:
+        for x, y, z in line.vertices:
+            add((x, y), z, line.id)
     if result.conflicts:
         result.warnings.append("no terrain surface built while elevations conflict")
         return result
@@ -80,7 +89,101 @@ def build_tin(spots: list[SpotElevation], contours: list[Contour]) -> TinResult:
     triangles.sort()
     sources = sorted({src for _, src in vertices.values()})
     result.surface = TinSurface(vertices=pts, triangles=triangles, source_ids=sources)
+    if breaklines:
+        _constrain(result, breaklines)
     return result
+
+
+def _constrain(result: TinResult, breaklines: list[TerrainBreakline]) -> None:
+    """Split TIN cells at mapped edges, then triangulate each constrained cell.
+
+    New edge intersections take the surveyed line's interpolated Z. Endpoint
+    points were inserted before triangulation, so even dangling segments cut
+    whole cells. Crossings must have consistent Z; vertical discontinuities
+    cannot be represented by a 2.5D surface and are refused explicitly.
+    """
+    from .earthworks import facets, plane
+
+    assert result.surface is not None
+    surface = result.surface
+    segments = [
+        (LineString([a[:2], b[:2]]), a, b, line.id)
+        for line in breaklines
+        for a, b in zip(line.vertices, line.vertices[1:], strict=False)
+    ]
+
+    def z_line(segment, a, b, xy):
+        return a[2] + (b[2] - a[2]) * segment.project(Point(xy)) / segment.length
+
+    def add_conflict(message):
+        result.conflicts.append(message)
+        result.surface = None
+
+    for i, (seg, a, b, identifier) in enumerate(segments):
+        for other, c, d, oid in segments[i + 1 :]:
+            hit = seg.intersection(other)
+            if hit.is_empty:
+                continue
+            points = [hit] if hit.geom_type == "Point" else [Point(p) for p in hit.coords]
+            for p in points:
+                if (
+                    abs(z_line(seg, a, b, p.coords[0]) - z_line(other, c, d, p.coords[0]))
+                    > VERTEX_TOL_M
+                ):
+                    add_conflict(f"breaklines {identifier} and {oid} cross at inconsistent heights")
+        for x, y, z in surface.vertices:
+            if (
+                seg.distance(Point(x, y)) < VERTEX_TOL_M
+                and abs(z_line(seg, a, b, (x, y)) - z) > VERTEX_TOL_M
+            ):
+                add_conflict(f"breakline {identifier} contradicts surveyed vertex {(x, y)}")
+    if result.conflicts:
+        return
+    # Split on whole segments in sequence; crossings become cell-boundary vertices.
+    all_segments = [s for s, _, _, _ in segments]
+    vertices, triangles, indices = [], [], {}
+    for triangle, z_at, _ in facets(surface):
+        cells = [triangle]
+        for segment in all_segments:
+            cells = [part for cell in cells for part in split(cell, segment).geoms]
+        for cell in cells:
+            for tri in constrained_delaunay_triangles(cell).geoms:
+                ids = []
+                coords = list(tri.exterior.coords)[:3]
+                if not tri.exterior.is_ccw:
+                    coords.reverse()
+                for x, y in coords:
+                    z = z_at(x, y)
+                    for seg, a, b, _ in segments:
+                        if seg.distance(Point(x, y)) < VERTEX_TOL_M:
+                            z = z_line(seg, a, b, (x, y))
+                            break
+                    k = _key((x, y))
+                    if k not in indices:
+                        indices[k] = len(vertices)
+                        vertices.append((x, y, z))
+                    ids.append(indices[k])
+                # Force a plane check now, so degenerate input fails clearly.
+                plane(*(vertices[i] for i in ids))
+                triangles.append(tuple(ids))
+    # Constraint edges must really exist in the result, including dangling lines.
+    edge_union = unary_union(
+        [
+            LineString([vertices[a][:2], vertices[b][:2]])
+            for tri in triangles
+            for a, b in zip(tri, (*tri[1:], tri[0]), strict=True)
+        ]
+    )
+    for segment, _, _, identifier in segments:
+        if segment.difference(edge_union.buffer(1e-7)).length > 1e-6:
+            add_conflict(f"could not enforce mapped breakline {identifier}; no surface built")
+            return
+    result.surface = TinSurface(
+        method="constrained_tin",
+        vertices=vertices,
+        triangles=triangles,
+        source_ids=sorted(set(surface.source_ids)|{line.id for line in breaklines}),
+    )
 
 
 def _cross(a: Point3, b: Point3, c: Point3) -> float:
@@ -88,10 +191,14 @@ def _cross(a: Point3, b: Point3, c: Point3) -> float:
 
 
 def terrain_from_survey(
-    spots: list[SpotElevation], contours: list[Contour]
+    spots: list[SpotElevation],
+    contours: list[Contour],
+    breaklines: list[TerrainBreakline] | None = None,
 ) -> tuple[Terrain, TinResult]:
-    tin = build_tin(spots, contours)
-    return build_terrain(spots, contours, surface=tin.surface), tin
+    tin = build_tin(spots, contours, breaklines)
+    terrain = build_terrain(spots, contours, surface=tin.surface)
+    terrain.breaklines = breaklines or []
+    return terrain, tin
 
 
 class DelaunayTerrainBuilder:
@@ -114,7 +221,9 @@ def triangle_slope_pct(a: Point3, b: Point3, c: Point3) -> float:
 
 
 def hull_polygon(surface: TinSurface) -> ShapelyPolygon:
-    return MultiPoint([(x, y) for x, y, _ in surface.vertices]).convex_hull
+    from .earthworks import support
+
+    return support(surface)
 
 
 def boundary_coverage(surface: TinSurface, boundary: Polygon2D) -> float:

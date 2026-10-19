@@ -11,7 +11,7 @@ from __future__ import annotations
 from enum import StrEnum
 from typing import Annotated, Literal
 
-from pydantic import Field, model_validator
+from pydantic import Field, model_serializer, model_validator
 
 from .base import SCHEMA_VERSION, Id, Sha256, StrictModel
 from .coordinates import SiteCoordinates
@@ -92,6 +92,20 @@ class TerrainStatus(StrEnum):
     ASSUMED_FLAT = "assumed_flat"
 
 
+class TerrainBreakline(StrictModel):
+    """Explicitly mapped surveyed 3D line; no inferred elevations or kerb roles."""
+
+    id: Id
+    vertices: list[Point3] = Field(min_length=2)
+    source_ref: str | None = None
+
+    @model_validator(mode="after")
+    def _segments(self) -> TerrainBreakline:
+        if any(a[:2] == b[:2] for a, b in zip(self.vertices, self.vertices[1:], strict=False)):
+            raise ValueError("breakline has a zero-length XY or vertical segment")
+        return self
+
+
 class TinSurface(StrictModel):
     """Triangulated terrain built only from surveyed points (LOCAL metres).
 
@@ -99,7 +113,7 @@ class TinSurface(StrictModel):
     outside it are unknown, never extrapolated.
     """
 
-    method: Literal["delaunay_tin"] = "delaunay_tin"
+    method: Literal["delaunay_tin", "constrained_tin"] = "delaunay_tin"
     vertices: list[Point3] = Field(min_length=3)
     #: Vertex index triples, counter-clockwise.
     triangles: list[tuple[int, int, int]] = Field(min_length=1)
@@ -122,6 +136,14 @@ class Terrain(StrictModel):
     #: Reference to a derived surface artifact (Milestone B), if any.
     surface_ref: str | None = None
     surface: TinSurface | None = None
+    breaklines: list[TerrainBreakline] = Field(default_factory=list)
+
+    @model_serializer(mode="wrap")
+    def _legacy_hash_compatible(self, handler):
+        data = handler(self)
+        if not self.breaklines:
+            data.pop("breaklines", None)
+        return data
 
     @model_validator(mode="after")
     def _surface_matches_status(self) -> Terrain:
@@ -231,6 +253,7 @@ class Site(StrictModel):
         ids = (
             [s.id for s in self.terrain.spot_elevations]
             + [c.id for c in self.terrain.contours]
+            + [b.id for b in self.terrain.breaklines]
             + [f.id for f in self.features]
         )
         dupes = sorted({i for i in ids if ids.count(i) > 1})
@@ -250,6 +273,8 @@ class Site(StrictModel):
             or self.buildable_envelope is not None
             or self.terrain.spot_elevations
             or self.terrain.contours
+            or self.terrain.breaklines
+            or self.terrain.surface is not None
             or self.features
         )
 
@@ -280,7 +305,12 @@ def site_verification_blockers(site: Site) -> list[str]:
             f"horizontal CRS is {crs.status.value}{detail}; a human must confirm the EPSG code "
             "or confirm the survey is local-only"
         )
-    has_elevations = bool(site.terrain.spot_elevations or site.terrain.contours)
+    has_elevations = bool(
+        site.terrain.spot_elevations
+        or site.terrain.contours
+        or site.terrain.breaklines
+        or site.terrain.surface is not None
+    )
     if has_elevations and not coords.elevation_units.confirmed:
         blockers.append(
             f"elevation units are {coords.elevation_units.status.value}"

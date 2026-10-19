@@ -1207,6 +1207,13 @@
     "Terrain": {
       "additionalProperties": false,
       "properties": {
+        "breaklines": {
+          "items": {
+            "$ref": "#/$defs/TerrainBreakline"
+          },
+          "title": "Breaklines",
+          "type": "array"
+        },
         "contours": {
           "items": {
             "$ref": "#/$defs/Contour"
@@ -1252,6 +1259,58 @@
       "title": "Terrain",
       "type": "object"
     },
+    "TerrainBreakline": {
+      "additionalProperties": false,
+      "description": "Explicitly mapped surveyed 3D line; no inferred elevations or kerb roles.",
+      "properties": {
+        "id": {
+          "maxLength": 64,
+          "minLength": 1,
+          "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "source_ref": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Source Ref"
+        },
+        "vertices": {
+          "items": {
+            "maxItems": 3,
+            "minItems": 3,
+            "prefixItems": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "type": "array"
+          },
+          "minItems": 2,
+          "title": "Vertices",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "vertices"
+      ],
+      "title": "TerrainBreakline",
+      "type": "object"
+    },
     "TerrainStatus": {
       "enum": [
         "unknown",
@@ -1267,8 +1326,11 @@
       "description": "Triangulated terrain built only from surveyed points (LOCAL metres).\n\nIt covers the convex hull of the survey data and nothing more: elevations\noutside it are unknown, never extrapolated.",
       "properties": {
         "method": {
-          "const": "delaunay_tin",
           "default": "delaunay_tin",
+          "enum": [
+            "delaunay_tin",
+            "constrained_tin"
+          ],
           "title": "Method",
           "type": "string"
         },
