@@ -470,6 +470,15 @@ def comparison_markdown(
         cells = [_fmt(summary_metric(r, name), unit) for _, _, r in rows]
         if any(c != "—" for c in cells):
             lines.append(f"| {label} | " + " | ".join(cells) + " |")
+    departures = [
+        (p.option_id, a.statement)
+        for p, _, _ in rows
+        for a in p.model.assumptions
+        if a.id == "asm-gen-requested-levels"
+    ]
+    if departures:
+        lines += ["", "## Requested storeys", ""]
+        lines += [f"- **{option}**: {statement}" for option, statement in departures]
     if len(rows) > 1:
         lines += [
             "",

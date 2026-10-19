@@ -42,6 +42,7 @@ from house_ai.domain.plan import (
 from house_ai.domain.program import AdjacencyRequirement, SpaceProgram
 from house_ai.domain.proposal import ConceptProposal
 from house_ai.domain.provenance import Actor, ActorKind, ArtifactRef, Provenance
+from house_ai.domain.records import Assumption
 from house_ai.domain.site import Site
 
 from .assemble import assemble
@@ -359,6 +360,7 @@ class CpSatPlanGenerator:
             )
             cand.status = "generated"
             cand.findings = findings
+            _explain_level_count(cand.plan, req.program)
             return cand
 
         best = None
@@ -450,4 +452,33 @@ class CpSatPlanGenerator:
         )
         cand.findings = findings
         cand.status = "generated"
+        _explain_level_count(cand.plan, req.program)
         return cand
+
+
+def _explain_level_count(plan: PlanVersion, program: SpaceProgram) -> None:
+    """Record departures from owner intent alongside the generated geometry (S10-12)."""
+    requested, actual = program.levels, len(plan.model.levels)
+    if requested is None or requested == actual:
+        return
+    if plan.strategy == STRATEGY_LINEAR:
+        reason = "The linear strategy places all rooms in one bar on a single level."
+    elif plan.strategy == STRATEGY_COMPACT:
+        reason = "The compact strategy requires at least two stacked levels."
+    else:
+        reason = (
+            "This strategy derives its floor levels from the massing and terrain; "
+            "split floor levels need not represent full stacked storeys."
+        )
+    plan.model.assumptions.append(
+        Assumption(
+            id="asm-gen-requested-levels",
+            statement=f"Requested storeys: {requested}; generated floor levels: {actual}. "
+            + reason
+            + " The requested storey count is not enforced by this strategy; owner review needed.",
+            basis="program.levels compared with canonical model.levels",
+            made_by=GENERATOR_ACTOR,
+            affects=[lv.id for lv in plan.model.levels],
+            confirm_with="owner",
+        )
+    )
