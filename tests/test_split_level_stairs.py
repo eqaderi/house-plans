@@ -10,7 +10,7 @@ from __future__ import annotations
 import pytest
 from shapely.geometry import LineString
 
-from house_ai.domain.model import StairKind
+from house_ai.domain.model import StairKind, WallKind
 from house_ai.evaluation.base import EvaluationContext
 from house_ai.evaluation.usability import StairUsabilityEvaluator
 from house_ai.orchestration.plans import PlanService
@@ -81,7 +81,12 @@ def test_stairwell_walls_span_from_floor_to_the_slab_above(concepts):
     model = plans["split_level"].model
     st = next(s for s in model.stairs if s.kind is StairKind.STRAIGHT)
     rise = model.level(st.to_level_id).elevation_m - model.level(st.from_level_id).elevation_m
-    tagged = [w for w in model.walls if w.base_offset_m != 0.0 or abs(w.height_m - 2.8) > 1e-9]
+    tagged = [
+        w
+        for w in model.walls
+        if w.kind is not WallKind.PARAPET
+        and (w.base_offset_m != 0.0 or abs(w.height_m - 2.8) > 1e-9)
+    ]
     below = [w for w in tagged if w.level_id == st.from_level_id]
     above = [w for w in tagged if w.level_id == st.to_level_id]
     assert below and above

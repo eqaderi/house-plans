@@ -17,6 +17,12 @@ from shapely.geometry import Polygon as ShapelyPolygon
 from shapely.geometry import box
 from shapely.ops import unary_union
 
+from house_ai.constants.placement2d import (
+    PARAPET_HEIGHT_M,
+    PARAPET_THICKNESS_M,
+    TERRACE_DOOR_DEFAULT_WIDTH_M,
+    TERRACE_SLAB_THICKNESS_M,
+)
 from house_ai.domain.base import EXTERIOR
 from house_ai.domain.epistemics import Epistemic
 from house_ai.domain.geometry import Polygon2D
@@ -46,7 +52,7 @@ from house_ai.domain.records import Assumption, Issue, Severity
 from house_ai.domain.site import Site
 
 from .fixtures import with_fixtures
-from .frame import DesignFrame, Ground, from_dm
+from .frame import DesignFrame, Ground, from_dm, limit_polygon
 from .massing import (
     FLOOR_TO_FLOOR_M,
     GARAGE_DEPTH_DM,
@@ -60,6 +66,7 @@ from .rooms import (
     ProgramRooms,
     RoomSpec,
     is_dependent,
+    space_id_for,
     touches_corridor,
 )
 from .solver import Solution
@@ -275,6 +282,8 @@ class _Builder:
         self.openings: list[Opening] = []
         self.stairs: list[Stair] = []
         self.stairwells: list[Stairwell] = []
+        #: Terrace space id -> the room it opens from (S10-11).
+        self.terrace_hosts: dict[str, str] = {}
         self.issues: list[Issue] = []
         self.notes: list[str] = list(m.notes)
         self._ids: set[str] = set()
@@ -460,6 +469,7 @@ class _Builder:
                 seg.id = f"w-{suffix}-{n:03d}"
                 self._classify(seg)
                 self._stairwell_wall(seg)
+                self._terrace_wall(seg)
             self.walls.extend(segs)
 
     def _seg_points(self, seg: WallSeg) -> tuple[tuple[int, int], tuple[int, int]]:
@@ -755,6 +765,14 @@ class _Builder:
             elif link.kind == "row":
                 self.door(lv_a, g if link.gap_dm else la, f"sp-link-{i}b", 1.2, **hall)
         self.open_stairwells()
+        for terrace, host in self.terrace_hosts.items():
+            self.door(
+                self.space(host).level_id,
+                host,
+                terrace,
+                TERRACE_DOOR_DEFAULT_WIDTH_M,
+                operation=Operation.SLIDING,
+            )
         self._build_relation_doors()
 
     def _build_relation_doors(self) -> None:
@@ -825,7 +843,7 @@ class _Builder:
         mid = {S.BEDROOM, S.GUEST_SUITE, S.STUDY, S.PLAY, S.GYM, S.PRAYER}
         wet = {S.BATHROOM, S.WC, S.ABLUTION}
         for s in self.spaces:
-            if s.kind in ("filler", "stairwell") or s.function in (
+            if s.kind in ("filler", "stairwell", "terrace") or s.function in (
                 S.GARAGE,
                 S.MECHANICAL,
                 S.STORAGE,
@@ -1034,6 +1052,92 @@ class _Builder:
                         [o.id for o in taken],
                     )
 
+    def add_terraces(self) -> None:
+        """Place program terraces outside the room they belong to (S10-11, ISS-33).
+
+        The host is the room the program links to the terrace, else a living, dining or
+        kitchen room; a garden-facing (back row) host comes first. The terrace runs along
+        the host's outer face, as wide as the host, deep enough for its target area (at
+        least 1.5 m), inside the buildable limit and clear of other rooms on its level.
+        """
+        limit = self.frame.polygon_to_design(limit_polygon(self.site)[0])
+        rooms = {s.program_item_id: s for s in self.spaces if s.kind == "room"}
+        for item in self.program.items:
+            if item.function is not S.TERRACE:
+                continue
+            linked = [
+                adj.b if adj.a == item.id else adj.a
+                for adj in self.program.adjacencies
+                if item.id in (adj.a, adj.b)
+            ]
+            candidates = [rooms[i] for i in linked if i in rooms] + [
+                s for s in rooms.values() if s.function in (S.LIVING, S.DINING, S.KITCHEN)
+            ]
+            candidates.sort(key=lambda s: self.m.bar(s.bar_id).row(s.row_id.rsplit("-", 1)[-1])
+                            .side != "back")  # fmt: skip
+            placed = None
+            for host in candidates:
+                placed = self._terrace_rect(host, item, limit)
+                if placed is not None:
+                    break
+            if placed is None:
+                self._issue(
+                    f"iss-terrace-{_short(item.id)}",
+                    f"{item.name} not placed: no host room has room for it outside its "
+                    "garden or road face within the buildable limit",
+                    Severity.WARNING,
+                    [],
+                )
+                continue
+            host, rect = placed
+            self.add_space(
+                SpaceInfo(
+                    id=space_id_for(item, 1),
+                    name=item.name,
+                    function=S.TERRACE,
+                    level_id=host.level_id,
+                    rect=rect,
+                    kind="terrace",
+                    bar_id=host.bar_id,
+                    program_item_id=item.id,
+                    zone_id=item.zone_id,
+                )
+            )
+            self.terrace_hosts[space_id_for(item, 1)] = host.id
+
+    def _terrace_rect(self, host: SpaceInfo, item, limit) -> tuple[SpaceInfo, Rect] | None:
+        bar = self.m.bar(host.bar_id)
+        row = bar.row(host.row_id.rsplit("-", 1)[-1])
+        if row.side not in ("front", "back"):
+            return None
+        r = host.rect
+        along = (r.u0, r.u1) if bar.axis == "u" else (r.v0, r.v1)
+        width = along[1] - along[0]
+        least = max(15, math.ceil((item.min_width_m or 0) * 10 - 1e-9))
+        if item.min_area_m2:
+            least = max(least, math.ceil(item.min_area_m2 * 100 / width - 1e-9))
+        if width < max(15, math.ceil((item.min_width_m or 0) * 10 - 1e-9)) or least > 40:
+            return None
+        want = math.ceil((item.target_area_m2 or 12.0) * 100 / width)
+        for depth in range(max(least, min(want, 40)), least - 1, -1):
+            if row.side == "back":
+                c0, c1 = bar.cross1_dm, bar.cross1_dm + depth
+            else:
+                c0, c1 = bar.cross0_dm - depth, bar.cross0_dm
+            if bar.axis == "u":
+                rect = Rect(along[0], c0, along[1], c1)
+            else:
+                rect = Rect(c0, along[0], c1, along[1])
+            inside = limit.buffer(1e-6).covers(
+                box(rect.u0 / 10, rect.v0 / 10, rect.u1 / 10, rect.v1 / 10)
+            )
+            clear = not any(
+                o.level_id == host.level_id and _overlap_dm2(o.rect, rect) > 0 for o in self.spaces
+            )
+            if inside and clear:
+                return host, rect
+        return None
+
     def open_stairwells(self) -> None:
         """A full-height opening across the bar boundary, exactly over each flight."""
         across = {"v": "h", "u": "v"}
@@ -1077,6 +1181,17 @@ class _Builder:
                     )
                 )
 
+    def _terrace_wall(self, seg: WallSeg) -> None:
+        """A terrace's edge: the house's exterior wall where it meets a room, else a
+        parapet (S10-11, as in the 2D path)."""
+        if not {seg.neg, seg.pos} & set(self.terrace_hosts):
+            return
+        if seg.neg is not None and seg.pos is not None:
+            seg.kind, seg.thickness, seg.party = WallKind.EXTERIOR, EXTERIOR_WALL_M, False
+        else:
+            seg.kind, seg.thickness, seg.retained_m = WallKind.PARAPET, PARAPET_THICKNESS_M, 0.0
+            seg.height_m = PARAPET_HEIGHT_M
+
     def _stairwell_wall(self, seg: WallSeg) -> None:
         """Height and kind of a stairwell's outer wall: it does not span a plain storey."""
         w = next((x for x in self.stairwells if {seg.neg, seg.pos} & x.created), None)
@@ -1114,6 +1229,7 @@ class _Builder:
         self.build_spaces()
         self.build_stairs()
         self.add_stairwell_spaces()
+        self.add_terraces()
         self.build_walls()
         self.build_openings()
         self.build_windows()
@@ -1154,7 +1270,7 @@ class _Builder:
                     material_id="m-int-wall",
                 )
                 for s in self.spaces
-                if s.kind != "stair"
+                if s.kind not in ("stair", "terrace")
             ],
             stairs=self.stairs,
             zones=zones,
@@ -1191,8 +1307,20 @@ class _Builder:
         out: list[Slab] = []
         polys = {}
         for lv in self.levels:
-            rects = [s.rect for s in self.spaces if s.level_id == lv.id]
+            rects = [s.rect for s in self.spaces if s.level_id == lv.id and s.kind != "terrace"]
             polys[lv.id] = unary_union([box(r.u0, r.v0, r.u1, r.v1) for r in rects])
+        for t in (s for s in self.spaces if s.kind == "terrace"):
+            r = t.rect
+            out.append(
+                Slab(
+                    id=f"slab-terrace-{_short(t.id)}"[:64],
+                    level_id=t.level_id,
+                    kind=SlabKind.TERRACE,
+                    boundary=self.frame.rect(r.u0, r.v0, r.u1, r.v1),
+                    thickness_m=TERRACE_SLAB_THICKNESS_M,
+                    material_id="m-slab",
+                )
+            )
         for lv in self.levels:
             above = [polys[o.id] for o in self.levels if o.elevation_m > lv.elevation_m]
             roof = polys[lv.id].difference(unary_union(above)) if above else polys[lv.id]

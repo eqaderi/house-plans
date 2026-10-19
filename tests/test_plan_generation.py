@@ -200,8 +200,12 @@ def test_plan_records_how_it_was_generated(hillside_plans):
     g = plan.generation
     assert g is not None and g.solver == "ortools-cp-sat"
     assert g.solver_status in ("OPTIMAL", "FEASIBLE")
+    # Every room the solver placed is recorded; stairs and terraces (S10-11) are laid out
+    # by the assembler around them.
     assert {p.space_id for p in g.placements} >= {
-        s.id for s in plan.model.spaces if s.program_item_id and s.function.value != "stair"
+        s.id
+        for s in plan.model.spaces
+        if s.program_item_id and s.function.value not in ("stair", "terrace")
     }
     assert plan.provenance.created_by.kind.value == "system"
 
