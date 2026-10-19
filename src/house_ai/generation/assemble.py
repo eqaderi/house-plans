@@ -45,6 +45,7 @@ from house_ai.domain.provenance import Actor, ArtifactRef
 from house_ai.domain.records import Assumption, Issue, Severity
 from house_ai.domain.site import Site
 
+from .fixtures import with_fixtures
 from .frame import DesignFrame, Ground, from_dm
 from .massing import (
     FLOOR_TO_FLOOR_M,
@@ -537,13 +538,18 @@ class _Builder:
             and (b is not None or not w.party and w.kind is not WallKind.RETAINING)
         ]
 
-    def _fit(self, seg: WallSeg, width: int, clear: int) -> int | None:
-        """Offset (dm, from seg.a) for an opening of ``width`` avoiding used spans."""
+    def _fit(self, seg: WallSeg, width: int, clear: int, ends: bool = False) -> int | None:
+        """Offset (dm, from seg.a) for an opening of ``width`` avoiding used spans.
+
+        Openings are centred, or with ``ends`` placed nearest a wall end, so the rest of
+        the wall stays one run (S10-09: a kitchen's counter needs 3 m of plain wall).
+        """
         lo, hi = clear, seg.length - clear - width
         if hi < lo:
             return None
         centre = (seg.length - width) // 2
-        candidates = sorted(range(lo, hi + 1), key=lambda o: (abs(o - centre), o))
+        key = (lambda o: (min(o - lo, hi - o), o)) if ends else (lambda o: (abs(o - centre), o))
+        candidates = sorted(range(lo, hi + 1), key=key)
         for off in candidates:
             if all(off + width + 1 <= a or off >= b + 1 for a, b in seg.used):
                 return off
@@ -570,6 +576,10 @@ class _Builder:
         require_direction: bool = False,
     ) -> Opening | None:
         walls = [host] if host is not None else self._walls_between(level, a, b)
+        # Passable openings keep to the corners of a kitchen's walls (S10-09).
+        ends = kind is not OpeningKind.WINDOW and any(
+            sid is not None and self.space(sid).function is S.KITCHEN for sid in (a, b)
+        )
         if prefer is not None:
             if require_direction:
                 walls = [w for w in walls if w.outward() == prefer]
@@ -579,14 +589,14 @@ class _Builder:
         for seg in walls:
             width = round(width_m * 10)
             clear = round(clear_m * 10)
-            off = self._fit(seg, width, clear)
+            off = self._fit(seg, width, clear, ends)
             while off is None and width > round(min_width_m * 10):
                 width -= 1
-                off = self._fit(seg, width, clear)
+                off = self._fit(seg, width, clear, ends)
             if off is None and clear > 1:
                 clear = 1
                 width = round(min_width_m * 10)
-                off = self._fit(seg, width, clear)
+                off = self._fit(seg, width, clear, ends)
             if off is None:
                 continue
             seg.used.append((off, off + width))
@@ -1153,7 +1163,7 @@ class _Builder:
             assumptions=self._assumptions(),
             issues=self._issues(),
         )
-        return model
+        return with_fixtures(model, self.actor)
 
     def _zones(self, spaces: list[Space]) -> list[Zone]:
         program_zones = {z.id: z for z in self.program.zones}

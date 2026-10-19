@@ -1567,14 +1567,15 @@ claimed without a recorded professional verification.
 
 #### Usable rooms
 
-- [ ] **S10-08** Fixtures in wet rooms and kitchens — `NOT_STARTED` · P1 · deps: none
+- [ ] **S10-08** Fixtures in wet rooms and kitchens — `IN_PROGRESS` · P1 · deps: none
   - Accept: generated bathrooms, en-suites, laundry and kitchens carry canonical fixtures that pass `check_model` (ISS-30)
   - Verify: generation and integrity tests
-  - Evidence: pending
-- [ ] **S10-09** Kitchens sized for the furniture study — `NOT_STARTED` · P1 · deps: S10-08
+  - Evidence: `generation/fixtures.py` lays out the template sets (kitchen: run and appliance; bathroom: shower, basin, WC; WC: basin and WC; laundry) by the critics' own rules: back to a wall's finish face, front into the room, clear zone in net floor and out of door swings, body out of approaches; all or nothing, with a warning issue when nothing fits. Templates moved to `domain/usability_templates.py` (re-exported by `evaluation/templates.py`) so generator and critics share bodies and clearances. Both assemblers apply it. Tests: `tests/test_generated_fixtures.py` (compact: every kitchen and wet room has its set, footprints inside, no integrity error, no `object_clearance_blocked`; a 1.5 × 1.5 m bathroom gets none, a 3.0 × 2.4 m one gets three). Demo: 9 fixtures in each of the 5 bar concepts (was 0); the 2D proposal's small many-doored wet rooms get none and are reported (S10-13)
+- [ ] **S10-09** Kitchens sized for the furniture study — `IN_PROGRESS` · P1 · deps: S10-08
   - Accept: no `kitchen_no_sampled_fit` on the demo concepts with unchanged clearances; aisle width and counter run measured (ISS-30, ISS-27)
   - Verify: usability tests; demo re-run
-  - Evidence: pending
+  - Evidence: cause was door placement, not kitchen size: doors were centred on walls, and the pantry door split the 6.6 m wall into two 2.9 m pieces, too short for the 3.0 m run. Passable openings into a kitchen now go nearest a wall end (`generation/assemble.py::_fit`, `ends`). Clearances unchanged (3.0 m run, 0.6 m deep, 1.219 m front). Demo re-run: `kitchen_no_sampled_fit` 6 → 0 (all six concepts, 2D included, before fixtures); with S10-08 fixtures the counter run is measured at 3.0 m (`tests/test_generated_fixtures.py::test_critics_measure_the_placed_fixtures`)
+  - Notes: generated kitchens are single runs, so the aisle claim stays `not_checked` with method `no_facing_counter_pair` (no facing runs to measure); a two-run layout is not generated
 - [ ] **S10-10** Double-bed rooms and vehicle size in the program — `NOT_STARTED` · P2 · deps: none
   - Accept: the program designates the main bedroom for a double bed and the garage for a stated vehicle size; the corresponding fit studies are measured (ISS-30, ISS-27)
   - Verify: program and usability tests
@@ -1606,6 +1607,7 @@ claimed without a recorded professional verification.
   - Accept: every canonical space, wall, opening and stair ID appears as a semantic attribute in `plan.svg`; the section panel draws cut stairs (ISS-34)
   - Verify: SVG tests and goldens
   - Evidence: pending
+  - Notes: generated plans now carry fixtures (S10-08), which neither `plan.svg` nor the reviewer draws yet (ISS-24); draw them here with their IDs
 - [ ] **S10-16** Detectors for stairs through slabs and label collisions — `NOT_STARTED` · P2 · deps: none
   - Accept: the S5 detectors flag the problems visual inspection found on S9 `concept-two-wing` v1 (stair through slab, overlapping labels) and pass on clean fixtures (ISS-34)
   - Verify: seeded-defect tests

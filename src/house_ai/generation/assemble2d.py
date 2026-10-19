@@ -58,6 +58,7 @@ from house_ai.domain.program import Privacy, SpaceFunction, SpaceProgram
 from house_ai.domain.provenance import Actor, ArtifactKind, ArtifactRef
 from house_ai.domain.records import Assumption, Issue, Severity
 from house_ai.domain.site import Site
+from house_ai.generation.fixtures import with_fixtures
 from house_ai.generation.frame import DesignFrame, Ground, from_dm
 from house_ai.generation.solver2d import (
     OPEN_PLAN_FUNCTIONS,
@@ -808,4 +809,6 @@ def assemble_2d(
     )
 
     builder = Builder2D(sol, site, frame, ground, program, actor)
-    return builder.build_model(model_id, name, dummy_site_ref, dummy_program_ref)
+    return with_fixtures(
+        builder.build_model(model_id, name, dummy_site_ref, dummy_program_ref), actor
+    )
