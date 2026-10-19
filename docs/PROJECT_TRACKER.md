@@ -6,7 +6,7 @@ No other TODO, roadmap or stage-status file is kept. Format and update rules
 are in [§P](#p-rules-for-updating-the-tracker); `python tools/check_tracker.py`
 checks them.
 
-Last updated: 2026-10-19, Stage S9 readiness assessment started by `agent:claude-code` on `stage/S9-readiness-gate`: gate NOT MET (6 of 13 criteria FAIL); owner decision on remediation pending.
+Last updated: 2026-10-19, owner chose option A (DEC-11): new Stage S10 Readiness remediation before S9 continues; S9 blocked on S10.
 
 ## A. Mission and immediate objective
 
@@ -116,11 +116,11 @@ to reopen A–D):
 
 | | |
 |---|---|
-| **Current stage** | S9 Floor-plan readiness gate, `IN_PROGRESS` on `stage/S9-readiness-gate`; assessment says NOT MET (6 of 13 FAIL); waiting for the owner's remediation decision |
+| **Current stage** | none; S9 Floor-plan readiness gate is `BLOCKED` on S10 (assessment NOT MET, 6 of 13 FAIL; DEC-11) |
 | **Awaiting review** | none |
-| **Next eligible stage** | none until the owner decides how to remediate the S9 FAILs (§O handoff note) |
-| **Path to good floor plans** | S1 (done) → S2 (done) → S3 (done) → S4 (done) → S5 (done) → S6 (done) → S7 (done) → S8 (done) → S9 (9 stages) |
-| **Blocked** | S9-03 (owner's remediation decision, then a re-run of S9-01/S9-02); H1 site facts (owner or surveyor input); program gate (needs site gate); H3 real design (needs S9 and approvals) |
+| **Next eligible stage** | S10 Readiness remediation (branch from the S9 head, §O handoff note) |
+| **Path to good floor plans** | S1 (done) → S2 (done) → S3 (done) → S4 (done) → S5 (done) → S6 (done) → S7 (done) → S8 (done) → S10 → S9 (10 stages) |
+| **Blocked** | S9 and its tasks (S10 first, then a re-run of S9-01/S9-02 and the owner's S9-03 words); H1 site facts (owner or surveyor input); program gate (needs site gate); H3 real design (needs S9 and approvals) |
 | **Human parallel tracks** | H1 site verification with the owner any time; H2 interview any time (S1-09 closed) |
 | **`main` health** | S8 closed; CI green on `3c2de1d` (run 39191955991) |
 | **Homeowner gates on `my-house`** | site: not approved (5 blockers) · program: none · plan: none · model: none |
@@ -149,7 +149,8 @@ until done, then goes to review once.
 | 6 | S6 Usability critics | S3 |
 | 7 | S7 Flexible plan generation | S3, S6 |
 | 8 | S8 Hillside geometry | S3, S7 |
-| 9 | S9 Floor-plan readiness gate | S2, S5, S6, S7, S8 |
+| 9 | S10 Readiness remediation (DEC-11) | S4, S5, S6, S7, S8 |
+| 10 | S9 Floor-plan readiness gate | S2, S5, S6, S7, S8, S10 |
 | — | X1 Optional tool research | T0.1 |
 | — | H1 Real site verification (human) | none |
 | — | H2 Real interview and program (human) | S1-09, H1 |
@@ -163,7 +164,8 @@ flowchart LR
   S3 --> S4[S4 viewer] --> S5[S5 visual review]
   S2 --> S5
   S3 --> S6[S6 critics] --> S7[S7 generation] --> S8[S8 hillside]
-  S5 & S6 & S7 & S8 --> S9[S9 readiness gate]
+  S4 & S5 & S6 & S7 & S8 --> S10[S10 remediation]
+  S5 & S6 & S7 & S8 & S10 --> S9[S9 readiness gate]
   H1[H1 site, human] --> H2[H2 interview + program, human]
   S9 & H2 --> H3[H3 real design, human]
   S9 -.deferred.-> FG[F/G Blender, IFC, Unreal]
@@ -179,7 +181,7 @@ stages A–D and T0.1 keep their IDs.
 | Stage | Contents |
 |---|---|
 | A–D, T0.1 | Done: milestones A–D and this tracker |
-| S1–S9 | Software path to the floor-plan readiness gate |
+| S1–S10 | Software path to the floor-plan readiness gate (S10 added by DEC-11) |
 | X1 | Optional tool research, any time, not on the critical path |
 | H1–H3 | Real house: site, interview and program, design (needs the homeowner) |
 | F, G | Blender, IFC, Unreal (deferred) |
@@ -1508,15 +1510,121 @@ claimed without a recorded professional verification.
   - Evidence: `test_extreme_slope_quantities_are_finite_and_risks_explicit` ±300% slope; all five sectional intents tested on irregular synthetic hillside; invalid pad/TIN cases explicit
   - Notes: closed with merge `3c2de1d`
 
+### Stage S10 — Readiness remediation
+
+| Field | Value |
+|---|---|
+| Kind | implementation |
+| Status | NOT_STARTED |
+| Review | NOT_REQUESTED |
+| Branch | `stage/S10-readiness-remediation` |
+| Depends on | S4, S5, S6, S7, S8 |
+| Tasks | S10-01, S10-02, S10-03, S10-04, S10-05, S10-06, S10-07, S10-08, S10-09, S10-10, S10-11, S10-12, S10-13, S10-14, S10-15, S10-16, S10-17, S10-18 |
+| Objective | Fix the defects behind the six S9 FAILs (DEC-11) so the readiness gate can be re-assessed |
+| Scope | In: ISS-25 and ISS-29 to ISS-35, using `examples/readiness/` as the regression harness. Out: ISS-28 (S9), the re-assessment itself (S9), `my-house`. The branch starts from the S9 head `3278620`, so merging S10 also brings the S9 assessment and demonstration commits (`2732a99`, `3278620`) to `main` |
+| Acceptance | Every task's measured criterion holds in tests and in a re-run of `examples/readiness/run_demo.py`; no clearance, threshold or tolerance is loosened, and no declared value relabelled, to silence a critic without a stated basis; DEC-04 still holds (no automatic preference for excavation or elevation) |
+| Tests | Full suite; `python -m house_ai.benchmarks.runner examples/benchmarks/fixtures --require-complete`; `tests/test_readiness_demo.py`; reviewer typecheck, Vitest and Playwright |
+| Demonstration | Re-run of the readiness demonstration showing the S9 defects gone or explicitly reported, with before and after counts |
+| Artifacts | Updated `examples/readiness/demonstration/`; ADR for plan-review handling of unbuildable findings; schema and `DOMAIN_MODEL.md` updates where the model changes |
+| Review requirements | Reviewer reads `git diff main...stage/S10-readiness-remediation` in full, including the S9 commits, re-runs the demonstration, and checks that no critic was quietened by loosening or relabelling |
+| Evidence | — |
+
+#### Reviewer and revision fixes
+
+- [ ] **S10-01** `house-ai reviewer serve` works and is tested — `NOT_STARTED` · P0 · deps: none
+  - Accept: `reviewer serve` starts on a synthetic project without error (ISS-32)
+  - Verify: CLI test
+  - Evidence: pending
+- [ ] **S10-02** Reviewer initial view fits the plan — `NOT_STARTED` · P1 · deps: none
+  - Accept: on the readiness demo bundle, the plan and comparison tabs show every room of the selected level inside the viewport on first load (ISS-32)
+  - Verify: Playwright test; `capture.js` screenshots
+  - Evidence: pending
+- [ ] **S10-03** A revision checks its own request; "not met" differs from "regression" — `NOT_STARTED` · P1 · deps: none
+  - Accept: the 25 m² living-room case reports the request not met with the achieved area on v2 and v3; only a request that was met and later lost is a regression (ISS-31 a, b)
+  - Verify: revision tests with ground-truth areas
+  - Evidence: pending
+- [ ] **S10-04** Proposals never replace an owner-revised version — `NOT_STARTED` · P1 · deps: none
+  - Accept: `plan propose` with a target strategy whose option has revisions stores a new option or is refused; the revised version stays latest of its option (ISS-31 c)
+  - Verify: workflow test
+  - Evidence: pending
+
+#### Stairs, levels and plan review
+
+- [ ] **S10-05** Stair rise, declared floor-to-floor heights and slab voids agree — `NOT_STARTED` · P0 · deps: none
+  - Accept: on every demo concept, each flight's rise equals the elevation difference of its levels, the declared floor-to-floor heights agree with it, every flight has a slab void, and measured headroom meets the configured minimum; no `floor_connection_height_mismatch` or `stair_low_headroom` (ISS-29, ISS-26)
+  - Verify: generation tests with ground-truth elevations; demo re-run
+  - Evidence: pending
+- [ ] **S10-06** U-shaped flights carry walking lines — `NOT_STARTED` · P1 · deps: S10-05
+  - Accept: every generated flight has a walking line; run fit, headroom and landing are measured and routes over U-shaped flights are `measured`, not `inferred` or `not_checked` (ISS-29, ISS-26)
+  - Verify: stair and route tests; demo re-run
+  - Evidence: pending
+- [ ] **S10-07** Unbuildable findings stop or are listed at plan review — `NOT_STARTED` · P1 · deps: none
+  - Accept: stair headroom, floor-connection and height-limit findings appear as open reasons at `plan review` (or block it), decided in an ADR (ISS-29)
+  - Verify: plan workflow test
+  - Evidence: pending
+
+#### Usable rooms
+
+- [ ] **S10-08** Fixtures in wet rooms and kitchens — `NOT_STARTED` · P1 · deps: none
+  - Accept: generated bathrooms, en-suites, laundry and kitchens carry canonical fixtures that pass `check_model` (ISS-30)
+  - Verify: generation and integrity tests
+  - Evidence: pending
+- [ ] **S10-09** Kitchens sized for the furniture study — `NOT_STARTED` · P1 · deps: S10-08
+  - Accept: no `kitchen_no_sampled_fit` on the demo concepts with unchanged clearances; aisle width and counter run measured (ISS-30, ISS-27)
+  - Verify: usability tests; demo re-run
+  - Evidence: pending
+- [ ] **S10-10** Double-bed rooms and vehicle size in the program — `NOT_STARTED` · P2 · deps: none
+  - Accept: the program designates the main bedroom for a double bed and the garage for a stated vehicle size; the corresponding fit studies are measured (ISS-30, ISS-27)
+  - Verify: program and usability tests
+  - Evidence: pending
+
+#### Owner intent and terrain in generation
+
+- [ ] **S10-11** Bar strategies place terraces and outdoor items — `NOT_STARTED` · P1 · deps: none
+  - Accept: `outdoor_item_placed` measured for the terrace on the demo bar concepts; the kitchen-terrace relation is checked (ISS-33)
+  - Verify: generation tests; demo re-run
+  - Evidence: pending
+- [ ] **S10-12** Requested storey count honoured or explained — `NOT_STARTED` · P2 · deps: none
+  - Accept: a concept that departs from the requested storeys says why in its explanation and comparison (ISS-33)
+  - Verify: generation test
+  - Evidence: pending
+- [ ] **S10-13** 2D placement enters from the road and solves levels against the terrain — `NOT_STARTED` · P1 · deps: none
+  - Accept: the demo proposal concept's entry is at the road access within the bar concepts' entry band, and its levels come from the terrain solve; no hard violations caused by the level choice; DEC-04 respected (ISS-33)
+  - Verify: placement tests; demo re-run
+  - Evidence: pending
+
+#### Verification infrastructure
+
+- [ ] **S10-14** Replace the five stale benchmark probes — `NOT_STARTED` · P1 · deps: S10-15
+  - Accept: `house_ai.benchmarks.runner examples/benchmarks/fixtures --require-complete` passes (ISS-34, ISS-25)
+  - Verify: benchmark runner
+  - Evidence: pending
+- [ ] **S10-15** Semantic IDs in `plan.svg` and stairs in its section panel — `NOT_STARTED` · P2 · deps: none
+  - Accept: every canonical space, wall, opening and stair ID appears as a semantic attribute in `plan.svg`; the section panel draws cut stairs (ISS-34)
+  - Verify: SVG tests and goldens
+  - Evidence: pending
+- [ ] **S10-16** Detectors for stairs through slabs and label collisions — `NOT_STARTED` · P2 · deps: none
+  - Accept: the S5 detectors flag the problems visual inspection found on S9 `concept-two-wing` v1 (stair through slab, overlapping labels) and pass on clean fixtures (ISS-34)
+  - Verify: seeded-defect tests
+  - Evidence: pending
+- [ ] **S10-17** Steep fixture with derived terrain and frontage; reviewer README — `NOT_STARTED` · P2 · deps: none
+  - Accept: the demo's interview site context reports slope and frontage; dependent goldens regenerated; `apps/reviewer/README.md` describes the implemented app (ISS-35)
+  - Verify: fixture `--check` scripts; interview site-context test
+  - Evidence: pending
+- [ ] **S10-18** Demonstration record turned into assertions — `NOT_STARTED` · P1 · deps: S10-03, S10-05, S10-06, S10-09, S10-11, S10-13
+  - Accept: `tests/test_readiness_demo.py` asserts the fixed properties (request checking, consistent stairs, kitchen fit, terrace placement, road-level 2D entry); demonstration output refreshed
+  - Verify: test; reviewer replay
+  - Evidence: pending
+
 ### Stage S9 — Floor-plan readiness gate
 
 | Field | Value |
 |---|---|
 | Kind | assessment |
-| Status | IN_PROGRESS |
+| Status | BLOCKED |
 | Review | NOT_REQUESTED |
 | Branch | `stage/S9-readiness-gate` |
-| Depends on | S2, S5, S6, S7, S8 |
+| Depends on | S2, S5, S6, S7, S8, S10 |
 | Tasks | S9-01, S9-02, S9-03 |
 | Objective | Decide, with evidence, whether the system is ready to design the real house |
 | Scope | In: evidence per §H criterion, end-to-end synthetic demonstration, owner's acknowledgement of limitations. Out: designing `my-house` |
@@ -1529,21 +1637,21 @@ claimed without a recorded professional verification.
 
 #### Floor-plan readiness assessment
 
-- [ ] **S9-01** Evidence for each readiness criterion FPR-01 to FPR-13 — `IN_PROGRESS` · P1 · deps: none
+- [ ] **S9-01** Evidence for each readiness criterion FPR-01 to FPR-13 — `BLOCKED` · P1 · deps: S10
   - Accept: §H table shows PASS/FAIL with evidence links
   - Verify: reviewer checks each link
   - Evidence: §H table and "S9-01 assessment" list (2026-10-19, macOS arm64): 7 PASS, 6 FAIL (FPR-04, 05, 06, 08, 10, 11); fresh runs: targeted pytest groups 171/108/71/40 passed, `examples/surveys/synthetic/make_expected.py --check` OK, benchmark runner 114 PASS 0 FAIL 5 NOT_CHECKED, reviewer typecheck clean, Vitest 16 passed, Playwright 7 passed; new defects ISS-29 to ISS-35
-  - Notes: re-run after the owner's remediation decision; grades must then be re-assessed on the new code
-- [ ] **S9-02** End-to-end synthetic demonstration — `IN_PROGRESS` · P1 · deps: S9-01
+  - Notes: blocked on S10 (DEC-11); re-assess every criterion on the code after S10 closes
+- [ ] **S9-02** End-to-end synthetic demonstration — `BLOCKED` · P1 · deps: S9-01, S10
   - Accept: synthetic interview → program → concepts → critics → visual review → owner-style revision → comparison, all recorded
   - Verify: reviewer replays it
   - Evidence: `examples/readiness/run_demo.py` (replay: `.venv/bin/python examples/readiness/run_demo.py --out project-data/s9-demo`, about 1 min); illustrative record `examples/readiness/demonstration/record.md` and `record.json`, renders, `comparison.md`; agent critique `examples/readiness/visual_critique.json` (4 grounded `ai_judgment` claims); `tests/test_readiness_demo.py::test_readiness_demonstration_end_to_end` (properties only)
-  - Notes: re-run with S9-01 after remediation
+  - Notes: blocked on S10 (DEC-11); re-run with S9-01 after S10 closes
 - [ ] **S9-03** Homeowner acknowledges the architectural limitations — `BLOCKED` · P1 · deps: S9-02
   - Accept: owner's words recorded in §I; limitations requiring human or professional judgment listed
   - Verify: §I entry
   - Evidence: pending
-  - Notes: human action; blocked on the owner's decision how to handle the six FAILs (remediation stage, larger S9, or exceptions), then a re-run of S9-01 and S9-02
+  - Notes: human action; blocked on S10 (DEC-11) and the re-run of S9-01 and S9-02
 
 ### Stage X1 — Optional tool research
 
@@ -2215,7 +2323,7 @@ aesthetic quality; the household's own sense of comfort.
 | **Site gate** | not approved | homeowner runs `site confirm` and `workflow approve … site` | H1-12 |
 | Interview | not started (0 turns) | start after S1-09 | H2-01 |
 | **Program gate** | no program | interview, build, review, homeowner approval | H2-15 |
-| Floor-plan readiness gate | not met: S9-01 assessment 2026-10-19, 6 of 13 criteria FAIL | owner decides remediation (§O handoff note) | S9-01 |
+| Floor-plan readiness gate | not met: S9-01 assessment 2026-10-19, 6 of 13 criteria FAIL | S10 remediation, then S9 re-run (DEC-11) | S9-01 |
 | **Plan gate** | no plans | H3 | H3-12 |
 | **Model gate** | deferred | F | F-05 |
 | Homeowner acknowledgement of limitations | not given | S9-03 | S9-03 |
@@ -2280,17 +2388,17 @@ changed), **decision** (owner must choose), **risk**.
 | ISS-22 | MASTER_SPEC "How to work" step 1 says "write docs/PRODUCT_SPEC.md"; the owner had that summary removed | conflict | `MASTER_SPEC.md:896`; T0.1-08 | Treat as a completed bootstrap instruction; MASTER_SPEC text not edited | none (owner decided) |
 | ISS-23 | §O lists `ruff check … tools` but CI lints only `src tests examples` | risk | `.github/workflows/ci.yml` | Resolved in S1: `tools` added to `ruff check` in CI workflow | S1 |
 | ISS-24 | S6 furniture/clear-zone geometry is canonical, but the SVG/reviewer does not yet draw or pick these new element kinds; complex stair flights and branching corridor dead ends remain unmeasured | risk | ADR 0019; `evaluation/usability.py`; `examples/usability/demonstration/report.md` | Expose these limitations; add visualization and richer flight/route geometry as generation evolves | S7, S8 |
-| ISS-25 | R2 `flat-simple/plan-visual` still names S5 as future work even though S5 is closed | stale doc | `examples/benchmarks/fixtures/flat-simple.json`; benchmark runner reports NOT_CHECKED | Replace this old probe with an actual visual regression expectation at readiness validation; S6 changes only its own probes | S9 |
+| ISS-25 | R2 `flat-simple/plan-visual` still names S5 as future work even though S5 is closed | stale doc | `examples/benchmarks/fixtures/flat-simple.json`; benchmark runner reports NOT_CHECKED | Replace this old probe with an actual visual regression expectation at readiness validation; S6 changes only its own probes | S10 (with ISS-34) |
 | ISS-26 | Generated split-level straight flights pass under the lower bar's roof slab without a void: measured pitch-line headroom 1.25 m (`stair_low_headroom` on `st-0`, `slab-roof-down-300` in the S6 demo); generated U-shaped flights have no walking line, so their run, headroom and landings stay unchecked and routes over them are inferred | risk | `examples/usability/demonstration/report.md`; `generation/assemble.py::build_stairs` | Generator to cut slab voids over every flight and model U-shaped walking lines | S7 |
 | ISS-27 | Furniture studies decide by bounded discrete search; a 7×6.5 m garage asked to hold three 1.8×4.5 m cars stops undecided (`not_checked`) and the kitchen studies on generated linear/split-level concepts fail by about 0.025 m under the assumed clearances. The program builder designates no bedroom for a double bed, so outside hand-written fixtures `bed_double_no_sampled_fit` never fires (undesignated rooms need a single bed only), including for the main bedroom | risk | `evaluation/usability_geometry.py::fit_templates`; ADR 0019 | Revisit search strategy and clearance assumptions with real furniture; program builder or generator to designate double-bed rooms; generator to size rooms for the studies | S7 |
 | ISS-28 | S8 joint level solve has tied optima on the synthetic hillside (DEC-04 keeps earthworks out of the objective): `split_level` keeps objective 15518 across seeds 0–5 while elevations move 7.04–7.33 m and fill 424–458 m³; macOS arm64 and Linux x86 CI pick different ties (max fill 4.853 vs 4.767 m) despite one worker and a fixed seed. Elevations inside a tie band are arbitrary and not reproducible across machines | risk | CI run 39174630794 on `fc57aa9`; `tests/test_plan_architectural_review.py::test_hybrid_reuses_entry_footprint_and_reports_cut_void_tradeoff` (strict max-fill ordering removed) | Report the tie band or enumerate tied sectional alternatives instead of one arbitrary pick; any tie-break must not prefer excavation or elevation | S9 |
-| ISS-29 | Stairs and levels disagree in generated plans, and critic findings that make a plan unbuildable are soft. In 3 of 5 bar concepts the stair climbs 4.50 m (25 × 0.18 m) between levels declared 3.0 m floor-to-floor (`floor_connection_height_mismatch`) and passes through the lower roof slab (headroom 0.500 m on split-level and two-wing). U-shaped flights (compact, split-walkout, open-plan) have no walking line, so run, headroom, landing and routes over them are unchecked or inferred. `height_limit_exceeded` (up to 12.04 m against a 10 m envelope) is soft. Plan review of `concept-two-wing` v3 lists 0 open reasons | defect | `examples/readiness/demonstration/record.md`; `generation/assemble.py:813`; `evaluation/usability.py:253,382` | Generator to keep declared floor-to-floor heights and stair rise consistent, cut slab voids over flights and model U-shaped walking lines (extends ISS-26). Unbuildable stair, level and height findings to block or be listed at plan review | owner decision (S9) |
-| ISS-30 | Generated plans carry no furniture and no fixtures in the canonical model (0 and 0 in all 6 demo concepts). `kitchen_no_sampled_fit` fires on all 6, kitchen aisle and counter run stay `not_checked`, and garage fit is `not_checked` because vehicle size is unknown | defect | `examples/readiness/demonstration/record.json` (`furniture`, `fixtures`, `not_checked`) | Generator to size kitchens for the furniture studies and place fixtures in wet rooms; program to carry vehicle size and double-bed rooms (extends ISS-27) | owner decision (S9) |
-| ISS-31 | Revisions lose the owner's intent. (a) A revision never checks its own request: v2 asked for a living room of about 25 m², got 21.96 m², and reported nothing (only inherited ops are checked). (b) v3 then reports the same request as a "regression" although it was never met. (c) `plan propose` with a `target_strategy` whose option already exists stores a new version with no parent and no revision ops (`concept-two-wing` v4 after owner revisions v2 and v3), silently replacing the revised version as latest | defect | `orchestration/plans.py:690-753`; demo record "Owner-style revisions"; (c) reproduced 2026-10-19: generate, revise twice, propose with `target_strategy: two_wing` | Check every request, current and inherited, after each revision and report "not met" rather than "regression" for requests never satisfied. Give proposal plans their own option or refuse to overwrite a revised lineage | owner decision (S9) |
-| ISS-32 | `house-ai reviewer serve <dir>` crashes on any project: `AttributeError: 'ProjectStore' object has no attribute 'name'`; no test covers it. The reviewer's default view crops the plan on the rotated synthetic hillside (demo bundle and shipped `public/bundles/synthetic-hillside`); the side-by-side comparison shows no rooms. Whether "Reset" fits the plan was not verified | defect | `src/house_ai/cli/reviewer_cmds.py:59`; `apps/reviewer/scripts/capture.js` captures of `plan` and `comparison` tabs, 2026-10-19 | Fix and test `reviewer serve`; fit the initial view to the plan bounds | owner decision (S9) |
-| ISS-33 | Generation ignores owner intent the program carries. Bar strategies never place program terraces or gardens (`outdoor_item_placed: not_placed_by_generator` on all 5), so "kitchen next to the terrace" stays unchecked. The linear concept drops the requested second storey and the stair. The 2D proposal path anchors levels at wherever the solver put the entrance door and keeps fixed 3 m storeys: `concept-open-plan` has its entry at FFL 8.64 m against 11.46 to 11.84 m for the bar concepts, 2 hard violations, 13 buried habitable faces and 6 buried windows | defect | demo record; `generation/assemble2d.py:440-466`; `evaluation/evaluators.py:278` | Place outdoor program items in bar strategies; tie the 2D path's entry to the road access and solve its levels against the terrain as S8 does for bars | owner decision (S9) |
-| ISS-34 | Visual and benchmark verification has gaps. 5 benchmark probes still say future work for closed stages (`flat-simple/plan-visual` S5, `flat-simple/revision-history` S7, `large-terrace/terrace-support`, `breakline-noise/retaining-breakline`, `sliver-tin/sliver-reported` S8). The static `plan.svg` has no semantic IDs, so the ISS-25 probe needs renderer work. The S5 automated detectors found nothing on `concept-two-wing` v1, where an agent found 4 grounded problems. The section panel in `plan.svg` shows no stair | stale doc | `python -m house_ai.benchmarks.runner examples/benchmarks/fixtures` (114 PASS, 0 FAIL, 5 NOT_CHECKED); `render2d/plan_svg.py`; demo record "Visual review" | Replace the five probes with real observations; add semantic IDs to `plan.svg`; strengthen the detectors for stair/slab and label collisions (extends ISS-25) | owner decision (S9) |
-| ISS-35 | The hand-written steep fixture `examples/projects/synthetic-hillside/site.yaml` has no TIN surface and no FRONTAGE features, and `validate_site` only reads stored ones. Slope and frontage therefore reach the interview as unknown although 35 spot heights and a road polygon exist. `apps/reviewer/README.md` still says "Nothing is implemented yet" | stale doc | `geospatial/validation.py:416`; `orchestration/site_context.py:15-40`; demo record "Site" | Regenerate the fixture through ingestion, or derive TIN and frontage when absent; update the reviewer README | owner decision (S9) |
+| ISS-29 | Stairs and levels disagree in generated plans, and critic findings that make a plan unbuildable are soft. In 3 of 5 bar concepts the stair climbs 4.50 m (25 × 0.18 m) between levels declared 3.0 m floor-to-floor (`floor_connection_height_mismatch`) and passes through the lower roof slab (headroom 0.500 m on split-level and two-wing). U-shaped flights (compact, split-walkout, open-plan) have no walking line, so run, headroom, landing and routes over them are unchecked or inferred. `height_limit_exceeded` (up to 12.04 m against a 10 m envelope) is soft. Plan review of `concept-two-wing` v3 lists 0 open reasons | defect | `examples/readiness/demonstration/record.md`; `generation/assemble.py:813`; `evaluation/usability.py:253,382` | Generator to keep declared floor-to-floor heights and stair rise consistent, cut slab voids over flights and model U-shaped walking lines (extends ISS-26). Unbuildable stair, level and height findings to block or be listed at plan review | S10 |
+| ISS-30 | Generated plans carry no furniture and no fixtures in the canonical model (0 and 0 in all 6 demo concepts). `kitchen_no_sampled_fit` fires on all 6, kitchen aisle and counter run stay `not_checked`, and garage fit is `not_checked` because vehicle size is unknown | defect | `examples/readiness/demonstration/record.json` (`furniture`, `fixtures`, `not_checked`) | Generator to size kitchens for the furniture studies and place fixtures in wet rooms; program to carry vehicle size and double-bed rooms (extends ISS-27) | S10 |
+| ISS-31 | Revisions lose the owner's intent. (a) A revision never checks its own request: v2 asked for a living room of about 25 m², got 21.96 m², and reported nothing (only inherited ops are checked). (b) v3 then reports the same request as a "regression" although it was never met. (c) `plan propose` with a `target_strategy` whose option already exists stores a new version with no parent and no revision ops (`concept-two-wing` v4 after owner revisions v2 and v3), silently replacing the revised version as latest | defect | `orchestration/plans.py:690-753`; demo record "Owner-style revisions"; (c) reproduced 2026-10-19: generate, revise twice, propose with `target_strategy: two_wing` | Check every request, current and inherited, after each revision and report "not met" rather than "regression" for requests never satisfied. Give proposal plans their own option or refuse to overwrite a revised lineage | S10 |
+| ISS-32 | `house-ai reviewer serve <dir>` crashes on any project: `AttributeError: 'ProjectStore' object has no attribute 'name'`; no test covers it. The reviewer's default view crops the plan on the rotated synthetic hillside (demo bundle and shipped `public/bundles/synthetic-hillside`); the side-by-side comparison shows no rooms. Whether "Reset" fits the plan was not verified | defect | `src/house_ai/cli/reviewer_cmds.py:59`; `apps/reviewer/scripts/capture.js` captures of `plan` and `comparison` tabs, 2026-10-19 | Fix and test `reviewer serve`; fit the initial view to the plan bounds | S10 |
+| ISS-33 | Generation ignores owner intent the program carries. Bar strategies never place program terraces or gardens (`outdoor_item_placed: not_placed_by_generator` on all 5), so "kitchen next to the terrace" stays unchecked. The linear concept drops the requested second storey and the stair. The 2D proposal path anchors levels at wherever the solver put the entrance door and keeps fixed 3 m storeys: `concept-open-plan` has its entry at FFL 8.64 m against 11.46 to 11.84 m for the bar concepts, 2 hard violations, 13 buried habitable faces and 6 buried windows | defect | demo record; `generation/assemble2d.py:440-466`; `evaluation/evaluators.py:278` | Place outdoor program items in bar strategies; tie the 2D path's entry to the road access and solve its levels against the terrain as S8 does for bars | S10 |
+| ISS-34 | Visual and benchmark verification has gaps. 5 benchmark probes still say future work for closed stages (`flat-simple/plan-visual` S5, `flat-simple/revision-history` S7, `large-terrace/terrace-support`, `breakline-noise/retaining-breakline`, `sliver-tin/sliver-reported` S8). The static `plan.svg` has no semantic IDs, so the ISS-25 probe needs renderer work. The S5 automated detectors found nothing on `concept-two-wing` v1, where an agent found 4 grounded problems. The section panel in `plan.svg` shows no stair | stale doc | `python -m house_ai.benchmarks.runner examples/benchmarks/fixtures` (114 PASS, 0 FAIL, 5 NOT_CHECKED); `render2d/plan_svg.py`; demo record "Visual review" | Replace the five probes with real observations; add semantic IDs to `plan.svg`; strengthen the detectors for stair/slab and label collisions (extends ISS-25) | S10 |
+| ISS-35 | The hand-written steep fixture `examples/projects/synthetic-hillside/site.yaml` has no TIN surface and no FRONTAGE features, and `validate_site` only reads stored ones. Slope and frontage therefore reach the interview as unknown although 35 spot heights and a road polygon exist. `apps/reviewer/README.md` still says "Nothing is implemented yet" | stale doc | `geospatial/validation.py:416`; `orchestration/site_context.py:15-40`; demo record "Site" | Regenerate the fixture through ingestion, or derive TIN and frontage when absent; update the reviewer README | S10 |
 
 ## L. Decisions
 
@@ -2306,6 +2414,7 @@ changed), **decision** (owner must choose), **risk**.
 | DEC-08 | Stages consolidated: the 38 remaining software stages became S1–S9 (T0.2–T0.4 → S1; T1.x → S2; R1.1, R2.1–R2.3 → S3; E1.x → S4; E2.x → S5; DQ.x, R2.4 → S6; DG.x → S7; DH.x → S8; RG.1 → S9; R1.2–R1.3 → X1; H1.x/H2.x/H3.x → H1/H2/H3; F.x → F; G.x → G). Task content kept; task IDs renumbered once | Homeowner, 2026-10-17 ("reduce that ... or combine them") | This tracker |
 | DEC-09 | Keep agent-recorded confirmation with verbatim owner words (ADR 0011); human terminal required only at the program approval gate | Homeowner, 2026-10-17 | This tracker (S1-05) |
 | DEC-10 | Allow rounded, approximate figures in AGENT_CONTRACT §7 and historical milestone reports (~600 m², ~12 m drop); exact coordinates, spot elevations, and content hashes strictly inside `projects/my-house/` | Homeowner, 2026-10-17 | This tracker (S1-13) |
+| DEC-11 | Option A for the six S9 FAILs: "a new fix-up stage for ISS-29 to ISS-35, with its own review. Then I re-run the S9 assessment and demonstration." | Homeowner, 2026-10-19 ("a", in reply to options A, B, C) | Stage S10 (ISS-25, ISS-29 to ISS-35); ISS-28 was not in option A and stays with S9 |
 
 Existing ADRs (all in force): 0001 canonical semantic model · 0002 Pydantic
 schemas and JSON Schema export · 0003 file-based store and event log · 0004
@@ -2368,6 +2477,10 @@ Closure record template:
 ```
 
 ### S9 records
+
+#### S9 handoff 2 — blocked on S10
+- 2026-10-19: the owner answered "a" to the options in handoff 1 (DEC-11). `agent:claude-code` defined Stage S10 Readiness remediation (S10-01 to S10-18) and set S9, S9-01, S9-02 and S9-03 to `BLOCKED` on S10. ISS-25 and ISS-29 to ISS-35 are now tracked by S10; ISS-28 stays with S9.
+- Resume S9 only after S10 closes: update the branch from `main`, re-run S9-01 and S9-02, then S9-03 and review.
 
 #### S9 handoff 1 — assessment NOT MET, owner decision needed
 - Branch: `stage/S9-readiness-gate` from `main` at `68707bd`; implementer `agent:claude-code` (Claude Opus 5.5) on the owner's "next stage", 2026-10-19.
@@ -3280,9 +3393,9 @@ homeowner approval of any site, program, plan or model.
 
 ### Current handoff note
 
-- S9 Floor-plan readiness gate is `IN_PROGRESS` on `stage/S9-readiness-gate` (handoff in §N "S9 handoff 1"). The assessment says the gate is NOT MET: FPR-04, 05, 06, 08, 10 and 11 FAIL (§H); root causes are ISS-29 to ISS-35.
-- Waiting for the owner to choose how to handle the FAILs: (A) a new remediation stage before S9 continues, (B) remediation tasks inside S9, or (C) owner-accepted exceptions. Adding a stage or tasks is a scope change the owner must approve (§B, §O step 6).
-- After that: re-run `examples/readiness/run_demo.py` and the §H assessment on the new code, record the owner's S9-03 words in §I, then request review.
+- The owner chose option A (DEC-11): Stage S10 Readiness remediation fixes ISS-25 and ISS-29 to ISS-35 before S9 continues. S9 is `BLOCKED` on S10; its assessment is in §H and §N "S9 handoff 1".
+- Start S10 on `stage/S10-readiness-remediation`, branched from the S9 head (`3278620`) because S10 uses `examples/readiness/` as its regression harness. Do the small fixes first (S10-01, S10-03, S10-04), then stairs and levels.
+- After S10 closes: bring S9 up to date with `main`, re-run S9-01 and S9-02, ask for the owner's S9-03 words, then request S9 review. ISS-28 stays with S9.
 
 ## P. Rules for updating the tracker
 
