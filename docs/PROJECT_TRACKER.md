@@ -6,7 +6,7 @@ No other TODO, roadmap or stage-status file is kept. Format and update rules
 are in [§P](#p-rules-for-updating-the-tracker); `python tools/check_tracker.py`
 checks them.
 
-Last updated: 2026-10-20, Stage S9 review 1 APPROVED; awaiting owner's "Close stage S9".
+Last updated: 2026-10-20, Stage S9 Floor-plan readiness gate closed by `agent:gemini` (merge `d8a38b1`, CI 39336825673).
 
 ## A. Mission and immediate objective
 
@@ -116,13 +116,13 @@ to reopen A–D):
 
 | | |
 |---|---|
-| **Current stage** | S9 Floor-plan readiness gate (branch stage/S9-readiness-gate, review APPROVED, awaiting closure) |
-| **Awaiting review** | none (S9 review 1 APPROVED, awaiting closure) |
-| **Next eligible stage** | none while S9 is in progress (H1 site verification, H2 interview in parallel) |
-| **Path to good floor plans** | S1 (done) → S2 (done) → S3 (done) → S4 (done) → S5 (done) → S6 (done) → S7 (done) → S8 (done) → S10 (done) → S9 (10 stages) |
-| **Blocked** | H1 site facts (owner or surveyor input); program gate (needs site gate); H3 real design (needs S9 and approvals) |
+| **Current stage** | none (all 10 software stages S1–S10 complete; readiness gate met) |
+| **Awaiting review** | none |
+| **Next eligible stage** | H1 Real site verification (human parallel track), H2 Real interview and program (human parallel track), or X1 Optional tool research |
+| **Path to good floor plans** | S1 (done) → S2 (done) → S3 (done) → S4 (done) → S5 (done) → S6 (done) → S7 (done) → S8 (done) → S10 (done) → S9 (done; 10 stages complete) |
+| **Blocked** | H1 site facts (owner or surveyor input); program gate (needs site gate); H3 real design (needs H1 and H2) |
 | **Human parallel tracks** | H1 site verification with the owner any time; H2 interview any time (S1-09 closed) |
-| **`main` health** | S10 closed; CI green on `af4b41c` (run 39318675202) |
+| **`main` health** | S9 closed; CI green on `d8a38b1` (run 39336825673) |
 | **Homeowner gates on `my-house`** | site: not approved (5 blockers) · program: none · plan: none · model: none |
 
 
@@ -1645,7 +1645,7 @@ claimed without a recorded professional verification.
 | Field | Value |
 |---|---|
 | Kind | assessment |
-| Status | IN_PROGRESS |
+| Status | DONE |
 | Review | APPROVED |
 | Branch | `stage/S9-readiness-gate` |
 | Depends on | S2, S5, S6, S7, S8, S10 |
@@ -1657,25 +1657,25 @@ claimed without a recorded professional verification.
 | Demonstration | Synthetic steep fixture from interview to reviewed revision |
 | Artifacts | §H filled in; demonstration record |
 | Review requirements | Independent reviewer re-runs the demonstration; owner acknowledges limitations |
-| Evidence | §H assessment re-evaluated 2026-10-19 after S10 (13 PASS, 0 FAIL); `examples/readiness/` (`run_demo.py`, `demonstration/record.md`); `tests/test_readiness_demo.py` (all properties pass); full suite 867 passed; branch CI run 39326164046 green; owner acknowledgement recorded in §I |
+| Evidence | merge `d8a38b1`; CI run 39336825673; reviewed commit `eb164be` (review 1 APPROVED); branch CI run 39326164046; all 13 criteria FPR-01 to FPR-13 PASS; synthetic steep hillside demonstration asserted in `tests/test_readiness_demo.py` (102 events, 5/5 refused properly); owner acknowledgement recorded in §I |
 
 #### Floor-plan readiness assessment
 
-- [ ] **S9-01** Evidence for each readiness criterion FPR-01 to FPR-13 — `IN_PROGRESS` · P1 · deps: none
+- [x] **S9-01** Evidence for each readiness criterion FPR-01 to FPR-13 — `DONE` · P1 · deps: none
   - Accept: §H table shows PASS/FAIL with evidence links
   - Verify: reviewer checks each link
   - Evidence: §H table and "S9-01 assessment" list (2026-10-19, macOS arm64): 13 PASS, 0 FAIL; fresh runs: full pytest 867 passed in 412s, ruff clean, schemas check clean, benchmark runner 117 PASS 0 FAIL 0 NOT_CHECKED, leak scan clean, store verify my-house intact; previous defects ISS-25 and ISS-29 to ISS-35 resolved by Stage S10
-  - Notes: re-assessed after S10; all 13 criteria meet the PASS standard
-- [ ] **S9-02** End-to-end synthetic demonstration — `IN_PROGRESS` · P1 · deps: S9-01
+  - Notes: re-assessed after S10; all 13 criteria meet the PASS standard; closed with merge `d8a38b1`
+- [x] **S9-02** End-to-end synthetic demonstration — `DONE` · P1 · deps: S9-01
   - Accept: synthetic interview → program → concepts → critics → visual review → owner-style revision → comparison, all recorded
   - Verify: reviewer replays it
   - Evidence: `examples/readiness/run_demo.py` replayed clean to `project-data/s9-demo`; `record.md` and `record.json` generated with 5/5 refused properly, 5 of 6 strategies feasible plus proposal, walking lines and headroom measured, all 9 canonical fixtures placed, revisions separating unmet from regression, reviewer bundle exported (3.3 MB), store verified (102 events); `tests/test_readiness_demo.py` passed (2 tests in 32s)
-  - Notes: replayed and verified after S10
-- [ ] **S9-03** Homeowner acknowledges the architectural limitations — `IN_PROGRESS` · P1 · deps: S9-02
+  - Notes: replayed and verified after S10; closed with merge `d8a38b1`
+- [x] **S9-03** Homeowner acknowledges the architectural limitations — `DONE` · P1 · deps: S9-02
   - Accept: owner's words recorded in §I; limitations requiring human or professional judgment listed
   - Verify: §I entry
   - Evidence: recorded in §I on 2026-10-19: owner confirmed `"I confirm acknoledgement of all"` across the five listed limitations in §H / §I
-  - Notes: human action completed; verified
+  - Notes: human action completed; verified; closed with merge `d8a38b1`
 
 ### Stage X1 — Optional tool research
 
@@ -2462,6 +2462,7 @@ lifecycle · 0015 agent skills canonical location and discovery · 0016 event-he
 
 | Date | What | Evidence |
 |---|---|---|
+| 2026-10-20 | Stage S9 closed: floor-plan readiness gate (all 13 readiness criteria FPR-01 to FPR-13 verified PASS with evidence from S10 remediation; synthetic steep hillside demonstration replayed clean with 5/5 refusals, 5 feasible strategies, 2D proposal, stair walking lines, 9 canonical fixtures, revision regression separation, reviewer bundle export, 102 events store integrity; homeowner acknowledgement of 5 architectural/engineering boundaries confirmed verbatim in §I; test decoupling verified) | merge `d8a38b1`; CI run 39336825673 |
 | 2026-10-19 | Stage S10 closed: readiness remediation (reviewer serve URL and viewport auto-fit, revision request checking and regression separation, distinct proposal concept options, consistent stair rise/headroom/wall clash checks, U-shaped walking lines, ADR 0024 unbuildable plan-gate blocking findings, wet-room and kitchen fixture generation, furniture-study kitchen sizing, double-bed and vehicle program studies, bar terraces and outdoor items, requested-storey explanation, 2D terrain entry and solved levels per DEC-04, vehicle-sized garages per DEC-12, 117-probe benchmark suite, plan.svg semantic attributes and cut stairs, slab-penetration and label-collision detectors, synthetic hillside context, demo property assertions) | merge `af4b41c`; CI run 39318675202 |
 | 2026-10-19 | Stage S8 closed: hillside geometry (exact TIN quantities and mesh booleans, true section cuts and local facade projections, coupled bar/level CP-SAT optimisation without excavation penalty per DEC-04, walkout/split-level/stepped/elevated/hybrid sectional strategies, underfloor void reporting, retaining walls and explicit pad earthworks, terrain-contact door access and garage grades, mapped breaklines and sliver quality checks, concept-level professional engineering risk register and exports, ADR 0022) | merge `3c2de1d`; CI run 39191955991 |
 | 2026-10-18 | Stage S7 closed: flexible plan generation (NoOverlap2D solver, ADRs 0020 & 0021, typed topology proposals ConceptProposal, composite spaces, corridor-free and open plans, two-wing and courtyard massing, multi-level alternative stair cores, terrace and outdoor links, feature-mapped combine revisions, intent regression detection, quantitative diversity metrics) | merge `b126e19`; CI run 39171542421 |
@@ -2658,6 +2659,11 @@ Closure record template:
 - Status: Stage S10 implementation complete. All 19 tasks have verified evidence. Review requested: PENDING.
 
 ### S9 records
+
+#### S9 closure
+- Merged: `stage/S9-readiness-gate` at `eb164be` (reviewed commit; branch head `66dca3b` adds only review 1 tracker record) into `main` as `d8a38b1` on 2026-10-20
+- CI on main: run 39336825673, success across all jobs (Reviewer App, Python 3.13, Python 3.11)
+- Closed by: agent:gemini on the owner's "Close stage S9"
 
 #### S9 review 1 — APPROVED
 - Reviewed commit: eb164bec28cb0f92b7ba1f8d423eafe1171891b0
@@ -3619,9 +3625,9 @@ homeowner approval of any site, program, plan or model.
 
 ### Current handoff note
 
-- Stage S9 Floor-plan readiness gate review 1 is APPROVED on head commit `eb164bec28cb0f92b7ba1f8d423eafe1171891b0` (CI run 39326164046 green, all local tests pass).
-- All 13 readiness criteria FPR-01 through FPR-13 verified PASS; synthetic demonstration replayed clean (5/5 refusals, 102 events store integrity); homeowner acknowledgement of architectural limitations confirmed verbatim in §I.
-- Next action: await owner's "Close stage S9" to merge into `main`.
+- Stage S9 Floor-plan readiness gate closed with merge `d8a38b1` (CI run 39336825673 green).
+- All 10 software stages (S1–S10) on the path to good floor plans are complete. The software pipeline is verified ready to design the real house.
+- Next steps are human-dependent: H1 site verification with the owner (confirming UTM, CRS, datum, boundary), and H2 interview rounds. Stage X1 (optional tool research) can be explored any time.
 
 ## P. Rules for updating the tracker
 
