@@ -79,6 +79,8 @@ KIND_WALL: str = "wall"
 KIND_DOOR: str = "door"
 KIND_WINDOW: str = "window"
 KIND_STAIR: str = "stair"
+KIND_FIXTURE: str = "fixture"
+KIND_FURNITURE: str = "furniture"
 KIND_PARCEL: str = "parcel"
 KIND_ENVELOPE: str = "envelope"
 KIND_LABEL: str = "label"
@@ -90,6 +92,8 @@ ELEMENT_KINDS: tuple[str, ...] = (
     KIND_DOOR,
     KIND_WINDOW,
     KIND_STAIR,
+    KIND_FIXTURE,
+    KIND_FURNITURE,
     KIND_PARCEL,
     KIND_ENVELOPE,
     KIND_LABEL,

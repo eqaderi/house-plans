@@ -1,5 +1,5 @@
 import React, { useLayoutEffect, useState, useRef } from "react";
-import type { HouseModel, Site, Space, Wall, Opening, Stair } from "../types/schemas";
+import type { HouseModel, Site, Space, Wall, Opening, Stair, Fixture } from "../types/schemas";
 import {
   computeBoundingBox,
   formatDimM,
@@ -105,6 +105,11 @@ export const PlanCanvas: React.FC<PlanCanvasProps> = ({
   const openings = (model.openings || []).filter((o: Opening) => wallMap.has(o.host_wall_id));
   const stairs = (model.stairs || []).filter(
     (st: Stair) => st.from_level_id === activeLevelId || st.to_level_id === activeLevelId
+  );
+  const spaceMap = new Map<string, Space>();
+  (model.spaces || []).forEach((s) => spaceMap.set(s.id, s));
+  const fixtures = (model.fixtures || []).filter(
+    (f: Fixture) => spaceMap.get(f.space_id)?.level_id === activeLevelId
   );
 
   // Check site CRS confirmation status
@@ -404,6 +409,44 @@ export const PlanCanvas: React.FC<PlanCanvasProps> = ({
                   stroke={isSelected ? "#38bdf8" : isHighlighted ? "#ef4444" : isDoor ? "#f8fafc" : "#0284c7"}
                   strokeWidth={isDoor ? 2 : 4}
                   strokeDasharray={isDoor ? "2 2" : "none"}
+                />
+              </g>
+            );
+          })}
+
+          {/* Fixtures */}
+          {fixtures.map((f: Fixture) => {
+            const isSelected = selectedId === f.id;
+            const isHighlighted = highlightedIds.includes(f.id);
+            const cx = toPx(f.position[0]);
+            const cy = toYPx(f.position[1]);
+            const w = f.width_m * currentScale;
+            const h = f.depth_m * currentScale;
+            const rot = f.rotation_deg ? -f.rotation_deg : 0;
+
+            return (
+              <g
+                key={f.id}
+                data-id={f.id}
+                data-kind="fixture"
+                role="img"
+                aria-label={`Fixture ${f.id} (${f.fixture_type})`}
+                transform={`rotate(${rot}, ${cx}, ${cy})`}
+                style={{ cursor: "pointer" }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onSelectElement(f.id, "fixture");
+                }}
+              >
+                <rect
+                  x={cx - w / 2}
+                  y={cy - h / 2}
+                  width={w}
+                  height={h}
+                  fill={isSelected ? "rgba(56, 189, 248, 0.3)" : isHighlighted ? "rgba(239, 68, 68, 0.3)" : "#f1f5f9"}
+                  stroke={isSelected ? "#38bdf8" : isHighlighted ? "#ef4444" : "#64748b"}
+                  strokeWidth={1}
+                  rx={2}
                 />
               </g>
             );

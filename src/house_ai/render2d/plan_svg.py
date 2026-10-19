@@ -17,6 +17,19 @@ from xml.sax.saxutils import escape
 from shapely.geometry import LineString, Point
 from shapely.ops import unary_union
 
+from house_ai.constants.reviewer import (
+    ATTR_DATA_ID,
+    ATTR_DATA_KIND,
+    KIND_DOOR,
+    KIND_ENVELOPE,
+    KIND_FIXTURE,
+    KIND_FURNITURE,
+    KIND_PARCEL,
+    KIND_SPACE,
+    KIND_STAIR,
+    KIND_WALL,
+    KIND_WINDOW,
+)
 from house_ai.domain.base import EXTERIOR
 from house_ai.domain.epistemics import ConfirmationStatus
 from house_ai.domain.evaluation import EvaluationReport
@@ -134,11 +147,18 @@ def _opening_svg(v: _View, model: HouseModel, o: Opening) -> str:
             p0 = (a[0] + nx * half * s * 2, a[1] + ny * half * s * 2)
             p1 = (b[0] + nx * half * s * 2, b[1] + ny * half * s * 2)
             out.append(f'<path d="{v.path([p0, p1], False)}" stroke="#2a6fb0" stroke-width="0.8"/>')
-        return "".join(out)
+        return (
+            f'<g {ATTR_DATA_ID}="{escape(o.id)}" {ATTR_DATA_KIND}="{KIND_WINDOW}">'
+            f'{"".join(out)}</g>'
+        )
     if o.kind is OpeningKind.OPENING or o.operation in (Operation.NONE, Operation.SLIDING):
         dash = ' stroke-dasharray="3,2"' if o.operation is Operation.SLIDING else ""
         out.append(f'<path d="{v.path([a, b], False)}" stroke="#999" stroke-width="0.6"{dash}/>')
-        return "".join(out)
+        kind = KIND_DOOR if o.is_passable else KIND_WINDOW
+        return (
+            f'<g {ATTR_DATA_ID}="{escape(o.id)}" {ATTR_DATA_KIND}="{kind}">'
+            f'{"".join(out)}</g>'
+        )
     # Swing door: leaf drawn open 90 degrees into the space it opens into.
     side = 1.0
     if o.opens_into and o.opens_into != EXTERIOR:
@@ -155,7 +175,10 @@ def _opening_svg(v: _View, model: HouseModel, o: Opening) -> str:
         f'<path d="M{_f(tx)},{_f(ty)} A{_f(r)},{_f(r)} 0 0 {sweep} {_f(ex)},{_f(ey)}" '
         f'fill="none" stroke="#666" stroke-width="0.6" stroke-dasharray="2,2"/>'
     )
-    return "".join(out)
+    return (
+        f'<g {ATTR_DATA_ID}="{escape(o.id)}" {ATTR_DATA_KIND}="{KIND_DOOR}">'
+        f'{"".join(out)}</g>'
+    )
 
 
 def _rect_dims(poly: Polygon2D) -> tuple[float, float]:
@@ -277,11 +300,13 @@ def _site_context(v: _View, site: Site | None) -> str:
             out.append(f'<circle cx="{_f(x)}" cy="{_f(y)}" r="3" fill="#c0392b"/>')
     if site.boundary is not None:
         out.append(
-            f'<path d="{v.poly(site.boundary)}" fill="none" stroke="#111" stroke-width="1.2"/>'
+            f'<path {ATTR_DATA_ID}="site-parcel-boundary" {ATTR_DATA_KIND}="{KIND_PARCEL}" '
+            f'd="{v.poly(site.boundary)}" fill="none" stroke="#111" stroke-width="1.2"/>'
         )
     if site.buildable_envelope is not None:
         out.append(
-            f'<path d="{v.poly(site.buildable_envelope.polygon)}" fill="none" '
+            f'<path {ATTR_DATA_ID}="site-buildable-envelope" {ATTR_DATA_KIND}="{KIND_ENVELOPE}" '
+            f'd="{v.poly(site.buildable_envelope.polygon)}" fill="none" '
             f'stroke="#2980b9" stroke-width="1" stroke-dasharray="6,4"/>'
         )
     return "".join(out)
@@ -305,12 +330,25 @@ def _level_panel(v: _View, model: HouseModel, site: Site | None, level_id: str, 
         fill = FILL.get(zone_privacy.get(s.zone_id or ""), "#f2f2f2")
         if s.program_item_id is None and s.function.value == "storage":
             fill = "#f7f7f7"
-        out.append(f'<path d="{v.poly(s.boundary)}" fill="{fill}" stroke="none"/>')
+        out.append(
+            f'<path {ATTR_DATA_ID}="{escape(s.id)}" {ATTR_DATA_KIND}="{KIND_SPACE}" '
+            f'd="{v.poly(s.boundary)}" fill="{fill}" stroke="none"/>'
+        )
+    space_levels = {s.id: s.level_id for s in model.spaces}
+    for f in [*model.fixtures, *model.furniture]:
+        if space_levels.get(f.space_id) == level_id:
+            kind = KIND_FURNITURE if f in model.furniture else KIND_FIXTURE
+            out.append(
+                f'<path {ATTR_DATA_ID}="{escape(f.id)}" {ATTR_DATA_KIND}="{kind}" '
+                f'd="{v.poly(f.footprint_polygon())}" fill="#f1f5f9" '
+                f'stroke="#64748b" stroke-width="0.6"/>'
+            )
     for st in model.stairs:
         if level_id not in (st.from_level_id, st.to_level_id):
             continue
         out.append(
-            f'<path d="{v.poly(st.footprint)}" fill="#ffffff" stroke="#555" stroke-width="0.8"/>'
+            f'<path {ATTR_DATA_ID}="{escape(st.id)}" {ATTR_DATA_KIND}="{KIND_STAIR}" '
+            f'd="{v.poly(st.footprint)}" fill="#ffffff" stroke="#555" stroke-width="0.8"/>'
         )
         r = st.footprint.to_shapely()
         minx, miny, maxx, maxy = r.bounds
@@ -338,7 +376,10 @@ def _level_panel(v: _View, model: HouseModel, site: Site | None, level_id: str, 
         out.append(_t(x, y + 3, f"{up} {rise:.2f} m", 8, colour="#444", weight="bold"))
     for w in model.walls:
         if w.level_id == level_id:
-            out.append(f'<path d="{v.path(_wall_quad(w))}" fill="{WALL_FILL[w.kind]}"/>')
+            out.append(
+                f'<path {ATTR_DATA_ID}="{escape(w.id)}" {ATTR_DATA_KIND}="{KIND_WALL}" '
+                f'd="{v.path(_wall_quad(w))}" fill="{WALL_FILL[w.kind]}"/>'
+            )
     for o in model.openings:
         if model.wall(o.host_wall_id).level_id == level_id:
             out.append(_opening_svg(v, model, o))
@@ -371,14 +412,20 @@ def _level_panel(v: _View, model: HouseModel, site: Site | None, level_id: str, 
 
 
 def _section(model: HouseModel, site: Site | None, x0: float, y0: float, width: float) -> str:
-    """True longitudinal cut through canonical elements and surveyed ground."""
+    """True vertical cut through canonical elements and surveyed ground.
+
+    When the model has stairs, cuts through the primary stair so vertical
+    circulation is drawn in section (S10-15, ISS-34).
+    """
     from house_ai.geospatial.sections import cut_section, standard_sections
     from house_ai.render2d.sections_svg import section_fragment
 
     requests = standard_sections(model, site)
     if not requests:
         return ""
-    return section_fragment(cut_section(model, site, requests[0]), x0, y0, width, SECTION_H)
+    stair_req = next((r for r in requests if r.id.startswith("stair-")), None)
+    request = stair_req if stair_req is not None else requests[0]
+    return section_fragment(cut_section(model, site, request), x0, y0, width, SECTION_H)
 
 
 def render_plan_svg(

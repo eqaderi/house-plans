@@ -16,6 +16,8 @@ from house_ai.constants.reviewer import (
     KIND_DOOR,
     KIND_ELEVATION_MARKER,
     KIND_ENVELOPE,
+    KIND_FIXTURE,
+    KIND_FURNITURE,
     KIND_PARCEL,
     KIND_SPACE,
     KIND_STAIR,
@@ -164,6 +166,21 @@ def build_semantic_id_map(
                 "from_level_id": st.from_level_id,
                 "to_level_id": st.to_level_id,
                 "riser_count": st.riser_count,
+            },
+        )
+
+    # Fixtures and furniture
+    for f in [*model.fixtures, *model.furniture]:
+        poly = f.footprint_polygon().to_shapely()
+        kind = KIND_FURNITURE if f in model.furniture else KIND_FIXTURE
+        elements[f.id] = SemanticElementRecord(
+            id=f.id,
+            kind=kind,
+            label=f"Fixture {f.id} ({f.fixture_type})",
+            bbox=tuple(poly.bounds),  # type: ignore[arg-type]
+            attributes={
+                "fixture_type": f.fixture_type,
+                "space_id": f.space_id,
             },
         )
 
