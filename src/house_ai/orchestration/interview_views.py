@@ -19,7 +19,7 @@ from house_ai.interview.brief_builder import describe
 from house_ai.interview.questions import SLOTS
 from house_ai.interview.rules import Finding
 from house_ai.interview.slot_types import BOOL, CHOICE, INT, OUTDOOR
-from house_ai.interview.state import Prompt
+from house_ai.interview.state import Prompt, SlotStatus
 
 from .site_context import SiteSummary
 
@@ -54,13 +54,12 @@ class Interpretation:
     slot: str
     value: FactValue
     method: str
-    #: "inference", "unknown" or "confirmed".
-    status: str
+    status: SlotStatus
 
     @classmethod
     def of(cls, understood: Understood) -> Interpretation:
         """An Interpretation as read from one answer (never confirmed yet)."""
-        status = "unknown" if understood.value is None else "inference"
+        status: SlotStatus = "unknown" if understood.value is None else "inference"
         return cls(current_slot(understood.slot), understood.value, understood.method, status)
 
     def to_json(self) -> dict[str, Any]:
