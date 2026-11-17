@@ -52,6 +52,7 @@ from house_ai.orchestration.workflow import (
     GATES,
     HumanAction,
     NextHumanAction,
+    UseProgramReject,
     Workflow,
     WorkflowError,
 )
@@ -361,11 +362,12 @@ def cmd_example_load(args: argparse.Namespace) -> int:
 
 def cmd_transition(args: argparse.Namespace) -> int:
     wf = Workflow(ProjectStore(resolve_project_dir(args.dir)))
-    if wf.state is WorkflowState.PROGRAM_REVIEW and args.state is WorkflowState.INTERVIEWING:
-        _err("leaving PROGRAM_REVIEW requires 'program reject' in a human terminal")
-        return EXIT_USAGE
     try:
         ev = wf.transition(args.state, args.actor, args.reason)
+    except UseProgramReject as exc:
+        _err(str(exc))
+        _err(human.next_line(exc.next_action, args.dir))  # type: ignore[arg-type]
+        return EXIT_USAGE
     except ApprovalRequiresHuman as exc:
         _err(str(exc))
         return EXIT_USAGE

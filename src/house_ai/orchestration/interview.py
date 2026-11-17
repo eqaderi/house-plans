@@ -37,7 +37,7 @@ from house_ai.domain.provenance import (
     refuse_non_human,
 )
 from house_ai.domain.site import Site, site_blockers
-from house_ai.domain.workflow import Blocker, Gate, WorkflowState
+from house_ai.domain.workflow import Blocker, EventType, Gate, WorkflowState
 from house_ai.interview import parsing
 from house_ai.interview.brief_builder import build_brief, describe
 from house_ai.interview.questions import (
@@ -1025,6 +1025,13 @@ class InterviewService:
             raise ValueError("say what is wrong with the program")
         session = self._append({"kind": TurnKind.PROGRAM_REJECTION, "text": text.strip()}, actor)
         _, b_ref = self._write(session, actor, "owner rejected the space program")
-        self.workflow.transition(WorkflowState.INTERVIEWING, actor,
-                                 f"owner rejected the program: {text.strip()}")  # fmt: skip
+        # The program-reject operation is the only move out of PROGRAM_REVIEW; the
+        # generic transition refuses it for every actor (ADR 0029).
+        self.store.append_event(
+            EventType.TRANSITION,
+            actor,
+            from_state=WorkflowState.PROGRAM_REVIEW,
+            to_state=WorkflowState.INTERVIEWING,
+            reason=f"owner rejected the program: {text.strip()}",
+        )
         return b_ref

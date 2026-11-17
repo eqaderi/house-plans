@@ -141,6 +141,18 @@ class TransitionNotAllowed(WorkflowError):
     pass
 
 
+class UseProgramReject(TransitionNotAllowed):
+    """Leaving PROGRAM_REVIEW for INTERVIEWING undoes a program review: only the
+    Owner's ``program reject`` does that, for every actor (ADR 0029)."""
+
+    def __init__(self) -> None:
+        super().__init__(
+            "leaving PROGRAM_REVIEW for INTERVIEWING undoes the program review; only the "
+            "owner's program reject, in their own terminal, does that",
+            next_action=NextHumanAction(HumanAction.REJECT_PROGRAM, Gate.PROGRAM),
+        )
+
+
 class GateBlocked(WorkflowError):
     def __init__(self, gate: Gate, blockers: list[Blocker]) -> None:
         self.gate = gate
@@ -318,7 +330,7 @@ class Workflow:
         if not reason.strip():
             raise TransitionNotAllowed("a transition needs a reason")
         if current is S.PROGRAM_REVIEW and to is S.INTERVIEWING:
-            refuse_non_human(actor, "leave PROGRAM_REVIEW for INTERVIEWING (use 'program reject')")
+            raise UseProgramReject()
         problems = self._transition_guard(current, to)
         if problems:
             raise TransitionNotAllowed(f"{current.value} -> {to.value}: " + "; ".join(problems))

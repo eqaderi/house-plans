@@ -14,7 +14,10 @@ from house_ai.orchestration.workflow import (
     GATES,
     TRANSITIONS,
     GateBlocked,
+    HumanAction,
+    NextHumanAction,
     TransitionNotAllowed,
+    UseProgramReject,
     Workflow,
     WorkflowError,
     replay,
@@ -277,6 +280,19 @@ def test_ambiguous_site_stops_at_needs_verification(project):
 
 
 # ---------------------------------------------------------------- program gate
+
+
+@pytest.mark.parametrize("actor", [HUMAN, AGENT, SYSTEM])
+def test_only_program_reject_leaves_program_review(project, actor):
+    project.to_program_review()
+    events = len(project.store.events())
+
+    with pytest.raises(UseProgramReject, match="program reject") as refused:
+        project.wf.transition(S.INTERVIEWING, actor, "undo the review")
+
+    assert refused.value.next_action == NextHumanAction(HumanAction.REJECT_PROGRAM, Gate.PROGRAM)
+    assert project.wf.state is S.PROGRAM_REVIEW
+    assert len(project.store.events()) == events
 
 
 def test_program_review_needs_a_program(store):

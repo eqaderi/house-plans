@@ -121,7 +121,7 @@ stateDiagram-v2
     SITE_INGESTION --> SITE_APPROVED: human approves site
     SITE_APPROVED --> INTERVIEWING
     INTERVIEWING --> PROGRAM_REVIEW
-    PROGRAM_REVIEW --> INTERVIEWING
+    PROGRAM_REVIEW --> INTERVIEWING: owner's program reject only
     PROGRAM_REVIEW --> PROGRAM_APPROVED: human approves program
     PROGRAM_APPROVED --> PLAN_GENERATION
     PLAN_GENERATION --> PLAN_REVIEW
@@ -144,7 +144,10 @@ from the approved plan. Each stage's module makes its own ordinary moves
 ([ADR 0028](adr/0028-site-service-and-stage-modules-move-their-own-state.md)):
 `SiteService` enters and leaves `SITE_NEEDS_CONFIRMATION`, `program review`
 leaves `SITE_APPROVED` and `plan generate` leaves `PROGRAM_APPROVED`;
-`workflow transition` remains for recovery.
+`workflow transition` remains for recovery. Leaving `PROGRAM_REVIEW` for
+`INTERVIEWING` undoes a program review, so only the Owner's `program reject`
+makes that move; the generic transition refuses it for every actor, humans
+included ([ADR 0029](adr/0029-gate-status.md)).
 
 **Gates** are crossed only by `Workflow.approve`, which:
 
@@ -155,13 +158,21 @@ leaves `SITE_APPROVED` and `plan generate` leaves `PROGRAM_APPROVED`;
    - *site*: `site_verification_blockers` (units, elevation units, CRS and
      vertical datum confirmed by a human, local frame present, boundary
      verified, no open blocking issues);
-   - *program*: site approved, no blocking open questions, no unresolved
-     contradictions in the cited brief;
+   - *program*: site approved, no blocking open questions, and the blocking
+     program checks on the cited brief (contradictions, missing answers,
+     unconfirmed interpretations, unknown facts), one Blocker per cause;
    - *plan*: site and program approved, the plan pins exactly those
      versions, `check_model` reports no errors, no stored evaluation reports
      hard violations for this version;
    - *model*: plan approved, a Blender build record made from that plan.
 5. appends an `approval_granted` event holding the `Approval` record.
+
+`Workflow.gate_status(gate, ref)` is what every caller reads before that
+([ADR 0029](adr/0029-gate-status.md)): whether the project is in the gate's
+review state, the typed `Blocker`s and attention items, whether the current
+approval is stale, and the next human action (approve this version, or
+confirm the site facts that block the site gate). The CLI renders that action
+as a command line in one place, `cli/human.py::command_for`.
 
 **Reopen** returns to a gate's review state and supersedes that approval and
 every later one. The superseded approvals stay in the log.

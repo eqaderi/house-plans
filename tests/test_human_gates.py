@@ -11,7 +11,7 @@ Invariants tested:
 1. Non-TTY execution exits 2 (EXIT_USAGE) and appends nothing.
 2. Agent actors or agent-looking ids are refused with exit 2 (EXIT_USAGE) and append nothing.
 3. Mismatched confirmation phrases exit 1 (EXIT_FAIL) and append nothing.
-4. Leaving PROGRAM_REVIEW back to INTERVIEWING refuses agent actors with exit 2.
+4. Leaving PROGRAM_REVIEW back to INTERVIEWING by transition is refused with exit 2.
 """
 
 from __future__ import annotations
@@ -239,7 +239,7 @@ def test_workflow_transition_program_review_to_interviewing_refuses_bypass(
     ])
     assert ret == EXIT_USAGE
     err = capsys.readouterr().err
-    assert "requires 'program reject' in a human terminal" in err
+    assert "only the owner's program reject" in err
     assert len(clean_project.events()) == before_events
 
 

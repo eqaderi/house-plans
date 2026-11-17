@@ -75,6 +75,14 @@ reported prose too.
   rendered command to the real parser. Hand-written copies are gone; two of
   them were wrong (`example load` had no `--approver`, the reopen hints had
   no `--reason` or `--actor`).
+- **Only `program reject` leaves program review.** Leaving `PROGRAM_REVIEW`
+  for `INTERVIEWING` undoes a program review. `Workflow.transition` refuses
+  that move for every actor, human included (`UseProgramReject`, which names
+  the `program reject` action); before, the library allowed any human actor
+  while the CLI refused everyone with its own copy of the rule, now deleted.
+  `InterviewService.reject_program` stays human-only, records the Owner's
+  words and makes the move itself (the rule of ADR 0028). `workflow
+  transition` reports the library's refusal, still with exit code 2.
 - `request_approval` returns the `GateStatus` it recorded; no caller reads
   the event payload by key. `--json` output that lists site blockers gains
   `blockers` (typed) beside `verification_blockers` (sentences).
