@@ -165,7 +165,7 @@ system it is drawn in and pins `site_ref` and `program_ref`.
 | `Level` | Finished floor elevation (local z) and floor-to-floor height |
 | `Space` | A drawn area with a function: level, boundary polygon (holes allowed), space requirement (`program_item_id`), zone, floor material |
 | `Wall` | Straight centerline segment on a level, thickness, height, base offset, kind |
-| `Opening` | Door, window or cased opening hosted by one wall: offset along the wall, width, height, sill, operation, and the two sides it connects (spaces or `exterior`) |
+| `Opening` | Door, window or cased opening hosted by one wall: offset along the wall, width, height, sill, operation, the two sides it connects (spaces or `exterior`), and an optional `role` (`main_entrance`, `vehicle_entrance`) for an exterior door the evaluators must find. Enclosure sets the role; plan versions saved without it are read by their `d-front` / `d-garage` id prefixes, and an absent role is not serialised, so their content hash is unchanged (ADR 0031) |
 | `Slab` | Floor, roof, terrace or foundation polygon with thickness and top offset |
 | `Ceiling` | Height above floor for a space |
 | `Stair` | Footprint, kind, the two levels and the bottom/top spaces it joins, riser/tread data when known |
@@ -248,7 +248,7 @@ the surveyed hull.
 
 ## Reviewer and visual critique records
 
-- `RevisionOpsFile` (`revision_ops.schema.json`): Structured operations (`--area`, `--separate`, `--adjacent`, `--near`, `--level`, `--rethink`, `--strategy`, `--connect`, `--orientation`, `--daylight`) and entity-linked comments exported from the 2D reviewer UI or authored by agents, replayed via `house-ai plan revise-from-file`.
+- `RevisionOpsFile` (`revision_ops.schema.json`): Revision operations (`op_type` is a `RevisionVerb`: `area`, `level`, `separate`, `adjacent`, `near`, `connect`, `outdoor`, `stair`, `proposal`, `rethink`, `strategy`), each checked against the one verb table `REVISION_VERBS` in `domain/revision_ops.py` ([ADR 0030](adr/0030-revision-operation-module.md)), and entity-linked comments exported from the 2D reviewer UI or authored by agents, replayed via `house-ai plan revise-from-file`.
 - `VisualCritiqueFile` (`visual_critique.schema.json`): Agent visual review records. Contains `VisualClaim` observations with element IDs grounded in a specific plan version, screenshot hash, claim text, epistemic status `ai_judgment`, severity, and suggested revision operations.
 
 

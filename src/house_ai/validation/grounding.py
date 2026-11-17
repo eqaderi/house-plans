@@ -220,15 +220,14 @@ def validate_critique_grounding(
 
         # 4. Validate suggested revision ops targets
         for op in claim.suggested_ops:
-            targets = [t.strip() for t in op.target.split(",")]
-            for t in targets:
-                if t not in valid_ids and t != "all":
+            for t in op.names:
+                if t not in valid_ids:
                     findings.append(
                         GroundingFinding(
                             claim_id=claim.id,
                             element_id=t,
                             issue=(
-                                f"Suggested revision op '{op.op_type}' "
+                                f"Suggested revision op '{op.op_type.value}' "
                                 f"targets nonexistent element '{t}'"
                             ),
                         )

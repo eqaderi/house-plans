@@ -14,13 +14,16 @@ from pathlib import Path
 
 from pydantic import ValidationError
 
+from house_ai.constants.proposals import VALID_STAIR_POSITIONS
 from house_ai.constants.strategies import (
     STRATEGY_EXTENDED_ORDER,
     STRATEGY_LABELS,
     STRATEGY_ORDER,
 )
 from house_ai.domain.plan import ChangeRequestKind
+from house_ai.domain.program import LEVEL_PREFERENCES
 from house_ai.domain.proposal import ConceptProposal
+from house_ai.domain.revision_ops import RevisionOp, RevisionOpError, RevisionOpsFile, parse_ops
 from house_ai.domain.workflow import Gate
 from house_ai.orchestration.plans import (
     GenerationOutcome,
@@ -35,6 +38,8 @@ from house_ai.storage.projects import resolve_project_dir
 
 from . import human
 from .exit_codes import EXIT_FAIL, EXIT_OK, EXIT_USAGE
+
+_LEVEL_METAVAR = "SPACE=" + "|".join(sorted(LEVEL_PREFERENCES))
 
 
 def _out(text: str = "") -> None:
@@ -183,22 +188,23 @@ def cmd_plan_propose(args: argparse.Namespace) -> int:
     return _render_generation_outcome(res, args, extra_json={"proposal_id": proposal.id})
 
 
-def _ops(args: argparse.Namespace) -> list[str]:
-    ops = [f"area:{a}" for a in getattr(args, "area", [])]
-    ops += [f"level:{a}" for a in getattr(args, "level", [])]
-    ops += [f"separate:{a}" for a in getattr(args, "separate", [])]
-    ops += [f"adjacent:{a}" for a in getattr(args, "adjacent", [])]
-    ops += [f"near:{a}" for a in getattr(args, "near", [])]
-    ops += [f"connect:{a}" for a in getattr(args, "connect", [])]
-    ops += [f"outdoor:{a}" for a in getattr(args, "outdoor", [])]
+def _ops(args: argparse.Namespace) -> list[RevisionOp]:
+    """The Revision operations the flags ask for, parsed once through the verb table."""
+    texts = [f"area:{a}" for a in getattr(args, "area", [])]
+    texts += [f"level:{a}" for a in getattr(args, "level", [])]
+    texts += [f"separate:{a}" for a in getattr(args, "separate", [])]
+    texts += [f"adjacent:{a}" for a in getattr(args, "adjacent", [])]
+    texts += [f"near:{a}" for a in getattr(args, "near", [])]
+    texts += [f"connect:{a}" for a in getattr(args, "connect", [])]
+    texts += [f"outdoor:{a}" for a in getattr(args, "outdoor", [])]
     if getattr(args, "stair", None):
-        ops.append(f"stair:{args.stair}")
+        texts.append(f"stair:{args.stair}")
     if getattr(args, "proposal", None):
-        ops.append(f"proposal:{args.proposal}")
-    ops += [f"rethink:{a}" for a in getattr(args, "rethink", [])]
+        texts.append(f"proposal:{args.proposal}")
+    texts += [f"rethink:{a}" for a in getattr(args, "rethink", [])]
     if getattr(args, "strategy", None):
-        ops.append(f"strategy:{args.strategy}")
-    return ops
+        texts.append(f"strategy:{args.strategy}")
+    return parse_ops(texts)
 
 
 def _render_revision_outcome(res: RevisionOutcome, args: argparse.Namespace) -> int:
@@ -231,6 +237,11 @@ def _render_revision_outcome(res: RevisionOutcome, args: argparse.Namespace) -> 
 
 
 def cmd_plan_revise(args: argparse.Namespace) -> int:
+    try:
+        ops = _ops(args)
+    except RevisionOpError as exc:
+        _out(f"refused: {exc}")
+        return EXIT_FAIL
     store = ProjectStore(resolve_project_dir(args.dir))
     out = Path(args.out) if args.out else _default_out(store, False)
     bases = getattr(args, "bases", None)
@@ -239,7 +250,7 @@ def cmd_plan_revise(args: argparse.Namespace) -> int:
             args.option,
             args.text,
             args.actor,
-            ops=_ops(args),
+            ops=ops,
             kind=ChangeRequestKind(args.kind),
             version=args.version,
             seed=args.seed,
@@ -254,16 +265,22 @@ def cmd_plan_revise(args: argparse.Namespace) -> int:
 
 
 def cmd_plan_combine(args: argparse.Namespace) -> int:
+    try:
+        ops = _ops(args)
+    except RevisionOpError as exc:
+        _out(f"refused: {exc}")
+        return EXIT_FAIL
     store = ProjectStore(resolve_project_dir(args.dir))
     out = Path(args.out) if args.out else _default_out(store, False)
     target = getattr(args, "target", None) or args.bases[0]
     try:
-        res = PlanService(store).combine(
+        res = PlanService(store).revise(
             target,
-            args.bases,
             args.text,
             args.actor,
-            ops=_ops(args),
+            ops=ops,
+            kind=ChangeRequestKind.COMBINE,
+            base_versions=args.bases,
             features=args.features,
             feature_confirmation=args.feature_confirmation,
             seed=args.seed,
@@ -345,8 +362,6 @@ def cmd_plan_export_bundle(args: argparse.Namespace) -> int:
 
 
 def cmd_plan_revise_from_file(args: argparse.Namespace) -> int:
-    from house_ai.domain.revision_ops import RevisionOpsFile
-
     store = ProjectStore(resolve_project_dir(args.dir))
     out = Path(args.out) if args.out else _default_out(store, False)
     ops_path = Path(args.file)
@@ -361,7 +376,7 @@ def cmd_plan_revise_from_file(args: argparse.Namespace) -> int:
         return EXIT_FAIL
 
     option = getattr(args, "option", None) or ops_file.option
-    ops = ops_file.to_cli_ops()
+    ops = ops_file.operations
     try:
         res = PlanService(store).revise(
             option,
@@ -520,7 +535,7 @@ def register(sub, actor_arg: Callable[[argparse.ArgumentParser], None]) -> None:
     )
     s.add_argument("--area", action="append", default=[], metavar="SPACE=M2")
     s.add_argument(
-        "--level", action="append", default=[], metavar="SPACE=entry|not_entry|upper|lower"
+        "--level", action="append", default=[], metavar=_LEVEL_METAVAR
     )
     s.add_argument("--separate", action="append", default=[], metavar="SPACE,SPACE")
     s.add_argument("--adjacent", action="append", default=[], metavar="SPACE,SPACE")
@@ -528,10 +543,10 @@ def register(sub, actor_arg: Callable[[argparse.ArgumentParser], None]) -> None:
     s.add_argument("--connect", action="append", default=[], metavar="SPACE,SPACE")
     s.add_argument(
         "--stair",
-        choices=["entry", "perimeter", "central", "rear"],
+        choices=sorted(VALID_STAIR_POSITIONS),
         help="stair-core placement position override",
     )
-    s.add_argument("--outdoor", action="append", default=[], metavar="SPACE,KIND")
+    s.add_argument("--outdoor", action="append", default=[], metavar="SPACE[,KIND]")
     s.add_argument("--proposal", metavar="PATH", help="concept_proposal YAML/JSON file")
     s.add_argument(
         "--rethink",
@@ -576,7 +591,7 @@ def register(sub, actor_arg: Callable[[argparse.ArgumentParser], None]) -> None:
     s.add_argument("--strategy", choices=STRATEGY_EXTENDED_ORDER)
     s.add_argument("--area", action="append", default=[], metavar="SPACE=M2")
     s.add_argument(
-        "--level", action="append", default=[], metavar="SPACE=entry|not_entry|upper|lower"
+        "--level", action="append", default=[], metavar=_LEVEL_METAVAR
     )
     s.add_argument("--separate", action="append", default=[], metavar="SPACE,SPACE")
     s.add_argument("--adjacent", action="append", default=[], metavar="SPACE,SPACE")
@@ -584,10 +599,10 @@ def register(sub, actor_arg: Callable[[argparse.ArgumentParser], None]) -> None:
     s.add_argument("--connect", action="append", default=[], metavar="SPACE,SPACE")
     s.add_argument(
         "--stair",
-        choices=["entry", "perimeter", "central", "rear"],
+        choices=sorted(VALID_STAIR_POSITIONS),
         help="stair-core placement position override",
     )
-    s.add_argument("--outdoor", action="append", default=[], metavar="SPACE,KIND")
+    s.add_argument("--outdoor", action="append", default=[], metavar="SPACE[,KIND]")
     s.add_argument("--proposal", metavar="PATH", help="concept_proposal YAML/JSON file")
     s.add_argument("--seed", type=int)
     s.add_argument("--out")

@@ -73,7 +73,7 @@ the orchestration layer.
 | `house_ai.interview` | C | Question bank (completeness checklist) with conditions and follow-ups, deterministic answer parsers, slot types, contradiction rules with options, session fold and planner, brief builder, summary (pure, domain only) |
 | `house_ai.program` | C | Brief → space program, adjacencies, zones, assumptions (including steep-hillside engineering assumptions) and open questions; program validation (missing information, unconfirmed interpretations, conflicts, sizes, totals, site fit); review sheet |
 | `house_ai.constraints` | D | Program + brief + site + CodePack → HARD/SOFT `ConstraintSet`; CodePack rules it cannot express are reported as not checked |
-| `house_ai.generation` | D | Design frame and envelope fitting, program → rooms and hard-connected clusters, six massing strategies (compact, split_level, linear, two_wing, courtyard, split_walkout), OR-Tools CP-SAT layout, canonical model assembly (walls derived from space edges, openings, stairs, slabs), `CpSatPlanGenerator` ([ADR 0013](adr/0013-solver-backed-plan-generation.md)) |
+| `house_ai.generation` | D | Design frame and envelope fitting, program → rooms and hard-connected clusters, six massing strategies (compact, split_level, linear, two_wing, courtyard, split_walkout), OR-Tools CP-SAT layout, canonical model assembly (walls derived from space edges, openings, stairs, slabs), `CpSatPlanGenerator` ([ADR 0013](adr/0013-solver-backed-plan-generation.md)); Revision operations → solver input and the unmet-request check (`revision.py`, [ADR 0030](adr/0030-revision-operation-module.md)) |
 | `house_ai.evaluation` | D, S6 | Six baseline evaluators plus eight usability critics; finish-face net floor, door sweeps, cited furniture studies, stairs/slab headroom, portal visibility routes, privacy, sampled daylight opportunity and conservative vehicle arrival (ADR 0019); reports, explanation, comparison and revision diff |
 | `house_ai.blender` | F | Deterministic canonical-plan → Blender scripts (planned, stage F) |
 | `house_ai.unreal` | G | FBX + `scene_manifest.json` → Unreal importer (planned, stage G) |
@@ -226,7 +226,9 @@ double-loaded bars (rows either side of a corridor) whose cross positions,
 row depths and level elevations come from the strategy, the envelope and the
 surveyed terrain; CP-SAT then decides each bar's position and length and each
 room cluster's row, order and widths on a 10 cm grid. The result is assembled
-into a canonical `HouseModel`: walls are derived from space edges so every
+into a canonical `HouseModel`. Both the bar assembler and the 2D placement
+assembler feed one Enclosure (`generation.enclosure`,
+[ADR 0031](adr/0031-enclosure.md)): walls are derived from space edges so every
 wall segment has one space (or the outside) per side, exterior faces against
 the ground become retaining walls without windows, and stairs join levels.
 `check_model` runs on every candidate; one with errors is kept and reported

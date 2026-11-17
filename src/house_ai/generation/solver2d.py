@@ -40,6 +40,7 @@ from house_ai.constants.proposals import (
     STAIR_CORE_ENTRY,
     STAIR_CORE_PERIMETER,
     STAIR_CORE_REAR,
+    VALID_OUTDOOR_LINKS,
 )
 from house_ai.constants.relations import (
     SHARED_WALL_MIN_M,
@@ -135,7 +136,6 @@ class PlacedRoom2D:
     v1: int  # dm
     program_item_id: str
     zone_id: str
-    sub_rects: list[tuple[int, int, int, int]] | None = None
 
     @property
     def width_dm(self) -> int:
@@ -147,9 +147,6 @@ class PlacedRoom2D:
 
     @property
     def area_m2(self) -> float:
-        if self.sub_rects:
-            dm2 = sum((sr[2] - sr[0]) * (sr[3] - sr[1]) for sr in self.sub_rects)
-            return dm2 / 100.0
         return (self.width_dm * self.depth_dm) / 100.0
 
 
@@ -179,7 +176,6 @@ class Solution2D:
     objective: float
     rooms: list[PlacedRoom2D]
     shared_walls: list[SharedWall]
-    circulation_rooms: list[PlacedRoom2D]
     levels: list[str]
     deterministic_time: float
     wall_time_s: float
@@ -589,7 +585,7 @@ def solve_2d_placement(
             outdoor_links.extend(
                 (r.space_id, link.kind) for r in rooms if r.item_id == link.program_item_id
             )
-    unsupported = {k for _, k in outdoor_links} - {"terrace", "balcony", "courtyard"}
+    unsupported = {k for _, k in outdoor_links} - VALID_OUTDOOR_LINKS
     if unsupported:
         raise Solve2DFailed(f"outdoor geometry not supported for {sorted(unsupported)}")
     courtyard = strategy == STRATEGY_COURTYARD or any(k == "courtyard" for _, k in outdoor_links)
@@ -1053,7 +1049,6 @@ def solve_2d_placement(
         objective=solver.ObjectiveValue(),
         rooms=placed,
         shared_walls=walls,
-        circulation_rooms=[],
         levels=levels,
         deterministic_time=solver.deterministic_time,
         wall_time_s=time.perf_counter() - started,

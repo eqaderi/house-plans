@@ -50,7 +50,7 @@ reported prose too.
   briefs and none cited the checks cannot run; the gate then reports each
   brief's Contradictions and one `unknown_fact` itself. The gate still reads
   the latest Open questions, not those written with the program version
-  being approved (tracker ISS-39).
+  being approved (tracker ISS-40).
 - **Stale approval.** The gate status carries the gate's current approval
   and, when a newer version of what it approved has been written,
   `stale_against` (that version). The definition is unchanged from the CLI

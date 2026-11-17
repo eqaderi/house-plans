@@ -19,17 +19,14 @@ VALID_STAIR_POSITIONS: frozenset[str] = frozenset(
 
 #: Outdoor link kinds connecting interior spaces to exterior areas.
 OUTDOOR_LINK_TERRACE: str = "terrace"
-OUTDOOR_LINK_GARDEN: str = "garden"
 OUTDOOR_LINK_COURTYARD: str = "courtyard"
-OUTDOOR_LINK_ENTRY: str = "entry"
 OUTDOOR_LINK_BALCONY: str = "balcony"
 
+#: The outdoor link kinds the 2D solver can place, and so the ones a revision may ask for.
 VALID_OUTDOOR_LINKS: frozenset[str] = frozenset(
     {
         OUTDOOR_LINK_TERRACE,
-        OUTDOOR_LINK_GARDEN,
         OUTDOOR_LINK_COURTYARD,
-        OUTDOOR_LINK_ENTRY,
         OUTDOOR_LINK_BALCONY,
     }
 )

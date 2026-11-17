@@ -12,13 +12,16 @@ from house_ai.constants.reviewer import (
     GATE_PLAN,
     GATE_PROGRAM,
     GATE_SITE,
-    OP_AREA,
-    OP_SEPARATE,
     REVIEWER_BUNDLE_FILENAME,
     REVIEWER_BUNDLE_SCHEMA_VERSION,
 )
 from house_ai.domain.provenance import Actor, ActorKind, ArtifactKind
-from house_ai.domain.revision_ops import RevisionComment, RevisionOp, RevisionOpsFile
+from house_ai.domain.revision_ops import (
+    RevisionComment,
+    RevisionOp,
+    RevisionOpsFile,
+    RevisionVerb,
+)
 from house_ai.domain.workflow import Gate, WorkflowState
 from house_ai.orchestration.plans import PlanService
 from house_ai.orchestration.reviewer_bundle import (
@@ -75,8 +78,8 @@ def test_revision_ops_model_and_cli_conversion() -> None:
         verbatim_request="Make the kitchen 18m2 and keep it separated from living",
         author="homeowner:alice",
         operations=[
-            RevisionOp(op_type=OP_AREA, target="pi-kitchen", value=18.0),
-            RevisionOp(op_type=OP_SEPARATE, target="pi-kitchen,pi-living"),
+            RevisionOp(op_type=RevisionVerb.AREA, target="pi-kitchen", value=18.0),
+            RevisionOp(op_type=RevisionVerb.SEPARATE, target="pi-kitchen,pi-living"),
         ],
         comments=[
             RevisionComment(
@@ -233,7 +236,7 @@ def test_cli_plan_revise_from_file_round_trip(tmp_path: Path) -> None:
         verbatim_request="Increase kitchen to 18 m2",
         author="homeowner:owner",
         operations=[
-            RevisionOp(op_type=OP_AREA, target="pi-kitchen", value=18.0),
+            RevisionOp(op_type=RevisionVerb.AREA, target="pi-kitchen", value=18.0),
         ],
     )
     ops_path = tmp_path / "my_ops.json"

@@ -16,7 +16,7 @@ from typing import Literal
 
 from pydantic import Field, model_serializer, model_validator
 
-from .base import SCHEMA_VERSION, Id, PositiveFloat, StrictModel
+from .base import EXTERIOR, SCHEMA_VERSION, Id, PositiveFloat, StrictModel
 from .geometry import Point2, Polygon2D, segment_length
 from .hillside import EarthworkPad
 from .program import Privacy, SpaceFunction
@@ -120,6 +120,15 @@ class Operation(StrEnum):
     TILT_TURN = "tilt_turn"
 
 
+class OpeningRole(StrEnum):
+    """What an exterior opening is for, where the evaluators need to know (ADR 0031)."""
+
+    #: The front door people arrive by.
+    MAIN_ENTRANCE = "main_entrance"
+    #: The door vehicles enter by, such as a garage door.
+    VEHICLE_ENTRANCE = "vehicle_entrance"
+
+
 class Opening(StrictModel):
     """A door, window or cased opening hosted by exactly one wall."""
 
@@ -138,12 +147,24 @@ class Opening(StrictModel):
     opens_into: Id | None = None
     operation: Operation = Operation.NONE
     material_id: Id | None = None
+    #: The entrance this opening is, if any. Plan versions saved before roles existed
+    #: have none; readers fall back to the ``d-front`` / ``d-garage`` id prefixes.
+    role: OpeningRole | None = None
+
+    @model_serializer(mode="wrap")
+    def _legacy_hash_compatible(self, handler):
+        data = handler(self)
+        if self.role is None:
+            data.pop("role", None)
+        return data
 
     @model_validator(mode="after")
     def _connects_two_things(self) -> Opening:
         a, b = self.connects
         if a == b:
             raise ValueError(f"{self.id}: an opening must connect two different sides")
+        if self.role is not None and EXTERIOR not in self.connects:
+            raise ValueError(f"{self.id}: an entrance ({self.role.value}) must open to exterior")
         if self.opens_into is not None and self.opens_into not in self.connects:
             raise ValueError(
                 f"{self.id}: opens_into ({self.opens_into!r}) must be one of {list(self.connects)}"
