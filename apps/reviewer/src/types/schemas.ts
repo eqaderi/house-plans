@@ -541,11 +541,15 @@ export interface Opening {
   offset_m: number;
   opens_into?: string | null;
   operation?: Operation;
+  role?: OpeningRole | null;
   sill_m?: number;
   width_m: number;
 }
 
 export type OpeningKind = "door" | "window" | "opening";
+
+/** What an exterior opening is for, where the evaluators need to know (ADR 0031). */
+export type OpeningRole = "main_entrance" | "vehicle_entrance";
 
 export interface OpeningsOnWallsRule {
   kind?: string;

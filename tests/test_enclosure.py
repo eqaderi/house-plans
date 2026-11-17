@@ -6,19 +6,33 @@ and a fixed terrain whose ground values are worked out by hand in the comments.
 
 from __future__ import annotations
 
+import json
+
 import pytest
 
-from house_ai.domain.geometry import Polygon2D
+from house_ai.domain.evaluation import MetricClaim
+from house_ai.domain.geometry import Polygon2D, Polyline2D
 from house_ai.domain.integrity import check_model, errors
-from house_ai.domain.model import Level, OpeningKind, Stair, StairKind, WallKind
+from house_ai.domain.model import (
+    Level,
+    Opening,
+    OpeningKind,
+    OpeningRole,
+    Stair,
+    StairKind,
+    WallKind,
+)
+from house_ai.domain.plan import PlanVersion
 from house_ai.domain.program import Privacy, ProgramZone, SpaceProgram, SpaceRelationship
 from house_ai.domain.program import SpaceFunction as S
-from house_ai.domain.site import Site
+from house_ai.domain.site import PolylineGeometry, Site, SiteFeature, SiteFeatureKind
+from house_ai.evaluation.base import EvaluationContext
+from house_ai.evaluation.evaluators import CirculationEvaluator, PrivacyEvaluator, SiteEvaluator
 from house_ai.generation.assemble2d import assemble_2d
 from house_ai.generation.enclosure import EnclosedSpace, Enclosure, Rect
 from house_ai.generation.frame import DesignFrame
 from house_ai.generation.solver2d import PlacedRoom2D, SharedWall, Solution2D
-from house_ai.storage.hashing import load_document
+from house_ai.storage.hashing import content_hash, load_document
 
 from .conftest import AGENT, REPO
 
@@ -478,3 +492,119 @@ def test_2d_plan_records_its_space_relationships_zones_and_slabs():
         ("slab-roof-entry", "m-slab", 0.25),
     ]
     assert not errors(check_model(model))
+
+
+# ------------------------------------------------------------- the entrance role
+
+
+def test_an_opening_role_is_optional_and_left_out_of_the_saved_record_when_absent():
+    door = Opening(
+        id="d-a",
+        kind=OpeningKind.DOOR,
+        host_wall_id="w-1",
+        offset_m=0.0,
+        width_m=1.0,
+        height_m=2.1,
+        connects=("sp-a", "exterior"),
+    )
+    assert door.role is None and "role" not in door.model_dump(mode="json")
+    front = door.model_copy(update={"role": OpeningRole.MAIN_ENTRANCE})
+    assert front.model_dump(mode="json")["role"] == "main_entrance"
+    with pytest.raises(ValueError, match="exterior"):
+        Opening.model_validate(
+            {**door.model_dump(), "connects": ("sp-a", "sp-b"), "role": "main_entrance"}
+        )
+
+
+def test_enclosure_records_the_role_it_is_given():
+    enc = Enclosure([ENTRY], [space("sp-a", S.ENTRY, (0, 0, 30, 30))], FRAME, Flat())
+    door = enc.place(
+        "lv-entry", "sp-a", None, OpeningKind.DOOR, 1.0, role=OpeningRole.MAIN_ENTRANCE
+    )
+    assert door is not None and door.role is OpeningRole.MAIN_ENTRANCE
+
+
+def _metrics(model, site, program) -> dict[str, MetricClaim]:
+    ctx = EvaluationContext(model, site, program, None)
+    out = {}
+    for ev in (CirculationEvaluator(), PrivacyEvaluator(), SiteEvaluator()):
+        out.update({m.metric: m for m in ev.evaluate(ctx).metrics})
+    return out
+
+
+def road_site() -> tuple[Site, SpaceProgram]:
+    """The hillside fixture with one road along y = -2 m (LOCAL) instead of its own."""
+    site, program = hillside()
+    road = SiteFeature(
+        id="road-test",
+        kind=SiteFeatureKind.ROAD,
+        geometry=PolylineGeometry(line=Polyline2D(points=[(-10.0, -2.0), (20.0, -2.0)])),
+    )
+    return site.model_copy(update={"features": [road]}), program
+
+
+def entrance_plan(site, program):
+    # Entry at the road, a bedroom straight behind it.
+    rooms = [
+        placed("sp-entry", S.ENTRY, (10, 0, 40, 20), "pi-entry", "z-circulation"),
+        placed("sp-bed", S.BEDROOM, (10, 20, 40, 50), "pi-bed-main", "z-night"),
+    ]
+    shared = [SharedWall("sp-entry", "sp-bed", "lv-entry", "h", 20, 10, 40)]
+    return assemble_2d(solution(rooms, shared), site, FRAME, Flat(), program, AGENT)
+
+
+def test_the_main_entrance_of_a_2d_plan_is_found_and_measured():
+    site, program = road_site()
+    model = entrance_plan(site, program)
+    (front,) = [o for o in model.openings if o.role is OpeningRole.MAIN_ENTRANCE]
+    assert set(front.connects) == {"sp-entry", "exterior"}
+    m = _metrics(model, site, program)
+    assert m["entrance_route_basis"].value == "front_door_identifier"
+    # The door sits in the front face at y = 0; the road runs along y = -2 m.
+    assert m["entrance_to_road_m"].value == 2.0
+    assert m["entrance_to_road_m"].status.value == "measured"
+    assert m["entrance_to_road_m"].subject_ids == [front.id]
+    # The 8 m ray from the front door crosses the private bedroom behind the entry.
+    assert m["entrance_sightline_private_spaces"].value == 1
+
+
+def test_entrance_metrics_that_cannot_be_measured_are_not_checked_never_zero():
+    site, program = road_site()
+    model = entrance_plan(site, program)
+    inside = model.model_copy(
+        update={"openings": [o for o in model.openings if "exterior" not in o.connects]}
+    )
+    m = _metrics(inside, site, program)
+    for name in ("entrance_to_road_m", "entrance_sightline_private_spaces"):
+        assert m[name].value is None and m[name].status.value == "not_checked", name
+
+
+def test_a_stored_plan_version_without_the_role_evaluates_exactly_as_before():
+    site, program = hillside()
+    path = HILLSIDE / "concepts" / "concept-split-level" / "exploratory" / "plan.json"
+    raw = json.loads(path.read_text(encoding="utf-8"))
+    plan = PlanVersion.model_validate(raw)
+    # Loading adds nothing to the record: its content hash is the one it was saved with.
+    assert not any(o.role for o in plan.model.openings)
+    assert content_hash(plan) == content_hash(raw)
+    stored = _metrics(plan.model, site, program)
+    # Found by the d-front / d-garage id prefixes, as before the role existed.
+    assert stored["entrance_route_basis"].value == "front_door_identifier"
+    assert stored["entrance_to_road_m"].value == 3.1
+    assert stored["garage_door_to_road_m"].value == 3.1
+    assert stored["entrance_sightline_private_spaces"].value == 0
+    # The same plan with roles gives exactly the same evaluation.
+    def with_role(o):
+        if "exterior" not in o.connects:
+            return o
+        if o.id.startswith("d-front"):
+            return o.model_copy(update={"role": OpeningRole.MAIN_ENTRANCE})
+        if o.id.startswith("d-garage"):
+            return o.model_copy(update={"role": OpeningRole.VEHICLE_ENTRANCE})
+        return o
+
+    tagged = plan.model.model_copy(
+        update={"openings": [with_role(o) for o in plan.model.openings]}
+    )
+    assert sum(1 for o in tagged.openings if o.role) == 2
+    assert _metrics(tagged, site, program) == stored

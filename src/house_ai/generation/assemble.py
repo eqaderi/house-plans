@@ -22,6 +22,7 @@ from house_ai.domain.model import (
     Level,
     Opening,
     OpeningKind,
+    OpeningRole,
     Operation,
     Space,
     Stair,
@@ -413,6 +414,7 @@ class _Builder:
                 opens_into=er.space_id,
                 prefer=road,
                 prefix="d-front",
+                role=OpeningRole.MAIN_ENTRANCE,
             )
         else:
             self.door(
@@ -423,6 +425,7 @@ class _Builder:
                 clear_m=0.1,
                 opens_into=corridor_of[entry_bar.id],
                 prefix="d-front",
+                role=OpeningRole.MAIN_ENTRANCE,
             )
         for pu in self.sol.units:
             u = pu.unit
@@ -805,6 +808,7 @@ class _Builder:
             require_direction=True,
             material="m-door",
             prefix="d-garage",
+            role=OpeningRole.VEHICLE_ENTRANCE,
         )
         if made is None:
             self._issue(

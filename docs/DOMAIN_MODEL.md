@@ -165,7 +165,7 @@ system it is drawn in and pins `site_ref` and `program_ref`.
 | `Level` | Finished floor elevation (local z) and floor-to-floor height |
 | `Space` | A drawn area with a function: level, boundary polygon (holes allowed), space requirement (`program_item_id`), zone, floor material |
 | `Wall` | Straight centerline segment on a level, thickness, height, base offset, kind |
-| `Opening` | Door, window or cased opening hosted by one wall: offset along the wall, width, height, sill, operation, and the two sides it connects (spaces or `exterior`) |
+| `Opening` | Door, window or cased opening hosted by one wall: offset along the wall, width, height, sill, operation, the two sides it connects (spaces or `exterior`), and an optional `role` (`main_entrance`, `vehicle_entrance`) for an exterior door the evaluators must find. Enclosure sets the role; plan versions saved without it are read by their `d-front` / `d-garage` id prefixes, and an absent role is not serialised, so their content hash is unchanged (ADR 0031) |
 | `Slab` | Floor, roof, terrace or foundation polygon with thickness and top offset |
 | `Ceiling` | Height above floor for a space |
 | `Stair` | Footprint, kind, the two levels and the bottom/top spaces it joins, riser/tread data when known |

@@ -30,6 +30,7 @@ from house_ai.domain.model import (
     Level,
     Opening,
     OpeningKind,
+    OpeningRole,
     Operation,
     Space,
     Stair,
@@ -155,6 +156,7 @@ class Builder2D:
         material: str | None = None,
         prefix: str = "d",
         road_facing: bool = False,
+        role: OpeningRole | None = None,
     ) -> Opening | None:
         """Choose candidate walls for an opening; Enclosure fits it (ADR 0031)."""
         level = next(r.level_id for r in self.sol.rooms if r.space_id == a)
@@ -181,6 +183,7 @@ class Builder2D:
             material=material or ("m-door" if kind is OpeningKind.DOOR else "m-glass"),
             prefix=prefix,
             walls=walls,
+            role=role,
         )
 
     def build_openings(self) -> None:
@@ -201,6 +204,7 @@ class Builder2D:
                 operation=Operation.SWING_RIGHT,
                 prefix="d-ext",
                 road_facing=sid == entry_room.space_id and self.sol.road_front_dm is not None,
+                role=OpeningRole.MAIN_ENTRANCE if sid == entry_room.space_id else None,
             )
 
         # 2. Door / cased openings along shared walls

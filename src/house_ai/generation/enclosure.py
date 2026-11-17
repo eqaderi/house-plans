@@ -45,6 +45,7 @@ from house_ai.domain.model import (
     MaterialRef,
     Opening,
     OpeningKind,
+    OpeningRole,
     Operation,
     PlanRelationship,
     RelationshipKind,
@@ -319,6 +320,7 @@ class Enclosure:
         material: str | None = None,
         prefix: str = "d",
         walls: Sequence[WallSeg] | None = None,
+        role: OpeningRole | None = None,
     ) -> Opening | None:
         """Fit an opening between ``a`` and ``b`` (None: the outside), or return None.
 
@@ -374,6 +376,7 @@ class Enclosure:
                 operation=operation,
                 opens_into=opens_into,
                 material=material,
+                role=role,
             )
         return None
 
@@ -391,6 +394,7 @@ class Enclosure:
         operation: Operation = Operation.NONE,
         opens_into: str | None = None,
         material: str | None = None,
+        role: OpeningRole | None = None,
     ) -> Opening:
         """Record an opening at a chosen place in ``seg``: the span is then taken."""
         seg.used.append((offset_dm, offset_dm + width_dm))
@@ -406,6 +410,7 @@ class Enclosure:
             operation=operation,
             opens_into=opens_into,
             material_id=material,
+            role=role,
         )
         self.openings.append(op)
         return op

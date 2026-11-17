@@ -57,7 +57,10 @@ taken: a buildable envelope is part of the Site.
   read the role and fall back to the `d-front` / `d-garage` id prefixes for
   stored plan versions that lack it. A missing role is not serialised, so the
   content hash of every stored plan version is unchanged
-  ([ADR 0003](0003-file-based-store-and-event-log.md)).
+  ([ADR 0003](0003-file-based-store-and-event-log.md)). Only an opening to the
+  exterior can carry a role. When no main entrance is found, entrance privacy
+  and distance to the road are reported as not checked, never as zero; so is
+  the garage door's distance when a garage has no vehicle entrance.
 - The 2D assembler's paths for multi-rectangle Spaces and separate circulation
   Spaces are deleted: the 2D solver never produces either.
 
