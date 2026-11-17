@@ -59,7 +59,7 @@ export const FeedbackPanel: React.FC<FeedbackPanelProps> = ({
       project: projectName,
       option: optionId,
       plan_version: planVersion,
-      verbatim_request: verbatimRequest.trim() || "Homeowner feedback export",
+      verbatim_request: verbatimRequest.trim() || "Owner feedback export",
       author: author.trim() || "homeowner:owner",
       created_at: new Date().toISOString(),
       operations,
@@ -116,7 +116,7 @@ export const FeedbackPanel: React.FC<FeedbackPanelProps> = ({
           />
         </div>
         <label style={{ display: "block", color: "#94a3b8", marginBottom: 4 }}>
-          Overall Request (Homeowner Verbatim Words):
+          Overall Request (Owner's Verbatim Words):
         </label>
         <textarea
           data-testid="verbatim-request-input"

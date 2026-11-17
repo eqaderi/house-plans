@@ -76,10 +76,10 @@ def _format_gate_commands(project_name: str) -> dict[str, dict[str, Any]]:
 def build_reviewer_bundle(
     store: ProjectStore,
     *,
-    concepts_dir: Path | None = None,
+    plan_options_dir: Path | None = None,
     exploratory: bool = False,
 ) -> dict[str, Any]:
-    """Construct a complete, read-only JSON bundle for the 2D concept reviewer.
+    """Construct a complete, read-only JSON bundle for the 2D plan option reviewer.
 
     Never mutates the ProjectStore, appends events, or modifies artifacts.
     """
@@ -172,9 +172,9 @@ def build_reviewer_bundle(
                 }
             )
 
-    # 6. Exploratory concepts from concepts_dir (if provided or requested)
-    if concepts_dir is not None and concepts_dir.exists():
-        for opt_dir in sorted(concepts_dir.iterdir()):
+    # 6. Exploratory plan options from plan_options_dir (if provided or requested)
+    if plan_options_dir is not None and plan_options_dir.exists():
+        for opt_dir in sorted(plan_options_dir.iterdir()):
             if not opt_dir.is_dir():
                 continue
             for v_dir in sorted(opt_dir.iterdir()):
@@ -266,13 +266,13 @@ def export_reviewer_bundle(
     store: ProjectStore,
     out_dir: Path,
     *,
-    concepts_dir: Path | None = None,
+    plan_options_dir: Path | None = None,
     exploratory: bool = False,
 ) -> Path:
     """Build and write the reviewer bundle JSON to out_dir/bundle.json."""
     bundle_data = build_reviewer_bundle(
         store,
-        concepts_dir=concepts_dir,
+        plan_options_dir=plan_options_dir,
         exploratory=exploratory,
     )
     out_path = Path(out_dir)

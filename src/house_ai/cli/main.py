@@ -1410,7 +1410,8 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("dir")
     s.add_argument(
         "state", type=WorkflowState, metavar="STATE",
-        help="target workflow state; names used before ADR 0025 are accepted",
+        help="target workflow state: " + ", ".join(st.value for st in WorkflowState)
+        + " (names used before ADR 0025 are accepted)",
     )
     s.add_argument("--reason", required=True)
     actor_arg(s)

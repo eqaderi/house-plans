@@ -716,8 +716,11 @@ def solve_2d_placement(
         for core in proposal.stair_cores:
             levels.update(_level_id(lv) for lv in core.connects_levels)
     levels = [lv for lv in level_order if lv in levels]
+    # 2D levels are stacked a whole storey apart (terrain_levels.py), so each is a storey.
     if program.storeys is not None and len(levels) > program.storeys:
-        raise Solve2DFailed(f"layout needs {len(levels)} levels; program permits {program.storeys}")
+        raise Solve2DFailed(
+            f"layout needs {len(levels)} storeys; the program asks for {program.storeys}"
+        )
     cores = {}
     if len(levels) > 1:
         for lv in levels:

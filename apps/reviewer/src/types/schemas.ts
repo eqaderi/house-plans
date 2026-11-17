@@ -808,8 +808,9 @@ export type SpaceFunction = "entry" | "hall" | "corridor" | "living" | "family" 
 /** The space requirements and relationships the program gate approves.
 
 Old field names (``items``, ``adjacencies``, ``levels``, ``site_verified``)
-are accepted on input. A record of schema 0.1.0 is written back with them,
-so programs saved before ADR 0025 keep their content hash. */
+are accepted on input; ``levels`` changed meaning, so only on schema 0.1.0.
+A record of schema 0.1.0 is written back with them, so programs saved before
+ADR 0025 keep their content hash. */
 export interface SpaceProgram {
   brief_ref?: ArtifactRef | null;
   budget?: Money | null;

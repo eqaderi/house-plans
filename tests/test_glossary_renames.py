@@ -10,6 +10,7 @@ import shutil
 from pathlib import Path
 
 import pytest
+import yaml
 from pydantic import ValidationError
 
 from house_ai.cli.main import main
@@ -19,6 +20,7 @@ from house_ai.domain.model import HouseModel, Level
 from house_ai.domain.program import SpaceProgram
 from house_ai.domain.provenance import ArtifactKind
 from house_ai.domain.workflow import EventType, WorkflowState
+from house_ai.evaluation.explain import comparison_markdown
 from house_ai.interview.state import fold
 from house_ai.orchestration.interview import InterviewService
 from house_ai.orchestration.plans import PlanService
@@ -30,6 +32,8 @@ from .conftest import AGENT, HUMAN
 from .test_plan_workflow import _approve_site_and_program, _load
 
 FIXTURE = Path(__file__).parent / "fixtures" / "pre_adr0025" / "store"
+HILLSIDE = Path(__file__).parents[1] / "examples" / "projects" / "synthetic-hillside"
+HILLSIDE_PROGRAM = HILLSIDE / "space_program.yaml"
 OLD_PROGRAM_KEYS = {"items", "adjacencies", "levels", "site_verified"}
 NEW_PROGRAM_KEYS = {"space_requirements", "space_relationships", "storeys", "site_approved"}
 
@@ -90,6 +94,15 @@ def test_a_program_cannot_give_a_field_under_both_names(old_store):
     doc = old_store.get(ref, SpaceProgram).model_dump(mode="json")
     with pytest.raises(ValidationError, match="not both"):
         SpaceProgram.model_validate({**doc, "storeys": 2})
+
+
+def test_a_new_program_rejects_the_old_levels_name():
+    doc = yaml.safe_load(HILLSIDE_PROGRAM.read_text(encoding="utf-8"))
+    assert doc["schema_version"] == "0.2.0" and doc["storeys"] == 2
+    doc["levels"] = doc.pop("storeys")
+    with pytest.raises(ValidationError, match="'levels' is a schema 0.1.0 name; .* 'storeys'"):
+        SpaceProgram.model_validate(doc)
+    assert SpaceProgram.model_validate({**doc, "schema_version": "0.1.0"}).storeys == 2
 
 
 def test_old_state_names_read_as_the_current_states(old_store):
@@ -191,3 +204,20 @@ def test_the_program_asks_for_storeys_and_the_plan_derives_its_levels(tmp_path):
     assert metrics["level_count"] == 3 and metrics["storey_count"] == 2
     assert "storey_count_differs" not in {v.code for v in generated.report.violations}
     assert not [a for a in model.assumptions if a.id == "asm-gen-requested-storeys"]
+
+
+def test_a_plan_saved_with_the_old_requested_levels_assumption_is_still_reported(tmp_path):
+    store = _load(tmp_path)
+    _approve_site_and_program(store)
+    outcome = PlanService(store).generate(AGENT, strategies=["linear"], exploratory=True)
+    (generated,) = outcome.generated
+    plan, report = generated.candidate.plan, generated.report
+    (note,) = [a for a in plan.model.assumptions if a.id == "asm-gen-requested-storeys"]
+    old_note = note.model_copy(update={"id": "asm-gen-requested-levels"})
+    assumptions = [old_note if a is note else a for a in plan.model.assumptions]
+    old_plan = plan.model_copy(
+        update={"model": plan.model.model_copy(update={"assumptions": assumptions})}
+    )
+    comparison = comparison_markdown([(old_plan, None, report)], [])
+    assert "## Requested storeys" in comparison
+    assert f"- **{plan.option_id}**: {note.statement}" in comparison

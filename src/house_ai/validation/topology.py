@@ -56,7 +56,7 @@ def validate_proposal(
                 ProposalFinding(
                     ERR_UNKNOWN_PROGRAM_ITEM,
                     Severity.BLOCKING,
-                    f"Unknown program item {la.program_item_id!r} in level assignments",
+                    f"Unknown space requirement {la.program_item_id!r} in level assignments",
                     [la.program_item_id],
                 )
             )
@@ -69,7 +69,7 @@ def validate_proposal(
                     ProposalFinding(
                         ERR_UNKNOWN_PROGRAM_ITEM,
                         Severity.BLOCKING,
-                        f"Unknown program item {pid!r} in zone {zone.id!r}",
+                        f"Unknown space requirement {pid!r} in zone {zone.id!r}",
                         [zone.id, pid],
                     )
                 )
@@ -81,7 +81,7 @@ def validate_proposal(
                 ProposalFinding(
                     ERR_UNKNOWN_PROGRAM_ITEM,
                     Severity.BLOCKING,
-                    f"Unknown program item {adj.a!r} in proposal adjacency {adj.id!r}",
+                    f"Unknown space requirement {adj.a!r} in proposal adjacency {adj.id!r}",
                     [adj.id, adj.a],
                 )
             )
@@ -92,7 +92,7 @@ def validate_proposal(
                     ProposalFinding(
                         ERR_UNKNOWN_PROGRAM_ITEM,
                         Severity.BLOCKING,
-                        f"Unknown program item {adj.b!r} in proposal adjacency {adj.id!r}",
+                        f"Unknown space requirement {adj.b!r} in proposal adjacency {adj.id!r}",
                         [adj.id, adj.b],
                     )
                 )
@@ -104,7 +104,7 @@ def validate_proposal(
                 ProposalFinding(
                     ERR_UNKNOWN_PROGRAM_ITEM,
                     Severity.BLOCKING,
-                    f"Unknown program item {ol.program_item_id!r} in outdoor link {ol.id!r}",
+                    f"Unknown space requirement {ol.program_item_id!r} in outdoor link {ol.id!r}",
                     [ol.id, ol.program_item_id],
                 )
             )
@@ -117,7 +117,7 @@ def validate_proposal(
                     ProposalFinding(
                         ERR_UNKNOWN_PROGRAM_ITEM,
                         Severity.BLOCKING,
-                        f"Unknown program item {pid!r} near stair core {sc.id!r}",
+                        f"Unknown space requirement {pid!r} near stair core {sc.id!r}",
                         [sc.id, pid],
                     )
                 )
@@ -131,20 +131,21 @@ def validate_proposal(
                 ProposalFinding(
                     ERR_MISSING_LEVEL_ASSIGNMENT,
                     Severity.BLOCKING,
-                    f"Program items missing level assignments: {', '.join(missing_levels)}",
+                    f"Space requirements missing level assignments: {', '.join(missing_levels)}",
                     missing_levels,
                 )
             )
 
     # 2. Level feasibility & Vertical circulation
+    # Proposal levels become stacked 2D levels a whole storey apart, so each is a storey.
     levels_used = {la.level_id for la in proposal.level_assignments}
     if program.storeys is not None and len(levels_used) > program.storeys:
         findings.append(
             ProposalFinding(
                 ERR_EXCESSIVE_LEVELS,
                 Severity.BLOCKING,
-                f"Proposal uses {len(levels_used)} levels ({sorted(levels_used)}), "
-                f"exceeding program maximum of {program.storeys}",
+                f"Proposal uses {len(levels_used)} stacked levels ({sorted(levels_used)}), "
+                f"more storeys than the program's {program.storeys}",
                 sorted(levels_used),
             )
         )

@@ -8,7 +8,7 @@ import http.server
 import socketserver
 from pathlib import Path
 
-from house_ai.cli.plan_cmds import existing_plan_options_dir
+from house_ai.cli.plan_cmds import add_plan_options_dir_argument, existing_plan_options_dir
 from house_ai.constants.reviewer import REVIEWER_DEFAULT_PORT
 from house_ai.orchestration.reviewer_bundle import export_reviewer_bundle
 from house_ai.storage import ProjectStore
@@ -24,11 +24,11 @@ def _out(text: str = "") -> None:
 def cmd_reviewer_export(args: argparse.Namespace) -> int:
     """Export a read-only reviewer bundle of the plan options."""
     store = ProjectStore(resolve_project_dir(args.dir))
-    concepts_dir = existing_plan_options_dir(store, args.plan_options_dir)
+    plan_options_dir = existing_plan_options_dir(store, args.plan_options_dir)
     bundle_file = export_reviewer_bundle(
         store,
         Path(args.out),
-        concepts_dir=concepts_dir,
+        plan_options_dir=plan_options_dir,
         exploratory=args.exploratory,
     )
     _out(f"wrote reviewer bundle to {bundle_file}")
@@ -52,7 +52,7 @@ def cmd_reviewer_serve(args: argparse.Namespace) -> int:
         )
         return EXIT_FAIL
     bundle_file = export_reviewer_bundle(
-        store, dist_dir, concepts_dir=existing_plan_options_dir(store)
+        store, dist_dir, plan_options_dir=existing_plan_options_dir(store)
     )
 
     url = f"http://127.0.0.1:{port}/?bundle={bundle_file.name}"
@@ -78,11 +78,7 @@ def register(sub, actor_arg=None) -> None:
     )
     s.add_argument("dir", help="project directory or name")
     s.add_argument("--out", required=True, help="output directory for bundle.json")
-    s.add_argument(
-        "--plan-options-dir", "--concepts-dir", dest="plan_options_dir",
-        help="optional folder of exported plan options (default: <project>/design/plan-options, "
-        "else design/concepts)",
-    )
+    add_plan_options_dir_argument(s)
     s.add_argument(
         "--exploratory",
         action="store_true",

@@ -83,7 +83,7 @@ def _minimal_program() -> SpaceProgram:
         project_id="proj-test",
         items=items,
         adjacencies=adj,
-        levels=2,
+        storeys=2,
         provenance=Provenance(
             created_at=WHEN,
             created_by=TOOL,

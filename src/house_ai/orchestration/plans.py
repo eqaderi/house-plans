@@ -417,7 +417,7 @@ class PlanService:
         if name in by_item:
             return by_item[name]
         raise PlanWorkflowError(
-            f"unknown room {name!r}; use a program item id (pi-...) or a space id (sp-...)"
+            f"unknown room {name!r}; use a space requirement id (pi-...) or a space id (sp-...)"
         )
 
     # ----------------------------------------------------------------- revise

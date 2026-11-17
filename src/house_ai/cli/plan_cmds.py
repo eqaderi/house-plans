@@ -59,6 +59,15 @@ def existing_plan_options_dir(store: ProjectStore, given: str | None = None) -> 
     return None
 
 
+def add_plan_options_dir_argument(parser: argparse.ArgumentParser) -> None:
+    """``--plan-options-dir`` with its old name ``--concepts-dir`` kept as an alias."""
+    parser.add_argument(
+        "--plan-options-dir", "--concepts-dir", dest="plan_options_dir",
+        help="optional folder of exported plan options (default: <project>/design/plan-options, "
+        "else design/concepts)",
+    )
+
+
 def cmd_plan_strategies(args: argparse.Namespace) -> int:
     for name in STRATEGY_ORDER:
         _out(f"{name:12} {STRATEGY_LABELS[name]}")
@@ -200,7 +209,7 @@ def _render_revision_outcome(res: RevisionOutcome, args: argparse.Namespace) -> 
         return EXIT_OK
     parent_note = f" (parent v{rev.from_version.version})" if rev.from_version else ""
     _out(f"stored {ref.id} v{ref.version}{parent_note}")
-    _out(f"rooms changed: {', '.join(rev.rooms_changed) or 'none'}")
+    _out(f"spaces changed: {', '.join(rev.rooms_changed) or 'none'}")
     for c in rev.area_changes:
         _out(f"  {c.space_id}: {c.before_m2} -> {c.after_m2} m²")
     for v in rev.new_violations:
@@ -315,11 +324,11 @@ def cmd_plan_export_bundle(args: argparse.Namespace) -> int:
     from house_ai.orchestration.reviewer_bundle import export_reviewer_bundle
 
     store = ProjectStore(resolve_project_dir(args.dir))
-    concepts_dir = existing_plan_options_dir(store, args.plan_options_dir)
+    plan_options_dir = existing_plan_options_dir(store, args.plan_options_dir)
     bundle_file = export_reviewer_bundle(
         store,
         Path(args.out),
-        concepts_dir=concepts_dir,
+        plan_options_dir=plan_options_dir,
         exploratory=args.exploratory,
     )
     _out(f"wrote reviewer bundle to {bundle_file}")
@@ -505,27 +514,27 @@ def register(sub, actor_arg: Callable[[argparse.ArgumentParser], None]) -> None:
         default=[],
         help="additional base versions for combine revisions",
     )
-    s.add_argument("--area", action="append", default=[], metavar="ROOM=M2")
+    s.add_argument("--area", action="append", default=[], metavar="SPACE=M2")
     s.add_argument(
-        "--level", action="append", default=[], metavar="ROOM=entry|not_entry|upper|lower"
+        "--level", action="append", default=[], metavar="SPACE=entry|not_entry|upper|lower"
     )
-    s.add_argument("--separate", action="append", default=[], metavar="ROOM,ROOM")
-    s.add_argument("--adjacent", action="append", default=[], metavar="ROOM,ROOM")
-    s.add_argument("--near", action="append", default=[], metavar="ROOM,ROOM")
-    s.add_argument("--connect", action="append", default=[], metavar="ROOM,ROOM")
+    s.add_argument("--separate", action="append", default=[], metavar="SPACE,SPACE")
+    s.add_argument("--adjacent", action="append", default=[], metavar="SPACE,SPACE")
+    s.add_argument("--near", action="append", default=[], metavar="SPACE,SPACE")
+    s.add_argument("--connect", action="append", default=[], metavar="SPACE,SPACE")
     s.add_argument(
         "--stair",
         choices=["entry", "perimeter", "central", "rear"],
         help="stair-core placement position override",
     )
-    s.add_argument("--outdoor", action="append", default=[], metavar="ROOM,KIND")
+    s.add_argument("--outdoor", action="append", default=[], metavar="SPACE,KIND")
     s.add_argument("--proposal", metavar="PATH", help="concept_proposal YAML/JSON file")
     s.add_argument(
         "--rethink",
         action="append",
         default=[],
-        metavar="ROOM|ZONE|all",
-        help="let these rooms move freely; the rest stays close to the parent",
+        metavar="SPACE|ZONE|all",
+        help="let these spaces move freely; the rest stays close to the parent",
     )
     s.add_argument("--strategy", choices=STRATEGY_EXTENDED_ORDER)
     s.add_argument("--seed", type=int)
@@ -552,7 +561,7 @@ def register(sub, actor_arg: Callable[[argparse.ArgumentParser], None]) -> None:
         dest="features",
         action="append",
         required=True,
-        metavar="SOURCE:ROOM=area,level,connections",
+        metavar="SOURCE:SPACE=area,level,connections",
     )
     s.add_argument(
         "--feature-confirmation",
@@ -561,20 +570,20 @@ def register(sub, actor_arg: Callable[[argparse.ArgumentParser], None]) -> None:
     )
     s.add_argument("--target", help="target plan option name (default: the first one)")
     s.add_argument("--strategy", choices=STRATEGY_EXTENDED_ORDER)
-    s.add_argument("--area", action="append", default=[], metavar="ROOM=M2")
+    s.add_argument("--area", action="append", default=[], metavar="SPACE=M2")
     s.add_argument(
-        "--level", action="append", default=[], metavar="ROOM=entry|not_entry|upper|lower"
+        "--level", action="append", default=[], metavar="SPACE=entry|not_entry|upper|lower"
     )
-    s.add_argument("--separate", action="append", default=[], metavar="ROOM,ROOM")
-    s.add_argument("--adjacent", action="append", default=[], metavar="ROOM,ROOM")
-    s.add_argument("--near", action="append", default=[], metavar="ROOM,ROOM")
-    s.add_argument("--connect", action="append", default=[], metavar="ROOM,ROOM")
+    s.add_argument("--separate", action="append", default=[], metavar="SPACE,SPACE")
+    s.add_argument("--adjacent", action="append", default=[], metavar="SPACE,SPACE")
+    s.add_argument("--near", action="append", default=[], metavar="SPACE,SPACE")
+    s.add_argument("--connect", action="append", default=[], metavar="SPACE,SPACE")
     s.add_argument(
         "--stair",
         choices=["entry", "perimeter", "central", "rear"],
         help="stair-core placement position override",
     )
-    s.add_argument("--outdoor", action="append", default=[], metavar="ROOM,KIND")
+    s.add_argument("--outdoor", action="append", default=[], metavar="SPACE,KIND")
     s.add_argument("--proposal", metavar="PATH", help="concept_proposal YAML/JSON file")
     s.add_argument("--seed", type=int)
     s.add_argument("--out")
@@ -619,11 +628,7 @@ def register(sub, actor_arg: Callable[[argparse.ArgumentParser], None]) -> None:
     )
     s.add_argument("dir", help="project directory or name")
     s.add_argument("--out", required=True, help="output directory for bundle.json")
-    s.add_argument(
-        "--plan-options-dir", "--concepts-dir", dest="plan_options_dir",
-        help="optional folder of exported plan options (default: <project>/design/plan-options, "
-        "else design/concepts)",
-    )
+    add_plan_options_dir_argument(s)
     s.add_argument(
         "--exploratory",
         action="store_true",

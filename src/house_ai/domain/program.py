@@ -142,6 +142,9 @@ class ProgramZone(StrictModel):
 SPACE_PROGRAM_SCHEMA_VERSION = "0.2.0"
 #: Schema versions whose records are written with the old field names.
 OLD_NAMES_SCHEMA_VERSIONS = frozenset({"0.1.0"})
+#: Old names whose meaning changed: read only from records of an old schema version.
+#: ``levels`` held the floors wanted, which the Owner answers as storeys (S11-02).
+VERSIONED_OLD_NAMES = frozenset({"levels"})
 #: ADR 0025: (parent field or None, new name) -> name saved before schema 0.2.0.
 RENAMED_FIELDS: dict[tuple[str | None, str], str] = {
     (None, "space_requirements"): "items",
@@ -177,8 +180,9 @@ class SpaceProgram(StrictModel):
     """The space requirements and relationships the program gate approves.
 
     Old field names (``items``, ``adjacencies``, ``levels``, ``site_verified``)
-    are accepted on input. A record of schema 0.1.0 is written back with them,
-    so programs saved before ADR 0025 keep their content hash.
+    are accepted on input; ``levels`` changed meaning, so only on schema 0.1.0.
+    A record of schema 0.1.0 is written back with them, so programs saved before
+    ADR 0025 keep their content hash.
     """
 
     schema_version: str = SPACE_PROGRAM_SCHEMA_VERSION
@@ -205,7 +209,14 @@ class SpaceProgram(StrictModel):
     @model_validator(mode="before")
     @classmethod
     def _accept_old_names(cls, data: Any) -> Any:
-        return _rename(data, to_old=False) if isinstance(data, dict) else data
+        if not isinstance(data, dict):
+            return data
+        version = data.get("schema_version", SPACE_PROGRAM_SCHEMA_VERSION)
+        if version not in OLD_NAMES_SCHEMA_VERSIONS:
+            for name in sorted(VERSIONED_OLD_NAMES & data.keys()):
+                new = next(n for (_, n), o in RENAMED_FIELDS.items() if o == name)
+                raise ValueError(f"{name!r} is a schema 0.1.0 name; schema {version} uses {new!r}")
+        return _rename(data, to_old=False)
 
     @model_serializer(mode="wrap")
     def _legacy_hash_compatible(self, handler):

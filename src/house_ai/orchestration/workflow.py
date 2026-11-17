@@ -310,7 +310,9 @@ class Workflow:
             for item in program.space_requirements:
                 for fid in item.source_fact_ids:
                     if fid not in known_facts:
-                        reasons.append(f"program item {item.id} cites unknown brief fact {fid!r}")
+                        reasons.append(
+                            f"space requirement {item.id} cites unknown brief fact {fid!r}"
+                        )
             for adj in program.space_relationships:
                 for fid in adj.source_fact_ids:
                     if fid not in known_facts:

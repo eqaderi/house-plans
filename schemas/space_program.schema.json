@@ -687,7 +687,7 @@
   "$id": "https://house-ai.local/schemas/space_program.schema.json",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "additionalProperties": false,
-  "description": "The space requirements and relationships the program gate approves.\n\nOld field names (``items``, ``adjacencies``, ``levels``, ``site_verified``)\nare accepted on input. A record of schema 0.1.0 is written back with them,\nso programs saved before ADR 0025 keep their content hash.",
+  "description": "The space requirements and relationships the program gate approves.\n\nOld field names (``items``, ``adjacencies``, ``levels``, ``site_verified``)\nare accepted on input; ``levels`` changed meaning, so only on schema 0.1.0.\nA record of schema 0.1.0 is written back with them, so programs saved before\nADR 0025 keep their content hash.",
   "properties": {
     "brief_ref": {
       "anyOf": [

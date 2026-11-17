@@ -384,7 +384,7 @@ def run(out: Path, strategies: list[str] | None = None, with_proposal: bool = Tr
     rec["refusals"] = refusals
 
     # 9. Reviewer bundle and provenance.
-    bundle = export_reviewer_bundle(store, out / "bundle", concepts_dir=concepts)
+    bundle = export_reviewer_bundle(store, out / "bundle", plan_options_dir=concepts)
     status = wf.status()
     rec["bundle"] = {"path": str(bundle.relative_to(out)), "bytes": bundle.stat().st_size}
     rec["provenance"] = {

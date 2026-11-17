@@ -54,6 +54,7 @@ readers still accept the old name.
 | Evaluation metric `site_verified`, violation `level_count_differs`, plan assumption `asm-gen-requested-levels` | yes | Approved, Storey | renamed `site_approved`, `storey_count_differs`, `asm-gen-requested-storeys` |
 | `BriefFact` (class) | no | none | kept: a brief fact can be an answer, an interpretation, a confirmed value or an assumption, so neither term fits |
 | `program_item_id` (`Space`, constraints, proposals), `program_item_ids`, `near_program_item_ids`, `adjacency_graph` (proposals) | yes | Space requirement, Space relationship | kept: these records have no rename schema version; follow-up candidate |
+| Evaluation and proposal finding codes `program_item_missing`, `unknown_program_item`, `hard_adjacency_unmet`, `soft_adjacency_unmet`, `hard_adjacency_violation`, `program_hard_adjacency_violation`; metrics `hard_adjacencies_met`, `soft_adjacency_score`, `adjacency_satisfied` | yes | Space requirement, Space relationship | kept: saved in evaluations and matched by agents and skills; follow-up candidate |
 | `SiteContext.verified` (interview sessions), brief topic `levels` | yes | Approved; levels | kept: not in the S11 scope; follow-up candidate |
 | Plan option ids `concept-<strategy>` | yes (artifact ids) | Plan option | kept: renaming the prefix would split one option into two when a project regenerates |
 | Relationship ids `adj-*`, item ids `pi-*` | yes (ids) | none | kept: ids, not words |

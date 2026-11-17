@@ -86,6 +86,6 @@ def validate_critique_grounding(referenced_ids: Iterable[str], context: Any) -> 
         if clean_id and clean_id not in valid_ids:
             errors.append(
                 f"Unknown entity ID '{clean_id}' in critique. "
-                f"Must reference an existing space, program item, zone, or level in the plan."
+                f"Must reference an existing space, space requirement, zone, or level in the plan."
             )
     return errors

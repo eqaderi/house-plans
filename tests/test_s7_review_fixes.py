@@ -35,7 +35,7 @@ def small_program(*, relation=None, quantity=1):
     return SpaceProgram(
         id="program-review",
         project_id="proj-demo",
-        levels=2,
+        storeys=2,
         space_requirements=[
             SpaceRequirement(
                 id="pi-entry",
@@ -293,7 +293,7 @@ def test_open_plan_three_functions_composite_space():
     program = SpaceProgram(
         id="prog-open-3",
         project_id="proj-demo",
-        levels=1,
+        storeys=1,
         space_requirements=[
             SpaceRequirement(
                 id="pi-entry",

@@ -6,7 +6,7 @@
 
 ## Strategy
 
-A lower floor under the road-level entry combines an embedded massing with a stepped downhill wing. Compare its cut, void, retaining walls, floor area, daylight and circulation against the other options; additional storeys can overfill the program. Walk-out doors and terraces remain unresolved.
+A lower storey under the road-level entry combines an embedded massing with a stepped downhill wing. Compare its cut, void, retaining walls, floor area, daylight and circulation against the other options; additional storeys can overfill the program. Walk-out doors and terraces remain unresolved.
 
 ## Levels
 
