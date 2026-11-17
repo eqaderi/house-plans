@@ -453,7 +453,7 @@ def test_validation_report_markdown(ingest):
 # ----------------------------------------------------------------------- CLI
 
 
-def test_cli_pipeline(tmp_path, capsys):
+def test_cli_pipeline(tmp_path):
     p = str(tmp_path / "proj")
     assert (
         main(
@@ -504,10 +504,8 @@ def test_cli_pipeline(tmp_path, capsys):
         )
         == 0
     )
-    assert "state SITE_NEEDS_CONFIRMATION" in capsys.readouterr().out
-    # Re-assessment still works and moves nothing.
+    # Re-assessment still works (the state it leaves is pinned in test_site_service).
     assert main(["workflow", "assess-site", p, "--id", "site", "--actor", "agent:claude-code"]) == 0
-    assert "state SITE_NEEDS_CONFIRMATION" in capsys.readouterr().out
     out = tmp_path / "out"
     assert main(["site", "report", p, "--id", "site", "--out", str(out)]) == 0
     assert (out / "site-report.md").is_file()  # the file list is pinned in test_site_service

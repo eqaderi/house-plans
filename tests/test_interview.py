@@ -623,11 +623,8 @@ def test_cli_interview_commands(tmp_path, capsys, new_store, monkeypatch):
                  "open_questions.yaml", "interview-summary.md", "program-review.md"):
         assert (out_dir / name).is_file(), name  # fmt: skip
     DesignBrief.model_validate(yaml.safe_load((out_dir / "design_brief.yaml").read_text()))
-    capsys.readouterr()
+    # The --json keys are pinned in test_read_models.
     assert main(["program", "build", d, "--actor", "agent:claude-code", "--json"]) == 0
-    assert set(json.loads(capsys.readouterr().out)) == {
-        "program_ref", "assumptions_ref", "open_questions_ref", "findings",
-    }  # fmt: skip
     assert main(["project", "verify", d]) == 0
     session = InterviewSession.model_validate_json(
         Path(store.root / "artifacts" / "interview_session" / "interview" / "v0002.json")
