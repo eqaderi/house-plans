@@ -15,7 +15,10 @@ from __future__ import annotations
 import json
 import re
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import Any
+
+import yaml
 
 from house_ai.domain.brief import DesignBrief, FactValue
 from house_ai.domain.interview import (
@@ -60,6 +63,7 @@ from house_ai.interview.state import (
 )
 from house_ai.interview.summary import summary_markdown
 from house_ai.program.builder import ProgramResult, build_program
+from house_ai.program.report import program_markdown
 from house_ai.program.validation import ProgramFinding, validate_program
 from house_ai.providers.base import (
     DataFlowPolicy,
@@ -262,6 +266,15 @@ class ProgramBuild:
     assumptions_ref: ArtifactRef
     open_questions_ref: ArtifactRef
     findings: list[ProgramFinding]
+
+    def to_json(self) -> dict[str, Any]:
+        """The one serialisation of a program build (``program build --json``)."""
+        return {
+            "program_ref": self.program_ref.model_dump(mode="json"),
+            "assumptions_ref": self.assumptions_ref.model_dump(mode="json"),
+            "open_questions_ref": self.open_questions_ref.model_dump(mode="json"),
+            "findings": [f.to_json() for f in self.findings],
+        }
 
 
 class InterviewService:
@@ -894,6 +907,35 @@ class InterviewService:
         )
         findings = validate_program(result.program, brief, site)
         return ProgramBuild(result, p_ref, a_ref, q_ref, findings)
+
+    def design_export(self, build: ProgramBuild) -> dict[str, str]:
+        """The six design files for a program build, by file name; writes nothing."""
+
+        def dump(model) -> str:
+            return yaml.safe_dump(model.model_dump(mode="json"), sort_keys=False,
+                                  allow_unicode=True)  # fmt: skip
+
+        brief = self.brief()
+        result = build.result
+        return {
+            "design_brief.yaml": dump(brief),
+            "space_program.yaml": dump(result.program),
+            "assumptions.yaml": dump(result.assumptions),
+            "open_questions.yaml": dump(result.open_questions),
+            "interview-summary.md": self.summary(),
+            "program-review.md": program_markdown(
+                result.program, brief, build.findings, result.assumptions, result.open_questions
+            ),
+        }
+
+    def write_design_export(self, build: ProgramBuild, out: Path) -> list[Path]:
+        """Write :meth:`design_export` into ``out``; the files are exports, not project state."""
+        out.mkdir(parents=True, exist_ok=True)
+        written = []
+        for name, text in self.design_export(build).items():
+            (out / name).write_text(text, encoding="utf-8")
+            written.append(out / name)
+        return written
 
     def review_program(self, actor: Actor) -> tuple[ProgramBuild, GateStatus]:
         """Build the program, move to PROGRAM_REVIEW and ask the owner to review it.

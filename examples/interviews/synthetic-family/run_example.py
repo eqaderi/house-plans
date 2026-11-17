@@ -25,7 +25,6 @@ from house_ai.domain.workflow import Gate, WorkflowState
 from house_ai.orchestration.interview import InterviewService
 from house_ai.orchestration.site_ingestion import SiteConfirmation, confirm_site, ingest_site
 from house_ai.orchestration.workflow import Workflow
-from house_ai.program.report import program_markdown
 from house_ai.storage import ProjectStore
 
 HERE = Path(__file__).resolve().parent
@@ -72,19 +71,7 @@ def run(root: Path) -> dict[str, str]:
     build, gate = svc.review_program(AGENT)
     assert gate.blockers == [], gate.open_reasons
 
-    def dump(model) -> str:
-        return yaml.safe_dump(model.model_dump(mode="json"), sort_keys=False, allow_unicode=True)
-
-    return {
-        "interview-summary.md": svc.summary(),
-        "design_brief.yaml": dump(svc.brief()),
-        "space_program.yaml": dump(build.result.program),
-        "assumptions.yaml": dump(build.result.assumptions),
-        "open_questions.yaml": dump(build.result.open_questions),
-        "program-review.md": program_markdown(build.result.program, svc.brief(), build.findings,
-                                              build.result.assumptions,
-                                              build.result.open_questions),
-    }  # fmt: skip
+    return svc.design_export(build)
 
 
 def main(argv: list[str]) -> int:

@@ -58,7 +58,6 @@ from house_ai.orchestration.workflow import (
     Workflow,
     WorkflowError,
 )
-from house_ai.program.report import program_markdown
 from house_ai.providers.base import ModelProvider, ProviderError
 from house_ai.storage import ProjectStore, StoreError
 from house_ai.storage.hashing import load_document, pretty_json
@@ -819,28 +818,8 @@ def cmd_interview_run(args: argparse.Namespace) -> int:
 
 
 def _export(svc: InterviewService, build, out: Path) -> None:
-    import yaml
-
-    out.mkdir(parents=True, exist_ok=True)
-
-    def dump(model) -> str:
-        return yaml.safe_dump(model.model_dump(mode="json"), sort_keys=False, allow_unicode=True)
-
-    brief = svc.brief()
-    files = {
-        "design_brief.yaml": dump(brief),
-        "space_program.yaml": dump(build.result.program),
-        "assumptions.yaml": dump(build.result.assumptions),
-        "open_questions.yaml": dump(build.result.open_questions),
-        "interview-summary.md": svc.summary(),
-        "program-review.md": program_markdown(
-            build.result.program, brief, build.findings, build.result.assumptions,
-            build.result.open_questions,
-        ),
-    }  # fmt: skip
-    for name, text in files.items():
-        (out / name).write_text(text, encoding="utf-8")
-        _out(f"wrote {out / name}")
+    for path in svc.write_design_export(build, out):
+        _out(f"wrote {path}")
 
 
 def _show_findings(findings) -> None:
@@ -856,27 +835,7 @@ def cmd_program_build(args: argparse.Namespace) -> int:
     if args.out:
         _export(svc, build, Path(args.out))
     if getattr(args, "json", False):
-        _out(
-            json.dumps(
-                {
-                    "program_ref": build.program_ref.model_dump(mode="json"),
-                    "assumptions_ref": build.assumptions_ref.model_dump(mode="json"),
-                    "open_questions_ref": build.open_questions_ref.model_dump(mode="json"),
-                    "findings": [
-                        {
-                            "code": f.code,
-                            "severity": f.severity.value,
-                            "message": f.message,
-                            "subject_ids": list(f.subject_ids),
-                            "options": list(f.options),
-                        }
-                        for f in build.findings
-                    ],
-                },
-                indent=2,
-                ensure_ascii=False,
-            )
-        )
+        _out(json.dumps(build.to_json(), indent=2, ensure_ascii=False))
         return EXIT_OK
     for ref in (build.program_ref, build.assumptions_ref, build.open_questions_ref):
         _out(f"stored {ref.kind.value}/{ref.id} v{ref.version}")

@@ -55,6 +55,16 @@ class ProgramFinding:
     #: Choices for the owner; none is applied automatically.
     options: list[str] = field(default_factory=list)
 
+    def to_json(self) -> dict:
+        """The one serialisation of a program Finding (``program build --json``)."""
+        return {
+            "code": self.code,
+            "severity": self.severity.value,
+            "message": self.message,
+            "subject_ids": list(self.subject_ids),
+            "options": list(self.options),
+        }
+
 
 @dataclass
 class AreaSummary:

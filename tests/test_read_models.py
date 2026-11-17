@@ -240,3 +240,54 @@ def test_a_slot_marked_unknown_is_an_interpretation_with_status_unknown(intervie
 
     (budget,) = turn["understood"]
     assert (budget["slot"], budget["value"], budget["status"]) == ("budget", None, "unknown")
+
+
+# --------------------------------------------------- program build and design export
+
+PROGRAM_BUILD_KEYS = {"program_ref", "assumptions_ref", "open_questions_ref", "findings"}
+FINDING_KEYS = {"code", "severity", "message", "subject_ids", "options"}
+DESIGN_EXPORT = [
+    "design_brief.yaml", "space_program.yaml", "assumptions.yaml", "open_questions.yaml",
+    "interview-summary.md", "program-review.md",
+]  # fmt: skip
+
+
+def _deferred_lift(svc: InterviewService) -> None:
+    svc.answer("Two adults.", HUMAN)
+    svc.answer("One bedroom.", HUMAN)
+    svc.answer("One bathroom, en-suite please.", HUMAN)
+    svc.answer("One floor. We want a lift too.", HUMAN)
+    svc.answer("not sure yet", HUMAN)  # defers c-lift-one-level
+
+
+def test_program_build_names_the_subject_of_each_finding(interview):
+    _deferred_lift(interview)
+
+    info = interview.build_program(AGENT).to_json()
+
+    assert set(info) == PROGRAM_BUILD_KEYS
+    assert info["program_ref"]["kind"] == "space_program"
+    assert all(set(f) == FINDING_KEYS for f in info["findings"])
+    contradiction = next(f for f in info["findings"] if f["code"] == "contradiction")
+    assert (contradiction["severity"], contradiction["subject_ids"]) == (
+        "blocking", ["c-lift-one-level"],
+    )
+
+
+def test_the_design_export_writes_the_six_files_from_the_stored_records(interview, tmp_path):
+    import yaml
+
+    _deferred_lift(interview)
+    build = interview.build_program(AGENT)
+    events = len(interview.store.events())
+
+    written = interview.write_design_export(build, tmp_path / "design")
+
+    assert [p.name for p in written] == DESIGN_EXPORT
+    brief = yaml.safe_load((tmp_path / "design" / "design_brief.yaml").read_text())
+    assert brief == interview.brief().model_dump(mode="json")
+    program = yaml.safe_load((tmp_path / "design" / "space_program.yaml").read_text())
+    assert program == build.result.program.model_dump(mode="json")
+    summary = (tmp_path / "design" / "interview-summary.md").read_text(encoding="utf-8")
+    assert summary == interview.summary()
+    assert len(interview.store.events()) == events  # an export writes no project state
