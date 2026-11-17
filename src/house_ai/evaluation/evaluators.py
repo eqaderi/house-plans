@@ -53,7 +53,9 @@ OUTDOOR = {S.TERRACE, S.BALCONY}
 SHARED_WALL_M = 0.9
 
 
-class _Out:
+class EvaluatorOutput:
+    """The metrics and Findings one evaluator run collects."""
+
     def __init__(self, name: str) -> None:
         self.name = name
         self.metrics: list[MetricClaim] = []
@@ -91,6 +93,7 @@ class _Out:
         subjects: list[str],
         status: ClaimStatus = M,
         constraint_id: str | None = None,
+        method: str | None = None,
     ) -> None:
         self.violations.append(
             Violation(
@@ -102,6 +105,7 @@ class _Out:
                 subject_ids=subjects,
                 status=status,
                 evaluator=self.name,
+                method=method,
             )
         )
 
@@ -127,7 +131,8 @@ def _min_side(space: Space) -> float:
     return min(math.dist(pts[0], pts[1]), math.dist(pts[1], pts[2]))
 
 
-def _privacy(model: HouseModel) -> dict[str, Privacy]:
+def space_privacy(model: HouseModel) -> dict[str, Privacy]:
+    """The privacy of each Space's Zone, for Spaces in a Zone."""
     by_zone = {z.id: z.privacy for z in model.zones}
     return {s.id: by_zone[s.zone_id] for s in model.spaces if s.zone_id in by_zone}
 
@@ -159,7 +164,7 @@ class GeometryEvaluator:
     }
 
     def evaluate(self, ctx: EvaluationContext) -> EvaluatorResult:
-        out, model = _Out(self.name), ctx.model
+        out, model = EvaluatorOutput(self.name), ctx.model
         findings = check_model(model, ctx.site, ctx.program)
         for f in findings:
             cid = self.CODE_TO_CONSTRAINT.get(f.code)
@@ -205,7 +210,7 @@ class GeometryEvaluator:
         )
         return out.result()
 
-    def _dimensions(self, ctx: EvaluationContext, out: _Out) -> None:
+    def _dimensions(self, ctx: EvaluationContext, out: EvaluatorOutput) -> None:
         if ctx.constraints is None:
             return
         model = ctx.model
@@ -252,7 +257,7 @@ class ProgramEvaluator:
     version = VERSION
 
     def evaluate(self, ctx: EvaluationContext) -> EvaluatorResult:
-        out, model, program = _Out(self.name), ctx.model, ctx.program
+        out, model, program = EvaluatorOutput(self.name), ctx.model, ctx.program
         if program is None:
             return EvaluatorResult(
                 run=EvaluatorRun(
@@ -449,7 +454,7 @@ class AdjacencyEvaluator:
     version = VERSION
 
     def evaluate(self, ctx: EvaluationContext) -> EvaluatorResult:
-        out, model, program = _Out(self.name), ctx.model, ctx.program
+        out, model, program = EvaluatorOutput(self.name), ctx.model, ctx.program
         if program is None:
             return EvaluatorResult(
                 run=EvaluatorRun(
@@ -563,7 +568,7 @@ class CirculationEvaluator:
     version = VERSION
 
     def evaluate(self, ctx: EvaluationContext) -> EvaluatorResult:
-        out, model = _Out(self.name), ctx.model
+        out, model = EvaluatorOutput(self.name), ctx.model
         graph = circulation_graph(model)
         entrances, entrance_basis = _pedestrian_entrances(model)
         for neighbours in graph.values():
@@ -614,7 +619,7 @@ class CirculationEvaluator:
         )
         if not complete:
             out.metric("entrance_route_coverage", len(routes), "measurable_space_routes")
-        privacy = _privacy(model)
+        privacy = space_privacy(model)
         crossings = 0
         crossed: list[str] = []
         parents = self._parents(graph)
@@ -669,8 +674,8 @@ class PrivacyEvaluator:
     version = VERSION
 
     def evaluate(self, ctx: EvaluationContext) -> EvaluatorResult:
-        out, model = _Out(self.name), ctx.model
-        privacy = _privacy(model)
+        out, model = EvaluatorOutput(self.name), ctx.model
+        privacy = space_privacy(model)
         entry_spaces = {s.id for s in model.spaces if s.function is S.ENTRY}
         bedrooms = [s.id for s in model.spaces if s.function in (S.BEDROOM, S.GUEST_SUITE)]
         on_entry = sorted(
@@ -779,7 +784,7 @@ class SiteEvaluator:
     version = VERSION
 
     def evaluate(self, ctx: EvaluationContext) -> EvaluatorResult:
-        out, model, site = _Out(self.name), ctx.model, ctx.site
+        out, model, site = EvaluatorOutput(self.name), ctx.model, ctx.site
         if site is None:
             return EvaluatorResult(
                 run=EvaluatorRun(
@@ -826,7 +831,7 @@ class SiteEvaluator:
         return out.result()
 
     @staticmethod
-    def _road(out: _Out, model: HouseModel, site) -> None:
+    def _road(out: EvaluatorOutput, model: HouseModel, site) -> None:
         shapes = []
         for f in site.features:
             if f.kind not in (SiteFeatureKind.ROAD, SiteFeatureKind.FRONTAGE):
@@ -867,7 +872,7 @@ class SiteEvaluator:
             )
 
     @staticmethod
-    def _terrain(ctx: EvaluationContext, out: _Out, foot) -> None:
+    def _terrain(ctx: EvaluationContext, out: EvaluatorOutput, foot) -> None:
         model, site = ctx.model, ctx.site
         assert site is not None
         from house_ai.evaluation.hillside import terrain_metrics

@@ -1,11 +1,13 @@
 """Room-label layout of the plan drawing, computed once (#34, ADR 0033).
 
-The plan drawing (``plan_svg``) draws these labels, and the label-collision Finding
-(``evaluation.drawing``) checks the same labels at the same scale, so the Finding matches
-what the Owner sees. Every Level panel of the drawing shares one scale: the extent of all
-Spaces, and of the Site boundary when one is drawn, plus a 2.5 m margin.
+The plan drawing (``render2d.plan_svg``) draws these labels, and the label-collision
+Finding (``evaluation.drawing``) checks the same labels at the same scale, so the Finding
+matches what the Owner sees. Every Level panel of the drawing shares one scale: the extent
+of all Spaces, and of the Site boundary when one is drawn, plus a 2.5 m margin.
 
-Label size on the page is estimated from the text: the drawing has no font metrics.
+This is geometry only: where each label's text lines sit and how large they are. How a
+line is styled (colour, weight) is the drawing's business. Label size on the page is
+estimated from the text: the drawing has no font metrics.
 """
 
 from __future__ import annotations
@@ -63,8 +65,6 @@ class LabelLine:
     text: str
     dy: float
     size: float
-    colour: str = "#222"
-    weight: str = "normal"
 
     def box(self, x: float, y: float):
         """Estimated extent on the page of this line, anchored at pixel ``(x, y)``."""
@@ -75,7 +75,7 @@ class LabelLine:
 
 @dataclass(frozen=True)
 class SpaceLabel:
-    """The name, area and dimensions drawn at a Space's representative point."""
+    """The name, area and dimensions drawn at a Space's representative point, in that order."""
 
     space_id: str
     level_id: str
@@ -123,14 +123,9 @@ def label_layout(model: HouseModel, site: Site | None) -> LabelLayout:
         length, width = rect_dims(s.boundary)
         small = length * scale < SMALL_LABEL_PX
         lines = (
-            LabelLine(
-                s.name if not small else s.name.split(" ")[0],
-                -4,
-                9 if not small else 7,
-                weight="bold",
-            ),
+            LabelLine(s.name if not small else s.name.split(" ")[0], -4, 9 if not small else 7),
             LabelLine(f"{s.area_m2:.1f} m²", 7, 8),
-            LabelLine(f"{length:.2f} × {width:.2f}", 17, 7, colour="#555"),
+            LabelLine(f"{length:.2f} × {width:.2f}", 17, 7),
         )
         labels.append(SpaceLabel(s.id, s.level_id, (c.x, c.y), lines))
     return LabelLayout(bounds, scale, tuple(labels))
