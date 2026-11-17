@@ -18,7 +18,8 @@ from house_ai.cli.main import main
 from house_ai.domain.provenance import Actor, ActorKind, ArtifactKind, DataClassification
 from house_ai.domain.units import LengthUnit
 from house_ai.domain.workflow import Gate, WorkflowState
-from house_ai.orchestration.site_ingestion import SiteConfirmation, confirm_site
+from house_ai.orchestration.site import SiteService
+from house_ai.orchestration.site_ingestion import SiteConfirmation
 from house_ai.orchestration.workflow import Workflow
 from house_ai.storage import ProjectStore
 from house_ai.validation.grounding import collect_canonical_ids, validate_cited_ids
@@ -85,22 +86,13 @@ def test_site_survey_review_skill_workflow(tmp_path: Path, capsys):
     assert store.latest(ArtifactKind.SITE, "site") is not None
     assert store.latest(ArtifactKind.CAD_IMPORT, f"cad-{source_id}") is not None
 
-    # 3. Transition to SITE_INGESTION and assess site blockers
-    rc = main(
-        [
-            "workflow",
-            "transition",
-            str(proj_dir),
-            "SITE_INGESTION",
-            "--reason",
-            "ingesting survey",
-            "--actor",
-            AGENT_ACTOR,
-        ]
-    )
-    assert rc == 0
+    # Ingesting started site ingestion and stopped the unconfirmed survey for the owner.
+    assert Workflow(store).state is WorkflowState.SITE_NEEDS_CONFIRMATION
+
+    # 3. Re-assess the site against the gate's blockers (moves nothing)
     rc = main(["workflow", "assess-site", str(proj_dir), "--id", "site", "--actor", AGENT_ACTOR])
     assert rc == 0
+    assert Workflow(store).state is WorkflowState.SITE_NEEDS_CONFIRMATION
 
 
 
@@ -204,10 +196,9 @@ def test_architectural_programming_skill_workflow(tmp_path: Path):
         vertical_epsg=7837,
         boundary_verified=True,
     )
-    confirm_site(store, "site", OWNER, conf)
-    wf = Workflow(store)
-    wf.transition(WorkflowState.SITE_INGESTION, AGENT, "ingesting site")
-    wf.approve(Gate.SITE, store.latest(ArtifactKind.SITE, "site"), OWNER, "synthetic site approved")
+    # The owner's confirmation clears every blocker; the site gate is then approvable.
+    site_ref = SiteService(store).confirm("site", OWNER, conf).site_ref
+    Workflow(store).approve(Gate.SITE, site_ref, OWNER, "synthetic site approved")
 
 
     # 1. Start the interview (works in SITE_APPROVED; no transition needed yet)
@@ -294,21 +285,8 @@ def test_architectural_programming_skill_workflow(tmp_path: Path):
     assert (design_dir / "design_brief.yaml").is_file()
     assert (design_dir / "program-review.md").is_file()
 
-    # 6. Move to INTERVIEWING (from SITE_APPROVED) and request program review
+    # 6. Request program review straight from SITE_APPROVED (it makes its own moves)
     assert Workflow(store).state is WorkflowState.SITE_APPROVED
-    rc = main(
-        [
-            "workflow",
-            "transition",
-            str(proj_dir),
-            "INTERVIEWING",
-            "--reason",
-            "interview",
-            "--actor",
-            AGENT_ACTOR,
-        ]
-    )
-    assert rc == 0
     rc = main(["program", "review", str(proj_dir), "--actor", AGENT_ACTOR])
     assert rc == 0
     assert Workflow(store).state is WorkflowState.PROGRAM_REVIEW

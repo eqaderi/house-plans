@@ -98,9 +98,9 @@ game engine may become a dependency of `domain`; each sits behind an adapter.
   and 27 elevation points (`seperated.dwg` + `elevation.dwg`). **Still
   unconfirmed:** exact UTM zone, hemisphere, horizontal datum/EPSG, vertical
   datum, and the formal legal boundary. Keep `my-house` in
-  `SITE_NEEDS_CONFIRMATION` until the owner runs `site confirm` and approves the
-  site gate. Future plan options on `my-house` must account for split-level layouts,
-  hillside construction, road-level parking/access, excavation, retaining walls,
+  `SITE_NEEDS_CONFIRMATION` until the owner's `site confirm` clears the
+  blockers; the owner then approves the site gate. Plan options on `my-house`
+  must account for split-level layouts, hillside construction, road-level parking/access, excavation, retaining walls,
   drainage, and structure without assuming all 600 m² is buildable.
 
 ## 8. Workflow and human approval gates

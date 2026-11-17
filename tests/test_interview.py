@@ -25,14 +25,15 @@ from house_ai.domain.program import (
 from house_ai.domain.provenance import ApprovalRequiresHuman, DataClassification
 from house_ai.domain.provenance import ArtifactKind as K
 from house_ai.domain.units import LengthUnit
-from house_ai.domain.workflow import Gate, WorkflowState
+from house_ai.domain.workflow import EventType, Gate, WorkflowState
 from house_ai.interview import parsing
 from house_ai.interview.questions import QUESTIONS, SLOTS
 from house_ai.interview.slot_types import InvalidValue, check
 from house_ai.interview.state import pick_option
 from house_ai.orchestration.interview import InterviewLocked, InterviewService
 from house_ai.orchestration.interview_llm import LlmAssist
-from house_ai.orchestration.site_ingestion import SiteConfirmation, confirm_site, ingest_site
+from house_ai.orchestration.site import SiteService
+from house_ai.orchestration.site_ingestion import SiteConfirmation
 from house_ai.orchestration.workflow import (
     GateBlocked,
     TransitionNotAllowed,
@@ -57,15 +58,11 @@ def _project(new_store, *, approve_site: bool = True):
     store = new_store("family")
     doc = store.add_source(SURVEY_DXF, HUMAN, classification=DataClassification.SYNTHETIC)
     wf = Workflow(store)
-    wf.transition(WorkflowState.SITE_INGESTION, AGENT, "survey received")
-    result = ingest_site(store, doc.id, load_layer_mapping(SURVEY_LAYERS), AGENT)
-    wf.assess_site(result.site_ref, AGENT)
+    sites = SiteService(store)
+    sites.ingest(doc.id, load_layer_mapping(SURVEY_LAYERS), AGENT)
     if approve_site:
-        ref = confirm_site(store, "site", HUMAN, FULL)
-        wf.transition(WorkflowState.SITE_INGESTION, HUMAN, "verified")
-        assert wf.assess_site(ref, AGENT) == []
+        ref = sites.confirm("site", HUMAN, FULL).site_ref
         wf.approve(Gate.SITE, ref, HUMAN, "synthetic owner approves the synthetic site")
-        wf.transition(WorkflowState.INTERVIEWING, AGENT, "start the interview")
     return store
 
 
@@ -417,6 +414,40 @@ def test_answers_cannot_change_once_the_program_is_approved(svc):
         svc.revise("q-bedrooms", "Five bedrooms.", HUMAN)
 
 
+# ------------------------------------------------------------ program review moves
+
+
+def _moves(store) -> list[tuple[str, str]]:
+    return [(e.from_state.value, e.to_state.value) for e in store.events()
+            if e.type is EventType.TRANSITION]  # fmt: skip
+
+
+def test_program_review_makes_its_own_move_out_of_site_approved(svc):
+    _run(svc)
+    svc.confirm(HUMAN)
+    assert svc.workflow.state is WorkflowState.SITE_APPROVED
+
+    _, reasons = svc.review_program(AGENT)
+
+    assert reasons == []
+    assert svc.workflow.state is WorkflowState.PROGRAM_REVIEW
+    assert _moves(svc.store)[-2:] == [
+        ("SITE_APPROVED", "INTERVIEWING"),
+        ("INTERVIEWING", "PROGRAM_REVIEW"),
+    ]
+
+
+def test_program_review_works_unchanged_from_interviewing(svc):
+    _run(svc)
+    svc.confirm(HUMAN)
+    svc.workflow.transition(WorkflowState.INTERVIEWING, AGENT, "recovery: moved by hand")
+
+    svc.review_program(AGENT)
+
+    assert svc.workflow.state is WorkflowState.PROGRAM_REVIEW
+    assert _moves(svc.store)[-1] == ("INTERVIEWING", "PROGRAM_REVIEW")
+
+
 # ------------------------------------------------------------ unverified site
 
 
@@ -686,7 +717,7 @@ def test_agent_first_end_to_end_workflow_with_persian_english_and_mixed_answers(
     # 1. Agent inspects project status and starts interview.
     assert main(["project", "status", d, "--json"]) == 0
     proj_status = json.loads(capsys.readouterr().out)
-    assert proj_status["state"] == "INTERVIEWING"
+    assert proj_status["state"] == "SITE_APPROVED"
     assert proj_status["site"]["verified"] is True
 
     assert main(["interview", "start", d, "--json", "--actor", "agent:gemini"]) == 0
@@ -1075,8 +1106,6 @@ def test_agent_inspects_synthetic_project_without_modifying_it(tmp_path, capsys)
     from house_ai.cli.main import main
     from house_ai.domain.geometry import Polygon2D
     from house_ai.domain.site import Epistemic, Site, SiteCoordinates
-    from house_ai.domain.workflow import WorkflowState
-    from house_ai.orchestration.workflow import Workflow
     from house_ai.storage import ProjectStore
 
     proj_dir = tmp_path / "synthetic-steep"
@@ -1087,8 +1116,6 @@ def test_agent_inspects_synthetic_project_without_modifying_it(tmp_path, capsys)
         classification="synthetic",  # type: ignore[arg-type]
         actor=HUMAN,
     )
-    wf = Workflow(store)
-    wf.transition(WorkflowState.SITE_INGESTION, HUMAN, "ingesting")
     # Put a site that needs verification (unverified boundary, local coords only)
     site = Site(
         id="site",
@@ -1101,7 +1128,7 @@ def test_agent_inspects_synthetic_project_without_modifying_it(tmp_path, capsys)
         provenance={"created_at": store.clock(), "created_by": HUMAN, "method": "test"},  # type: ignore[arg-type]
     )
     s_ref = store.put(K.SITE, "site", site, HUMAN)
-    wf.assess_site(s_ref, HUMAN)
+    SiteService(store).assess(s_ref, HUMAN)
 
     before_events = len(store.events())
     assert main(["project", "status", str(proj_dir), "--json"]) == 0
