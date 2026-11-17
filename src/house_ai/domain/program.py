@@ -56,6 +56,13 @@ class DaylightNeed(StrEnum):
     NOT_NEEDED = "not_needed"
 
 
+#: Level words a Space may ask for, relative to the entry Level: on it ("entry", "ground"),
+#: off it ("not_entry"), above ("upper"), below ("lower"), or anywhere ("any").
+LEVEL_PREFERENCES: frozenset[str] = frozenset(
+    {"entry", "ground", "not_entry", "upper", "lower", "any"}
+)
+
+
 class SpaceRequirement(StrictModel):
     """A kind of space the Owner needs, with a quantity and a size (GLOSSARY.md)."""
 

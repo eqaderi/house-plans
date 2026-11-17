@@ -32,6 +32,7 @@ from house_ai.constants.reviewer import (
     PANEL_W,
 )
 from house_ai.domain.model import HouseModel, OpeningKind, SlabKind, WallKind
+from house_ai.domain.revision_ops import RevisionOp, RevisionVerb
 from house_ai.evaluation.usability import _pitch
 from house_ai.render2d.plan_svg import _rect_dims
 
@@ -41,7 +42,8 @@ class DefectFinding:
     defect_type: str
     element_ids: list[str]
     description: str
-    suggested_op: str | None = None
+    #: A Revision operation ``plan revise`` can run; None when no operation fixes it.
+    suggested_op: RevisionOp | None = None
 
 
 def _polygon_centroid(points: Sequence[Sequence[float]]) -> tuple[float, float]:
@@ -68,7 +70,6 @@ def detect_windows_on_retaining_walls(model: HouseModel) -> list[DefectFinding]:
                             f"Window '{op.id}' is hosted on retaining wall '{host.id}' "
                             "which faces earth/soil."
                         ),
-                        suggested_op=f"separate:{op.id},{host.id}",
                     )
                 )
 
@@ -162,7 +163,9 @@ def detect_overlapping_space_labels(
                             defect_type=DEFECT_OVERLAPPING_LABELS,
                             element_ids=[sp_a.id, sp_b.id],
                             description=f"Spaces '{sp_a.id}' and '{sp_b.id}' have {reason}.",
-                            suggested_op=f"separate:{sp_a.id},{sp_b.id}",
+                            suggested_op=RevisionOp(
+                                op_type=RevisionVerb.SEPARATE, target=f"{sp_a.id},{sp_b.id}"
+                            ),
                         )
                     )
 
@@ -257,7 +260,6 @@ def detect_door_into_wall_clash(model: HouseModel) -> list[DefectFinding]:
                             f"exceeds host wall '{host.id}' length ({wall_len:.2f}m) "
                             "and clashes into corner/wall intersection."
                         ),
-                        suggested_op=f"separate:{op.id},{host.id}",
                     )
                 )
 
@@ -336,7 +338,6 @@ def detect_stair_through_slab(model: HouseModel) -> list[DefectFinding]:
                             f"Stair '{st.id}' passes through slab '{sl.id}' ({sl.kind}) "
                             f"between levels '{from_lvl.id}' and '{to_lvl.id}' without a void."
                         ),
-                        suggested_op=f"void:{st.id},{sl.id}",
                     )
                 )
 

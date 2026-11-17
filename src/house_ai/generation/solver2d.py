@@ -42,6 +42,7 @@ from house_ai.constants.proposals import (
     STAIR_CORE_ENTRY,
     STAIR_CORE_PERIMETER,
     STAIR_CORE_REAR,
+    VALID_OUTDOOR_LINKS,
 )
 from house_ai.constants.relations import (
     SHARED_WALL_MIN_M,
@@ -656,7 +657,7 @@ def solve_2d_placement(
             outdoor_links.extend(
                 (r.space_id, link.kind) for r in rooms if r.item_id == link.program_item_id
             )
-    unsupported = {k for _, k in outdoor_links} - {"terrace", "balcony", "courtyard"}
+    unsupported = {k for _, k in outdoor_links} - VALID_OUTDOOR_LINKS
     if unsupported:
         raise Solve2DFailed(f"outdoor geometry not supported for {sorted(unsupported)}")
     courtyard = strategy == STRATEGY_COURTYARD or any(k == "courtyard" for _, k in outdoor_links)

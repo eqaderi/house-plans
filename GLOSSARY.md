@@ -130,6 +130,12 @@ request to change an option makes its next version; a gate approves exactly one
 version.
 _Avoid_: Plan (alone), revision, draft
 
+**Revision operation** (عملیات بازنگری):
+One structured change asked of a Plan option, such as a new area or a Level for
+a Space. The system either acts on it or refuses it; the next Plan version
+records it.
+_Avoid_: Op, edit, revision (alone)
+
 ## Evidence
 
 **Confirmed** (تأییدشده):

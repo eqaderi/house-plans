@@ -16,6 +16,7 @@ gates are passed. It never changes the workflow.
 from __future__ import annotations
 
 import json
+from collections.abc import Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -48,6 +49,7 @@ from house_ai.domain.program import SpaceProgram, SpaceRelationshipKind, Strengt
 from house_ai.domain.proposal import ConceptProposal
 from house_ai.domain.provenance import Actor, ArtifactKind, ArtifactRef, Provenance
 from house_ai.domain.records import AssumptionsFile, Severity
+from house_ai.domain.revision_ops import RevisionOp, RevisionOpError
 from house_ai.domain.site import Site
 from house_ai.domain.workflow import Gate, WorkflowEvent, WorkflowState
 from house_ai.evaluation.explain import (
@@ -428,7 +430,7 @@ class PlanService:
         text: str,
         actor: Actor,
         *,
-        ops: list[str] | None = None,
+        ops: Sequence[RevisionOp | str] | None = None,
         kind: ChangeRequestKind = ChangeRequestKind.MODIFY,
         version: int | None = None,
         seed: int | None = None,
@@ -438,7 +440,13 @@ class PlanService:
         features: list[str] | None = None,
         feature_confirmation: str | None = None,
     ) -> RevisionOutcome:
-        ops = list(ops or [])
+        try:
+            ops = [
+                str(op if isinstance(op, RevisionOp) else RevisionOp.parse(op))
+                for op in ops or []
+            ]
+        except RevisionOpError as exc:
+            raise PlanWorkflowError(str(exc)) from exc
         if not text.strip():
             raise PlanWorkflowError("a revision needs the owner's request, verbatim")
         if kind not in (
@@ -784,7 +792,7 @@ class PlanService:
         text: str,
         actor: Actor,
         *,
-        ops: list[str] | None = None,
+        ops: Sequence[RevisionOp | str] | None = None,
         seed: int | None = None,
         out_dir: Path | None = None,
         features: list[str] | None = None,
