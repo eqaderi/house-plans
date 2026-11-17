@@ -32,7 +32,8 @@ from house_ai.interview.slot_types import InvalidValue, check
 from house_ai.interview.state import pick_option
 from house_ai.orchestration.interview import InterviewLocked, InterviewService
 from house_ai.orchestration.interview_llm import LlmAssist
-from house_ai.orchestration.site_ingestion import SiteConfirmation, confirm_site, ingest_site
+from house_ai.orchestration.site import SiteService
+from house_ai.orchestration.site_ingestion import SiteConfirmation, confirm_site
 from house_ai.orchestration.workflow import (
     GateBlocked,
     TransitionNotAllowed,
@@ -57,13 +58,12 @@ def _project(new_store, *, approve_site: bool = True):
     store = new_store("family")
     doc = store.add_source(SURVEY_DXF, HUMAN, classification=DataClassification.SYNTHETIC)
     wf = Workflow(store)
-    wf.transition(WorkflowState.SITE_INGESTION, AGENT, "survey received")
-    result = ingest_site(store, doc.id, load_layer_mapping(SURVEY_LAYERS), AGENT)
-    wf.assess_site(result.site_ref, AGENT)
+    sites = SiteService(store)
+    sites.ingest(doc.id, load_layer_mapping(SURVEY_LAYERS), AGENT)
     if approve_site:
         ref = confirm_site(store, "site", HUMAN, FULL)
         wf.transition(WorkflowState.SITE_INGESTION, HUMAN, "verified")
-        assert wf.assess_site(ref, AGENT) == []
+        assert sites.assess(ref, AGENT).blockers == []
         wf.approve(Gate.SITE, ref, HUMAN, "synthetic owner approves the synthetic site")
         wf.transition(WorkflowState.INTERVIEWING, AGENT, "start the interview")
     return store
@@ -1075,8 +1075,6 @@ def test_agent_inspects_synthetic_project_without_modifying_it(tmp_path, capsys)
     from house_ai.cli.main import main
     from house_ai.domain.geometry import Polygon2D
     from house_ai.domain.site import Epistemic, Site, SiteCoordinates
-    from house_ai.domain.workflow import WorkflowState
-    from house_ai.orchestration.workflow import Workflow
     from house_ai.storage import ProjectStore
 
     proj_dir = tmp_path / "synthetic-steep"
@@ -1087,8 +1085,6 @@ def test_agent_inspects_synthetic_project_without_modifying_it(tmp_path, capsys)
         classification="synthetic",  # type: ignore[arg-type]
         actor=HUMAN,
     )
-    wf = Workflow(store)
-    wf.transition(WorkflowState.SITE_INGESTION, HUMAN, "ingesting")
     # Put a site that needs verification (unverified boundary, local coords only)
     site = Site(
         id="site",
@@ -1101,7 +1097,7 @@ def test_agent_inspects_synthetic_project_without_modifying_it(tmp_path, capsys)
         provenance={"created_at": store.clock(), "created_by": HUMAN, "method": "test"},  # type: ignore[arg-type]
     )
     s_ref = store.put(K.SITE, "site", site, HUMAN)
-    wf.assess_site(s_ref, HUMAN)
+    SiteService(store).assess(s_ref, HUMAN)
 
     before_events = len(store.events())
     assert main(["project", "status", str(proj_dir), "--json"]) == 0

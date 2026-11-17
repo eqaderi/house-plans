@@ -9,6 +9,7 @@ from house_ai.domain.build import BuildRecord
 from house_ai.domain.evaluation import EvaluationReport
 from house_ai.domain.provenance import ApprovalRequiresHuman, ArtifactKind, ArtifactRef
 from house_ai.domain.workflow import Approval, EventType, Gate, WorkflowState
+from house_ai.orchestration.site import SiteService
 from house_ai.orchestration.workflow import (
     GATES,
     TRANSITIONS,
@@ -58,8 +59,7 @@ class Project:
         return self.ref(K.PLAN, "plan-a")
 
     def to_site_review(self) -> None:
-        self.wf.transition(S.SITE_INGESTION, AGENT, "survey loaded")
-        assert self.wf.assess_site(self.site, AGENT) == []
+        assert SiteService(self.store).assess(self.site, AGENT).blockers == []
 
     def to_site_approved(self) -> None:
         self.to_site_review()
@@ -203,8 +203,7 @@ def test_ambiguous_site_stops_at_needs_verification(project):
     doc["coordinates"]["source_units"] = {"unit": "mm", "status": "declared_in_source"}
     unsure = project.store.put(K.SITE, "site", doc, AGENT)
 
-    project.wf.transition(S.SITE_INGESTION, AGENT, "survey loaded")
-    blockers = project.wf.assess_site(unsure, AGENT)
+    blockers = SiteService(project.store).assess(unsure, AGENT).blockers
     assert len(blockers) == 2
     assert project.wf.state is S.SITE_NEEDS_CONFIRMATION
     last = project.store.events()[-1]
@@ -221,7 +220,7 @@ def test_ambiguous_site_stops_at_needs_verification(project):
     confirmed = project.store.put(K.SITE, "site", doc, HUMAN)
     assert confirmed.version == unsure.version + 1
     project.wf.transition(S.SITE_INGESTION, HUMAN, "units and CRS confirmed")
-    assert project.wf.assess_site(confirmed, AGENT) == []
+    assert SiteService(project.store).assess(confirmed, AGENT).blockers == []
 
     # The ambiguous version still cannot be approved; the confirmed one can.
     with pytest.raises(GateBlocked, match="drawing units"):

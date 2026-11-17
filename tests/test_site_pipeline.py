@@ -30,6 +30,7 @@ from house_ai.domain.workflow import Gate, WorkflowState
 from house_ai.geospatial.crs import CrsValidationError
 from house_ai.geospatial.terrain import elevation_at
 from house_ai.geospatial.validation import report_markdown, validate_site
+from house_ai.orchestration.site import SiteService
 from house_ai.orchestration.site_ingestion import SiteConfirmation, confirm_site, ingest_site
 from house_ai.orchestration.survey_inspection import inspect_file, inspection_markdown
 from house_ai.orchestration.workflow import GateBlocked, Workflow
@@ -320,14 +321,6 @@ def test_inspection_of_an_unreadable_file(tmp_path):
 # --------------------------------------------------------------- approval gate
 
 
-def test_ingested_site_stops_at_needs_verification(ingest):
-    store, result = ingest()
-    wf = Workflow(store)
-    wf.transition(WorkflowState.SITE_INGESTION, AGENT, "survey received")
-    assert wf.assess_site(result.site_ref, AGENT) == result.blockers
-    assert wf.state is WorkflowState.SITE_NEEDS_CONFIRMATION
-
-
 def test_agents_cannot_confirm_site_facts(ingest):
     store, _ = ingest()
     with pytest.raises(ApprovalRequiresHuman):
@@ -337,8 +330,7 @@ def test_agents_cannot_confirm_site_facts(ingest):
 def test_human_confirmation_clears_blockers_and_the_human_approves(ingest):
     store, result = ingest()
     wf = Workflow(store)
-    wf.transition(WorkflowState.SITE_INGESTION, AGENT, "survey received")
-    wf.assess_site(result.site_ref, AGENT)
+    SiteService(store).assess(result.site_ref, AGENT)
     ref = confirm_site(store, "site", HUMAN, FULL)
     site = _site(store, ref)
     assert ref.version == 2 and site_verification_blockers(site) == []
@@ -346,7 +338,7 @@ def test_human_confirmation_clears_blockers_and_the_human_approves(ingest):
     assert site.coordinates.horizontal_crs.epsg == 25832
     assert site.coordinates.local.grid_to_true_north_deg == pytest.approx(-0.00103, abs=5e-5)
     wf.transition(WorkflowState.SITE_INGESTION, HUMAN, "verified")
-    assert wf.assess_site(ref, AGENT) == []
+    assert SiteService(store).assess(ref, AGENT).blockers == []
     with pytest.raises(ApprovalRequiresHuman):
         wf.approve(Gate.SITE, ref, AGENT, "agent tries")
     with pytest.raises(GateBlocked):
@@ -498,21 +490,6 @@ def test_cli_pipeline(tmp_path, capsys):
     assert (
         main(
             [
-                "workflow",
-                "transition",
-                p,
-                "SITE_INGESTION",
-                "--reason",
-                "go",
-                "--actor",
-                "agent:claude-code",
-            ]
-        )
-        == 0
-    )
-    assert (
-        main(
-            [
                 "site",
                 "ingest",
                 p,
@@ -526,7 +503,10 @@ def test_cli_pipeline(tmp_path, capsys):
         )
         == 0
     )
+    assert "state SITE_NEEDS_CONFIRMATION" in capsys.readouterr().out
+    # Re-assessment still works and moves nothing.
     assert main(["workflow", "assess-site", p, "--id", "site", "--actor", "agent:claude-code"]) == 0
+    assert "state SITE_NEEDS_CONFIRMATION" in capsys.readouterr().out
     out = tmp_path / "out"
     assert main(["site", "report", p, "--id", "site", "--out", str(out)]) == 0
     names = sorted(f.name for f in out.iterdir())
@@ -540,7 +520,6 @@ def test_cli_pipeline(tmp_path, capsys):
         "terrain.svg",
     ]
     assert main(["project", "verify", p]) == 0
-    assert "SITE_NEEDS_CONFIRMATION" in capsys.readouterr().out
 
 
 def test_cli_site_confirm_refuses_a_non_interactive_shell(tmp_path):

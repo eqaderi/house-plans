@@ -64,7 +64,7 @@ the orchestration layer.
 |---|---|---|
 | `house_ai.domain` | A | Pydantic models for every canonical schema, units, geometry, coordinate frames, integrity checks, compliance language, schema registry |
 | `house_ai.storage` | A | `ProjectStore` (write-once artifacts, immutable sources, hash-chained event log), canonical hashing, folder importer |
-| `house_ai.orchestration` | A-D | Workflow state machine, transition guards, approval gates, reopen; site ingestion, human site confirmation, read-only survey inspection; agent-first interview service (store, workflow, site context, checklist, structured slot interpretations), optional LLM assist through `providers.base.send`; plan service (`plans.py`: gated or exploratory generation, evaluation, revisions, exports, plan review request) |
+| `house_ai.orchestration` | A-D | Workflow state machine, transition guards, approval gates, reopen; site service (`site.py`: ingest, assess, human site confirmation, site review package; moves the project between the site states, ADR 0028), site ingestion records, read-only survey inspection; agent-first interview service (store, workflow, site context, checklist, structured slot interpretations), optional LLM assist through `providers.base.send`; plan service (`plans.py`: gated or exploratory generation, evaluation, revisions, exports, plan review request) |
 | `house_ai.cli` | A-D | `house-ai` command, a thin layer over the library with `--json` and `--set` for coding agents; `plan` commands in `cli/plan_cmds.py` |
 | `house_ai.providers` | A, C | `ModelProvider` protocol, `DataFlowPolicy`, `send()`; `ScriptedProvider` for tests; optional `ClaudeProvider` (`providers/claude.py`, ADR 0010) |
 | `house_ai.cad` | B | `CadAdapter` / `CadSiteExtractor` protocols; format detection from bytes; ezdxf DXF adapter; DWG via ODA File Converter; layer roles from a human mapping; raw SOURCE-frame extraction and site interpretation with explicit ambiguity |
@@ -179,7 +179,7 @@ detect format ─▶ CAD adapter (ezdxf | ODA→ezdxf) ─▶ raw entities, SOUR
    ─▶ layer mapping (human) ─▶ SurveyTransform SOURCE→GRID→LOCAL
    ─▶ boundary · contours · spots · features · ambiguous entities
    ─▶ TIN, frontage, issues ─▶ cad_import + site artifacts
-   ─▶ workflow assess-site ─▶ SITE_NEEDS_CONFIRMATION
+   ─▶ SiteService assesses ─▶ SITE_NEEDS_CONFIRMATION while a blocker is open
    ─▶ site confirm (human, TTY) ─▶ new site version ─▶ site gate (human)
 site report ─▶ validation report (JSON/Markdown) + site SVG, derived on demand
 ```

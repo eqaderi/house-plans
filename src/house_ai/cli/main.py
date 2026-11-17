@@ -44,7 +44,8 @@ from house_ai.geospatial.validation import report_markdown, validate_site
 from house_ai.interview.brief_builder import describe
 from house_ai.interview.questions import SLOTS
 from house_ai.orchestration.interview import InterviewService
-from house_ai.orchestration.site_ingestion import SiteConfirmation, confirm_site, ingest_site
+from house_ai.orchestration.site import SiteService
+from house_ai.orchestration.site_ingestion import SiteConfirmation, confirm_site
 from house_ai.orchestration.statements import owner_statements, record_owner_statement
 from house_ai.orchestration.survey_inspection import inspect_files, inspection_markdown
 from house_ai.orchestration.workflow import (
@@ -341,14 +342,12 @@ def cmd_example_load(args: argparse.Namespace) -> int:
     refs = import_folder(store, folder, args.actor)
     for ref in refs:
         _out(f"stored {ref.kind.value}/{ref.id} v{ref.version}")
-    wf = Workflow(store)
-    wf.transition(WorkflowState.SITE_INGESTION, args.actor, "example site loaded")
     site_ref = next(r for r in refs if r.kind is ArtifactKind.SITE)
-    blockers = wf.assess_site(site_ref, args.actor)
-    for b in blockers:
+    outcome = SiteService(store).assess(site_ref, args.actor)
+    for b in outcome.blockers:
         _out(f"SITE BLOCKER {b}")
-    _out(f"state {wf.state.value}")
-    if not blockers:
+    _out(f"state {outcome.state.value}")
+    if not outcome.blockers:
         _out(f"next: a human runs `house-ai workflow approve {args.dir} site --id {site_ref.id}`")
     return EXIT_OK
 
@@ -375,11 +374,11 @@ def cmd_transition(args: argparse.Namespace) -> int:
 
 def cmd_assess_site(args: argparse.Namespace) -> int:
     store = ProjectStore(resolve_project_dir(args.dir))
-    wf = Workflow(store)
-    blockers = wf.assess_site(_ref(store, ArtifactKind.SITE, args.id, args.version), args.actor)
-    for b in blockers:
+    ref = _ref(store, ArtifactKind.SITE, args.id, args.version)
+    outcome = SiteService(store).assess(ref, args.actor)
+    for b in outcome.blockers:
         _out(f"BLOCKER {b}")
-    _out(f"state {wf.state.value}")
+    _out(f"state {outcome.state.value}")
     return EXIT_OK
 
 
@@ -462,18 +461,14 @@ def cmd_site_inspect(args: argparse.Namespace) -> int:
 
 def cmd_site_ingest(args: argparse.Namespace) -> int:
     store = ProjectStore(resolve_project_dir(args.dir))
-    result = ingest_site(
-        store, args.source, load_layer_mapping(Path(args.layers)), args.actor, site_id=args.site_id
+    result = SiteService(store).ingest(
+        args.source, load_layer_mapping(Path(args.layers)), args.actor, site_id=args.site_id
     )
     for ref in (*result.cad_refs, result.site_ref):
         _out(f"stored {ref.kind.value}/{ref.id} v{ref.version} sha256 {ref.sha256}")
     for b in result.blockers:
         _out(f"BLOCKER {b}")
-    if result.blockers:
-        _out(
-            "next: house-ai workflow assess-site "
-            f"{args.dir} --id {args.site_id} --actor <you>   # records SITE_NEEDS_CONFIRMATION"
-        )
+    _out(f"state {result.state.value}")
     return EXIT_OK
 
 
@@ -1133,7 +1128,10 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--json", action="store_true")
     s.add_argument("--out", help="write inspection.md/.json here instead of printing")
     s.set_defaults(func=cmd_site_inspect)
-    s = site.add_parser("ingest", help="extract a stored survey into cad_import + site")
+    s = site.add_parser(
+        "ingest",
+        help="extract a stored survey into cad_import + site, start site ingestion and assess it",
+    )
     s.add_argument("dir")
     s.add_argument(
         "--source",
@@ -1337,7 +1335,7 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--reason", required=True)
     actor_arg(s)
     s.set_defaults(func=cmd_transition)
-    s = wf.add_parser("assess-site")
+    s = wf.add_parser("assess-site", help="re-assess a stored site version against the site gate")
     s.add_argument("dir")
     s.add_argument("--id", required=True)
     s.add_argument("--version", type=int)

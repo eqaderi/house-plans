@@ -85,22 +85,13 @@ def test_site_survey_review_skill_workflow(tmp_path: Path, capsys):
     assert store.latest(ArtifactKind.SITE, "site") is not None
     assert store.latest(ArtifactKind.CAD_IMPORT, f"cad-{source_id}") is not None
 
-    # 3. Transition to SITE_INGESTION and assess site blockers
-    rc = main(
-        [
-            "workflow",
-            "transition",
-            str(proj_dir),
-            "SITE_INGESTION",
-            "--reason",
-            "ingesting survey",
-            "--actor",
-            AGENT_ACTOR,
-        ]
-    )
-    assert rc == 0
+    # Ingesting started site ingestion and stopped the unconfirmed survey for the owner.
+    assert Workflow(store).state is WorkflowState.SITE_NEEDS_CONFIRMATION
+
+    # 3. Re-assess the site against the gate's blockers (moves nothing)
     rc = main(["workflow", "assess-site", str(proj_dir), "--id", "site", "--actor", AGENT_ACTOR])
     assert rc == 0
+    assert Workflow(store).state is WorkflowState.SITE_NEEDS_CONFIRMATION
 
 
 
