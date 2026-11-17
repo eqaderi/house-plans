@@ -8,10 +8,18 @@ from __future__ import annotations
 
 import pytest
 
+from house_ai.domain.integrity import check_model, errors
 from house_ai.domain.model import Level, WallKind
 from house_ai.domain.program import SpaceFunction as S
+from house_ai.domain.program import SpaceProgram
+from house_ai.domain.site import Site
+from house_ai.generation.assemble2d import assemble_2d
 from house_ai.generation.enclosure import EnclosedSpace, Enclosure, Rect
 from house_ai.generation.frame import DesignFrame
+from house_ai.generation.solver2d import PlacedRoom2D, SharedWall, Solution2D
+from house_ai.storage.hashing import load_document
+
+from .conftest import AGENT, REPO
 
 FRAME = DesignFrame((0.0, 0.0), (1.0, 0.0), (0.0, 1.0), "test frame", None, None)
 ENTRY = Level(id="lv-entry", name="Entry", elevation_m=0.0, floor_to_floor_m=3.0)
@@ -159,3 +167,66 @@ def test_terrace_edges_are_parapets_and_its_wall_to_the_room_is_exterior():
     assert len(edges) == 3
     assert {(w.kind, w.thickness, w.height_m) for w in edges} == {(WallKind.PARAPET, 0.2, 1.0)}
 
+
+# --------------------------------------------------------------- the 2D adapter
+
+HILLSIDE = REPO / "examples" / "projects" / "synthetic-hillside"
+
+
+def hillside() -> tuple[Site, SpaceProgram]:
+    site = Site.model_validate(load_document(HILLSIDE / "site.yaml"))
+    program = SpaceProgram.model_validate(load_document(HILLSIDE / "space_program.yaml"))
+    return site, program
+
+
+def placed(sid, function, rect, item, zone, level="lv-entry") -> PlacedRoom2D:
+    return PlacedRoom2D(sid, sid.removeprefix("sp-").title(), function, level, *rect, item, zone)
+
+
+def solution(rooms, shared=(), *, strategy="corridor_free", levels=("lv-entry",)) -> Solution2D:
+    return Solution2D(
+        status="FEASIBLE",
+        objective=0.0,
+        rooms=list(rooms),
+        shared_walls=list(shared),
+        levels=list(levels),
+        deterministic_time=0.0,
+        wall_time_s=0.0,
+        seed=0,
+        platform_info="test",
+        strategy=strategy,
+        circulation_share=0.0,
+        level_elevations_m={lv: 0.0 for lv in levels},
+    )
+
+
+def test_2d_plan_on_a_slope_has_retaining_walls_where_the_ground_is_held_back():
+    site, program = hillside()
+    # A 4 m x 2 m entry at the road and a 4 m x 3 m living room behind it, floor at z = 0,
+    # on ground rising 0.5 m per metre away from the road.
+    rooms = [
+        placed("sp-entry", S.ENTRY, (0, 0, 40, 20), "pi-entry", "z-circulation"),
+        placed("sp-living", S.LIVING, (0, 20, 40, 50), "pi-living", "z-day"),
+    ]
+    shared = [SharedWall("sp-entry", "sp-living", "lv-entry", "h", 20, 0, 40)]
+    model = assemble_2d(solution(rooms, shared), site, FRAME, RisingAway(), program, AGENT)
+    retaining = {(w.start, w.end) for w in model.walls if w.kind is WallKind.RETAINING}
+    # Living: back face (ground 2.8 m above the floor 0.6 m outside it) and both side
+    # faces (mean of 1.1875, 1.5625, 1.9375, 2.3125 = 1.75 m) hold back ground. The entry's
+    # sides (mean 0.5 m) and the front face (ground below the floor) do not.
+    assert retaining == {
+        ((0.0, 5.0), (4.0, 5.0)),
+        ((0.0, 2.0), (0.0, 5.0)),
+        ((4.0, 2.0), (4.0, 5.0)),
+    }
+    assert {w.material_id for w in model.walls if w.kind is WallKind.RETAINING} == {"m-retaining"}
+    exterior = {(w.start, w.end) for w in model.walls if w.kind is WallKind.EXTERIOR}
+    assert exterior == {
+        ((0.0, 0.0), (4.0, 0.0)),
+        ((0.0, 0.0), (0.0, 2.0)),
+        ((4.0, 0.0), (4.0, 2.0)),
+    }
+    # No opening is cut into a wall that holds back ground.
+    retaining_ids = {w.id for w in model.walls if w.kind is WallKind.RETAINING}
+    assert not [o for o in model.openings if o.host_wall_id in retaining_ids]
+    assert not errors(check_model(model))
