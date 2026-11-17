@@ -285,21 +285,8 @@ def test_architectural_programming_skill_workflow(tmp_path: Path):
     assert (design_dir / "design_brief.yaml").is_file()
     assert (design_dir / "program-review.md").is_file()
 
-    # 6. Move to INTERVIEWING (from SITE_APPROVED) and request program review
+    # 6. Request program review straight from SITE_APPROVED (it makes its own moves)
     assert Workflow(store).state is WorkflowState.SITE_APPROVED
-    rc = main(
-        [
-            "workflow",
-            "transition",
-            str(proj_dir),
-            "INTERVIEWING",
-            "--reason",
-            "interview",
-            "--actor",
-            AGENT_ACTOR,
-        ]
-    )
-    assert rc == 0
     rc = main(["program", "review", str(proj_dir), "--actor", AGENT_ACTOR])
     assert rc == 0
     assert Workflow(store).state is WorkflowState.PROGRAM_REVIEW

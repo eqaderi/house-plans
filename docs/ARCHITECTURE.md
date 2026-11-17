@@ -142,8 +142,9 @@ can never target a gated state (`SITE_APPROVED`, `PROGRAM_APPROVED`,
 concept review needs a plan, Blender/Unreal review need a build record made
 from the approved plan. Each stage's module makes its own ordinary moves
 ([ADR 0028](adr/0028-site-service-and-stage-modules-move-their-own-state.md)):
-`SiteService` enters and leaves `SITE_NEEDS_CONFIRMATION` and `plan generate`
-leaves `PROGRAM_APPROVED`; `workflow transition` remains for recovery.
+`SiteService` enters and leaves `SITE_NEEDS_CONFIRMATION`, `program review`
+leaves `SITE_APPROVED` and `plan generate` leaves `PROGRAM_APPROVED`;
+`workflow transition` remains for recovery.
 
 **Gates** are crossed only by `Workflow.approve`, which:
 

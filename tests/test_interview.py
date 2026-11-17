@@ -25,7 +25,7 @@ from house_ai.domain.program import (
 from house_ai.domain.provenance import ApprovalRequiresHuman, DataClassification
 from house_ai.domain.provenance import ArtifactKind as K
 from house_ai.domain.units import LengthUnit
-from house_ai.domain.workflow import Gate, WorkflowState
+from house_ai.domain.workflow import EventType, Gate, WorkflowState
 from house_ai.interview import parsing
 from house_ai.interview.questions import QUESTIONS, SLOTS
 from house_ai.interview.slot_types import InvalidValue, check
@@ -63,7 +63,6 @@ def _project(new_store, *, approve_site: bool = True):
     if approve_site:
         ref = sites.confirm("site", HUMAN, FULL).site_ref
         wf.approve(Gate.SITE, ref, HUMAN, "synthetic owner approves the synthetic site")
-        wf.transition(WorkflowState.INTERVIEWING, AGENT, "start the interview")
     return store
 
 
@@ -415,6 +414,40 @@ def test_answers_cannot_change_once_the_program_is_approved(svc):
         svc.revise("q-bedrooms", "Five bedrooms.", HUMAN)
 
 
+# ------------------------------------------------------------ program review moves
+
+
+def _moves(store) -> list[tuple[str, str]]:
+    return [(e.from_state.value, e.to_state.value) for e in store.events()
+            if e.type is EventType.TRANSITION]  # fmt: skip
+
+
+def test_program_review_makes_its_own_move_out_of_site_approved(svc):
+    _run(svc)
+    svc.confirm(HUMAN)
+    assert svc.workflow.state is WorkflowState.SITE_APPROVED
+
+    _, reasons = svc.review_program(AGENT)
+
+    assert reasons == []
+    assert svc.workflow.state is WorkflowState.PROGRAM_REVIEW
+    assert _moves(svc.store)[-2:] == [
+        ("SITE_APPROVED", "INTERVIEWING"),
+        ("INTERVIEWING", "PROGRAM_REVIEW"),
+    ]
+
+
+def test_program_review_works_unchanged_from_interviewing(svc):
+    _run(svc)
+    svc.confirm(HUMAN)
+    svc.workflow.transition(WorkflowState.INTERVIEWING, AGENT, "recovery: moved by hand")
+
+    svc.review_program(AGENT)
+
+    assert svc.workflow.state is WorkflowState.PROGRAM_REVIEW
+    assert _moves(svc.store)[-1] == ("INTERVIEWING", "PROGRAM_REVIEW")
+
+
 # ------------------------------------------------------------ unverified site
 
 
@@ -684,7 +717,7 @@ def test_agent_first_end_to_end_workflow_with_persian_english_and_mixed_answers(
     # 1. Agent inspects project status and starts interview.
     assert main(["project", "status", d, "--json"]) == 0
     proj_status = json.loads(capsys.readouterr().out)
-    assert proj_status["state"] == "INTERVIEWING"
+    assert proj_status["state"] == "SITE_APPROVED"
     assert proj_status["site"]["verified"] is True
 
     assert main(["interview", "start", d, "--json", "--actor", "agent:gemini"]) == 0
