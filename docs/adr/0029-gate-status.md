@@ -38,6 +38,19 @@ reported prose too.
   saved before this change and a store written earlier still verifies. The
   SITE_NEEDS_CONFIRMATION transition keeps its `blockers` strings likewise.
   Blockers are computed from the store, never stored.
+- **Program gate: one cause, one Blocker.** The program checks
+  (`program.validation`) are the one source of program gate Blockers; their
+  `contradiction` findings become Blockers of kind `contradiction` with the
+  Contradiction's id as `code`. The gate adds only what they do not cover:
+  the site gate's approval, blocking Open questions, and a cited brief the
+  store lacks. A missing blocking answer is one Blocker, its Open question:
+  the check's `missing_information` for the same slot (`f-<topic>`) is
+  dropped. Before this, one missing answer produced two reasons, and an
+  unknown fact id one per citing item plus the check's. With several stored
+  briefs and none cited the checks cannot run; the gate then reports each
+  brief's Contradictions and one `unknown_fact` itself. The gate still reads
+  the latest Open questions, not those written with the program version
+  being approved (tracker ISS-39).
 - `request_approval` returns the `GateStatus` it recorded; no caller reads
   the event payload by key. `--json` output that lists site blockers gains
   `blockers` (typed) beside `verification_blockers` (sentences).

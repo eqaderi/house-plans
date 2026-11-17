@@ -484,8 +484,8 @@ def test_program_gate_rejects_unknown_source_fact_ids(project):
     prog_ref = project.store.put(K.SPACE_PROGRAM, "program", program, AGENT)
     project.to_program_review()
     status = project.wf.gate_status(Gate.PROGRAM, prog_ref)
-    unknown = [b for b in status.blockers if b.code == "unknown_fact"]
-    assert unknown and all("f-nonexistent" in b.subject_ids for b in unknown)
+    assert _codes(status) == [("program_check", "unknown_fact")]
+    assert status.blockers[0].subject_ids == ["f-nonexistent"]
 
 
 def test_plan_gate_blocks_program_min_area_without_evaluation_report(project):

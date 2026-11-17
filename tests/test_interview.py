@@ -407,6 +407,33 @@ def test_unconfirmed_interpretations_block_the_program_gate(svc):
         svc.workflow.approve(Gate.PROGRAM, build.program_ref, HUMAN, "too early")
 
 
+def test_a_missing_blocking_answer_is_one_blocker_its_open_question(svc):
+    _run(svc)
+    svc.revise("q-household", "We have not decided who will live there.", HUMAN,
+               interpreted={"adults": None})  # fmt: skip
+    svc.confirm(HUMAN)
+
+    _, gate = svc.review_program(AGENT)
+
+    assert [(b.kind.value, b.code, b.subject_ids) for b in gate.blockers] == [
+        ("open_question", "oq-adults", ["oq-adults"])
+    ]
+
+
+def test_an_unresolved_contradiction_is_one_blocker(svc):
+    _run(svc)
+    svc.confirm(HUMAN)
+    program = svc.build_program(AGENT)
+    assert not blocking(program.findings)
+    svc.revise("q-bedrooms", "Two bedrooms.", HUMAN)  # three people need their own rooms
+    svc.confirm(HUMAN)
+
+    _, gate = svc.review_program(AGENT)
+
+    contradiction = [b for b in gate.blockers if b.kind.value == "contradiction"]
+    assert len(contradiction) == 1 and len(gate.blockers) == 1
+
+
 def test_answers_cannot_change_once_the_program_is_approved(svc):
     _run(svc)
     svc.confirm(HUMAN)

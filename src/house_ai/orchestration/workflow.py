@@ -45,7 +45,7 @@ from house_ai.domain.workflow import (
     WorkflowEvent,
     WorkflowState,
 )
-from house_ai.program.validation import blocking, validate_program
+from house_ai.program.validation import ProgramFinding, blocking, validate_program
 from house_ai.storage import ProjectStore, StoreError
 
 from .site_context import site_context_for
@@ -146,6 +146,36 @@ class GateStatus:
 
 def _blocker(kind: BlockerKind, code: str, message: str, *subject_ids: str) -> Blocker:
     return Blocker(kind=kind, code=code, subject_ids=list(subject_ids), message=message)
+
+
+def _program_check_blockers(finding: ProgramFinding, asked: set[str]) -> list[Blocker]:
+    """The Blocker for one blocking program check, unless an Open question covers it."""
+    if finding.code == "missing_information" and set(finding.subject_ids) <= asked:
+        return []  # its blocking Open question is the Blocker
+    if finding.code == "contradiction":
+        cid = finding.subject_ids[0]
+        message = f"unresolved contradiction {cid}: {finding.message}"
+        return [_blocker(BlockerKind.CONTRADICTION, cid, message, *finding.subject_ids)]
+    message = f"program check {finding.code}: {finding.message}"
+    return [_blocker(BlockerKind.PROGRAM_CHECK, finding.code, message, *finding.subject_ids)]
+
+
+def _uncited_brief_blockers(program: SpaceProgram, briefs: list[DesignBrief]) -> list[Blocker]:
+    """Contradictions and unknown fact ids across several briefs, none cited by the program."""
+    out = [
+        _blocker(
+            BlockerKind.CONTRADICTION, c.id, f"unresolved contradiction {c.id}: {c.statement}", c.id
+        )
+        for brief in briefs
+        for c in brief.unresolved_contradictions()
+    ]
+    known = {f.id for brief in briefs for f in brief.facts}
+    cited = [*program.space_requirements, *program.space_relationships]
+    unknown = sorted({fid for item in cited for fid in item.source_fact_ids} - known)
+    if unknown:
+        message = f"program check unknown_fact: the program cites facts in no brief: {unknown}"
+        out.append(_blocker(BlockerKind.PROGRAM_CHECK, "unknown_fact", message, *unknown))
+    return out
 
 
 @dataclass
@@ -318,9 +348,22 @@ class Workflow:
     def _check_program_gate(
         self, program: SpaceProgram, ref: ArtifactRef, status: WorkflowStatus
     ) -> list[Blocker]:
+        """One cause, one Blocker (ADR 0029).
+
+        The program checks are the one source; the gate adds what they do not
+        cover: the site gate's approval, blocking Open questions (a missing
+        blocking answer is its Open question, not also the check's
+        ``missing_information``), and a brief the program cites but the store
+        lacks. With several stored briefs and none cited, the checks cannot
+        run, and the gate reports each brief's Contradictions and unknown fact
+        ids itself.
+        """
         blockers = self._upstream(status, Gate.SITE)
+        asked: set[str] = set()  # fact ids a blocking Open question already stands for
         for q_ref in self.store.latest_of_kind(ArtifactKind.OPEN_QUESTIONS):
             for q in self.store.get(q_ref, OpenQuestionsFile).blocking_open():
+                if q.topic:
+                    asked.add(f"f-{q.topic}")
                 blockers.append(
                     _blocker(
                         BlockerKind.OPEN_QUESTION,
@@ -335,11 +378,10 @@ class Workflow:
             if program.brief_ref
             else self.store.latest_of_kind(ArtifactKind.DESIGN_BRIEF)
         )
-        known_facts: set[str] = set()
-        loaded_any_brief = False
+        briefs: list[DesignBrief] = []
         for b_ref in brief_refs:
             try:
-                brief = self.store.get(b_ref, DesignBrief)
+                briefs.append(self.store.get(b_ref, DesignBrief))
             except StoreError as exc:
                 blockers.append(
                     _blocker(
@@ -349,60 +391,17 @@ class Workflow:
                         b_ref.id,
                     )
                 )
-                continue
-            loaded_any_brief = True
-            known_facts.update(f.id for f in brief.facts)
-            for c in brief.unresolved_contradictions():
-                blockers.append(
-                    _blocker(
-                        BlockerKind.CONTRADICTION,
-                        c.id,
-                        f"unresolved contradiction {c.id}: {c.statement}",
-                        c.id,
-                    )
-                )
-        if loaded_any_brief and len(brief_refs) == 1:
+        if len(brief_refs) == 1 and briefs:
             site = None
             if Gate.SITE in status.approvals:
                 site_ref = status.approvals[Gate.SITE].artifact
                 site = site_context_for(
                     self.store.get(site_ref, Site), site_ref, status.approvals[Gate.SITE]
                 )
-            for finding in blocking(validate_program(program, brief, site)):
-                if finding.code != "contradiction":  # reported above
-                    blockers.append(
-                        _blocker(
-                            BlockerKind.PROGRAM_CHECK,
-                            finding.code,
-                            f"program check {finding.code}: {finding.message}",
-                            *finding.subject_ids,
-                        )
-                    )
-        if loaded_any_brief:
-            for item in program.space_requirements:
-                for fid in item.source_fact_ids:
-                    if fid not in known_facts:
-                        blockers.append(
-                            _blocker(
-                                BlockerKind.PROGRAM_CHECK,
-                                "unknown_fact",
-                                f"space requirement {item.id} cites unknown brief fact {fid!r}",
-                                item.id,
-                                fid,
-                            )
-                        )
-            for adj in program.space_relationships:
-                for fid in adj.source_fact_ids:
-                    if fid not in known_facts:
-                        blockers.append(
-                            _blocker(
-                                BlockerKind.PROGRAM_CHECK,
-                                "unknown_fact",
-                                f"adjacency {adj.id} cites unknown brief fact {fid!r}",
-                                adj.id,
-                                fid,
-                            )
-                        )
+            for finding in blocking(validate_program(program, briefs[0], site)):
+                blockers += _program_check_blockers(finding, asked)
+        elif briefs:
+            blockers += _uncited_brief_blockers(program, briefs)
         return blockers
 
     def _check_plan_gate(
