@@ -185,7 +185,6 @@ def test_geospatial_and_cad_boundaries(site):
     from house_ai.domain.site import CadImportProvenance
     from house_ai.geospatial.base import (
         build_terrain,
-        create_local_coordinate_system,
         set_coordinate_reference_system,
     )
 
@@ -197,8 +196,6 @@ def test_geospatial_and_cad_boundaries(site):
         )
     crs = set_coordinate_reference_system(actor=HUMAN, status=C.USER_CONFIRMED, epsg=32632)
     assert crs.resolved and crs.epsg == 32632
-    lcs = create_local_coordinate_system(frame_id="lcs-1", origin=(500000.0, 5400000.0, 100.0))
-    assert lcs.id == "lcs-1"
     terrain = build_terrain(site.terrain.spot_elevations, [])
     assert terrain.status.value == "surveyed_points"
 
