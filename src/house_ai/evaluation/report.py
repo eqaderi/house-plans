@@ -13,6 +13,7 @@ from house_ai.domain.provenance import Actor, ActorKind, ArtifactRef, Provenance
 from house_ai.domain.site import Site
 
 from .base import FUTURE_EVALUATORS, EvaluationContext
+from .drawing import DRAWING_EVALUATORS
 from .evaluators import REQUIRED, VERSION, codepack_rules_checked
 from .usability import USABILITY_EVALUATORS
 
@@ -37,7 +38,7 @@ def evaluate_plan(
 ) -> EvaluationReport:
     ctx = EvaluationContext(plan.model, site, program, constraints, site_approved)
     runs, metrics, violations = [], [], []
-    for ev in [*REQUIRED, *USABILITY_EVALUATORS]:
+    for ev in [*REQUIRED, *USABILITY_EVALUATORS, *DRAWING_EVALUATORS]:
         res = ev.evaluate(ctx)
         runs.append(res.run)
         metrics.extend(res.metrics)

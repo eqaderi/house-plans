@@ -114,8 +114,8 @@ def test_readiness_demonstration_end_to_end(tmp_path):
     assert vr["critique_made_on_this_rendering"] is (
         vr["png_sha256"] == critique["screenshot_hash"]
     )
-    assert len(vr["detector_findings"]) > 0
-    assert any(f["type"] == "overlapping_labels" for f in vr["detector_findings"])
+    # Colliding labels are a Finding of the Evaluation, from the drawing's own layout (#34).
+    assert any(d["code"] == "label_collision" for d in two_wing["defects"])
 
     # Revisions keep the owner's words and ops and add versions 2 and 3.
     assert [(r["words"], r["ops"]) for r in rec["revisions"]] == REVISIONS

@@ -8,10 +8,11 @@ from house_ai.constants.reviewer import (
     DEFECT_DOOR_EXCEEDS_WALL,
     DEFECT_MISSING_STAIR_ARRIVAL,
     DEFECT_MISSING_STAIR_LEVEL,
-    DEFECT_OVERLAPPING_LABELS,
     DEFECT_STAIR_THROUGH_SLAB,
     DEFECT_WINDOW_ON_RETAINING_WALL,
 )
+from house_ai.domain.epistemics import ClaimStatus
+from house_ai.domain.evaluation import EvaluationReport, Violation
 from house_ai.domain.geometry import Polygon2D
 from house_ai.domain.model import (
     HouseModel,
@@ -26,14 +27,43 @@ from house_ai.domain.model import (
     Wall,
     WallKind,
 )
+from house_ai.domain.plan import PlanVersion
+from house_ai.domain.provenance import Actor, ActorKind, ArtifactKind, ArtifactRef, Provenance
+from house_ai.domain.site import Site
+from house_ai.evaluation.report import evaluate_plan
+from house_ai.storage.hashing import load_document
 from house_ai.validation.defect_detectors import (
     detect_door_into_wall_clash,
-    detect_overlapping_space_labels,
     detect_stair_arrival_defects,
     detect_stair_through_slab,
     detect_windows_on_retaining_walls,
     scan_all_model_defects,
 )
+
+from .conftest import REPO
+
+HILLSIDE = REPO / "examples" / "projects" / "synthetic-hillside"
+WHEN = "2026-11-17T00:00:00Z"
+
+
+def _evaluation(model: HouseModel, site: Site | None = None) -> EvaluationReport:
+    """The Evaluation of a hand-built model, as `plan generate` would store it."""
+    plan = PlanVersion(
+        option_id="seeded",
+        label="Seeded defects",
+        provenance=Provenance(
+            created_at=WHEN, created_by=Actor(kind=ActorKind.SYSTEM, id="test"), method="test"
+        ),
+        model=model,
+    )
+    ref = ArtifactRef(kind=ArtifactKind.PLAN, id="seeded", version=1, sha256="0" * 64)
+    return evaluate_plan(
+        plan, ref, site=site, program=None, constraints=None, codepack=None, created_at=WHEN
+    )
+
+
+def _findings(report: EvaluationReport, code: str) -> list[Violation]:
+    return [v for v in report.violations if v.code == code]
 
 
 @pytest.fixture
@@ -136,9 +166,9 @@ def test_detects_window_on_retaining_wall(clean_model):
     assert "w-ret-hillside" in findings[0].element_ids
 
 
-def test_detects_overlapping_space_labels(clean_model):
-    """Detects when two room label centers collide / overlap."""
-    # Add two tiny adjacent spaces whose centers are 0.5m apart (< 1.5m)
+def test_overlapping_space_labels_are_a_finding_of_the_evaluation(clean_model):
+    """Two closets whose labels overlap on the drawing (anchors 0.5 m = 15.25 px apart at
+    30.5 px/m, each "1.00 × 0.50" line about 42 px wide)."""
     clean_model.spaces.append(
         Space(
             id="sp-closet-a",
@@ -158,10 +188,10 @@ def test_detects_overlapping_space_labels(clean_model):
         )
     )
 
-    findings = detect_overlapping_space_labels(clean_model, min_label_distance_m=1.0)
-    assert len(findings) == 1
-    assert findings[0].defect_type == DEFECT_OVERLAPPING_LABELS
-    assert set(findings[0].element_ids) == {"sp-closet-a", "sp-closet-b"}
+    findings = _findings(_evaluation(clean_model), "label_collision")
+    assert [set(v.subject_ids) for v in findings] == [{"sp-closet-a", "sp-closet-b"}]
+    assert findings[0].status is ClaimStatus.MEASURED
+    assert findings[0].evaluator == "LabelCollisionEvaluator"
 
 
 def test_detects_missing_stair_arrival(clean_model):
@@ -245,13 +275,10 @@ def test_detects_stair_through_slab(clean_model):
     assert len(detect_stair_through_slab(clean_model)) == 0
 
 
-def test_detects_s9_concept_two_wing_defects():
-    """Detects the defects found during S9 visual review on concept-two-wing v1:
-
-    1. Stair st-0 through slab-roof-down-450 without a void (vc-stair-through-slab).
-    2. Overlapping labels on lower level tight rooms (vc-lower-labels-overlap).
-    """
-    # Self-contained representation of the S9 concept-two-wing v1 geometry with seeded defects
+def _two_wing_v1() -> HouseModel:
+    """Self-contained copy of the S9 concept-two-wing v1 geometry with its two defects:
+    stair st-0 through slab-roof-down-450 without a void (vc-stair-through-slab), and
+    overlapping labels on the tight lower rooms (vc-lower-labels-overlap)."""
     model = HouseModel(
         id="concept-two-wing-v1",
         name="Two Wing v1",
@@ -366,7 +393,11 @@ def test_detects_s9_concept_two_wing_defects():
                 ),
             ],
         )
+    return model
 
+
+def test_detects_s9_concept_two_wing_stair_through_slab():
+    model = _two_wing_v1()
     # 1. Stair through slab defect detector flags st-0 penetrating slab-roof-down-450
     stair_findings = detect_stair_through_slab(model)
     assert len(stair_findings) >= 1
@@ -374,16 +405,16 @@ def test_detects_s9_concept_two_wing_defects():
     assert "st-0" in stair_defect.element_ids
     assert "slab-roof-down-450" in stair_defect.element_ids
 
-    # 2. Overlapping label detector flags collisions between tight rooms on lv-down-450
-    label_findings = detect_overlapping_space_labels(model)
-    assert len(label_findings) >= 1
-    implicated = {eid for f in label_findings for eid in f.element_ids}
-    # At least two of the lower rooms whose labels collide are flagged
-    lower_rooms = {"sp-bed-child-1", "sp-bed-child-2", "sp-corridor-b1", "sp-mechanical"}
-    assert len(implicated & lower_rooms) >= 2
 
-    # 3. scan_all_model_defects contains both defect types
-    all_defects = scan_all_model_defects(model)
-    types = {f.defect_type for f in all_defects}
-    assert DEFECT_STAIR_THROUGH_SLAB in types
-    assert DEFECT_OVERLAPPING_LABELS in types
+def test_s9_concept_two_wing_lower_labels_overlap_on_the_drawing_with_the_site():
+    """The S9 drawing showed the synthetic-hillside parcel: at its scale (12.34 px/m) the
+    corridor and the child's bedroom 1, and that bedroom and the plant room, collide. Without
+    the parcel the same rooms are drawn at 24.25 px/m and no labels collide."""
+    model = _two_wing_v1()
+    site = Site.model_validate(load_document(HILLSIDE / "site.yaml"))
+    pairs = [set(v.subject_ids) for v in _findings(_evaluation(model, site), "label_collision")]
+    assert pairs == [
+        {"sp-corridor-b1", "sp-bed-child-1"},
+        {"sp-bed-child-1", "sp-mechanical"},
+    ]
+    assert _findings(_evaluation(model), "label_collision") == []

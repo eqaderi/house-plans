@@ -3,7 +3,6 @@
 Detects visual and geometric defects including:
 - Windows hosted on retaining walls (buried in earth).
 - Doors clashing into walls or openings with zero clearance.
-- Overlapping room labels / overlapping spaces.
 - Missing or invalid stair arrival connections.
 """
 
@@ -13,28 +12,21 @@ import math
 from collections.abc import Sequence
 from dataclasses import dataclass
 
-from shapely.geometry import LineString, Point, box
-from shapely.ops import unary_union
+from shapely.geometry import LineString, Point
 
 from house_ai.constants.evaluations import MIN_STAIR_HEADROOM_M
 from house_ai.constants.reviewer import (
-    DEFAULT_LABEL_PADDING_PX,
-    DEFAULT_MIN_LABEL_DISTANCE_M,
     DEFECT_DOOR_EXCEEDS_WALL,
     DEFECT_MISSING_HOST_WALL,
     DEFECT_MISSING_STAIR_ARRIVAL,
     DEFECT_MISSING_STAIR_LEVEL,
-    DEFECT_OVERLAPPING_LABELS,
     DEFECT_STAIR_THROUGH_SLAB,
     DEFECT_WINDOW_ON_RETAINING_WALL,
-    MARGIN,
     MIN_SLAB_INTERSECTION_AREA_M2,
-    PANEL_W,
 )
 from house_ai.domain.model import HouseModel, OpeningKind, SlabKind, WallKind
-from house_ai.domain.revision_ops import RevisionOp, RevisionVerb
+from house_ai.domain.revision_ops import RevisionOp
 from house_ai.evaluation.usability import _pitch
-from house_ai.render2d.plan_svg import _rect_dims
 
 
 @dataclass
@@ -72,102 +64,6 @@ def detect_windows_on_retaining_walls(model: HouseModel) -> list[DefectFinding]:
                         ),
                     )
                 )
-
-    return findings
-
-
-def detect_overlapping_space_labels(
-    model: HouseModel, min_label_distance_m: float = DEFAULT_MIN_LABEL_DISTANCE_M
-) -> list[DefectFinding]:
-    """Flag spaces whose label centers or rendered bounding boxes collide / overlap.
-
-    Detects both 3D/local centroid proximity (closer than min_label_distance_m)
-    and 2D canvas label bounding box collisions at default plan viewing scale.
-    """
-    spaces_by_level: dict[str, list] = {}
-    valid_shapes = []
-    for sp in model.spaces or []:
-        spaces_by_level.setdefault(sp.level_id, []).append(sp)
-        if sp.boundary and sp.boundary.outer:
-            poly = sp.boundary.to_shapely()
-            if poly.is_valid and not poly.is_empty:
-                valid_shapes.append(poly)
-
-    if not spaces_by_level:
-        return []
-
-    # Compute rendered view scale across the model
-    scale = 30.0
-    minx, maxy = 0.0, 0.0
-    if valid_shapes:
-        bounds = unary_union(valid_shapes).buffer(2.5).bounds
-        minx, miny, maxx, maxy = bounds
-        scale = (PANEL_W - 2 * MARGIN) / max(maxx - minx, maxy - miny, 1.0)
-
-    findings: list[DefectFinding] = []
-
-    for _lvl_id, sp_list in spaces_by_level.items():
-        boxes: dict[str, tuple[box, tuple[float, float]]] = {}
-        for sp in sp_list:
-            if not sp.boundary or not sp.boundary.outer:
-                continue
-            poly = sp.boundary.to_shapely()
-            if not poly.is_valid:
-                poly = poly.buffer(0)
-            rep_pt = poly.representative_point()
-            cx, cy = rep_pt.x, rep_pt.y
-            px = (cx - minx) * scale
-            py = (maxy - cy) * scale
-
-            L, W = _rect_dims(sp.boundary)
-            small = L * scale < 70
-            name = sp.name if not small else sp.name.split(" ")[0]
-            w = max(
-                len(name) * (9 if not small else 7),
-                len(f"{sp.area_m2:.1f} m²") * 8,
-                len(f"{L:.2f} × {W:.2f}") * 7,
-            ) * 0.55
-            b = box(
-                px - w / 2 - DEFAULT_LABEL_PADDING_PX,
-                py - 12 - DEFAULT_LABEL_PADDING_PX,
-                px + w / 2 + DEFAULT_LABEL_PADDING_PX,
-                py + 22 + DEFAULT_LABEL_PADDING_PX,
-            )
-            boxes[sp.id] = (b, (cx, cy))
-
-        for i in range(len(sp_list)):
-            sp_a = sp_list[i]
-            if sp_a.id not in boxes:
-                continue
-            box_a, center_a = boxes[sp_a.id]
-
-            for j in range(i + 1, len(sp_list)):
-                sp_b = sp_list[j]
-                if sp_b.id not in boxes:
-                    continue
-                box_b, center_b = boxes[sp_b.id]
-
-                dist = math.dist(center_a, center_b)
-                box_clash = box_a.intersects(box_b)
-
-                if dist < min_label_distance_m or box_clash:
-                    if box_clash:
-                        reason = f"colliding label bounding boxes (distance {dist:.2f} m)"
-                    else:
-                        reason = (
-                            f"colliding label centers "
-                            f"(distance {dist:.2f} m < {min_label_distance_m:.2f} m)"
-                        )
-                    findings.append(
-                        DefectFinding(
-                            defect_type=DEFECT_OVERLAPPING_LABELS,
-                            element_ids=[sp_a.id, sp_b.id],
-                            description=f"Spaces '{sp_a.id}' and '{sp_b.id}' have {reason}.",
-                            suggested_op=RevisionOp(
-                                op_type=RevisionVerb.SEPARATE, target=f"{sp_a.id},{sp_b.id}"
-                            ),
-                        )
-                    )
 
     return findings
 
@@ -348,7 +244,6 @@ def scan_all_model_defects(model: HouseModel) -> list[DefectFinding]:
     """Run all defect detectors on a HouseModel."""
     return [
         *detect_windows_on_retaining_walls(model),
-        *detect_overlapping_space_labels(model),
         *detect_stair_arrival_defects(model),
         *detect_door_into_wall_clash(model),
         *detect_stair_through_slab(model),

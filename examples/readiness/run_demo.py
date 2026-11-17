@@ -86,6 +86,7 @@ DEFECT_CODES = {
     "large_underfloor_void",
     "buried_habitable_face",
     "window_buried",
+    "label_collision",
 }
 
 
