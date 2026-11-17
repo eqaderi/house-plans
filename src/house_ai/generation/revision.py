@@ -19,10 +19,18 @@ from house_ai.constants.evaluations import (
     REQUEST_NOT_MET_PREFIX,
     REQUESTED_AREA_TOLERANCE_M2,
 )
+from house_ai.constants.placement2d import LEVEL_ENTRY
 from house_ai.constants.strategies import STRATEGY_LABELS
+from house_ai.domain.integrity import circulation_graph
 from house_ai.domain.model import HouseModel
 from house_ai.domain.plan import PlanVersion
-from house_ai.domain.program import SpaceProgram, SpaceRelationshipKind, Strength
+from house_ai.domain.program import (
+    SpaceProgram,
+    SpaceRelationshipKind,
+    Strength,
+    level_preference_met,
+)
+from house_ai.domain.relations import is_relation_satisfied, shared_wall_length
 from house_ai.domain.revision_ops import RevisionOp, RevisionOpError, RevisionVerb
 
 from .frame import to_dm
@@ -217,7 +225,9 @@ def compile_revision(
 def request_unmet(op: RevisionOp, model: HouseModel, program: SpaceProgram) -> str | None:
     """Why ``model`` does not meet the area, level or separation request ``op``.
 
-    None when it is met, or for a kind of request this check does not cover.
+    None when it is met, or for a kind of request this check does not cover. "Separate" and the
+    level words mean what they mean to the evaluators: no door and no shared wall (ADR 0020),
+    and :func:`~house_ai.domain.program.level_preference_met`.
     """
     spaces = {s.id: s for s in model.spaces}
     verb = op.op_type
@@ -229,28 +239,38 @@ def request_unmet(op: RevisionOp, model: HouseModel, program: SpaceProgram) -> s
                 return f"{sp.id} area {sp.area_m2:.1f} m² < requested {target:g} m²"
     elif verb is V.LEVEL:
         pref = str(op.value)
-        entry = next((lv for lv in model.levels if lv.id == "lv-entry"), None)
-        entry_elev = entry.elevation_m if entry else 0.0
+        entry = next((lv for lv in model.levels if lv.id == LEVEL_ENTRY), None)
         for sid in resolve_spaces(op.target, program):
             sp = spaces.get(sid)
             if sp is None:
                 continue
-            elev = model.level(sp.level_id).elevation_m
-            if (
-                (pref == "lower" and elev >= entry_elev)
-                or (pref == "upper" and elev <= entry_elev)
-                or (pref == "entry" and elev != entry_elev)
-            ):
-                return f"{sp.id} is on {sp.level_id}, not the {pref} level"
+            met = level_preference_met(
+                pref,
+                model.level(sp.level_id).elevation_m,
+                entry.elevation_m if entry else None,
+                len(model.levels),
+            )
+            if met is False:
+                return f"{sp.id} is on {sp.level_id}; the request is level={pref}"
     elif verb is V.SEPARATE:
         a, b = op.names
-        sids_a = set(resolve_spaces(a, program))
-        sids_b = set(resolve_spaces(b, program))
-        for opn in model.openings:
-            if opn.connects and len(opn.connects) == 2:
-                c0, c1 = opn.connects
-                if (c0 in sids_a and c1 in sids_b) or (c0 in sids_b and c1 in sids_a):
-                    return f"door {opn.id} connects the rooms to keep apart"
+        graph = circulation_graph(model)
+        for sa in resolve_spaces(a, program):
+            for sb in resolve_spaces(b, program):
+                if sa not in spaces or sb not in spaces or sa == sb:
+                    continue
+                met, _ = is_relation_satisfied(
+                    SpaceRelationshipKind.SEPARATED, model, graph, [sa], [sb]
+                )
+                if met is not False:
+                    continue
+                door = next(
+                    (o.id for o in model.openings if o.is_passable and set(o.connects) == {sa, sb}),
+                    None,
+                )
+                if door is not None:
+                    return f"door {door} connects {sa} and {sb}"
+                return f"{sa} and {sb} share a {shared_wall_length(model, sa, sb):.2f} m wall"
     return None
 
 
