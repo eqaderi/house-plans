@@ -238,7 +238,7 @@ the surveyed hull.
 
 ## Reviewer and visual critique records
 
-- `RevisionOpsFile` (`revision_ops.schema.json`): Structured operations (`--area`, `--separate`, `--adjacent`, `--near`, `--level`, `--rethink`, `--strategy`, `--connect`, `--orientation`, `--daylight`) and entity-linked comments exported from the 2D reviewer UI or authored by agents, replayed via `house-ai plan revise-from-file`.
+- `RevisionOpsFile` (`revision_ops.schema.json`): Revision operations (`op_type` is a `RevisionVerb`: `area`, `level`, `separate`, `adjacent`, `near`, `connect`, `outdoor`, `stair`, `proposal`, `rethink`, `strategy`), each checked against the one verb table `REVISION_VERBS` in `domain/revision_ops.py` ([ADR 0030](adr/0030-revision-operation-module.md)), and entity-linked comments exported from the 2D reviewer UI or authored by agents, replayed via `house-ai plan revise-from-file`.
 - `VisualCritiqueFile` (`visual_critique.schema.json`): Agent visual review records. Contains `VisualClaim` observations with element IDs grounded in a specific plan version, screenshot hash, claim text, epistemic status `ai_judgment`, severity, and suggested revision operations.
 
 

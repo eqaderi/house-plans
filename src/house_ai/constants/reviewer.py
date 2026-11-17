@@ -11,37 +11,6 @@ REVISION_OPS_FILENAME: str = "revision_ops.json"
 ATTR_DATA_ID: str = "data-id"
 ATTR_DATA_KIND: str = "data-kind"
 
-# Supported structured revision operation types
-OP_AREA: str = "area"
-OP_SEPARATE: str = "separate"
-OP_CONNECT: str = "connect"
-OP_ADJACENT: str = "adjacent"
-OP_NEAR: str = "near"
-OP_LEVEL: str = "level"
-OP_RETHINK: str = "rethink"
-OP_STRATEGY: str = "strategy"
-OP_ORIENTATION: str = "orientation"
-OP_DAYLIGHT: str = "daylight"
-OP_STAIR: str = "stair"
-OP_OUTDOOR: str = "outdoor"
-OP_PROPOSAL: str = "proposal"
-
-SUPPORTED_REVISION_OPS: tuple[str, ...] = (
-    OP_AREA,
-    OP_SEPARATE,
-    OP_CONNECT,
-    OP_ADJACENT,
-    OP_NEAR,
-    OP_LEVEL,
-    OP_RETHINK,
-    OP_STRATEGY,
-    OP_ORIENTATION,
-    OP_DAYLIGHT,
-    OP_STAIR,
-    OP_OUTDOOR,
-    OP_PROPOSAL,
-)
-
 # Epistemic status values
 STATUS_MEASURED: str = "measured"
 STATUS_INFERRED: str = "inferred"

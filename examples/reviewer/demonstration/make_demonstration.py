@@ -87,13 +87,9 @@ def generate_demonstration_artifacts() -> None:
                     f"Window win-buried-001 is hosted on retaining wall {retaining_wall_id} "
                     "which directly abuts earthwork cut, preventing daylight access and egress."
                 ),
-                suggested_ops=[
-                    RevisionOp(
-                        op_type="connect",
-                        target="win-buried-001",
-                        value=exterior_wall_id,
-                    )
-                ],
+                # Let the study move so its window leaves the buried wall: an operation
+                # `plan revise` can run (ADR 0030).
+                suggested_ops=[RevisionOp(op_type="rethink", target="sp-study-1")],
             )
         ],
     )

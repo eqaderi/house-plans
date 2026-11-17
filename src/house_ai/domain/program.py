@@ -56,6 +56,35 @@ class DaylightNeed(StrEnum):
     NOT_NEEDED = "not_needed"
 
 
+#: Level words a Space may ask for, relative to the entry Level: on it ("entry", "ground"),
+#: off it ("not_entry"), above ("upper"), below ("lower"), or anywhere ("any").
+LEVEL_PREFERENCES: frozenset[str] = frozenset(
+    {"entry", "ground", "not_entry", "upper", "lower", "any"}
+)
+
+
+def level_preference_met(
+    pref: str | None, z: float, entry: float | None, n_levels: int
+) -> bool | None:
+    """Whether a Space at elevation ``z`` meets the level word ``pref``.
+
+    ``entry`` is the entry Level's elevation. None when not checked: no entry Level, no
+    preference, ``any``, or a word outside :data:`LEVEL_PREFERENCES`. Off the entry Level
+    (``not_entry``) is met trivially in a one-level house.
+    """
+    if entry is None or pref in (None, "any"):
+        return None
+    if pref in ("entry", "ground"):
+        return abs(z - entry) < 1e-6
+    if pref == "not_entry":
+        return n_levels == 1 or abs(z - entry) > 1e-6
+    if pref == "upper":
+        return z > entry + 1e-6
+    if pref == "lower":
+        return z < entry - 1e-6
+    return None
+
+
 class SpaceRequirement(StrictModel):
     """A kind of space the Owner needs, with a quantity and a size (GLOSSARY.md)."""
 

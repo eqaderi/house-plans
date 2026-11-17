@@ -36,6 +36,7 @@ from house_ai.domain.program import (
     SpaceFunction,
     SpaceRelationshipKind,
     Strength,
+    level_preference_met,
 )
 from house_ai.domain.relations import hops_between, is_relation_satisfied
 from house_ai.domain.site import PointGeometry, PolygonGeometry, PolylineGeometry, SiteFeatureKind
@@ -374,7 +375,7 @@ class ProgramEvaluator:
                     )
                 if item.function in (S.STAIR, S.LIFT):
                     continue
-                ok = _level_ok(
+                ok = level_preference_met(
                     item.level_preference,
                     model.level(sp.level_id).elevation_m,
                     entry.elevation_m if entry else None,
@@ -427,20 +428,6 @@ class ProgramEvaluator:
                 [],
             )
         return out.result()
-
-
-def _level_ok(pref: str | None, z: float, entry: float | None, n_levels: int) -> bool | None:
-    if entry is None or pref in (None, "any"):
-        return None
-    if pref in ("entry", "ground"):
-        return abs(z - entry) < 1e-6
-    if pref == "not_entry":
-        return n_levels == 1 or abs(z - entry) > 1e-6
-    if pref == "upper":
-        return z > entry + 1e-6
-    if pref == "lower":
-        return z < entry - 1e-6
-    return None
 
 
 def _step_free(model: HouseModel, target: str) -> bool:
