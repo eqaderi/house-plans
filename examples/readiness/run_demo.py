@@ -34,6 +34,7 @@ from pathlib import Path
 
 import yaml
 
+from house_ai.cli.human import renderer
 from house_ai.domain.plan import PlanVersion
 from house_ai.domain.program import Strength
 from house_ai.domain.proposal import ConceptProposal
@@ -190,7 +191,7 @@ def run(out: Path, strategies: list[str] | None = None, with_proposal: bool = Tr
             lambda: wf.approve(Gate.SITE, site_ref, AGENT, "agent tries"), ApprovalRequiresHuman
         ),
     }
-    blockers = SiteService(store).assess(site_ref, AGENT).blockers
+    blockers = [b.message for b in SiteService(store).assess(site_ref, AGENT).blockers]
     wf.approve(Gate.SITE, site_ref, OWNER, "synthetic owner approves the synthetic site")
 
     # 2. Agent-operated interview.
@@ -238,9 +239,9 @@ def run(out: Path, strategies: list[str] | None = None, with_proposal: bool = Tr
     }
 
     # 3. Program and program gate.
-    build, reasons = svc.review_program(AGENT)
-    if reasons:
-        raise DemoError(f"program review has open reasons: {reasons}")
+    build, program_gate = svc.review_program(AGENT)
+    if program_gate.blockers:
+        raise DemoError(f"program review has open reasons: {program_gate.open_reasons}")
     refusals["agent_approves_program"] = _refused(
         lambda: wf.approve(Gate.PROGRAM, build.program_ref, AGENT, "agent tries"),
         ApprovalRequiresHuman,
@@ -369,7 +370,7 @@ def run(out: Path, strategies: list[str] | None = None, with_proposal: bool = Tr
 
     # 8. Plan gate: review request, refusal for an agent, synthetic approval, frozen plan.
     if visual is not None:
-        ref, event = plans.request_review(VISUAL_OPTION, AGENT)
+        ref, plan_gate = plans.request_review(VISUAL_OPTION, AGENT)
         refusals["agent_approves_plan"] = _refused(
             lambda: wf.approve(Gate.PLAN, ref, AGENT, "agent tries"), ApprovalRequiresHuman
         )
@@ -388,12 +389,14 @@ def run(out: Path, strategies: list[str] | None = None, with_proposal: bool = Tr
                 PlanWorkflowError,
             )
         rec["plan_gate"] = {"requested": ref.model_dump(mode="json"),
-                            "open_reasons": event.payload["open_reasons"],
-                            "attention": event.payload.get("attention", [])}  # fmt: skip
+                            "open_reasons": plan_gate.open_reasons,
+                            "blockers": [b.model_dump(mode="json") for b in plan_gate.blockers],
+                            "attention": plan_gate.attention}  # fmt: skip
     rec["refusals"] = refusals
 
     # 9. Reviewer bundle and provenance.
-    bundle = export_reviewer_bundle(store, out / "bundle", plan_options_dir=concepts)
+    bundle = export_reviewer_bundle(store, out / "bundle", render=renderer(store.project_id),
+                                    plan_options_dir=concepts)  # fmt: skip
     status = wf.status()
     rec["bundle"] = {"path": str(bundle.relative_to(out)), "bytes": bundle.stat().st_size}
     rec["provenance"] = {

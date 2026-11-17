@@ -198,6 +198,12 @@ A point in the workflow that only an Approver can pass, approving one pinned
 version: site, program, plan or model.
 _Avoid_: Checkpoint, milestone
 
+**Gate status** (وضعیت نقطه تصویب):
+Where a gate stands for one pinned version now: whether the project is in the
+gate's review state, its Blockers, what the Approver should see that does not
+block, whether an existing approval is stale, and the next human action.
+_Avoid_: Gate check, gate report
+
 ## Development process
 
 **Stage**:

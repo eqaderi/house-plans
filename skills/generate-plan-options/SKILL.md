@@ -85,6 +85,9 @@ Guide the agent through generating solver-backed, geometrically checked plan opt
   ```bash
   .venv/bin/house-ai workflow approve <project> plan --id <option-id> --version <v> --approver <name>
   ```
+  Give the owner the exact command the CLI printed on its `next:` line, or
+  `next_human_command` from `project status --json`: it is rendered in one place,
+  pins the version and names the human (ADR 0029).
 
 ## Failure handling
 - **Infeasible strategy**: quote the solver's reason from `comparison.md` (e.g. not enough envelope depth for a courtyard). Never hide infeasibility.

@@ -89,6 +89,52 @@ class Approval(StrictModel):
         return self
 
 
+class BlockerKind(StrEnum):
+    """What sort of thing keeps a gate closed (ADR 0029)."""
+
+    #: The project is not in the gate's review state.
+    WORKFLOW_STATE = "workflow_state"
+    #: The pinned artifact is the wrong kind or is not in the store.
+    ARTIFACT = "artifact"
+    #: A gate upstream has no valid approval; ``code`` names that gate.
+    UPSTREAM_GATE = "upstream_gate"
+    #: A site fact a human has not confirmed (units, CRS, datum, boundary, frame).
+    SITE_FACT = "site_fact"
+    #: A blocking site Issue still open; ``code`` is the Issue id.
+    SITE_ISSUE = "site_issue"
+    #: A blocking Open question; ``code`` is its id.
+    OPEN_QUESTION = "open_question"
+    #: An unresolved Contradiction in the brief; ``code`` is its id.
+    CONTRADICTION = "contradiction"
+    #: A blocking program check; ``code`` is the check's finding code.
+    PROGRAM_CHECK = "program_check"
+    #: The artifact is not built on the approved upstream version.
+    PINNED_INPUT = "pinned_input"
+    #: An integrity error in the house model; ``code`` is the finding code.
+    INTEGRITY = "integrity"
+    #: A hard Violation in an Evaluation; ``code`` is the violation code.
+    HARD_VIOLATION = "hard_violation"
+    #: Unbuildable or unwalkable as drawn, whatever its strength (ADR 0024).
+    UNBUILDABLE = "unbuildable"
+
+
+class Blocker(StrictModel):
+    """One reason a gate cannot be approved for a pinned artifact version now (ADR 0029).
+
+    ``message`` is the sentence a person reads; it is also the ``open_reasons``
+    string saved in the approval-requested event. Agents act on ``kind`` and
+    ``code``.
+    """
+
+    kind: BlockerKind
+    #: A stable machine code, or the id of the record the Blocker is (an Open
+    #: question, a Contradiction, an Issue, a gate).
+    code: str = Field(min_length=1)
+    #: Ids of what the Blocker is about (Space requirements, facts, elements).
+    subject_ids: list[str] = Field(default_factory=list)
+    message: str = Field(min_length=1)
+
+
 class EventType(StrEnum):
     PROJECT_CREATED = "project_created"
     SOURCE_ADDED = "source_added"

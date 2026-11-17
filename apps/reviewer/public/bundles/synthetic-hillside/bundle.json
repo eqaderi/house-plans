@@ -326,7 +326,7 @@
   "comparison_markdown": "# Plan options compared\n\nEach column is one plan option; values are individual metrics, not a combined score. Status in brackets when not measured exactly.\n\n| Metric |  |\n|---|\n| Strategy |  |\n| Hard violations |  |\n| Soft violations |  |\n\nThese are design explorations. None is reviewed, engineered or checked against a building code; see docs/PROFESSIONAL_HANDOFF.md.\n",
   "gates": {
     "model": {
-      "approve_command": "house-ai workflow approve synthetic-hillside model --id <model-id> --approver <your-name>",
+      "approve_command": "house-ai workflow approve synthetic-hillside model --id <model-id> --version <version> --approver <your-name>",
       "approved": false,
       "approved_at": "2026-10-17T12:00:00Z",
       "approved_by": null,
@@ -344,7 +344,7 @@
       "name": "Plan Gate"
     },
     "program": {
-      "approve_command": "house-ai workflow approve synthetic-hillside program --id program --approver <your-name>",
+      "approve_command": "house-ai workflow approve synthetic-hillside program --id program --version 1 --approver <your-name>",
       "approved": true,
       "approved_at": "2026-10-17T12:00:00Z",
       "approved_by": "example-owner",
@@ -358,7 +358,7 @@
       "name": "Program Gate"
     },
     "site": {
-      "approve_command": "house-ai workflow approve synthetic-hillside site --id site --approver <your-name>",
+      "approve_command": "house-ai workflow approve synthetic-hillside site --id site --version 1 --approver <your-name>",
       "approved": true,
       "approved_at": "2026-10-17T12:00:00Z",
       "approved_by": "example-owner",
@@ -368,7 +368,7 @@
         "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
         "version": 1
       },
-      "confirm_command": "house-ai site confirm synthetic-hillside --epsg <epsg-code> --vertical-datum <datum> --confirmer <your-name>",
+      "confirm_command": "house-ai site confirm synthetic-hillside --id site --epsg <epsg-code> --vertical-datum <datum> --confirmer <your-name>",
       "description": "Requires human confirmation of horizontal/vertical CRS and human approval.",
       "name": "Site Gate"
     }

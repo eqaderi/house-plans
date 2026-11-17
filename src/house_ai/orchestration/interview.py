@@ -36,8 +36,8 @@ from house_ai.domain.provenance import (
     Provenance,
     refuse_non_human,
 )
-from house_ai.domain.site import Site, site_verification_blockers
-from house_ai.domain.workflow import Gate, WorkflowState
+from house_ai.domain.site import Site, site_blockers
+from house_ai.domain.workflow import Blocker, EventType, Gate, WorkflowState
 from house_ai.interview import parsing
 from house_ai.interview.brief_builder import build_brief, describe
 from house_ai.interview.questions import (
@@ -73,7 +73,14 @@ from house_ai.storage import ProjectStore, StoreError
 from .interview_llm import LlmAssist
 from .site_context import latest_site_context
 from .statements import owner_statements
-from .workflow import TransitionNotAllowed, Workflow, WorkflowError
+from .workflow import (
+    GateStatus,
+    HumanAction,
+    NextHumanAction,
+    TransitionNotAllowed,
+    Workflow,
+    WorkflowError,
+)
 
 SESSION_ID = "interview"
 BRIEF_ID = "brief"
@@ -305,12 +312,12 @@ class InterviewService:
     def site(self) -> SiteContext | None:
         return latest_site_context(self.store, self.workflow.status().approvals.get(Gate.SITE))
 
-    def site_blockers(self) -> list[str]:
+    def site_blockers(self) -> list[Blocker]:
         site_ctx = self.site()
         if site_ctx is None or site_ctx.site_ref is None:
             return []
         site_obj = self.store.get(site_ctx.site_ref, Site)
-        return site_verification_blockers(site_obj)
+        return site_blockers(site_obj)
 
     def pending(self) -> Prompt | None:
         s = self.session()
@@ -437,7 +444,8 @@ class InterviewService:
                 "relief_m": site.relief_m if site else None,
                 "mean_slope_pct": site.mean_slope_pct if site else None,
                 "frontage_m": site.frontage_m if site else None,
-                "verification_blockers": blockers,
+                "verification_blockers": [b.message for b in blockers],
+                "blockers": [b.model_dump(mode="json") for b in blockers],
                 "steep_hillside": is_steep,
                 "hillside_considerations": list(STEEP_HILLSIDE_CONSIDERATIONS) if is_steep else [],
             },
@@ -534,8 +542,8 @@ class InterviewService:
     def _check_open(self) -> None:
         if Gate.PROGRAM in self.workflow.status().approvals:
             raise InterviewLocked(
-                "the program gate is approved; the owner must reopen it "
-                "(`house-ai workflow reopen <dir> program`) before answers can change"
+                "the program gate is approved; the owner must reopen it before answers can change",
+                next_action=NextHumanAction(HumanAction.REOPEN, Gate.PROGRAM),
             )
 
     def _write(
@@ -980,7 +988,7 @@ class InterviewService:
         findings = validate_program(result.program, brief, site)
         return ProgramBuild(result, p_ref, a_ref, q_ref, findings)
 
-    def review_program(self, actor: Actor) -> tuple[ProgramBuild, list[str]]:
+    def review_program(self, actor: Actor) -> tuple[ProgramBuild, GateStatus]:
         """Build the program, move to PROGRAM_REVIEW and ask the owner to review it.
 
         From SITE_APPROVED this module makes its own move to INTERVIEWING first
@@ -1004,8 +1012,7 @@ class InterviewService:
                                      "program review: the interview stage begins")  # fmt: skip
         self.workflow.transition(WorkflowState.PROGRAM_REVIEW, actor,
                                  "space program ready for the owner's review")  # fmt: skip
-        event = self.workflow.request_approval(Gate.PROGRAM, build.program_ref, actor)
-        return build, list(event.payload["open_reasons"])
+        return build, self.workflow.request_approval(Gate.PROGRAM, build.program_ref, actor)
 
     def reject_program(self, actor: Actor, text: str) -> ArtifactRef:
         """The owner rejects the program at review; their words are kept verbatim."""
@@ -1018,6 +1025,13 @@ class InterviewService:
             raise ValueError("say what is wrong with the program")
         session = self._append({"kind": TurnKind.PROGRAM_REJECTION, "text": text.strip()}, actor)
         _, b_ref = self._write(session, actor, "owner rejected the space program")
-        self.workflow.transition(WorkflowState.INTERVIEWING, actor,
-                                 f"owner rejected the program: {text.strip()}")  # fmt: skip
+        # The program-reject operation is the only move out of PROGRAM_REVIEW; the
+        # generic transition refuses it for every actor (ADR 0029).
+        self.store.append_event(
+            EventType.TRANSITION,
+            actor,
+            from_state=WorkflowState.PROGRAM_REVIEW,
+            to_state=WorkflowState.INTERVIEWING,
+            reason=f"owner rejected the program: {text.strip()}",
+        )
         return b_ref
