@@ -49,6 +49,7 @@ from house_ai.evaluation.explain import (
 )
 from house_ai.evaluation.findings import FindingsChange, compare_findings
 from house_ai.evaluation.report import evaluate_plan, report_id
+from house_ai.generation.engines import optimised_objectives
 from house_ai.generation.generator import (
     Candidate,
     CpSatPlanGenerator,
@@ -546,7 +547,7 @@ class PlanService:
             )
         except RevisionOpError as exc:
             raise PlanWorkflowError(str(exc)) from exc
-        strategy, solver_opts = request.strategy, request.options
+        strategy, asked = request.strategy, request.requests
 
         loaded_proposal = proposal
         proposal_ref: ArtifactRef | None = None
@@ -592,8 +593,8 @@ class PlanService:
                 op.op_type is V.STRATEGY for op in ops
             ):
                 strategy = loaded_proposal.target_strategy
-            if loaded_proposal.stair_cores and not solver_opts.stair_position:
-                solver_opts.stair_position = loaded_proposal.stair_cores[0].position
+            if loaded_proposal.stair_cores and not asked.stair_position:
+                asked.stair_position = loaded_proposal.stair_cores[0].position
             if loaded_proposal.outdoor_links:
                 for ol in loaded_proposal.outdoor_links:
                     try:
@@ -601,7 +602,7 @@ class PlanService:
                     except RevisionOpError as exc:
                         raise PlanWorkflowError(str(exc)) from exc
                     for sid in sids:
-                        solver_opts.outdoor_links.append((sid, ol.kind))
+                        asked.outdoor_links.append((sid, ol.kind))
 
         constraints, _, _ = self._constraints(inp, actor)
         existing_refs = self.store.refs(ArtifactKind.PLAN, option_id)
@@ -624,7 +625,7 @@ class PlanService:
             strategies=[strategy],
             seed=base.generation.seed if seed is None and base.generation else (seed or 0),
             deterministic_time=base.generation.deterministic_time_limit if base.generation else 4.0,
-            solver=solver_opts,
+            requests=asked,
             parent=base_ref,
             change_request=cr,
             revision_ops=[str(op) for op in request.operations],
@@ -821,7 +822,13 @@ class PlanService:
                 constraints = getattr(inp, "constraints", None)
             (folder / "explanation.md").write_text(
                 explanation_markdown(
-                    plan, version, report, program, banner=banner, constraints=constraints
+                    plan,
+                    version,
+                    report,
+                    program,
+                    banner=banner,
+                    constraints=constraints,
+                    optimised=optimised_objectives(plan.generation) if plan.generation else None,
                 ),
                 encoding="utf-8",
             )

@@ -33,9 +33,8 @@ from house_ai.domain.program import (
 from house_ai.domain.relations import is_relation_satisfied, shared_wall_length
 from house_ai.domain.revision_ops import RevisionOp, RevisionOpError, RevisionVerb
 
-from .frame import to_dm
+from .engines import OwnerRequests
 from .rooms import Relation, expand_program, space_id_for
-from .solver import SolverOptions
 
 V = RevisionVerb
 
@@ -55,7 +54,8 @@ class RevisionRequest:
     """What the solver is asked for one revision."""
 
     strategy: str
-    options: SolverOptions
+    #: What the operations ask of whichever engine lays the Plan version out.
+    requests: OwnerRequests
     #: The operations this Plan version carries: inherited and new, overrides applied.
     operations: list[RevisionOp] = field(default_factory=list)
     #: Every operation the parent Plan version recorded, parsed once.
@@ -178,7 +178,8 @@ def compile_revision(
     """Turn ``ops`` (and, when ``inherit``, the parent's lasting operations) into solver input.
 
     ``inherit`` is true for a modification or combination of ``base``; then Spaces that are not
-    rethought keep their positions in the parent when the strategy stays the same.
+    rethought keep their positions in the parent when the strategy stays the same. The engine
+    that reads positions recovers them from the parent's generation record (ADR 0032).
     """
     parent_ops = [
         RevisionOp.parse(text)
@@ -190,7 +191,7 @@ def compile_revision(
     rooms = expand_program(program)
     spaces = {r.space_id for r in rooms.rooms}
     strategy = base.strategy or ""
-    opts = SolverOptions()
+    asked = OwnerRequests()
     rethink: set[str] = set()
     for op in operations:
         verb = op.op_type
@@ -203,15 +204,15 @@ def compile_revision(
                         f"{target:g} m² is below the approved program minimum for {item.id} "
                         f"({item.min_area_m2:g} m²); revise the program instead"
                     )
-                opts.targets[sid] = target
+                asked.targets[sid] = target
         elif verb is V.LEVEL:
             for sid in resolve_spaces(op.target, program):
-                opts.level_prefs[sid] = str(op.value)
+                asked.level_prefs[sid] = str(op.value)
         elif verb in RELATION_KINDS:
             a, b = op.names
             for sa in resolve_spaces(a, program):
                 for sb in resolve_spaces(b, program):
-                    opts.relations.append(
+                    asked.relations.append(
                         Relation(
                             sa,
                             sb,
@@ -222,12 +223,10 @@ def compile_revision(
                         )
                     )
         elif verb is V.STAIR:
-            opts.stair_position = op.target
-            opts.force_2d = True
+            asked.stair_position = op.target
         elif verb is V.OUTDOOR:
             for sid in resolve_spaces(op.target, program):
-                opts.outdoor_links.append((sid, op.outdoor_kind))
-            opts.force_2d = True
+                asked.outdoor_links.append((sid, op.outdoor_kind))
         elif verb is V.RETHINK:
             if op.target == "all":
                 rethink |= spaces
@@ -243,13 +242,9 @@ def compile_revision(
             "--strategy to choose one"
         )
     if inherit and base.generation is not None and strategy == base.strategy:
-        for p in base.generation.placements:
-            if p.space_id in spaces and p.space_id not in rethink:
-                opts.hints[p.space_id] = (p.row_id, to_dm(p.start_m))
-        for key, value in base.generation.parameters.items():
-            if key.endswith("_start_m") and isinstance(value, int | float) and not rethink:
-                opts.bar_hints[key.removesuffix("_start_m")] = to_dm(float(value))
-    return RevisionRequest(strategy, opts, operations, parent_ops)
+        asked.positions_from = base.generation
+        asked.rethink = rethink
+    return RevisionRequest(strategy, asked, operations, parent_ops)
 
 
 def request_unmet(op: RevisionOp, model: HouseModel, program: SpaceProgram) -> str | None:
