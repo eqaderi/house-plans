@@ -11,14 +11,23 @@ from pathlib import Path
 
 import pytest
 
+from house_ai.constraints.compiler import compile_constraints
 from house_ai.domain.plan import PlanVersion, RoomPlacement
 from house_ai.domain.program import SpaceProgram
 from house_ai.domain.proposal import ConceptProposal
-from house_ai.domain.provenance import ArtifactKind, ArtifactRef
+from house_ai.domain.provenance import Actor, ActorKind, ArtifactKind, ArtifactRef
 from house_ai.domain.site import Site
-from house_ai.generation.engines import EngineContext, EngineKind, Layout, NoLayout
+from house_ai.evaluation.explain import soft_objectives_report
+from house_ai.generation.engines import (
+    BarEngine,
+    EngineContext,
+    EngineKind,
+    Layout,
+    NoLayout,
+    OwnerRequests,
+    optimised_objectives,
+)
 from house_ai.generation.generator import CpSatPlanGenerator, GenerationRequest
-from house_ai.generation.solver import SolverOptions
 from house_ai.storage.hashing import load_document
 
 WHEN = datetime(2026, 10, 17, 12, 0, tzinfo=UTC)
@@ -96,7 +105,7 @@ def test_a_strategy_is_routed_to_one_engine(strategy, extra, engine) -> None:
         kw["proposal"] = _proposal()
     opts = {k: v for k, v in extra.items() if k != "proposal"}
     if opts:
-        kw["solver"] = SolverOptions(**opts)
+        kw["requests"] = OwnerRequests(**opts)
     engines = _stubs()
     [cand] = CpSatPlanGenerator(engines=engines).candidates(_request(**kw))
     assert cand.status == "infeasible"
@@ -199,3 +208,55 @@ def test_every_strategy_is_infeasible_when_the_site_has_no_design_frame() -> Non
     )
     assert [c.status for c in cands] == ["infeasible", "infeasible"]
     assert engines[EngineKind.BAR].calls == engines[EngineKind.TWO_D].calls == []
+
+
+def _record(**update):
+    plan = PlanVersion.model_validate_json(LINEAR.read_text())
+    return plan.generation.model_copy(update=update)
+
+
+def test_the_bar_engine_recovers_position_hints_from_its_own_parent_record() -> None:
+    _, program = _inputs()
+    parent = _record(
+        placements=[
+            RoomPlacement(space_id="sp-kitchen", bar_id="b0", row_id="b0-front", start_m=2.4),
+            RoomPlacement(space_id="sp-living", bar_id="b0", row_id="b0-back", start_m=0.0),
+            RoomPlacement(space_id="sp-attic", bar_id="b0", row_id="b0-back", start_m=5.0),
+        ],
+        parameters={"strategy": "linear", "b0_start_m": 6.1, "b0_length_m": 9.2},
+    )
+    engine = BarEngine()
+    hints, bar_hints = engine.position_hints(OwnerRequests(positions_from=parent), program)
+    # Spaces the program no longer has are dropped; positions are in decimetres.
+    assert hints == {"sp-kitchen": ("b0-front", 24), "sp-living": ("b0-back", 0)}
+    assert bar_hints == {"b0": 61}
+    # A rethought Space moves freely, and then no bar keeps its start.
+    rethink = OwnerRequests(positions_from=parent, rethink={"sp-kitchen"})
+    assert engine.position_hints(rethink, program) == ({"sp-living": ("b0-back", 0)}, {})
+    assert engine.position_hints(OwnerRequests(), program) == ({}, {})
+
+
+def test_the_explanation_reports_the_objectives_the_engine_optimised() -> None:
+    site, program = _inputs()
+    cs = compile_constraints(
+        program, site, created_at=WHEN, actor=Actor(kind=ActorKind.SYSTEM, id="test")
+    ).constraints
+    placed = _record(
+        parameters={"strategy": "open_plan", "engine": "2d_nooverlap",
+                    "optimised_objectives": "adjacency_quality,site_response"}
+    )
+    assert optimised_objectives(placed) == {"adjacency_quality", "site_response"}
+    statuses = {name: status for name, status, _, _ in soft_objectives_report(
+        cs, optimised_objectives(placed))}
+    assert statuses == {
+        "adjacency_quality": "optimised",
+        "circulation_efficiency": "not_optimised",
+        "daylight_opportunity": "not_optimised",
+        "envelope_simplicity": "not_optimised",
+        "privacy": "not_optimised",
+        "site_response": "optimised",
+    }
+    # The bar engine records no list: the documented bar-solver objectives apply.
+    bar = _record()
+    assert optimised_objectives(bar) is None
+    assert {status for _, status, _, _ in soft_objectives_report(cs, None)} == {"optimised"}

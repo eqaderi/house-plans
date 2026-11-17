@@ -37,10 +37,18 @@ from house_ai.domain.provenance import Actor, ActorKind, ArtifactRef, Provenance
 from house_ai.domain.records import Assumption
 from house_ai.domain.site import Site
 
-from .engines import BarEngine, Engine, EngineContext, EngineKind, Layout, NoLayout, TwoDEngine
+from .engines import (
+    BarEngine,
+    Engine,
+    EngineContext,
+    EngineKind,
+    Layout,
+    NoLayout,
+    OwnerRequests,
+    TwoDEngine,
+)
 from .frame import FrameError, Ground, design_frame, limit_polygon
 from .massing import STRATEGY_LABELS, STRATEGY_ORDER
-from .solver import SolverOptions
 
 GENERATOR = "house-ai-cpsat-bars"
 GENERATOR_VERSION = "0.2.0"
@@ -88,7 +96,8 @@ class GenerationRequest:
     strategies: list[str] | None = None
     seed: int = 0
     deterministic_time: float = 4.0
-    solver: SolverOptions | None = None
+    #: What the Owner asked of this layout (a revision); empty for a first generation.
+    requests: OwnerRequests | None = None
     inputs: list[ArtifactRef] = field(default_factory=list)
     #: For revisions: the parent version, the change request and the agent's ops.
     parent: ArtifactRef | None = None
@@ -138,11 +147,11 @@ def route(strategy: str, req: GenerationRequest) -> EngineKind:
     The 2D engine takes its own strategies, every topology proposal, and any request for a
     stair position or an outdoor link, which only it can place; the bar engine takes the rest.
     """
-    opts = req.solver
+    asked = req.requests
     if (
         strategy in TWO_D_STRATEGIES
         or req.proposal is not None
-        or (opts is not None and (opts.stair_position or opts.outdoor_links))
+        or (asked is not None and (asked.stair_position or asked.outdoor_links))
     ):
         return EngineKind.TWO_D
     return EngineKind.BAR
@@ -174,22 +183,16 @@ class CpSatPlanGenerator:
                 Candidate(s, req.option_id or option_id_for(s, proposal_id), "infeasible", str(exc))
                 for s in (req.strategies or STRATEGY_ORDER)
             ]
-        opts = req.solver or SolverOptions()
-        opts.min_areas = hard_areas
-        opts.min_widths = hard_widths
-        opts.seed = req.seed
-        opts.deterministic_time = req.deterministic_time
-        opts.objective_weights = {**objective_weights(req.constraints), **opts.objective_weights}
-        if req.proposal and req.proposal.level_assignments:
-            for la in req.proposal.level_assignments:
-                opts.level_prefs[la.program_item_id] = la.level_id
         ctx = EngineContext(
             site=req.site,
             program=req.program,
             frame=frame,
             limit=limit,
             ground=Ground(req.site, frame),
-            options=opts,
+            requests=req.requests or OwnerRequests(),
+            seed=req.seed,
+            deterministic_time=req.deterministic_time,
+            objective_weights=objective_weights(req.constraints),
             min_areas=hard_areas,
             min_widths=hard_widths,
             proposal=req.proposal,
