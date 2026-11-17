@@ -31,6 +31,7 @@ from house_ai.domain.brief import DesignBrief
 from house_ai.domain.build import BuildRecord, BuildTarget
 from house_ai.domain.evaluation import EvaluationReport
 from house_ai.domain.integrity import check_model, errors
+from house_ai.domain.interview import slot_fact_id
 from house_ai.domain.plan import PlanVersion
 from house_ai.domain.program import SpaceProgram, Strength
 from house_ai.domain.provenance import Actor, ArtifactKind, ArtifactRef, refuse_non_human
@@ -481,7 +482,7 @@ class Workflow:
         for q_ref in self.store.latest_of_kind(ArtifactKind.OPEN_QUESTIONS):
             for q in self.store.get(q_ref, OpenQuestionsFile).blocking_open():
                 if q.topic:
-                    asked.add(f"f-{q.topic}")
+                    asked.add(slot_fact_id(q.topic))
                 blockers.append(
                     _blocker(
                         BlockerKind.OPEN_QUESTION,

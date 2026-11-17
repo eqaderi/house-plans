@@ -12,8 +12,14 @@ from enum import StrEnum
 
 from pydantic import Field, model_validator
 
+from house_ai.constants.slopes import (
+    SLOPED_MIN_RELIEF_M,
+    STEEP_MIN_MEAN_SLOPE_PCT,
+    STEEP_MIN_RELIEF_M,
+)
+
 from .base import SCHEMA_VERSION, Id, StrictModel, UtcDatetime
-from .brief import FactValue
+from .brief import BriefFact, DesignBrief, FactValue
 from .provenance import Actor, ActorKind, ArtifactRef, Provenance
 
 #: ADR 0025: slot names saved before the glossary rename -> current slot names.
@@ -31,6 +37,20 @@ def current_question_id(question_id: str) -> str:
     """The current id of a question (or ``<question>#<slot>`` follow-up) saved by an old id."""
     base, sep, slot = question_id.partition("#")
     return RENAMED_QUESTIONS.get(base, base) + sep + (current_slot(slot) if sep else "")
+
+
+def slot_fact_id(slot: str) -> str:
+    """The id of the brief fact that holds a slot's current value and status."""
+    return f"f-{slot}"
+
+
+def slot_facts(brief: DesignBrief) -> dict[str, BriefFact]:
+    """The one reader of slot values in a Design brief: current slot name -> its fact.
+
+    The fact gives the slot's current value and status. Facts saved under an old slot
+    name (ADR 0025) are found by the current name.
+    """
+    return {current_slot(f.key): f for f in brief.facts if f.id == slot_fact_id(f.key)}
 
 
 class TurnKind(StrEnum):
@@ -119,6 +139,18 @@ class SiteContext(StrictModel):
     #: Horizontal-area-weighted TIN slope inside the parcel, without extrapolation.
     mean_slope_pct: float | None = Field(default=None, ge=0)
     frontage_m: float | None = Field(default=None, ge=0)
+
+    @property
+    def sloped(self) -> bool:
+        """The interview asks how the house meets the slope; the program needs a strategy."""
+        return (self.relief_m or 0.0) >= SLOPED_MIN_RELIEF_M
+
+    @property
+    def steep(self) -> bool:
+        """Hillside construction (agent contract §7)."""
+        return (self.relief_m or 0.0) >= STEEP_MIN_RELIEF_M or (
+            self.mean_slope_pct or 0.0
+        ) >= STEEP_MIN_MEAN_SLOPE_PCT
 
 
 class SessionStatus(StrEnum):

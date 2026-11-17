@@ -17,7 +17,7 @@ from typing import Any
 from house_ai.domain.base import EXTERIOR
 from house_ai.domain.brief import BriefFact, DesignBrief, Priority
 from house_ai.domain.epistemics import Epistemic
-from house_ai.domain.interview import SiteContext, current_slot
+from house_ai.domain.interview import SiteContext, slot_facts
 from house_ai.domain.program import (
     DaylightNeed,
     Privacy,
@@ -37,6 +37,8 @@ from house_ai.domain.records import (
     OpenQuestionsFile,
 )
 from house_ai.domain.usability import UsabilityRequirements, VehicleEnvelope
+
+from .needed_slots import needed_slots
 
 TOOL_ACTOR = Actor(kind=ActorKind.SYSTEM, id="house-ai-program")
 
@@ -103,15 +105,10 @@ def is_indoor(item: SpaceRequirement) -> bool:
 
 
 class Facts:
-    """Slot values from the brief's ``f-<slot>`` facts, any status.
-
-    Facts saved under an old slot name (ADR 0025) are found by the current name.
-    """
+    """Slot values from the brief's slot facts, any status (read by ``slot_facts``)."""
 
     def __init__(self, brief: DesignBrief) -> None:
-        self.by_key: dict[str, BriefFact] = {
-            current_slot(f.key): f for f in brief.facts if f.id == f"f-{f.key}"
-        }
+        self.by_key: dict[str, BriefFact] = slot_facts(brief)
 
     def get(self, key: str, default: Any = None) -> Any:
         f = self.by_key.get(key)
@@ -628,7 +625,7 @@ def build_program(
                 confirm_with="owner",
             )
         )
-    if site is not None and ((site.relief_m or 0.0) >= 8.0 or (site.mean_slope_pct or 0.0) >= 20.0):
+    if site is not None and site.steep:
         assumptions.append(
             Assumption(
                 id="asm-hillside-engineering",
@@ -693,36 +690,21 @@ def build_program(
     )
 
 
-#: Slot -> question to record when it is unknown, and whether it blocks the program.
-_NEEDED: dict[str, tuple[str, bool]] = {
-    "adults": ("How many adults will live in the house?", True),
-    "bedrooms": ("How many bedrooms do you want?", True),
-    "bathrooms": ("How many bathrooms do you want?", True),
-    "storeys": ("How many storeys should the house have?", False),
-    "budget": ("What is the building budget?", False),
-    "target_area": ("Is there a total floor area in mind?", False),
-    "slope_strategy": ("How should the house meet the slope?", False),
-}
-
-
 def _open_questions(
     f: Facts, open_prompts: int, site: SiteContext | None
 ) -> list[OpenQuestion]:
     out = []
-    sloped = site is not None and (site.relief_m or 0.0) >= 2.0
-    for slot, (question, blocking) in _NEEDED.items():
-        if slot == "slope_strategy" and not sloped:
-            continue
-        fact = f.by_key.get(slot)
+    for n in needed_slots(site):
+        fact = f.by_key.get(n.slot)
         if fact is None or fact.value is None:
             out.append(
                 OpenQuestion(
-                    id=f"oq-{slot.replace('_', '-')}",
-                    question=question,
-                    topic=slot,
-                    why_it_matters="needed to size the program" if blocking
+                    id=f"oq-{n.slot.replace('_', '-')}",
+                    question=n.question,
+                    topic=n.slot,
+                    why_it_matters="needed to size the program" if n.blocks_program_gate
                     else "helps check the program against budget and site",
-                    blocking=blocking,
+                    blocking=n.blocks_program_gate,
                     answer=None,
                 )
             )  # fmt: skip

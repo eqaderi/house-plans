@@ -12,17 +12,12 @@ from dataclasses import dataclass, field
 
 from house_ai.domain.brief import DesignBrief, Priority
 from house_ai.domain.epistemics import Epistemic
-from house_ai.domain.interview import SiteContext
+from house_ai.domain.interview import SiteContext, slot_fact_id, slot_facts
 from house_ai.domain.program import SpaceFunction, SpaceProgram, SpaceRelationshipKind, Strength
 from house_ai.domain.records import Severity
 
 from .builder import is_indoor
-
-CRITICAL_SLOTS = {
-    "adults": "how many adults live in the house",
-    "bedrooms": "how many bedrooms you want",
-    "bathrooms": "how many bathrooms you want",
-}
+from .needed_slots import needed_slots
 
 #: Plausible net area range per room (m²); outside it a size is suspicious.
 PLAUSIBLE: dict[SpaceFunction, tuple[float, float]] = {
@@ -94,15 +89,16 @@ def validate_program(
     out: list[ProgramFinding] = []
     add = out.append
     facts = {f.id: f for f in brief.facts} if brief else {}
-    by_key = {f.key: f for f in brief.facts if f.id == f"f-{f.key}"} if brief else {}
+    by_key = slot_facts(brief) if brief else {}
 
     # -- missing information and unconfirmed interpretations
     from_interview = brief is not None and brief.provenance.method == "owner_interview"
-    for slot, what in CRITICAL_SLOTS.items() if from_interview else ():
-        f = by_key.get(slot)
-        if f is None or f.value is None:
+    for n in needed_slots(site) if from_interview else ():
+        f = by_key.get(n.slot)
+        if n.blocks_program_gate and (f is None or f.value is None):
             add(ProgramFinding("missing_information", Severity.BLOCKING,
-                               f"We do not know yet {what}.", [f"f-{slot}"]))  # fmt: skip
+                               f"We do not know yet {n.unknown}.",
+                               [slot_fact_id(n.slot)]))  # fmt: skip
     cited = {fid for i in program.space_requirements for fid in i.source_fact_ids} | {
         fid for a in program.space_relationships for fid in a.source_fact_ids
     }
@@ -257,7 +253,7 @@ def validate_program(
                 [program.id],
                 ["Add a storey", "Reduce the total area", "Accept a small garden"],
             ))  # fmt: skip
-        if (site.relief_m or 0) >= 2.0 and by_key.get("slope_strategy") is None:
+        if site.sloped and by_key.get("slope_strategy") is None:
             add(ProgramFinding(
                 "levels_against_ground", Severity.INFO,
                 f"The ground falls about {site.relief_m:.1f} m{label}. How each level meets the "
@@ -266,8 +262,8 @@ def validate_program(
         slope_fact = by_key.get("slope_strategy")
         if (
             slope_fact is not None
-            and slope_fact.value in ("platform", "flat")
-            and ((site.relief_m or 0.0) >= 8.0 or (site.mean_slope_pct or 0.0) >= 20.0)
+            and slope_fact.value == "platform"
+            and site.steep
         ):
             add(ProgramFinding(
                 "steep_site_flat_pad", Severity.WARNING,

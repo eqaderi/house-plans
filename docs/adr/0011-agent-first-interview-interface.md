@@ -66,6 +66,21 @@ In the initial Milestone C implementation:
    `{option, label, updates}` (turn results used to list the option labels
    only). Keys keep their names; outputs may gain keys and lose none.
 
+   Note (spec #9, part 9): which slots the Space program needs, and which of
+   those block the program gate, is one table (`program/needed_slots.py`):
+   `adults`, `bedrooms` and `bathrooms` block; `storeys`, `budget` and
+   `target_area` are needed and do not block; `slope_strategy` is needed on a
+   sloped Site and does not block. The program build (its Open questions), the
+   program checks (`missing_information`) and the checklist's
+   `missing_required_slots` all read it, so the checklist now also lists
+   `storeys`, `budget` and `target_area` while they are unknown. A slot's value
+   and status in a Design brief are read by `domain/interview.py::slot_facts`,
+   which applies the old-name translation of ADR 0025. "Sloped" (relief of 2 m
+   or more) and "steep" (relief of 8 m or more, or a mean slope of 20 % or more)
+   are `SiteContext.sloped` / `.steep`, with the thresholds in
+   `constants/slopes.py`. The slot types stay in `interview/slot_types.py`;
+   there is no slot catalogue.
+
 ## Consequences
 
 - Claude Code, Gemini CLI, and OpenAI Codex can conduct natural, adaptive

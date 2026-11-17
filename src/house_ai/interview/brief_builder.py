@@ -25,7 +25,7 @@ from house_ai.domain.brief import (
     Money,
 )
 from house_ai.domain.epistemics import Epistemic
-from house_ai.domain.interview import InterviewSession, TurnKind, current_slot
+from house_ai.domain.interview import InterviewSession, TurnKind, current_slot, slot_fact_id
 from house_ai.domain.provenance import Actor, ActorKind, ArtifactRef, Provenance
 from house_ai.domain.records import Contradiction
 
@@ -34,10 +34,6 @@ from .rules import contradictions
 from .state import SlotState, State, answer_fact_id, fold, open_contradictions
 
 TOOL_ACTOR = Actor(kind=ActorKind.SYSTEM, id="house-ai-interview")
-
-
-def slot_fact_id(slot: str) -> str:
-    return f"f-{slot}"
 
 
 def describe(value: Any) -> str:

@@ -35,6 +35,7 @@ from house_ai.domain.constraints import (
     WithinEnvelopeRule,
 )
 from house_ai.domain.epistemics import Epistemic
+from house_ai.domain.interview import slot_facts
 from house_ai.domain.program import SpaceFunction, SpaceProgram, Strength
 from house_ai.domain.provenance import Actor, ArtifactRef, Provenance
 from house_ai.domain.site import Site
@@ -195,9 +196,9 @@ def compile_constraints(
 
     objectives: dict[SoftObjective, tuple[float, ConstraintSource, str]] = {}
     if brief is not None:
-        for fact in brief.facts:
-            obj = BRIEF_OBJECTIVES.get(fact.key)
-            if obj is None or fact.value in (None, False, [], "") or fact.id != f"f-{fact.key}":
+        for key, fact in slot_facts(brief).items():
+            obj = BRIEF_OBJECTIVES.get(key)
+            if obj is None or fact.value in (None, False, [], ""):
                 continue
             owner = fact.status in (Epistemic.PREFERENCE, Epistemic.VERIFIED_FACT)
             weight = 2.0 if owner else 1.0
@@ -206,7 +207,7 @@ def compile_constraints(
                 objectives[obj] = (
                     weight,
                     ConstraintSource(kind=K.BRIEF, ref=fact.id),
-                    f"from the brief: {fact.key} ({fact.status.value})",
+                    f"from the brief: {key} ({fact.status.value})",
                 )
     for obj in DEFAULT_OBJECTIVES:
         objectives.setdefault(obj, (1.0, system, "default objective; not stated in the brief"))
