@@ -40,7 +40,8 @@ Every claim says how it is known.
   from.
 - `SourceDocument`: an original input preserved byte-for-byte, with its
   SHA-256 and a data classification (`private` by default, `synthetic`,
-  `public`).
+  `public`). Its `stored_path` is always `source/<sha12>-<name>`; the schema
+  refuses any path that leaves `source/` (ADR 0027).
 - `CadImportProvenance` (artifact kind `cad_import`, id `cad-<source id>`):
   file name, SHA-256, detected format, drawing units and their status,
   parser and version, converter and version plus the converted file's

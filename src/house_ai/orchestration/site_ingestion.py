@@ -67,7 +67,7 @@ from house_ai.geospatial.parcel import derive_frontage
 from house_ai.geospatial.terrain import crossing_contours, terrain_from_survey
 from house_ai.storage import ProjectStore, StoreError
 
-from .workflow import ApprovalRequiresHuman
+from .workflow import require_human
 
 TOOL = "house-ai site ingestion"
 LOCAL_FRAME_ID = "lcs-site"
@@ -764,10 +764,7 @@ def confirm_site(
     The site is re-derived from the immutable source files with the confirmed
     values, so a corrected unit changes every coordinate consistently.
     """
-    if actor.kind is not ActorKind.HUMAN:
-        raise ApprovalRequiresHuman(
-            f"{actor.kind.value} {actor.id!r} cannot confirm site facts; only a human can"
-        )
+    require_human(actor, "confirm site facts")
     if conf.epsg is not None and conf.local_only:
         raise ValueError("choose either an EPSG code or local-only, not both")
     if conf.vertical_epsg is not None and conf.vertical_local:

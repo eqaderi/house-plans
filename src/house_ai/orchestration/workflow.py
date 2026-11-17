@@ -107,6 +107,19 @@ class ApprovalRequiresHuman(WorkflowError):
     pass
 
 
+def require_human(actor: Actor, what: str) -> None:
+    """Refuse ``actor`` unless it is a human: the one library check for human-only moves.
+
+    Gate approval and reopening, site confirmation, provider consent and program
+    rejection all pass through here; the CLI adds the terminal check on top
+    (``house_ai.cli.human``).
+    """
+    if actor.kind is not ActorKind.HUMAN:
+        raise ApprovalRequiresHuman(
+            f"{actor.kind.value} {actor.id!r} cannot {what}; only a human can"
+        )
+
+
 @dataclass
 class WorkflowStatus:
     state: WorkflowState
@@ -191,11 +204,7 @@ class Workflow:
         if not reason.strip():
             raise TransitionNotAllowed("a transition needs a reason")
         if current is S.PROGRAM_REVIEW and to is S.INTERVIEWING:
-            if actor.kind is not ActorKind.HUMAN:
-                raise ApprovalRequiresHuman(
-                    "leaving PROGRAM_REVIEW back to INTERVIEWING requires a human actor "
-                    "(use 'program reject')"
-                )
+            require_human(actor, "leave PROGRAM_REVIEW for INTERVIEWING (use 'program reject')")
         problems = self._transition_guard(current, to)
         if problems:
             raise TransitionNotAllowed(f"{current.value} -> {to.value}: " + "; ".join(problems))
@@ -398,11 +407,7 @@ class Workflow:
         statement: str,
         conditions: list[str] | None = None,
     ) -> Approval:
-        if approver.kind is not ActorKind.HUMAN:
-            raise ApprovalRequiresHuman(
-                f"{approver.kind.value} {approver.id!r} cannot approve the {gate.value} gate; "
-                "only a human can"
-            )
+        require_human(approver, f"approve the {gate.value} gate")
         reasons = self.check_gate(gate, ref)
         if reasons:
             raise GateBlocked(gate, reasons)
@@ -429,11 +434,7 @@ class Workflow:
 
     def reopen(self, gate: Gate, actor: Actor, reason: str) -> WorkflowEvent:
         """Go back to a gate's review state; supersede it and every later approval."""
-        if actor.kind is not ActorKind.HUMAN:
-            raise ApprovalRequiresHuman(
-                f"{actor.kind.value} {actor.id!r} cannot reopen the {gate.value} gate; "
-                "only a human can supersede a human approval"
-            )
+        require_human(actor, f"reopen the {gate.value} gate")
         status = self.status()
         if gate not in status.approvals:
             raise TransitionNotAllowed(f"the {gate.value} gate is not approved; nothing to reopen")

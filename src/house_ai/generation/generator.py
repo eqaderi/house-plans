@@ -171,32 +171,9 @@ def objective_weights(constraints: ConstraintSet | None) -> dict[str, float]:
 
 
 class CpSatPlanGenerator:
-    """:class:`~house_ai.generation.base.PlanGenerator` backed by OR-Tools CP-SAT."""
+    """Plan options from OR-Tools CP-SAT, one candidate per massing strategy (ADR 0013)."""
 
     name = GENERATOR
-
-    def generate(
-        self,
-        site: Site,
-        program: SpaceProgram,
-        constraints: ConstraintSet,
-        *,
-        strategies: list[str],
-        seed: int,
-    ) -> list[PlanVersion]:
-        from house_ai.domain.base import utc_now
-
-        req = GenerationRequest(
-            site=site,
-            program=program,
-            constraints=constraints,
-            site_ref=None,
-            program_ref=None,
-            created_at=utc_now(),
-            strategies=strategies,
-            seed=seed,
-        )
-        return [c.plan for c in self.candidates(req) if c.plan is not None]
 
     def candidates(self, req: GenerationRequest) -> list[Candidate]:
         hard_areas, hard_widths = hard_dimension_bounds(req.constraints)

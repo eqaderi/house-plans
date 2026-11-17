@@ -11,14 +11,14 @@ import yaml
 from pydantic import ValidationError
 
 from house_ai.domain.plan import PlanVersion
-from house_ai.domain.provenance import ArtifactKind, DataClassification
+from house_ai.domain.provenance import ArtifactKind, DataClassification, SourceDocument
 from house_ai.domain.site import Site
 from house_ai.domain.workflow import EventType, WorkflowEvent
 from house_ai.storage import ImmutableArtifactError, ProjectStore, StoreError, StoreIntegrityError
 from house_ai.storage.hashing import content_hash, load_document
 from house_ai.storage.importer import import_folder
 
-from .conftest import AGENT, HUMAN
+from .conftest import AGENT, EXAMPLE, HUMAN
 
 K = ArtifactKind
 
@@ -324,3 +324,37 @@ def test_verify_detects_unregistered_source_file(store):
     stray.write_text("0\nEOF\n")
     assert any("source/unregistered.dxf is not registered" in p for p in store.verify())
 
+
+
+@pytest.mark.parametrize(
+    "artifact_id", ["../escape", "a/../../escape", "/tmp/escape", "Site", "", "x" * 65]
+)
+def test_put_refuses_an_id_that_could_leave_the_artifacts_folder(store, artifact_id):
+    """The store checks the id itself, before it reads or writes anything (ADR 0027)."""
+    data = load_document(EXAMPLE / "assumptions.yaml")
+    events = (store.root / "events.jsonl").read_bytes()
+    with pytest.raises(StoreError, match="invalid artifact id"):
+        store.put(K.ASSUMPTIONS, artifact_id, data, AGENT)
+    assert (store.root / "events.jsonl").read_bytes() == events
+    assert list((store.root / "artifacts").rglob("*")) == []
+    assert not (store.root.parent / "escape").exists()
+
+
+@pytest.mark.parametrize(
+    "stored_path",
+    ["../../etc/passwd", "/etc/passwd", "source/../project.json", "source/a/b", "artifacts/x"],
+)
+def test_a_source_record_cannot_point_outside_source(stored_path):
+    doc = {
+        "id": "src-survey",
+        "original_filename": "survey.dxf",
+        "sha256": "0" * 64,
+        "size_bytes": 1,
+        "stored_path": stored_path,
+        "classification": "synthetic",
+        "imported_at": "2026-11-17T00:00:00Z",
+        "imported_by": {"kind": "human", "id": "test-owner"},
+    }
+    with pytest.raises(ValidationError, match="stored_path"):
+        SourceDocument.model_validate(doc)
+    SourceDocument.model_validate({**doc, "stored_path": "source/0123456789ab-survey.dxf"})

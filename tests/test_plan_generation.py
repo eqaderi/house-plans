@@ -16,7 +16,6 @@ from house_ai.domain.program import SpaceProgram, SpaceRelationshipKind, Strengt
 from house_ai.domain.site import Site
 from house_ai.domain.terrain import elevation_at, site_surface
 from house_ai.evaluation.explain import concept_signature, footprint_iou, zoning_difference
-from house_ai.generation.base import PlanGenerator
 from house_ai.generation.frame import design_frame
 from house_ai.generation.generator import CpSatPlanGenerator, GenerationRequest
 from house_ai.generation.massing import FLOOR_TO_FLOOR_M, HALF_STOREY_M
@@ -71,12 +70,6 @@ def test_fixture_is_synthetic_and_not_the_real_project():
     assert site.boundary.area_m2 == pytest.approx(737.5, rel=1e-2)
     text = (HILLSIDE / "site.yaml").read_text(encoding="utf-8")
     assert "my-house" not in text and "seperated" not in text
-
-
-def test_generator_meets_the_plan_generator_protocol(hillside):
-    gen: PlanGenerator = CpSatPlanGenerator()
-    plans = gen.generate(hillside[0], hillside[1], None, strategies=["linear"], seed=0)  # type: ignore[arg-type]
-    assert [p.strategy for p in plans] == ["linear"]
 
 
 def test_steep_site_gets_at_least_three_valid_structurally_different_concepts(

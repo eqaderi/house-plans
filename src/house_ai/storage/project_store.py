@@ -32,7 +32,7 @@ from typing import Any, TypeVar
 
 from pydantic import BaseModel, ValidationError
 
-from house_ai.domain.base import utc_now
+from house_ai.domain.base import ID_PATTERN, utc_now
 from house_ai.domain.provenance import (
     Actor,
     ArtifactKind,
@@ -327,8 +327,14 @@ class ProjectStore:
 
     # -------------------------------------------------------------- artifacts
 
+    def _artifact_dir(self, kind: ArtifactKind, artifact_id: str) -> Path:
+        """The folder of an artifact's versions; refuses any id that could leave artifacts/."""
+        if len(artifact_id) > 64 or re.fullmatch(ID_PATTERN, artifact_id) is None:
+            raise StoreError(f"invalid artifact id {artifact_id!r}")
+        return self.root / "artifacts" / kind.value / artifact_id
+
     def _artifact_path(self, kind: ArtifactKind, artifact_id: str, version: int) -> Path:
-        return self.root / "artifacts" / kind.value / artifact_id / f"v{version:04d}.json"
+        return self._artifact_dir(kind, artifact_id) / f"v{version:04d}.json"
 
     def refs(
         self, kind: ArtifactKind | None = None, artifact_id: str | None = None
@@ -378,6 +384,7 @@ class ProjectStore:
         reason: str | None,
     ) -> ArtifactRef:
         self._require_valid_head(self.events())
+        self._artifact_dir(kind, artifact_id)  # before anything reads or writes under it
         model_cls = ARTIFACT_MODELS[kind]
         raw = data.model_dump(mode="json") if isinstance(data, BaseModel) else data
         model = model_cls.model_validate(raw)
@@ -415,7 +422,7 @@ class ProjectStore:
         A crash between writing a version file and appending its event leaves an
         unregistered file. Skipping past it keeps the id usable; verify() reports it.
         """
-        folder = self.root / "artifacts" / kind.value / artifact_id
+        folder = self._artifact_dir(kind, artifact_id)
         numbers = [int(p.stem[1:]) for p in folder.glob("v[0-9][0-9][0-9][0-9].json")]
         return max(numbers, default=0)
 

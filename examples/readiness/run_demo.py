@@ -42,7 +42,6 @@ from house_ai.domain.site import Site
 from house_ai.domain.visual_critique import VisualCritiqueFile
 from house_ai.domain.workflow import Gate, WorkflowState
 from house_ai.evaluation.explain import detect_near_duplicates, footprint_iou, topology_distance
-from house_ai.evaluation.grounding import collect_canonical_ids
 from house_ai.orchestration.interview import InterviewService
 from house_ai.orchestration.plans import PlanService, PlanWorkflowError, StoredOption
 from house_ai.orchestration.reviewer_bundle import export_reviewer_bundle
@@ -51,6 +50,7 @@ from house_ai.render2d.rasterize import find_rasterizer, rasterize_svg_to_png
 from house_ai.storage import ProjectStore
 from house_ai.storage.hashing import load_document
 from house_ai.validation.defect_detectors import scan_all_model_defects
+from house_ai.validation.grounding import collect_canonical_ids
 
 HERE = Path(__file__).resolve().parent
 REPO = HERE.parents[1]

@@ -112,8 +112,8 @@ class SourceDocument(StrictModel):
     sha256: Sha256
     size_bytes: int = Field(ge=0)
     media_type: str | None = None
-    #: Path relative to the project root.
-    stored_path: str
+    #: Relative to the project folder, always ``source/<sha12>-<name>``: never outside it.
+    stored_path: str = Field(pattern=r"^source/[0-9a-f]{12}-[^/\\]+$")
     classification: DataClassification
     imported_at: UtcDatetime
     imported_by: Actor

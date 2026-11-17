@@ -369,19 +369,19 @@ def cmd_plan_revise_from_file(args: argparse.Namespace) -> int:
 
 
 def cmd_plan_ground(args: argparse.Namespace) -> int:
-    from house_ai.evaluation.grounding import (
+    from house_ai.storage.hashing import load_document
+    from house_ai.validation.grounding import (
         collect_canonical_ids,
         extract_entity_ids_from_text,
-        validate_critique_grounding,
+        validate_cited_ids,
     )
-    from house_ai.storage.hashing import load_document
 
     valid = collect_canonical_ids(load_document(Path(args.plan)))
     if args.program:
         valid |= collect_canonical_ids(load_document(Path(args.program)))
     text = sys.stdin.read() if args.critique == "-" else Path(args.critique).read_text("utf-8")
     cited = extract_entity_ids_from_text(text)
-    errors = validate_critique_grounding(cited, valid)
+    errors = validate_cited_ids(cited, valid)
     for err in errors:
         _out(f"UNKNOWN {err}")
     _out(f"{len(cited)} cited ID(s), {len(errors)} unknown")

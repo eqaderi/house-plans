@@ -18,10 +18,10 @@ from house_ai.cli.main import main
 from house_ai.domain.provenance import Actor, ActorKind, ArtifactKind, DataClassification
 from house_ai.domain.units import LengthUnit
 from house_ai.domain.workflow import Gate, WorkflowState
-from house_ai.evaluation.grounding import collect_canonical_ids, validate_critique_grounding
 from house_ai.orchestration.site_ingestion import SiteConfirmation, confirm_site
 from house_ai.orchestration.workflow import Workflow
 from house_ai.storage import ProjectStore
+from house_ai.validation.grounding import collect_canonical_ids, validate_cited_ids
 
 from .conftest import AGENT, HUMAN, SURVEY_DXF, SURVEY_LAYERS
 
@@ -442,12 +442,12 @@ def test_generate_plan_options_and_critique_skills_workflow(tmp_path: Path):
     valid_ids = [item.id for item in program.space_requirements[:3]]
 
     # Grounded critique with valid IDs: passes
-    grounding_errors = validate_critique_grounding(valid_ids, program)
+    grounding_errors = validate_cited_ids(valid_ids, program)
     assert grounding_errors == []
 
     # Ungrounded critique with hallucinated IDs: rejected!
     hallucinated_ids = ["pi-nonexistent-ballroom", "z-imaginary-galaxy"]
-    grounding_errors = validate_critique_grounding(hallucinated_ids, program)
+    grounding_errors = validate_cited_ids(hallucinated_ids, program)
     assert len(grounding_errors) == 2
     assert "Unknown entity ID 'pi-nonexistent-ballroom'" in grounding_errors[0]
 

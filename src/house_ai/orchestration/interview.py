@@ -55,13 +55,18 @@ from house_ai.interview.state import (
 from house_ai.interview.summary import summary_markdown
 from house_ai.program.builder import ProgramResult, build_program
 from house_ai.program.validation import ProgramFinding, validate_program
-from house_ai.providers.base import DataFlowPolicy, PrivateDataFlowError, ProviderError
+from house_ai.providers.base import (
+    DataFlowPolicy,
+    ModelProvider,
+    PrivateDataFlowError,
+    ProviderError,
+)
 from house_ai.storage import ProjectStore, StoreError
 
 from .interview_llm import LlmAssist
 from .site_context import latest_site_context
 from .statements import owner_statements
-from .workflow import ApprovalRequiresHuman, TransitionNotAllowed, Workflow, WorkflowError
+from .workflow import TransitionNotAllowed, Workflow, WorkflowError, require_human
 
 SESSION_ID = "interview"
 BRIEF_ID = "brief"
@@ -253,26 +258,29 @@ class ProgramBuild:
     findings: list[ProgramFinding]
 
 
-def _require_human(actor: Actor, what: str) -> None:
-    if actor.kind is not ActorKind.HUMAN:
-        raise ApprovalRequiresHuman(
-            f"{actor.kind.value} {actor.id!r} cannot {what}; only the owner can. An agent must "
-            "never answer, confirm or decide for the owner."
-        )
-
-
 class InterviewService:
     def __init__(
         self,
         store: ProjectStore,
         *,
-        assist: LlmAssist | None = None,
+        provider: ModelProvider | None = None,
         session_id: str = SESSION_ID,
     ) -> None:
         self.store = store
-        self.assist = assist
+        self.assist: LlmAssist | None = None
         self.session_id = session_id
         self.workflow = Workflow(store)
+        if provider is not None:
+            self.use_ai(provider)
+
+    def use_ai(self, provider: ModelProvider) -> LlmAssist:
+        """Let ``provider`` word questions and read answers, within the owner's consent.
+
+        The assist reads :meth:`policy` from the session on every request, so a
+        consent recorded later applies at once and nothing is sent without one.
+        """
+        self.assist = LlmAssist(provider, self.policy)
+        return self.assist
 
     # ----------------------------------------------------------------- read
 
@@ -474,12 +482,6 @@ class InterviewService:
         }
         return json.dumps(context, ensure_ascii=False, sort_keys=True)
 
-    def _live_assist(self) -> LlmAssist | None:
-        """The assist with the consent recorded in the session right now."""
-        if self.assist is not None:
-            self.assist.policy = self.policy()
-        return self.assist
-
     def _provider_failed(self, exc: ProviderError, what: str) -> str:
         if exc.fatal:
             self.assist = None
@@ -491,7 +493,7 @@ class InterviewService:
 
         Contradiction choices keep their exact numbered wording.
         """
-        assist = self._live_assist()
+        assist = self.assist
         if assist is None or prompt.kind == "resolve":
             return AskedQuestion(prompt.id, prompt.text)
         try:
@@ -609,7 +611,7 @@ class InterviewService:
                 for k, v in parser(text).items():
                     parsed[k] = v
                     method[k] = "parser"
-        assist = self._live_assist()
+        assist = self.assist
         if not any(s in parsed for s in slots) and assist is not None:
             try:
                 for k, v in assist.extract(prompt.text, slots, text).items():
@@ -942,7 +944,7 @@ class InterviewService:
 
     def consent(self, actor: Actor, provider: str) -> None:
         """The owner allows ``provider`` to receive interview content (private data)."""
-        _require_human(actor, "allow an AI provider to receive private data")
+        require_human(actor, "allow an AI provider to receive private data")
         session = self._append(
             {"kind": TurnKind.CONSENT, "provider": provider,
              "text": f"I allow {provider} to receive my interview answers."},
@@ -994,7 +996,7 @@ class InterviewService:
 
     def reject_program(self, actor: Actor, text: str) -> ArtifactRef:
         """The owner rejects the program at review; their words are kept verbatim."""
-        _require_human(actor, "reject the space program")
+        require_human(actor, "reject the space program")
         if self.workflow.state is not WorkflowState.PROGRAM_REVIEW:
             raise TransitionNotAllowed(
                 f"a program can be rejected in PROGRAM_REVIEW, not {self.workflow.state.value}"

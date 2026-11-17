@@ -17,7 +17,14 @@ from house_ai.domain.plan import PlanVersion
 from house_ai.domain.provenance import Actor, ArtifactKind, ArtifactRef, Provenance
 from house_ai.domain.revision_ops import RevisionOp
 from house_ai.domain.visual_critique import VisualClaim, VisualCritiqueFile
-from house_ai.validation.grounding import GroundingError, validate_critique_grounding
+from house_ai.validation.grounding import (
+    CANONICAL_PLAN_TARGETS,
+    GroundingError,
+    collect_canonical_ids,
+    collect_plan_element_ids,
+    validate_cited_ids,
+    validate_critique_grounding,
+)
 
 
 @pytest.fixture
@@ -210,3 +217,40 @@ def test_measurable_claim_with_eval_metric_is_accepted(sample_plan):
 
     report = validate_critique_grounding(critique, sample_plan, evaluation=eval_rep)
     assert report.is_grounded is True
+
+
+def _one_claim(element_ids: list[str], target: str | None = None) -> VisualCritiqueFile:
+    ops = [RevisionOp(op_type="rethink", target=target)] if target else []
+    return VisualCritiqueFile(
+        project="synthetic-bungalow",
+        option="concept-compact",
+        plan_version=1,
+        author="agent:reviewer",
+        screenshot_hash="c" * 64,
+        claims=[
+            VisualClaim(
+                id="vc-01", element_ids=element_ids, claim_text="Feels cramped", suggested_ops=ops
+            )
+        ],
+    )
+
+
+def test_visual_and_written_critiques_share_one_set_of_ids(sample_plan):
+    """A space's program item, zone and level references are citable in both kinds (ADR 0027)."""
+    space = sample_plan.model.spaces[1].model_copy(
+        update={"program_item_id": "pi-kitchen", "zone_id": "z-day"}
+    )
+    model = sample_plan.model.model_copy(update={"spaces": [sample_plan.model.spaces[0], space]})
+    plan = sample_plan.model_copy(update={"model": model})
+    assert collect_plan_element_ids(plan) == CANONICAL_PLAN_TARGETS | collect_canonical_ids(plan)
+    report = validate_critique_grounding(_one_claim(["pi-kitchen", "z-day", "lvl-ground"]), plan)
+    assert report.is_grounded, report.findings
+    assert validate_cited_ids(["pi-kitchen", "z-day", "lvl-ground"], plan) == []
+
+
+def test_a_revision_op_may_not_target_a_zone_the_plan_lacks(sample_plan):
+    """Zone targets used to pass on their ``z-`` prefix alone."""
+    report = validate_critique_grounding(_one_claim(["sp-kitchen"], "z-imaginary"), sample_plan)
+    assert [(f.element_id, f.issue) for f in report.findings] == [
+        ("z-imaginary", "Suggested revision op 'rethink' targets nonexistent element 'z-imaginary'")
+    ]

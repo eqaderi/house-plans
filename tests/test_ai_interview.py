@@ -10,11 +10,9 @@ import pytest
 
 from house_ai.domain.interview import TurnKind
 from house_ai.orchestration.interview import UNCONFIRMED_SITE_LABEL, InterviewService
-from house_ai.orchestration.interview_llm import LlmAssist
 from house_ai.orchestration.statements import record_owner_statement
 from house_ai.providers.base import (
     Attachment,
-    DataFlowPolicy,
     ProviderError,
     ProviderRequest,
     ProviderResponse,
@@ -135,7 +133,7 @@ def test_the_ai_words_the_question_and_the_shown_wording_is_kept(unverified):
     svc = unverified
     svc.consent(HUMAN, "scripted")
     provider = ScriptedProvider(["On your sloping 1400 m² plot: who will live in the house?"])
-    svc.assist = LlmAssist(provider, DataFlowPolicy())  # policy refreshed from the session
+    svc.use_ai(provider)
     prompt = svc.pending()
     asked = svc.ask(prompt)
     assert asked.text.startswith("On your sloping") and asked.model == "scripted-1"
@@ -156,8 +154,8 @@ def test_every_ai_wording_is_labelled_while_the_site_is_unconfirmed(new_store, v
     svc = InterviewService(_project(new_store, approve_site=verified))
     svc.start(AGENT)
     svc.consent(HUMAN, "scripted")
-    svc.assist = LlmAssist(ScriptedProvider(["Who will share the hillside home with you?"]),
-                           DataFlowPolicy())  # no digit, no obvious site word  # fmt: skip
+    # no digit, no obvious site word
+    svc.use_ai(ScriptedProvider(["Who will share the hillside home with you?"]))
     asked = svc.ask(svc.pending())
     assert asked.text == "Who will share the hillside home with you?"
     assert asked.notes == ([] if verified else [UNCONFIRMED_SITE_LABEL])
@@ -165,7 +163,7 @@ def test_every_ai_wording_is_labelled_while_the_site_is_unconfirmed(new_store, v
 
 def test_without_consent_nothing_is_sent_and_the_planned_question_is_shown(unverified):
     provider = ScriptedProvider(["should never be used"])
-    unverified.assist = LlmAssist(provider, DataFlowPolicy())
+    unverified.use_ai(provider)
     prompt = unverified.pending()
     asked = unverified.ask(prompt)
     assert asked.text == prompt.text and asked.provider is None
@@ -188,7 +186,7 @@ class FailingProvider:
 def test_a_provider_error_falls_back_to_the_built_in_interview(unverified, kind, stays_on):
     svc = unverified
     svc.consent(HUMAN, "scripted")
-    svc.assist = LlmAssist(FailingProvider(kind), DataFlowPolicy())
+    svc.use_ai(FailingProvider(kind))
     prompt = svc.pending()
     asked = svc.ask(prompt)
     assert asked.text == prompt.text and f"{kind} happened" in asked.notes[0]
@@ -201,8 +199,8 @@ def test_a_provider_error_falls_back_to_the_built_in_interview(unverified, kind,
 def test_an_unreadable_answer_is_read_by_the_ai_and_recorded_with_its_model(svc_verified):
     svc = svc_verified
     svc.consent(HUMAN, "scripted")
-    svc.assist = LlmAssist(ScriptedProvider(['{"values": [{"slot": "adults", "value": 2}]}'],
-                                            model="scripted-2"), DataFlowPolicy())  # fmt: skip
+    svc.use_ai(ScriptedProvider(['{"values": [{"slot": "adults", "value": 2}]}'],
+                                model="scripted-2"))  # fmt: skip
     result = svc.answer("Just us, the happy pair.", HUMAN)  # the parser cannot read this
     assert [(u.slot, u.value, u.method) for u in result.understood if u.slot == "adults"] == [
         ("adults", 2, "llm:scripted")
@@ -219,7 +217,7 @@ def test_contradiction_choices_are_never_reworded(svc_verified):
     for answer in ("Me and my wife.", "Two bedrooms.", "One bathroom, with an en-suite.",
                    "One level, a bungalow. We need a lift for later."):  # fmt: skip
         svc.answer(answer, HUMAN)
-    svc.assist = LlmAssist(provider, DataFlowPolicy())
+    svc.use_ai(provider)
     prompt = svc.pending()
     assert prompt.kind == "resolve"
     asked = svc.ask(prompt)
