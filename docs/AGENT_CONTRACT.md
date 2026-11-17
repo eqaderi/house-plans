@@ -25,8 +25,8 @@ is strictly optional.
 
 Authorities: [MASTER_SPEC.md](MASTER_SPEC.md) (wins every conflict),
 [ARCHITECTURE.md](ARCHITECTURE.md), [DOMAIN_MODEL.md](DOMAIN_MODEL.md),
-[adr/](adr/), [milestones/](milestones/) (history). Roadmap, stage status and
-the stage protocol: [PROJECT_TRACKER.md](PROJECT_TRACKER.md).
+[adr/](adr/), [milestones/](milestones/) (history). Roadmap, stages:
+[PROJECT_TRACKER.md](PROJECT_TRACKER.md). Terms: [GLOSSARY.md](../GLOSSARY.md).
 
 ## 2. Repository architecture
 

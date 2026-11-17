@@ -118,7 +118,7 @@ to reopen A–D):
 |---|---|
 | **Current stage** | none (all 10 software stages S1–S10 complete; readiness gate met) |
 | **Awaiting review** | none |
-| **Next eligible stage** | H1 Real site verification (human parallel track), H2 Real interview and program (human parallel track), or X1 Optional tool research |
+| **Next eligible stage** | S11 Align code vocabulary with the glossary; H1 Real site verification (human parallel track), H2 Real interview and program (human parallel track), or X1 Optional tool research |
 | **Path to good floor plans** | S1 (done) → S2 (done) → S3 (done) → S4 (done) → S5 (done) → S6 (done) → S7 (done) → S8 (done) → S10 (done) → S9 (done; 10 stages complete) |
 | **Blocked** | H1 site facts (owner or surveyor input); program gate (needs site gate); H3 real design (needs H1 and H2) |
 | **Human parallel tracks** | H1 site verification with the owner any time; H2 interview any time (S1-09 closed) |
@@ -151,6 +151,7 @@ until done, then goes to review once.
 | 8 | S8 Hillside geometry | S3, S7 |
 | 9 | S10 Readiness remediation (DEC-11) | S4, S5, S6, S7, S8 |
 | 10 | S9 Floor-plan readiness gate | S2, S5, S6, S7, S8, S10 |
+| 11 | S11 Align code vocabulary with the glossary (DEC-14) | S9 |
 | — | X1 Optional tool research | T0.1 |
 | — | H1 Real site verification (human) | none |
 | — | H2 Real interview and program (human) | S1-09, H1 |
@@ -182,6 +183,7 @@ stages A–D and T0.1 keep their IDs.
 |---|---|
 | A–D, T0.1 | Done: milestones A–D and this tracker |
 | S1–S10 | Software path to the floor-plan readiness gate (S10 added by DEC-11) |
+| S11 | Code vocabulary aligned with GLOSSARY.md (DEC-14) |
 | X1 | Optional tool research, any time, not on the critical path |
 | H1–H3 | Real house: site, interview and program, design (needs the homeowner) |
 | F, G | Blender, IFC, Unreal (deferred) |
@@ -1677,6 +1679,40 @@ claimed without a recorded professional verification.
   - Evidence: recorded in §I on 2026-10-19: owner confirmed `"I confirm acknoledgement of all"` across the five listed limitations in §H / §I
   - Notes: human action completed; verified; closed with merge `d8a38b1`
 
+### Stage S11 — Align code vocabulary with the glossary
+
+| Field | Value |
+|---|---|
+| Kind | implementation |
+| Status | NOT_STARTED |
+| Review | NOT_REQUESTED |
+| Branch | `stage/S11-glossary-vocabulary` |
+| Depends on | S9 |
+| Tasks | S11-01, S11-02, S11-03 |
+| Objective | Make code, CLI text and docs use the GLOSSARY.md terms, following ADR 0025 (DEC-14) |
+| Scope | In: every row of the ADR 0025 mapping table; validation aliases for saved names; CLI help and agent skills text. Out: rewriting any stored artifact or event (`projects/my-house/` stays byte-identical) |
+| Acceptance | Every ADR 0025 row is renamed or marked kept with a reason; records written before the stage still load and `project verify my-house` stays intact; new records use the glossary names |
+| Tests | Full suite; a test loading pre-rename fixtures of each renamed saved name; `house-ai schemas check` |
+| Demonstration | Old and new space program and plan records loaded side by side |
+| Artifacts | Updated ADR 0025 table, schemas, `DOMAIN_MODEL.md`, skills |
+| Review requirements | Reviewer confirms no stored record changed (`git diff main -- projects/` empty) and spot-checks the aliases |
+| Evidence | — |
+
+#### Renames
+
+- [ ] **S11-01** Rename saved names with validation aliases (ADR 0025 rows marked saved) — `NOT_STARTED` · P2 · deps: none
+  - Accept: new records use new names; old records load unchanged and keep their hashes
+  - Verify: alias tests; `project verify my-house`
+  - Evidence: pending
+- [ ] **S11-02** Record the owner's floor count as storeys (`SpaceProgram.levels`), levels derived from the plan — `NOT_STARTED` · P2 · deps: S11-01
+  - Accept: interview and program builder ask and store a storey count; the plan derives the level count
+  - Verify: program builder test on a split-level fixture
+  - Evidence: pending
+- [ ] **S11-03** Rename unsaved identifiers, CLI text, docs and skills to the glossary terms — `NOT_STARTED` · P2 · deps: none
+  - Accept: no avoided term from GLOSSARY.md remains in CLI help or skills, except in quoted history
+  - Verify: grep of the _Avoid_ lists over `src/house_ai/cli` and `skills/`
+  - Evidence: pending
+
 ### Stage X1 — Optional tool research
 
 | Field | Value |
@@ -2448,6 +2484,7 @@ changed), **decision** (owner must choose), **risk**.
 | DEC-11 | Option A for the six S9 FAILs: "a new fix-up stage for ISS-29 to ISS-35, with its own review. Then I re-run the S9 assessment and demonstration." | Homeowner, 2026-10-19 ("a", in reply to options A, B, C) | Stage S10 (ISS-25, ISS-29 to ISS-35); ISS-28 was not in option A and stays with S9 |
 | DEC-12 | Garages: option (c) of ISS-36, "a separate road-level garage volume or carport" instead of a garage row inside the house bars; garages sized for the program's cars with the vehicle template's clearances unchanged | Homeowner, 2026-10-19 ("the answer is c", in reply to options a, b, c) | Task S10-19; ISS-36 |
 | DEC-13 | ISS-37: support L-shaped or opposite-wall fixture arrangements; retain approved program areas and existing fixture clearances | Homeowner, 2026-10-19 ("(c) Support L-shaped or opposite-wall fixture arrangements.") | S10-08, S10-09; ISS-37 |
+| DEC-14 | GLOSSARY.md is the project vocabulary; code is renamed to match, but records already saved keep their old names (no rewrite); new records use new names and readers accept both; the owner's floor count is a storey count | Homeowner, 2026-11-17 ("You don't need to rewrite the history ... use the table that you said to map them") | ADR 0025; Stage S11 |
 
 Existing ADRs (all in force): 0001 canonical semantic model · 0002 Pydantic
 schemas and JSON Schema export · 0003 file-based store and event log · 0004
@@ -2456,7 +2493,7 @@ ingestion pipeline · 0007 site review corrections · 0008 owner interview and
 space program · 0009 personal-first project folders · 0010 Claude adapter
 for the interview · 0011 agent-first interview interface · 0012 site metric
 scope · 0013 solver-backed plan generation · 0014 project tracker and stage
-lifecycle · 0015 agent skills canonical location and discovery · 0016 event-head anchor integrity · 0017 synthetic benchmark contract · 0018 reviewer architecture · 0019 canonical placements and derived usability studies · 0020 relation semantics between solver and evaluator · 0021 2D placement formulation · 0022 hillside geometry and level decisions · 0023 stairs between split levels · 0024 unbuildable findings at the plan gate.
+lifecycle · 0015 agent skills canonical location and discovery · 0016 event-head anchor integrity · 0017 synthetic benchmark contract · 0018 reviewer architecture · 0019 canonical placements and derived usability studies · 0020 relation semantics between solver and evaluator · 0021 2D placement formulation · 0022 hillside geometry and level decisions · 0023 stairs between split levels · 0024 unbuildable findings at the plan gate · 0025 glossary vocabulary and code renames.
 
 ## M. Recently completed
 
