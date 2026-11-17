@@ -251,6 +251,26 @@ def test_cli_run_with_ai_asks_consent_and_shows_the_ai_wording(new_store, monkey
     assert answer.question_text == "Who will call this house home?"
 
 
+@pytest.mark.parametrize("typed", ["", "allow", "allow anthropic", "ALLOW SCRIPTED"])
+def test_cli_run_without_the_exact_phrase_continues_without_ai(
+    new_store, monkeypatch, capsys, typed
+):
+    from house_ai.cli import main as cli
+
+    store = _project(new_store)
+    provider = ScriptedProvider(["Who will call this house home?"])
+    monkeypatch.setattr(cli, "_ai_provider", lambda name, model: provider)
+    replies = iter([typed, ":quit"])
+    monkeypatch.setattr("sys.stdin.isatty", lambda: True)
+    monkeypatch.setattr("builtins.input", lambda *_: next(replies))
+    assert cli.main(["interview", "run", str(store.root), "--owner", "example-owner",
+                     "--ai", "anthropic"]) == 0  # fmt: skip
+    out = capsys.readouterr().out
+    assert "(Continuing without AI.)" in out and "AI assistant:" not in out
+    turns = InterviewService(store).session().turns
+    assert [t for t in turns if t.kind is TurnKind.CONSENT] == [] and provider.requests == []
+
+
 def test_cli_run_without_credentials_continues_without_ai(new_store, monkeypatch, capsys):
     from house_ai.cli import main as cli
 

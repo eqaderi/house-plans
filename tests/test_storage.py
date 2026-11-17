@@ -329,10 +329,13 @@ def test_verify_detects_unregistered_source_file(store):
 @pytest.mark.parametrize(
     "artifact_id", ["../escape", "a/../../escape", "/tmp/escape", "Site", "", "x" * 65]
 )
-def test_put_refuses_an_id_that_could_leave_the_artifacts_folder(store, artifact_id):
+def test_put_refuses_an_id_that_could_leave_the_artifacts_folder(
+    store, artifact_id, monkeypatch
+):
     """The store checks the id itself, before it reads or writes anything (ADR 0027)."""
     data = load_document(EXAMPLE / "assumptions.yaml")
     events = (store.root / "events.jsonl").read_bytes()
+    monkeypatch.setattr(store, "events", lambda: pytest.fail("read the event log"))
     with pytest.raises(StoreError, match="invalid artifact id"):
         store.put(K.ASSUMPTIONS, artifact_id, data, AGENT)
     assert (store.root / "events.jsonl").read_bytes() == events

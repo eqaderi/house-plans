@@ -236,7 +236,7 @@ def _one_claim(element_ids: list[str], target: str | None = None) -> VisualCriti
 
 
 def test_visual_and_written_critiques_share_one_set_of_ids(sample_plan):
-    """A space's program item, zone and level references are citable in both kinds (ADR 0027)."""
+    """A space's space requirement, zone and level are citable in both kinds (ADR 0027)."""
     space = sample_plan.model.spaces[1].model_copy(
         update={"program_item_id": "pi-kitchen", "zone_id": "z-day"}
     )

@@ -31,7 +31,7 @@ from house_ai.storage import ProjectStore
 from house_ai.storage.hashing import load_document
 from house_ai.storage.projects import resolve_project_dir
 
-EXIT_OK, EXIT_FAIL, EXIT_USAGE = 0, 1, 2
+from .exit_codes import EXIT_FAIL, EXIT_OK, EXIT_USAGE
 
 
 def _out(text: str = "") -> None:

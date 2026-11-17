@@ -30,9 +30,9 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, TypeVar
 
-from pydantic import BaseModel, ValidationError
+from pydantic import BaseModel, TypeAdapter, ValidationError
 
-from house_ai.domain.base import ID_PATTERN, utc_now
+from house_ai.domain.base import Id, utc_now
 from house_ai.domain.provenance import (
     Actor,
     ArtifactKind,
@@ -50,6 +50,8 @@ M = TypeVar("M", bound=BaseModel)
 
 READ_ONLY = stat.S_IRUSR | stat.S_IRGRP | stat.S_IROTH
 HEAD_ANCHOR_REQUIRED = "head_anchor_required"
+#: An artifact id becomes a folder name, so it must be a valid ``Id`` (no ``/`` or ``..``).
+_ARTIFACT_ID = TypeAdapter(Id)
 
 
 class StoreError(Exception):
@@ -329,8 +331,10 @@ class ProjectStore:
 
     def _artifact_dir(self, kind: ArtifactKind, artifact_id: str) -> Path:
         """The folder of an artifact's versions; refuses any id that could leave artifacts/."""
-        if len(artifact_id) > 64 or re.fullmatch(ID_PATTERN, artifact_id) is None:
-            raise StoreError(f"invalid artifact id {artifact_id!r}")
+        try:
+            _ARTIFACT_ID.validate_python(artifact_id)
+        except ValidationError:
+            raise StoreError(f"invalid artifact id {artifact_id!r}") from None
         return self.root / "artifacts" / kind.value / artifact_id
 
     def _artifact_path(self, kind: ArtifactKind, artifact_id: str, version: int) -> Path:
@@ -371,6 +375,7 @@ class ProjectStore:
         reason: str | None = None,
     ) -> ArtifactRef:
         """Validate and store a new immutable version of an artifact."""
+        self._artifact_dir(kind, artifact_id)  # before anything is read or written
         with self._locked():
             return self._put_unlocked(kind, artifact_id, data, actor, reason=reason)
 
@@ -384,7 +389,6 @@ class ProjectStore:
         reason: str | None,
     ) -> ArtifactRef:
         self._require_valid_head(self.events())
-        self._artifact_dir(kind, artifact_id)  # before anything reads or writes under it
         model_cls = ARTIFACT_MODELS[kind]
         raw = data.model_dump(mode="json") if isinstance(data, BaseModel) else data
         model = model_cls.model_validate(raw)

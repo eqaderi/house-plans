@@ -7,12 +7,11 @@ from pydantic import ValidationError
 
 from house_ai.domain.build import BuildRecord
 from house_ai.domain.evaluation import EvaluationReport
-from house_ai.domain.provenance import ArtifactKind, ArtifactRef
+from house_ai.domain.provenance import ApprovalRequiresHuman, ArtifactKind, ArtifactRef
 from house_ai.domain.workflow import Approval, EventType, Gate, WorkflowState
 from house_ai.orchestration.workflow import (
     GATES,
     TRANSITIONS,
-    ApprovalRequiresHuman,
     GateBlocked,
     TransitionNotAllowed,
     Workflow,

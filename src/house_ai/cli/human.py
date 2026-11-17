@@ -10,7 +10,7 @@ something, :func:`require_phrase`.
 This stops an agent driving a non-interactive shell from crossing a gate by
 accident. It is not a security boundary against a determined local process;
 the library refuses non-human actors as well
-(:func:`house_ai.orchestration.workflow.require_human`).
+(:func:`house_ai.domain.provenance.refuse_non_human`).
 """
 
 from __future__ import annotations
@@ -21,10 +21,9 @@ from typing import Protocol
 
 from pydantic import ValidationError
 
-from house_ai.domain.provenance import Actor, ActorKind
+from house_ai.domain.provenance import Actor, ActorKind, ApprovalRequiresHuman, refuse_non_human
 
-#: Exit codes, as in ``house_ai.cli.main``.
-EXIT_FAIL, EXIT_USAGE = 1, 2
+from .exit_codes import EXIT_FAIL, EXIT_USAGE
 
 
 class Terminal(Protocol):
@@ -93,10 +92,10 @@ def require_human(action: HumanOnly, who: Actor | str, terminal: Terminal | None
             "themselves."
         )
     if isinstance(who, Actor):
-        if who.kind is not ActorKind.HUMAN:
-            raise HumanCheckFailed(
-                f"{who.kind.value} {who.id!r} cannot {action.deed}; only a human can."
-            )
+        try:
+            refuse_non_human(who, action.deed)
+        except ApprovalRequiresHuman as exc:
+            raise HumanCheckFailed(f"{exc}.") from exc
         return who
     try:
         return Actor(kind=ActorKind.HUMAN, id=who)

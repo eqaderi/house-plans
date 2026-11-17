@@ -22,6 +22,7 @@ from pydantic import ValidationError
 from house_ai.cad.dwg_oda import DwgConversionError
 from house_ai.cad.layers import load_layer_mapping
 from house_ai.cli import human, plan_cmds, reviewer_cmds
+from house_ai.cli.exit_codes import EXIT_FAIL, EXIT_OK, EXIT_USAGE
 from house_ai.domain.integrity import FindingSeverity, check_model
 from house_ai.domain.model import HouseModel
 from house_ai.domain.plan import PlanVersion
@@ -29,6 +30,7 @@ from house_ai.domain.program import SpaceProgram
 from house_ai.domain.provenance import (
     Actor,
     ActorKind,
+    ApprovalRequiresHuman,
     ArtifactKind,
     ArtifactRef,
     DataClassification,
@@ -47,7 +49,6 @@ from house_ai.orchestration.statements import owner_statements, record_owner_sta
 from house_ai.orchestration.survey_inspection import inspect_files, inspection_markdown
 from house_ai.orchestration.workflow import (
     GATES,
-    ApprovalRequiresHuman,
     Workflow,
     WorkflowError,
 )
@@ -62,7 +63,6 @@ from house_ai.storage.importer import import_folder
 from house_ai.storage.projects import create_project, list_projects, resolve_project_dir
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
-EXIT_OK, EXIT_FAIL, EXIT_USAGE = 0, 1, 2
 
 
 def _out(text: str = "") -> None:
@@ -411,7 +411,7 @@ def cmd_approve(args: argparse.Namespace) -> int:
     _out("Approval is recorded permanently in the project event log.")
     human.require_phrase(human.APPROVE, phrase)
     statement = args.statement or (
-        f"{args.approver} reviewed {ref.kind.value}/{ref.id} v{ref.version} and approves it."
+        f"{approver.id} reviewed {ref.kind.value}/{ref.id} v{ref.version} and approves it."
     )
     approval = wf.approve(gate, ref, approver, statement, conditions=args.condition)
     _out(f"approved: {approval.id}; state {wf.state.value}")
@@ -867,9 +867,13 @@ def _attach_ai(svc: InterviewService, owner: Actor, name: str, model: str | None
         _out(f"Your answers and your site's details are private. With your permission they "
              f"are sent to {provider.name} ({getattr(provider, 'model', '')}) so it can word "
              "the questions and read free answers. Nothing it says is accepted without you.")
-        phrase = f"allow {provider.name}"
-        typed = input(f'Type "{phrase}" to allow, or press Enter to continue without AI: ')
-        if typed.strip() != phrase:
+        try:
+            human.require_phrase(
+                human.CONSENT,
+                f"allow {provider.name}",
+                verb="allow, or press Enter to continue without AI",
+            )
+        except human.NotConfirmed:
             _out("(Continuing without AI.)")
             return
         svc.consent(owner, provider.name)

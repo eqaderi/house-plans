@@ -37,7 +37,13 @@ import yaml
 from house_ai.domain.plan import PlanVersion
 from house_ai.domain.program import Strength
 from house_ai.domain.proposal import ConceptProposal
-from house_ai.domain.provenance import Actor, ActorKind, ArtifactKind, DataClassification
+from house_ai.domain.provenance import (
+    Actor,
+    ActorKind,
+    ApprovalRequiresHuman,
+    ArtifactKind,
+    DataClassification,
+)
 from house_ai.domain.site import Site
 from house_ai.domain.visual_critique import VisualCritiqueFile
 from house_ai.domain.workflow import Gate, WorkflowState
@@ -45,7 +51,7 @@ from house_ai.evaluation.explain import detect_near_duplicates, footprint_iou, t
 from house_ai.orchestration.interview import InterviewService
 from house_ai.orchestration.plans import PlanService, PlanWorkflowError, StoredOption
 from house_ai.orchestration.reviewer_bundle import export_reviewer_bundle
-from house_ai.orchestration.workflow import ApprovalRequiresHuman, GateBlocked, Workflow
+from house_ai.orchestration.workflow import GateBlocked, Workflow
 from house_ai.render2d.rasterize import find_rasterizer, rasterize_svg_to_png
 from house_ai.storage import ProjectStore
 from house_ai.storage.hashing import load_document

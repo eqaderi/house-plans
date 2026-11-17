@@ -12,7 +12,7 @@ from typing import Protocol
 from house_ai.domain.coordinates import HorizontalCRS, LocalCoordinateSystem
 from house_ai.domain.epistemics import ConfirmationStatus
 from house_ai.domain.geometry import Point3
-from house_ai.domain.provenance import Actor, ActorKind
+from house_ai.domain.provenance import Actor, refuse_non_human
 from house_ai.domain.site import Contour, SpotElevation, Terrain, TerrainStatus, TinSurface
 
 from .crs import describe_epsg, require_projected_metric
@@ -33,8 +33,7 @@ def set_coordinate_reference_system(
     metre-based CRS; its official name is filled in when none is given.
     """
     if status in (ConfirmationStatus.USER_CONFIRMED, ConfirmationStatus.LOCAL_ONLY_CONFIRMED):
-        if actor.kind is not ActorKind.HUMAN:
-            raise ValueError("only a human can confirm the coordinate reference system")
+        refuse_non_human(actor, "confirm the coordinate reference system")
     if status is ConfirmationStatus.USER_CONFIRMED and epsg is not None:
         name = name or require_projected_metric(epsg).name
     elif declared_epsg is not None and name is None:

@@ -625,7 +625,7 @@ only where a tool cannot read the canonical location.
 - [x] **S2-11** critique-plan skill — `DONE` · P1 · deps: none
   - Accept: reads evaluation reports, separates measured from inferred from AI judgment, names canonical IDs, proposes explicit revise ops
   - Verify: test that a critique with an unknown ID is rejected by the grounding check (shared with S5-06 when available)
-  - Evidence: `skills/critique-plan/SKILL.md`; `src/house_ai/evaluation/grounding.py`; `house-ai plan ground` (`src/house_ai/cli/plan_cmds.py`); `tests/test_skills.py::test_grounding_extracts_only_backticked_ids`, `::test_grounding_reads_a_plan_json_and_the_references_of_its_spaces`; `tests/test_skills_workflows.py::test_generate_concepts_and_critique_skills_workflow` (unknown IDs exit 1)
+  - Evidence: `skills/critique-plan/SKILL.md`; `src/house_ai/validation/grounding.py` (was `evaluation/grounding.py` until ADR 0027); `house-ai plan ground` (`src/house_ai/cli/plan_cmds.py`); `tests/test_skills.py::test_grounding_extracts_only_backticked_ids`, `::test_grounding_reads_a_plan_json_and_the_references_of_its_spaces`; `tests/test_skills_workflows.py::test_generate_concepts_and_critique_skills_workflow` (unknown IDs exit 1)
 - [x] **S2-12** Synthetic workflow tests for both skills — `DONE` · P1 · deps: S2-10, S2-11
   - Accept: generate → critique → revise → compare runs offline on synthetic-hillside
   - Verify: `pytest -q`
@@ -3458,7 +3458,7 @@ All cited S7 file paths and test function names exist. Their existence and passi
     - `skills/architectural-programming/SKILL.md`: Adaptive multi-turn interview in English/Persian/mixed, verbatim recording of owner statements, slot inference, contradiction resolution, program building, and program gate review request.
     - `skills/generate-concepts/SKILL.md`: CP-SAT residential concept generation across 6 massing strategies, infeasibility reporting, structured plan revisions, and plan approval gate preparation.
     - `skills/critique-plan/SKILL.md`: Grounded architectural critique across geometry, circulation, privacy, and hillside metrics, separating measured facts from AI judgment, referencing canonical element IDs, and proposing structured revision operations.
-  - Grounding validator: `src/house_ai/evaluation/grounding.py` verifying critique element IDs against canonical model entities (`pi-*`, `z-*`, `level-*`).
+  - Grounding validator: `src/house_ai/evaluation/grounding.py` (merged into `src/house_ai/validation/grounding.py` by ADR 0027) verifying critique element IDs against canonical model entities (`pi-*`, `z-*`, `level-*`).
   - Unit and workflow tests:
     - `tests/test_skills.py` (11 tests): frontmatter validation, required sections, symlink integrity, drift prevention, and grounding validation.
     - `tests/test_skills_workflows.py` (3 tests): end-to-end synthetic project execution for survey review, interview programming, and concept generation/critique/revision.

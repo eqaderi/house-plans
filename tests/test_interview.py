@@ -22,8 +22,8 @@ from house_ai.domain.program import (
     SpaceRelationshipKind,
     Strength,
 )
+from house_ai.domain.provenance import ApprovalRequiresHuman, DataClassification
 from house_ai.domain.provenance import ArtifactKind as K
-from house_ai.domain.provenance import DataClassification
 from house_ai.domain.units import LengthUnit
 from house_ai.domain.workflow import Gate, WorkflowState
 from house_ai.interview import parsing
@@ -34,7 +34,6 @@ from house_ai.orchestration.interview import InterviewLocked, InterviewService
 from house_ai.orchestration.interview_llm import LlmAssist
 from house_ai.orchestration.site_ingestion import SiteConfirmation, confirm_site, ingest_site
 from house_ai.orchestration.workflow import (
-    ApprovalRequiresHuman,
     GateBlocked,
     TransitionNotAllowed,
     Workflow,
@@ -476,7 +475,7 @@ def test_llm_output_is_validated_and_stays_an_inference(svc):
 
 def test_private_data_never_reaches_a_provider_without_consent():
     provider = ScriptedProvider(['{"values": []}'])
-    assist = LlmAssist(provider, DataFlowPolicy)
+    assist = LlmAssist(provider, lambda: DataFlowPolicy())  # no consent recorded
     with pytest.raises(PrivateDataFlowError):
         assist.extract("How many bedrooms?", ["bedrooms"], "three")
     assert provider.requests == []
@@ -598,6 +597,19 @@ def test_cli_interactive_run_confirms_each_answer_and_can_stop(new_store, monkey
     rejected = [t for t in svc.session().turns if t.kind is TurnKind.REJECTION]
     assert rejected and rejected[0].slots == ["bedrooms"]
     assert "Your answers are saved" in out
+
+
+@pytest.mark.parametrize("owner", ["claude-code", "agent:gemini", "codex"])
+def test_cli_run_refuses_an_agent_looking_owner(new_store, monkeypatch, capsys, owner):
+    from house_ai.cli.main import EXIT_USAGE, main
+
+    store = _project(new_store)
+    before = len(store.events())
+    monkeypatch.setattr("sys.stdin.isatty", lambda: True)
+    monkeypatch.setattr("builtins.input", lambda *_: pytest.fail("asked a question"))
+    assert main(["interview", "run", str(store.root), "--owner", owner]) == EXIT_USAGE
+    assert "disallowed owner" in capsys.readouterr().err
+    assert len(store.events()) == before
 
 
 def test_an_empty_confirmation_confirms_nothing(svc, monkeypatch):

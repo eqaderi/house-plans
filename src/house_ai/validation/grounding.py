@@ -40,7 +40,7 @@ _ID = re.compile(
     r"(?<![A-Za-z0-9_.:/-])((?:" + "|".join(GROUNDED_ID_PREFIXES) + r")-[A-Za-z0-9_-]*[A-Za-z0-9])"
 )
 
-#: Fields on a space or program item that point at another canonical entity.
+#: Fields on a space or space requirement that point at another canonical entity.
 _REFERENCE_FIELDS = ("program_item_id", "zone_id", "level_id")
 
 
@@ -48,8 +48,8 @@ def collect_canonical_ids(context: Any) -> set[str]:
     """All entity IDs in a plan (`plan.json`), house model, space program, or ID list.
 
     A plan's model is read from its ``model`` key. Every element of every
-    top-level list that has an ``id`` counts, plus the program item, zone
-    and level each element refers to.
+    top-level list that has an ``id`` counts, plus the space requirement,
+    zone and level each element refers to.
     """
     if isinstance(context, (set, list, tuple, frozenset)):
         return {str(i) for i in context}
