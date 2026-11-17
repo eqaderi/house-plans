@@ -16,7 +16,8 @@ Pipeline (each step separate, each result traceable):
    human layer mapping;
 5. terrain (TIN), frontage and issues are derived;
 6. a ``site`` artifact is written. Unconfirmed facts block the site gate,
-   so ``workflow assess-site`` moves the project to SITE_NEEDS_CONFIRMATION.
+   so :class:`~house_ai.orchestration.site.SiteService`, which sequences these
+   steps, moves the project to SITE_NEEDS_CONFIRMATION.
 
 :func:`confirm_site` is the only way to mark units, CRS, datum or boundary
 as confirmed. It requires a human actor; the CLI additionally requires an

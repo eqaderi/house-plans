@@ -17,7 +17,6 @@ from ezdxf import recover
 from ezdxf.entities import DXFGraphic
 
 from .base import CadExtraction, CadInspection, RawPoint, RawPolyline
-from .formats import FileFormat, detect_format
 
 #: Header variables reported by inspection when present. $LATITUDE,
 #: $LONGITUDE and $NORTHDIRECTION are left out on purpose: drawing templates
@@ -58,9 +57,6 @@ class EzdxfAdapter:
     @property
     def version(self) -> str:
         return ezdxf.__version__
-
-    def can_read(self, path: Path) -> bool:
-        return detect_format(path).format in (FileFormat.DXF_ASCII, FileFormat.DXF_BINARY)
 
     def _read(self, path: Path) -> tuple[Any, list[str]]:
         try:

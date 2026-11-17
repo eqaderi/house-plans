@@ -981,9 +981,13 @@ class InterviewService:
         return ProgramBuild(result, p_ref, a_ref, q_ref, findings)
 
     def review_program(self, actor: Actor) -> tuple[ProgramBuild, list[str]]:
-        """Build the program, move to PROGRAM_REVIEW and ask the owner to review it."""
+        """Build the program, move to PROGRAM_REVIEW and ask the owner to review it.
+
+        From SITE_APPROVED this module makes its own move to INTERVIEWING first
+        (ADR 0028); before the site gate is approved the review still waits.
+        """
         state = self.workflow.state
-        if state is not WorkflowState.INTERVIEWING:
+        if state not in (WorkflowState.SITE_APPROVED, WorkflowState.INTERVIEWING):
             hint = (
                 " The site is not approved yet: the interview and the program can be built "
                 "and checked now, but review and approval wait for the site gate."
@@ -991,10 +995,13 @@ class InterviewService:
                 else ""
             )
             raise TransitionNotAllowed(
-                f"program review starts from INTERVIEWING; the project is in {state.value}."
-                + hint
+                "program review starts from SITE_APPROVED or INTERVIEWING; the project is in "
+                f"{state.value}." + hint
             )
         build = self.build_program(actor)
+        if state is WorkflowState.SITE_APPROVED:
+            self.workflow.transition(WorkflowState.INTERVIEWING, actor,
+                                     "program review: the interview stage begins")  # fmt: skip
         self.workflow.transition(WorkflowState.PROGRAM_REVIEW, actor,
                                  "space program ready for the owner's review")  # fmt: skip
         event = self.workflow.request_approval(Gate.PROGRAM, build.program_ref, actor)

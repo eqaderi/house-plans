@@ -492,51 +492,19 @@ def test_terrain_svg_shades_slope_and_labels_calculated_contours(new_store, mapp
     assert svg.count("calculated contour") >= 3
 
 
-def test_review_page_labels_how_each_value_is_known(tmp_path, capsys):
-    from house_ai.cli.main import main
+def test_review_page_labels_how_each_value_is_known(tmp_path):
+    from house_ai.orchestration.site import SiteService
+    from house_ai.storage import ProjectStore
 
     from .conftest import SURVEY_DXF
 
-    p = tmp_path / "proj"
-    actor = ["--actor", "human:example-owner"]
-    assert (
-        main(
-            [
-                "project",
-                "init",
-                str(p),
-                "--id",
-                "demo",
-                "--name",
-                "Demo <x>",
-                "--classification",
-                "synthetic",
-                *actor,
-            ]
-        )
-        == 0
-    )
-    assert (
-        main(["source", "add", str(p), str(SURVEY_DXF), "--classification", "synthetic", *actor])
-        == 0
-    )
-    assert (
-        main(
-            [
-                "site",
-                "ingest",
-                str(p),
-                "--source",
-                "src-survey",
-                "--layers",
-                str(SURVEY_LAYERS),
-                *actor,
-            ]
-        )
-        == 0
-    )
+    store = ProjectStore.init(tmp_path / "proj", project_id="demo", name="Demo <x>",
+                              classification=DataClassification.SYNTHETIC, actor=HUMAN)  # fmt: skip
+    sid = store.add_source(SURVEY_DXF, HUMAN, classification=DataClassification.SYNTHETIC).id
+    sites = SiteService(store)
+    result = sites.ingest(sid, load_layer_mapping(SURVEY_LAYERS), AGENT)
     out = tmp_path / "report"
-    assert main(["site", "report", str(p), "--id", "site", "--out", str(out)]) == 0
+    sites.write_review_package(result.site_ref, out)
     html = (out / "index.html").read_text()
     assert (out / "terrain.svg").is_file()
     for heading in (

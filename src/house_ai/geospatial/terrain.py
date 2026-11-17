@@ -201,15 +201,6 @@ def terrain_from_survey(
     return terrain, tin
 
 
-class DelaunayTerrainBuilder:
-    """:class:`house_ai.geospatial.base.TerrainBuilder` using :func:`build_tin`."""
-
-    def build_surface(
-        self, spot_elevations: list[SpotElevation], contours: list[Contour]
-    ) -> Terrain:
-        return terrain_from_survey(spot_elevations, contours)[0]
-
-
 def triangle_slope_pct(a: Point3, b: Point3, c: Point3) -> float:
     """Steepest slope of the triangle's plane, in percent."""
     ux, uy, uz = b[0] - a[0], b[1] - a[1], b[2] - a[2]

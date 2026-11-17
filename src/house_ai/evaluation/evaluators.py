@@ -38,7 +38,7 @@ from house_ai.domain.program import (
     Strength,
     level_preference_met,
 )
-from house_ai.domain.relations import hops_between, is_relation_satisfied, shared_wall_length
+from house_ai.domain.relations import hops_between, is_relation_satisfied
 from house_ai.domain.site import PointGeometry, PolygonGeometry, PolylineGeometry, SiteFeatureKind
 from house_ai.domain.terrain import elevation_at, site_surface
 
@@ -134,10 +134,6 @@ def _privacy(model: HouseModel) -> dict[str, Privacy]:
 
 def _hops(graph: dict[str, set[str]], origin: str) -> dict[str, int]:
     return hops_between(graph, origin)
-
-
-def _shared_length(model: HouseModel, a: str, b: str) -> float:
-    return shared_wall_length(model, a, b)
 
 
 def _spaces_for(model: HouseModel, item_id: str) -> list[str]:
@@ -521,11 +517,6 @@ class AdjacencyEvaluator:
         else:
             out.metric("soft_adjacency_score", None, "no_soft_requirements", NC)
         return out.result()
-
-    @staticmethod
-    def _satisfied(kind, model, graph, a_s, b_s) -> bool | None:
-        ok, _ = is_relation_satisfied(kind, model, graph, a_s, b_s)
-        return ok
 
 
 # ------------------------------------------------------------------ circulation

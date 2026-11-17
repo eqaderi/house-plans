@@ -126,13 +126,12 @@ Implement:
 
 inspect_cad()
 extract_cad()
-classify_layers()
-extract_boundary()
-extract_contours()
-extract_spot_elevations()
+LayerMapping.role_of()                (classify each layer by role)
+MappedLayerSiteExtractor.extract()    (boundary, contours, spot elevations
+                                       and features in one pass)
 build_terrain()
 set_coordinate_reference_system()
-create_local_coordinate_system()
+LocalCoordinateSystem(...)            (constructed directly)
 
 Every import must create provenance including:
 
