@@ -1,0 +1,56 @@
+{
+  "$defs": {
+    "BlockerKind": {
+      "description": "What sort of thing keeps a gate closed (ADR 0029).",
+      "enum": [
+        "workflow_state",
+        "artifact",
+        "upstream_gate",
+        "site_fact",
+        "site_issue",
+        "open_question",
+        "contradiction",
+        "program_check",
+        "pinned_input",
+        "integrity",
+        "hard_violation",
+        "unbuildable"
+      ],
+      "title": "BlockerKind",
+      "type": "string"
+    }
+  },
+  "$id": "https://house-ai.local/schemas/blocker.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "One reason a gate cannot be approved for a pinned artifact version now (ADR 0029).\n\n``message`` is the sentence a person reads; it is also the ``open_reasons``\nstring saved in the approval-requested event. Agents act on ``kind`` and\n``code``.",
+  "properties": {
+    "code": {
+      "minLength": 1,
+      "title": "Code",
+      "type": "string"
+    },
+    "kind": {
+      "$ref": "#/$defs/BlockerKind"
+    },
+    "message": {
+      "minLength": 1,
+      "title": "Message",
+      "type": "string"
+    },
+    "subject_ids": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Subject Ids",
+      "type": "array"
+    }
+  },
+  "required": [
+    "kind",
+    "code",
+    "message"
+  ],
+  "title": "Blocker",
+  "type": "object"
+}

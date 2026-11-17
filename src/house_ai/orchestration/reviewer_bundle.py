@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
@@ -20,67 +21,74 @@ from house_ai.domain.evaluation import EvaluationReport
 from house_ai.domain.plan import PlanVersion, RevisionReport
 from house_ai.domain.program import SpaceProgram
 from house_ai.domain.provenance import ArtifactKind
-from house_ai.domain.site import Site
-from house_ai.domain.workflow import Gate
+from house_ai.domain.site import Site, site_blockers
+from house_ai.domain.workflow import GATE_ARTIFACT_KIND, Gate
 from house_ai.render2d.plan_svg import render_plan_svg
 from house_ai.storage import ProjectStore
 from house_ai.storage.hashing import content_hash
 
 from .plans import EXPLORATORY_BANNER, PlanService
-from .workflow import Workflow
+from .workflow import HumanAction, NextHumanAction, Workflow
+
+#: Reviewer card text per gate; the commands come from the CLI's renderer.
+_GATE_CARDS: dict[str, dict[str, str]] = {
+    GATE_SITE: {
+        "name": "Site Gate",
+        "description": "Requires human confirmation of horizontal/vertical CRS and human approval.",
+    },
+    GATE_PROGRAM: {
+        "name": "Program Gate",
+        "description": "Requires human review of space program and architectural brief.",
+    },
+    GATE_PLAN: {
+        "name": "Plan Gate",
+        "description": "Requires human approval of a specific evaluated plan version.",
+    },
+    GATE_MODEL: {
+        "name": "Model Gate",
+        "description": "Requires human approval of 3D Blender/BIM model.",
+    },
+}
 
 
-def _format_gate_commands(project_name: str) -> dict[str, dict[str, Any]]:
-    """Format human-only CLI approval commands for each workflow gate."""
-    return {
-        GATE_SITE: {
-            "name": "Site Gate",
-            "confirm_command": (
-                f"house-ai site confirm {project_name} "
-                "--epsg <epsg-code> --vertical-datum <datum> --confirmer <your-name>"
-            ),
-            "approve_command": (
-                f"house-ai workflow approve {project_name} site --id site --approver <your-name>"
-            ),
-            "description": (
-                "Requires human confirmation of horizontal/vertical CRS and human approval."
-            ),
-        },
-        GATE_PROGRAM: {
-            "name": "Program Gate",
-            "approve_command": (
-                f"house-ai workflow approve {project_name} program "
-                "--id program --approver <your-name>"
-            ),
-            "description": "Requires human review of space program and architectural brief.",
-        },
-        GATE_PLAN: {
-            "name": "Plan Gate",
-            "approve_command": (
-                f"house-ai workflow approve {project_name} plan "
-                "--id <option-id> --version <version> --approver <your-name>"
-            ),
-            "description": "Requires human approval of a specific evaluated plan version.",
-        },
-        GATE_MODEL: {
-            "name": "Model Gate",
-            "approve_command": (
-                f"house-ai workflow approve {project_name} model "
-                "--id <model-id> --approver <your-name>"
-            ),
-            "description": "Requires human approval of 3D Blender/BIM model.",
-        },
-    }
+def gate_actions(store: ProjectStore) -> dict[Gate, dict[str, NextHumanAction]]:
+    """The human actions the reviewer shows for each gate, without command syntax (ADR 0029).
+
+    Site and program name their newest stored version; plan and model are
+    templates, since the Approver picks the option or build in the reviewer.
+    The site confirmation asks for what the newest Site's Blockers need.
+    """
+    out: dict[Gate, dict[str, NextHumanAction]] = {}
+    for gate in Gate:
+        refs = store.latest_of_kind(GATE_ARTIFACT_KIND[gate])
+        pinned = refs[-1] if refs and gate in (Gate.SITE, Gate.PROGRAM) else None
+        approve = NextHumanAction(
+            HumanAction.APPROVE,
+            gate,
+            pinned.id if pinned else None,
+            pinned.version if pinned else None,
+        )
+        out[gate] = {"approve_command": approve}
+    site_refs = store.latest_of_kind(ArtifactKind.SITE)
+    site = site_refs[-1] if site_refs else None
+    clears = tuple(site_blockers(store.get(site, Site))) if site else ()
+    out[Gate.SITE]["confirm_command"] = NextHumanAction(
+        HumanAction.CONFIRM_SITE, Gate.SITE, site.id if site else None, clears=clears
+    )
+    return out
 
 
 def build_reviewer_bundle(
     store: ProjectStore,
     *,
+    render: Callable[[NextHumanAction], str],
     plan_options_dir: Path | None = None,
     exploratory: bool = False,
 ) -> dict[str, Any]:
     """Construct a complete, read-only JSON bundle for the 2D plan option reviewer.
 
+    ``render`` turns a next human action into the command line the reviewer
+    shows; the command that builds the bundle passes the CLI's renderer.
     Never mutates the ProjectStore, appends events, or modifies artifacts.
     """
     wf = Workflow(store)
@@ -89,7 +97,7 @@ def build_reviewer_bundle(
 
     # 1. Project metadata & gate status
     approvals_summary: dict[str, Any] = {}
-    gate_commands = _format_gate_commands(project_name)
+    actions = gate_actions(store)
 
     for g in APPROVAL_GATES:
         gate_enum = Gate(g)
@@ -100,7 +108,8 @@ def build_reviewer_bundle(
             "approved_at": approval_obj.approved_at.isoformat() if approval_obj else None,
             "approved_by": approval_obj.approved_by.id if approval_obj else None,
             "artifact": approval_obj.artifact.model_dump(mode="json") if approval_obj else None,
-            **gate_commands[g],
+            **_GATE_CARDS[g],
+            **{key: render(action) for key, action in actions[gate_enum].items()},
         }
 
     # 2. Canonical Site
@@ -266,12 +275,14 @@ def export_reviewer_bundle(
     store: ProjectStore,
     out_dir: Path,
     *,
+    render: Callable[[NextHumanAction], str],
     plan_options_dir: Path | None = None,
     exploratory: bool = False,
 ) -> Path:
     """Build and write the reviewer bundle JSON to out_dir/bundle.json."""
     bundle_data = build_reviewer_bundle(
         store,
+        render=render,
         plan_options_dir=plan_options_dir,
         exploratory=exploratory,
     )

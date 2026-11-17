@@ -24,16 +24,19 @@ from house_ai.domain.plan import ChangeRequestKind
 from house_ai.domain.program import LEVEL_PREFERENCES
 from house_ai.domain.proposal import ConceptProposal
 from house_ai.domain.revision_ops import RevisionOp, RevisionOpError, RevisionOpsFile, parse_ops
+from house_ai.domain.workflow import Gate
 from house_ai.orchestration.plans import (
     GenerationOutcome,
     PlanService,
     PlanWorkflowError,
     RevisionOutcome,
 )
+from house_ai.orchestration.workflow import HumanAction, NextHumanAction
 from house_ai.storage import ProjectStore
 from house_ai.storage.hashing import load_document
 from house_ai.storage.projects import resolve_project_dir
 
+from . import human
 from .exit_codes import EXIT_FAIL, EXIT_OK, EXIT_USAGE
 
 _LEVEL_METAVAR = "SPACE=" + "|".join(sorted(LEVEL_PREFERENCES))
@@ -41,6 +44,13 @@ _LEVEL_METAVAR = "SPACE=" + "|".join(sorted(LEVEL_PREFERENCES))
 
 def _out(text: str = "") -> None:
     print(text)
+
+
+def _refused(exc: PlanWorkflowError, project: str) -> int:
+    _out(f"refused: {exc}")
+    if exc.next_action is not None:
+        _out(human.next_line(exc.next_action, project))
+    return EXIT_FAIL
 
 
 #: Export folder for plan options under ``<project>/design``. Folders written before
@@ -127,10 +137,11 @@ def _render_generation_outcome(
         _out(f"note: {n}")
     _out(f"comparison: {res.comparison}")
     if not res.exploratory:
+        approve = NextHumanAction(HumanAction.APPROVE, Gate.PLAN)
         _out(
             "state PLAN_REVIEW; show the owner the plan options, then `house-ai plan review "
-            f"{args.dir} <option>` and the owner approves with `house-ai workflow approve "
-            f"{args.dir} plan --id <option> --approver <name>`"
+            f"{args.dir} <option>`; the owner approves one version with "
+            f"`{human.command_for(approve, args.dir)}`"
         )
     return EXIT_OK
 
@@ -149,8 +160,7 @@ def cmd_plan_generate(args: argparse.Namespace) -> int:
             deterministic_time=args.time,
         )
     except PlanWorkflowError as exc:
-        _out(f"refused: {exc}")
-        return EXIT_FAIL
+        return _refused(exc, args.dir)
     return _render_generation_outcome(res, args)
 
 
@@ -250,8 +260,7 @@ def cmd_plan_revise(args: argparse.Namespace) -> int:
             feature_confirmation=getattr(args, "feature_confirmation", None),
         )
     except PlanWorkflowError as exc:
-        _out(f"refused: {exc}")
-        return EXIT_FAIL
+        return _refused(exc, args.dir)
     return _render_revision_outcome(res, args)
 
 
@@ -278,8 +287,7 @@ def cmd_plan_combine(args: argparse.Namespace) -> int:
             out_dir=out,
         )
     except PlanWorkflowError as exc:
-        _out(f"refused: {exc}")
-        return EXIT_FAIL
+        return _refused(exc, args.dir)
     return _render_revision_outcome(res, args)
 
 
@@ -345,6 +353,7 @@ def cmd_plan_export_bundle(args: argparse.Namespace) -> int:
     bundle_file = export_reviewer_bundle(
         store,
         Path(args.out),
+        render=human.renderer(store.project_id),
         plan_options_dir=plan_options_dir,
         exploratory=args.exploratory,
     )
@@ -378,8 +387,7 @@ def cmd_plan_revise_from_file(args: argparse.Namespace) -> int:
             out_dir=out,
         )
     except PlanWorkflowError as exc:
-        _out(f"refused: {exc}")
-        return EXIT_FAIL
+        return _refused(exc, args.dir)
     return _render_revision_outcome(res, args)
 
 
@@ -406,20 +414,16 @@ def cmd_plan_ground(args: argparse.Namespace) -> int:
 def cmd_plan_review(args: argparse.Namespace) -> int:
     svc = PlanService(ProjectStore(resolve_project_dir(args.dir)))
     try:
-        ref, ev = svc.request_review(args.option, args.actor, args.version)
+        ref, gate = svc.request_review(args.option, args.actor, args.version)
     except PlanWorkflowError as exc:
-        _out(f"refused: {exc}")
-        return EXIT_FAIL
-    for r in ev.payload["open_reasons"]:
+        return _refused(exc, args.dir)
+    for r in gate.open_reasons:
         _out(f"OPEN {r}")
-    for r in ev.payload.get("attention", []):
+    for r in gate.attention:
         _out(f"ATTENTION {r}")
     _out(f"plan review requested for {ref.id} v{ref.version}")
-    if not ev.payload["open_reasons"]:
-        _out(
-            f"next: the owner runs `house-ai workflow approve {args.dir} plan --id {ref.id} "
-            f"--version {ref.version} --approver <name>` in their own terminal"
-        )
+    if gate.next_action is not None:
+        _out(human.next_line(gate.next_action, args.dir))
     return EXIT_OK
 
 

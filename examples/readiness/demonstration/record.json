@@ -1037,6 +1037,7 @@
       "sha256": "de12ad4d9174cc76ffd196eef98c1a90a4b0eb6ebc107286636e6841cde1e77c"
     },
     "open_reasons": [],
+    "blockers": [],
     "attention": [
       "height_limit_exceeded (eval-concept-two-wing): Height 10.62 m exceeds envelope 10 m."
     ]

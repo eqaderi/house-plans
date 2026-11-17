@@ -99,6 +99,9 @@ Guide the agent through inspecting raw CAD survey files, ingesting survey entiti
     --boundary-verified --confirmer <name>
   .venv/bin/house-ai workflow approve <project> site --id site --version <v> --approver <name>
   ```
+  Give the owner the exact command the CLI printed on its `next:` line, or
+  `next_human_command` from `project status --json`: it is rendered in one place,
+  pins the version and names the human (ADR 0029).
   `site confirm` writes the confirmed site version and re-assesses it. If it
   prints no `BLOCKER` line, the project is back in `SITE_INGESTION` (recorded
   under the confirmer's name) and the owner approves the site gate next, with

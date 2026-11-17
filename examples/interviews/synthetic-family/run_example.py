@@ -69,8 +69,8 @@ def run(root: Path) -> dict[str, str]:
         assert prompt is not None and prompt.id == step["question"], (prompt, step)
         svc.answer(step["answer"], OWNER)
     svc.confirm(OWNER)
-    build, reasons = svc.review_program(AGENT)
-    assert reasons == [], reasons
+    build, gate = svc.review_program(AGENT)
+    assert gate.blockers == [], gate.open_reasons
 
     def dump(model) -> str:
         return yaml.safe_dump(model.model_dump(mode="json"), sort_keys=False, allow_unicode=True)

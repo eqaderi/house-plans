@@ -31,7 +31,7 @@ from .revision_ops import RevisionOpsFile
 from .site import CadImportProvenance, Site
 from .usability import FurnitureTemplate
 from .visual_critique import VisualCritiqueFile
-from .workflow import Approval, ProjectManifest, WorkflowEvent
+from .workflow import Approval, Blocker, ProjectManifest, WorkflowEvent
 
 ARTIFACT_MODELS: dict[ArtifactKind, type[BaseModel]] = {
     ArtifactKind.SOURCE_DOCUMENT: SourceDocument,
@@ -61,6 +61,7 @@ SCHEMAS: dict[str, type[BaseModel]] = {
     "scene_manifest": SceneManifest,
     "change_request": ChangeRequest,
     "approval": Approval,
+    "blocker": Blocker,
     "workflow_event": WorkflowEvent,
     "project_manifest": ProjectManifest,
     "agent_roster": AgentRoster,

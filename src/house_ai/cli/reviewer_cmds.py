@@ -14,6 +14,7 @@ from house_ai.orchestration.reviewer_bundle import export_reviewer_bundle
 from house_ai.storage import ProjectStore
 from house_ai.storage.projects import resolve_project_dir
 
+from . import human
 from .exit_codes import EXIT_FAIL, EXIT_OK
 
 
@@ -28,6 +29,7 @@ def cmd_reviewer_export(args: argparse.Namespace) -> int:
     bundle_file = export_reviewer_bundle(
         store,
         Path(args.out),
+        render=human.renderer(store.project_id),
         plan_options_dir=plan_options_dir,
         exploratory=args.exploratory,
     )
@@ -52,7 +54,10 @@ def cmd_reviewer_serve(args: argparse.Namespace) -> int:
         )
         return EXIT_FAIL
     bundle_file = export_reviewer_bundle(
-        store, dist_dir, plan_options_dir=existing_plan_options_dir(store)
+        store,
+        dist_dir,
+        render=human.renderer(store.project_id),
+        plan_options_dir=existing_plan_options_dir(store),
     )
 
     url = f"http://127.0.0.1:{port}/?bundle={bundle_file.name}"
