@@ -116,9 +116,127 @@ def test_status_checklist_and_ai_context_read_one_site_summary(ingested):
     Workflow(ingested).approve(Gate.SITE, site_ref, HUMAN, "synthetic owner approves")
 
     status_site = project_status(ingested).to_json(_render)["site"]
-    checklist_site = svc.checklist()["site"]
+    checklist_site = svc.checklist().to_json()["site"]
 
     assert status_site == checklist_site
     assert status_site["verified"] is True and status_site["blockers"] == []
     assert status_site["site_ref"]["version"] == site_ref.version
     assert '"status": "confirmed by the owner"' in svc.ai_context()
+
+
+# ------------------------------------------------- interview turn result and checklist
+
+TURN_KEYS = {
+    "session_ref", "brief_ref", "understood", "asked_again", "notes", "contradictions",
+    "next_prompt",
+}  # fmt: skip
+PROMPT_KEYS = {"id", "kind", "text"}
+#: The richest of today's shapes (the turn result's).
+INTERPRETATION_KEYS = {"slot", "label", "value", "display", "method", "status"}
+#: The richest of today's shapes (the checklist's).
+CONTRADICTION_KEYS = {"id", "statement", "tradeoff", "slots", "options"}
+CHECKLIST_KEYS = {
+    "checklist", "contradictions", "counts", "custom_turns", "missing_required_slots",
+    "owner_statements", "project_id", "session_status", "site", "suggested_next", "turn_count",
+    "unconfirmed", "workflow_state",
+}  # fmt: skip
+COUNT_KEYS = {
+    "total_checklist_questions", "applicable_questions", "covered_questions",
+    "remaining_questions", "confirmed_slots", "unconfirmed_slots", "unknown_slots",
+    "open_contradictions",
+}  # fmt: skip
+ITEM_KEYS = {"answered", "applicable", "covered", "id", "question", "slots", "topic"}
+SLOT_ENTRY_KEYS = {
+    "choices", "display", "kind", "label", "method", "required", "slot", "status", "value",
+}  # fmt: skip
+CUSTOM_TURN_KEYS = {"seq", "question_id", "question_text", "text", "understood"}
+TOO_FEW_BEDROOMS_OPTIONS = [
+    {"option": 1, "label": "Plan 3 bedrooms", "updates": {"bedrooms": 3}},
+    {"option": 2, "label": "Let the children share bedrooms",
+     "updates": {"children_own_rooms": False}},
+    {"option": 3, "label": "Keep 2 bedrooms; we will manage", "updates": {}},
+]  # fmt: skip
+
+
+@pytest.fixture
+def interview(ingested):
+    svc = InterviewService(ingested)
+    svc.start(AGENT)
+    return svc
+
+
+def test_the_checklist_before_the_interview_starts(ingested):
+    info = InterviewService(ingested).checklist().to_json()
+
+    assert set(info) == CHECKLIST_KEYS
+    assert (info["session_status"], info["turn_count"]) == ("not_started", 0)
+    assert set(info["counts"]) == COUNT_KEYS
+    assert (info["counts"]["total_checklist_questions"],
+            info["counts"]["applicable_questions"]) == (30, 24)  # fmt: skip
+    assert set(info["site"]) == SITE_SUMMARY_KEYS
+    assert info["suggested_next"] == {"id": "q-household", "kind": "question",
+                                      "text": info["checklist"][0]["question"]}  # fmt: skip
+
+
+def test_the_turn_result_and_the_checklist_keep_their_keys(interview):
+    turn = interview.answer("Two adults and two children.", HUMAN).to_json()
+
+    assert set(turn) == TURN_KEYS
+    assert set(turn["next_prompt"]) == PROMPT_KEYS
+    info = interview.checklist().to_json()
+    assert set(info) == CHECKLIST_KEYS
+    assert (info["session_status"], info["turn_count"]) == ("active", 1)
+    assert all(set(item) == ITEM_KEYS for item in info["checklist"])
+    assert all(set(s) == SLOT_ENTRY_KEYS for item in info["checklist"] for s in item["slots"])
+    household = next(i for i in info["checklist"] if i["id"] == "q-household")
+    adults = next(s for s in household["slots"] if s["slot"] == "adults")
+    assert (adults["value"], adults["status"], adults["kind"], adults["required"]) == (
+        2, "inference", "int", True,
+    )
+    assert info["suggested_next"] == turn["next_prompt"]
+
+
+def test_a_contradiction_has_one_shape_wherever_it_appears(interview):
+    interview.answer("Two adults and two children.", HUMAN)
+    interview.answer("Each child their own room.", HUMAN)
+    turn = interview.answer("Two bedrooms.", HUMAN).to_json()
+
+    listed = interview.checklist().to_json()["contradictions"]
+    assert turn["contradictions"] == listed
+    (contradiction,) = listed
+    assert set(contradiction) == CONTRADICTION_KEYS
+    assert contradiction["id"] == "c-too-few-bedrooms"
+    assert contradiction["options"] == TOO_FEW_BEDROOMS_OPTIONS
+    assert contradiction["slots"] == [
+        "bedrooms", "adults", "children", "elders", "children_own_rooms",
+    ]  # fmt: skip
+
+
+def test_an_interpretation_has_one_shape_wherever_it_appears(interview):
+    turn = interview.answer("Two adults.", HUMAN).to_json()
+    interview.answer("We need a lift.", AGENT, question_id="q-follow-access",
+                     question_text="How do you reach the upper level?", topic="access",
+                     interpreted={"lift": "true"})  # fmt: skip
+
+    info = interview.checklist().to_json()
+    adults_in_turn = next(u for u in turn["understood"] if u["slot"] == "adults")
+    adults_unconfirmed = next(u for u in info["unconfirmed"] if u["slot"] == "adults")
+    (custom,) = info["custom_turns"]
+    (lift,) = custom["understood"]
+    assert set(custom) == CUSTOM_TURN_KEYS
+    for item in (adults_in_turn, adults_unconfirmed, lift):
+        assert set(item) == INTERPRETATION_KEYS
+    assert adults_in_turn == adults_unconfirmed == {
+        "slot": "adults", "label": "Adults", "value": 2, "display": "2", "method": "parser",
+        "status": "inference",
+    }  # fmt: skip
+    assert (lift["value"], lift["method"], lift["status"]) == (True, "agent:claude-code",
+                                                              "inference")  # fmt: skip
+
+
+def test_a_slot_marked_unknown_is_an_interpretation_with_status_unknown(interview):
+    turn = interview.answer("Not sure yet.", AGENT, question_id="q-budget",
+                            interpreted={"budget": None}).to_json()  # fmt: skip
+
+    (budget,) = turn["understood"]
+    assert (budget["slot"], budget["value"], budget["status"]) == ("budget", None, "unknown")

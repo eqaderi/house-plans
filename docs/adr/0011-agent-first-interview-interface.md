@@ -56,6 +56,16 @@ In the initial Milestone C implementation:
    record adaptive architectural follow-up questions outside the 30 predefined
    questions (`--question <custom-id> --question-text "<question>" --topic <topic>`).
 
+   Note (spec #9, part 4): what these commands print is defined once, in
+   orchestration (`orchestration/interview_views.py`, `project_status.py`, the
+   site summary in `site_context.py`), and pinned by key-set tests there. Each
+   glossary term has one shape, the richest of the earlier ones: an
+   Interpretation is `{slot, label, value, display, method, status}` in turn
+   results, `unconfirmed` and `custom_turns`; a Contradiction is
+   `{id, statement, tradeoff, slots, options}` with each option
+   `{option, label, updates}` (turn results used to list the option labels
+   only). Keys keep their names; outputs may gain keys and lose none.
+
 ## Consequences
 
 - Claude Code, Gemini CLI, and OpenAI Codex can conduct natural, adaptive

@@ -235,7 +235,7 @@ def run(out: Path, strategies: list[str] | None = None, with_proposal: bool = Tr
         "budget_history": [t.text for t in session.turns if t.question_id == "q-budget"],
         "budget_value": state.values.get("budget"),
         "outdoor_value": state.values.get("outdoor"),
-        "open_contradictions": svc.checklist()["counts"]["open_contradictions"],
+        "open_contradictions": svc.checklist().counts()["open_contradictions"],
     }
 
     # 3. Program and program gate.

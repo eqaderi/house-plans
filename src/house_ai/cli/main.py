@@ -44,6 +44,7 @@ from house_ai.geospatial.validation import validate_site
 from house_ai.interview.brief_builder import describe
 from house_ai.interview.questions import SLOTS
 from house_ai.orchestration.interview import InterviewService
+from house_ai.orchestration.interview_views import prompt_json
 from house_ai.orchestration.project_status import project_status
 from house_ai.orchestration.site import SiteService
 from house_ai.orchestration.site_ingestion import SiteConfirmation
@@ -528,43 +529,9 @@ def _parse_set_args(
     return out
 
 
-def _turn_dict(result) -> dict:
-    return {
-        "session_ref": result.session_ref.model_dump(mode="json"),
-        "brief_ref": result.brief_ref.model_dump(mode="json"),
-        "understood": [
-            {
-                "slot": u.slot,
-                "label": SLOTS[u.slot].label,
-                "value": u.value,
-                "display": describe(u.value),
-                "method": u.method,
-                "status": "unknown" if u.value is None else "inference",
-            }
-            for u in result.understood
-        ],
-        "asked_again": result.asked_again,
-        "notes": list(result.notes),
-        "contradictions": [
-            {
-                "id": f.id,
-                "statement": f.statement,
-                "tradeoff": f.tradeoff,
-                "options": [o.label for o in f.options],
-            }
-            for f in result.contradictions
-        ],
-        "next_prompt": (
-            {"id": result.prompt.id, "kind": result.prompt.kind, "text": result.prompt.text}
-            if result.prompt is not None
-            else None
-        ),
-    }
-
-
 def _show_turn(result, *, prompt: bool = True, as_json: bool = False) -> None:
     if as_json:
-        _out(json.dumps(_turn_dict(result), indent=2, ensure_ascii=False))
+        _out(json.dumps(result.to_json(), indent=2, ensure_ascii=False))
         return
     text = result.message()
     if text:
@@ -591,12 +558,7 @@ def cmd_interview_next(args: argparse.Namespace) -> int:
     svc = InterviewService(ProjectStore(resolve_project_dir(args.dir)))
     prompt = svc.pending()
     if getattr(args, "json", False):
-        payload = (
-            {"id": prompt.id, "kind": prompt.kind, "text": prompt.text}
-            if prompt is not None
-            else None
-        )
-        _out(json.dumps({"next_prompt": payload}, indent=2, ensure_ascii=False))
+        _out(json.dumps({"next_prompt": prompt_json(prompt)}, indent=2, ensure_ascii=False))
         return EXIT_OK
     _out(f"[{prompt.id}] {prompt.text}" if prompt else "No question pending.")
     return EXIT_OK
@@ -604,7 +566,7 @@ def cmd_interview_next(args: argparse.Namespace) -> int:
 
 def cmd_interview_checklist(args: argparse.Namespace) -> int:
     svc = InterviewService(ProjectStore(resolve_project_dir(args.dir)))
-    info = svc.checklist()
+    info = svc.checklist().to_json()
     if getattr(args, "json", False):
         _out(json.dumps(info, indent=2, ensure_ascii=False))
         return EXIT_OK

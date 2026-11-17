@@ -47,7 +47,7 @@ from house_ai.interview.questions import (
     question_for,
 )
 from house_ai.interview.rules import Finding
-from house_ai.interview.slot_types import BOOL, CHOICE, INT, OUTDOOR, InvalidValue, check
+from house_ai.interview.slot_types import InvalidValue, check
 from house_ai.interview.state import (
     RESOLVE_PREFIX,
     Prompt,
@@ -70,6 +70,16 @@ from house_ai.providers.base import (
 from house_ai.storage import ProjectStore, StoreError
 
 from .interview_llm import LlmAssist
+from .interview_views import (
+    Checklist,
+    ChecklistItem,
+    CustomTurn,
+    Interpretation,
+    SlotCoverage,
+    contradiction_json,
+    prompt_json,
+    slot_kind_and_choices,
+)
 from .site_context import SiteSummary, latest_site_context, site_summary
 from .statements import owner_statements
 from .workflow import (
@@ -100,31 +110,13 @@ class InterviewLocked(WorkflowError):
     pass
 
 
-def _slot_kind_and_choices(slot: str) -> tuple[str, list[str]]:
-    if slot in INT:
-        return "int", []
-    if slot in BOOL:
-        return "bool", []
-    if slot in CHOICE:
-        return "choice", sorted(CHOICE[slot])
-    if slot == "outdoor":
-        return "list", sorted(OUTDOOR)
-    if slot in ("relationships", "room_sizes", "priorities"):
-        return "list", []
-    if slot == "target_area":
-        return "number", []
-    if slot == "budget":
-        return "money", []
-    return "text", []
-
-
 def parse_slot_value(slot: str, raw: Any) -> FactValue:
     """Coerce and validate an explicit slot value (from CLI ``--set`` or JSON)."""
     if slot not in SLOTS:
         raise ValueError(f"unknown slot {slot!r}; valid slots are: {', '.join(SLOTS)}")
     if raw is None:
         return None
-    kind, choices = _slot_kind_and_choices(slot)
+    kind, choices = slot_kind_and_choices(slot)
     val: Any = raw
     if isinstance(raw, str):
         stripped = raw.strip()
@@ -224,6 +216,18 @@ class TurnResult:
     prompt: Prompt | None = None
     contradictions: list[Finding] = field(default_factory=list)
     notes: list[str] = field(default_factory=list)
+
+    def to_json(self) -> dict[str, Any]:
+        """The one serialisation of a turn result (``interview answer --json`` and friends)."""
+        return {
+            "session_ref": self.session_ref.model_dump(mode="json"),
+            "brief_ref": self.brief_ref.model_dump(mode="json"),
+            "understood": [Interpretation.of(u).to_json() for u in self.understood],
+            "asked_again": self.asked_again,
+            "notes": list(self.notes),
+            "contradictions": [contradiction_json(f) for f in self.contradictions],
+            "next_prompt": prompt_json(self.prompt),
+        }
 
     def message(self) -> str:
         lines = list(self.notes)
@@ -326,7 +330,7 @@ class InterviewService:
             raise StoreError("no design brief yet")
         return self.store.get(ref, DesignBrief)
 
-    def checklist(self) -> dict[str, Any]:
+    def checklist(self) -> Checklist:
         """Structured completeness checklist and context for coding agents and humans."""
         exists = self.exists()
         session = self.session() if exists else None
@@ -334,51 +338,24 @@ class InterviewService:
         summary = self.site_summary()
         site = summary.context if summary.exists else None
         sloped = bool(site and (site.relief_m or 0.0) >= 2.0)
-        statements = [
-            {"id": st.id, "subject": st.subject, "words": st.words, "stated_by": st.stated_by}
-            for st in owner_statements(self.store)
-        ]
-        items: list[dict[str, Any]] = []
+        items: list[ChecklistItem] = []
         for q in QUESTIONS:
-            applicable = bool(q.when(state.values, site))
             answered = state.answered(q.id)
-            covered = answered or all(s in state.slots for s in q.slots)
-            slot_entries = []
+            slots = []
             for s_name in q.slots:
                 st = state.slots.get(s_name)
-                s_kind, s_choices = _slot_kind_and_choices(s_name)
-                slot_entries.append(
-                    {
-                        "slot": s_name,
-                        "label": SLOTS[s_name].label,
-                        "kind": s_kind,
-                        "choices": s_choices,
-                        "required": s_name in q.required,
-                        "status": st.status if st else "unanswered",
-                        "value": st.value if st else None,
-                        "display": describe(st.value) if st else None,
-                        "method": st.method if st else None,
-                    }
-                )
-            items.append(
-                {
-                    "id": q.id,
-                    "topic": q.topic.value,
-                    "applicable": applicable,
-                    "answered": answered,
-                    "covered": covered,
-                    "question": q.render(state.values, site),
-                    "slots": slot_entries,
-                }
-            )
+                slots.append(SlotCoverage(
+                    s_name, s_name in q.required, st.status if st else "unanswered",
+                    st.value if st else None, st.method if st else None,
+                ))  # fmt: skip
+            items.append(ChecklistItem(
+                q.id, q.topic.value, bool(q.when(state.values, site)), answered,
+                answered or all(s in state.slots for s in q.slots), q.render(state.values, site),
+                slots,
+            ))  # fmt: skip
         custom_turns = [
-            {
-                "seq": t.seq,
-                "question_id": qid,
-                "question_text": t.question_text,
-                "text": t.text,
-                "understood": [u.model_dump() for u in t.understood],
-            }
+            CustomTurn(t.seq, qid, t.question_text, t.text,
+                       [Interpretation.of(u) for u in t.understood])  # fmt: skip
             for qid, t in state.answers.items()
             if qid.partition("#")[0] not in QUESTION_BY_ID
         ]
@@ -389,59 +366,25 @@ class InterviewService:
             s for s in required_slots if s not in state.slots or state.slots[s].value is None
         ]
         unconfirmed = [
-            {
-                "slot": s,
-                "label": SLOTS[s].label,
-                "value": state.slots[s].value,
-                "display": describe(state.slots[s].value),
-                "method": state.slots[s].method,
-            }
+            Interpretation(s, state.slots[s].value, state.slots[s].method, state.slots[s].status)
             for s in state.unconfirmed()
         ]
-        conflicts = [
-            {
-                "id": f.id,
-                "statement": f.statement,
-                "tradeoff": f.tradeoff,
-                "slots": list(f.slots),
-                "options": [
-                    {"option": i + 1, "label": o.label, "updates": dict(o.updates)}
-                    for i, o in enumerate(f.options)
-                ],
-            }
-            for f in open_contradictions(state)
-        ]
-        nxt = self.pending() if exists else next_prompt(state, site)
-        applicable_items = [i for i in items if i["applicable"]]
-        covered_items = [i for i in applicable_items if i["covered"]]
-        return {
-            "project_id": self.store.project_id,
-            "workflow_state": self.workflow.state.value,
-            "session_status": session.status.value if session else "not_started",
-            "turn_count": len(session.turns) if session else 0,
-            "site": summary.to_json(),
-            "owner_statements": statements,
-            "counts": {
-                "total_checklist_questions": len(items),
-                "applicable_questions": len(applicable_items),
-                "covered_questions": len(covered_items),
-                "remaining_questions": len(applicable_items) - len(covered_items),
-                "confirmed_slots": sum(
-                    1 for st in state.slots.values() if st.status == "confirmed"
-                ),
-                "unconfirmed_slots": len(unconfirmed),
-                "unknown_slots": sum(1 for st in state.slots.values() if st.status == "unknown"),
-                "open_contradictions": len(conflicts),
-            },
-            "missing_required_slots": missing_required,
-            "unconfirmed": unconfirmed,
-            "contradictions": conflicts,
-            "custom_turns": custom_turns,
-            "suggested_next": (
-                {"id": nxt.id, "kind": nxt.kind, "text": nxt.text} if nxt is not None else None
-            ),
-            "checklist": items,
-        }
+        return Checklist(
+            project_id=self.store.project_id,
+            workflow_state=self.workflow.state.value,
+            session_status=session.status.value if session else "not_started",
+            turn_count=len(session.turns) if session else 0,
+            site=summary,
+            owner_statements=owner_statements(self.store),
+            items=items,
+            custom_turns=custom_turns,
+            missing_required_slots=missing_required,
+            unconfirmed=unconfirmed,
+            contradictions=open_contradictions(state),
+            suggested_next=self.pending() if exists else next_prompt(state, site),
+            confirmed_slots=sum(1 for st in state.slots.values() if st.status == "confirmed"),
+            unknown_slots=sum(1 for st in state.slots.values() if st.status == "unknown"),
+        )
 
     def ai_context(self) -> str:
         """What the AI may know when wording a question: site values with their status, the
