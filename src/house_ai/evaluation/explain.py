@@ -31,6 +31,8 @@ from house_ai.domain.plan import AreaChange, MetricChange, PlanVersion, Revision
 from house_ai.domain.program import SpaceProgram
 from house_ai.domain.provenance import ArtifactRef, Provenance
 
+from .findings import FindingsChange
+
 STRATEGY_TEXT = {
     STRATEGY_LINEAR: (
         "One long bar along the contours on a single level. A road-level floor over "
@@ -599,7 +601,7 @@ def revision_report(
     )
 
 
-def revision_markdown(r: RevisionReport) -> str:
+def revision_markdown(r: RevisionReport, findings: FindingsChange | None = None) -> str:
     lines = [
         f"# Revision {r.id}",
         "",
@@ -618,6 +620,16 @@ def revision_markdown(r: RevisionReport) -> str:
         ("Assumptions", r.assumptions),
     ):
         lines += [f"## {title}", ""] + ([f"- {i}" for i in items] or ["- none"]) + [""]
+    if findings is not None and findings.targets:
+        lines += [f"## Findings about {', '.join(findings.targets)}", ""]
+        for title, items in (
+            ("Disappeared", findings.disappeared),
+            ("Remaining", findings.remaining),
+            ("New", findings.new),
+        ):
+            lines += [f"{title}:", ""]
+            lines += [f"- `{v.code}` {v.subject_ids}: {v.message}" for v in items] or ["- none"]
+            lines += [""]
     lines += ["## Area changes", "", "| Space | Before m² | After m² |", "|---|---:|---:|"]
     for c in r.area_changes:
         lines.append(

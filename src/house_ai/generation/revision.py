@@ -78,6 +78,36 @@ def resolve_spaces(name: str, program: SpaceProgram) -> list[str]:
     )
 
 
+def targeted_ids(ops: list[RevisionOp], program: SpaceProgram) -> set[str]:
+    """The ids a request is about: each name it gives and the Spaces that name means.
+
+    A Zone name means the Spaces of its requirements; ``rethink:all`` means every Space.
+    Operations without names (stair, proposal, strategy) target nothing.
+    """
+    spaces = {
+        it.id: [space_id_for(it, i) for i in range(1, it.quantity + 1)]
+        for it in program.space_requirements
+    }
+    zones: dict[str, set[str]] = {}
+    for it in program.space_requirements:
+        if it.zone_id is not None:
+            zones.setdefault(it.zone_id, set()).update(spaces[it.id])
+    out: set[str] = set()
+    for op in ops:
+        if op.op_type is V.RETHINK and op.target == "all":
+            out |= {sid for group in spaces.values() for sid in group}
+        for name in op.names:
+            out.add(name)
+            if name in zones:
+                out |= zones[name]
+                continue
+            try:
+                out |= set(resolve_spaces(name, program))
+            except RevisionOpError:
+                pass  # a name the request gives but the program does not hold
+    return out
+
+
 def _keys(op: RevisionOp, program: SpaceProgram) -> list[tuple[str, ...]] | None:
     """What ``op`` asks about, so a later request about the same thing overrides it.
 

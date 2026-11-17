@@ -56,12 +56,15 @@ Guide the agent through visual inspection and grounded visual critique of plan o
      --option <option-id> --actor agent:<tool>
    ```
 
-4. **Verify fixes and request gate review:**
-   Re-export the revised plan option, inspect the new plan version, and confirm the finding is resolved before requesting the owner's gate review:
+4. **Verify fixes from the revise report, then request gate review:**
+   Run the revision with `--json` and read its `findings` object. For the ids the request targeted (`findings.targets`), it lists the Findings of the parent plan version's Evaluation that `disappeared`, those that are `remaining`, and the `new` ones; a Finding about elements whose geometry did not change is never listed as disappeared. The same lists are in `revision.md` under "Findings about ...". Then re-export and inspect the new plan version before requesting the owner's gate review:
    ```bash
+   .venv/bin/house-ai plan revise <project> <option-id> "<owner's words>" \
+     --rethink sp-study-1 --json --actor agent:<tool>
    .venv/bin/house-ai plan export <project> <option-id> --out <scratch-dir>/fixed
    .venv/bin/house-ai plan review <project> <option-id> --actor agent:<tool>
    ```
+   Label collisions are reported in the Evaluation as `label_collision`, measured on the drawing's own layout.
 
 ## Required validations
 - **Strict canonical grounding**: every visual claim must cite valid canonical element IDs (`sp-*`, `w-*`, `d-*`, `win-*`, `st-*`, `site-*`) existing in the target plan. Ungrounded or hallucinatory element references are strictly rejected.
@@ -69,7 +72,7 @@ Guide the agent through visual inspection and grounded visual critique of plan o
   - Visual critique observations carry epistemic status `ai_judgment`.
   - Geometric dimensions and areas carry `measured` status and must cite model values.
   - Earthwork cut/fill and retaining estimates carry `inferred` status.
-- **Fix verification**: any claimed fix must be checked against the revised plan geometry. Fake fixes that do not change geometry or do not resolve the finding must remain open.
+- **Fix verification**: a claimed fix counts only when the revise report lists the Finding under `findings.disappeared`. A Finding under `remaining` or `new` keeps the critique item open, and so does a claim no Finding backs when its cited elements did not change.
 - Never state that a plan is code-compliant, structurally sound, or construction-ready.
 
 ## Human-approval boundaries
@@ -79,5 +82,5 @@ Guide the agent through visual inspection and grounded visual critique of plan o
 
 ## Failure handling
 - **Ungrounded element ID**: if `plan ground` or the grounding validator reports an unknown ID, verify the identifier against `plan.json` under `model.spaces`, `model.walls`, or `model.openings` and correct the critique.
-- **Fix not resolved**: if the revised plan version still shows the finding or introduces a new violation, do not close the critique item; propose a different revision operation.
+- **Fix not resolved**: if the revise report lists the finding under `remaining` or a Finding under `new`, do not close the critique item; propose a different revision operation.
 - **Infeasible revision**: when the constraint solver cannot satisfy the revision constraints, inspect the solver diagnosis and report other space allocations.

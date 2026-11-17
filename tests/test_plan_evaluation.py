@@ -187,7 +187,9 @@ def test_every_claim_says_how_it_was_obtained(plan_a_report):
     r = plan_a_report
     assert [
         e.name for e in r.evaluators if e.status is EvaluatorRunStatus.RAN
-    ] == REQUIRED_EVALUATORS + [e.name for e in USABILITY_EVALUATORS]
+    ] == REQUIRED_EVALUATORS + [e.name for e in USABILITY_EVALUATORS] + [
+        "LabelCollisionEvaluator"
+    ]
     assert {e.name for e in r.evaluators if e.status is EvaluatorRunStatus.NOT_RUN} == set(
         FUTURE_EVALUATORS
     )

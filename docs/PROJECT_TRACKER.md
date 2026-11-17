@@ -955,7 +955,7 @@ rejected.
   - Accept: fixtures with overlapping labels, door into wall, window on retaining wall, missing stair arrival; tests assert detection by deterministic or visual checks with correct IDs
   - Verify: `pytest -q`
   - Evidence: `src/house_ai/validation/defect_detectors.py`; `tests/test_seeded_defects.py`
-  - Notes: closed with merge `b79595e`
+  - Notes: closed with merge `b79595e`. Spec #9 part 8 (ADR 0033): the detector module and `DefectFinding` are deleted; the seeded defects are Findings of the Evaluation or the integrity check: window in a retaining wall `window_buried` (`DaylightOpportunityEvaluator`, measured from the wall kind, no terrain needed), stair through a slab `stair_low_headroom` (`StairUsabilityEvaluator`, honours `UsabilityPolicy.min_headroom_m`), door wider than its wall `opening_outside_wall` and missing host wall or stair level/arrival `dangling_reference` (`check_model`), overlapping labels `label_collision` (`evaluation/drawing.py` on `render2d/labels.py`); `tests/test_seeded_defects.py`, `tests/test_label_collisions.py`
 - [x] **S5-08** Screenshot and semantic regression tests — `DONE` · P2 · deps: none
   - Accept: screenshot diffs and ID-map diffs fail on unintended changes
   - Verify: CI run
@@ -968,12 +968,12 @@ rejected.
   - Accept: critiques map to explicit `plan revise` ops; new version re-captured
   - Verify: loop test
   - Evidence: `src/house_ai/orchestration/visual_review.py`; `tests/test_visual_review_loop.py`
-  - Notes: closed with merge `b79595e`
+  - Notes: closed with merge `b79595e`. Spec #9 part 8 (ADR 0033): the uncalled loop function and `visual_review.py` are deleted; the loop is the visual-review skill's `plan revise --json`, whose `findings` lists the Findings about the targeted ids (`evaluation/findings.py`, `tests/test_revision_findings.py`)
 - [x] **S5-10** Fix verification — `DONE` · P0 · deps: S5-09
   - Accept: each "fixed" claim is checked by the evaluator or a new capture; unverified claims stay open
   - Verify: test where a fake fix is rejected
   - Evidence: `src/house_ai/orchestration/visual_review.py`; `tests/test_visual_review_loop.py`
-  - Notes: closed with merge `b79595e`
+  - Notes: closed with merge `b79595e`. Spec #9 part 8 (ADR 0033): fix verification now compares the parent's and the new Evaluation in `plan revise` (`evaluation/findings.py::compare_findings`); a Finding whose cited geometry did not change is never reported as disappeared (`tests/test_findings_change.py`, `tests/test_revision_findings.py`)
 - [x] **S5-11** visual-review skill — `DONE` · P1 · deps: S5-09
   - Accept: follows the S2 template; forbids ungrounded claims
   - Verify: skill drift and workflow tests
@@ -983,7 +983,7 @@ rejected.
   - Accept: before/after screenshots, critique records and revision report for synthetic-hillside
   - Verify: reviewer replays it
   - Evidence: `examples/reviewer/demonstration/` (`before.svg`, `before.png`, `visual_critique.json`, `revision_ops.json`, `after.svg`, `after.png`, `revision_report.json`, `README.md`, `make_demonstration.py`); `tests/test_visual_demonstration.py`
-  - Notes: closed with merge `b79595e`
+  - Notes: closed with merge `b79595e`. Spec #9 part 8 (ADR 0033): `revision_report.json` is deleted; the hand-edited after-state was not a fix the Evaluation confirms, and fix verification is the `plan revise` report
 
 ### Stage S6 — Usability critics
 
