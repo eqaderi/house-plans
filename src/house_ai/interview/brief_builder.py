@@ -25,7 +25,7 @@ from house_ai.domain.brief import (
     Money,
 )
 from house_ai.domain.epistemics import Epistemic
-from house_ai.domain.interview import InterviewSession, TurnKind
+from house_ai.domain.interview import InterviewSession, TurnKind, current_slot
 from house_ai.domain.provenance import Actor, ActorKind, ArtifactRef, Provenance
 from house_ai.domain.records import Contradiction
 
@@ -112,7 +112,7 @@ def _topic_for_turn(qid: str, turn_slots: list[str]) -> tuple[BriefTopic, bool]:
     base = QUESTION_BY_ID.get(base_id)
     if base is not None:
         return base.topic, all(SLOTS[s].is_fact for s in base.slots)
-    valid_slots = [s for s in turn_slots if s in SLOTS]
+    valid_slots = [current_slot(s) for s in turn_slots if current_slot(s) in SLOTS]
     if valid_slots:
         return SLOTS[valid_slots[0]].topic, all(SLOTS[s].is_fact for s in valid_slots)
     for topic in BriefTopic:

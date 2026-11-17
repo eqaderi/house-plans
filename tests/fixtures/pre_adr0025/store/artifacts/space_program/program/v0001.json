@@ -1,0 +1,362 @@
+{
+  "adjacencies": [
+    {
+      "a": "pi-entry",
+      "b": "exterior",
+      "id": "adj-01-entry-exterior",
+      "kind": "connected",
+      "rationale": "The front door opens into the hall",
+      "source_fact_ids": [],
+      "strength": "hard",
+      "weight": null
+    },
+    {
+      "a": "pi-kitchen",
+      "b": "pi-living",
+      "id": "adj-02-kitchen-living",
+      "kind": "adjacent",
+      "rationale": "Kitchen close to living, behind a door or glass wall",
+      "source_fact_ids": [],
+      "strength": "soft",
+      "weight": 2.0
+    },
+    {
+      "a": "pi-dining",
+      "b": "pi-living",
+      "id": "adj-03-dining-living",
+      "kind": "near",
+      "rationale": "Dining near living",
+      "source_fact_ids": [],
+      "strength": "soft",
+      "weight": 2.0
+    },
+    {
+      "a": "pi-kitchen",
+      "b": "pi-dining",
+      "id": "adj-04-kitchen-dining",
+      "kind": "connected",
+      "rationale": "Food goes from kitchen to table",
+      "source_fact_ids": [],
+      "strength": "hard",
+      "weight": null
+    },
+    {
+      "a": "pi-bed-main",
+      "b": "pi-bath-ensuite",
+      "id": "adj-05-bed-main-bath-ensuite",
+      "kind": "connected",
+      "rationale": "En-suite opens from the main bedroom",
+      "source_fact_ids": [
+        "f-ensuite"
+      ],
+      "strength": "hard",
+      "weight": null
+    },
+    {
+      "a": "pi-stair",
+      "b": "pi-entry",
+      "id": "adj-06-stair-entry",
+      "kind": "near",
+      "rationale": "Stair reached from the hall",
+      "source_fact_ids": [
+        "f-floors"
+      ],
+      "strength": "soft",
+      "weight": 1.0
+    }
+  ],
+  "brief_ref": {
+    "id": "brief",
+    "kind": "design_brief",
+    "sha256": "87c396d4aebbfdf1c4d5eed8b1a80430515b49859c9329b3843b7986da6322f8",
+    "version": 7
+  },
+  "budget": null,
+  "circulation_factor": 0.2,
+  "id": "program",
+  "items": [
+    {
+      "accessible": false,
+      "daylight": "preferred",
+      "function": "entry",
+      "id": "pi-entry",
+      "level_preference": "entry",
+      "max_area_m2": null,
+      "min_area_m2": 4.0,
+      "min_width_m": 1.5,
+      "name": "Entrance hall",
+      "notes": null,
+      "priority": "must",
+      "privacy": "semi_private",
+      "quantity": 1,
+      "source_fact_ids": [],
+      "target_area_m2": 6.0,
+      "zone_id": "z-circulation"
+    },
+    {
+      "accessible": false,
+      "daylight": "required",
+      "function": "living",
+      "id": "pi-living",
+      "level_preference": "entry",
+      "max_area_m2": null,
+      "min_area_m2": 16.0,
+      "min_width_m": 3.6,
+      "name": "Living room",
+      "notes": null,
+      "priority": "must",
+      "privacy": "public",
+      "quantity": 1,
+      "source_fact_ids": [],
+      "target_area_m2": 25.0,
+      "zone_id": "z-day"
+    },
+    {
+      "accessible": false,
+      "daylight": "required",
+      "function": "kitchen",
+      "id": "pi-kitchen",
+      "level_preference": "entry",
+      "max_area_m2": null,
+      "min_area_m2": 8.0,
+      "min_width_m": 2.4,
+      "name": "Kitchen",
+      "notes": null,
+      "priority": "must",
+      "privacy": "public",
+      "quantity": 1,
+      "source_fact_ids": [],
+      "target_area_m2": 12.0,
+      "zone_id": "z-day"
+    },
+    {
+      "accessible": false,
+      "daylight": "preferred",
+      "function": "dining",
+      "id": "pi-dining",
+      "level_preference": "entry",
+      "max_area_m2": null,
+      "min_area_m2": 10.0,
+      "min_width_m": 3.0,
+      "name": "Dining",
+      "notes": null,
+      "priority": "must",
+      "privacy": "public",
+      "quantity": 1,
+      "source_fact_ids": [],
+      "target_area_m2": 14.0,
+      "zone_id": "z-day"
+    },
+    {
+      "accessible": false,
+      "daylight": "required",
+      "function": "bedroom",
+      "id": "pi-bed-main",
+      "level_preference": "any",
+      "max_area_m2": null,
+      "min_area_m2": 12.0,
+      "min_width_m": 3.0,
+      "name": "Main bedroom",
+      "notes": null,
+      "priority": "must",
+      "privacy": "private",
+      "quantity": 1,
+      "source_fact_ids": [
+        "f-bedrooms",
+        "f-adults",
+        "f-children",
+        "f-children_own_rooms",
+        "f-ensuite"
+      ],
+      "target_area_m2": 15.0,
+      "zone_id": "z-night"
+    },
+    {
+      "accessible": false,
+      "daylight": "required",
+      "function": "bedroom",
+      "id": "pi-bed-child-1",
+      "level_preference": "any",
+      "max_area_m2": null,
+      "min_area_m2": 9.0,
+      "min_width_m": 2.7,
+      "name": "Child's bedroom 1",
+      "notes": null,
+      "priority": "must",
+      "privacy": "private",
+      "quantity": 1,
+      "source_fact_ids": [
+        "f-bedrooms",
+        "f-adults",
+        "f-children",
+        "f-children_own_rooms"
+      ],
+      "target_area_m2": 11.0,
+      "zone_id": "z-night"
+    },
+    {
+      "accessible": false,
+      "daylight": "required",
+      "function": "bedroom",
+      "id": "pi-bed-child-2",
+      "level_preference": "any",
+      "max_area_m2": null,
+      "min_area_m2": 9.0,
+      "min_width_m": 2.7,
+      "name": "Child's bedroom 2",
+      "notes": null,
+      "priority": "must",
+      "privacy": "private",
+      "quantity": 1,
+      "source_fact_ids": [
+        "f-bedrooms",
+        "f-adults",
+        "f-children",
+        "f-children_own_rooms"
+      ],
+      "target_area_m2": 11.0,
+      "zone_id": "z-night"
+    },
+    {
+      "accessible": false,
+      "daylight": "preferred",
+      "function": "bathroom",
+      "id": "pi-bath-ensuite",
+      "level_preference": "any",
+      "max_area_m2": null,
+      "min_area_m2": 3.5,
+      "min_width_m": 1.6,
+      "name": "En-suite bathroom",
+      "notes": null,
+      "priority": "must",
+      "privacy": "private",
+      "quantity": 1,
+      "source_fact_ids": [
+        "f-bathrooms",
+        "f-ensuite"
+      ],
+      "target_area_m2": 5.0,
+      "zone_id": "z-night"
+    },
+    {
+      "accessible": false,
+      "daylight": "preferred",
+      "function": "bathroom",
+      "id": "pi-bath-1",
+      "level_preference": "any",
+      "max_area_m2": null,
+      "min_area_m2": 4.0,
+      "min_width_m": 1.8,
+      "name": "Bathroom 1",
+      "notes": null,
+      "priority": "must",
+      "privacy": "private",
+      "quantity": 1,
+      "source_fact_ids": [
+        "f-bathrooms"
+      ],
+      "target_area_m2": 6.0,
+      "zone_id": "z-night"
+    },
+    {
+      "accessible": false,
+      "daylight": "not_needed",
+      "function": "mechanical",
+      "id": "pi-mechanical",
+      "level_preference": "any",
+      "max_area_m2": null,
+      "min_area_m2": 3.0,
+      "min_width_m": null,
+      "name": "Plant / technical room",
+      "notes": "heating, water and electrics",
+      "priority": "must",
+      "privacy": "service",
+      "quantity": 1,
+      "source_fact_ids": [],
+      "target_area_m2": 4.0,
+      "zone_id": "z-service"
+    },
+    {
+      "accessible": false,
+      "daylight": "preferred",
+      "function": "stair",
+      "id": "pi-stair",
+      "level_preference": "any",
+      "max_area_m2": null,
+      "min_area_m2": 8.0,
+      "min_width_m": 2.2,
+      "name": "Stair",
+      "notes": "connects 2 floors",
+      "priority": "must",
+      "privacy": "semi_private",
+      "quantity": 1,
+      "source_fact_ids": [
+        "f-floors"
+      ],
+      "target_area_m2": 10.0,
+      "zone_id": "z-circulation"
+    }
+  ],
+  "levels": 2,
+  "project_id": "pre-adr0025",
+  "provenance": {
+    "created_at": "2026-11-17T09:00:35Z",
+    "created_by": {
+      "display_name": null,
+      "id": "house-ai-program",
+      "kind": "system",
+      "model": null,
+      "provider": null
+    },
+    "inputs": [
+      {
+        "id": "brief",
+        "kind": "design_brief",
+        "sha256": "87c396d4aebbfdf1c4d5eed8b1a80430515b49859c9329b3843b7986da6322f8",
+        "version": 7
+      }
+    ],
+    "method": "program_from_brief",
+    "notes": "Deterministic; sizes not given by the owner are typical values (assumptions).",
+    "tool": "house-ai program",
+    "tool_version": null
+  },
+  "schema_version": "0.1.0",
+  "site_ref": null,
+  "site_verified": false,
+  "target_gross_area_m2": null,
+  "usability": {
+    "arrival_path": null,
+    "double_bed_program_item_ids": [
+      "pi-bed-main"
+    ],
+    "household_seats": 4,
+    "single_bed_program_item_ids": [
+      "pi-bed-child-1",
+      "pi-bed-child-2"
+    ],
+    "vehicles": null
+  },
+  "zones": [
+    {
+      "id": "z-day",
+      "name": "Day (living, kitchen, dining)",
+      "privacy": "public"
+    },
+    {
+      "id": "z-night",
+      "name": "Night (bedrooms, bathrooms)",
+      "privacy": "private"
+    },
+    {
+      "id": "z-service",
+      "name": "Service",
+      "privacy": "service"
+    },
+    {
+      "id": "z-circulation",
+      "name": "Circulation",
+      "privacy": "semi_private"
+    }
+  ]
+}

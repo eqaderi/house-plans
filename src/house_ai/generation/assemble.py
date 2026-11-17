@@ -36,18 +36,18 @@ from house_ai.domain.model import (
     Opening,
     OpeningKind,
     Operation,
+    PlanRelationship,
     RelationshipKind,
     Slab,
     SlabKind,
     Space,
-    SpaceRelationship,
     Stair,
     StairKind,
     Wall,
     WallKind,
     Zone,
 )
-from house_ai.domain.program import AdjacencyKind, Privacy, SpaceFunction, SpaceProgram
+from house_ai.domain.program import Privacy, SpaceFunction, SpaceProgram, SpaceRelationshipKind
 from house_ai.domain.provenance import Actor, ArtifactRef
 from house_ai.domain.records import Assumption, Issue, Severity
 from house_ai.domain.site import Site
@@ -768,8 +768,8 @@ class _Builder:
         connected_pairs: set[frozenset[str]] = {
             frozenset(o.connects) for o in self.openings if len(o.connects) == 2
         }
-        for adj in self.program.adjacencies:
-            if adj.kind is not AdjacencyKind.CONNECTED:
+        for adj in self.program.space_relationships:
+            if adj.kind is not SpaceRelationshipKind.CONNECTED:
                 continue
             if adj.a == EXTERIOR or adj.b == EXTERIOR:
                 target = adj.a if adj.b == EXTERIOR else adj.b
@@ -1113,12 +1113,12 @@ class _Builder:
         """
         limit = self.frame.polygon_to_design(limit_polygon(self.site)[0])
         rooms = {s.program_item_id: s for s in self.spaces if s.kind == "room"}
-        for item in self.program.items:
+        for item in self.program.space_requirements:
             if item.function is not S.TERRACE:
                 continue
             linked = [
                 adj.b if adj.a == item.id else adj.a
-                for adj in self.program.adjacencies
+                for adj in self.program.space_relationships
                 if item.id in (adj.a, adj.b)
             ]
             candidates = [rooms[i] for i in linked if i in rooms] + [
@@ -1454,7 +1454,7 @@ class _Builder:
                     )
         return out
 
-    def _relationships(self) -> list[SpaceRelationship]:
+    def _relationships(self) -> list[PlanRelationship]:
         ids = {s.id for s in self.spaces}
         hall_space = next(
             (
@@ -1472,7 +1472,7 @@ class _Builder:
                 first[s.program_item_id] = s.id
         if hall_space and self.rooms.hall_item:
             first[self.rooms.hall_item.id] = hall_space
-        K = AdjacencyKind
+        K = SpaceRelationshipKind
         mapping = {
             K.CONNECTED: RelationshipKind.CONNECTED,
             K.ADJACENT: RelationshipKind.ADJACENT,
@@ -1481,12 +1481,12 @@ class _Builder:
             K.ACOUSTIC_SEPARATION: RelationshipKind.SEPARATED,
         }
         out = []
-        for adj in self.program.adjacencies:
+        for adj in self.program.space_relationships:
             a, b = first.get(adj.a), first.get(adj.b)
             if a is None or b is None or adj.kind not in mapping or a not in ids or b not in ids:
                 continue
             out.append(
-                SpaceRelationship(
+                PlanRelationship(
                     id=f"rel-{adj.id.removeprefix('adj-')}"[:64].rstrip("-"),
                     a=a,
                     b=b,

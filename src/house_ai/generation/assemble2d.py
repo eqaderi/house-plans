@@ -591,7 +591,7 @@ class Builder2D:
             poly = self._space_boundary(r, all_rooms)
             prog_item_id = (
                 r.program_item_id
-                if any(it.id == r.program_item_id for it in self.program.items)
+                if any(it.id == r.program_item_id for it in self.program.space_requirements)
                 else None
             )
             spaces.append(

@@ -176,7 +176,7 @@
       "status": "measured",
       "subject_ids": [],
       "unit": "m2",
-      "value": 293.58
+      "value": 281.7
     },
     {
       "evaluator": "GeometryEvaluator",
@@ -186,7 +186,7 @@
       "status": "measured",
       "subject_ids": [],
       "unit": "m2",
-      "value": 176.22
+      "value": 184.14
     },
     {
       "evaluator": "GeometryEvaluator",
@@ -196,7 +196,7 @@
       "status": "measured",
       "subject_ids": [],
       "unit": "m",
-      "value": 80.029
+      "value": 102.8
     },
     {
       "evaluator": "GeometryEvaluator",
@@ -206,7 +206,7 @@
       "status": "measured",
       "subject_ids": [],
       "unit": null,
-      "value": 0.346
+      "value": 0.219
     },
     {
       "evaluator": "GeometryEvaluator",
@@ -217,6 +217,16 @@
       "subject_ids": [],
       "unit": null,
       "value": 3
+    },
+    {
+      "evaluator": "GeometryEvaluator",
+      "evaluator_version": "0.1.0",
+      "method": "level_elevations_storey_height",
+      "metric": "storey_count",
+      "status": "inferred",
+      "subject_ids": [],
+      "unit": null,
+      "value": 2
     },
     {
       "evaluator": "GeometryEvaluator",
@@ -236,7 +246,7 @@
       "status": "measured",
       "subject_ids": [],
       "unit": "m",
-      "value": 116.4
+      "value": 107.3
     },
     {
       "evaluator": "GeometryEvaluator",
@@ -246,7 +256,7 @@
       "status": "measured",
       "subject_ids": [],
       "unit": "m",
-      "value": 131.5
+      "value": 123.9
     },
     {
       "evaluator": "ProgramEvaluator",
@@ -259,7 +269,7 @@
         "pi-entry"
       ],
       "unit": "m2",
-      "value": 8.1
+      "value": 7.68
     },
     {
       "evaluator": "ProgramEvaluator",
@@ -272,7 +282,7 @@
         "pi-entry"
       ],
       "unit": "%",
-      "value": 35.0
+      "value": 28.0
     },
     {
       "evaluator": "ProgramEvaluator",
@@ -285,7 +295,7 @@
         "pi-living"
       ],
       "unit": "m2",
-      "value": 24.84
+      "value": 19.44
     },
     {
       "evaluator": "ProgramEvaluator",
@@ -296,201 +306,6 @@
       "subject_ids": [
         "sp-living",
         "pi-living"
-      ],
-      "unit": null,
-      "value": 2
-    },
-    {
-      "evaluator": "ProgramEvaluator",
-      "evaluator_version": "0.1.0",
-      "method": "rotated_rectangle_sides",
-      "metric": "room_aspect_ratio",
-      "status": "measured",
-      "subject_ids": [
-        "sp-living",
-        "pi-living"
-      ],
-      "unit": null,
-      "value": 1.174
-    },
-    {
-      "evaluator": "ProgramEvaluator",
-      "evaluator_version": "0.1.0",
-      "method": "polygon_area_centerline",
-      "metric": "room_area_vs_target_pct",
-      "status": "measured",
-      "subject_ids": [
-        "sp-living",
-        "pi-living"
-      ],
-      "unit": "%",
-      "value": -0.64
-    },
-    {
-      "evaluator": "ProgramEvaluator",
-      "evaluator_version": "0.1.0",
-      "method": "polygon_area_centerline",
-      "metric": "room_area_m2",
-      "status": "measured",
-      "subject_ids": [
-        "sp-kitchen",
-        "pi-kitchen"
-      ],
-      "unit": "m2",
-      "value": 11.76
-    },
-    {
-      "evaluator": "ProgramEvaluator",
-      "evaluator_version": "0.1.0",
-      "method": "exterior_window_count_only",
-      "metric": "required_daylight_exterior_windows",
-      "status": "measured",
-      "subject_ids": [
-        "sp-kitchen",
-        "pi-kitchen"
-      ],
-      "unit": null,
-      "value": 2
-    },
-    {
-      "evaluator": "ProgramEvaluator",
-      "evaluator_version": "0.1.0",
-      "method": "rotated_rectangle_sides",
-      "metric": "room_aspect_ratio",
-      "status": "measured",
-      "subject_ids": [
-        "sp-kitchen",
-        "pi-kitchen"
-      ],
-      "unit": null,
-      "value": 2.042
-    },
-    {
-      "evaluator": "ProgramEvaluator",
-      "evaluator_version": "0.1.0",
-      "method": "polygon_area_centerline",
-      "metric": "room_area_vs_target_pct",
-      "status": "measured",
-      "subject_ids": [
-        "sp-kitchen",
-        "pi-kitchen"
-      ],
-      "unit": "%",
-      "value": -2.0
-    },
-    {
-      "evaluator": "ProgramEvaluator",
-      "evaluator_version": "0.1.0",
-      "method": "polygon_area_centerline",
-      "metric": "room_area_m2",
-      "status": "measured",
-      "subject_ids": [
-        "sp-dining",
-        "pi-dining"
-      ],
-      "unit": "m2",
-      "value": 14.7
-    },
-    {
-      "evaluator": "ProgramEvaluator",
-      "evaluator_version": "0.1.0",
-      "method": "rotated_rectangle_sides",
-      "metric": "room_aspect_ratio",
-      "status": "measured",
-      "subject_ids": [
-        "sp-dining",
-        "pi-dining"
-      ],
-      "unit": null,
-      "value": 1.633
-    },
-    {
-      "evaluator": "ProgramEvaluator",
-      "evaluator_version": "0.1.0",
-      "method": "polygon_area_centerline",
-      "metric": "room_area_vs_target_pct",
-      "status": "measured",
-      "subject_ids": [
-        "sp-dining",
-        "pi-dining"
-      ],
-      "unit": "%",
-      "value": 5.0
-    },
-    {
-      "evaluator": "ProgramEvaluator",
-      "evaluator_version": "0.1.0",
-      "method": "polygon_area_centerline",
-      "metric": "room_area_m2",
-      "status": "measured",
-      "subject_ids": [
-        "sp-bed-main",
-        "pi-bed-main"
-      ],
-      "unit": "m2",
-      "value": 16.2
-    },
-    {
-      "evaluator": "ProgramEvaluator",
-      "evaluator_version": "0.1.0",
-      "method": "exterior_window_count_only",
-      "metric": "required_daylight_exterior_windows",
-      "status": "measured",
-      "subject_ids": [
-        "sp-bed-main",
-        "pi-bed-main"
-      ],
-      "unit": null,
-      "value": 0
-    },
-    {
-      "evaluator": "ProgramEvaluator",
-      "evaluator_version": "0.1.0",
-      "method": "rotated_rectangle_sides",
-      "metric": "room_aspect_ratio",
-      "status": "measured",
-      "subject_ids": [
-        "sp-bed-main",
-        "pi-bed-main"
-      ],
-      "unit": null,
-      "value": 1.8
-    },
-    {
-      "evaluator": "ProgramEvaluator",
-      "evaluator_version": "0.1.0",
-      "method": "polygon_area_centerline",
-      "metric": "room_area_vs_target_pct",
-      "status": "measured",
-      "subject_ids": [
-        "sp-bed-main",
-        "pi-bed-main"
-      ],
-      "unit": "%",
-      "value": 8.0
-    },
-    {
-      "evaluator": "ProgramEvaluator",
-      "evaluator_version": "0.1.0",
-      "method": "polygon_area_centerline",
-      "metric": "room_area_m2",
-      "status": "measured",
-      "subject_ids": [
-        "sp-bed-child-1",
-        "pi-bed-child-1"
-      ],
-      "unit": "m2",
-      "value": 11.76
-    },
-    {
-      "evaluator": "ProgramEvaluator",
-      "evaluator_version": "0.1.0",
-      "method": "exterior_window_count_only",
-      "metric": "required_daylight_exterior_windows",
-      "status": "measured",
-      "subject_ids": [
-        "sp-bed-child-1",
-        "pi-bed-child-1"
       ],
       "unit": null,
       "value": 1
@@ -502,11 +317,206 @@
       "metric": "room_aspect_ratio",
       "status": "measured",
       "subject_ids": [
+        "sp-living",
+        "pi-living"
+      ],
+      "unit": null,
+      "value": 1.5
+    },
+    {
+      "evaluator": "ProgramEvaluator",
+      "evaluator_version": "0.1.0",
+      "method": "polygon_area_centerline",
+      "metric": "room_area_vs_target_pct",
+      "status": "measured",
+      "subject_ids": [
+        "sp-living",
+        "pi-living"
+      ],
+      "unit": "%",
+      "value": -22.24
+    },
+    {
+      "evaluator": "ProgramEvaluator",
+      "evaluator_version": "0.1.0",
+      "method": "polygon_area_centerline",
+      "metric": "room_area_m2",
+      "status": "measured",
+      "subject_ids": [
+        "sp-kitchen",
+        "pi-kitchen"
+      ],
+      "unit": "m2",
+      "value": 8.16
+    },
+    {
+      "evaluator": "ProgramEvaluator",
+      "evaluator_version": "0.1.0",
+      "method": "exterior_window_count_only",
+      "metric": "required_daylight_exterior_windows",
+      "status": "measured",
+      "subject_ids": [
+        "sp-kitchen",
+        "pi-kitchen"
+      ],
+      "unit": null,
+      "value": 2
+    },
+    {
+      "evaluator": "ProgramEvaluator",
+      "evaluator_version": "0.1.0",
+      "method": "rotated_rectangle_sides",
+      "metric": "room_aspect_ratio",
+      "status": "measured",
+      "subject_ids": [
+        "sp-kitchen",
+        "pi-kitchen"
+      ],
+      "unit": null,
+      "value": 1.417
+    },
+    {
+      "evaluator": "ProgramEvaluator",
+      "evaluator_version": "0.1.0",
+      "method": "polygon_area_centerline",
+      "metric": "room_area_vs_target_pct",
+      "status": "measured",
+      "subject_ids": [
+        "sp-kitchen",
+        "pi-kitchen"
+      ],
+      "unit": "%",
+      "value": -32.0
+    },
+    {
+      "evaluator": "ProgramEvaluator",
+      "evaluator_version": "0.1.0",
+      "method": "polygon_area_centerline",
+      "metric": "room_area_m2",
+      "status": "measured",
+      "subject_ids": [
+        "sp-dining",
+        "pi-dining"
+      ],
+      "unit": "m2",
+      "value": 10.2
+    },
+    {
+      "evaluator": "ProgramEvaluator",
+      "evaluator_version": "0.1.0",
+      "method": "rotated_rectangle_sides",
+      "metric": "room_aspect_ratio",
+      "status": "measured",
+      "subject_ids": [
+        "sp-dining",
+        "pi-dining"
+      ],
+      "unit": null,
+      "value": 1.133
+    },
+    {
+      "evaluator": "ProgramEvaluator",
+      "evaluator_version": "0.1.0",
+      "method": "polygon_area_centerline",
+      "metric": "room_area_vs_target_pct",
+      "status": "measured",
+      "subject_ids": [
+        "sp-dining",
+        "pi-dining"
+      ],
+      "unit": "%",
+      "value": -27.143
+    },
+    {
+      "evaluator": "ProgramEvaluator",
+      "evaluator_version": "0.1.0",
+      "method": "polygon_area_centerline",
+      "metric": "room_area_m2",
+      "status": "measured",
+      "subject_ids": [
+        "sp-bed-main",
+        "pi-bed-main"
+      ],
+      "unit": "m2",
+      "value": 17.28
+    },
+    {
+      "evaluator": "ProgramEvaluator",
+      "evaluator_version": "0.1.0",
+      "method": "exterior_window_count_only",
+      "metric": "required_daylight_exterior_windows",
+      "status": "measured",
+      "subject_ids": [
+        "sp-bed-main",
+        "pi-bed-main"
+      ],
+      "unit": null,
+      "value": 0
+    },
+    {
+      "evaluator": "ProgramEvaluator",
+      "evaluator_version": "0.1.0",
+      "method": "rotated_rectangle_sides",
+      "metric": "room_aspect_ratio",
+      "status": "measured",
+      "subject_ids": [
+        "sp-bed-main",
+        "pi-bed-main"
+      ],
+      "unit": null,
+      "value": 1.687
+    },
+    {
+      "evaluator": "ProgramEvaluator",
+      "evaluator_version": "0.1.0",
+      "method": "polygon_area_centerline",
+      "metric": "room_area_vs_target_pct",
+      "status": "measured",
+      "subject_ids": [
+        "sp-bed-main",
+        "pi-bed-main"
+      ],
+      "unit": "%",
+      "value": 15.2
+    },
+    {
+      "evaluator": "ProgramEvaluator",
+      "evaluator_version": "0.1.0",
+      "method": "polygon_area_centerline",
+      "metric": "room_area_m2",
+      "status": "measured",
+      "subject_ids": [
+        "sp-bed-child-1",
+        "pi-bed-child-1"
+      ],
+      "unit": "m2",
+      "value": 12.96
+    },
+    {
+      "evaluator": "ProgramEvaluator",
+      "evaluator_version": "0.1.0",
+      "method": "exterior_window_count_only",
+      "metric": "required_daylight_exterior_windows",
+      "status": "measured",
+      "subject_ids": [
         "sp-bed-child-1",
         "pi-bed-child-1"
       ],
       "unit": null,
-      "value": 1.5
+      "value": 0
+    },
+    {
+      "evaluator": "ProgramEvaluator",
+      "evaluator_version": "0.1.0",
+      "method": "rotated_rectangle_sides",
+      "metric": "room_aspect_ratio",
+      "status": "measured",
+      "subject_ids": [
+        "sp-bed-child-1",
+        "pi-bed-child-1"
+      ],
+      "unit": null,
+      "value": 1.778
     },
     {
       "evaluator": "ProgramEvaluator",
@@ -519,7 +529,7 @@
         "pi-bed-child-1"
       ],
       "unit": "%",
-      "value": 6.909
+      "value": 17.818
     },
     {
       "evaluator": "ProgramEvaluator",
@@ -532,7 +542,7 @@
         "pi-bed-child-2"
       ],
       "unit": "m2",
-      "value": 14.58
+      "value": 11.76
     },
     {
       "evaluator": "ProgramEvaluator",
@@ -545,7 +555,7 @@
         "pi-bed-child-2"
       ],
       "unit": null,
-      "value": 0
+      "value": 1
     },
     {
       "evaluator": "ProgramEvaluator",
@@ -558,7 +568,7 @@
         "pi-bed-child-2"
       ],
       "unit": null,
-      "value": 2.0
+      "value": 1.5
     },
     {
       "evaluator": "ProgramEvaluator",
@@ -571,7 +581,7 @@
         "pi-bed-child-2"
       ],
       "unit": "%",
-      "value": 32.545
+      "value": 6.909
     },
     {
       "evaluator": "ProgramEvaluator",
@@ -623,7 +633,7 @@
         "pi-bath-1"
       ],
       "unit": "m2",
-      "value": 7.56
+      "value": 8.64
     },
     {
       "evaluator": "ProgramEvaluator",
@@ -636,7 +646,7 @@
         "pi-bath-1"
       ],
       "unit": null,
-      "value": 2.333
+      "value": 2.667
     },
     {
       "evaluator": "ProgramEvaluator",
@@ -649,7 +659,7 @@
         "pi-bath-1"
       ],
       "unit": "%",
-      "value": 26.0
+      "value": 44.0
     },
     {
       "evaluator": "ProgramEvaluator",
@@ -662,7 +672,7 @@
         "pi-study-1"
       ],
       "unit": "m2",
-      "value": 11.52
+      "value": 10.08
     },
     {
       "evaluator": "ProgramEvaluator",
@@ -688,7 +698,7 @@
         "pi-study-1"
       ],
       "unit": null,
-      "value": 2.0
+      "value": 1.75
     },
     {
       "evaluator": "ProgramEvaluator",
@@ -701,7 +711,7 @@
         "pi-study-1"
       ],
       "unit": "%",
-      "value": 28.0
+      "value": 12.0
     },
     {
       "evaluator": "ProgramEvaluator",
@@ -714,7 +724,7 @@
         "pi-garage"
       ],
       "unit": "m2",
-      "value": 30.24
+      "value": 36.0
     },
     {
       "evaluator": "ProgramEvaluator",
@@ -727,7 +737,7 @@
         "pi-garage"
       ],
       "unit": "%",
-      "value": -16.0
+      "value": 0.0
     },
     {
       "evaluator": "ProgramEvaluator",
@@ -740,7 +750,7 @@
         "pi-laundry"
       ],
       "unit": "m2",
-      "value": 9.72
+      "value": 8.64
     },
     {
       "evaluator": "ProgramEvaluator",
@@ -753,7 +763,7 @@
         "pi-laundry"
       ],
       "unit": null,
-      "value": 3.0
+      "value": 2.667
     },
     {
       "evaluator": "ProgramEvaluator",
@@ -766,7 +776,7 @@
         "pi-laundry"
       ],
       "unit": "%",
-      "value": 62.0
+      "value": 44.0
     },
     {
       "evaluator": "ProgramEvaluator",
@@ -805,7 +815,7 @@
         "pi-stair"
       ],
       "unit": "m2",
-      "value": 12.96
+      "value": 15.36
     },
     {
       "evaluator": "ProgramEvaluator",
@@ -818,7 +828,7 @@
         "pi-stair"
       ],
       "unit": "%",
-      "value": 29.6
+      "value": 53.6
     },
     {
       "evaluator": "ProgramEvaluator",
@@ -831,7 +841,7 @@
         "pi-stair"
       ],
       "unit": "m2",
-      "value": 12.96
+      "value": 15.36
     },
     {
       "evaluator": "ProgramEvaluator",
@@ -844,7 +854,7 @@
         "pi-stair"
       ],
       "unit": "%",
-      "value": 29.6
+      "value": 53.6
     },
     {
       "evaluator": "ProgramEvaluator",
@@ -901,14 +911,14 @@
     {
       "evaluator": "ProgramEvaluator",
       "evaluator_version": "0.1.0",
-      "method": "not_placed_by_generator",
+      "method": "space_for_item",
       "metric": "outdoor_item_placed",
-      "status": "not_checked",
+      "status": "measured",
       "subject_ids": [
         "pi-terrace"
       ],
       "unit": null,
-      "value": null
+      "value": true
     },
     {
       "evaluator": "ProgramEvaluator",
@@ -918,7 +928,7 @@
       "status": "measured",
       "subject_ids": [],
       "unit": "m2",
-      "value": 224.28
+      "value": 218.94
     },
     {
       "evaluator": "ProgramEvaluator",
@@ -938,7 +948,7 @@
       "status": "measured",
       "subject_ids": [],
       "unit": "m2",
-      "value": 35.82
+      "value": 20.16
     },
     {
       "evaluator": "ProgramEvaluator",
@@ -1131,14 +1141,16 @@
     {
       "evaluator": "AdjacencyEvaluator",
       "evaluator_version": "0.1.0",
-      "method": "outdoor_item_not_placed",
+      "method": "graph_analysis",
       "metric": "adjacency_satisfied",
-      "status": "not_checked",
+      "status": "measured",
       "subject_ids": [
-        "adj-13-terrace-living"
+        "adj-13-terrace-living",
+        "sp-terrace",
+        "sp-living"
       ],
       "unit": null,
-      "value": null
+      "value": true
     },
     {
       "evaluator": "AdjacencyEvaluator",
@@ -1185,7 +1197,7 @@
       "status": "measured",
       "subject_ids": [],
       "unit": null,
-      "value": 0.826
+      "value": 0.852
     },
     {
       "evaluator": "CirculationEvaluator",
@@ -1215,7 +1227,7 @@
       "status": "measured",
       "subject_ids": [],
       "unit": "m2",
-      "value": 89.94
+      "value": 89.04
     },
     {
       "evaluator": "CirculationEvaluator",
@@ -1225,7 +1237,7 @@
       "status": "measured",
       "subject_ids": [],
       "unit": null,
-      "value": 0.306
+      "value": 0.316
     },
     {
       "evaluator": "CirculationEvaluator",
@@ -1245,7 +1257,7 @@
       "status": "measured",
       "subject_ids": [],
       "unit": "doors",
-      "value": 4.88
+      "value": 4.68
     },
     {
       "evaluator": "CirculationEvaluator",
@@ -1275,7 +1287,7 @@
       "status": "measured",
       "subject_ids": [],
       "unit": "m",
-      "value": 38.587
+      "value": 36.206
     },
     {
       "evaluator": "CirculationEvaluator",
@@ -1303,9 +1315,12 @@
       "method": "shared_boundary",
       "metric": "private_public_shared_walls",
       "status": "measured",
-      "subject_ids": [],
+      "subject_ids": [
+        "sp-bed-child-2",
+        "sp-study-1"
+      ],
       "unit": null,
-      "value": 0
+      "value": 1
     },
     {
       "evaluator": "PrivacyEvaluator",
@@ -1331,7 +1346,7 @@
       "evaluator": "SiteEvaluator",
       "evaluator_version": "0.1.0",
       "method": "workflow_site_gate",
-      "metric": "site_verified",
+      "metric": "site_approved",
       "status": "measured",
       "subject_ids": [],
       "unit": null,
@@ -1385,7 +1400,7 @@
       "status": "measured",
       "subject_ids": [],
       "unit": "%",
-      "value": 23.894
+      "value": 24.968
     },
     {
       "evaluator": "SiteEvaluator",
@@ -1419,7 +1434,7 @@
       "status": "inferred",
       "subject_ids": [],
       "unit": "m3",
-      "value": 136.911
+      "value": 102.354
     },
     {
       "evaluator": "SiteEvaluator",
@@ -1429,7 +1444,7 @@
       "status": "inferred",
       "subject_ids": [],
       "unit": "m3",
-      "value": 131.848
+      "value": 166.264
     },
     {
       "evaluator": "SiteEvaluator",
@@ -1449,7 +1464,7 @@
       "status": "inferred",
       "subject_ids": [],
       "unit": "m",
-      "value": 3.289
+      "value": 3.238
     },
     {
       "evaluator": "SiteEvaluator",
@@ -1459,7 +1474,7 @@
       "status": "inferred",
       "subject_ids": [],
       "unit": "m",
-      "value": 4.793
+      "value": 4.202
     },
     {
       "evaluator": "SiteEvaluator",
@@ -1492,7 +1507,7 @@
         "slab-floor-down-450"
       ],
       "unit": "m3",
-      "value": 112.824
+      "value": 116.748
     },
     {
       "evaluator": "SiteEvaluator",
@@ -1505,7 +1520,7 @@
         "slab-floor-down-450"
       ],
       "unit": "m",
-      "value": 3.854
+      "value": 3.797
     },
     {
       "evaluator": "SiteEvaluator",
@@ -1529,7 +1544,7 @@
         "lv-down-450"
       ],
       "unit": "m",
-      "value": 3.86
+      "value": 4.047
     },
     {
       "evaluator": "SiteEvaluator",
@@ -1542,7 +1557,7 @@
         "slab-floor-down-300"
       ],
       "unit": "m3",
-      "value": 19.025
+      "value": 8.742
     },
     {
       "evaluator": "SiteEvaluator",
@@ -1555,7 +1570,7 @@
         "slab-floor-down-300"
       ],
       "unit": "m",
-      "value": 1.543
+      "value": 1.238
     },
     {
       "evaluator": "SiteEvaluator",
@@ -1579,7 +1594,7 @@
         "lv-down-300"
       ],
       "unit": "m",
-      "value": 1.638
+      "value": 1.332
     },
     {
       "evaluator": "SiteEvaluator",
@@ -1592,7 +1607,7 @@
         "slab-floor-entry"
       ],
       "unit": "m3",
-      "value": 0.0
+      "value": 40.774
     },
     {
       "evaluator": "SiteEvaluator",
@@ -1605,7 +1620,33 @@
         "slab-floor-entry"
       ],
       "unit": "m",
-      "value": 4.543
+      "value": 2.329
+    },
+    {
+      "evaluator": "SiteEvaluator",
+      "evaluator_version": "0.1.0",
+      "method": "exact_clipped_tin_affine_integration",
+      "metric": "underfloor_area_void_m3",
+      "status": "inferred",
+      "subject_ids": [
+        "lv-entry",
+        "slab-terrace-terrace"
+      ],
+      "unit": "m3",
+      "value": 0.0
+    },
+    {
+      "evaluator": "SiteEvaluator",
+      "evaluator_version": "0.1.0",
+      "method": "exact_clipped_tin_affine_integration",
+      "metric": "underfloor_area_max_clear_height_m",
+      "status": "inferred",
+      "subject_ids": [
+        "lv-entry",
+        "slab-terrace-terrace"
+      ],
+      "unit": "m",
+      "value": 4.202
     },
     {
       "evaluator": "SiteEvaluator",
@@ -1629,7 +1670,7 @@
         "lv-entry"
       ],
       "unit": "m",
-      "value": 4.793
+      "value": 0.252
     },
     {
       "evaluator": "SiteEvaluator",
@@ -1639,7 +1680,7 @@
       "status": "inferred",
       "subject_ids": [],
       "unit": "m",
-      "value": 28.1
+      "value": 27.6
     },
     {
       "evaluator": "SiteEvaluator",
@@ -1649,7 +1690,7 @@
       "status": "inferred",
       "subject_ids": [],
       "unit": "m2",
-      "value": 51.2
+      "value": 36.076
     },
     {
       "evaluator": "SiteEvaluator",
@@ -1661,7 +1702,7 @@
         "w-down-300-001"
       ],
       "unit": "m",
-      "value": 2.6
+      "value": 2.0
     },
     {
       "evaluator": "SiteEvaluator",
@@ -1673,7 +1714,7 @@
         "w-down-300-001"
       ],
       "unit": "m",
-      "value": 2.6
+      "value": 2.0
     },
     {
       "evaluator": "SiteEvaluator",
@@ -1685,7 +1726,7 @@
         "w-down-300-001"
       ],
       "unit": "m",
-      "value": 2.762
+      "value": 2.788
     },
     {
       "evaluator": "SiteEvaluator",
@@ -1697,7 +1738,7 @@
         "w-down-300-001"
       ],
       "unit": "m",
-      "value": 2.71
+      "value": 2.748
     },
     {
       "evaluator": "SiteEvaluator",
@@ -1709,7 +1750,7 @@
         "w-down-300-001"
       ],
       "unit": "m2",
-      "value": 7.047
+      "value": 5.497
     },
     {
       "evaluator": "SiteEvaluator",
@@ -1719,66 +1760,6 @@
       "status": "inferred",
       "subject_ids": [
         "w-down-300-002"
-      ],
-      "unit": "m",
-      "value": 2.7
-    },
-    {
-      "evaluator": "SiteEvaluator",
-      "evaluator_version": "0.1.0",
-      "method": "piecewise_linear_positive_height_integral",
-      "metric": "retaining_known_length_m",
-      "status": "inferred",
-      "subject_ids": [
-        "w-down-300-002"
-      ],
-      "unit": "m",
-      "value": 2.7
-    },
-    {
-      "evaluator": "SiteEvaluator",
-      "evaluator_version": "0.1.0",
-      "method": "piecewise_linear_positive_height_integral",
-      "metric": "retaining_max_retained_height_m",
-      "status": "inferred",
-      "subject_ids": [
-        "w-down-300-002"
-      ],
-      "unit": "m",
-      "value": 2.87
-    },
-    {
-      "evaluator": "SiteEvaluator",
-      "evaluator_version": "0.1.0",
-      "method": "piecewise_linear_positive_height_integral",
-      "metric": "retaining_mean_retained_height_m",
-      "status": "inferred",
-      "subject_ids": [
-        "w-down-300-002"
-      ],
-      "unit": "m",
-      "value": 2.816
-    },
-    {
-      "evaluator": "SiteEvaluator",
-      "evaluator_version": "0.1.0",
-      "method": "piecewise_linear_positive_height_integral",
-      "metric": "retaining_face_area_m2",
-      "status": "inferred",
-      "subject_ids": [
-        "w-down-300-002"
-      ],
-      "unit": "m2",
-      "value": 7.604
-    },
-    {
-      "evaluator": "SiteEvaluator",
-      "evaluator_version": "0.1.0",
-      "method": "piecewise_linear_positive_height_integral",
-      "metric": "retaining_length_m",
-      "status": "inferred",
-      "subject_ids": [
-        "w-down-300-003"
       ],
       "unit": "m",
       "value": 1.8
@@ -1790,7 +1771,7 @@
       "metric": "retaining_known_length_m",
       "status": "inferred",
       "subject_ids": [
-        "w-down-300-003"
+        "w-down-300-002"
       ],
       "unit": "m",
       "value": 1.8
@@ -1802,10 +1783,70 @@
       "metric": "retaining_max_retained_height_m",
       "status": "inferred",
       "subject_ids": [
+        "w-down-300-002"
+      ],
+      "unit": "m",
+      "value": 2.861
+    },
+    {
+      "evaluator": "SiteEvaluator",
+      "evaluator_version": "0.1.0",
+      "method": "piecewise_linear_positive_height_integral",
+      "metric": "retaining_mean_retained_height_m",
+      "status": "inferred",
+      "subject_ids": [
+        "w-down-300-002"
+      ],
+      "unit": "m",
+      "value": 2.825
+    },
+    {
+      "evaluator": "SiteEvaluator",
+      "evaluator_version": "0.1.0",
+      "method": "piecewise_linear_positive_height_integral",
+      "metric": "retaining_face_area_m2",
+      "status": "inferred",
+      "subject_ids": [
+        "w-down-300-002"
+      ],
+      "unit": "m2",
+      "value": 5.084
+    },
+    {
+      "evaluator": "SiteEvaluator",
+      "evaluator_version": "0.1.0",
+      "method": "piecewise_linear_positive_height_integral",
+      "metric": "retaining_length_m",
+      "status": "inferred",
+      "subject_ids": [
         "w-down-300-003"
       ],
       "unit": "m",
-      "value": 2.942
+      "value": 3.2
+    },
+    {
+      "evaluator": "SiteEvaluator",
+      "evaluator_version": "0.1.0",
+      "method": "piecewise_linear_positive_height_integral",
+      "metric": "retaining_known_length_m",
+      "status": "inferred",
+      "subject_ids": [
+        "w-down-300-003"
+      ],
+      "unit": "m",
+      "value": 3.2
+    },
+    {
+      "evaluator": "SiteEvaluator",
+      "evaluator_version": "0.1.0",
+      "method": "piecewise_linear_positive_height_integral",
+      "metric": "retaining_max_retained_height_m",
+      "status": "inferred",
+      "subject_ids": [
+        "w-down-300-003"
+      ],
+      "unit": "m",
+      "value": 2.988
     },
     {
       "evaluator": "SiteEvaluator",
@@ -1817,7 +1858,7 @@
         "w-down-300-003"
       ],
       "unit": "m",
-      "value": 2.906
+      "value": 2.924
     },
     {
       "evaluator": "SiteEvaluator",
@@ -1829,7 +1870,7 @@
         "w-down-300-003"
       ],
       "unit": "m2",
-      "value": 5.232
+      "value": 9.358
     },
     {
       "evaluator": "SiteEvaluator",
@@ -1838,67 +1879,7 @@
       "metric": "retaining_length_m",
       "status": "inferred",
       "subject_ids": [
-        "w-down-300-004"
-      ],
-      "unit": "m",
-      "value": 2.4
-    },
-    {
-      "evaluator": "SiteEvaluator",
-      "evaluator_version": "0.1.0",
-      "method": "piecewise_linear_positive_height_integral",
-      "metric": "retaining_known_length_m",
-      "status": "inferred",
-      "subject_ids": [
-        "w-down-300-004"
-      ],
-      "unit": "m",
-      "value": 2.4
-    },
-    {
-      "evaluator": "SiteEvaluator",
-      "evaluator_version": "0.1.0",
-      "method": "piecewise_linear_positive_height_integral",
-      "metric": "retaining_max_retained_height_m",
-      "status": "inferred",
-      "subject_ids": [
-        "w-down-300-004"
-      ],
-      "unit": "m",
-      "value": 3.039
-    },
-    {
-      "evaluator": "SiteEvaluator",
-      "evaluator_version": "0.1.0",
-      "method": "piecewise_linear_positive_height_integral",
-      "metric": "retaining_mean_retained_height_m",
-      "status": "inferred",
-      "subject_ids": [
-        "w-down-300-004"
-      ],
-      "unit": "m",
-      "value": 2.99
-    },
-    {
-      "evaluator": "SiteEvaluator",
-      "evaluator_version": "0.1.0",
-      "method": "piecewise_linear_positive_height_integral",
-      "metric": "retaining_face_area_m2",
-      "status": "inferred",
-      "subject_ids": [
-        "w-down-300-004"
-      ],
-      "unit": "m2",
-      "value": 7.177
-    },
-    {
-      "evaluator": "SiteEvaluator",
-      "evaluator_version": "0.1.0",
-      "method": "piecewise_linear_positive_height_integral",
-      "metric": "retaining_length_m",
-      "status": "inferred",
-      "subject_ids": [
-        "w-down-300-020"
+        "w-down-300-018"
       ],
       "unit": "m",
       "value": 5.4
@@ -1910,7 +1891,7 @@
       "metric": "retaining_known_length_m",
       "status": "inferred",
       "subject_ids": [
-        "w-down-300-020"
+        "w-down-300-018"
       ],
       "unit": "m",
       "value": 5.4
@@ -1922,10 +1903,10 @@
       "metric": "retaining_max_retained_height_m",
       "status": "inferred",
       "subject_ids": [
-        "w-down-300-020"
+        "w-down-300-018"
       ],
       "unit": "m",
-      "value": 2.658
+      "value": 0.661
     },
     {
       "evaluator": "SiteEvaluator",
@@ -1934,10 +1915,10 @@
       "metric": "retaining_mean_retained_height_m",
       "status": "inferred",
       "subject_ids": [
-        "w-down-300-020"
+        "w-down-300-018"
       ],
       "unit": "m",
-      "value": 1.794
+      "value": 0.108
     },
     {
       "evaluator": "SiteEvaluator",
@@ -1946,10 +1927,10 @@
       "metric": "retaining_face_area_m2",
       "status": "inferred",
       "subject_ids": [
-        "w-down-300-020"
+        "w-down-300-018"
       ],
       "unit": "m2",
-      "value": 9.69
+      "value": 0.583
     },
     {
       "evaluator": "SiteEvaluator",
@@ -1958,7 +1939,67 @@
       "metric": "retaining_length_m",
       "status": "inferred",
       "subject_ids": [
-        "w-down-300-021"
+        "w-down-300-025"
+      ],
+      "unit": "m",
+      "value": 4.8
+    },
+    {
+      "evaluator": "SiteEvaluator",
+      "evaluator_version": "0.1.0",
+      "method": "piecewise_linear_positive_height_integral",
+      "metric": "retaining_known_length_m",
+      "status": "inferred",
+      "subject_ids": [
+        "w-down-300-025"
+      ],
+      "unit": "m",
+      "value": 4.8
+    },
+    {
+      "evaluator": "SiteEvaluator",
+      "evaluator_version": "0.1.0",
+      "method": "piecewise_linear_positive_height_integral",
+      "metric": "retaining_max_retained_height_m",
+      "status": "inferred",
+      "subject_ids": [
+        "w-down-300-025"
+      ],
+      "unit": "m",
+      "value": 2.988
+    },
+    {
+      "evaluator": "SiteEvaluator",
+      "evaluator_version": "0.1.0",
+      "method": "piecewise_linear_positive_height_integral",
+      "metric": "retaining_mean_retained_height_m",
+      "status": "inferred",
+      "subject_ids": [
+        "w-down-300-025"
+      ],
+      "unit": "m",
+      "value": 2.23
+    },
+    {
+      "evaluator": "SiteEvaluator",
+      "evaluator_version": "0.1.0",
+      "method": "piecewise_linear_positive_height_integral",
+      "metric": "retaining_face_area_m2",
+      "status": "inferred",
+      "subject_ids": [
+        "w-down-300-025"
+      ],
+      "unit": "m2",
+      "value": 10.705
+    },
+    {
+      "evaluator": "SiteEvaluator",
+      "evaluator_version": "0.1.0",
+      "method": "piecewise_linear_positive_height_integral",
+      "metric": "retaining_length_m",
+      "status": "inferred",
+      "subject_ids": [
+        "w-down-300-026"
       ],
       "unit": "m",
       "value": 1.2
@@ -1970,7 +2011,7 @@
       "metric": "retaining_known_length_m",
       "status": "inferred",
       "subject_ids": [
-        "w-down-300-021"
+        "w-down-300-026"
       ],
       "unit": "m",
       "value": 1.2
@@ -1982,10 +2023,10 @@
       "metric": "retaining_max_retained_height_m",
       "status": "inferred",
       "subject_ids": [
-        "w-down-300-021"
+        "w-down-300-026"
       ],
       "unit": "m",
-      "value": 0.836
+      "value": 1.391
     },
     {
       "evaluator": "SiteEvaluator",
@@ -1994,10 +2035,10 @@
       "metric": "retaining_mean_retained_height_m",
       "status": "inferred",
       "subject_ids": [
-        "w-down-300-021"
+        "w-down-300-026"
       ],
       "unit": "m",
-      "value": 0.611
+      "value": 1.166
     },
     {
       "evaluator": "SiteEvaluator",
@@ -2006,10 +2047,10 @@
       "metric": "retaining_face_area_m2",
       "status": "inferred",
       "subject_ids": [
-        "w-down-300-021"
+        "w-down-300-026"
       ],
       "unit": "m2",
-      "value": 0.734
+      "value": 1.4
     },
     {
       "evaluator": "SiteEvaluator",
@@ -2018,7 +2059,7 @@
       "metric": "retaining_length_m",
       "status": "inferred",
       "subject_ids": [
-        "w-down-300-031"
+        "w-down-300-027"
       ],
       "unit": "m",
       "value": 5.4
@@ -2030,7 +2071,7 @@
       "metric": "retaining_known_length_m",
       "status": "inferred",
       "subject_ids": [
-        "w-down-300-031"
+        "w-down-300-027"
       ],
       "unit": "m",
       "value": 5.4
@@ -2042,10 +2083,10 @@
       "metric": "retaining_max_retained_height_m",
       "status": "inferred",
       "subject_ids": [
-        "w-down-300-031"
+        "w-down-300-027"
       ],
       "unit": "m",
-      "value": 3.039
+      "value": 0.941
     },
     {
       "evaluator": "SiteEvaluator",
@@ -2054,10 +2095,10 @@
       "metric": "retaining_mean_retained_height_m",
       "status": "inferred",
       "subject_ids": [
-        "w-down-300-031"
+        "w-down-300-027"
       ],
       "unit": "m",
-      "value": 2.175
+      "value": 0.219
     },
     {
       "evaluator": "SiteEvaluator",
@@ -2066,10 +2107,10 @@
       "metric": "retaining_face_area_m2",
       "status": "inferred",
       "subject_ids": [
-        "w-down-300-031"
+        "w-down-300-027"
       ],
       "unit": "m2",
-      "value": 11.743
+      "value": 1.182
     },
     {
       "evaluator": "SiteEvaluator",
@@ -2078,7 +2119,67 @@
       "metric": "retaining_length_m",
       "status": "inferred",
       "subject_ids": [
-        "w-down-300-032"
+        "w-down-450-001"
+      ],
+      "unit": "m",
+      "value": 1.4
+    },
+    {
+      "evaluator": "SiteEvaluator",
+      "evaluator_version": "0.1.0",
+      "method": "piecewise_linear_positive_height_integral",
+      "metric": "retaining_known_length_m",
+      "status": "inferred",
+      "subject_ids": [
+        "w-down-450-001"
+      ],
+      "unit": "m",
+      "value": 1.4
+    },
+    {
+      "evaluator": "SiteEvaluator",
+      "evaluator_version": "0.1.0",
+      "method": "piecewise_linear_positive_height_integral",
+      "metric": "retaining_max_retained_height_m",
+      "status": "inferred",
+      "subject_ids": [
+        "w-down-450-001"
+      ],
+      "unit": "m",
+      "value": 0.786
+    },
+    {
+      "evaluator": "SiteEvaluator",
+      "evaluator_version": "0.1.0",
+      "method": "piecewise_linear_positive_height_integral",
+      "metric": "retaining_mean_retained_height_m",
+      "status": "inferred",
+      "subject_ids": [
+        "w-down-450-001"
+      ],
+      "unit": "m",
+      "value": 0.758
+    },
+    {
+      "evaluator": "SiteEvaluator",
+      "evaluator_version": "0.1.0",
+      "method": "piecewise_linear_positive_height_integral",
+      "metric": "retaining_face_area_m2",
+      "status": "inferred",
+      "subject_ids": [
+        "w-down-450-001"
+      ],
+      "unit": "m2",
+      "value": 1.061
+    },
+    {
+      "evaluator": "SiteEvaluator",
+      "evaluator_version": "0.1.0",
+      "method": "piecewise_linear_positive_height_integral",
+      "metric": "retaining_length_m",
+      "status": "inferred",
+      "subject_ids": [
+        "w-down-450-022"
       ],
       "unit": "m",
       "value": 1.2
@@ -2090,7 +2191,7 @@
       "metric": "retaining_known_length_m",
       "status": "inferred",
       "subject_ids": [
-        "w-down-300-032"
+        "w-down-450-022"
       ],
       "unit": "m",
       "value": 1.2
@@ -2102,10 +2203,10 @@
       "metric": "retaining_max_retained_height_m",
       "status": "inferred",
       "subject_ids": [
-        "w-down-300-032"
+        "w-down-450-022"
       ],
       "unit": "m",
-      "value": 1.217
+      "value": 0.73
     },
     {
       "evaluator": "SiteEvaluator",
@@ -2114,10 +2215,10 @@
       "metric": "retaining_mean_retained_height_m",
       "status": "inferred",
       "subject_ids": [
-        "w-down-300-032"
+        "w-down-450-022"
       ],
       "unit": "m",
-      "value": 0.992
+      "value": 0.475
     },
     {
       "evaluator": "SiteEvaluator",
@@ -2126,10 +2227,10 @@
       "metric": "retaining_face_area_m2",
       "status": "inferred",
       "subject_ids": [
-        "w-down-300-032"
+        "w-down-450-022"
       ],
       "unit": "m2",
-      "value": 1.19
+      "value": 0.569
     },
     {
       "evaluator": "SiteEvaluator",
@@ -2138,10 +2239,10 @@
       "metric": "retaining_length_m",
       "status": "inferred",
       "subject_ids": [
-        "w-down-300-033"
+        "w-down-450-024"
       ],
       "unit": "m",
-      "value": 5.4
+      "value": 1.2
     },
     {
       "evaluator": "SiteEvaluator",
@@ -2150,10 +2251,10 @@
       "metric": "retaining_known_length_m",
       "status": "inferred",
       "subject_ids": [
-        "w-down-300-033"
+        "w-down-450-024"
       ],
       "unit": "m",
-      "value": 5.4
+      "value": 1.2
     },
     {
       "evaluator": "SiteEvaluator",
@@ -2162,10 +2263,10 @@
       "metric": "retaining_max_retained_height_m",
       "status": "inferred",
       "subject_ids": [
-        "w-down-300-033"
+        "w-down-450-024"
       ],
       "unit": "m",
-      "value": 0.767
+      "value": 0.786
     },
     {
       "evaluator": "SiteEvaluator",
@@ -2174,10 +2275,10 @@
       "metric": "retaining_mean_retained_height_m",
       "status": "inferred",
       "subject_ids": [
-        "w-down-300-033"
+        "w-down-450-024"
       ],
       "unit": "m",
-      "value": 0.145
+      "value": 0.531
     },
     {
       "evaluator": "SiteEvaluator",
@@ -2186,10 +2287,10 @@
       "metric": "retaining_face_area_m2",
       "status": "inferred",
       "subject_ids": [
-        "w-down-300-033"
+        "w-down-450-024"
       ],
       "unit": "m2",
-      "value": 0.784
+      "value": 0.637
     },
     {
       "evaluator": "SiteEvaluator",
@@ -2201,7 +2302,7 @@
         "d-front-entry-ext"
       ],
       "unit": "m",
-      "value": 0.159
+      "value": 0.019
     },
     {
       "evaluator": "SiteEvaluator",
@@ -2213,7 +2314,7 @@
         "d-front-entry-ext"
       ],
       "unit": "m",
-      "value": 11.321
+      "value": 11.651
     },
     {
       "evaluator": "SiteEvaluator",
@@ -2225,7 +2326,7 @@
         "d-garage-garage-ext"
       ],
       "unit": "m",
-      "value": 0.017
+      "value": 0.259
     },
     {
       "evaluator": "SiteEvaluator",
@@ -2237,7 +2338,7 @@
         "d-garage-garage-ext"
       ],
       "unit": "m",
-      "value": 11.463
+      "value": 11.411
     },
     {
       "evaluator": "SiteEvaluator",
@@ -2289,7 +2390,7 @@
         "sp-garage"
       ],
       "unit": "m",
-      "value": 12.256
+      "value": 12.204
     },
     {
       "evaluator": "SiteEvaluator",
@@ -2301,7 +2402,7 @@
         "sp-garage"
       ],
       "unit": "m",
-      "value": -0.776
+      "value": -0.534
     },
     {
       "evaluator": "SiteEvaluator",
@@ -2325,7 +2426,7 @@
         "sp-garage"
       ],
       "unit": "%",
-      "value": -25.027
+      "value": -17.22
     },
     {
       "evaluator": "SiteEvaluator",
@@ -2335,7 +2436,7 @@
       "status": "measured",
       "subject_ids": [],
       "unit": null,
-      "value": "6.98, 8.48, 11.48"
+      "value": "7.17, 8.67, 11.67"
     },
     {
       "evaluator": "SiteEvaluator",
@@ -2345,7 +2446,7 @@
       "status": "inferred",
       "subject_ids": [],
       "unit": "m",
-      "value": 8.642
+      "value": 8.535
     },
     {
       "evaluator": "SiteEvaluator",
@@ -2355,7 +2456,45 @@
       "status": "inferred",
       "subject_ids": [],
       "unit": "m",
-      "value": 11.604
+      "value": 11.547
+    },
+    {
+      "evaluator": "SiteEvaluator",
+      "evaluator_version": "0.1.0",
+      "method": "doors_connecting_to_terrace",
+      "metric": "room_terrace_door_count",
+      "status": "inferred",
+      "subject_ids": [
+        "sp-terrace"
+      ],
+      "unit": "count",
+      "value": 1
+    },
+    {
+      "evaluator": "SiteEvaluator",
+      "evaluator_version": "0.1.0",
+      "method": "room_terrace_elevation_difference",
+      "metric": "room_terrace_level_delta_m",
+      "status": "inferred",
+      "subject_ids": [
+        "sp-terrace",
+        "sp-living",
+        "d-living-terrace"
+      ],
+      "unit": "m",
+      "value": 0.0
+    },
+    {
+      "evaluator": "SiteEvaluator",
+      "evaluator_version": "0.1.0",
+      "method": "tin_at_terrace_centroid",
+      "metric": "terrace_ground_delta_m",
+      "status": "inferred",
+      "subject_ids": [
+        "sp-terrace"
+      ],
+      "unit": "m",
+      "value": 5.13
     },
     {
       "evaluator": "NetAreaEvaluator",
@@ -2367,7 +2506,7 @@
         "sp-corridor-b0"
       ],
       "unit": "m2",
-      "value": 11.4
+      "value": 8.4
     },
     {
       "evaluator": "NetAreaEvaluator",
@@ -2379,7 +2518,7 @@
         "sp-corridor-b0"
       ],
       "unit": "m2",
-      "value": 9.952
+      "value": 7.453
     },
     {
       "evaluator": "NetAreaEvaluator",
@@ -2403,7 +2542,7 @@
         "sp-corridor-b0"
       ],
       "unit": "m",
-      "value": 9.2
+      "value": 6.85
     },
     {
       "evaluator": "NetAreaEvaluator",
@@ -2427,7 +2566,7 @@
         "sp-corridor-b-walkout"
       ],
       "unit": "m2",
-      "value": 11.4
+      "value": 8.4
     },
     {
       "evaluator": "NetAreaEvaluator",
@@ -2439,7 +2578,7 @@
         "sp-corridor-b-walkout"
       ],
       "unit": "m2",
-      "value": 10.162
+      "value": 7.41
     },
     {
       "evaluator": "NetAreaEvaluator",
@@ -2463,7 +2602,7 @@
         "sp-corridor-b-walkout"
       ],
       "unit": "m",
-      "value": 9.2
+      "value": 6.7
     },
     {
       "evaluator": "NetAreaEvaluator",
@@ -2487,7 +2626,7 @@
         "sp-corridor-b1"
       ],
       "unit": "m2",
-      "value": 7.32
+      "value": 8.04
     },
     {
       "evaluator": "NetAreaEvaluator",
@@ -2499,7 +2638,7 @@
         "sp-corridor-b1"
       ],
       "unit": "m2",
-      "value": 6.495
+      "value": 7.133
     },
     {
       "evaluator": "NetAreaEvaluator",
@@ -2523,7 +2662,7 @@
         "sp-corridor-b1"
       ],
       "unit": "m",
-      "value": 5.8
+      "value": 6.4
     },
     {
       "evaluator": "NetAreaEvaluator",
@@ -2547,7 +2686,7 @@
         "sp-entry"
       ],
       "unit": "m2",
-      "value": 8.1
+      "value": 7.68
     },
     {
       "evaluator": "NetAreaEvaluator",
@@ -2559,7 +2698,7 @@
         "sp-entry"
       ],
       "unit": "m2",
-      "value": 6.801
+      "value": 6.859
     },
     {
       "evaluator": "NetAreaEvaluator",
@@ -2571,7 +2710,7 @@
         "sp-entry"
       ],
       "unit": "m",
-      "value": 1.275
+      "value": 1.45
     },
     {
       "evaluator": "NetAreaEvaluator",
@@ -2583,7 +2722,7 @@
         "sp-entry"
       ],
       "unit": "m",
-      "value": 5.4
+      "value": 4.8
     },
     {
       "evaluator": "NetAreaEvaluator",
@@ -2607,7 +2746,7 @@
         "sp-dining"
       ],
       "unit": "m2",
-      "value": 14.7
+      "value": 10.2
     },
     {
       "evaluator": "NetAreaEvaluator",
@@ -2619,7 +2758,7 @@
         "sp-dining"
       ],
       "unit": "m2",
-      "value": 13.684
+      "value": 9.394
     },
     {
       "evaluator": "NetAreaEvaluator",
@@ -2643,7 +2782,7 @@
         "sp-dining"
       ],
       "unit": "m",
-      "value": 4.75
+      "value": 3.25
     },
     {
       "evaluator": "NetAreaEvaluator",
@@ -2667,7 +2806,7 @@
         "sp-kitchen"
       ],
       "unit": "m2",
-      "value": 11.76
+      "value": 8.16
     },
     {
       "evaluator": "NetAreaEvaluator",
@@ -2679,7 +2818,7 @@
         "sp-kitchen"
       ],
       "unit": "m2",
-      "value": 10.483
+      "value": 7.161
     },
     {
       "evaluator": "NetAreaEvaluator",
@@ -2703,7 +2842,7 @@
         "sp-kitchen"
       ],
       "unit": "m",
-      "value": 4.75
+      "value": 3.25
     },
     {
       "evaluator": "NetAreaEvaluator",
@@ -2727,7 +2866,7 @@
         "sp-living"
       ],
       "unit": "m2",
-      "value": 24.84
+      "value": 19.44
     },
     {
       "evaluator": "NetAreaEvaluator",
@@ -2739,7 +2878,7 @@
         "sp-living"
       ],
       "unit": "m2",
-      "value": 23.023
+      "value": 17.983
     },
     {
       "evaluator": "NetAreaEvaluator",
@@ -2751,7 +2890,7 @@
         "sp-living"
       ],
       "unit": "m",
-      "value": 4.45
+      "value": 3.45
     },
     {
       "evaluator": "NetAreaEvaluator",
@@ -2763,7 +2902,7 @@
         "sp-living"
       ],
       "unit": "m",
-      "value": 5.25
+      "value": 5.4
     },
     {
       "evaluator": "NetAreaEvaluator",
@@ -2799,7 +2938,7 @@
         "sp-bath-ensuite"
       ],
       "unit": "m2",
-      "value": 7.564
+      "value": 7.176
     },
     {
       "evaluator": "NetAreaEvaluator",
@@ -2811,7 +2950,7 @@
         "sp-bath-ensuite"
       ],
       "unit": "m",
-      "value": 1.525
+      "value": 1.45
     },
     {
       "evaluator": "NetAreaEvaluator",
@@ -2847,7 +2986,7 @@
         "sp-bed-main"
       ],
       "unit": "m2",
-      "value": 16.2
+      "value": 17.28
     },
     {
       "evaluator": "NetAreaEvaluator",
@@ -2859,7 +2998,7 @@
         "sp-bed-main"
       ],
       "unit": "m2",
-      "value": 14.876
+      "value": 15.911
     },
     {
       "evaluator": "NetAreaEvaluator",
@@ -2871,7 +3010,7 @@
         "sp-bed-main"
       ],
       "unit": "m",
-      "value": 2.925
+      "value": 3.125
     },
     {
       "evaluator": "NetAreaEvaluator",
@@ -2907,7 +3046,7 @@
         "sp-bed-child-1"
       ],
       "unit": "m2",
-      "value": 11.76
+      "value": 12.96
     },
     {
       "evaluator": "NetAreaEvaluator",
@@ -2919,7 +3058,7 @@
         "sp-bed-child-1"
       ],
       "unit": "m2",
-      "value": 10.601
+      "value": 11.734
     },
     {
       "evaluator": "NetAreaEvaluator",
@@ -2929,66 +3068,6 @@
       "status": "measured",
       "subject_ids": [
         "sp-bed-child-1"
-      ],
-      "unit": "m",
-      "value": 2.65
-    },
-    {
-      "evaluator": "NetAreaEvaluator",
-      "evaluator_version": "1.0.0",
-      "method": "net_minimum_rotated_bounds",
-      "metric": "net_extent_long_m",
-      "status": "measured",
-      "subject_ids": [
-        "sp-bed-child-1"
-      ],
-      "unit": "m",
-      "value": 4.05
-    },
-    {
-      "evaluator": "NetAreaEvaluator",
-      "evaluator_version": "1.0.0",
-      "method": "boundary_wall_coverage",
-      "metric": "net_wall_basis_complete",
-      "status": "measured",
-      "subject_ids": [
-        "sp-bed-child-1"
-      ],
-      "unit": null,
-      "value": true
-    },
-    {
-      "evaluator": "NetAreaEvaluator",
-      "evaluator_version": "1.0.0",
-      "method": "polygon_area_centerline",
-      "metric": "gross_area_m2",
-      "status": "measured",
-      "subject_ids": [
-        "sp-bed-child-2"
-      ],
-      "unit": "m2",
-      "value": 14.58
-    },
-    {
-      "evaluator": "NetAreaEvaluator",
-      "evaluator_version": "1.0.0",
-      "method": "wall_solids_minus_floor_apertures",
-      "metric": "net_area_m2",
-      "status": "measured",
-      "subject_ids": [
-        "sp-bed-child-2"
-      ],
-      "unit": "m2",
-      "value": 13.264
-    },
-    {
-      "evaluator": "NetAreaEvaluator",
-      "evaluator_version": "1.0.0",
-      "method": "net_minimum_rotated_bounds",
-      "metric": "net_extent_short_m",
-      "status": "measured",
-      "subject_ids": [
-        "sp-bed-child-2"
       ],
       "unit": "m",
       "value": 2.55
@@ -3000,10 +3079,70 @@
       "metric": "net_extent_long_m",
       "status": "measured",
       "subject_ids": [
+        "sp-bed-child-1"
+      ],
+      "unit": "m",
+      "value": 4.65
+    },
+    {
+      "evaluator": "NetAreaEvaluator",
+      "evaluator_version": "1.0.0",
+      "method": "boundary_wall_coverage",
+      "metric": "net_wall_basis_complete",
+      "status": "measured",
+      "subject_ids": [
+        "sp-bed-child-1"
+      ],
+      "unit": null,
+      "value": true
+    },
+    {
+      "evaluator": "NetAreaEvaluator",
+      "evaluator_version": "1.0.0",
+      "method": "polygon_area_centerline",
+      "metric": "gross_area_m2",
+      "status": "measured",
+      "subject_ids": [
+        "sp-bed-child-2"
+      ],
+      "unit": "m2",
+      "value": 11.76
+    },
+    {
+      "evaluator": "NetAreaEvaluator",
+      "evaluator_version": "1.0.0",
+      "method": "wall_solids_minus_floor_apertures",
+      "metric": "net_area_m2",
+      "status": "measured",
+      "subject_ids": [
+        "sp-bed-child-2"
+      ],
+      "unit": "m2",
+      "value": 10.303
+    },
+    {
+      "evaluator": "NetAreaEvaluator",
+      "evaluator_version": "1.0.0",
+      "method": "net_minimum_rotated_bounds",
+      "metric": "net_extent_short_m",
+      "status": "measured",
+      "subject_ids": [
         "sp-bed-child-2"
       ],
       "unit": "m",
-      "value": 5.25
+      "value": 2.575
+    },
+    {
+      "evaluator": "NetAreaEvaluator",
+      "evaluator_version": "1.0.0",
+      "method": "net_minimum_rotated_bounds",
+      "metric": "net_extent_long_m",
+      "status": "measured",
+      "subject_ids": [
+        "sp-bed-child-2"
+      ],
+      "unit": "m",
+      "value": 4.05
     },
     {
       "evaluator": "NetAreaEvaluator",
@@ -3027,7 +3166,7 @@
         "sp-bath-1"
       ],
       "unit": "m2",
-      "value": 7.56
+      "value": 8.64
     },
     {
       "evaluator": "NetAreaEvaluator",
@@ -3039,7 +3178,7 @@
         "sp-bath-1"
       ],
       "unit": "m2",
-      "value": 6.321
+      "value": 7.266
     },
     {
       "evaluator": "NetAreaEvaluator",
@@ -3063,7 +3202,7 @@
         "sp-bath-1"
       ],
       "unit": "m",
-      "value": 4.05
+      "value": 4.65
     },
     {
       "evaluator": "NetAreaEvaluator",
@@ -3087,7 +3226,7 @@
         "sp-study-1"
       ],
       "unit": "m2",
-      "value": 11.52
+      "value": 10.08
     },
     {
       "evaluator": "NetAreaEvaluator",
@@ -3099,7 +3238,7 @@
         "sp-study-1"
       ],
       "unit": "m2",
-      "value": 10.018
+      "value": 9.011
     },
     {
       "evaluator": "NetAreaEvaluator",
@@ -3111,7 +3250,7 @@
         "sp-study-1"
       ],
       "unit": "m",
-      "value": 2.175
+      "value": 2.25
     },
     {
       "evaluator": "NetAreaEvaluator",
@@ -3123,7 +3262,7 @@
         "sp-study-1"
       ],
       "unit": "m",
-      "value": 4.65
+      "value": 4.05
     },
     {
       "evaluator": "NetAreaEvaluator",
@@ -3144,70 +3283,10 @@
       "metric": "gross_area_m2",
       "status": "measured",
       "subject_ids": [
-        "sp-garage"
-      ],
-      "unit": "m2",
-      "value": 30.24
-    },
-    {
-      "evaluator": "NetAreaEvaluator",
-      "evaluator_version": "1.0.0",
-      "method": "wall_solids_minus_floor_apertures",
-      "metric": "net_area_m2",
-      "status": "measured",
-      "subject_ids": [
-        "sp-garage"
-      ],
-      "unit": "m2",
-      "value": 29.021
-    },
-    {
-      "evaluator": "NetAreaEvaluator",
-      "evaluator_version": "1.0.0",
-      "method": "net_minimum_rotated_bounds",
-      "metric": "net_extent_short_m",
-      "status": "measured",
-      "subject_ids": [
-        "sp-garage"
-      ],
-      "unit": "m",
-      "value": 5.4
-    },
-    {
-      "evaluator": "NetAreaEvaluator",
-      "evaluator_version": "1.0.0",
-      "method": "net_minimum_rotated_bounds",
-      "metric": "net_extent_long_m",
-      "status": "measured",
-      "subject_ids": [
-        "sp-garage"
-      ],
-      "unit": "m",
-      "value": 5.45
-    },
-    {
-      "evaluator": "NetAreaEvaluator",
-      "evaluator_version": "1.0.0",
-      "method": "boundary_wall_coverage",
-      "metric": "net_wall_basis_complete",
-      "status": "measured",
-      "subject_ids": [
-        "sp-garage"
-      ],
-      "unit": null,
-      "value": true
-    },
-    {
-      "evaluator": "NetAreaEvaluator",
-      "evaluator_version": "1.0.0",
-      "method": "polygon_area_centerline",
-      "metric": "gross_area_m2",
-      "status": "measured",
-      "subject_ids": [
         "sp-laundry"
       ],
       "unit": "m2",
-      "value": 9.72
+      "value": 8.64
     },
     {
       "evaluator": "NetAreaEvaluator",
@@ -3219,7 +3298,7 @@
         "sp-laundry"
       ],
       "unit": "m2",
-      "value": 8.606
+      "value": 7.616
     },
     {
       "evaluator": "NetAreaEvaluator",
@@ -3243,7 +3322,7 @@
         "sp-laundry"
       ],
       "unit": "m",
-      "value": 5.25
+      "value": 4.65
     },
     {
       "evaluator": "NetAreaEvaluator",
@@ -3327,7 +3406,7 @@
         "sp-stair-0a"
       ],
       "unit": "m2",
-      "value": 12.96
+      "value": 15.36
     },
     {
       "evaluator": "NetAreaEvaluator",
@@ -3339,7 +3418,7 @@
         "sp-stair-0a"
       ],
       "unit": "m2",
-      "value": 3.146
+      "value": 3.901
     },
     {
       "evaluator": "NetAreaEvaluator",
@@ -3351,7 +3430,7 @@
         "sp-stair-0a"
       ],
       "unit": "m",
-      "value": 2.175
+      "value": 2.975
     },
     {
       "evaluator": "NetAreaEvaluator",
@@ -3363,7 +3442,7 @@
         "sp-stair-0a"
       ],
       "unit": "m",
-      "value": 5.25
+      "value": 4.65
     },
     {
       "evaluator": "NetAreaEvaluator",
@@ -3387,7 +3466,7 @@
         "sp-stair-0b"
       ],
       "unit": "m2",
-      "value": 12.96
+      "value": 15.36
     },
     {
       "evaluator": "NetAreaEvaluator",
@@ -3399,7 +3478,7 @@
         "sp-stair-0b"
       ],
       "unit": "m2",
-      "value": 11.346
+      "value": 13.701
     },
     {
       "evaluator": "NetAreaEvaluator",
@@ -3411,7 +3490,7 @@
         "sp-stair-0b"
       ],
       "unit": "m",
-      "value": 2.175
+      "value": 2.975
     },
     {
       "evaluator": "NetAreaEvaluator",
@@ -3423,7 +3502,7 @@
         "sp-stair-0b"
       ],
       "unit": "m",
-      "value": 5.25
+      "value": 4.65
     },
     {
       "evaluator": "NetAreaEvaluator",
@@ -3519,7 +3598,7 @@
         "sp-stair-1b"
       ],
       "unit": "m2",
-      "value": 9.634
+      "value": 9.291
     },
     {
       "evaluator": "NetAreaEvaluator",
@@ -3531,7 +3610,7 @@
         "sp-stair-1b"
       ],
       "unit": "m",
-      "value": 2.05
+      "value": 1.975
     },
     {
       "evaluator": "NetAreaEvaluator",
@@ -3564,70 +3643,10 @@
       "metric": "gross_area_m2",
       "status": "measured",
       "subject_ids": [
-        "sp-flex-b-walkout-back"
-      ],
-      "unit": "m2",
-      "value": 14.58
-    },
-    {
-      "evaluator": "NetAreaEvaluator",
-      "evaluator_version": "1.0.0",
-      "method": "wall_solids_minus_floor_apertures",
-      "metric": "net_area_m2",
-      "status": "measured",
-      "subject_ids": [
-        "sp-flex-b-walkout-back"
-      ],
-      "unit": "m2",
-      "value": 12.868
-    },
-    {
-      "evaluator": "NetAreaEvaluator",
-      "evaluator_version": "1.0.0",
-      "method": "net_minimum_rotated_bounds",
-      "metric": "net_extent_short_m",
-      "status": "measured",
-      "subject_ids": [
-        "sp-flex-b-walkout-back"
-      ],
-      "unit": "m",
-      "value": 2.475
-    },
-    {
-      "evaluator": "NetAreaEvaluator",
-      "evaluator_version": "1.0.0",
-      "method": "net_minimum_rotated_bounds",
-      "metric": "net_extent_long_m",
-      "status": "measured",
-      "subject_ids": [
-        "sp-flex-b-walkout-back"
-      ],
-      "unit": "m",
-      "value": 5.25
-    },
-    {
-      "evaluator": "NetAreaEvaluator",
-      "evaluator_version": "1.0.0",
-      "method": "boundary_wall_coverage",
-      "metric": "net_wall_basis_complete",
-      "status": "measured",
-      "subject_ids": [
-        "sp-flex-b-walkout-back"
-      ],
-      "unit": null,
-      "value": true
-    },
-    {
-      "evaluator": "NetAreaEvaluator",
-      "evaluator_version": "1.0.0",
-      "method": "polygon_area_centerline",
-      "metric": "gross_area_m2",
-      "status": "measured",
-      "subject_ids": [
         "sp-flex-b-walkout-front"
       ],
       "unit": "m2",
-      "value": 14.04
+      "value": 9.6
     },
     {
       "evaluator": "NetAreaEvaluator",
@@ -3639,7 +3658,7 @@
         "sp-flex-b-walkout-front"
       ],
       "unit": "m2",
-      "value": 12.351
+      "value": 8.181
     },
     {
       "evaluator": "NetAreaEvaluator",
@@ -3651,7 +3670,7 @@
         "sp-flex-b-walkout-front"
       ],
       "unit": "m",
-      "value": 2.375
+      "value": 1.775
     },
     {
       "evaluator": "NetAreaEvaluator",
@@ -3661,66 +3680,6 @@
       "status": "measured",
       "subject_ids": [
         "sp-flex-b-walkout-front"
-      ],
-      "unit": "m",
-      "value": 5.25
-    },
-    {
-      "evaluator": "NetAreaEvaluator",
-      "evaluator_version": "1.0.0",
-      "method": "boundary_wall_coverage",
-      "metric": "net_wall_basis_complete",
-      "status": "measured",
-      "subject_ids": [
-        "sp-flex-b-walkout-front"
-      ],
-      "unit": null,
-      "value": true
-    },
-    {
-      "evaluator": "NetAreaEvaluator",
-      "evaluator_version": "1.0.0",
-      "method": "polygon_area_centerline",
-      "metric": "gross_area_m2",
-      "status": "measured",
-      "subject_ids": [
-        "sp-flex-b1-front"
-      ],
-      "unit": "m2",
-      "value": 7.2
-    },
-    {
-      "evaluator": "NetAreaEvaluator",
-      "evaluator_version": "1.0.0",
-      "method": "wall_solids_minus_floor_apertures",
-      "metric": "net_area_m2",
-      "status": "measured",
-      "subject_ids": [
-        "sp-flex-b1-front"
-      ],
-      "unit": "m2",
-      "value": 5.893
-    },
-    {
-      "evaluator": "NetAreaEvaluator",
-      "evaluator_version": "1.0.0",
-      "method": "net_minimum_rotated_bounds",
-      "metric": "net_extent_short_m",
-      "status": "measured",
-      "subject_ids": [
-        "sp-flex-b1-front"
-      ],
-      "unit": "m",
-      "value": 1.275
-    },
-    {
-      "evaluator": "NetAreaEvaluator",
-      "evaluator_version": "1.0.0",
-      "method": "net_minimum_rotated_bounds",
-      "metric": "net_extent_long_m",
-      "status": "measured",
-      "subject_ids": [
-        "sp-flex-b1-front"
       ],
       "unit": "m",
       "value": 4.65
@@ -3732,7 +3691,67 @@
       "metric": "net_wall_basis_complete",
       "status": "measured",
       "subject_ids": [
-        "sp-flex-b1-front"
+        "sp-flex-b-walkout-front"
+      ],
+      "unit": null,
+      "value": true
+    },
+    {
+      "evaluator": "NetAreaEvaluator",
+      "evaluator_version": "1.0.0",
+      "method": "polygon_area_centerline",
+      "metric": "gross_area_m2",
+      "status": "measured",
+      "subject_ids": [
+        "sp-flex-b0-front"
+      ],
+      "unit": "m2",
+      "value": 10.56
+    },
+    {
+      "evaluator": "NetAreaEvaluator",
+      "evaluator_version": "1.0.0",
+      "method": "wall_solids_minus_floor_apertures",
+      "metric": "net_area_m2",
+      "status": "measured",
+      "subject_ids": [
+        "sp-flex-b0-front"
+      ],
+      "unit": "m2",
+      "value": 9.439
+    },
+    {
+      "evaluator": "NetAreaEvaluator",
+      "evaluator_version": "1.0.0",
+      "method": "net_minimum_rotated_bounds",
+      "metric": "net_extent_short_m",
+      "status": "measured",
+      "subject_ids": [
+        "sp-flex-b0-front"
+      ],
+      "unit": "m",
+      "value": 2.05
+    },
+    {
+      "evaluator": "NetAreaEvaluator",
+      "evaluator_version": "1.0.0",
+      "method": "net_minimum_rotated_bounds",
+      "metric": "net_extent_long_m",
+      "status": "measured",
+      "subject_ids": [
+        "sp-flex-b0-front"
+      ],
+      "unit": "m",
+      "value": 4.65
+    },
+    {
+      "evaluator": "NetAreaEvaluator",
+      "evaluator_version": "1.0.0",
+      "method": "boundary_wall_coverage",
+      "metric": "net_wall_basis_complete",
+      "status": "measured",
+      "subject_ids": [
+        "sp-flex-b0-front"
       ],
       "unit": null,
       "value": true
@@ -3858,6 +3877,126 @@
       "value": true
     },
     {
+      "evaluator": "NetAreaEvaluator",
+      "evaluator_version": "1.0.0",
+      "method": "polygon_area_centerline",
+      "metric": "gross_area_m2",
+      "status": "measured",
+      "subject_ids": [
+        "sp-garage"
+      ],
+      "unit": "m2",
+      "value": 36.0
+    },
+    {
+      "evaluator": "NetAreaEvaluator",
+      "evaluator_version": "1.0.0",
+      "method": "wall_solids_minus_floor_apertures",
+      "metric": "net_area_m2",
+      "status": "measured",
+      "subject_ids": [
+        "sp-garage"
+      ],
+      "unit": "m2",
+      "value": 33.75
+    },
+    {
+      "evaluator": "NetAreaEvaluator",
+      "evaluator_version": "1.0.0",
+      "method": "net_minimum_rotated_bounds",
+      "metric": "net_extent_short_m",
+      "status": "measured",
+      "subject_ids": [
+        "sp-garage"
+      ],
+      "unit": "m",
+      "value": 5.85
+    },
+    {
+      "evaluator": "NetAreaEvaluator",
+      "evaluator_version": "1.0.0",
+      "method": "net_minimum_rotated_bounds",
+      "metric": "net_extent_long_m",
+      "status": "measured",
+      "subject_ids": [
+        "sp-garage"
+      ],
+      "unit": "m",
+      "value": 5.85
+    },
+    {
+      "evaluator": "NetAreaEvaluator",
+      "evaluator_version": "1.0.0",
+      "method": "boundary_wall_coverage",
+      "metric": "net_wall_basis_complete",
+      "status": "measured",
+      "subject_ids": [
+        "sp-garage"
+      ],
+      "unit": null,
+      "value": true
+    },
+    {
+      "evaluator": "NetAreaEvaluator",
+      "evaluator_version": "1.0.0",
+      "method": "polygon_area_centerline",
+      "metric": "gross_area_m2",
+      "status": "measured",
+      "subject_ids": [
+        "sp-terrace"
+      ],
+      "unit": "m2",
+      "value": 14.4
+    },
+    {
+      "evaluator": "NetAreaEvaluator",
+      "evaluator_version": "1.0.0",
+      "method": "wall_solids_minus_floor_apertures",
+      "metric": "net_area_m2",
+      "status": "measured",
+      "subject_ids": [
+        "sp-terrace"
+      ],
+      "unit": "m2",
+      "value": 12.93
+    },
+    {
+      "evaluator": "NetAreaEvaluator",
+      "evaluator_version": "1.0.0",
+      "method": "net_minimum_rotated_bounds",
+      "metric": "net_extent_short_m",
+      "status": "measured",
+      "subject_ids": [
+        "sp-terrace"
+      ],
+      "unit": "m",
+      "value": 3.4
+    },
+    {
+      "evaluator": "NetAreaEvaluator",
+      "evaluator_version": "1.0.0",
+      "method": "net_minimum_rotated_bounds",
+      "metric": "net_extent_long_m",
+      "status": "measured",
+      "subject_ids": [
+        "sp-terrace"
+      ],
+      "unit": "m",
+      "value": 3.9
+    },
+    {
+      "evaluator": "NetAreaEvaluator",
+      "evaluator_version": "1.0.0",
+      "method": "boundary_wall_coverage",
+      "metric": "net_wall_basis_complete",
+      "status": "measured",
+      "subject_ids": [
+        "sp-terrace"
+      ],
+      "unit": null,
+      "value": true
+    },
+    {
       "evaluator": "DoorClearanceEvaluator",
       "evaluator_version": "1.0.0",
       "method": "quarter_circle_sweep_0_5deg_conservative",
@@ -3867,7 +4006,7 @@
         "d-front-entry-ext"
       ],
       "unit": "m2",
-      "value": 0.636
+      "value": 0.785
     },
     {
       "evaluator": "DoorClearanceEvaluator",
@@ -3972,7 +4111,7 @@
       "metric": "door_swing_area_m2",
       "status": "measured",
       "subject_ids": [
-        "d-bed-child-2-corridor-b-walkout"
+        "d-bed-child-2-corridor-b1"
       ],
       "unit": "m2",
       "value": 0.636
@@ -4000,30 +4139,6 @@
       ],
       "unit": "m2",
       "value": 0.636
-    },
-    {
-      "evaluator": "DoorClearanceEvaluator",
-      "evaluator_version": "1.0.0",
-      "method": "quarter_circle_sweep_0_5deg_conservative",
-      "metric": "door_swing_area_m2",
-      "status": "measured",
-      "subject_ids": [
-        "d-garage-corridor-b0"
-      ],
-      "unit": "m2",
-      "value": 0.636
-    },
-    {
-      "evaluator": "DoorClearanceEvaluator",
-      "evaluator_version": "1.0.0",
-      "method": "quarter_circle_sweep_0_5deg_conservative",
-      "metric": "door_swing_area_m2",
-      "status": "measured",
-      "subject_ids": [
-        "d-garage-garage-ext"
-      ],
-      "unit": "m2",
-      "value": 0.0
     },
     {
       "evaluator": "DoorClearanceEvaluator",
@@ -4104,18 +4219,6 @@
       "metric": "door_swing_area_m2",
       "status": "measured",
       "subject_ids": [
-        "d-flex-b-walkout-back-corridor-b-walkout"
-      ],
-      "unit": "m2",
-      "value": 0.503
-    },
-    {
-      "evaluator": "DoorClearanceEvaluator",
-      "evaluator_version": "1.0.0",
-      "method": "quarter_circle_sweep_0_5deg_conservative",
-      "metric": "door_swing_area_m2",
-      "status": "measured",
-      "subject_ids": [
         "d-flex-b-walkout-front-corridor-b-walkout"
       ],
       "unit": "m2",
@@ -4128,7 +4231,7 @@
       "metric": "door_swing_area_m2",
       "status": "measured",
       "subject_ids": [
-        "d-flex-b1-front-corridor-b1"
+        "d-flex-b0-front-corridor-b0"
       ],
       "unit": "m2",
       "value": 0.503
@@ -4153,6 +4256,42 @@
       "status": "measured",
       "subject_ids": [
         "o-stair-1a-stair-hall-1"
+      ],
+      "unit": "m2",
+      "value": 0.0
+    },
+    {
+      "evaluator": "DoorClearanceEvaluator",
+      "evaluator_version": "1.0.0",
+      "method": "quarter_circle_sweep_0_5deg_conservative",
+      "metric": "door_swing_area_m2",
+      "status": "measured",
+      "subject_ids": [
+        "d-garage-garage-ext"
+      ],
+      "unit": "m2",
+      "value": 0.0
+    },
+    {
+      "evaluator": "DoorClearanceEvaluator",
+      "evaluator_version": "1.0.0",
+      "method": "quarter_circle_sweep_0_5deg_conservative",
+      "metric": "door_swing_area_m2",
+      "status": "measured",
+      "subject_ids": [
+        "d-garage-corridor-b0"
+      ],
+      "unit": "m2",
+      "value": 0.385
+    },
+    {
+      "evaluator": "DoorClearanceEvaluator",
+      "evaluator_version": "1.0.0",
+      "method": "quarter_circle_sweep_0_5deg_conservative",
+      "metric": "door_swing_area_m2",
+      "status": "measured",
+      "subject_ids": [
+        "d-living-terrace"
       ],
       "unit": "m2",
       "value": 0.0
@@ -4215,7 +4354,7 @@
         "st-0"
       ],
       "unit": "m",
-      "value": 1.0
+      "value": 1.1
     },
     {
       "evaluator": "StairUsabilityEvaluator",
@@ -4447,13 +4586,12 @@
       "evaluator_version": "1.0.0",
       "method": "placed_counter_width_sum",
       "metric": "kitchen_counter_run_m",
-      "status": "measured",
+      "status": "not_checked",
       "subject_ids": [
-        "sp-kitchen",
-        "fx-kitchen-1"
+        "sp-kitchen"
       ],
       "unit": "m",
-      "value": 3.0
+      "value": null
     },
     {
       "evaluator": "FurnitureUsabilityEvaluator",
@@ -4462,11 +4600,23 @@
       "metric": "kitchen_aisle_width_m",
       "status": "not_checked",
       "subject_ids": [
-        "sp-kitchen",
-        "fx-kitchen-1"
+        "sp-kitchen"
       ],
       "unit": null,
       "value": null
+    },
+    {
+      "assumption_basis": "assumption: kitchen-run: https://media.nkba.org/uploads/2022/05/Kitchen-Planning-Guidelines.pdf; run/depth: docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption); appliance: docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption)",
+      "evaluator": "FurnitureUsabilityEvaluator",
+      "evaluator_version": "1.0.0",
+      "method": "0_1m_four_rotation_room_frame_packing",
+      "metric": "kitchen_sampled_fit",
+      "status": "inferred",
+      "subject_ids": [
+        "sp-kitchen"
+      ],
+      "unit": null,
+      "value": false
     },
     {
       "assumption_basis": "assumption: sofa-group: docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption)",
@@ -4534,19 +4684,6 @@
       "value": true
     },
     {
-      "assumption_basis": "assumption: vehicle-701cec69f31b804f: typical car envelope (assumption until the owner gives the car size); docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption); vehicle-369d85bd76214ff9: typical car envelope (assumption until the owner gives the car size); docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption)",
-      "evaluator": "FurnitureUsabilityEvaluator",
-      "evaluator_version": "1.0.0",
-      "method": "0_1m_four_rotation_room_frame_packing",
-      "metric": "garage_sampled_fit",
-      "status": "inferred",
-      "subject_ids": [
-        "sp-garage"
-      ],
-      "unit": null,
-      "value": false
-    },
-    {
       "assumption_basis": "assumption: appliance: docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption)",
       "evaluator": "FurnitureUsabilityEvaluator",
       "evaluator_version": "1.0.0",
@@ -4567,19 +4704,6 @@
       "metric": "storage_sampled_fit",
       "status": "inferred",
       "subject_ids": [
-        "sp-flex-b-walkout-back"
-      ],
-      "unit": null,
-      "value": true
-    },
-    {
-      "assumption_basis": "assumption: shelf: docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption)",
-      "evaluator": "FurnitureUsabilityEvaluator",
-      "evaluator_version": "1.0.0",
-      "method": "0_1m_four_rotation_room_frame_packing",
-      "metric": "storage_sampled_fit",
-      "status": "inferred",
-      "subject_ids": [
         "sp-flex-b-walkout-front"
       ],
       "unit": null,
@@ -4593,7 +4717,33 @@
       "metric": "storage_sampled_fit",
       "status": "inferred",
       "subject_ids": [
-        "sp-flex-b1-front"
+        "sp-flex-b0-front"
+      ],
+      "unit": null,
+      "value": true
+    },
+    {
+      "assumption_basis": "assumption: vehicle-701cec69f31b804f: typical car envelope (assumption until the owner gives the car size); docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption); vehicle-369d85bd76214ff9: typical car envelope (assumption until the owner gives the car size); docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption)",
+      "evaluator": "FurnitureUsabilityEvaluator",
+      "evaluator_version": "1.0.0",
+      "method": "0_1m_four_rotation_room_frame_packing",
+      "metric": "garage_sampled_fit",
+      "status": "inferred",
+      "subject_ids": [
+        "sp-garage"
+      ],
+      "unit": null,
+      "value": true
+    },
+    {
+      "assumption_basis": "docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption)",
+      "evaluator": "FurnitureUsabilityEvaluator",
+      "evaluator_version": "1.0.0",
+      "method": "sampled_vehicle_clear_zone_to_house_portal_point_paths",
+      "metric": "garage_pedestrian_route",
+      "status": "inferred",
+      "subject_ids": [
+        "sp-garage"
       ],
       "unit": null,
       "value": true
@@ -4608,7 +4758,7 @@
         "sp-corridor-b0"
       ],
       "unit": "m",
-      "value": 9.363
+      "value": 5.53
     },
     {
       "evaluator": "RouteUsabilityEvaluator",
@@ -4620,7 +4770,7 @@
         "sp-corridor-b-walkout"
       ],
       "unit": "m",
-      "value": 25.429
+      "value": 19.225
     },
     {
       "evaluator": "RouteUsabilityEvaluator",
@@ -4632,7 +4782,7 @@
         "sp-corridor-b1"
       ],
       "unit": "m",
-      "value": 34.425
+      "value": 31.249
     },
     {
       "evaluator": "RouteUsabilityEvaluator",
@@ -4644,7 +4794,7 @@
         "sp-entry"
       ],
       "unit": "m",
-      "value": 2.738
+      "value": 2.438
     },
     {
       "evaluator": "RouteUsabilityEvaluator",
@@ -4656,7 +4806,7 @@
         "sp-dining"
       ],
       "unit": "m",
-      "value": 16.993
+      "value": 11.196
     },
     {
       "evaluator": "RouteUsabilityEvaluator",
@@ -4668,7 +4818,7 @@
         "sp-kitchen"
       ],
       "unit": "m",
-      "value": 19.061
+      "value": 13.197
     },
     {
       "evaluator": "RouteUsabilityEvaluator",
@@ -4680,7 +4830,7 @@
         "sp-living"
       ],
       "unit": "m",
-      "value": 14.626
+      "value": 9.941
     },
     {
       "evaluator": "RouteUsabilityEvaluator",
@@ -4692,7 +4842,7 @@
         "sp-bath-ensuite"
       ],
       "unit": "m",
-      "value": 28.515
+      "value": 23.571
     },
     {
       "evaluator": "RouteUsabilityEvaluator",
@@ -4704,7 +4854,7 @@
         "sp-bed-main"
       ],
       "unit": "m",
-      "value": 27.085
+      "value": 22.108
     },
     {
       "evaluator": "RouteUsabilityEvaluator",
@@ -4716,7 +4866,7 @@
         "sp-bed-child-1"
       ],
       "unit": "m",
-      "value": 37.017
+      "value": 33.936
     },
     {
       "evaluator": "RouteUsabilityEvaluator",
@@ -4728,7 +4878,7 @@
         "sp-bed-child-2"
       ],
       "unit": "m",
-      "value": 28.893
+      "value": 35.593
     },
     {
       "evaluator": "RouteUsabilityEvaluator",
@@ -4740,7 +4890,7 @@
         "sp-bath-1"
       ],
       "unit": "m",
-      "value": 38.587
+      "value": 36.206
     },
     {
       "evaluator": "RouteUsabilityEvaluator",
@@ -4752,19 +4902,7 @@
         "sp-study-1"
       ],
       "unit": "m",
-      "value": 38.466
-    },
-    {
-      "evaluator": "RouteUsabilityEvaluator",
-      "evaluator_version": "1.0.0",
-      "method": "net_floor_visibility_graph_point_path",
-      "metric": "entrance_route_length_m",
-      "status": "measured",
-      "subject_ids": [
-        "sp-garage"
-      ],
-      "unit": "m",
-      "value": 11.575
+      "value": 33.216
     },
     {
       "evaluator": "RouteUsabilityEvaluator",
@@ -4776,7 +4914,7 @@
         "sp-laundry"
       ],
       "unit": "m",
-      "value": 25.781
+      "value": 21.828
     },
     {
       "evaluator": "RouteUsabilityEvaluator",
@@ -4788,7 +4926,7 @@
         "sp-mechanical"
       ],
       "unit": "m",
-      "value": 37.93
+      "value": 32.412
     },
     {
       "evaluator": "RouteUsabilityEvaluator",
@@ -4800,7 +4938,7 @@
         "sp-stair-0a"
       ],
       "unit": "m",
-      "value": 16.273
+      "value": 10.431
     },
     {
       "evaluator": "RouteUsabilityEvaluator",
@@ -4812,7 +4950,7 @@
         "sp-stair-0b"
       ],
       "unit": "m",
-      "value": 22.986
+      "value": 17.783
     },
     {
       "evaluator": "RouteUsabilityEvaluator",
@@ -4824,7 +4962,7 @@
         "sp-stair-1a"
       ],
       "unit": "m",
-      "value": 25.256
+      "value": 20.665
     },
     {
       "evaluator": "RouteUsabilityEvaluator",
@@ -4836,19 +4974,7 @@
         "sp-stair-1b"
       ],
       "unit": "m",
-      "value": 31.821
-    },
-    {
-      "evaluator": "RouteUsabilityEvaluator",
-      "evaluator_version": "1.0.0",
-      "method": "net_floor_visibility_graph_point_path",
-      "metric": "entrance_route_length_m",
-      "status": "measured",
-      "subject_ids": [
-        "sp-flex-b-walkout-back"
-      ],
-      "unit": "m",
-      "value": 31.635
+      "value": 27.238
     },
     {
       "evaluator": "RouteUsabilityEvaluator",
@@ -4860,7 +4986,7 @@
         "sp-flex-b-walkout-front"
       ],
       "unit": "m",
-      "value": 31.544
+      "value": 23.957
     },
     {
       "evaluator": "RouteUsabilityEvaluator",
@@ -4869,10 +4995,10 @@
       "metric": "entrance_route_length_m",
       "status": "measured",
       "subject_ids": [
-        "sp-flex-b1-front"
+        "sp-flex-b0-front"
       ],
       "unit": "m",
-      "value": 37.878
+      "value": 9.075
     },
     {
       "evaluator": "RouteUsabilityEvaluator",
@@ -4901,6 +5027,30 @@
     {
       "evaluator": "RouteUsabilityEvaluator",
       "evaluator_version": "1.0.0",
+      "method": "net_floor_visibility_graph_point_path",
+      "metric": "entrance_route_length_m",
+      "status": "measured",
+      "subject_ids": [
+        "sp-garage"
+      ],
+      "unit": "m",
+      "value": 11.554
+    },
+    {
+      "evaluator": "RouteUsabilityEvaluator",
+      "evaluator_version": "1.0.0",
+      "method": "net_floor_visibility_graph_point_path",
+      "metric": "entrance_route_length_m",
+      "status": "measured",
+      "subject_ids": [
+        "sp-terrace"
+      ],
+      "unit": "m",
+      "value": 14.687
+    },
+    {
+      "evaluator": "RouteUsabilityEvaluator",
+      "evaluator_version": "1.0.0",
       "method": "destination_visibility_graph",
       "metric": "guest_routes_crossing_private_count",
       "status": "measured",
@@ -4919,7 +5069,7 @@
         "sp-kitchen"
       ],
       "unit": "m",
-      "value": 12.951
+      "value": 14.859
     },
     {
       "evaluator": "RouteUsabilityEvaluator",
@@ -4958,7 +5108,7 @@
         "sp-kitchen"
       ],
       "unit": "m",
-      "value": 16.324
+      "value": 10.759
     },
     {
       "evaluator": "RouteUsabilityEvaluator",
@@ -5016,7 +5166,7 @@
         "lv-down-450"
       ],
       "unit": null,
-      "value": 0.313
+      "value": 0.288
     },
     {
       "assumption_basis": "assumption residual_width_m=0.9; precedent: docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption); not code checked",
@@ -5029,7 +5179,7 @@
         "sp-corridor-b1"
       ],
       "unit": "m2",
-      "value": 0.213
+      "value": 0.224
     },
     {
       "evaluator": "RouteUsabilityEvaluator",
@@ -5064,10 +5214,23 @@
       "metric": "residual_area_m2",
       "status": "measured",
       "subject_ids": [
+        "sp-bed-child-2"
+      ],
+      "unit": "m2",
+      "value": 0.187
+    },
+    {
+      "assumption_basis": "assumption residual_width_m=0.9; precedent: docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption); not code checked",
+      "evaluator": "RouteUsabilityEvaluator",
+      "evaluator_version": "1.0.0",
+      "method": "morphological_opening",
+      "metric": "residual_area_m2",
+      "status": "measured",
+      "subject_ids": [
         "sp-bath-1"
       ],
       "unit": "m2",
-      "value": 0.989
+      "value": 1.127
     },
     {
       "assumption_basis": "assumption residual_width_m=0.9; precedent: docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption); not code checked",
@@ -5106,20 +5269,7 @@
         "sp-stair-1b"
       ],
       "unit": "m2",
-      "value": 1.078
-    },
-    {
-      "assumption_basis": "assumption residual_width_m=0.9; precedent: docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption); not code checked",
-      "evaluator": "RouteUsabilityEvaluator",
-      "evaluator_version": "1.0.0",
-      "method": "morphological_opening",
-      "metric": "residual_area_m2",
-      "status": "measured",
-      "subject_ids": [
-        "sp-flex-b1-front"
-      ],
-      "unit": "m2",
-      "value": 0.154
+      "value": 0.996
     },
     {
       "assumption_basis": "assumption residual_width_m=0.9; precedent: docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption); not code checked",
@@ -5144,7 +5294,7 @@
         "lv-down-300"
       ],
       "unit": null,
-      "value": 0.305
+      "value": 0.437
     },
     {
       "assumption_basis": "assumption residual_width_m=0.9; precedent: docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption); not code checked",
@@ -5157,7 +5307,7 @@
         "sp-corridor-b-walkout"
       ],
       "unit": "m2",
-      "value": 0.255
+      "value": 0.231
     },
     {
       "evaluator": "RouteUsabilityEvaluator",
@@ -5182,7 +5332,7 @@
         "sp-bath-ensuite"
       ],
       "unit": "m2",
-      "value": 1.338
+      "value": 1.687
     },
     {
       "assumption_basis": "assumption residual_width_m=0.9; precedent: docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption); not code checked",
@@ -5205,23 +5355,10 @@
       "metric": "residual_area_m2",
       "status": "measured",
       "subject_ids": [
-        "sp-bed-child-2"
-      ],
-      "unit": "m2",
-      "value": 0.187
-    },
-    {
-      "assumption_basis": "assumption residual_width_m=0.9; precedent: docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption); not code checked",
-      "evaluator": "RouteUsabilityEvaluator",
-      "evaluator_version": "1.0.0",
-      "method": "morphological_opening",
-      "metric": "residual_area_m2",
-      "status": "measured",
-      "subject_ids": [
         "sp-laundry"
       ],
       "unit": "m2",
-      "value": 0.24
+      "value": 0.267
     },
     {
       "assumption_basis": "assumption residual_width_m=0.9; precedent: docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption); not code checked",
@@ -5234,7 +5371,7 @@
         "sp-stair-0b"
       ],
       "unit": "m2",
-      "value": 1.013
+      "value": 0.948
     },
     {
       "assumption_basis": "assumption residual_width_m=0.9; precedent: docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption); not code checked",
@@ -5248,19 +5385,6 @@
       ],
       "unit": "m2",
       "value": 0.996
-    },
-    {
-      "assumption_basis": "assumption residual_width_m=0.9; precedent: docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption); not code checked",
-      "evaluator": "RouteUsabilityEvaluator",
-      "evaluator_version": "1.0.0",
-      "method": "morphological_opening",
-      "metric": "residual_area_m2",
-      "status": "measured",
-      "subject_ids": [
-        "sp-flex-b-walkout-back"
-      ],
-      "unit": "m2",
-      "value": 0.187
     },
     {
       "assumption_basis": "assumption residual_width_m=0.9; precedent: docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption); not code checked",
@@ -5298,7 +5422,7 @@
         "lv-entry"
       ],
       "unit": null,
-      "value": 0.207
+      "value": 0.167
     },
     {
       "assumption_basis": "assumption residual_width_m=0.9; precedent: docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption); not code checked",
@@ -5311,7 +5435,7 @@
         "sp-corridor-b0"
       ],
       "unit": "m2",
-      "value": 0.206
+      "value": 0.215
     },
     {
       "evaluator": "RouteUsabilityEvaluator",
@@ -5336,7 +5460,7 @@
         "sp-entry"
       ],
       "unit": "m2",
-      "value": 0.136
+      "value": 0.145
     },
     {
       "assumption_basis": "assumption residual_width_m=0.9; precedent: docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption); not code checked",
@@ -5362,7 +5486,7 @@
         "sp-kitchen"
       ],
       "unit": "m2",
-      "value": 0.25
+      "value": 0.164
     },
     {
       "assumption_basis": "assumption residual_width_m=0.9; precedent: docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption); not code checked",
@@ -5375,20 +5499,7 @@
         "sp-living"
       ],
       "unit": "m2",
-      "value": 0.176
-    },
-    {
-      "assumption_basis": "assumption residual_width_m=0.9; precedent: docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption); not code checked",
-      "evaluator": "RouteUsabilityEvaluator",
-      "evaluator_version": "1.0.0",
-      "method": "morphological_opening",
-      "metric": "residual_area_m2",
-      "status": "measured",
-      "subject_ids": [
-        "sp-garage"
-      ],
-      "unit": "m2",
-      "value": 0.182
+      "value": 0.224
     },
     {
       "assumption_basis": "assumption residual_width_m=0.9; precedent: docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption); not code checked",
@@ -5401,7 +5512,46 @@
         "sp-stair-0a"
       ],
       "unit": "m2",
-      "value": 1.013
+      "value": 0.948
+    },
+    {
+      "assumption_basis": "assumption residual_width_m=0.9; precedent: docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption); not code checked",
+      "evaluator": "RouteUsabilityEvaluator",
+      "evaluator_version": "1.0.0",
+      "method": "morphological_opening",
+      "metric": "residual_area_m2",
+      "status": "measured",
+      "subject_ids": [
+        "sp-flex-b0-front"
+      ],
+      "unit": "m2",
+      "value": 0.187
+    },
+    {
+      "assumption_basis": "assumption residual_width_m=0.9; precedent: docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption); not code checked",
+      "evaluator": "RouteUsabilityEvaluator",
+      "evaluator_version": "1.0.0",
+      "method": "morphological_opening",
+      "metric": "residual_area_m2",
+      "status": "measured",
+      "subject_ids": [
+        "sp-garage"
+      ],
+      "unit": "m2",
+      "value": 0.181
+    },
+    {
+      "assumption_basis": "assumption residual_width_m=0.9; precedent: docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption); not code checked",
+      "evaluator": "RouteUsabilityEvaluator",
+      "evaluator_version": "1.0.0",
+      "method": "morphological_opening",
+      "metric": "residual_area_m2",
+      "status": "measured",
+      "subject_ids": [
+        "sp-terrace"
+      ],
+      "unit": "m2",
+      "value": 0.206
     },
     {
       "assumption_basis": "assumption potential_sill_m=0.9; precedent: docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption); not code checked",
@@ -5427,7 +5577,7 @@
         "sp-dining"
       ],
       "unit": null,
-      "value": 0.153
+      "value": 0.224
     },
     {
       "assumption_basis": "assumption min_facade_angle_deg=45; precedent: docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption); not code checked",
@@ -5453,7 +5603,7 @@
         "sp-kitchen"
       ],
       "unit": "m",
-      "value": 7.3
+      "value": 5.8
     },
     {
       "assumption_basis": "assumption min_glazing_ratio=0.1; precedent: docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption); not code checked",
@@ -5466,7 +5616,7 @@
         "sp-kitchen"
       ],
       "unit": null,
-      "value": 0.486
+      "value": 0.566
     },
     {
       "assumption_basis": "assumption min_facade_angle_deg=45; precedent: docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption); not code checked",
@@ -5492,7 +5642,7 @@
         "sp-living"
       ],
       "unit": "m",
-      "value": 10.0
+      "value": 9.0
     },
     {
       "assumption_basis": "assumption min_glazing_ratio=0.1; precedent: docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption); not code checked",
@@ -5505,7 +5655,7 @@
         "sp-living"
       ],
       "unit": null,
-      "value": 0.293
+      "value": 0.2
     },
     {
       "assumption_basis": "assumption min_facade_angle_deg=45; precedent: docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption); not code checked",
@@ -5518,7 +5668,7 @@
         "sp-living"
       ],
       "unit": null,
-      "value": true
+      "value": false
     },
     {
       "assumption_basis": "assumption potential_sill_m=0.9; precedent: docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption); not code checked",
@@ -5570,7 +5720,7 @@
         "sp-bed-child-1"
       ],
       "unit": "m",
-      "value": 2.8
+      "value": 0.0
     },
     {
       "assumption_basis": "assumption min_glazing_ratio=0.1; precedent: docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption); not code checked",
@@ -5583,7 +5733,7 @@
         "sp-bed-child-1"
       ],
       "unit": null,
-      "value": 0.145
+      "value": 0.0
     },
     {
       "assumption_basis": "assumption min_facade_angle_deg=45; precedent: docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption); not code checked",
@@ -5609,7 +5759,7 @@
         "sp-bed-child-2"
       ],
       "unit": "m",
-      "value": 0.0
+      "value": 7.0
     },
     {
       "assumption_basis": "assumption min_glazing_ratio=0.1; precedent: docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption); not code checked",
@@ -5622,7 +5772,7 @@
         "sp-bed-child-2"
       ],
       "unit": null,
-      "value": 0.0
+      "value": 0.231
     },
     {
       "assumption_basis": "assumption min_facade_angle_deg=45; precedent: docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption); not code checked",
@@ -5648,7 +5798,7 @@
         "sp-study-1"
       ],
       "unit": "m",
-      "value": 4.8
+      "value": 2.4
     },
     {
       "assumption_basis": "assumption min_glazing_ratio=0.1; precedent: docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption); not code checked",
@@ -5661,7 +5811,7 @@
         "sp-study-1"
       ],
       "unit": null,
-      "value": 0.252
+      "value": 0.155
     },
     {
       "assumption_basis": "assumption min_facade_angle_deg=45; precedent: docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption); not code checked",
@@ -5684,10 +5834,10 @@
       "status": "inferred",
       "subject_ids": [
         "d-front-entry-ext",
-        "w-entry-001"
+        "w-entry-003"
       ],
       "unit": "m",
-      "value": 0.251
+      "value": 0.11
     },
     {
       "evaluator": "DaylightOpportunityEvaluator",
@@ -5697,10 +5847,10 @@
       "status": "inferred",
       "subject_ids": [
         "d-garage-garage-ext",
-        "w-entry-002"
+        "w-entry-001"
       ],
       "unit": "m",
-      "value": 0.109
+      "value": 0.351
     },
     {
       "evaluator": "DaylightOpportunityEvaluator",
@@ -5726,11 +5876,11 @@
   "plan_ref": {
     "id": "concept-split-walkout",
     "kind": "plan",
-    "sha256": "823e82aa445628c03ad667fbb63c0e2cb760f5060fff5d49dae8455ea8502d38",
+    "sha256": "9b0fab17c5ab3ae7ec4307b8e8f6e317185582ab09968c9c00106264394dc227",
     "version": 1
   },
   "provenance": {
-    "created_at": "2026-10-19T09:25:46.700546Z",
+    "created_at": "2026-11-17T18:07:44.828263Z",
     "created_by": {
       "display_name": null,
       "id": "house-ai-evaluation",
@@ -5742,7 +5892,7 @@
       {
         "id": "concept-split-walkout",
         "kind": "plan",
-        "sha256": "823e82aa445628c03ad667fbb63c0e2cb760f5060fff5d49dae8455ea8502d38",
+        "sha256": "9b0fab17c5ab3ae7ec4307b8e8f6e317185582ab09968c9c00106264394dc227",
         "version": 1
       },
       {
@@ -5754,7 +5904,7 @@
       {
         "id": "program",
         "kind": "space_program",
-        "sha256": "9dd9270f641b930a432de0deda27841b401a0c9848f4e54cdf67801ddd974cc7",
+        "sha256": "daac5729ee863eaf6b016a99b45ab7f04f1312e5ba634ee3b85abfb5602cbd2c",
         "version": 1
       }
     ],
@@ -5783,12 +5933,12 @@
       "constraint_id": null,
       "evaluator": "ProgramEvaluator",
       "id": "v-002-required-daylight-no-exterior-window",
-      "message": "sp-bed-child-2 requests daylight but has no exterior window; borrowed light and actual illumination are not checked",
+      "message": "sp-bed-child-1 requests daylight but has no exterior window; borrowed light and actual illumination are not checked",
       "status": "measured",
       "strength": "soft",
       "subject_ids": [
-        "sp-bed-child-2",
-        "pi-bed-child-2"
+        "sp-bed-child-1",
+        "pi-bed-child-1"
       ]
     },
     {
@@ -5805,20 +5955,10 @@
       ]
     },
     {
-      "code": "level_count_differs",
-      "constraint_id": null,
-      "evaluator": "ProgramEvaluator",
-      "id": "v-004-level-count-differs",
-      "message": "the program asks for 2 storey(s); this concept has 3 floor level(s)",
-      "status": "measured",
-      "strength": "soft",
-      "subject_ids": []
-    },
-    {
       "code": "soft_adjacency_unmet",
       "constraint_id": "c-adj-10-study-1-entry",
       "evaluator": "AdjacencyEvaluator",
-      "id": "v-005-soft-adjacency-unmet",
+      "id": "v-004-soft-adjacency-unmet",
       "message": "adj-10-study-1-entry: pi-study-1 near pi-entry is not met",
       "status": "measured",
       "strength": "soft",
@@ -5832,7 +5972,7 @@
       "code": "soft_adjacency_unmet",
       "constraint_id": "c-adj-12-laundry-kitchen",
       "evaluator": "AdjacencyEvaluator",
-      "id": "v-006-soft-adjacency-unmet",
+      "id": "v-005-soft-adjacency-unmet",
       "message": "adj-12-laundry-kitchen: pi-laundry near pi-kitchen is not met",
       "status": "measured",
       "strength": "soft",
@@ -5846,8 +5986,8 @@
       "code": "elevated_floor_support_unresolved",
       "constraint_id": null,
       "evaluator": "SiteEvaluator",
-      "id": "v-007-elevated-floor-support-unresolved",
-      "message": "Underfloor void is 131.8 m³, maximum 4.79 m. This is not specified engineered fill; supports, lateral stability, foundations and drainage unresolved.",
+      "id": "v-006-elevated-floor-support-unresolved",
+      "message": "Underfloor void is 166.3 m³, maximum 4.20 m. This is not specified engineered fill; supports, lateral stability, foundations and drainage unresolved.",
       "status": "inferred",
       "strength": "soft",
       "subject_ids": []
@@ -5856,8 +5996,8 @@
       "code": "large_underfloor_void",
       "constraint_id": null,
       "evaluator": "SiteEvaluator",
-      "id": "v-008-large-underfloor-void",
-      "message": "Void clear height 4.79 m exceeds configured 4 m concept-review trigger.",
+      "id": "v-007-large-underfloor-void",
+      "message": "Void clear height 4.20 m exceeds configured 4 m concept-review trigger.",
       "status": "inferred",
       "strength": "soft",
       "subject_ids": []
@@ -5866,8 +6006,8 @@
       "code": "garage_ramp_grade_review",
       "constraint_id": null,
       "evaluator": "SiteEvaluator",
-      "id": "v-009-garage-ramp-grade-review",
-      "message": "Straight candidate grade -25.0% exceeds configured concept trigger; no designed ramp or regulatory compliance established.",
+      "id": "v-008-garage-ramp-grade-review",
+      "message": "Straight candidate grade -17.2% exceeds configured concept trigger; no designed ramp or regulatory compliance established.",
       "status": "inferred",
       "strength": "soft",
       "subject_ids": [
@@ -5878,7 +6018,7 @@
       "code": "needs_professional_structure",
       "constraint_id": null,
       "evaluator": "SiteEvaluator",
-      "id": "v-010-needs-professional-structure",
+      "id": "v-009-needs-professional-structure",
       "message": "Concept load paths, lateral stability and support systems unresolved — needs professional.",
       "status": "inferred",
       "strength": "soft",
@@ -5888,7 +6028,7 @@
       "code": "needs_professional_foundations",
       "constraint_id": null,
       "evaluator": "SiteEvaluator",
-      "id": "v-011-needs-professional-foundations",
+      "id": "v-010-needs-professional-foundations",
       "message": "Bearing capacity, settlement and footing depths unverified — needs professional.",
       "status": "inferred",
       "strength": "soft",
@@ -5898,7 +6038,7 @@
       "code": "needs_professional_slope_stability",
       "constraint_id": null,
       "evaluator": "SiteEvaluator",
-      "id": "v-012-needs-professional-slope-stability",
+      "id": "v-011-needs-professional-slope-stability",
       "message": "Survey TIN does not establish geotechnical or slope stability — needs professional.",
       "status": "inferred",
       "strength": "soft",
@@ -5908,7 +6048,7 @@
       "code": "needs_professional_retaining",
       "constraint_id": null,
       "evaluator": "SiteEvaluator",
-      "id": "v-013-needs-professional-retaining",
+      "id": "v-012-needs-professional-retaining",
       "message": "Earth-contact wall needs engineered retaining design — needs professional.",
       "status": "inferred",
       "strength": "soft",
@@ -5920,7 +6060,7 @@
       "code": "needs_professional_drainage",
       "constraint_id": null,
       "evaluator": "SiteEvaluator",
-      "id": "v-014-needs-professional-drainage",
+      "id": "v-013-needs-professional-drainage",
       "message": "Uphill earth-contact face: intercept and discharge routes unresolved — needs professional.",
       "status": "inferred",
       "strength": "soft",
@@ -5932,7 +6072,7 @@
       "code": "needs_professional_retaining",
       "constraint_id": null,
       "evaluator": "SiteEvaluator",
-      "id": "v-015-needs-professional-retaining",
+      "id": "v-014-needs-professional-retaining",
       "message": "Earth-contact wall needs engineered retaining design — needs professional.",
       "status": "inferred",
       "strength": "soft",
@@ -5944,7 +6084,7 @@
       "code": "needs_professional_drainage",
       "constraint_id": null,
       "evaluator": "SiteEvaluator",
-      "id": "v-016-needs-professional-drainage",
+      "id": "v-015-needs-professional-drainage",
       "message": "Uphill earth-contact face: intercept and discharge routes unresolved — needs professional.",
       "status": "inferred",
       "strength": "soft",
@@ -5953,16 +6093,27 @@
       ]
     },
     {
-      "code": "needs_professional_waterproofing",
+      "code": "needs_professional_retaining",
       "constraint_id": null,
       "evaluator": "SiteEvaluator",
-      "id": "v-017-needs-professional-waterproofing",
-      "message": "Buried habitable wall: waterproofing and moisture control — needs professional.",
+      "id": "v-016-needs-professional-retaining",
+      "message": "Earth-contact wall needs engineered retaining design — needs professional.",
       "status": "inferred",
       "strength": "soft",
       "subject_ids": [
-        "w-down-300-002",
-        "sp-bed-child-2"
+        "w-down-300-003"
+      ]
+    },
+    {
+      "code": "needs_professional_drainage",
+      "constraint_id": null,
+      "evaluator": "SiteEvaluator",
+      "id": "v-017-needs-professional-drainage",
+      "message": "Uphill earth-contact face: intercept and discharge routes unresolved — needs professional.",
+      "status": "inferred",
+      "strength": "soft",
+      "subject_ids": [
+        "w-down-300-003"
       ]
     },
     {
@@ -5974,7 +6125,7 @@
       "status": "inferred",
       "strength": "soft",
       "subject_ids": [
-        "w-down-300-003"
+        "w-down-300-018"
       ]
     },
     {
@@ -5986,7 +6137,7 @@
       "status": "inferred",
       "strength": "soft",
       "subject_ids": [
-        "w-down-300-003"
+        "w-down-300-018"
       ]
     },
     {
@@ -5998,7 +6149,7 @@
       "status": "inferred",
       "strength": "soft",
       "subject_ids": [
-        "w-down-300-004"
+        "w-down-300-025"
       ]
     },
     {
@@ -6010,7 +6161,7 @@
       "status": "inferred",
       "strength": "soft",
       "subject_ids": [
-        "w-down-300-004"
+        "w-down-300-025"
       ]
     },
     {
@@ -6022,7 +6173,7 @@
       "status": "inferred",
       "strength": "soft",
       "subject_ids": [
-        "w-down-300-020"
+        "w-down-300-026"
       ]
     },
     {
@@ -6034,7 +6185,7 @@
       "status": "inferred",
       "strength": "soft",
       "subject_ids": [
-        "w-down-300-020"
+        "w-down-300-026"
       ]
     },
     {
@@ -6046,7 +6197,7 @@
       "status": "inferred",
       "strength": "soft",
       "subject_ids": [
-        "w-down-300-021"
+        "w-down-300-027"
       ]
     },
     {
@@ -6058,7 +6209,7 @@
       "status": "inferred",
       "strength": "soft",
       "subject_ids": [
-        "w-down-300-021"
+        "w-down-300-027"
       ]
     },
     {
@@ -6070,7 +6221,7 @@
       "status": "inferred",
       "strength": "soft",
       "subject_ids": [
-        "w-down-300-031"
+        "w-down-450-001"
       ]
     },
     {
@@ -6082,7 +6233,7 @@
       "status": "inferred",
       "strength": "soft",
       "subject_ids": [
-        "w-down-300-031"
+        "w-down-450-001"
       ]
     },
     {
@@ -6094,7 +6245,7 @@
       "status": "inferred",
       "strength": "soft",
       "subject_ids": [
-        "w-down-300-032"
+        "w-down-450-022"
       ]
     },
     {
@@ -6106,7 +6257,7 @@
       "status": "inferred",
       "strength": "soft",
       "subject_ids": [
-        "w-down-300-032"
+        "w-down-450-022"
       ]
     },
     {
@@ -6118,7 +6269,7 @@
       "status": "inferred",
       "strength": "soft",
       "subject_ids": [
-        "w-down-300-033"
+        "w-down-450-024"
       ]
     },
     {
@@ -6130,7 +6281,7 @@
       "status": "inferred",
       "strength": "soft",
       "subject_ids": [
-        "w-down-300-033"
+        "w-down-450-024"
       ]
     },
     {
@@ -6181,23 +6332,32 @@
       ]
     },
     {
-      "code": "buried_habitable_face",
+      "code": "needs_professional_foundations",
       "constraint_id": null,
       "evaluator": "SiteEvaluator",
-      "id": "v-036-buried-habitable-face",
-      "message": "Buried face reduces daylight capability; waterproofing needs professional.",
+      "id": "v-036-needs-professional-foundations",
+      "message": "Terrace supports, edge protection and garden approach unresolved — needs professional.",
       "status": "inferred",
       "strength": "soft",
       "subject_ids": [
-        "w-down-300-002",
-        "sp-bed-child-2"
+        "sp-terrace"
       ]
+    },
+    {
+      "code": "needs_professional_waterproofing",
+      "constraint_id": null,
+      "evaluator": "SiteEvaluator",
+      "id": "v-037-needs-professional-waterproofing",
+      "message": "Building-ground moisture details unverified — needs professional.",
+      "status": "inferred",
+      "strength": "soft",
+      "subject_ids": []
     },
     {
       "code": "terrain_triangle_review",
       "constraint_id": null,
       "evaluator": "SiteEvaluator",
-      "id": "v-037-terrain-triangle-review",
+      "id": "v-038-terrain-triangle-review",
       "message": "Triangle 2 at (12.153666666666664, 0.5386666666666667): sliver; survey review needed, no smoothing.",
       "status": "measured",
       "strength": "soft",
@@ -6207,7 +6367,7 @@
       "code": "terrain_triangle_review",
       "constraint_id": null,
       "evaluator": "SiteEvaluator",
-      "id": "v-038-terrain-triangle-review",
+      "id": "v-039-terrain-triangle-review",
       "message": "Triangle 6 at (16.392333333333333, 1.4393333333333334): sliver; survey review needed, no smoothing.",
       "status": "measured",
       "strength": "soft",
@@ -6217,7 +6377,7 @@
       "code": "terrain_triangle_review",
       "constraint_id": null,
       "evaluator": "SiteEvaluator",
-      "id": "v-039-terrain-triangle-review",
+      "id": "v-040-terrain-triangle-review",
       "message": "Triangle 18 at (-3.4733333333333336, 11.530000000000001): sliver, steep_review; survey review needed, no smoothing.",
       "status": "measured",
       "strength": "soft",
@@ -6227,7 +6387,7 @@
       "code": "terrain_triangle_review",
       "constraint_id": null,
       "evaluator": "SiteEvaluator",
-      "id": "v-040-terrain-triangle-review",
+      "id": "v-041-terrain-triangle-review",
       "message": "Triangle 28 at (23.761, 8.458333333333334): sliver, steep_review; survey review needed, no smoothing.",
       "status": "measured",
       "strength": "soft",
@@ -6237,7 +6397,7 @@
       "code": "terrain_triangle_review",
       "constraint_id": null,
       "evaluator": "SiteEvaluator",
-      "id": "v-041-terrain-triangle-review",
+      "id": "v-042-terrain-triangle-review",
       "message": "Triangle 29 at (23.206333333333333, 11.067): sliver, steep_review; survey review needed, no smoothing.",
       "status": "measured",
       "strength": "soft",
@@ -6247,7 +6407,7 @@
       "code": "terrain_triangle_review",
       "constraint_id": null,
       "evaluator": "SiteEvaluator",
-      "id": "v-042-terrain-triangle-review",
+      "id": "v-043-terrain-triangle-review",
       "message": "Triangle 46 at (20.711333333333336, 22.804333333333332): sliver, steep_review; survey review needed, no smoothing.",
       "status": "measured",
       "strength": "soft",
@@ -6257,7 +6417,7 @@
       "code": "terrain_triangle_review",
       "constraint_id": null,
       "evaluator": "SiteEvaluator",
-      "id": "v-043-terrain-triangle-review",
+      "id": "v-044-terrain-triangle-review",
       "message": "Triangle 50 at (1.2619999999999998, 30.93866666666667): sliver; survey review needed, no smoothing.",
       "status": "measured",
       "strength": "soft",
@@ -6267,7 +6427,7 @@
       "code": "terrain_triangle_review",
       "constraint_id": null,
       "evaluator": "SiteEvaluator",
-      "id": "v-044-terrain-triangle-review",
+      "id": "v-045-terrain-triangle-review",
       "message": "Triangle 53 at (5.500333333333333, 31.839333333333336): sliver; survey review needed, no smoothing.",
       "status": "measured",
       "strength": "soft",
@@ -6277,40 +6437,24 @@
       "code": "height_limit_exceeded",
       "constraint_id": null,
       "evaluator": "SiteEvaluator",
-      "id": "v-045-height-limit-exceeded",
-      "message": "Height 11.60 m exceeds envelope 10 m.",
+      "id": "v-046-height-limit-exceeded",
+      "message": "Height 11.55 m exceeds envelope 10 m.",
       "status": "inferred",
       "strength": "soft",
       "subject_ids": []
     },
     {
       "assumption_basis": "docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption)",
-      "code": "garage_no_sampled_fit",
+      "code": "kitchen_no_sampled_fit",
       "constraint_id": null,
       "evaluator": "FurnitureUsabilityEvaluator",
-      "id": "v-046-garage-no-sampled-fit",
+      "id": "v-047-kitchen-no-sampled-fit",
       "message": "No arrangement in the declared discrete template search; continuous infeasibility has not been proved.",
       "method": "0_1m_four_rotation_room_frame_packing",
       "status": "inferred",
       "strength": "soft",
       "subject_ids": [
-        "sp-garage"
-      ]
-    },
-    {
-      "assumption_basis": "docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption)",
-      "code": "kitchen_through_traffic",
-      "constraint_id": null,
-      "evaluator": "RouteUsabilityEvaluator",
-      "id": "v-047-kitchen-through-traffic",
-      "message": "Portal desire line crosses a work/seating zone; alternate routes may exist.",
-      "method": "direct_desire_line_zone_intersection",
-      "status": "inferred",
-      "strength": "soft",
-      "subject_ids": [
-        "sp-kitchen",
-        "o-kitchen-living",
-        "o-kitchen-dining"
+        "sp-kitchen"
       ]
     },
     {
@@ -6342,27 +6486,23 @@
       "subject_ids": [
         "sp-living",
         "d-living-corridor-b0",
-        "o-dining-living"
+        "d-living-terrace"
       ]
     },
     {
-      "assumption_basis": "assumption max_daily_route_m=15; precedent: docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption); not code checked",
-      "code": "daily_route_long",
+      "assumption_basis": "docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption)",
+      "code": "living_through_traffic",
       "constraint_id": null,
       "evaluator": "RouteUsabilityEvaluator",
-      "id": "v-050-daily-route-long",
-      "message": "entry_to_kitchen: 16.324 m point route.",
-      "method": "visibility_graph",
-      "status": "measured",
+      "id": "v-050-living-through-traffic",
+      "message": "Portal desire line crosses a work/seating zone; alternate routes may exist.",
+      "method": "direct_desire_line_zone_intersection",
+      "status": "inferred",
       "strength": "soft",
       "subject_ids": [
-        "sp-entry",
-        "sp-kitchen",
-        "sp-entry",
-        "d-entry-corridor-b0",
-        "d-living-corridor-b0",
-        "o-kitchen-living",
-        "sp-kitchen"
+        "sp-living",
+        "o-dining-living",
+        "d-living-terrace"
       ]
     },
     {
@@ -6431,56 +6571,11 @@
       ]
     },
     {
-      "assumption_basis": "docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption)",
-      "code": "bedroom_noise_adjacency",
-      "constraint_id": null,
-      "evaluator": "PrivacyUsabilityEvaluator",
-      "id": "v-055-bedroom-noise-adjacency",
-      "message": "Noisy activity beside/above/below sleeping space; acoustic assembly performance is unknown.",
-      "method": "plan_contact_or_stack",
-      "status": "inferred",
-      "strength": "soft",
-      "subject_ids": [
-        "sp-bed-child-1",
-        "sp-mechanical"
-      ]
-    },
-    {
-      "assumption_basis": "docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption)",
-      "code": "bedroom_noise_stacking",
-      "constraint_id": null,
-      "evaluator": "PrivacyUsabilityEvaluator",
-      "id": "v-056-bedroom-noise-stacking",
-      "message": "Noisy activity beside/above/below sleeping space; acoustic assembly performance is unknown.",
-      "method": "plan_contact_or_stack",
-      "status": "inferred",
-      "strength": "soft",
-      "subject_ids": [
-        "sp-bed-child-2",
-        "sp-garage"
-      ]
-    },
-    {
-      "assumption_basis": "docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption)",
-      "code": "bedroom_noise_adjacency",
-      "constraint_id": null,
-      "evaluator": "PrivacyUsabilityEvaluator",
-      "id": "v-057-bedroom-noise-adjacency",
-      "message": "Noisy activity beside/above/below sleeping space; acoustic assembly performance is unknown.",
-      "method": "plan_contact_or_stack",
-      "status": "inferred",
-      "strength": "soft",
-      "subject_ids": [
-        "sp-bed-child-2",
-        "sp-laundry"
-      ]
-    },
-    {
       "assumption_basis": "assumption min_glazing_ratio=0.1; precedent: docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption); not code checked",
       "code": "low_daylight_opportunity",
       "constraint_id": null,
       "evaluator": "DaylightOpportunityEvaluator",
-      "id": "v-058-low-daylight-opportunity",
+      "id": "v-055-low-daylight-opportunity",
       "message": "Unburied glazing ratio is below assumption; no daylight simulation.",
       "method": "glazing_area_ratio",
       "status": "inferred",
@@ -6494,13 +6589,13 @@
       "code": "low_daylight_opportunity",
       "constraint_id": null,
       "evaluator": "DaylightOpportunityEvaluator",
-      "id": "v-059-low-daylight-opportunity",
+      "id": "v-056-low-daylight-opportunity",
       "message": "Unburied glazing ratio is below assumption; no daylight simulation.",
       "method": "glazing_area_ratio",
       "status": "inferred",
       "strength": "soft",
       "subject_ids": [
-        "sp-bed-child-2"
+        "sp-bed-child-1"
       ]
     },
     {
@@ -6508,15 +6603,15 @@
       "code": "outdoor_door_grade_mismatch",
       "constraint_id": null,
       "evaluator": "DaylightOpportunityEvaluator",
-      "id": "v-060-outdoor-door-grade-mismatch",
-      "message": "Door threshold is 0.251 m relative to grade; check landing/ramp.",
+      "id": "v-057-outdoor-door-grade-mismatch",
+      "message": "Door threshold is 0.351 m relative to grade; check landing/ramp.",
       "method": "outside_face_tin_interpolation",
       "status": "inferred",
       "strength": "soft",
       "subject_ids": [
-        "d-front-entry-ext",
+        "d-garage-garage-ext",
         "w-entry-001",
-        "sp-entry"
+        "sp-garage"
       ]
     }
   ]

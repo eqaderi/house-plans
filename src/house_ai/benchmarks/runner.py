@@ -153,7 +153,7 @@ def _site_claims(site: Site) -> list[MetricClaim]:
 def _observations(fixture: BenchmarkFixture):
     metrics = {("site", "site"): _site_claims(fixture.site)}
     program_claims = []
-    for item in fixture.program.items:
+    for item in fixture.program.space_requirements:
         for name, value in (
             ("quantity", item.quantity),
             ("accessible", item.accessible),
@@ -165,7 +165,7 @@ def _observations(fixture: BenchmarkFixture):
             "garage_vehicle_capacity",
             sum(
                 item.quantity
-                for item in fixture.program.items
+                for item in fixture.program.space_requirements
                 if item.function is SpaceFunction.GARAGE
             ),
             "program_garage_bay_quantity",

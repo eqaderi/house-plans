@@ -33,8 +33,8 @@ def _doc(path: str):
 def test_program_names_beds_and_typical_cars(folder, cars):
     program = SpaceProgram.model_validate(_doc(f"{folder}/space_program.yaml"))
     usability = program.usability
-    assert usability.double_bed_program_item_ids == ["pi-bed-main"]
-    assert usability.single_bed_program_item_ids == ["pi-bed-child-1", "pi-bed-child-2"]
+    assert usability.double_bed_space_requirement_ids == ["pi-bed-main"]
+    assert usability.single_bed_space_requirement_ids == ["pi-bed-child-1", "pi-bed-child-2"]
     assert [(v.width_m, v.length_m, v.door_side_clearance_m) for v in usability.vehicles] == [
         (1.8, 4.5, 0.6)
     ] * cars

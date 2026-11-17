@@ -1,22 +1,22 @@
-"""The space program as a plain-language review sheet for the homeowner."""
+"""The space program as a plain-language review sheet for the owner."""
 
 from __future__ import annotations
 
 from house_ai.domain.brief import DesignBrief
 from house_ai.domain.epistemics import Epistemic
-from house_ai.domain.program import AdjacencyKind, SpaceProgram, Strength
+from house_ai.domain.program import SpaceProgram, SpaceRelationshipKind, Strength
 from house_ai.domain.records import AssumptionsFile, OpenQuestionsFile
 
 from .builder import is_indoor
 from .validation import ProgramFinding, area_summary
 
 _KIND = {
-    AdjacencyKind.CONNECTED: "opens directly into",
-    AdjacencyKind.ADJACENT: "shares a wall with",
-    AdjacencyKind.NEAR: "is close to",
-    AdjacencyKind.VISUAL: "can be seen from",
-    AdjacencyKind.SEPARATED: "is kept away from",
-    AdjacencyKind.ACOUSTIC_SEPARATION: "is kept out of earshot of",
+    SpaceRelationshipKind.CONNECTED: "opens directly into",
+    SpaceRelationshipKind.ADJACENT: "shares a wall with",
+    SpaceRelationshipKind.NEAR: "is close to",
+    SpaceRelationshipKind.VISUAL: "can be seen from",
+    SpaceRelationshipKind.SEPARATED: "is kept away from",
+    SpaceRelationshipKind.ACOUSTIC_SEPARATION: "is kept out of earshot of",
 }
 
 
@@ -39,7 +39,7 @@ def program_markdown(
     assumptions: AssumptionsFile | None = None,
     questions: OpenQuestionsFile | None = None,
 ) -> str:
-    names = {i.id: i.name for i in program.items}
+    names = {i.id: i.name for i in program.space_requirements}
     names["exterior"] = "outside"
     s = area_summary(program)
     lines = [
@@ -53,7 +53,7 @@ def program_markdown(
         "| Space | Number | Size min–target (m²) | Floor | Must / nice | Step-free | Basis |",
         "|---|---|---|---|---|---|---|",
     ]
-    for i in program.items:
+    for i in program.space_requirements:
         size = (
             "outdoor" if not is_indoor(i) and i.target_area_m2 is None
             else f"{i.min_area_m2 or 0:g}–{i.target_area_m2 or 0:g}"
@@ -74,17 +74,17 @@ def program_markdown(
         "- Your total floor area: "
         + (f"{program.target_gross_area_m2:.0f} m²" if program.target_gross_area_m2
            else "not given"),
-        f"- Floors: {program.levels or 'not decided'}"
-        + (f"; about {s.footprint_m2:.0f} m² per floor" if s.footprint_m2 else ""),
+        f"- Storeys: {program.storeys or 'not decided'}"
+        + (f"; about {s.footprint_m2:.0f} m² per storey" if s.footprint_m2 else ""),
         "- Budget: "
         + (f"{program.budget.amount:,.0f} {program.budget.currency} (cost not checked)"
            if program.budget else "not given"),
-        f"- Site: {'confirmed' if program.site_verified else 'not confirmed yet'}",
+        f"- Site: {'approved' if program.site_approved else 'not approved yet'}",
         "",
         "## How spaces relate",
         "",
     ]  # fmt: skip
-    for a in program.adjacencies:
+    for a in program.space_relationships:
         must = "must" if a.strength is Strength.HARD else "wish"
         lines.append(f"- {names.get(a.a, a.a)} {_KIND[a.kind]} {names.get(a.b, a.b)} "
                      f"({must}). {a.rationale or ''}".rstrip())  # fmt: skip

@@ -41,13 +41,14 @@ from house_ai.constants.strategies import (
 from house_ai.constants.strategies import (
     STRATEGY_ORDER as STRATEGY_ORDER,
 )
+from house_ai.domain.model import STOREY_HEIGHT_M
 from house_ai.domain.program import Privacy, SpaceFunction, SpaceProgram
 
 from .frame import ENVELOPE_MARGIN_M, DesignFrame, Ground, best_interval_dm, from_dm
 from .rooms import ProgramRooms, RoomSpec, garage_dims_dm
 
 #: Typical values for a first layout; recorded as plan assumptions, not rules.
-FLOOR_TO_FLOOR_M = 3.0
+FLOOR_TO_FLOOR_M = STOREY_HEIGHT_M
 HALF_STOREY_M = 1.5
 CORRIDOR_DM = 12
 MIN_BAR_LENGTH_DM = 60
@@ -360,7 +361,8 @@ def _linear(ctx: MassingContext, depths: tuple[int, int]) -> Massing:
 
 
 def _compact(ctx: MassingContext, depths: tuple[int, int]) -> Massing:
-    n = max(2, ctx.program.levels or 2)
+    # Compact bars are stacked a whole storey apart: one bar per requested storey.
+    n = max(2, ctx.program.storeys or 2)
     d = _entry_depths(ctx, depths)
     b0 = _u_bar(ctx, "b0", _front_v(ctx), d)
     b0.entry, b0.groups = True, DAY_GROUPS

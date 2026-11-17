@@ -1,0 +1,85 @@
+{
+  "assumptions": [
+    {
+      "affects": [
+        "pi-entry",
+        "pi-living",
+        "pi-kitchen",
+        "pi-dining",
+        "pi-bed-main",
+        "pi-bed-child-1",
+        "pi-bed-child-2",
+        "pi-bath-ensuite",
+        "pi-bath-1",
+        "pi-mechanical",
+        "pi-stair"
+      ],
+      "basis": "house-ai typical-size table (program.builder.TYPICAL)",
+      "confirm_with": "owner",
+      "id": "asm-typical-sizes",
+      "made_by": null,
+      "statement": "Rooms without a size from you use typical sizes for a first layout: Entrance hall 6 m², Living room 25 m², Kitchen 12 m², Dining 14 m², Main bedroom 15 m², Child's bedroom 1 11 m², Child's bedroom 2 11 m², En-suite bathroom 5 m², Bathroom 1 6 m², Plant / technical room 4 m², Stair 10 m². These are not building-code minimums; no local rules are loaded.",
+      "status": "assumption"
+    },
+    {
+      "affects": [
+        "program"
+      ],
+      "basis": "Typical share for a compact house; checked again in Milestone D.",
+      "confirm_with": "architect",
+      "id": "asm-circulation",
+      "made_by": null,
+      "statement": "Halls, walls and structure add 20% to the room areas.",
+      "status": "assumption"
+    },
+    {
+      "affects": [
+        "pi-entry",
+        "pi-mechanical"
+      ],
+      "basis": "Every house needs a way in and room for heating, water and electrics.",
+      "confirm_with": "owner",
+      "id": "asm-entry-and-plant",
+      "made_by": null,
+      "statement": "The house has an entrance hall and a small plant / technical room.",
+      "status": "assumption"
+    },
+    {
+      "affects": [
+        "pi-bed-main",
+        "pi-bed-child-1",
+        "pi-bed-child-2"
+      ],
+      "basis": "Who sleeps where, from the household answers.",
+      "confirm_with": "owner",
+      "id": "asm-beds",
+      "made_by": null,
+      "statement": "The main bedroom is tested for a double bed and children's bedrooms for single beds.",
+      "status": "assumption"
+    }
+  ],
+  "project_id": "pre-adr0025",
+  "provenance": {
+    "created_at": "2026-11-17T09:00:35Z",
+    "created_by": {
+      "display_name": null,
+      "id": "house-ai-program",
+      "kind": "system",
+      "model": null,
+      "provider": null
+    },
+    "inputs": [
+      {
+        "id": "brief",
+        "kind": "design_brief",
+        "sha256": "87c396d4aebbfdf1c4d5eed8b1a80430515b49859c9329b3843b7986da6322f8",
+        "version": 7
+      }
+    ],
+    "method": "program_from_brief",
+    "notes": "Deterministic; sizes not given by the owner are typical values (assumptions).",
+    "tool": "house-ai program",
+    "tool_version": null
+  },
+  "schema_version": "0.1.0"
+}

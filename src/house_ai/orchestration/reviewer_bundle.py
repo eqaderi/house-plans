@@ -1,4 +1,4 @@
-"""Read-only export bundle generator for the 2D concept reviewer."""
+"""Read-only export bundle generator for the 2D plan option reviewer."""
 
 from __future__ import annotations
 

@@ -12,7 +12,14 @@ from dataclasses import dataclass, field
 from typing import Any, Literal
 
 from house_ai.domain.brief import Priority
-from house_ai.domain.interview import InterviewSession, InterviewTurn, SiteContext, TurnKind
+from house_ai.domain.interview import (
+    InterviewSession,
+    InterviewTurn,
+    SiteContext,
+    TurnKind,
+    current_question_id,
+    current_slot,
+)
 
 from . import parsing
 from .questions import QUESTIONS, SLOTS, followup_id, question_for
@@ -40,7 +47,7 @@ class SlotState:
 @dataclass
 class State:
     slots: dict[str, SlotState] = field(default_factory=dict)
-    #: Pending-question id -> latest answer/revision turn for it.
+    #: Pending-question id (current name, ADR 0025) -> latest answer/revision turn for it.
     answers: dict[str, InterviewTurn] = field(default_factory=dict)
     #: Contradiction id -> (resolution turn, slot values it was resolved for).
     resolutions: dict[str, tuple[InterviewTurn, dict[str, Any]]] = field(default_factory=dict)
@@ -67,15 +74,16 @@ def answer_fact_id(turn: InterviewTurn) -> str:
 
 
 def fold(session: InterviewSession) -> State:
+    """Replay the turns. Slots and questions saved by old names count as current ones."""
     state = State()
     for t in session.turns:
         if t.kind in (TurnKind.ANSWER, TurnKind.REVISION):
             assert t.question_id is not None
-            state.answers[t.question_id] = t
+            state.answers[current_question_id(t.question_id)] = t
             fact = answer_fact_id(t)
             prio = parsing.priority(t.text or "")
             for u in t.understood:
-                state.slots[u.slot] = SlotState(
+                state.slots[current_slot(u.slot)] = SlotState(
                     value=u.value,
                     status="unknown" if u.value is None else "inference",
                     seq=t.seq,
@@ -83,14 +91,14 @@ def fold(session: InterviewSession) -> State:
                     method=u.method,
                     priority=prio,
                 )
-                if u.slot in state.rejected_open:
-                    state.rejected_open.remove(u.slot)
+                if current_slot(u.slot) in state.rejected_open:
+                    state.rejected_open.remove(current_slot(u.slot))
         elif t.kind is TurnKind.CONFIRMATION:
-            for s in t.slots:
+            for s in map(current_slot, t.slots):
                 if s in state.slots and state.slots[s].status == "inference":
                     state.slots[s].status = "confirmed"
         elif t.kind is TurnKind.REJECTION:
-            for s in t.slots:
+            for s in map(current_slot, t.slots):
                 state.slots.pop(s, None)
                 if s not in state.rejected_open:
                     state.rejected_open.append(s)
@@ -98,7 +106,7 @@ def fold(session: InterviewSession) -> State:
             assert t.contradiction_id is not None
             fact = answer_fact_id(t)
             for u in t.understood:
-                state.slots[u.slot] = SlotState(
+                state.slots[current_slot(u.slot)] = SlotState(
                     value=u.value,
                     status="confirmed",
                     seq=t.seq,
@@ -106,7 +114,8 @@ def fold(session: InterviewSession) -> State:
                     method="resolution",
                     resolution=t.contradiction_id,
                 )
-            signature = {s: state.slots[s].value for s in t.slots if s in state.slots}
+            slots = [current_slot(s) for s in t.slots]
+            signature = {s: state.slots[s].value for s in slots if s in state.slots}
             if t.option is None and parsing.is_unknown(t.text or ""):
                 state.deferred[t.contradiction_id] = signature
             else:

@@ -125,15 +125,21 @@ Companion files: `assumptions` (`AssumptionsFile`) and `open_questions`
 
 ## Space program (`space_program`)
 
-- `ProgramItem`: function, quantity, min/target/max area (ordered), minimum
-  width, privacy, zone, level preference, priority, daylight need, whether
-  it must be step-free (`accessible`), and the brief facts it derives from.
-- `SpaceProgram` also records `levels` (floors wanted, or unknown), `budget`,
-  and the `site_ref` it was checked against with `site_verified`.
-- `AdjacencyRequirement`: `connected`, `adjacent`, `near`, `visual`,
+- `SpaceRequirement` (in `space_requirements`): function, quantity,
+  min/target/max area (ordered), minimum width, privacy, zone, level
+  preference, priority, daylight need, whether it must be step-free
+  (`accessible`), and the brief facts it derives from.
+- `SpaceProgram` also records `storeys` (how many storeys the owner wants, or
+  unknown; the plan derives its levels, and on a hillside two storeys may be
+  four split levels), `budget`, and the `site_ref` it was checked against with
+  `site_approved`.
+- `SpaceRelationship` (in `space_relationships`, kind
+  `SpaceRelationshipKind`): `connected`, `adjacent`, `near`, `visual`,
   `separated`, `acoustic_separation`; `hard` (no weight) or `soft` (weight
-  required). Endpoints are program items or `exterior`.
+  required). Endpoints are space requirements or `exterior`.
 - `ProgramZone`, `target_gross_area_m2`, `circulation_factor`.
+- Records written before ADR 0025 use the old names `items`, `adjacencies`,
+  `levels` and `site_verified`; they still load and are never rewritten.
 
 ## Constraints and code packs
 
@@ -156,7 +162,7 @@ system it is drawn in and pins `site_ref` and `program_ref`.
 | Entity | Meaning |
 |---|---|
 | `Level` | Finished floor elevation (local z) and floor-to-floor height |
-| `Space` | A room or area: function, level, boundary polygon (holes allowed), program item, zone, floor material |
+| `Space` | A drawn area with a function: level, boundary polygon (holes allowed), space requirement (`program_item_id`), zone, floor material |
 | `Wall` | Straight centerline segment on a level, thickness, height, base offset, kind |
 | `Opening` | Door, window or cased opening hosted by one wall: offset along the wall, width, height, sill, operation, and the two sides it connects (spaces or `exterior`) |
 | `Slab` | Floor, roof, terrace or foundation polygon with thickness and top offset |
@@ -164,15 +170,15 @@ system it is drawn in and pins `site_ref` and `program_ref`.
 | `Stair` | Footprint, kind, the two levels and the bottom/top spaces it joins, riser/tread data when known |
 | `Zone` | Named group of spaces with a privacy class |
 | `Fixture` | Typed fixture with position, rotation and footprint in a space |
-| `SpaceRelationship` | Declared intent between two spaces (geometry decides whether it holds) |
-| `CompositeSpace` | One physical open room partitioned into non-overlapping functional Space zones (e.g. open-plan living/dining/kitchen) |
+| `PlanRelationship` | Declared intent between two spaces (geometry decides whether it holds) |
+| `CompositeSpace` | One physical open room partitioned into non-overlapping functional spaces (e.g. open-plan living/dining/kitchen) |
 | `MaterialRef` | Reference to a material by id, category and optional library URI |
 | `assumptions`, `issues` | Assumptions and unresolved issues attached to this model |
 
 Circulation is not stored. It is derived from passable openings and stairs
 (`integrity.circulation_graph`), so it cannot disagree with the geometry.
 
-## Concept proposals, plans, revisions and evaluations
+## Concept proposals, plan versions, revisions and evaluations
 
 Site reports retain `mean_slope_pct` as the horizontal-area-weighted mean over
 the complete survey TIN. `parcel_mean_slope_pct` uses each triangle's exact
@@ -181,8 +187,8 @@ extrapolation. `SiteContext.mean_slope_pct` (interview/program context) uses thi
 parcel value; it is unknown without a covered parcel. See [ADR 0012](adr/0012-site-metric-scope.md).
 
 - `ConceptProposal` (artifact kind `concept_proposal`): human or agent proposal
-  structuring floor organization (`level_assignments`, `stair_cores`), zoning,
-  outdoor links (`terrace`, `balcony`, `courtyard`), topology additions
+  structuring level organization (`level_assignments`, `stair_cores`), zoning,
+  outdoor connections (`terrace`, `balcony`, `courtyard`), topology additions
   (`adjacency_graph`), and optional `target_strategy`. Validated deterministically
   before solving and recorded in provenance.
 - `PlanVersion` (artifact kind `plan`, artifact id = `option_id`): label,
@@ -192,14 +198,14 @@ parcel value; it is unknown without a covered parcel. See [ADR 0012](adr/0012-si
 - `GenerationRecord` (Milestone D, optional; `null` for hand-authored plans):
   generator and solver names and versions, solver status and objective,
   seed, deterministic-time budget, the strategy parameters used (row depths,
-  corridor width, level elevations, bar positions), one `RoomPlacement`
+  corridor width, level heights, bar positions), one `RoomPlacement`
   (space, bar, row, start) per placed space, and the structured revision
   operations an agent applied (e.g. `area:pi-kitchen=16`). It lets a revision
   stay close to its parent and lets anyone reproduce the run.
 - `ChangeRequest`: the owner's words verbatim, a kind (`modify`,
   `alternatives`, `restart_from_program`, `combine`, `other`) and the base
   plan versions. `combine` needs at least two.
-- `RevisionReport`: requested change, geometry changed, rooms added,
+- `RevisionReport`: requested change, geometry changed, spaces added,
   removed and changed, area changes, metric changes, new and resolved
   violations, assumptions.
 - `EvaluationReport`: evaluator runs (ran, not run with a reason, failed),
@@ -208,7 +214,7 @@ parcel value; it is unknown without a covered parcel. See [ADR 0012](adr/0012-si
 
 Generated plans use these conventions (see [ADR 0013](adr/0013-solver-backed-plan-generation.md)):
 level ids `lv-entry`, `lv-down-<cm>`, `lv-up-<cm>` relative to the entry
-level; space ids `sp-<item>` from program item ids (`-<n>` for quantities),
+level; space ids `sp-<item>` from space requirement ids (`-<n>` for quantities),
 `sp-corridor-<bar>`, `sp-stair-<link><a|b>`, `sp-link-…`, `sp-gallery-…` and
 `sp-flex-<row>` (flexible space not in the program); wall kinds `exterior`,
 `interior` (also between split levels) and `retaining`. Terrain queries
@@ -257,17 +263,19 @@ assumption sources and limits.
   A flight between bars side by side at different levels belongs to a stair volume
   on both levels: a `Stairwell` space (lower level, under the higher floor) and a
   `Stair hall` space (higher level, over the lower roof), each `function: stair`
-  without a program item, walled with `base_offset_m`/`height_m` to span the
+  without a space requirement, walled with `base_offset_m`/`height_m` to span the
   volume (ADR 0023). A flight is not walkable floor in any space of its two levels
   it passes through. Walls must stay out of the clear band above a walking line.
 - `SpaceProgram.usability`: optional household seats, vehicle envelopes, arrival
-  path and bed variants by program item. Vehicle dimensions, side-door access and
+  path and bed variants by space requirement
+  (`double_bed_space_requirement_ids`, `single_bed_space_requirement_ids`;
+  old records: `double_bed_program_item_ids`, `single_bed_program_item_ids`). Vehicle dimensions, side-door access and
   source are explicit; turning radius may be unknown. The program builder only
   derives household seats when adult and child counts are both supplied; stated
-  older relatives are added (absent elders mean the program plans no elder room).
+  older relatives are added (absent elders mean the program plans no elder bedroom).
 - `FurnitureTemplate`: individually cited `DimensionAssumption` records for body
   width/depth and four access margins. Front means local negative Y, for templates
-  and for placed `Fixture`/`Furniture` rotation alike (the user side). Templates
+  and for placed `Fixture`/`Furniture` rotation alike (the side a person uses). Templates
   are exported as `furniture_template.schema.json`; library version 1.0.0.
 - `MetricClaim.assumption_basis`, `Violation.method` and `Violation.assumption_basis`
   expose how a usability result was obtained. Usability findings are soft. Checked
@@ -280,7 +288,7 @@ The eight added evaluators are `NetAreaEvaluator`, `DoorClearanceEvaluator`,
 runner alongside the existing six evaluators. Full solar/daylight simulation and
 life-safety/accessibility certification remain not run. Unknown inputs produce
 null, not-checked metrics. The old straight-line walking estimate is replaced in
-reports by a visibility-graph point route through actual room polygons and portals.
+reports by a visibility-graph point route through actual space polygons and portals.
 
 Empty/absent new fields are omitted during canonical serialization to retain
 pre-S6 immutable hashes. Populated fields affect hashes normally; old project
@@ -297,12 +305,12 @@ so historical project hashes remain stable.
 
 `Terrain.breaklines` holds mapped surveyed 3D `TerrainBreakline` vertices and
 source references. `TinSurface.method` additionally accepts `constrained_tin`.
-Crossing-height conflicts and unenforceable constraints leave no surface;
+Crossing-height mismatches and unenforceable constraints leave no surface;
 queries never silently substitute unconstrained Delaunay when breaklines
 exist. Empty breaklines preserve historical hashes.
 
 `SectionLine` and `HillsideSettings` have exported schemas. Sections, facade
 projections, earthwork integrations and engineering-risk registers are
-derived views retaining canonical IDs. They do not form a competing design
+derived views retaining canonical IDs. They do not form a competing house
 model. Every numeric terrain relationship is inferred from survey TIN
 interpolation; missing support remains unknown.

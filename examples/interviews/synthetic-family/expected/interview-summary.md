@@ -58,7 +58,7 @@
 
 ## Levels
 
-- Floors: **2** (confirmed by you)
+- Storeys: **2** (confirmed by you)
 
 ## Lifestyle
 

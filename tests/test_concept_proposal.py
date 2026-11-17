@@ -21,11 +21,11 @@ from house_ai.constants.proposals import (
     STAIR_CORE_CENTRAL,
 )
 from house_ai.domain.program import (
-    AdjacencyKind,
-    AdjacencyRequirement,
-    ProgramItem,
     SpaceFunction,
     SpaceProgram,
+    SpaceRelationship,
+    SpaceRelationshipKind,
+    SpaceRequirement,
     Strength,
 )
 from house_ai.domain.proposal import (
@@ -47,21 +47,21 @@ TOOL = Actor(kind=ActorKind.SYSTEM, id="house-ai")
 
 def _minimal_program() -> SpaceProgram:
     items = [
-        ProgramItem(
+        SpaceRequirement(
             id="pi-entry",
             name="Entry",
             function=SpaceFunction.ENTRY,
             privacy="public",
             min_area_m2=5.0,
         ),
-        ProgramItem(
+        SpaceRequirement(
             id="pi-living",
             name="Living room",
             function=SpaceFunction.LIVING,
             privacy="public",
             min_area_m2=20.0,
         ),
-        ProgramItem(
+        SpaceRequirement(
             id="pi-bed-1",
             name="Primary bedroom",
             function=SpaceFunction.BEDROOM,
@@ -70,11 +70,11 @@ def _minimal_program() -> SpaceProgram:
         ),
     ]
     adj = [
-        AdjacencyRequirement(
+        SpaceRelationship(
             id="adj-prog-entry-living",
             a="pi-entry",
             b="pi-living",
-            kind=AdjacencyKind.CONNECTED,
+            kind=SpaceRelationshipKind.CONNECTED,
             strength=Strength.HARD,
         ),
     ]
@@ -115,14 +115,14 @@ def test_concept_proposal_schema_valid_instantiation():
                 id="padj-entry-living",
                 a="pi-entry",
                 b="pi-living",
-                kind=AdjacencyKind.CONNECTED,
+                kind=SpaceRelationshipKind.CONNECTED,
                 strength=Strength.HARD,
             ),
             ProposalAdjacency(
                 id="padj-living-bed",
                 a="pi-living",
                 b="pi-bed-1",
-                kind=AdjacencyKind.NEAR,
+                kind=SpaceRelationshipKind.NEAR,
                 strength=Strength.SOFT,
                 weight=1.5,
             ),
@@ -190,7 +190,7 @@ def test_concept_proposal_schema_rejections():
             id="padj-self",
             a="pi-entry",
             b="pi-entry",
-            kind=AdjacencyKind.CONNECTED,
+            kind=SpaceRelationshipKind.CONNECTED,
             strength=Strength.HARD,
         )
 
@@ -200,7 +200,7 @@ def test_concept_proposal_schema_rejections():
             id="padj-hard-weight",
             a="pi-entry",
             b="pi-living",
-            kind=AdjacencyKind.CONNECTED,
+            kind=SpaceRelationshipKind.CONNECTED,
             strength=Strength.HARD,
             weight=2.0,
         )
@@ -242,14 +242,14 @@ def test_validate_proposal_success():
                 id="padj-1",
                 a="pi-entry",
                 b="pi-living",
-                kind=AdjacencyKind.CONNECTED,
+                kind=SpaceRelationshipKind.CONNECTED,
                 strength=Strength.HARD,
             ),
             ProposalAdjacency(
                 id="padj-2",
                 a="pi-living",
                 b="pi-bed-1",
-                kind=AdjacencyKind.NEAR,
+                kind=SpaceRelationshipKind.NEAR,
                 strength=Strength.SOFT,
             ),
         ],
@@ -307,7 +307,7 @@ def test_validate_proposal_missing_level_assignment():
 
 
 def test_validate_proposal_excessive_levels():
-    prog = _minimal_program()  # program.levels = 2
+    prog = _minimal_program()  # program.storeys = 2
     prop = ConceptProposal(
         id="prop-too-many-levels",
         project_id="proj-test",
@@ -396,7 +396,7 @@ def test_validate_proposal_program_hard_adjacency_violation():
                 id="padj-conflict",
                 a="pi-entry",
                 b="pi-living",
-                kind=AdjacencyKind.SEPARATED,
+                kind=SpaceRelationshipKind.SEPARATED,
                 strength=Strength.HARD,
             ),
         ],
@@ -424,14 +424,14 @@ def test_validate_proposal_internal_conflict():
                 id="padj-1",
                 a="pi-living",
                 b="pi-bed-1",
-                kind=AdjacencyKind.CONNECTED,
+                kind=SpaceRelationshipKind.CONNECTED,
                 strength=Strength.SOFT,
             ),
             ProposalAdjacency(
                 id="padj-2",
                 a="pi-living",
                 b="pi-bed-1",
-                kind=AdjacencyKind.SEPARATED,
+                kind=SpaceRelationshipKind.SEPARATED,
                 strength=Strength.SOFT,
             ),
         ],
@@ -447,8 +447,8 @@ def test_validate_proposal_disconnected_topology():
     prog = prog.model_copy(
         update={
             "items": [
-                *prog.items,
-                ProgramItem(
+                *prog.space_requirements,
+                SpaceRequirement(
                     id="pi-bed-2",
                     name="Second bedroom",
                     function=SpaceFunction.BEDROOM,
@@ -474,14 +474,14 @@ def test_validate_proposal_disconnected_topology():
                 id="padj-1",
                 a="pi-entry",
                 b="pi-living",
-                kind=AdjacencyKind.CONNECTED,
+                kind=SpaceRelationshipKind.CONNECTED,
                 strength=Strength.HARD,
             ),
             ProposalAdjacency(
                 id="padj-2",
                 a="pi-bed-1",
                 b="pi-bed-2",
-                kind=AdjacencyKind.CONNECTED,
+                kind=SpaceRelationshipKind.CONNECTED,
                 strength=Strength.HARD,
             ),
         ],

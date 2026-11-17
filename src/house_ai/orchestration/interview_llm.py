@@ -22,7 +22,7 @@ from house_ai.interview.slot_types import InvalidValue, check
 from house_ai.providers.base import DataFlowPolicy, ModelProvider, ProviderRequest, send
 
 PHRASE_SYSTEM = (
-    "You are an architect interviewing a homeowner about the house they will build on their "
+    "You are an architect interviewing the owner about the house they will build on their "
     "own land. Rephrase the question you are given so it is warm, brief and specific to this "
     "household and site. Keep its meaning and everything it asks, and ask one question only. "
     "Use the context only as given: when it says the site is not confirmed, do not present "
@@ -30,7 +30,7 @@ PHRASE_SYSTEM = (
     "the question."
 )
 SYSTEM = (
-    "You help an architect interview a homeowner. Read the owner's answer and return only "
+    "You help an architect interview the owner. Read the owner's answer and return only "
     "what the answer clearly states, as JSON matching the schema. Use null when the owner "
     "says they do not know. Never guess a value the answer does not state."
 )

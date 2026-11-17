@@ -1,6 +1,6 @@
 ---
 name: site-survey-review
-description: Inspect and ingest survey CAD files (DWG/DXF), validate boundary and terrain, identify blockers, and prepare the site confirmation sheet for homeowner approval.
+description: Inspect and ingest survey CAD files (DWG/DXF), validate boundary and terrain, identify blockers, and prepare the site confirmation sheet for the owner's confirmation and approval.
 ---
 
 # Site Survey Review
@@ -10,13 +10,13 @@ Follow [docs/AGENT_CONTRACT.md](../../docs/AGENT_CONTRACT.md) (§5 private data,
 `agent:<tool>` is your own tool name: `claude-code`, `codex` or `gemini`.
 
 ## Purpose
-Guide the agent through inspecting raw CAD survey files, ingesting survey entities into the project store with a human layer mapping, computing boundary and terrain metrics, evaluating site blockers, drafting the owner's questions and confirmation sheet, and requesting the human site gate.
+Guide the agent through inspecting raw CAD survey files, ingesting survey entities into the project store with a human layer mapping, computing boundary and terrain metrics, evaluating site blockers, writing the owner's questions and confirmation sheet, and requesting the human site gate.
 
 ## When to invoke
 - When a new project is created and survey files (DWG or DXF) need ingestion.
 - When existing survey files need inspection or re-ingestion.
-- When checking site status, boundary area, slope, relief, frontage, or terrain triangles.
-- When preparing the site facts for the homeowner before the site approval gate.
+- When checking site status, parcel area, slope, relief, frontage, or terrain triangles.
+- When preparing the site facts for the owner before the site approval gate.
 
 ## Inputs
 - Project folder or name under `projects/` (`<project>`).
@@ -62,14 +62,14 @@ Guide the agent through inspecting raw CAD survey files, ingesting survey entiti
    .venv/bin/house-ai site report <project> --out projects/<project>/reviews/site-v<N>
    ```
 
-5. **Draft the owner's questions and `reviews/CONFIRM-SITE.md`.** Write it in
+5. **Write the owner's questions and `reviews/CONFIRM-SITE.md`.** Write it in
    plain language (and in the owner's language) with these sections:
    - what the owner already told us (verbatim, marked "not yet confirmed in the tool");
    - what the survey answers (area, relief, frontage, point counts), each with how it was obtained;
    - every open blocker from `assess-site` and `site report` (units, horizontal CRS, vertical datum, boundary), phrased as a question only the owner or surveyor can answer;
    - suspicious terrain findings (steep or sliver triangles, close point pairs), stated as measurements, never smoothed;
    - the exact commands the owner runs in their own terminal (see Human-approval boundaries).
-   Never guess a CRS, UTM zone, hemisphere, datum or unit from coordinate magnitudes; list them as unknown.
+   Never infer a CRS, UTM zone, hemisphere, datum or unit from coordinate magnitudes; list them as unknown.
 
 6. **Request the human site gate review:**
    ```bash
@@ -102,7 +102,7 @@ Guide the agent through inspecting raw CAD survey files, ingesting survey entiti
   ```
 
 ## Failure handling
-- **ODA File Converter missing**: if DWG conversion is unavailable, ask the user to convert DWG to DXF or install ODA File Converter.
-- **Ambiguous boundary or missing elevation**: record it as unknown in the confirmation sheet and keep the project in `SITE_NEEDS_VERIFICATION`.
+- **ODA File Converter missing**: if DWG conversion is unavailable, ask the owner to convert DWG to DXF or install ODA File Converter.
+- **Ambiguous boundary or missing elevation**: record it as unknown in the confirmation sheet and keep the project in `SITE_NEEDS_CONFIRMATION`.
 - **`site ingest` cannot find the source**: rerun `source add` and pass the printed id.
 - **Integrity failure**: if `project verify` reports tampering or a hash mismatch, stop and report it.

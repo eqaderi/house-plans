@@ -24,5 +24,5 @@ provenance:
   - kind: design_brief
     id: brief
     version: 27
-    sha256: 8fa870f80cd88ad1ffecaa1c55352b209319e6846318591ea4a0accbae79258d
+    sha256: 63a5b66c0cb5589db8f16968aabea98ca8125b21f4670ab27ed44c27e2eb1775
   notes: Deterministic; sizes not given by the owner are typical values (assumptions).

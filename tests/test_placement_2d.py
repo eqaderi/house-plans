@@ -61,9 +61,9 @@ from house_ai.domain.program import (
     DaylightNeed,
     Priority,
     Privacy,
-    ProgramItem,
     ProgramZone,
     SpaceProgram,
+    SpaceRequirement,
 )
 from house_ai.domain.proposal import (
     ConceptProposal,
@@ -403,7 +403,7 @@ def test_privacy_driven_zoning():
         ProgramZone(id="z-circulation", name="Circulation Zone", privacy=Privacy.SEMI_PRIVATE),
     ]
     items = [
-        ProgramItem(
+        SpaceRequirement(
             id="pi-entry",
             name="Entry",
             function=SpaceFunction.ENTRY,
@@ -413,7 +413,7 @@ def test_privacy_driven_zoning():
             daylight=DaylightNeed.NOT_NEEDED,
             priority=Priority.MUST,
         ),
-        ProgramItem(
+        SpaceRequirement(
             id="pi-hall",
             name="Hall",
             function=SpaceFunction.HALL,
@@ -423,7 +423,7 @@ def test_privacy_driven_zoning():
             daylight=DaylightNeed.NOT_NEEDED,
             priority=Priority.MUST,
         ),
-        ProgramItem(
+        SpaceRequirement(
             id="pi-living",
             name="Living Room",
             function=SpaceFunction.LIVING,
@@ -433,7 +433,7 @@ def test_privacy_driven_zoning():
             daylight=DaylightNeed.REQUIRED,
             priority=Priority.MUST,
         ),
-        ProgramItem(
+        SpaceRequirement(
             id="pi-kitchen",
             name="Kitchen",
             function=SpaceFunction.KITCHEN,
@@ -443,7 +443,7 @@ def test_privacy_driven_zoning():
             daylight=DaylightNeed.REQUIRED,
             priority=Priority.MUST,
         ),
-        ProgramItem(
+        SpaceRequirement(
             id="pi-master",
             name="Master Bedroom",
             function=SpaceFunction.BEDROOM,
@@ -453,7 +453,7 @@ def test_privacy_driven_zoning():
             daylight=DaylightNeed.REQUIRED,
             priority=Priority.MUST,
         ),
-        ProgramItem(
+        SpaceRequirement(
             id="pi-bed2",
             name="Child Bedroom",
             function=SpaceFunction.BEDROOM,
@@ -463,7 +463,7 @@ def test_privacy_driven_zoning():
             daylight=DaylightNeed.REQUIRED,
             priority=Priority.MUST,
         ),
-        ProgramItem(
+        SpaceRequirement(
             id="pi-guest",
             name="Guest Bedroom",
             function=SpaceFunction.BEDROOM,
@@ -473,7 +473,7 @@ def test_privacy_driven_zoning():
             daylight=DaylightNeed.REQUIRED,
             priority=Priority.SHOULD,
         ),
-        ProgramItem(
+        SpaceRequirement(
             id="pi-laundry",
             name="Laundry",
             function=SpaceFunction.LAUNDRY,
@@ -488,8 +488,8 @@ def test_privacy_driven_zoning():
         id="prog-zoned",
         project_id="proj-demo",
         zones=zones,
-        items=items,
-        adjacencies=[],
+        space_requirements=items,
+        space_relationships=[],
         provenance=Provenance(created_at=datetime.now(UTC), created_by=ACTOR, method="test"),
     )
 
@@ -607,7 +607,7 @@ def test_non_rectangular_l_shaped_space():
     )
 
     custom_items = [
-        ProgramItem(
+        SpaceRequirement(
             id="pi-living",
             name="Living Room",
             function=SpaceFunction.LIVING,
@@ -617,7 +617,7 @@ def test_non_rectangular_l_shaped_space():
             priority=Priority.MUST,
             daylight=DaylightNeed.REQUIRED,
         ),
-        ProgramItem(
+        SpaceRequirement(
             id="pi-bed",
             name="Bedroom",
             function=SpaceFunction.BEDROOM,
@@ -627,7 +627,7 @@ def test_non_rectangular_l_shaped_space():
             priority=Priority.MUST,
             daylight=DaylightNeed.REQUIRED,
         ),
-        ProgramItem(
+        SpaceRequirement(
             id="pi-entry",
             name="Entry",
             function=SpaceFunction.ENTRY,
@@ -642,8 +642,8 @@ def test_non_rectangular_l_shaped_space():
         id="prog-l-shape",
         project_id="proj-demo",
         zones=[],
-        items=custom_items,
-        adjacencies=[],
+        space_requirements=custom_items,
+        space_relationships=[],
         provenance=Provenance(created_at=datetime.now(UTC), created_by=ACTOR, method="test"),
     )
 
@@ -793,7 +793,7 @@ def test_indoor_outdoor_relationships_evaluated_s7_20():
 
 def test_adversarial_generation_s7_25():
     """S7-25: Adversarial generation tests for contradictory, oversized, and pathological inputs."""
-    from house_ai.domain.program import AdjacencyKind, AdjacencyRequirement, Priority, Strength
+    from house_ai.domain.program import Priority, SpaceRelationship, SpaceRelationshipKind, Strength
     from house_ai.generation.generator import CpSatPlanGenerator, GenerationRequest
     from house_ai.generation.massing import Infeasible
     from house_ai.generation.solver2d import Solve2DFailed
@@ -806,24 +806,24 @@ def test_adversarial_generation_s7_25():
     # 1. Contradictory hard requirements: room A and room B simultaneously
     # MUST be adjacent AND separated
     contra_adj = [
-        AdjacencyRequirement(
+        SpaceRelationship(
             id="adj-contra-1",
             a="pi-living",
             b="pi-kitchen",
-            kind=AdjacencyKind.ADJACENT,
+            kind=SpaceRelationshipKind.ADJACENT,
             strength=Strength.HARD,
             rationale="adversarial test: hard adjacent",
         ),
-        AdjacencyRequirement(
+        SpaceRelationship(
             id="adj-contra-2",
             a="pi-living",
             b="pi-kitchen",
-            kind=AdjacencyKind.SEPARATED,
+            kind=SpaceRelationshipKind.SEPARATED,
             strength=Strength.HARD,
             rationale="adversarial test: hard separated",
         ),
     ]
-    contra_program = fix.program.model_copy(update={"adjacencies": contra_adj})
+    contra_program = fix.program.model_copy(update={"space_relationships": contra_adj})
     with pytest.raises((Infeasible, Solve2DFailed)):
         solve_2d_placement(contra_program, site, frame, opts, strategy=STRATEGY_CORRIDOR_FREE)
 
@@ -847,9 +847,9 @@ def test_adversarial_generation_s7_25():
     # 2. Oversized program: program area 10x envelope capacity (e.g., 2000 m2)
     oversized_items = [
         item.model_copy(update={"target_area_m2": item.target_area_m2 * 20.0, "min_area_m2": 150.0})
-        for item in fix.program.items
+        for item in fix.program.space_requirements
     ]
-    oversized_program = fix.program.model_copy(update={"items": oversized_items})
+    oversized_program = fix.program.model_copy(update={"space_requirements": oversized_items})
     with pytest.raises((Infeasible, Solve2DFailed)):
         solve_2d_placement(oversized_program, site, frame, opts, strategy=STRATEGY_CORRIDOR_FREE)
 
@@ -868,7 +868,7 @@ def test_adversarial_generation_s7_25():
     assert cands_over[0].plan is None
 
     # 3. Impossible dimension bounds: room minimum width exceeds envelope width (e.g. 80 meters)
-    impossible_item = ProgramItem(
+    impossible_item = SpaceRequirement(
         id="pi-gigantic",
         name="Gigantic Hall",
         function=SpaceFunction.LIVING,
@@ -877,6 +877,6 @@ def test_adversarial_generation_s7_25():
         priority=Priority.MUST,
         privacy=Privacy.PUBLIC,
     )
-    impossible_program = fix.program.model_copy(update={"items": [impossible_item]})
+    impossible_program = fix.program.model_copy(update={"space_requirements": [impossible_item]})
     with pytest.raises((Infeasible, Solve2DFailed)):
         solve_2d_placement(impossible_program, site, frame, opts, strategy=STRATEGY_CORRIDOR_FREE)

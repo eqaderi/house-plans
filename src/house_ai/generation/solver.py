@@ -29,7 +29,7 @@ from dataclasses import dataclass, field
 
 from ortools.sat.python import cp_model
 
-from house_ai.domain.program import AdjacencyKind, SpaceFunction, Strength
+from house_ai.domain.program import SpaceFunction, SpaceRelationshipKind, Strength
 
 from .massing import Bar, Massing, MassingContext, Row, room_group
 from .rooms import Cluster, ProgramRooms, Relation, RoomSpec, Slot
@@ -656,7 +656,7 @@ def _relation(md, rel: Relation, ua: Unit, ub: Unit, x, st, width, bar_of, obj, 
     else:
         md.Add(same_bar == 0)
     hard = rel.strength is Strength.HARD
-    K = AdjacencyKind
+    K = SpaceRelationshipKind
     if rel.kind in (K.ADJACENT, K.CONNECTED):
         if hard:
             md.Add(touch == 1)

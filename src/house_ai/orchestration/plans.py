@@ -3,7 +3,7 @@
 Gated mode (the normal case) works only on the human-approved site and
 program versions, stores every plan, evaluation and revision as a new
 immutable artifact version and moves the workflow PROGRAM_APPROVED ->
-CONCEPT_GENERATION -> CONCEPT_REVIEW. The plan gate itself stays human-only
+PLAN_GENERATION -> PLAN_REVIEW. The plan gate itself stays human-only
 (``house-ai workflow approve``). Every precondition is checked before anything
 is written, so a refused command leaves the project untouched.
 
@@ -44,7 +44,7 @@ from house_ai.domain.plan import (
     PlanVersion,
     RevisionReport,
 )
-from house_ai.domain.program import AdjacencyKind, SpaceProgram, Strength
+from house_ai.domain.program import SpaceProgram, SpaceRelationshipKind, Strength
 from house_ai.domain.proposal import ConceptProposal
 from house_ai.domain.provenance import Actor, ArtifactKind, ArtifactRef, Provenance
 from house_ai.domain.records import AssumptionsFile, Severity
@@ -78,7 +78,7 @@ EXPLORATORY_BANNER = (
     "EXPLORATORY: not stored in the project; the site and/or program are not approved by the "
     "owner. Not a validated plan."
 )
-GENERATION_STATES = {S.PROGRAM_APPROVED, S.CONCEPT_GENERATION, S.CONCEPT_REVIEW}
+GENERATION_STATES = {S.PROGRAM_APPROVED, S.PLAN_GENERATION, S.PLAN_REVIEW}
 LEVEL_PREFS = {"entry", "not_entry", "upper", "lower", "any", "ground"}
 
 
@@ -96,7 +96,7 @@ class Inputs:
     brief_ref: ArtifactRef | None = None
     codepack: CodePack | None = None
     codepack_ref: ArtifactRef | None = None
-    site_verified: bool = False
+    site_approved: bool = False
 
 
 @dataclass
@@ -143,7 +143,7 @@ class PlanService:
             if status.state not in GENERATION_STATES:
                 hint = ""
                 if self.store.latest_of_kind(ArtifactKind.SPACE_PROGRAM):
-                    hint = " Use --exploratory to preview concepts without storing them."
+                    hint = " Use --exploratory to preview plan options without storing them."
                 raise PlanWorkflowError(
                     f"plan generation needs the owner's approved site and program "
                     f"(PROGRAM_APPROVED or later); the project is in {status.state.value}.{hint}"
@@ -156,7 +156,7 @@ class PlanService:
             if not sites or not programs:
                 missing = "site" if not sites else "space program"
                 raise PlanWorkflowError(
-                    f"no {missing} in this project yet; concepts need a site and a program "
+                    f"no {missing} in this project yet; plan options need a site and a program "
                     "(run the interview and `house-ai program build` first)"
                 )
             site_ref = (
@@ -173,7 +173,7 @@ class PlanService:
             site_ref=site_ref,
             program=program,
             program_ref=program_ref,
-            site_verified=Gate.SITE in status.approvals
+            site_approved=Gate.SITE in status.approvals
             and status.approvals[Gate.SITE].artifact.model_dump() == site_ref.model_dump(),
         )
         if program.brief_ref is not None:
@@ -324,11 +324,11 @@ class PlanService:
                 opt.report = self._evaluate(plan, ref, inp, constraints)
         else:
             state = self.wf.state
-            if state is not S.CONCEPT_GENERATION:
+            if state is not S.PLAN_GENERATION:
                 self.wf.transition(
-                    S.CONCEPT_GENERATION,
+                    S.PLAN_GENERATION,
                     actor,
-                    "generating plan concepts from the approved program",
+                    "generating plan options from the approved program",
                 )
             outcome.constraints_ref = self._store_constraints(
                 constraints, actor, "compiled for plan generation"
@@ -349,7 +349,7 @@ class PlanService:
                     plan.option_id,
                     plan,
                     actor,
-                    reason=f"generated concept ({plan.strategy})",
+                    reason=f"generated plan option ({plan.strategy})",
                 )
                 opt.report = self._evaluate(
                     plan, opt.plan_ref, inp, constraints, outcome.constraints_ref
@@ -359,9 +359,9 @@ class PlanService:
                     opt.report.id,
                     opt.report,
                     actor,
-                    reason="evaluated concept",
+                    reason="evaluated plan version",
                 )
-            self.wf.transition(S.CONCEPT_REVIEW, actor, "plan concepts ready for owner review")
+            self.wf.transition(S.PLAN_REVIEW, actor, "plan options ready for owner review")
             outcome.states.append(self.wf.state.value)
         if out_dir is not None:
             banner = EXPLORATORY_BANNER if exploratory else None
@@ -400,7 +400,7 @@ class PlanService:
             constraints=constraints,
             codepack=inp.codepack,
             created_at=self.store.clock(),
-            site_verified=inp.site_verified,
+            site_approved=inp.site_approved,
             inputs=[r for r in (inp.site_ref, inp.program_ref, constraints_ref) if r],
         )
 
@@ -408,7 +408,8 @@ class PlanService:
 
     def _resolve_spaces(self, name: str, program: SpaceProgram) -> list[str]:
         by_item = {
-            it.id: [space_id_for(it, i) for i in range(1, it.quantity + 1)] for it in program.items
+            it.id: [space_id_for(it, i) for i in range(1, it.quantity + 1)]
+            for it in program.space_requirements
         }
         spaces = {sid for group in by_item.values() for sid in group}
         if name in spaces:
@@ -452,11 +453,11 @@ class PlanService:
             )
         status = self.wf.status()
         if Gate.PLAN in status.approvals or status.state not in (
-            S.CONCEPT_GENERATION,
-            S.CONCEPT_REVIEW,
+            S.PLAN_GENERATION,
+            S.PLAN_REVIEW,
         ):
             raise PlanWorkflowError(
-                f"plans can be revised during concept generation or review; the project is in "
+                f"plans can be revised during plan generation or review; the project is in "
                 f"{status.state.value}. An approved plan is frozen: a human must reopen the plan "
                 "gate (`house-ai workflow reopen <dir> plan`)."
             )
@@ -528,7 +529,7 @@ class PlanService:
                     }
                     known = {
                         space_id_for(it, i)
-                        for it in self.inputs(False).program.items
+                        for it in self.inputs(False).program.space_requirements
                         for i in range(1, it.quantity + 1)
                     }
                     for neighbor in sorted(neighbors & known):
@@ -636,8 +637,8 @@ class PlanService:
             raise PlanWorkflowError(
                 f"the revision cannot be laid out; nothing was stored: {cand.reason}"
             )
-        if self.wf.state is S.CONCEPT_REVIEW:
-            self.wf.transition(S.CONCEPT_GENERATION, actor, f"revising {option_id}: {text}")
+        if self.wf.state is S.PLAN_REVIEW:
+            self.wf.transition(S.PLAN_GENERATION, actor, f"revising {option_id}: {text}")
         c_ref = self._store_constraints(constraints, actor, "compiled for a plan revision")
         if kind is ChangeRequestKind.COMBINE and cand.plan.generation:
             cand.plan = cand.plan.model_copy(
@@ -705,7 +706,7 @@ class PlanService:
             reason=f"revision report for {option_id} v{plan_ref.version}",
         )
         self.wf.transition(
-            S.CONCEPT_REVIEW, actor, f"{option_id} v{plan_ref.version} ready for owner review"
+            S.PLAN_REVIEW, actor, f"{option_id} v{plan_ref.version} ready for owner review"
         )
         opt = StoredOption(cand, plan_ref, report, report_ref)
         export = None
@@ -789,7 +790,7 @@ class PlanService:
         features: list[str] | None = None,
         feature_confirmation: str | None = None,
     ) -> RevisionOutcome:
-        """Combine compatible features from multiple concept alternatives (S7-22)."""
+        """Combine compatible features from several plan options (S7-22)."""
         return self.revise(
             option_id,
             text,
@@ -900,10 +901,10 @@ class PlanService:
             elif verb in ("separate", "adjacent", "near", "connect"):
                 a, _, b = arg.partition(",")
                 kind_ = {
-                    "separate": AdjacencyKind.SEPARATED,
-                    "adjacent": AdjacencyKind.ADJACENT,
-                    "near": AdjacencyKind.NEAR,
-                    "connect": AdjacencyKind.CONNECTED,
+                    "separate": SpaceRelationshipKind.SEPARATED,
+                    "adjacent": SpaceRelationshipKind.ADJACENT,
+                    "near": SpaceRelationshipKind.NEAR,
+                    "connect": SpaceRelationshipKind.CONNECTED,
                 }[verb]
                 for sa in resolve(a):
                     for sb in resolve(b):
@@ -982,9 +983,9 @@ class PlanService:
         )
         if ref is None:
             raise PlanWorkflowError(f"no plan {option_id}" + (f" v{version}" if version else ""))
-        if self.wf.state is not S.CONCEPT_REVIEW:
+        if self.wf.state is not S.PLAN_REVIEW:
             raise PlanWorkflowError(
-                f"plan review is requested from CONCEPT_REVIEW; the project "
+                f"plan review is requested from PLAN_REVIEW; the project "
                 f"is in {self.wf.state.value}"
             )
         return ref, self.wf.request_approval(Gate.PLAN, ref, actor)
@@ -1002,7 +1003,7 @@ class PlanService:
             site_ref=site_ref,
             program=self.store.get(program_ref, SpaceProgram),
             program_ref=program_ref,
-            site_verified=approval is not None and approval.artifact == site_ref,
+            site_approved=approval is not None and approval.artifact == site_ref,
         )
 
     def export(
@@ -1066,7 +1067,7 @@ class PlanService:
             "plan": [a.model_dump(mode="json") for a in plan.model.assumptions],
             "plan_issues": [i.model_dump(mode="json") for i in plan.model.issues],
             "program": program_assumptions,
-            "site_verified": inp.site_verified if inp is not None else None,
+            "site_approved": inp.site_approved if inp is not None else None,
             "note": "Plan assumptions come from the generator; program assumptions from the "
             "interview. Nothing here is a verified fact unless its status says so.",
         }

@@ -1,331 +1,334 @@
 {
   "buried_habitable_faces": [
     {
-      "face_area_m2": 7.2012241729003605,
-      "known_length_m": 2.4000001672949947,
-      "length_m": 2.4000001672949947,
-      "max_retained_height_m": 3.04853322057018,
-      "mean_retained_height_m": 3.000509862887533,
-      "space_ids": [
-        "sp-study-1"
-      ],
-      "wall_id": "w-down-300-005"
-    },
-    {
-      "face_area_m2": 11.796626044561052,
-      "known_length_m": 5.399999991296297,
-      "length_m": 5.399999991296297,
-      "max_retained_height_m": 3.04853322057018,
-      "mean_retained_height_m": 2.1845603821434847,
-      "space_ids": [
-        "sp-study-1"
-      ],
-      "wall_id": "w-down-300-029"
-    },
-    {
-      "face_area_m2": 0.8041001782246969,
-      "known_length_m": 5.399999991296298,
-      "length_m": 5.399999991296298,
-      "max_retained_height_m": 0.7765815813391992,
-      "mean_retained_height_m": 0.14890744065198944,
+      "face_area_m2": 11.539492705860482,
+      "known_length_m": 4.099999708119501,
+      "length_m": 4.099999708119501,
+      "max_retained_height_m": 2.8964905555689633,
+      "mean_retained_height_m": 2.8145106164295717,
       "space_ids": [
         "sp-bed-main"
       ],
-      "wall_id": "w-down-300-031"
+      "wall_id": "w-down-300-002"
+    },
+    {
+      "face_area_m2": 0.5149678899773718,
+      "known_length_m": 5.399999991296296,
+      "length_m": 5.399999991296296,
+      "max_retained_height_m": 0.6214727412920986,
+      "mean_retained_height_m": 0.09536442422359176,
+      "space_ids": [
+        "sp-bed-child-2"
+      ],
+      "wall_id": "w-down-300-017"
     }
   ],
   "doors": [
     {
-      "delta_m": -0.17101327580506265,
+      "delta_m": 0.05298916325743619,
       "door_id": "d-front-entry-ext",
-      "ground_z_m": 11.661013275805063,
+      "ground_z_m": 11.657010836742565,
       "outside_level_change_needed": false,
       "outside_xy": [
-        10.56140088247022,
-        4.902990813789315
+        10.46358588247022,
+        4.882199813789315
       ],
       "status": "inferred",
-      "threshold_z_m": 11.49
+      "threshold_z_m": 11.71
     },
     {
-      "delta_m": -0.020925526180095133,
+      "delta_m": 0.2990977986108341,
       "door_id": "d-garage-garage-ext",
-      "ground_z_m": 11.510925526180095,
+      "ground_z_m": 11.410902201389167,
       "outside_level_change_needed": false,
       "outside_xy": [
-        6.893347538204639,
-        4.1233187406130964
+        4.447979511584701,
+        3.603537341233582
       ],
       "status": "inferred",
-      "threshold_z_m": 11.49
+      "threshold_z_m": 11.71
     }
   ],
   "earthworks": {
-    "coverage_pct": 99.99999999967046,
+    "coverage_pct": 99.99999999999999,
     "engineered_fill_volume_m3": null,
-    "excavation_volume_m3": 142.55870699191976,
-    "footprint_area_m2": 120.00000043484323,
-    "known_area_m2": 120.00000043444778,
+    "excavation_volume_m3": 123.53403132847846,
+    "footprint_area_m2": 151.28000540782963,
+    "known_area_m2": 151.2800054078296,
     "known_pad_area_m2": 0.0,
-    "max_cut_m": 3.29853322057018,
-    "max_underfloor_void_height_m": 4.803463187526797,
+    "max_cut_m": 3.2664159801643358,
+    "max_underfloor_void_height_m": 5.701802166228347,
     "method": "exact_clipped_tin_affine_integration",
     "note": "Partial quantities cover surveyed support only. Slab undersides when present; finished-floor upper bounds when slab thickness/geometry is absent. Explicit pad planes; conceptual geometric quantities, not a construction estimate. Engineered fill is not specified unless explicit earthwork pads are present.",
     "regions": [
       {
-        "area_m2": 119.999999784332,
-        "below_plane_m3": 21.72668460743112,
-        "calculation_plane_m": 8.24,
-        "cut_m3": 142.5587064063998,
+        "area_m2": 99.1800005403795,
+        "below_plane_m3": 12.601802851257128,
+        "calculation_plane_m": 8.46,
+        "cut_m3": 123.53403105630028,
         "floor_basis": "underside:slab-floor-down-300",
         "footprint": {
           "coordinates": [
             [
               [
-                11.191055,
-                5.547999
+                13.418144,
+                17.676069
               ],
               [
-                7.523002250903175,
-                4.768326750191977
+                15.788348,
+                6.525188
               ],
               [
-                7.523002248029895,
-                4.768326749581239
+                9.135166746919358,
+                5.111004782129539
               ],
               [
-                5.599207040249809,
-                4.35940958278501
+                9.135166744972302,
+                5.111004781715677
               ],
               [
-                5.599207040019408,
-                4.359409582736037
+                7.278465,
+                4.716349
+              ],
+              [
+                4.908262,
+                15.867229
+              ],
+              [
+                13.418144,
+                17.676069
+              ]
+            ]
+          ],
+          "type": "Polygon"
+        },
+        "ground_max_m": 11.726415980164337,
+        "ground_min_m": 7.181509257691062,
+        "known_area_m2": 99.18000054037947,
+        "level_id": "lv-down-300",
+        "max_below_m": 1.2784907423089384,
+        "max_cut_m": 3.2664159801643358,
+        "max_void_height_m": 1.2784907423089384,
+        "underfloor_void_volume_m3": 12.601802851257128
+      },
+      {
+        "area_m2": 5.175534529416881e-08,
+        "below_plane_m3": 0.0,
+        "calculation_plane_m": 8.71,
+        "cut_m3": 1.405216688407583e-07,
+        "floor_basis": "finished_floor_bound_no_slab",
+        "footprint": {
+          "coordinates": [
+            [
+              [
+                8.843501,
+                5.049009
+              ],
+              [
+                7.278465,
+                4.716349
+              ],
+              [
+                9.135166743706254,
+                5.111004781446569
+              ],
+              [
+                8.843501,
+                5.049009
+              ]
+            ]
+          ],
+          "type": "Polygon"
+        },
+        "ground_max_m": 11.454416103990432,
+        "ground_min_m": 11.37844441777435,
+        "known_area_m2": 5.1755345094903275e-08,
+        "level_id": "lv-down-300",
+        "max_below_m": 0.0,
+        "max_cut_m": 2.7444161039904316,
+        "max_void_height_m": 0,
+        "underfloor_void_volume_m3": 0
+      },
+      {
+        "area_m2": 36.00000397459276,
+        "below_plane_m3": 42.21398176723798,
+        "calculation_plane_m": 11.46,
+        "cut_m3": 1.3165651404179894e-07,
+        "floor_basis": "underside:slab-floor-entry",
+        "footprint": {
+          "coordinates": [
+            [
+              [
+                6.030989791032347,
+                10.585232955582377
+              ],
+              [
+                7.278465,
+                4.716349
+              ],
+              [
+                8.843501,
+                5.049009
+              ],
+              [
+                9.135166746919358,
+                5.111004782129539
+              ],
+              [
+                15.788348,
+                6.525188
               ],
               [
                 1.409581,
                 3.468873
               ],
               [
-                -1.08537,
-                15.206642
+                0.162105,
+                9.337758
               ],
               [
-                8.696104,
-                17.285768
-              ],
-              [
-                11.191055,
-                5.547999
+                6.030989791032347,
+                10.585232955582377
               ]
             ]
           ],
           "type": "Polygon"
         },
-        "ground_max_m": 11.53853322057018,
-        "ground_min_m": 6.686536812473204,
-        "known_area_m2": 119.99999978433205,
-        "level_id": "lv-down-300",
-        "max_below_m": 1.5534631875267966,
-        "max_cut_m": 3.29853322057018,
-        "max_void_height_m": 1.5534631875267966,
-        "underfloor_void_volume_m3": 21.72668460743112
-      },
-      {
-        "area_m2": 4.525611569244914e-07,
-        "below_plane_m3": 2.805008503535726e-08,
-        "calculation_plane_m": 8.49,
-        "cut_m3": 5.845973355122638e-07,
-        "floor_basis": "finished_floor_bound_no_slab",
-        "footprint": {
-          "coordinates": [
-            [
-              [
-                [
-                  9.818832,
-                  12.003772
-                ],
-                [
-                  9.943579499805775,
-                  11.416883500913755
-                ],
-                [
-                  11.191055,
-                  5.547999
-                ],
-                [
-                  8.696104,
-                  17.285768
-                ],
-                [
-                  9.818832,
-                  12.003772
-                ]
-              ]
-            ],
-            [
-              [
-                [
-                  7.082836,
-                  4.674766
-                ],
-                [
-                  5.615614,
-                  4.362897
-                ],
-                [
-                  5.599207040338776,
-                  4.35940958280392
-                ],
-                [
-                  7.523002246627017,
-                  4.768326749283046
-                ],
-                [
-                  7.082836,
-                  4.674766
-                ]
-              ]
-            ],
-            [
-              [
-                [
-                  5.599207040019408,
-                  4.359409582736037
-                ],
-                [
-                  5.599207040249809,
-                  4.35940958278501
-                ],
-                [
-                  5.599207040338776,
-                  4.35940958280392
-                ],
-                [
-                  5.599207040019408,
-                  4.359409582736037
-                ]
-              ]
-            ],
-            [
-              [
-                [
-                  0.286853,
-                  8.750869
-                ],
-                [
-                  0.1621054997086618,
-                  9.337757501370632
-                ],
-                [
-                  -1.08537,
-                  15.206642
-                ],
-                [
-                  1.409581,
-                  3.468873
-                ],
-                [
-                  0.286853,
-                  8.750869
-                ]
-              ]
-            ]
-          ],
-          "type": "MultiPolygon"
-        },
-        "ground_max_m": 11.38845041715297,
-        "ground_min_m": 7.086646382457667,
-        "known_area_m2": 4.525611536489514e-07,
-        "level_id": "lv-down-300",
-        "max_below_m": 1.403353617542333,
-        "max_cut_m": 2.8984504171529704,
-        "max_void_height_m": 1.403353617542333,
-        "underfloor_void_volume_m3": 2.805008503535726e-08
-      },
-      {
-        "area_m2": 1.9795007077938465e-07,
-        "below_plane_m3": 1.9958593811123712e-07,
-        "calculation_plane_m": 11.49,
-        "cut_m3": 9.226309825002539e-10,
-        "floor_basis": "finished_floor_bound_no_slab",
-        "footprint": {
-          "coordinates": [
-            [
-              [
-                [
-                  -1.08537,
-                  15.206642
-                ],
-                [
-                  -0.38011971661024474,
-                  11.888715149487311
-                ],
-                [
-                  -0.58638,
-                  12.859089
-                ],
-                [
-                  -1.08537,
-                  15.206642
-                ]
-              ]
-            ],
-            [
-              [
-                [
-                  8.745686502502183,
-                  5.0282175005318575
-                ],
-                [
-                  11.191055,
-                  5.547999
-                ],
-                [
-                  9.723834,
-                  5.23613
-                ],
-                [
-                  8.745686502502183,
-                  5.0282175005318575
-                ]
-              ]
-            ]
-          ],
-          "type": "MultiPolygon"
-        },
-        "ground_max_m": 11.534535050768696,
-        "ground_min_m": 6.686536812473204,
-        "known_area_m2": 1.9755458557942821e-07,
+        "ground_max_m": 11.726415980164337,
+        "ground_min_m": 9.091486849704953,
+        "known_area_m2": 36.00000397459276,
         "level_id": "lv-entry",
-        "max_below_m": 4.803463187526797,
-        "max_cut_m": 0.04453505076869568,
-        "max_void_height_m": 4.803463187526797,
-        "underfloor_void_volume_m3": 1.9958593811123712e-07
+        "max_below_m": 2.3685131502950476,
+        "max_cut_m": 0.26641598016433576,
+        "max_void_height_m": 2.3685131502950476,
+        "underfloor_void_volume_m3": 42.21398176723798
+      },
+      {
+        "area_m2": 16.100000010860004,
+        "below_plane_m3": 78.34526157023869,
+        "calculation_plane_m": 11.56,
+        "cut_m3": 0,
+        "floor_basis": "underside:slab-terrace-terrace",
+        "footprint": {
+          "coordinates": [
+            [
+              [
+                13.418144,
+                17.676069
+              ],
+              [
+                8.918666,
+                16.719671
+              ],
+              [
+                8.190972,
+                20.143187
+              ],
+              [
+                12.69045,
+                21.099585
+              ],
+              [
+                13.418144,
+                17.676069
+              ]
+            ]
+          ],
+          "type": "Polygon"
+        },
+        "ground_max_m": 7.529471542949825,
+        "ground_min_m": 5.858197833771653,
+        "known_area_m2": 16.100000010860004,
+        "level_id": "lv-entry",
+        "max_below_m": 5.701802166228347,
+        "max_cut_m": 0.0,
+        "max_void_height_m": 5.701802166228347,
+        "underfloor_void_volume_m3": 78.34526157023869
+      },
+      {
+        "area_m2": 8.302420097305205e-07,
+        "below_plane_m3": 3.6179831885083675e-06,
+        "calculation_plane_m": 11.71,
+        "cut_m3": 0,
+        "floor_basis": "finished_floor_bound_no_slab",
+        "footprint": {
+          "coordinates": [
+            [
+              [
+                [
+                  8.918666039682227,
+                  16.719670813310547
+                ],
+                [
+                  4.908262,
+                  15.867229
+                ],
+                [
+                  8.918666,
+                  16.719671
+                ],
+                [
+                  8.918666039682227,
+                  16.719670813310547
+                ]
+              ]
+            ],
+            [
+              [
+                [
+                  8.918666039682247,
+                  16.719670813310554
+                ],
+                [
+                  8.918666,
+                  16.719671
+                ],
+                [
+                  13.418144,
+                  17.676069
+                ],
+                [
+                  8.918666039682247,
+                  16.719670813310554
+                ]
+              ]
+            ]
+          ],
+          "type": "MultiPolygon"
+        },
+        "ground_max_m": 7.529471542949825,
+        "ground_min_m": 7.181509257691062,
+        "known_area_m2": 8.30242002315523e-07,
+        "level_id": "lv-entry",
+        "max_below_m": 4.528490742308938,
+        "max_cut_m": 0.0,
+        "max_void_height_m": 4.528490742308938,
+        "underfloor_void_volume_m3": 3.6179831885083675e-06
       }
     ],
     "status": "inferred",
-    "underfloor_void_volume_m3": 21.726684835067143,
-    "unknown_area_m2": 3.9544545415992616e-10,
+    "underfloor_void_volume_m3": 133.161049806717,
+    "unknown_area_m2": 2.842170943040401e-14,
     "unknown_pad_area_m2": 0.0
   },
   "garages": [
     {
-      "candidate_grade_pct": -26.25408492369266,
+      "candidate_grade_pct": -15.929840415541964,
       "candidate_route_xy": [
         [
-          7.433814201108497,
-          1.5803155221394372
+          4.988434943302316,
+          1.0605864912297882
         ],
         [
-          6.789391295451039,
-          4.612392456521603
+          4.344023172152641,
+          4.092611036592356
         ]
       ],
-      "candidate_run_m": 3.099801835174041,
-      "delta_m": -0.8138246062727763,
+      "candidate_run_m": 3.099748275985865,
+      "delta_m": -0.49378495364806163,
       "door_id": "d-garage-garage-ext",
-      "floor_z_m": 11.49,
-      "frontage_z_m": 12.303824606272777,
+      "floor_z_m": 11.71,
+      "frontage_z_m": 12.203784953648062,
       "garage_id": "sp-garage",
       "inside_parcel": true,
       "method": "straight_candidate_approach_to_nearest_frontage",
@@ -341,94 +344,67 @@
   "retaining_assessment_complete": true,
   "retaining_candidates": [
     {
-      "face_area_m2": 6.746090851713924,
-      "known_length_m": 2.499999596589568,
-      "length_m": 2.499999596589568,
-      "max_retained_height_m": 2.748417156424546,
-      "mean_retained_height_m": 2.698436776116588,
+      "face_area_m2": 4.320741333434563,
+      "known_length_m": 1.6000001115299962,
+      "length_m": 1.6000001115299962,
+      "max_retained_height_m": 2.7324818725405464,
+      "mean_retained_height_m": 2.700463145157449,
       "status": "inferred",
       "wall_id": "w-down-300-001"
     },
     {
-      "face_area_m2": 5.011927550399957,
-      "known_length_m": 1.799999532441328,
-      "length_m": 1.799999532441328,
-      "max_retained_height_m": 2.8204048139450233,
-      "mean_retained_height_m": 2.7844049179292347,
+      "face_area_m2": 11.539492705860482,
+      "known_length_m": 4.099999708119501,
+      "length_m": 4.099999708119501,
+      "max_retained_height_m": 2.8964905555689633,
+      "mean_retained_height_m": 2.8145106164295717,
       "status": "inferred",
       "wall_id": "w-down-300-002"
     },
     {
-      "face_area_m2": 4.275636096912588,
-      "known_length_m": 1.5000008901480697,
-      "length_m": 1.5000008901480697,
-      "max_retained_height_m": 2.8804399322077963,
-      "mean_retained_height_m": 2.8504223730764098,
+      "face_area_m2": 8.869361560431726,
+      "known_length_m": 3.000000594236274,
+      "length_m": 3.0000005942362744,
+      "max_retained_height_m": 3.0164159801643358,
+      "mean_retained_height_m": 2.9564532678666504,
       "status": "inferred",
       "wall_id": "w-down-300-003"
     },
     {
-      "face_area_m2": 5.249628867025723,
-      "known_length_m": 1.7999997403538697,
-      "length_m": 1.7999997403538697,
-      "max_retained_height_m": 2.952481872540547,
-      "mean_retained_height_m": 2.9164609023741725,
-      "status": "inferred",
-      "wall_id": "w-down-300-004"
-    },
-    {
-      "face_area_m2": 7.2012241729003605,
-      "known_length_m": 2.4000001672949947,
-      "length_m": 2.4000001672949947,
-      "max_retained_height_m": 3.04853322057018,
-      "mean_retained_height_m": 3.000509862887533,
-      "status": "inferred",
-      "wall_id": "w-down-300-005"
-    },
-    {
-      "face_area_m2": 9.636163436063354,
+      "face_area_m2": 0.5149678899773718,
       "known_length_m": 5.399999991296296,
       "length_m": 5.399999991296296,
-      "max_retained_height_m": 2.64845639580863,
-      "mean_retained_height_m": 1.7844747132583136,
+      "max_retained_height_m": 0.6214727412920986,
+      "mean_retained_height_m": 0.09536442422359176,
       "status": "inferred",
-      "wall_id": "w-down-300-019"
+      "wall_id": "w-down-300-017"
     },
     {
-      "face_area_m2": 0.7217845553007184,
-      "known_length_m": 1.2000000836474964,
-      "length_m": 1.2000000836474964,
-      "max_retained_height_m": 0.8264885258437324,
-      "mean_retained_height_m": 0.6014870874898578,
+      "face_area_m2": 10.838961980738024,
+      "known_length_m": 4.8000005425025725,
+      "length_m": 4.8000005425025725,
+      "max_retained_height_m": 3.0164159801643358,
+      "mean_retained_height_m": 2.2581168241049663,
       "status": "inferred",
-      "wall_id": "w-down-300-020"
+      "wall_id": "w-down-300-023"
     },
     {
-      "face_area_m2": 11.796626044561052,
-      "known_length_m": 5.399999991296297,
-      "length_m": 5.399999991296297,
-      "max_retained_height_m": 3.04853322057018,
-      "mean_retained_height_m": 2.1845603821434847,
+      "face_area_m2": 1.433328296537001,
+      "known_length_m": 1.2000000836474982,
+      "length_m": 1.2000000836474982,
+      "max_retained_height_m": 1.4194416016549347,
+      "mean_retained_height_m": 1.1944401638542246,
       "status": "inferred",
-      "wall_id": "w-down-300-029"
+      "wall_id": "w-down-300-024"
     },
     {
-      "face_area_m2": 1.2018997067478032,
-      "known_length_m": 1.2000000836474964,
-      "length_m": 1.2000000836474964,
-      "max_retained_height_m": 1.2265844569406195,
-      "mean_retained_height_m": 1.0015830191399093,
+      "face_area_m2": 1.2530739900179624,
+      "known_length_m": 5.399999991296294,
+      "length_m": 5.399999991296294,
+      "max_retained_height_m": 0.9694387260535144,
+      "mean_retained_height_m": 0.23205073926623404,
       "status": "inferred",
-      "wall_id": "w-down-300-030"
-    },
-    {
-      "face_area_m2": 0.8041001782246969,
-      "known_length_m": 5.399999991296298,
-      "length_m": 5.399999991296298,
-      "max_retained_height_m": 0.7765815813391992,
-      "mean_retained_height_m": 0.14890744065198944,
-      "status": "inferred",
-      "wall_id": "w-down-300-031"
+      "wall_id": "w-down-300-025"
     }
   ],
   "risks": [
@@ -483,159 +459,102 @@
       "trigger": "Uphill earth-contact face: intercept and discharge routes unresolved"
     },
     {
-      "discipline": "retaining",
-      "status": "needs_professional",
-      "subject_ids": [
-        "w-down-300-003"
-      ],
-      "trigger": "Earth-contact wall needs engineered retaining design"
-    },
-    {
-      "discipline": "drainage",
-      "status": "needs_professional",
-      "subject_ids": [
-        "w-down-300-003"
-      ],
-      "trigger": "Uphill earth-contact face: intercept and discharge routes unresolved"
-    },
-    {
-      "discipline": "retaining",
-      "status": "needs_professional",
-      "subject_ids": [
-        "w-down-300-004"
-      ],
-      "trigger": "Earth-contact wall needs engineered retaining design"
-    },
-    {
-      "discipline": "drainage",
-      "status": "needs_professional",
-      "subject_ids": [
-        "w-down-300-004"
-      ],
-      "trigger": "Uphill earth-contact face: intercept and discharge routes unresolved"
-    },
-    {
-      "discipline": "retaining",
-      "status": "needs_professional",
-      "subject_ids": [
-        "w-down-300-005"
-      ],
-      "trigger": "Earth-contact wall needs engineered retaining design"
-    },
-    {
-      "discipline": "drainage",
-      "status": "needs_professional",
-      "subject_ids": [
-        "w-down-300-005"
-      ],
-      "trigger": "Uphill earth-contact face: intercept and discharge routes unresolved"
-    },
-    {
       "discipline": "waterproofing",
       "status": "needs_professional",
       "subject_ids": [
-        "w-down-300-005",
-        "sp-study-1"
-      ],
-      "trigger": "Buried habitable wall: waterproofing and moisture control"
-    },
-    {
-      "discipline": "retaining",
-      "status": "needs_professional",
-      "subject_ids": [
-        "w-down-300-019"
-      ],
-      "trigger": "Earth-contact wall needs engineered retaining design"
-    },
-    {
-      "discipline": "drainage",
-      "status": "needs_professional",
-      "subject_ids": [
-        "w-down-300-019"
-      ],
-      "trigger": "Uphill earth-contact face: intercept and discharge routes unresolved"
-    },
-    {
-      "discipline": "retaining",
-      "status": "needs_professional",
-      "subject_ids": [
-        "w-down-300-020"
-      ],
-      "trigger": "Earth-contact wall needs engineered retaining design"
-    },
-    {
-      "discipline": "drainage",
-      "status": "needs_professional",
-      "subject_ids": [
-        "w-down-300-020"
-      ],
-      "trigger": "Uphill earth-contact face: intercept and discharge routes unresolved"
-    },
-    {
-      "discipline": "retaining",
-      "status": "needs_professional",
-      "subject_ids": [
-        "w-down-300-029"
-      ],
-      "trigger": "Earth-contact wall needs engineered retaining design"
-    },
-    {
-      "discipline": "drainage",
-      "status": "needs_professional",
-      "subject_ids": [
-        "w-down-300-029"
-      ],
-      "trigger": "Uphill earth-contact face: intercept and discharge routes unresolved"
-    },
-    {
-      "discipline": "waterproofing",
-      "status": "needs_professional",
-      "subject_ids": [
-        "w-down-300-029",
-        "sp-study-1"
-      ],
-      "trigger": "Buried habitable wall: waterproofing and moisture control"
-    },
-    {
-      "discipline": "retaining",
-      "status": "needs_professional",
-      "subject_ids": [
-        "w-down-300-030"
-      ],
-      "trigger": "Earth-contact wall needs engineered retaining design"
-    },
-    {
-      "discipline": "drainage",
-      "status": "needs_professional",
-      "subject_ids": [
-        "w-down-300-030"
-      ],
-      "trigger": "Uphill earth-contact face: intercept and discharge routes unresolved"
-    },
-    {
-      "discipline": "retaining",
-      "status": "needs_professional",
-      "subject_ids": [
-        "w-down-300-031"
-      ],
-      "trigger": "Earth-contact wall needs engineered retaining design"
-    },
-    {
-      "discipline": "drainage",
-      "status": "needs_professional",
-      "subject_ids": [
-        "w-down-300-031"
-      ],
-      "trigger": "Uphill earth-contact face: intercept and discharge routes unresolved"
-    },
-    {
-      "discipline": "waterproofing",
-      "status": "needs_professional",
-      "subject_ids": [
-        "w-down-300-031",
+        "w-down-300-002",
         "sp-bed-main"
       ],
       "trigger": "Buried habitable wall: waterproofing and moisture control"
+    },
+    {
+      "discipline": "retaining",
+      "status": "needs_professional",
+      "subject_ids": [
+        "w-down-300-003"
+      ],
+      "trigger": "Earth-contact wall needs engineered retaining design"
+    },
+    {
+      "discipline": "drainage",
+      "status": "needs_professional",
+      "subject_ids": [
+        "w-down-300-003"
+      ],
+      "trigger": "Uphill earth-contact face: intercept and discharge routes unresolved"
+    },
+    {
+      "discipline": "retaining",
+      "status": "needs_professional",
+      "subject_ids": [
+        "w-down-300-017"
+      ],
+      "trigger": "Earth-contact wall needs engineered retaining design"
+    },
+    {
+      "discipline": "drainage",
+      "status": "needs_professional",
+      "subject_ids": [
+        "w-down-300-017"
+      ],
+      "trigger": "Uphill earth-contact face: intercept and discharge routes unresolved"
+    },
+    {
+      "discipline": "waterproofing",
+      "status": "needs_professional",
+      "subject_ids": [
+        "w-down-300-017",
+        "sp-bed-child-2"
+      ],
+      "trigger": "Buried habitable wall: waterproofing and moisture control"
+    },
+    {
+      "discipline": "retaining",
+      "status": "needs_professional",
+      "subject_ids": [
+        "w-down-300-023"
+      ],
+      "trigger": "Earth-contact wall needs engineered retaining design"
+    },
+    {
+      "discipline": "drainage",
+      "status": "needs_professional",
+      "subject_ids": [
+        "w-down-300-023"
+      ],
+      "trigger": "Uphill earth-contact face: intercept and discharge routes unresolved"
+    },
+    {
+      "discipline": "retaining",
+      "status": "needs_professional",
+      "subject_ids": [
+        "w-down-300-024"
+      ],
+      "trigger": "Earth-contact wall needs engineered retaining design"
+    },
+    {
+      "discipline": "drainage",
+      "status": "needs_professional",
+      "subject_ids": [
+        "w-down-300-024"
+      ],
+      "trigger": "Uphill earth-contact face: intercept and discharge routes unresolved"
+    },
+    {
+      "discipline": "retaining",
+      "status": "needs_professional",
+      "subject_ids": [
+        "w-down-300-025"
+      ],
+      "trigger": "Earth-contact wall needs engineered retaining design"
+    },
+    {
+      "discipline": "drainage",
+      "status": "needs_professional",
+      "subject_ids": [
+        "w-down-300-025"
+      ],
+      "trigger": "Uphill earth-contact face: intercept and discharge routes unresolved"
     },
     {
       "discipline": "structure",
@@ -667,6 +586,14 @@
         "d-garage-garage-ext"
       ],
       "trigger": "Garage ramp approach needs design and professional review"
+    },
+    {
+      "discipline": "foundations",
+      "status": "needs_professional",
+      "subject_ids": [
+        "sp-terrace"
+      ],
+      "trigger": "Terrace supports, edge protection and garden approach unresolved"
     }
   ],
   "settings": {
@@ -676,7 +603,111 @@
     "vehicle_grade_trigger_pct": 15.0
   },
   "site_frame_matches": true,
-  "terraces": [],
+  "terraces": [
+    {
+      "connected_openings": [
+        "d-living-terrace"
+      ],
+      "edge_ground_relationships": [
+        {
+          "face_area_m2": 0.0,
+          "floor_z_m": 11.71,
+          "ground_profile": [
+            {
+              "end_m": 2.2999136789222874,
+              "end_z_m": 7.4375480245425205,
+              "start_m": 0.0,
+              "start_z_m": 7.3456314032453225,
+              "status": "inferred"
+            },
+            {
+              "end_m": 4.5999999355313035,
+              "end_z_m": 7.529471542949824,
+              "start_m": 2.2999136789222874,
+              "start_z_m": 7.4375480245425205,
+              "status": "inferred"
+            }
+          ],
+          "known_length_m": 4.5999999355313035,
+          "length_m": 4.5999999355313035,
+          "max_floor_ground_delta_m": 4.364368596754678,
+          "max_retained_height_m": 0.0,
+          "mean_retained_height_m": 0.0,
+          "min_floor_ground_delta_m": 4.180528457050177
+        },
+        {
+          "face_area_m2": 0.0,
+          "floor_z_m": 11.71,
+          "ground_profile": [
+            {
+              "end_m": 2.3001658912246468,
+              "end_z_m": 6.551944711033215,
+              "start_m": 0.0,
+              "start_z_m": 7.529471542949824,
+              "status": "inferred"
+            },
+            {
+              "end_m": 3.5000000514131453,
+              "end_z_m": 6.0420379734761545,
+              "start_m": 2.3001658912246468,
+              "start_z_m": 6.551944711033215,
+              "status": "inferred"
+            }
+          ],
+          "known_length_m": 3.5000000514131453,
+          "length_m": 3.5000000514131453,
+          "max_floor_ground_delta_m": 5.667962026523846,
+          "max_retained_height_m": 0.0,
+          "mean_retained_height_m": 0.0,
+          "min_floor_ground_delta_m": 4.180528457050177
+        },
+        {
+          "face_area_m2": 0.0,
+          "floor_z_m": 11.71,
+          "ground_profile": [
+            {
+              "end_m": 4.599999935531304,
+              "end_z_m": 5.858197833771653,
+              "start_m": 0.0,
+              "start_z_m": 6.0420379734761545,
+              "status": "inferred"
+            }
+          ],
+          "known_length_m": 4.599999935531304,
+          "length_m": 4.5999999355313035,
+          "max_floor_ground_delta_m": 5.851802166228348,
+          "max_retained_height_m": 0.0,
+          "mean_retained_height_m": 0.0,
+          "min_floor_ground_delta_m": 5.667962026523846
+        },
+        {
+          "face_area_m2": 0.0,
+          "floor_z_m": 11.71,
+          "ground_profile": [
+            {
+              "end_m": 3.5000000514131417,
+              "end_z_m": 7.3456314032453225,
+              "start_m": 0.0,
+              "start_z_m": 5.858197833771653,
+              "status": "inferred"
+            }
+          ],
+          "known_length_m": 3.5000000514131417,
+          "length_m": 3.5000000514131417,
+          "max_floor_ground_delta_m": 5.851802166228348,
+          "max_retained_height_m": 0.0,
+          "mean_retained_height_m": 0.0,
+          "min_floor_ground_delta_m": 4.364368596754678
+        }
+      ],
+      "garden_access": {
+        "candidate_at_grade_edges": [],
+        "note": "Terrain contact candidates only; a traversable garden approach, stairs/ramp, edge protection and support need design.",
+        "status": "inferred"
+      },
+      "space_id": "sp-terrace"
+    }
+  ],
   "terrain_quality": [
     {
       "note": "Suspicious geometry for review, not evidence of bad survey; real steep slopes are retained, never smoothed.",

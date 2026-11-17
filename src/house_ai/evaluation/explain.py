@@ -14,6 +14,7 @@ from house_ai.constants.evaluations import (
     DIVERSITY_IOU_THRESHOLD,
     DIVERSITY_TOPOLOGY_THRESHOLD,
     FLAG_NEAR_DUPLICATE,
+    REQUESTED_STOREYS_ASSUMPTION_IDS,
 )
 from house_ai.constants.strategies import (
     STRATEGY_COMPACT,
@@ -49,7 +50,7 @@ STRATEGY_TEXT = {
     STRATEGY_SPLIT_WALKOUT: (
         "A lower floor under the road-level entry combines an embedded massing "
         "with a stepped downhill wing. Compare its cut, void, retaining walls, floor area, "
-        "daylight and circulation against the other options; additional floors can overfill "
+        "daylight and circulation against the other options; additional storeys can overfill "
         "the program. Walk-out doors and terraces remain unresolved."
     ),
     STRATEGY_TWO_WING: (
@@ -66,7 +67,8 @@ STRATEGY_TEXT = {
 KEY_METRICS = [
     ("gross_floor_area_m2", "Gross floor area (centreline)", "m²"),
     ("footprint_area_m2", "Footprint", "m²"),
-    ("level_count", "Floor levels", ""),
+    ("level_count", "Levels", ""),
+    ("storey_count", "Storeys", ""),
     ("net_program_area_m2", "Programmed room area", "m²"),
     ("unprogrammed_area_m2", "Flexible area not in the program", "m²"),
     ("circulation_ratio", "Circulation share", ""),
@@ -205,7 +207,7 @@ def explanation_markdown(
         "| Room | Level | Area m² | Program target m² | Program min m² |",
         "|---|---|---:|---:|---:|",
     ]
-    items = {i.id: i for i in program.items} if program else {}
+    items = {i.id: i for i in program.space_requirements} if program else {}
     for s in model.spaces:
         it = items.get(s.program_item_id or "")
         tgt = f"{it.target_area_m2:.1f}" if it and it.target_area_m2 else "—"
@@ -302,7 +304,7 @@ def _model_adjacency_edges(model: HouseModel) -> set[tuple[str, str]]:
 
 
 def topology_distance(a: HouseModel, b: HouseModel) -> float:
-    """Circulation/adjacency graph Jaccard distance between two concept models."""
+    """Circulation/adjacency graph Jaccard distance between two plan option models."""
     ea = _model_adjacency_edges(a)
     eb = _model_adjacency_edges(b)
     union = ea | eb
@@ -312,7 +314,7 @@ def topology_distance(a: HouseModel, b: HouseModel) -> float:
 
 
 def room_aspect_ratio_variance(model: HouseModel) -> float:
-    """Variance in room aspect ratios across a concept model."""
+    """Variance in space aspect ratios across a plan option model."""
     ratios = []
     for s in model.spaces:
         minx, miny, maxx, maxy = s.boundary.to_shapely().bounds
@@ -443,11 +445,11 @@ def comparison_markdown(
     *,
     banner: str | None = None,
 ) -> str:
-    lines = ["# Plan concepts compared", ""]
+    lines = ["# Plan options compared", ""]
     if banner:
         lines += [f"> **{banner}**", ""]
     lines += [
-        "Each column is one concept; values are individual metrics, not a combined score. "
+        "Each column is one plan option; values are individual metrics, not a combined score. "
         "Status in brackets when not measured exactly.",
         "",
     ]
@@ -474,7 +476,7 @@ def comparison_markdown(
         (p.option_id, a.statement)
         for p, _, _ in rows
         for a in p.model.assumptions
-        if a.id == "asm-gen-requested-levels"
+        if a.id in REQUESTED_STOREYS_ASSUMPTION_IDS
     ]
     if departures:
         lines += ["", "## Requested storeys", ""]
@@ -482,7 +484,7 @@ def comparison_markdown(
     if len(rows) > 1:
         lines += [
             "",
-            "## How different the concepts are (measured)",
+            "## How different the plan options are (measured)",
             "",
             "| Pair | Footprint IoU | Topology dist | Diff level | Levels/stairs | Assessment |",
             "|---|---:|---:|---:|---|---|",

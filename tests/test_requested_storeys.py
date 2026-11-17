@@ -18,14 +18,15 @@ def test_requested_storeys_explained_in_both_exports(tmp_path, strategy, actual)
     (generated,) = outcome.generated
     plan, report = generated.candidate.plan, generated.report
     program = svc.inputs(exploratory=True).program
-    assert program.levels == 2
+    assert program.storeys == 2
     assert len(plan.model.levels) == actual
-    notes = [a for a in plan.model.assumptions if a.id == "asm-gen-requested-levels"]
+    notes = [a for a in plan.model.assumptions if a.id == "asm-gen-requested-storeys"]
     explanation = explanation_markdown(plan, None, report, program)
     comparison = comparison_markdown([(plan, None, report)], [])
     if actual == 1:
         (note,) = notes
-        assert "Requested storeys: 2; generated floor levels: 1." in note.statement
+        statement = "Requested storeys: 2; this plan option has 1 storey(s) on 1 level(s)."
+        assert statement in note.statement
         assert "one bar on a single level" in note.statement
         assert note.statement in explanation and note.statement in comparison
         assert note.confirm_with == "owner"

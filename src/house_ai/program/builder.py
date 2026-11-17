@@ -17,16 +17,16 @@ from typing import Any
 from house_ai.domain.base import EXTERIOR
 from house_ai.domain.brief import BriefFact, DesignBrief, Priority
 from house_ai.domain.epistemics import Epistemic
-from house_ai.domain.interview import SiteContext
+from house_ai.domain.interview import SiteContext, current_slot
 from house_ai.domain.program import (
-    AdjacencyKind,
-    AdjacencyRequirement,
     DaylightNeed,
     Privacy,
-    ProgramItem,
     ProgramZone,
     SpaceFunction,
     SpaceProgram,
+    SpaceRelationship,
+    SpaceRelationshipKind,
+    SpaceRequirement,
     Strength,
 )
 from house_ai.domain.provenance import Actor, ActorKind, ArtifactRef, Provenance
@@ -98,16 +98,19 @@ ROOM_ITEMS: dict[str, tuple[str, ...]] = {
 }
 
 
-def is_indoor(item: ProgramItem) -> bool:
+def is_indoor(item: SpaceRequirement) -> bool:
     return item.function not in OUTDOOR_FUNCTIONS and item.level_preference not in OUTDOOR_LEVELS
 
 
 class Facts:
-    """Slot values from the brief's ``f-<slot>`` facts, any status."""
+    """Slot values from the brief's ``f-<slot>`` facts, any status.
+
+    Facts saved under an old slot name (ADR 0025) are found by the current name.
+    """
 
     def __init__(self, brief: DesignBrief) -> None:
         self.by_key: dict[str, BriefFact] = {
-            f.key: f for f in brief.facts if f.id == f"f-{f.key}"
+            current_slot(f.key): f for f in brief.facts if f.id == f"f-{f.key}"
         }
 
     def get(self, key: str, default: Any = None) -> Any:
@@ -139,11 +142,11 @@ class _Builder:
     def __init__(self, brief: DesignBrief, site: SiteContext | None) -> None:
         self.f = Facts(brief)
         self.site = site
-        self.items: list[ProgramItem] = []
-        self.adj: list[AdjacencyRequirement] = []
+        self.requirements: list[SpaceRequirement] = []
+        self.relationships: list[SpaceRelationship] = []
         self.typical: list[str] = []
-        floors = self.f.get("floors")
-        self.floors = floors if isinstance(floors, int) and floors > 0 else None
+        storeys = self.f.get("storeys")
+        self.storeys = storeys if isinstance(storeys, int) and storeys > 0 else None
         self.step_free = self.f.get("accessibility") in ("step_free", "wheelchair") or (
             self.f.get("elder_step_free") is True
         )
@@ -151,9 +154,9 @@ class _Builder:
     # ------------------------------------------------------------ helpers
 
     def level(self, kind: str) -> str:
-        if self.floors == 1:
+        if self.storeys == 1:
             return "ground"
-        if self.floors is None:
+        if self.storeys is None:
             return "any"
         return kind
 
@@ -173,39 +176,39 @@ class _Builder:
         accessible: bool = False,
         scale: float = 1.0,
         notes: str | None = None,
-    ) -> ProgramItem:
+    ) -> SpaceRequirement:
         lo = target = width = None
         if size is not None:
             lo, target, width = TYPICAL[size]
             lo, target = lo * scale, target * scale
             self.typical.append(item_id)
-        item = ProgramItem(
+        item = SpaceRequirement(
             id=item_id, name=name, function=function, min_area_m2=lo, target_area_m2=target,
             min_width_m=width, privacy=privacy, zone_id=zone, level_preference=level,
             priority=priority, daylight=daylight, source_fact_ids=facts or [],
             accessible=accessible, notes=notes,
         )  # fmt: skip
-        self.items.append(item)
+        self.requirements.append(item)
         return item
 
     def link(
         self,
         a: str,
         b: str,
-        kind: AdjacencyKind,
+        kind: SpaceRelationshipKind,
         strength: Strength,
         rationale: str,
         facts: list[str] | None = None,
         weight: float = 2.0,
     ) -> None:
-        ids = {i.id for i in self.items} | {EXTERIOR}
+        ids = {i.id for i in self.requirements} | {EXTERIOR}
         if a not in ids or b not in ids or a == b:
             return
-        self.adj.append(
-            AdjacencyRequirement(
-                id=f"adj-{len(self.adj) + 1:02d}-{a.removeprefix('pi-')}-{b.removeprefix('pi-')}"[
-                    :64
-                ].rstrip("-_"),
+        n = len(self.relationships) + 1
+        rel_id = f"adj-{n:02d}-{a.removeprefix('pi-')}-{b.removeprefix('pi-')}"
+        self.relationships.append(
+            SpaceRelationship(
+                id=rel_id[:64].rstrip("-_"),
                 a=a, b=b, kind=kind, strength=strength,
                 weight=weight if strength is Strength.SOFT else None,
                 rationale=rationale, source_fact_ids=facts or [],
@@ -215,7 +218,9 @@ class _Builder:
     def ids_for(self, room: str) -> list[str]:
         prefixes = ROOM_ITEMS.get(room, ())
         return [
-            i.id for i in self.items if any(i.id == p or i.id.startswith(p + "-") for p in prefixes)
+            i.id
+            for i in self.requirements
+            if any(i.id == p or i.id.startswith(p + "-") for p in prefixes)
         ]
 
     # ------------------------------------------------------------- rooms
@@ -292,9 +297,9 @@ class _Builder:
             self.add("pi-prayer", "Prayer / quiet room", S.PRAYER, "prayer", P.PRIVATE, "z-night",
                      priority=f.priority("prayer_room", Priority.SHOULD), level=self.level("any"),
                      facts=f.ids("prayer_room"))  # fmt: skip
-        if self.floors and self.floors > 1:
+        if self.storeys and self.storeys > 1:
             self.add("pi-stair", "Stair", S.STAIR, "stair", P.SEMI_PRIVATE, "z-circulation",
-                     facts=f.ids("floors"), notes=f"connects {self.floors} floors",
+                     facts=f.ids("storeys"), notes=f"connects {self.storeys} storeys",
                      daylight=D.PREFERRED)  # fmt: skip
         if f.get("lift") is True:
             self.add("pi-lift", "Lift", S.LIFT, "lift", P.SEMI_PRIVATE, "z-circulation",
@@ -304,7 +309,7 @@ class _Builder:
         for key, (name, function, level) in {
             "terrace": ("Terrace", S.TERRACE, "outdoor"),
             "roof_terrace": ("Roof terrace", S.TERRACE, "roof"),
-            "balcony": ("Balcony", S.BALCONY, "any" if not self.floors or self.floors > 1
+            "balcony": ("Balcony", S.BALCONY, "any" if not self.storeys or self.storeys > 1
                         else "outdoor"),
         }.items():  # fmt: skip
             if key in outdoor:
@@ -346,7 +351,7 @@ class _Builder:
             wanted.append((f"pi-bed-{n}", f"Bedroom {n}", "bedroom", False, []))
         shared = len(wanted) > total
         for item_id, name, size, accessible, extra in wanted[:total]:
-            level = "entry" if accessible and self.floors and self.floors > 1 else private_level
+            level = "entry" if accessible and self.storeys and self.storeys > 1 else private_level
             note = None
             if shared and item_id.startswith("pi-bed-child"):
                 note = "children share: you kept fewer bedrooms than one per child"
@@ -354,12 +359,12 @@ class _Builder:
                      daylight=D.REQUIRED, facts=[*facts, *extra], accessible=accessible,
                      notes=note)  # fmt: skip
         if f.get("accessible_ground_suite") is True and not any(
-            i.accessible and i.function is S.BEDROOM for i in self.items
+            i.accessible and i.function is S.BEDROOM for i in self.requirements
         ):
-            first = next((i for i in self.items if i.function is S.BEDROOM), None)
+            first = next((i for i in self.requirements if i.function is S.BEDROOM), None)
             if first is not None:
-                idx = self.items.index(first)
-                self.items[idx] = first.model_copy(
+                idx = self.requirements.index(first)
+                self.requirements[idx] = first.model_copy(
                     update={"accessible": True, "level_preference": self.level("entry"),
                             "source_fact_ids": [*first.source_fact_ids,
                                                 *f.ids("accessible_ground_suite")]}
@@ -372,8 +377,8 @@ class _Builder:
             return
         facts = f.ids("bathrooms")
         n = 0
-        if f.get("ensuite") is True and any(i.id == "pi-bed-main" for i in self.items):
-            main = next(i for i in self.items if i.id == "pi-bed-main")
+        if f.get("ensuite") is True and any(i.id == "pi-bed-main" for i in self.requirements):
+            main = next(i for i in self.requirements if i.id == "pi-bed-main")
             self.add("pi-bath-ensuite", "En-suite bathroom", S.BATHROOM, "ensuite", P.PRIVATE,
                      "z-night", level=main.level_preference or "any",
                      facts=[*facts, *f.ids("ensuite")])  # fmt: skip
@@ -406,13 +411,13 @@ class _Builder:
     def _resize(
         self, item_id: str, target: float | None, factor: float | None, facts: list[str]
     ) -> None:
-        idx = next(i for i, it in enumerate(self.items) if it.id == item_id)
-        it = self.items[idx]
+        idx = next(i for i, it in enumerate(self.requirements) if it.id == item_id)
+        it = self.requirements[idx]
         if it.target_area_m2 is None:
             return
         new_target = target if target is not None else it.target_area_m2 * (factor or 1.0)
         new_min = min(it.min_area_m2 or new_target, new_target * 0.85)
-        self.items[idx] = it.model_copy(
+        self.requirements[idx] = it.model_copy(
             update={"target_area_m2": round(new_target, 2), "min_area_m2": round(new_min, 2),
                     "max_area_m2": None, "source_fact_ids": [*it.source_fact_ids, *facts]}
         )  # fmt: skip
@@ -421,7 +426,7 @@ class _Builder:
 
     def _relations(self) -> None:
         f = self.f
-        K, H, Sf = AdjacencyKind, Strength.HARD, Strength.SOFT
+        K, H, Sf = SpaceRelationshipKind, Strength.HARD, Strength.SOFT
         self.link("pi-entry", EXTERIOR, K.CONNECTED, H, "The front door opens into the hall")
         layout = f.get("kitchen_layout") or ("open" if f.get("open_plan") is True else None)
         kf = f.ids("open_plan", "kitchen_layout", "kitchen_smell_separate")
@@ -440,7 +445,7 @@ class _Builder:
         self.link("pi-bed-main", "pi-bath-ensuite", K.CONNECTED, H,
                   "En-suite opens from the main bedroom", f.ids("ensuite"))  # fmt: skip
         if f.get("bedrooms_separate") is True:
-            for item in self.items:
+            for item in self.requirements:
                 if item.function is SpaceFunction.BEDROOM:
                     self.link(item.id, "pi-living", K.ACOUSTIC_SEPARATION, Sf,
                               "Bedrooms kept away from the living areas",
@@ -449,7 +454,7 @@ class _Builder:
             self.link("pi-guest-suite", "pi-bed-main", K.SEPARATED, Sf,
                       "Guests and family sleep apart", f.ids("privacy", "bedrooms_separate"))
         if f.get("office_quiet") is True:
-            for item in self.items:
+            for item in self.requirements:
                 if item.function is SpaceFunction.STUDY:
                     self.link(item.id, "pi-living", K.ACOUSTIC_SEPARATION, Sf,
                               "Quiet workplace", f.ids("office_quiet"), weight=2.0)
@@ -462,12 +467,12 @@ class _Builder:
         self.link("pi-terrace", "pi-living", K.CONNECTED, Sf, "Living opens to the terrace",
                   f.ids("outdoor"))  # fmt: skip
         self.link("pi-stair", "pi-entry", K.NEAR, Sf, "Stair reached from the hall",
-                  f.ids("floors"), weight=1.0)  # fmt: skip
+                  f.ids("storeys"), weight=1.0)  # fmt: skip
         self.link("pi-lift", "pi-entry", K.NEAR, H, "Lift reached step-free from the entrance",
                   f.ids("lift"))  # fmt: skip
-        for item in self.items:
+        for item in self.requirements:
             if item.accessible and item.function is SpaceFunction.BEDROOM:
-                bath = next((b.id for b in self.items if b.accessible and
+                bath = next((b.id for b in self.requirements if b.accessible and
                              b.function is SpaceFunction.BATHROOM), None)  # fmt: skip
                 if bath:
                     self.link(item.id, bath, K.NEAR, H, "Step-free bedroom near an accessible "
@@ -508,7 +513,7 @@ TYPICAL_CAR_SOURCE = "typical car envelope (assumption until the owner gives the
 
 def _usability(b: _Builder) -> UsabilityRequirements:
     """Seats, beds and vehicles the usability studies test the plan against (S10-10)."""
-    ids = {i.id for i in b.items}
+    ids = {i.id for i in b.requirements}
     cars = int(b.f.get("cars", 0) or 0) if "pi-garage" in ids else 0
     return UsabilityRequirements(
         household_seats=_household_seats(b.f),
@@ -517,8 +522,8 @@ def _usability(b: _Builder) -> UsabilityRequirements:
             for n in range(1, cars + 1)
         ]
         or None,
-        double_bed_program_item_ids=[i for i in ("pi-bed-main",) if i in ids],
-        single_bed_program_item_ids=sorted(i for i in ids if i.startswith("pi-bed-child")),
+        double_bed_space_requirement_ids=[i for i in ("pi-bed-main",) if i in ids],
+        single_bed_space_requirement_ids=sorted(i for i in ids if i.startswith("pi-bed-child")),
     )
 
 
@@ -547,7 +552,7 @@ def build_program(
     questions are still unanswered (reported, not blocking)."""
     b = _Builder(brief, site)
     b.build()
-    used_zones = {i.zone_id for i in b.items}
+    used_zones = {i.zone_id for i in b.requirements}
     budget = brief.budget
     provenance = Provenance(
         created_at=created_at,
@@ -561,15 +566,15 @@ def build_program(
         id=program_id,
         project_id=brief.project_id,
         brief_ref=brief_ref,
-        items=b.items,
-        adjacencies=b.adj,
+        space_requirements=b.requirements,
+        space_relationships=b.relationships,
         zones=[z for z in ZONES if z.id in used_zones],
         target_gross_area_m2=brief.target_gross_area_m2,
         circulation_factor=CIRCULATION,
-        levels=b.floors,
+        storeys=b.storeys,
         budget=budget,
         site_ref=site.site_ref if site else None,
-        site_verified=bool(site and site.verified),
+        site_approved=bool(site and site.verified),
         usability=_usability(b),
         provenance=provenance,
     )
@@ -578,7 +583,7 @@ def build_program(
             id="asm-typical-sizes",
             statement="Rooms without a size from you use typical sizes for a first layout: "
             + ", ".join(
-                f"{i.name} {i.target_area_m2:g} m²" for i in b.items
+                f"{i.name} {i.target_area_m2:g} m²" for i in b.requirements
                 if i.id in b.typical and i.target_area_m2
             )
             + ". These are not building-code minimums; no local rules are loaded.",
@@ -613,7 +618,7 @@ def build_program(
                 confirm_with="owner",
             )
         )
-    if any(i.id == "pi-guest-suite" for i in b.items):
+    if any(i.id == "pi-guest-suite" for i in b.requirements):
         assumptions.append(
             Assumption(
                 id="asm-guest-suite-extra",
@@ -651,7 +656,7 @@ def build_program(
                 confirm_with="owner",
             )
         )
-    if program.usability.double_bed_program_item_ids:
+    if program.usability.double_bed_space_requirement_ids:
         assumptions.append(
             Assumption(
                 id="asm-beds",
@@ -659,8 +664,8 @@ def build_program(
                 "bedrooms for single beds.",
                 basis="Who sleeps where, from the household answers.",
                 affects=[
-                    *program.usability.double_bed_program_item_ids,
-                    *program.usability.single_bed_program_item_ids,
+                    *program.usability.double_bed_space_requirement_ids,
+                    *program.usability.single_bed_space_requirement_ids,
                 ],
                 confirm_with="owner",
             )
@@ -693,7 +698,7 @@ _NEEDED: dict[str, tuple[str, bool]] = {
     "adults": ("How many adults will live in the house?", True),
     "bedrooms": ("How many bedrooms do you want?", True),
     "bathrooms": ("How many bathrooms do you want?", True),
-    "floors": ("How many floors should the house have?", False),
+    "storeys": ("How many storeys should the house have?", False),
     "budget": ("What is the building budget?", False),
     "target_area": ("Is there a total floor area in mind?", False),
     "slope_strategy": ("How should the house meet the slope?", False),

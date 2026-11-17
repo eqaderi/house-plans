@@ -35,7 +35,7 @@ def test_terrace_opens_from_its_room_with_parapets_and_no_roof(concepts, strateg
     model = models[strategy]
     assert not errors(check_model(model, inp.site, inp.program))
     (terrace,) = [s for s in model.spaces if s.function is S.TERRACE]
-    item = next(i for i in inp.program.items if i.function is S.TERRACE)
+    item = next(i for i in inp.program.space_requirements if i.function is S.TERRACE)
     assert terrace.program_item_id == item.id
     poly = terrace.boundary.to_shapely()
     # At least 1.5 m deep, and inside the buildable envelope.
@@ -67,7 +67,7 @@ def test_placed_terrace_is_measured_and_its_relation_checked(concepts):
     result = ProgramEvaluator().evaluate(
         EvaluationContext(models["compact"], inp.site, inp.program, None)
     )
-    item = next(i for i in inp.program.items if i.function is S.TERRACE)
+    item = next(i for i in inp.program.space_requirements if i.function is S.TERRACE)
     placed = next(
         m for m in result.metrics if m.metric == "outdoor_item_placed" and item.id in m.subject_ids
     )

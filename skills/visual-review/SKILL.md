@@ -1,6 +1,6 @@
 ---
 name: visual-review
-description: Perform grounded visual inspection and critique of floor-plan concepts, detecting visual and spatial defects against canonical element IDs, proposing structured revisions, and verifying fixes.
+description: Perform grounded visual inspection and critique of floor-plan options, detecting visual and spatial findings against canonical element IDs, proposing structured revisions, and verifying fixes.
 ---
 
 # Visual Plan Review
@@ -10,17 +10,17 @@ Follow [docs/AGENT_CONTRACT.md](../../docs/AGENT_CONTRACT.md) (§3 one model,
 `agent:<tool>` is your own tool name: `claude-code`, `codex` or `gemini`.
 
 ## Purpose
-Guide the agent through visual inspection and grounded visual critique of floor-plan concepts rendered in the 2D plan viewer. Agents inspect semantic SVG elements, identify layout defects (such as door-swing clashes, window-wall misalignments, label collisions, and stair landing issues), cite elements strictly by their canonical IDs, propose structured revisions, and verify that fixes actually resolve the defects.
+Guide the agent through visual inspection and grounded visual critique of plan options rendered in the 2D plan viewer. Agents inspect semantic SVG elements, identify layout findings (such as door-swing collisions, window-wall misalignments, label collisions, and stair landing issues), cite elements strictly by their canonical IDs, propose structured revisions, and verify that fixes actually resolve them.
 
 ## When to invoke
 - When visually inspecting rendered plan SVGs or interactive reviewer bundles.
-- When checking for visual and physical spatial clashes that pure metric checks may not fully capture.
+- When checking for visual and physical spatial collisions that pure metric checks may not fully capture.
 - When evaluating door clearances, label readability, or window placements against retaining walls.
-- When verifying that a requested revision successfully resolved a previously reported visual defect.
+- When verifying that a requested revision successfully resolved a previously reported visual finding.
 
 ## Inputs
-- Exported plan concept directory containing `plan.json`, `plan.svg`, and `metrics.json`:
-  - From `plan export <project> <concept-id> --out <dir>`; or
+- Exported plan option directory containing `plan.json`, `plan.svg`, and `metrics.json`:
+  - From `plan export <project> <option-id> --out <dir>`; or
   - From `plan generate <project> --exploratory --out <dir>`.
 - Or a reviewer bundle generated via `plan export-bundle <project> --out <bundle-dir>`.
 - The space program (`projects/<project>/design/space_program.yaml`).
@@ -28,14 +28,14 @@ Guide the agent through visual inspection and grounded visual critique of floor-
 ## Outputs
 - A grounded visual critique record (`visual_critique.json` or Markdown report) with findings labelled `ai_judgment` and citing canonical IDs in backticks.
 - Structured revision operations (`revision_ops.json` or CLI flags).
-- Re-rendered verification confirming that each defect has been resolved.
+- Re-rendered verification confirming that each finding has been resolved.
 
 ## Exact commands
 
-1. **Export the concept or bundle for visual review:**
+1. **Export the plan option or bundle for visual review:**
    ```bash
-   # Export concept files for inspection:
-   .venv/bin/house-ai plan export <project> <concept-id> --out <scratch-dir>/review
+   # Export plan option files for inspection:
+   .venv/bin/house-ai plan export <project> <option-id> --out <scratch-dir>/review
    # Or export an interactive bundle for browser capture:
    .venv/bin/house-ai plan export-bundle <project> --out <scratch-dir>/bundle
    ```
@@ -50,17 +50,17 @@ Guide the agent through visual inspection and grounded visual critique of floor-
 3. **Apply structured revisions from feedback:**
    Apply revision operations directly using CLI flags or replaying from an exported operations file:
    ```bash
-   .venv/bin/house-ai plan revise <project> <concept-id> "<owner's words>" \
+   .venv/bin/house-ai plan revise <project> <option-id> "<owner's words>" \
      --area pi-kitchen=18 --actor agent:<tool>
    .venv/bin/house-ai plan revise-from-file <project> <scratch-dir>/revision_ops.json \
-     --option <concept-id> --actor agent:<tool>
+     --option <option-id> --actor agent:<tool>
    ```
 
 4. **Verify fixes and request gate review:**
-   Re-export the revised concept, inspect the new plan, and confirm the defect is resolved before requesting homeowner gate review:
+   Re-export the revised plan option, inspect the new plan version, and confirm the finding is resolved before requesting the owner's gate review:
    ```bash
-   .venv/bin/house-ai plan export <project> <concept-id> --out <scratch-dir>/verified
-   .venv/bin/house-ai plan review <project> <concept-id> --actor agent:<tool>
+   .venv/bin/house-ai plan export <project> <option-id> --out <scratch-dir>/fixed
+   .venv/bin/house-ai plan review <project> <option-id> --actor agent:<tool>
    ```
 
 ## Required validations
@@ -69,15 +69,15 @@ Guide the agent through visual inspection and grounded visual critique of floor-
   - Visual critique observations carry epistemic status `ai_judgment`.
   - Geometric dimensions and areas carry `measured` status and must cite model values.
   - Earthwork cut/fill and retaining estimates carry `inferred` status.
-- **Fix verification**: any claimed fix must be verified against the revised plan geometry. Fake fixes that do not change geometry or do not resolve the defect must remain open.
+- **Fix verification**: any claimed fix must be checked against the revised plan geometry. Fake fixes that do not change geometry or do not resolve the finding must remain open.
 - Never state that a plan is code-compliant, structurally sound, or construction-ready.
 
 ## Human-approval boundaries
-- Visual reviews and critique reports are proposals for the human homeowner.
+- Visual reviews and critique reports are proposals for the owner.
 - Agents must **NEVER** execute `house-ai workflow approve <project> plan`.
 - Gate approval is strictly reserved for the human owner in their own terminal.
 
 ## Failure handling
 - **Ungrounded element ID**: if `plan ground` or the grounding validator reports an unknown ID, verify the identifier against `plan.json` under `model.spaces`, `model.walls`, or `model.openings` and correct the critique.
-- **Fix verification failure**: if the revised plan still exhibits the defect or introduces a new violation, do not close the critique item; propose an alternative revision operation.
-- **Infeasible revision**: when the constraint solver cannot satisfy the revision constraints, inspect the solver diagnosis and report alternative space allocations.
+- **Fix not resolved**: if the revised plan version still shows the finding or introduces a new violation, do not close the critique item; propose a different revision operation.
+- **Infeasible revision**: when the constraint solver cannot satisfy the revision constraints, inspect the solver diagnosis and report other space allocations.

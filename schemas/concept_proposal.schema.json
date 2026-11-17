@@ -65,18 +65,6 @@
       "title": "ActorKind",
       "type": "string"
     },
-    "AdjacencyKind": {
-      "enum": [
-        "connected",
-        "adjacent",
-        "near",
-        "visual",
-        "separated",
-        "acoustic_separation"
-      ],
-      "title": "AdjacencyKind",
-      "type": "string"
-    },
     "ArtifactKind": {
       "description": "Kinds of versioned artifacts kept in a project store.",
       "enum": [
@@ -213,7 +201,7 @@
           "type": "string"
         },
         "kind": {
-          "$ref": "#/$defs/AdjacencyKind",
+          "$ref": "#/$defs/SpaceRelationshipKind",
           "default": "adjacent"
         },
         "rationale": {
@@ -390,6 +378,18 @@
       ],
       "title": "Provenance",
       "type": "object"
+    },
+    "SpaceRelationshipKind": {
+      "enum": [
+        "connected",
+        "adjacent",
+        "near",
+        "visual",
+        "separated",
+        "acoustic_separation"
+      ],
+      "title": "SpaceRelationshipKind",
+      "type": "string"
     },
     "StairCoreProposal": {
       "additionalProperties": false,

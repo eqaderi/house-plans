@@ -31,10 +31,10 @@ from house_ai.domain.evaluation import EvaluatorRun, EvaluatorRunStatus, MetricC
 from house_ai.domain.integrity import FindingSeverity, check_model, circulation_graph
 from house_ai.domain.model import HouseModel, OpeningKind, Space, WallKind
 from house_ai.domain.program import (
-    AdjacencyKind,
     DaylightNeed,
     Privacy,
     SpaceFunction,
+    SpaceRelationshipKind,
     Strength,
 )
 from house_ai.domain.relations import hops_between, is_relation_satisfied, shared_wall_length
@@ -194,6 +194,7 @@ class GeometryEvaluator:
                 "isoperimetric_ratio",
             )
         out.metric("level_count", len(model.levels), "count")
+        out.metric("storey_count", model.storey_count, "level_elevations_storey_height", INF)
         out.metric("space_count", len(model.spaces), "count")
         ext = sum(
             w.length_m for w in model.walls if w.kind in (WallKind.EXTERIOR, WallKind.RETAINING)
@@ -267,7 +268,7 @@ class ProgramEvaluator:
         entry = next((lv for lv in model.levels if lv.id == "lv-entry"), None)
         net_target = placed_net = 0.0
         prefs_met = prefs_total = 0
-        for item in program.items:
+        for item in program.space_requirements:
             spaces = [model.space(s) for s in _spaces_for(model, item.id)]
             if (
                 item.function in OUTDOOR
@@ -304,7 +305,7 @@ class ProgramEvaluator:
                 note = ""
                 if item.function in (S.STAIR, S.LIFT) and len(model.levels) == 1:
                     # Vertical circulation serves levels; a one-level concept has none to serve.
-                    strength, note = Strength.SOFT, "; not needed in a one-level concept"
+                    strength, note = Strength.SOFT, "; not needed in a one-level plan option"
                 out.violation(
                     "program_item_missing",
                     strength,
@@ -421,12 +422,12 @@ class ProgramEvaluator:
             )
         out.metric("level_preferences_met", prefs_met, "level_lookup")
         out.metric("level_preferences_total", prefs_total, "level_lookup")
-        if program.levels is not None and program.levels != len(model.levels):
+        if program.storeys is not None and program.storeys != model.storey_count:
             out.violation(
-                "level_count_differs",
+                "storey_count_differs",
                 Strength.SOFT,
-                f"the program asks for {program.levels} storey(s); this concept has "
-                f"{len(model.levels)} floor level(s)",
+                f"the program asks for {program.storeys} storey(s); this plan option has "
+                f"{model.storey_count} storey(s) on {len(model.levels)} level(s)",
                 [],
             )
         return out.result()
@@ -480,10 +481,10 @@ class AdjacencyEvaluator:
         soft_w = soft_ok = 0.0
         outdoor = {
             i.id
-            for i in program.items
+            for i in program.space_requirements
             if i.function in OUTDOOR or i.level_preference in ("outdoor", "roof")
         }
-        for adj in program.adjacencies:
+        for adj in program.space_relationships:
 
             def ends(item_id: str) -> list[str]:
                 if item_id == EXTERIOR:
@@ -507,7 +508,7 @@ class AdjacencyEvaluator:
                 hard_n += 1
                 hard_ok += ok
                 # Hard connections are already reported by the GeometryEvaluator (check_model).
-                if not ok and adj.kind is not AdjacencyKind.CONNECTED:
+                if not ok and adj.kind is not SpaceRelationshipKind.CONNECTED:
                     out.violation(
                         "hard_adjacency_unmet",
                         Strength.HARD,
@@ -793,8 +794,8 @@ class SiteEvaluator:
                     reason="no site",
                 )
             )
-        if ctx.site_verified is not None:
-            out.metric("site_verified", ctx.site_verified, "workflow_site_gate")
+        if ctx.site_approved is not None:
+            out.metric("site_approved", ctx.site_approved, "workflow_site_gate")
         env = site.buildable_envelope
         limit = (
             env.polygon.to_shapely()

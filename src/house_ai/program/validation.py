@@ -13,7 +13,7 @@ from dataclasses import dataclass, field
 from house_ai.domain.brief import DesignBrief, Priority
 from house_ai.domain.epistemics import Epistemic
 from house_ai.domain.interview import SiteContext
-from house_ai.domain.program import AdjacencyKind, SpaceFunction, SpaceProgram, Strength
+from house_ai.domain.program import SpaceFunction, SpaceProgram, SpaceRelationshipKind, Strength
 from house_ai.domain.records import Severity
 
 from .builder import is_indoor
@@ -38,11 +38,11 @@ PLAUSIBLE: dict[SpaceFunction, tuple[float, float]] = {
 
 #: Pairs of kinds that cannot both hold for the same two spaces.
 _CLASH = {
-    (AdjacencyKind.CONNECTED, AdjacencyKind.SEPARATED),
-    (AdjacencyKind.ADJACENT, AdjacencyKind.SEPARATED),
-    (AdjacencyKind.NEAR, AdjacencyKind.SEPARATED),
-    (AdjacencyKind.CONNECTED, AdjacencyKind.ACOUSTIC_SEPARATION),
-    (AdjacencyKind.ADJACENT, AdjacencyKind.ACOUSTIC_SEPARATION),
+    (SpaceRelationshipKind.CONNECTED, SpaceRelationshipKind.SEPARATED),
+    (SpaceRelationshipKind.ADJACENT, SpaceRelationshipKind.SEPARATED),
+    (SpaceRelationshipKind.NEAR, SpaceRelationshipKind.SEPARATED),
+    (SpaceRelationshipKind.CONNECTED, SpaceRelationshipKind.ACOUSTIC_SEPARATION),
+    (SpaceRelationshipKind.ADJACENT, SpaceRelationshipKind.ACOUSTIC_SEPARATION),
 }
 
 
@@ -64,17 +64,17 @@ class AreaSummary:
     gross_target_m2: float
     #: Items with no size, left out of the totals.
     unsized: list[str]
-    #: Gross target per floor, when the number of floors is known.
+    #: Gross target per storey, when the number of storeys is known.
     footprint_m2: float | None
 
 
 def area_summary(program: SpaceProgram) -> AreaSummary:
-    indoor = [i for i in program.items if is_indoor(i)]
+    indoor = [i for i in program.space_requirements if is_indoor(i)]
     c = 1.0 + (program.circulation_factor or 0.0)
     net_min = sum((i.min_area_m2 or i.target_area_m2 or 0.0) * i.quantity for i in indoor)
     net_target = sum((i.target_area_m2 or i.min_area_m2 or 0.0) * i.quantity for i in indoor)
     unsized = [i.id for i in indoor if i.target_area_m2 is None and i.min_area_m2 is None]
-    footprint = net_target * c / program.levels if program.levels else None
+    footprint = net_target * c / program.storeys if program.storeys else None
     return AreaSummary(net_min, net_target, net_min * c, net_target * c, unsized, footprint)
 
 
@@ -93,8 +93,8 @@ def validate_program(
         if f is None or f.value is None:
             add(ProgramFinding("missing_information", Severity.BLOCKING,
                                f"We do not know yet {what}.", [f"f-{slot}"]))  # fmt: skip
-    cited = {fid for i in program.items for fid in i.source_fact_ids} | {
-        fid for a in program.adjacencies for fid in a.source_fact_ids
+    cited = {fid for i in program.space_requirements for fid in i.source_fact_ids} | {
+        fid for a in program.space_relationships for fid in a.source_fact_ids
     }
     unconfirmed = sorted(
         fid for fid in cited if fid in facts and facts[fid].status is Epistemic.INFERENCE
@@ -118,14 +118,15 @@ def validate_program(
                                list(c.options)))  # fmt: skip
 
     # -- duplicates
-    names = Counter(i.name.lower() for i in program.items)
+    requirements = program.space_requirements
+    names = Counter(i.name.lower() for i in requirements)
     for name, n in names.items():
         if n > 1:
             add(ProgramFinding("duplicate_space", Severity.WARNING,
                                f"{n} spaces are called '{name}'.",
-                               [i.id for i in program.items if i.name.lower() == name]))
-    seen: Counter[tuple[frozenset[str], AdjacencyKind]] = Counter(
-        (frozenset((a.a, a.b)), a.kind) for a in program.adjacencies
+                               [i.id for i in requirements if i.name.lower() == name]))
+    seen: Counter[tuple[frozenset[str], SpaceRelationshipKind]] = Counter(
+        (frozenset((a.a, a.b)), a.kind) for a in program.space_relationships
     )
     for (pair, kind), n in seen.items():
         if n > 1:
@@ -135,7 +136,7 @@ def validate_program(
 
     # -- conflicting adjacencies
     by_pair: dict[frozenset[str], list] = {}
-    for a in program.adjacencies:
+    for a in program.space_relationships:
         by_pair.setdefault(frozenset((a.a, a.b)), []).append(a)
     for pair, reqs in by_pair.items():
         for x in reqs:
@@ -153,7 +154,7 @@ def validate_program(
                     ))  # fmt: skip
 
     # -- suspicious sizes and combinations
-    for i in program.items:
+    for i in program.space_requirements:
         bounds = PLAUSIBLE.get(i.function)
         size = i.target_area_m2 or i.min_area_m2
         if bounds and size is not None and not bounds[0] <= size <= bounds[1]:
@@ -161,24 +162,24 @@ def validate_program(
                                f"{i.name} at {size:g} m² is outside the usual "
                                f"{bounds[0]:g}–{bounds[1]:g} m² for a {i.function.value}.",
                                [i.id]))  # fmt: skip
-    beds = sum(i.quantity for i in program.items if i.function is SpaceFunction.BEDROOM)
-    baths = sum(i.quantity for i in program.items if i.function is SpaceFunction.BATHROOM)
+    beds = sum(i.quantity for i in requirements if i.function is SpaceFunction.BEDROOM)
+    baths = sum(i.quantity for i in requirements if i.function is SpaceFunction.BATHROOM)
     if baths > beds + 2:
         add(ProgramFinding("unusual_combination", Severity.WARNING,
                            f"{baths} bathrooms for {beds} bedrooms is unusual.", []))
-    if program.levels and program.levels > 1 and not any(
-        i.function is SpaceFunction.STAIR for i in program.items
+    if program.storeys and program.storeys > 1 and not any(
+        i.function is SpaceFunction.STAIR for i in program.space_requirements
     ):
         add(ProgramFinding("missing_stair", Severity.BLOCKING,
-                           f"{program.levels} floors but no stair in the program.", []))
-    if program.levels == 1 and any(i.function is SpaceFunction.LIFT for i in program.items):
+                           f"{program.storeys} storeys but no stair in the program.", []))
+    if program.storeys == 1 and any(i.function is SpaceFunction.LIFT for i in requirements):
         add(ProgramFinding("lift_on_one_level", Severity.WARNING,
-                           "The program has a lift but only one floor.", ["pi-lift"]))
+                           "The program has a lift but only one storey.", ["pi-lift"]))
     accessible_off_entry = [
-        i.id for i in program.items
-        if i.accessible and program.levels and program.levels > 1
+        i.id for i in program.space_requirements
+        if i.accessible and program.storeys and program.storeys > 1
         and i.level_preference not in ("entry", "ground")
-        and not any(x.function is SpaceFunction.LIFT for x in program.items)
+        and not any(x.function is SpaceFunction.LIFT for x in program.space_requirements)
     ]  # fmt: skip
     if accessible_off_entry:
         add(ProgramFinding("accessible_route", Severity.WARNING,
@@ -193,7 +194,8 @@ def validate_program(
                            f"{len(s.unsized)} indoor space(s) have no size and are left out of "
                            "the totals.", s.unsized))  # fmt: skip
     target = program.target_gross_area_m2
-    optional = [i for i in program.items if i.priority in (Priority.COULD, Priority.SHOULD)
+    optional = [i for i in program.space_requirements
+                if i.priority in (Priority.COULD, Priority.SHOULD)
                 and is_indoor(i)]  # fmt: skip
     if target is not None and s.gross_min_m2 > target + 1e-6:
         add(ProgramFinding(
@@ -224,31 +226,31 @@ def validate_program(
     # -- site
     if site is not None and site.parcel_area_m2:
         label = "" if site.verified else " (unconfirmed survey value)"
-        floors = program.levels
-        footprint = s.gross_target_m2 / floors if floors else s.gross_target_m2
-        floors_note = f"on {floors} floor(s)" if floors else "if on one floor"
+        storeys = program.storeys
+        footprint = s.gross_target_m2 / storeys if storeys else s.gross_target_m2
+        storeys_note = f"on {storeys} storey(s)" if storeys else "if in one storey"
         if footprint > site.parcel_area_m2:
             add(ProgramFinding(
                 "exceeds_parcel", Severity.BLOCKING if site.verified else Severity.WARNING,
-                f"About {footprint:.0f} m² per floor {floors_note} is more than the whole parcel "
+                f"About {footprint:.0f} m² per storey {storeys_note} is more than the whole parcel "
                 f"of {site.parcel_area_m2:.0f} m²{label}.",
                 [program.id],
-                ["Add a floor", "Reduce the total area", "Drop optional spaces"],
+                ["Add a storey", "Reduce the total area", "Drop optional spaces"],
             ))  # fmt: skip
         elif footprint > 0.5 * site.parcel_area_m2:
             add(ProgramFinding(
                 "large_footprint", Severity.WARNING,
-                f"About {footprint:.0f} m² per floor {floors_note} covers "
+                f"About {footprint:.0f} m² per storey {storeys_note} covers "
                 f"{footprint / site.parcel_area_m2:.0%} of the {site.parcel_area_m2:.0f} m² "
                 f"parcel{label}, leaving little outdoor space. Local site-coverage limits are "
                 "not loaded (not checked).",
                 [program.id],
-                ["Add a floor", "Reduce the total area", "Accept a small garden"],
+                ["Add a storey", "Reduce the total area", "Accept a small garden"],
             ))  # fmt: skip
         if (site.relief_m or 0) >= 2.0 and by_key.get("slope_strategy") is None:
             add(ProgramFinding(
                 "levels_against_ground", Severity.INFO,
-                f"The ground falls about {site.relief_m:.1f} m{label}. How each floor meets the "
+                f"The ground falls about {site.relief_m:.1f} m{label}. How each level meets the "
                 "ground is decided first in Milestone D (section before rooms).",
             ))  # fmt: skip
         slope_fact = by_key.get("slope_strategy")

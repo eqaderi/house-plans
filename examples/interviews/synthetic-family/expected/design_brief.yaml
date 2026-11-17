@@ -67,7 +67,7 @@ facts:
     kind: owner_answer
     ref: q-bathrooms
     interview_round: 4
-- id: ans-q-floors-5
+- id: ans-q-storeys-5
   topic: levels
   key: answer
   statement: Two floors.
@@ -76,7 +76,7 @@ facts:
   priority: null
   source:
     kind: owner_answer
-    ref: q-floors
+    ref: q-storeys
     interview_round: 5
 - id: ans-q-slope-6
   topic: site_response
@@ -465,17 +465,6 @@ facts:
     kind: owner_answer
     ref: confirmed:ans-q-parking-12
     interview_round: 12
-- id: f-floors
-  topic: levels
-  key: floors
-  statement: 'Floors: 2'
-  value: 2
-  status: preference
-  priority: null
-  source:
-    kind: owner_answer
-    ref: confirmed:ans-q-floors-5
-    interview_round: 5
 - id: f-future_expansion
   topic: future_expansion
   key: future_expansion
@@ -703,6 +692,17 @@ facts:
     kind: owner_answer
     ref: confirmed:ans-q-storage-13
     interview_round: 13
+- id: f-storeys
+  topic: levels
+  key: storeys
+  statement: 'Storeys: 2'
+  value: 2
+  status: preference
+  priority: null
+  source:
+    kind: owner_answer
+    ref: confirmed:ans-q-storeys-5
+    interview_round: 5
 - id: f-style
   topic: materials_style
   key: style
@@ -757,5 +757,5 @@ provenance:
   - kind: interview_session
     id: interview
     version: 27
-    sha256: bad2f1dc23bd2aa23e8dabb57895d2a90d1b466bc6c7fa8a281e682c4536f265
+    sha256: 2fd7ae9bf1ec6fd891875dfa5a6a42f3790ecf7723b4392d4062d640758a67c1
   notes: Derived from the interview session; the owner's words are kept verbatim.

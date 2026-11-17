@@ -1,4 +1,4 @@
-"""CLI commands for 2D concept reviewer application: export and serve."""
+"""CLI commands for the 2D plan option reviewer application: export and serve."""
 
 from __future__ import annotations
 
@@ -8,6 +8,7 @@ import http.server
 import socketserver
 from pathlib import Path
 
+from house_ai.cli.plan_cmds import existing_plan_options_dir
 from house_ai.constants.reviewer import REVIEWER_DEFAULT_PORT
 from house_ai.orchestration.reviewer_bundle import export_reviewer_bundle
 from house_ai.storage import ProjectStore
@@ -20,17 +21,10 @@ def _out(text: str = "") -> None:
     print(text)
 
 
-def _concepts_dir(store: ProjectStore, given: str | None) -> Path | None:
-    if given:
-        return Path(given)
-    default = store.root / "design" / "concepts"
-    return default if default.exists() else None
-
-
 def cmd_reviewer_export(args: argparse.Namespace) -> int:
-    """Export a read-only concept reviewer bundle."""
+    """Export a read-only reviewer bundle of the plan options."""
     store = ProjectStore(resolve_project_dir(args.dir))
-    concepts_dir = _concepts_dir(store, args.concepts_dir)
+    concepts_dir = existing_plan_options_dir(store, args.plan_options_dir)
     bundle_file = export_reviewer_bundle(
         store,
         Path(args.out),
@@ -57,10 +51,12 @@ def cmd_reviewer_serve(args: argparse.Namespace) -> int:
             "apps/reviewer, or pass --dist"
         )
         return EXIT_FAIL
-    bundle_file = export_reviewer_bundle(store, dist_dir, concepts_dir=_concepts_dir(store, None))
+    bundle_file = export_reviewer_bundle(
+        store, dist_dir, concepts_dir=existing_plan_options_dir(store)
+    )
 
     url = f"http://127.0.0.1:{port}/?bundle={bundle_file.name}"
-    _out(f"Serving 2D concept reviewer for project {store.manifest().name} at {url}")
+    _out(f"Serving the 2D plan option reviewer for project {store.manifest().name} at {url}")
     _out(f"Bundle: {bundle_file}")
     _out("Press Ctrl+C to stop.")
 
@@ -74,17 +70,23 @@ def cmd_reviewer_serve(args: argparse.Namespace) -> int:
 
 
 def register(sub, actor_arg=None) -> None:
-    rv = sub.add_parser("reviewer", help="2D desktop concept reviewer app (Stage S4)")
+    rv = sub.add_parser("reviewer", help="2D desktop reviewer app for plan options (Stage S4)")
     rv = rv.add_subparsers(dest="sub", required=True)
 
-    s = rv.add_parser("export", help="export read-only concept bundle for the reviewer app")
+    s = rv.add_parser(
+        "export", help="export a read-only bundle of the plan options for the reviewer app"
+    )
     s.add_argument("dir", help="project directory or name")
     s.add_argument("--out", required=True, help="output directory for bundle.json")
-    s.add_argument("--concepts-dir", help="optional directory with exploratory concepts")
+    s.add_argument(
+        "--plan-options-dir", "--concepts-dir", dest="plan_options_dir",
+        help="optional folder of exported plan options (default: <project>/design/plan-options, "
+        "else design/concepts)",
+    )
     s.add_argument(
         "--exploratory",
         action="store_true",
-        help="include exploratory concepts",
+        help="include exploratory plan options",
     )
     s.set_defaults(func=cmd_reviewer_export)
 

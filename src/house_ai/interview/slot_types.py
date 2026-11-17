@@ -14,7 +14,7 @@ from house_ai.domain.brief import FactValue
 from .parsing import ROOMS
 from .questions import SLOTS
 
-INT = {"adults", "children", "elders", "household_size", "bedrooms", "bathrooms", "floors",
+INT = {"adults", "children", "elders", "household_size", "bedrooms", "bathrooms", "storeys",
        "workspaces", "cars"}  # fmt: skip
 BOOL = {
     "children_own_rooms", "elder_step_free", "ensuite", "entry_at_road", "open_plan",

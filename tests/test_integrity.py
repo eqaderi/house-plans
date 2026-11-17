@@ -55,7 +55,7 @@ def test_golden_plan_meets_program_minimum_areas(plan, example_dir):
     from house_ai.storage.hashing import load_document
 
     program = SpaceProgram.model_validate(load_document(example_dir / "space_program.yaml"))
-    minima = {i.id: i.min_area_m2 for i in program.items}
+    minima = {i.id: i.min_area_m2 for i in program.space_requirements}
     for space in plan.model.spaces:
         assert space.area_m2 >= minima[space.program_item_id]
 

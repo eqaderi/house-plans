@@ -77,8 +77,8 @@ class Project:
 
     def to_concept_review(self) -> None:
         self.to_program_approved()
-        self.wf.transition(S.CONCEPT_GENERATION, AGENT, "generate concepts")
-        self.wf.transition(S.CONCEPT_REVIEW, AGENT, "concepts ready")
+        self.wf.transition(S.PLAN_GENERATION, AGENT, "generate concepts")
+        self.wf.transition(S.PLAN_REVIEW, AGENT, "concepts ready")
 
     def to_plan_approved(self) -> None:
         self.to_concept_review()
@@ -144,7 +144,7 @@ def test_gated_states_cannot_be_reached_by_transition(project, gate):
 
 def test_cannot_jump_ahead(project):
     with pytest.raises(TransitionNotAllowed, match="allowed: SITE_INGESTION"):
-        project.wf.transition(S.CONCEPT_GENERATION, AGENT, "let's just design")
+        project.wf.transition(S.PLAN_GENERATION, AGENT, "let's just design")
     assert project.wf.state is S.NEW_PROJECT
 
 
@@ -207,7 +207,7 @@ def test_ambiguous_site_stops_at_needs_verification(project):
     project.wf.transition(S.SITE_INGESTION, AGENT, "survey loaded")
     blockers = project.wf.assess_site(unsure, AGENT)
     assert len(blockers) == 2
-    assert project.wf.state is S.SITE_NEEDS_VERIFICATION
+    assert project.wf.state is S.SITE_NEEDS_CONFIRMATION
     last = project.store.events()[-1]
     assert last.payload["blockers"] == blockers
 
@@ -354,7 +354,7 @@ def test_reopening_the_plan_supersedes_plan_and_model_only(project):
     project.wf.reopen(Gate.PLAN, HUMAN, "make the kitchen larger")
 
     status = project.wf.status()
-    assert status.state is S.CONCEPT_REVIEW
+    assert status.state is S.PLAN_REVIEW
     assert set(status.approvals) == {Gate.SITE, Gate.PROGRAM}
     assert {a.gate for a in status.superseded} == {Gate.PLAN, Gate.MODEL}
     # Revising and re-approving works; the history keeps both approvals.
@@ -397,7 +397,7 @@ def test_replay_rejects_an_out_of_sequence_log(project):
     bogus = events[-1].model_copy(
         update={
             "type": EventType.TRANSITION,
-            "from_state": S.CONCEPT_REVIEW,
+            "from_state": S.PLAN_REVIEW,
             "to_state": S.PLAN_APPROVED,
         }
     )
@@ -407,8 +407,8 @@ def test_replay_rejects_an_out_of_sequence_log(project):
 
 def test_revision_concept_loop_is_allowed(project):
     project.to_concept_review()
-    project.wf.transition(S.CONCEPT_GENERATION, HUMAN, "I hate this option; start again")
-    project.wf.transition(S.CONCEPT_REVIEW, AGENT, "new options ready")
+    project.wf.transition(S.PLAN_GENERATION, HUMAN, "I hate this option; start again")
+    project.wf.transition(S.PLAN_REVIEW, AGENT, "new options ready")
     assert project.wf.status().approvals.keys() == {Gate.SITE, Gate.PROGRAM}
 
 

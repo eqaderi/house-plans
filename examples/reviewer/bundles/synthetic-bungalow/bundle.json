@@ -128,7 +128,7 @@
     "schema_version": "0.1.0",
     "target_gross_area_m2": 120.0
   },
-  "comparison_markdown": "# Plan concepts compared\n\nEach column is one concept; values are individual metrics, not a combined score. Status in brackets when not measured exactly.\n\n| Metric |  |\n|---|\n| Strategy |  |\n| Hard violations |  |\n| Soft violations |  |\n\nThese are design explorations. None is reviewed, engineered or checked against a building code; see docs/PROFESSIONAL_HANDOFF.md.\n",
+  "comparison_markdown": "# Plan options compared\n\nEach column is one plan option; values are individual metrics, not a combined score. Status in brackets when not measured exactly.\n\n| Metric |  |\n|---|\n| Strategy |  |\n| Hard violations |  |\n| Soft violations |  |\n\nThese are design explorations. None is reviewed, engineered or checked against a building code; see docs/PROFESSIONAL_HANDOFF.md.\n",
   "gates": {
     "model": {
       "approve_command": "house-ai workflow approve synthetic-bungalow model --id <model-id> --approver <your-name>",

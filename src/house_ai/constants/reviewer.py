@@ -1,4 +1,4 @@
-"""Constants for the 2D concept reviewer application and bundle exchange."""
+"""Constants for the 2D plan option reviewer application and bundle exchange."""
 
 from __future__ import annotations
 

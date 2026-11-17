@@ -24,6 +24,11 @@ from .provenance import ArtifactRef
 from .records import Assumption, Issue
 from .usability import ClearanceZone, Furniture
 
+#: Typical floor-to-floor height of one storey, used to count a plan's storeys.
+STOREY_HEIGHT_M = 3.0
+#: Level offsets this close to a whole storey count as one.
+SPLIT_LEVEL_TOLERANCE_M = 0.3
+
 
 class Level(StrictModel):
     id: Id
@@ -289,14 +294,14 @@ class RelationshipKind(StrEnum):
     SEPARATED = "separated"
 
 
-class SpaceRelationship(StrictModel):
-    """A declared design intent between two spaces (geometry decides if it holds)."""
+class PlanRelationship(StrictModel):
+    """A declared design intent between two spaces of a plan (geometry decides if it holds)."""
 
     id: Id
     a: Id
     b: Id
     kind: RelationshipKind
-    #: Program adjacency requirement this realises, if any.
+    #: Space relationship (program) this realises, if any.
     requirement_id: Id | None = None
 
 
@@ -348,7 +353,7 @@ class HouseModel(StrictModel):
     fixtures: list[Fixture] = Field(default_factory=list)
     furniture: list[Furniture] = Field(default_factory=list)
     clearance_zones: list[ClearanceZone] = Field(default_factory=list)
-    relationships: list[SpaceRelationship] = Field(default_factory=list)
+    relationships: list[PlanRelationship] = Field(default_factory=list)
     materials: list[MaterialRef] = Field(default_factory=list)
     earthwork_pads: list[EarthworkPad] = Field(default_factory=list)
     assumptions: list[Assumption] = Field(default_factory=list)
@@ -370,6 +375,19 @@ class HouseModel(StrictModel):
 
     def level(self, level_id: str) -> Level:
         return next(lv for lv in self.levels if lv.id == level_id)
+
+    @property
+    def storey_count(self) -> int:
+        """Storeys the levels span, derived from their elevations (GLOSSARY.md).
+
+        Levels less than a storey apart are split levels of one storey, so on a
+        slope two storeys can hold four levels. A level at least
+        ``STOREY_HEIGHT_M - SPLIT_LEVEL_TOLERANCE_M`` above the lowest starts a
+        new storey.
+        """
+        elevations = [lv.elevation_m for lv in self.levels]
+        span = max(elevations) - min(elevations)
+        return 1 + int((span + SPLIT_LEVEL_TOLERANCE_M) / STOREY_HEIGHT_M)
 
     def all_ids(self) -> list[str]:
         """Every entity id in the model, in a stable order (duplicates kept)."""

@@ -17,7 +17,7 @@ from house_ai.constants.relations import (
 )
 from house_ai.domain.base import EXTERIOR
 from house_ai.domain.model import HouseModel
-from house_ai.domain.program import AdjacencyKind
+from house_ai.domain.program import SpaceRelationshipKind
 
 
 def shared_wall_length(model: HouseModel, a: str, b: str) -> float:
@@ -70,7 +70,7 @@ def hops_between(graph: dict[str, set[str]], origin: str) -> dict[str, int]:
 
 
 def is_relation_satisfied(
-    kind: AdjacencyKind,
+    kind: SpaceRelationshipKind,
     model: HouseModel,
     graph: dict[str, set[str]],
     a_spaces: list[str],
@@ -84,7 +84,7 @@ def is_relation_satisfied(
     if not a_spaces or not b_spaces:
         return False, "missing_spaces"
 
-    K = AdjacencyKind
+    K = SpaceRelationshipKind
     if kind is K.CONNECTED:
         method = "graph_analysis"
         connected = any(b in graph.get(a, set()) for a in a_spaces for b in b_spaces)

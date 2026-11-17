@@ -133,7 +133,7 @@ def test_seeded_bath_disconnect_reports_one_real_failure_and_clean_case_is_reach
         assert not errors(check_model(c.model, f.site, f.program))
     findings = check_model(defect.model, f.site, f.program)
     assert [v.subject_ids for v in findings if v.code == "space_unreachable"] == [["sp-bath"]]
-    items = {i.id: i for i in f.program.items}
+    items = {i.id: i for i in f.program.space_requirements}
     assert items["pi-bed-parents"].accessible and items["pi-bath"].accessible
     assert items["pi-bed-parents"].level_preference == items["pi-bath"].level_preference == "entry"
 

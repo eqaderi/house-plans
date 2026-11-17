@@ -19,7 +19,7 @@ from house_ai.constants.proposals import (
     ERR_UNKNOWN_PROGRAM_ITEM,
 )
 from house_ai.domain.base import EXTERIOR
-from house_ai.domain.program import AdjacencyKind, SpaceProgram, Strength
+from house_ai.domain.program import SpaceProgram, SpaceRelationshipKind, Strength
 from house_ai.domain.proposal import ConceptProposal
 from house_ai.domain.records import Severity
 from house_ai.domain.site import Site
@@ -45,7 +45,7 @@ def validate_proposal(
 ) -> list[ProposalFinding]:
     """Validate a topology proposal against a space program and optional site."""
     findings: list[ProposalFinding] = []
-    prog_item_ids = {item.id for item in program.items}
+    prog_item_ids = {item.id for item in program.space_requirements}
 
     # 1. Program coverage & unknown item checks
     referenced_items: set[str] = set()
@@ -138,13 +138,13 @@ def validate_proposal(
 
     # 2. Level feasibility & Vertical circulation
     levels_used = {la.level_id for la in proposal.level_assignments}
-    if program.levels is not None and len(levels_used) > program.levels:
+    if program.storeys is not None and len(levels_used) > program.storeys:
         findings.append(
             ProposalFinding(
                 ERR_EXCESSIVE_LEVELS,
                 Severity.BLOCKING,
                 f"Proposal uses {len(levels_used)} levels ({sorted(levels_used)}), "
-                f"exceeding program maximum of {program.levels}",
+                f"exceeding program maximum of {program.storeys}",
                 sorted(levels_used),
             )
         )
@@ -192,11 +192,11 @@ def validate_proposal(
                 )
 
     # 3. Adjacency conflicts
-    touching_kinds = {AdjacencyKind.CONNECTED, AdjacencyKind.ADJACENT}
-    separation_kinds = {AdjacencyKind.SEPARATED, AdjacencyKind.ACOUSTIC_SEPARATION}
+    touching_kinds = {SpaceRelationshipKind.CONNECTED, SpaceRelationshipKind.ADJACENT}
+    separation_kinds = {SpaceRelationshipKind.SEPARATED, SpaceRelationshipKind.ACOUSTIC_SEPARATION}
 
     # Internal proposal conflicts
-    seen_adj: dict[frozenset[str], AdjacencyKind] = {}
+    seen_adj: dict[frozenset[str], SpaceRelationshipKind] = {}
     for padj in proposal.adjacency_graph:
         pair = frozenset({padj.a, padj.b})
         if pair in seen_adj:
@@ -217,7 +217,7 @@ def validate_proposal(
             seen_adj[pair] = padj.kind
 
     # Cross-level hard adjacency & Program hard adjacency violations
-    for prog_adj in program.adjacencies:
+    for prog_adj in program.space_relationships:
         if prog_adj.strength is Strength.HARD:
             # Cross-level check
             if prog_adj.kind in touching_kinds and prog_adj.b != EXTERIOR:
@@ -261,7 +261,11 @@ def validate_proposal(
                         )
 
     # 4. Connectivity graph: verify proposed adjacencies do not form disconnected clusters
-    active_kinds = {AdjacencyKind.CONNECTED, AdjacencyKind.ADJACENT, AdjacencyKind.NEAR}
+    active_kinds = {
+        SpaceRelationshipKind.CONNECTED,
+        SpaceRelationshipKind.ADJACENT,
+        SpaceRelationshipKind.NEAR,
+    }
     prop_nodes: set[str] = set()
     for padj in proposal.adjacency_graph:
         if padj.kind in active_kinds and padj.b != EXTERIOR:
@@ -275,7 +279,7 @@ def validate_proposal(
                 combined_graph[padj.a].add(padj.b)
                 combined_graph[padj.b].add(padj.a)
 
-        for prog_adj in program.adjacencies:
+        for prog_adj in program.space_relationships:
             if prog_adj.kind in active_kinds and prog_adj.b != EXTERIOR:
                 if prog_adj.a in combined_graph and prog_adj.b in combined_graph:
                     combined_graph[prog_adj.a].add(prog_adj.b)

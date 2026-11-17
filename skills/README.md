@@ -14,17 +14,17 @@ real `house-ai` commands, and stops at every human gate. Commands write
 - **Canonical location**: `skills/<skill-name>/SKILL.md` (the only copy)
 - **Claude Code discovery**: `.claude/skills/<skill-name>` → `../../skills/<skill-name>`
 - **Codex, Gemini CLI and Antigravity discovery**: `.agents/skills/<skill-name>` → `../../skills/<skill-name>`
-- `python tools/sync_skills.py` creates missing links; `--check` only verifies;
+- `python tools/sync_skills.py` creates missing symlinks; `--check` only verifies;
   `--prune` also removes non-canonical entries (never done by default).
-- `tests/test_skills.py` checks links, template, commands and flags against the CLI.
+- `tests/test_skills.py` checks symlinks, template, commands and flags against the CLI.
 
 ## Skills Catalog
 
 1. **`site-survey-review`**: survey inspection, ingestion by source id, terrain/boundary validation, blockers, owner questions and `CONFIRM-SITE.md`, site gate request.
 2. **`architectural-programming`**: adaptive interview in rounds (English, Persian, mixed) with hillside questions, verbatim recording, confirmation, contradictions, space program, program gate request.
-3. **`generate-concepts`**: exploratory and stored CP-SAT concepts, feasibility reasons, revision ops, plan gate request.
-4. **`critique-plan`**: grounded critique of exploratory or exported concepts, checked with `house-ai plan ground`, with explicit revision ops.
-5. **`visual-review`**: visual inspection and grounded critique of rendered plan SVGs or reviewer bundles, defect detection (door clashes, window/wall misalignment, label overlaps), fix verification.
+3. **`generate-plan-options`**: exploratory and stored CP-SAT plan options, feasibility reasons, revision ops (each a new plan version), plan gate request.
+4. **`critique-plan`**: grounded critique of exploratory or exported plan options, checked with `house-ai plan ground`, with explicit revision ops.
+5. **`visual-review`**: visual inspection and grounded critique of rendered plan SVGs or reviewer bundles, visual findings (door-swing collisions, window/wall misalignment, label overlaps), fix verification.
 
 ## Skill Template
 
@@ -45,7 +45,7 @@ In every command, `agent:<tool>` is your own tool name: `claude-code`, `codex` o
 <What this skill accomplishes and why>
 
 ## When to invoke
-<Specific trigger conditions, workflow states, and user requests>
+<Specific trigger conditions, workflow states, and owner requests>
 
 ## Inputs
 <Required files, project identifiers, survey data, or parameters>

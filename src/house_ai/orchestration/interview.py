@@ -2,8 +2,8 @@
 
 Every turn writes a new ``interview_session`` version and the design brief
 derived from it. The program is built from the brief on request. Coding agents
-(Claude Code, Gemini CLI, Codex) or the homeowner in an interactive terminal
-may record the homeowner's verbatim answers, propose structured slot
+(Claude Code, Gemini CLI, Codex) or the owner in an interactive terminal
+may record the owner's verbatim answers, propose structured slot
 interpretations (always stored as ``inference`` until confirmed), record
 confirmations/corrections/revisions, and resolve contradictions. Only a human
 may grant external provider consent, reject a reviewed program, or approve a
@@ -25,6 +25,8 @@ from house_ai.domain.interview import (
     SiteContext,
     TurnKind,
     Understood,
+    current_question_id,
+    current_slot,
 )
 from house_ai.domain.provenance import Actor, ActorKind, ArtifactKind, ArtifactRef, Provenance
 from house_ai.domain.site import Site, site_verification_blockers
@@ -173,7 +175,11 @@ def parse_slot_value(slot: str, raw: Any) -> FactValue:
 
 
 def resolve_question_id(question_or_slot: str) -> str:
-    """Map a slot name (e.g. ``bedrooms``) to its canonical question id, or keep ``question_id``."""
+    """Map a slot name (e.g. ``bedrooms``) to its canonical question id, or keep ``question_id``.
+
+    Old slot names and question ids (ADR 0025) give the current question id.
+    """
+    question_or_slot = current_question_id(current_slot(question_or_slot))
     if question_or_slot in SLOTS:
         return next(q.id for q in QUESTIONS if question_or_slot in q.slots)
     return question_or_slot
@@ -195,7 +201,8 @@ def _normalize_interpreted(
         return []
     method = f"agent:{actor.id}" if actor.kind is ActorKind.AGENT else "explicit"
     return [
-        Understood(slot=slot, value=parse_slot_value(slot, raw), method=method)
+        Understood(slot=current_slot(slot), value=parse_slot_value(current_slot(slot), raw),
+                   method=method)
         for slot, raw in interpreted.items()
     ]
 
@@ -296,7 +303,7 @@ class InterviewService:
         if s.pending_question_id is None:
             return None
         prompt = next_prompt(fold(s), s.site)
-        if prompt is not None and prompt.id == s.pending_question_id:
+        if prompt is not None and prompt.id == current_question_id(s.pending_question_id):
             return prompt
         try:
             return prompt_by_id(s.pending_question_id, fold(s), s.site)
@@ -529,7 +536,9 @@ class InterviewService:
         state = fold(session)
         site = self.site()
         prompt = next_prompt(state, site)
-        moved = prompt is None or prompt.id != session.pending_question_id
+        moved = prompt is None or prompt.id != current_question_id(
+            session.pending_question_id or ""
+        )
         session = session.model_copy(
             update={
                 "site": site,
@@ -902,6 +911,7 @@ class InterviewService:
         """The owner confirms what was understood (all pending interpretations by default)."""
         self._check_open()
         pending = self.state().unconfirmed()
+        slots = None if slots is None else [current_slot(s) for s in slots]
         chosen = pending if slots is None else [s for s in slots if s in pending]
         unknown = set(slots or []) - set(pending)
         if unknown:
@@ -919,6 +929,7 @@ class InterviewService:
         """The owner says an interpretation is wrong; it is removed and asked again."""
         self._check_open()
         state = self.state()
+        slots = [current_slot(s) for s in slots]
         missing = [s for s in slots if s not in state.slots]
         if missing or not slots:
             raise ValueError(f"no current value for: {', '.join(missing) or '(none given)'}")

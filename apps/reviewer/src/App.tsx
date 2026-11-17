@@ -18,7 +18,7 @@ const DEMO_BUNDLE: ReviewerBundle = {
   schema_version: "1.0.0",
   project: {
     name: "synthetic-hillside",
-    state: "CONCEPT_REVIEW",
+    state: "PLAN_REVIEW",
   },
   gates: {
     site: {

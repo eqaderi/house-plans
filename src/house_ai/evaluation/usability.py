@@ -514,7 +514,7 @@ class FurnitureUsabilityEvaluator(Critic):
                     )
                 self._kitchen_aisles(out, s, counters)
             item = (
-                next((i for i in ctx.program.items if i.id == s.program_item_id), None)
+                next((i for i in ctx.program.space_requirements if i.id == s.program_item_id), None)
                 if ctx.program
                 else None
             )
@@ -677,9 +677,9 @@ class FurnitureUsabilityEvaluator(Critic):
         if s.function in {S.BEDROOM, S.GUEST_SUITE}:
             # Undesignated rooms must hold a single bed; the double study is information only.
             variants = [("bed-double", False), ("bed-single", True)]
-            if req and s.program_item_id in req.double_bed_program_item_ids:
+            if req and s.program_item_id in req.double_bed_space_requirement_ids:
                 variants = [("bed-double", True)]
-            elif req and s.program_item_id in req.single_bed_program_item_ids:
+            elif req and s.program_item_id in req.single_bed_space_requirement_ids:
                 variants = [("bed-single", True)]
             return [
                 (v.replace("-", "_"), [TEMPLATES[v], TEMPLATES["wardrobe"]], required)

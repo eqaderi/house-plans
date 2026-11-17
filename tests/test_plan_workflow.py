@@ -84,7 +84,7 @@ def generated(tmp_path_factory):
 
 def test_generate_stores_versions_evaluations_and_moves_to_concept_review(generated):
     store, out = generated
-    assert Workflow(store).state is WorkflowState.CONCEPT_REVIEW
+    assert Workflow(store).state is WorkflowState.PLAN_REVIEW
     plans = store.latest_of_kind(ArtifactKind.PLAN)
     assert len(plans) >= 3
     reports = {
@@ -166,7 +166,7 @@ def test_revision_creates_a_child_version_with_a_report(generated):
     assert kitchen.after_m2 > kitchen.before_m2
     # The parent is untouched and still loadable.
     assert store.get(base, PlanVersion).generation.revision_ops == []
-    assert Workflow(store).state is WorkflowState.CONCEPT_REVIEW
+    assert Workflow(store).state is WorkflowState.PLAN_REVIEW
     assert (res.export_dir / "revision.md").is_file()
     assert store.verify() == []
 
@@ -221,7 +221,7 @@ def test_cli_list_compare_and_strategies(generated, capsys):
     rows = json.loads(capsys.readouterr().out)
     assert {r["option_id"] for r in rows} >= {"concept-compact", "concept-split-level"}
     assert main(["plan", "compare", str(store.root)]) == 0
-    assert "How different the concepts are" in capsys.readouterr().out
+    assert "How different the plan options are" in capsys.readouterr().out
     assert main(["plan", "strategies"]) == 0
     assert "split_level" in capsys.readouterr().out
 

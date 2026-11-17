@@ -65,94 +65,6 @@
       "title": "ActorKind",
       "type": "string"
     },
-    "AdjacencyKind": {
-      "enum": [
-        "connected",
-        "adjacent",
-        "near",
-        "visual",
-        "separated",
-        "acoustic_separation"
-      ],
-      "title": "AdjacencyKind",
-      "type": "string"
-    },
-    "AdjacencyRequirement": {
-      "additionalProperties": false,
-      "properties": {
-        "a": {
-          "maxLength": 64,
-          "minLength": 1,
-          "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
-          "title": "A",
-          "type": "string"
-        },
-        "b": {
-          "maxLength": 64,
-          "minLength": 1,
-          "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
-          "title": "B",
-          "type": "string"
-        },
-        "id": {
-          "maxLength": 64,
-          "minLength": 1,
-          "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
-          "title": "Id",
-          "type": "string"
-        },
-        "kind": {
-          "$ref": "#/$defs/AdjacencyKind"
-        },
-        "rationale": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null,
-          "title": "Rationale"
-        },
-        "source_fact_ids": {
-          "items": {
-            "maxLength": 64,
-            "minLength": 1,
-            "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
-            "type": "string"
-          },
-          "title": "Source Fact Ids",
-          "type": "array"
-        },
-        "strength": {
-          "$ref": "#/$defs/Strength"
-        },
-        "weight": {
-          "anyOf": [
-            {
-              "exclusiveMinimum": 0,
-              "type": "number"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null,
-          "title": "Weight"
-        }
-      },
-      "required": [
-        "id",
-        "a",
-        "b",
-        "kind",
-        "strength"
-      ],
-      "title": "AdjacencyRequirement",
-      "type": "object"
-    },
     "ArtifactKind": {
       "description": "Kinds of versioned artifacts kept in a project store.",
       "enum": [
@@ -260,8 +172,225 @@
       "title": "Privacy",
       "type": "string"
     },
-    "ProgramItem": {
+    "ProgramZone": {
       "additionalProperties": false,
+      "properties": {
+        "id": {
+          "maxLength": 64,
+          "minLength": 1,
+          "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "privacy": {
+          "$ref": "#/$defs/Privacy"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "privacy"
+      ],
+      "title": "ProgramZone",
+      "type": "object"
+    },
+    "Provenance": {
+      "additionalProperties": false,
+      "properties": {
+        "created_at": {
+          "format": "date-time",
+          "title": "Created At",
+          "type": "string"
+        },
+        "created_by": {
+          "$ref": "#/$defs/Actor"
+        },
+        "inputs": {
+          "items": {
+            "$ref": "#/$defs/ArtifactRef"
+          },
+          "title": "Inputs",
+          "type": "array"
+        },
+        "method": {
+          "minLength": 1,
+          "title": "Method",
+          "type": "string"
+        },
+        "notes": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Notes"
+        },
+        "tool": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Tool"
+        },
+        "tool_version": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Tool Version"
+        }
+      },
+      "required": [
+        "created_at",
+        "created_by",
+        "method"
+      ],
+      "title": "Provenance",
+      "type": "object"
+    },
+    "SpaceFunction": {
+      "enum": [
+        "entry",
+        "hall",
+        "corridor",
+        "living",
+        "family",
+        "reception",
+        "dining",
+        "kitchen",
+        "pantry",
+        "bedroom",
+        "bathroom",
+        "wc",
+        "ablution",
+        "prayer",
+        "study",
+        "gym",
+        "play",
+        "storage",
+        "laundry",
+        "mechanical",
+        "garage",
+        "stair",
+        "lift",
+        "guest_suite",
+        "terrace",
+        "balcony",
+        "other"
+      ],
+      "title": "SpaceFunction",
+      "type": "string"
+    },
+    "SpaceRelationship": {
+      "additionalProperties": false,
+      "description": "How two spaces should relate (GLOSSARY.md).",
+      "properties": {
+        "a": {
+          "maxLength": 64,
+          "minLength": 1,
+          "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+          "title": "A",
+          "type": "string"
+        },
+        "b": {
+          "maxLength": 64,
+          "minLength": 1,
+          "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+          "title": "B",
+          "type": "string"
+        },
+        "id": {
+          "maxLength": 64,
+          "minLength": 1,
+          "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "$ref": "#/$defs/SpaceRelationshipKind"
+        },
+        "rationale": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Rationale"
+        },
+        "source_fact_ids": {
+          "items": {
+            "maxLength": 64,
+            "minLength": 1,
+            "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+            "type": "string"
+          },
+          "title": "Source Fact Ids",
+          "type": "array"
+        },
+        "strength": {
+          "$ref": "#/$defs/Strength"
+        },
+        "weight": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Weight"
+        }
+      },
+      "required": [
+        "id",
+        "a",
+        "b",
+        "kind",
+        "strength"
+      ],
+      "title": "SpaceRelationship",
+      "type": "object"
+    },
+    "SpaceRelationshipKind": {
+      "enum": [
+        "connected",
+        "adjacent",
+        "near",
+        "visual",
+        "separated",
+        "acoustic_separation"
+      ],
+      "title": "SpaceRelationshipKind",
+      "type": "string"
+    },
+    "SpaceRequirement": {
+      "additionalProperties": false,
+      "description": "A kind of space the Owner needs, with a quantity and a size (GLOSSARY.md).",
       "properties": {
         "accessible": {
           "default": false,
@@ -407,135 +536,8 @@
         "function",
         "privacy"
       ],
-      "title": "ProgramItem",
+      "title": "SpaceRequirement",
       "type": "object"
-    },
-    "ProgramZone": {
-      "additionalProperties": false,
-      "properties": {
-        "id": {
-          "maxLength": 64,
-          "minLength": 1,
-          "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
-          "title": "Id",
-          "type": "string"
-        },
-        "name": {
-          "title": "Name",
-          "type": "string"
-        },
-        "privacy": {
-          "$ref": "#/$defs/Privacy"
-        }
-      },
-      "required": [
-        "id",
-        "name",
-        "privacy"
-      ],
-      "title": "ProgramZone",
-      "type": "object"
-    },
-    "Provenance": {
-      "additionalProperties": false,
-      "properties": {
-        "created_at": {
-          "format": "date-time",
-          "title": "Created At",
-          "type": "string"
-        },
-        "created_by": {
-          "$ref": "#/$defs/Actor"
-        },
-        "inputs": {
-          "items": {
-            "$ref": "#/$defs/ArtifactRef"
-          },
-          "title": "Inputs",
-          "type": "array"
-        },
-        "method": {
-          "minLength": 1,
-          "title": "Method",
-          "type": "string"
-        },
-        "notes": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null,
-          "title": "Notes"
-        },
-        "tool": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null,
-          "title": "Tool"
-        },
-        "tool_version": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null,
-          "title": "Tool Version"
-        }
-      },
-      "required": [
-        "created_at",
-        "created_by",
-        "method"
-      ],
-      "title": "Provenance",
-      "type": "object"
-    },
-    "SpaceFunction": {
-      "enum": [
-        "entry",
-        "hall",
-        "corridor",
-        "living",
-        "family",
-        "reception",
-        "dining",
-        "kitchen",
-        "pantry",
-        "bedroom",
-        "bathroom",
-        "wc",
-        "ablution",
-        "prayer",
-        "study",
-        "gym",
-        "play",
-        "storage",
-        "laundry",
-        "mechanical",
-        "garage",
-        "stair",
-        "lift",
-        "guest_suite",
-        "terrace",
-        "balcony",
-        "other"
-      ],
-      "title": "SpaceFunction",
-      "type": "string"
     },
     "Strength": {
       "enum": [
@@ -574,14 +576,14 @@
           "default": null,
           "title": "Arrival Path"
         },
-        "double_bed_program_item_ids": {
+        "double_bed_space_requirement_ids": {
           "items": {
             "maxLength": 64,
             "minLength": 1,
             "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
             "type": "string"
           },
-          "title": "Double Bed Program Item Ids",
+          "title": "Double Bed Space Requirement Ids",
           "type": "array"
         },
         "household_seats": {
@@ -597,14 +599,14 @@
           "default": null,
           "title": "Household Seats"
         },
-        "single_bed_program_item_ids": {
+        "single_bed_space_requirement_ids": {
           "items": {
             "maxLength": 64,
             "minLength": 1,
             "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
             "type": "string"
           },
-          "title": "Single Bed Program Item Ids",
+          "title": "Single Bed Space Requirement Ids",
           "type": "array"
         },
         "vehicles": {
@@ -685,14 +687,8 @@
   "$id": "https://house-ai.local/schemas/space_program.schema.json",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "additionalProperties": false,
+  "description": "The space requirements and relationships the program gate approves.\n\nOld field names (``items``, ``adjacencies``, ``levels``, ``site_verified``)\nare accepted on input. A record of schema 0.1.0 is written back with them,\nso programs saved before ADR 0025 keep their content hash.",
   "properties": {
-    "adjacencies": {
-      "items": {
-        "$ref": "#/$defs/AdjacencyRequirement"
-      },
-      "title": "Adjacencies",
-      "type": "array"
-    },
     "brief_ref": {
       "anyOf": [
         {
@@ -736,28 +732,6 @@
       "title": "Id",
       "type": "string"
     },
-    "items": {
-      "items": {
-        "$ref": "#/$defs/ProgramItem"
-      },
-      "minItems": 1,
-      "title": "Items",
-      "type": "array"
-    },
-    "levels": {
-      "anyOf": [
-        {
-          "maximum": 10,
-          "minimum": 1,
-          "type": "integer"
-        },
-        {
-          "type": "null"
-        }
-      ],
-      "default": null,
-      "title": "Levels"
-    },
     "project_id": {
       "maxLength": 64,
       "minLength": 1,
@@ -769,9 +743,14 @@
       "$ref": "#/$defs/Provenance"
     },
     "schema_version": {
-      "default": "0.1.0",
+      "default": "0.2.0",
       "title": "Schema Version",
       "type": "string"
+    },
+    "site_approved": {
+      "default": false,
+      "title": "Site Approved",
+      "type": "boolean"
     },
     "site_ref": {
       "anyOf": [
@@ -784,10 +763,34 @@
       ],
       "default": null
     },
-    "site_verified": {
-      "default": false,
-      "title": "Site Verified",
-      "type": "boolean"
+    "space_relationships": {
+      "items": {
+        "$ref": "#/$defs/SpaceRelationship"
+      },
+      "title": "Space Relationships",
+      "type": "array"
+    },
+    "space_requirements": {
+      "items": {
+        "$ref": "#/$defs/SpaceRequirement"
+      },
+      "minItems": 1,
+      "title": "Space Requirements",
+      "type": "array"
+    },
+    "storeys": {
+      "anyOf": [
+        {
+          "maximum": 10,
+          "minimum": 1,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Storeys"
     },
     "target_gross_area_m2": {
       "anyOf": [
@@ -816,7 +819,7 @@
   "required": [
     "id",
     "project_id",
-    "items",
+    "space_requirements",
     "provenance"
   ],
   "title": "SpaceProgram",

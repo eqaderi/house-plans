@@ -739,7 +739,7 @@ def test_maximum_vehicle_id_and_bed_requirement_references():
     )
     assert metric(result, "garage_sampled_fit").value is True
     with pytest.raises(ValidationError):
-        program(double_bed_program_item_ids=["nonexistent"])
+        program(double_bed_space_requirement_ids=["nonexistent"])
     with pytest.raises(ValidationError):
         program(vehicles=[vehicle, vehicle])
 

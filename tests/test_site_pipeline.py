@@ -325,7 +325,7 @@ def test_ingested_site_stops_at_needs_verification(ingest):
     wf = Workflow(store)
     wf.transition(WorkflowState.SITE_INGESTION, AGENT, "survey received")
     assert wf.assess_site(result.site_ref, AGENT) == result.blockers
-    assert wf.state is WorkflowState.SITE_NEEDS_VERIFICATION
+    assert wf.state is WorkflowState.SITE_NEEDS_CONFIRMATION
 
 
 def test_agents_cannot_confirm_site_facts(ingest):
@@ -540,7 +540,7 @@ def test_cli_pipeline(tmp_path, capsys):
         "terrain.svg",
     ]
     assert main(["project", "verify", p]) == 0
-    assert "SITE_NEEDS_VERIFICATION" in capsys.readouterr().out
+    assert "SITE_NEEDS_CONFIRMATION" in capsys.readouterr().out
 
 
 def test_cli_site_confirm_refuses_a_non_interactive_shell(tmp_path):

@@ -148,7 +148,7 @@ Every import must create provenance including:
 - warnings;
 - unrecognized layers/entities.
 
-If CRS or units are ambiguous, mark SITE_NEEDS_VERIFICATION and stop.
+If CRS or units are ambiguous, mark SITE_NEEDS_CONFIRMATION and stop.
 Never silently continue.
 
 Preserve the original input as immutable.
@@ -427,13 +427,13 @@ Implement explicit workflow states.
 
 NEW_PROJECT
 SITE_INGESTION
-SITE_NEEDS_VERIFICATION
+SITE_NEEDS_CONFIRMATION
 SITE_APPROVED
 INTERVIEWING
 PROGRAM_REVIEW
 PROGRAM_APPROVED
-CONCEPT_GENERATION
-CONCEPT_REVIEW
+PLAN_GENERATION
+PLAN_REVIEW
 PLAN_APPROVED
 BLENDER_BUILD
 BLENDER_REVIEW

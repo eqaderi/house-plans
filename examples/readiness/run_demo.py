@@ -75,7 +75,7 @@ DEFECT_CODES = {
     "bed_double_no_sampled_fit",
     "height_limit_exceeded",
     "program_item_missing",
-    "level_count_differs",
+    "storey_count_differs",
     "large_underfloor_void",
     "buried_habitable_face",
     "window_buried",
@@ -244,7 +244,7 @@ def run(out: Path, strategies: list[str] | None = None, with_proposal: bool = Tr
         "ref": build.program_ref.model_dump(mode="json"),
         "items": [
             {"id": i.id, "function": i.function.value, "target_m2": i.target_area_m2}
-            for i in program.items
+            for i in program.space_requirements
         ],
         "target_gross_area_m2": program.target_gross_area_m2,
         "findings": sorted({f.code for f in build.findings}),

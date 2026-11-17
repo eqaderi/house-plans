@@ -2,7 +2,7 @@
 
 A model-provider-neutral system for exploring the design of a real house on
 a real surveyed site. Its first purpose is the owner's own house on their own
-land ([`projects/my-house/`](projects/my-house/README.md)); other projects get
+parcel ([`projects/my-house/`](projects/my-house/README.md)); other projects get
 their own folder (ADR 0009). Its outputs are structured semantic geometry, not
 pictures. The full specification is [docs/MASTER_SPEC.md](docs/MASTER_SPEC.md).
 
@@ -11,20 +11,20 @@ Milestone A ([report](docs/milestones/A.md)) delivered canonical schemas,
 project storage with provenance and the workflow with human approval gates.
 Milestone B ([report](docs/milestones/B.md)) turns a DXF or DWG survey into
 a validated site model: read-only inspection, raw CAD extraction, unit and
-CRS verification by a human, a reversible survey-to-local transform,
+CRS confirmation by a human, a reversible survey-to-local transform,
 boundary and terrain, a validation report, site and terrain SVGs and a
 review page. Milestone C ([report](docs/milestones/C.md)) adds an
 **agent-first** conversational owner interview ([ADR 0011](docs/adr/0011-agent-first-interview-interface.md))
 that becomes a design brief and a validated space program for the floor-plan
 solver, with owner confirmation and the program approval gate. Milestone D
 ([report](docs/milestones/D.md), [ADR 0013](docs/adr/0013-solver-backed-plan-generation.md))
-generates several structurally different floor-plan concepts from the approved
-program with a constraint solver (OR-Tools CP-SAT), with level elevations taken
-from a steep site's surveyed terrain: a walk-out concept that digs in behind
-retaining walls, and stepped, linear and two-wing concepts that sit over the
+generates several structurally different plan options from the approved
+program with a constraint solver (OR-Tools CP-SAT), with level heights taken
+from a steep site's surveyed terrain: a walk-out option that digs in behind
+retaining walls, and stepped, linear and two-wing options that sit over the
 falling ground (their void beneath is reported, not used). It evaluates them with
-six evaluators, renders dimensioned SVG plans and versions every revision behind
-the human plan gate. Blender and Unreal come in later milestones.
+six evaluators, renders dimensioned SVG plans and saves every revision as a new plan
+version behind the human plan gate. Blender and Unreal come in later milestones.
 
 ## Setup
 
@@ -47,7 +47,7 @@ Talk directly with **Claude Code**, **Gemini CLI**, or **OpenAI Codex** in
 English, Persian, or mixed language. The coding agent inspects the project and
 site, conducts an adaptive architectural interview (using the 30-question bank
 as a completeness checklist plus intelligent follow-up questions), records your
-exact words verbatim, proposes structured slot interpretations (`--set`), asks
+exact words verbatim, proposes interpretations (`--set`), asks
 you to confirm or correct them, resolves contradictions, and builds/validates
 the space program — while human approval gates remain strictly yours in your
 own terminal:
@@ -113,12 +113,12 @@ Then continue through the program and plan gates:
 .venv/bin/house-ai workflow transition project-data/demo INTERVIEWING --reason "start" --actor human:<you>
 .venv/bin/house-ai workflow transition project-data/demo PROGRAM_REVIEW --reason "program drafted" --actor human:<you>
 .venv/bin/house-ai workflow approve project-data/demo program --id program --approver <your-name>
-.venv/bin/house-ai workflow transition project-data/demo CONCEPT_GENERATION --reason "go" --actor human:<you>
-.venv/bin/house-ai workflow transition project-data/demo CONCEPT_REVIEW --reason "plan-a ready" --actor human:<you>
+.venv/bin/house-ai workflow transition project-data/demo PLAN_GENERATION --reason "go" --actor human:<you>
+.venv/bin/house-ai workflow transition project-data/demo PLAN_REVIEW --reason "plan-a ready" --actor human:<you>
 .venv/bin/house-ai workflow approve project-data/demo plan --id plan-a --approver <your-name>
 ```
 
-Generate plan concepts on the synthetic steep hillside (Milestone D). The
+Generate plan options on the synthetic steep hillside (Milestone D). The
 exploratory preview stores nothing and needs no approval; the gated run works
 only after the human approved the site and program gates
 ([worked examples](docs/AGENT_WORKFLOWS.md)):
@@ -127,12 +127,12 @@ only after the human approved the site and program gates
 .venv/bin/house-ai example load project-data/hill --name synthetic-hillside --project-id synthetic-hillside --actor human:<you>
 .venv/bin/house-ai plan generate project-data/hill --exploratory --out project-data/hill-preview --actor human:<you>
 # after `workflow approve ... site` and `... program` by you, in your terminal:
-.venv/bin/house-ai plan generate project-data/hill --actor human:<you>      # -> CONCEPT_REVIEW
+.venv/bin/house-ai plan generate project-data/hill --actor human:<you>      # -> PLAN_REVIEW
 .venv/bin/house-ai plan revise project-data/hill concept-split-level "Bigger kitchen" --area pi-kitchen=16 --actor human:<you>
 .venv/bin/house-ai plan review project-data/hill concept-split-level --actor human:<you>
 ```
 
-A committed preview of these concepts is in
+A committed preview of these plan options is in
 [examples/projects/synthetic-hillside/concepts/](examples/projects/synthetic-hillside/concepts/comparison.md).
 
 Run the site pipeline on the synthetic survey (Milestone B):
@@ -144,7 +144,7 @@ S=examples/surveys/synthetic
 .venv/bin/house-ai source add project-data/site-demo $S/survey.dxf --classification synthetic --actor human:<you>
 .venv/bin/house-ai workflow transition project-data/site-demo SITE_INGESTION --reason "survey received" --actor human:<you>
 .venv/bin/house-ai site ingest project-data/site-demo --source src-survey --layers $S/layers.yaml --actor human:<you>
-.venv/bin/house-ai workflow assess-site project-data/site-demo --id site --actor human:<you>   # -> SITE_NEEDS_VERIFICATION
+.venv/bin/house-ai workflow assess-site project-data/site-demo --id site --actor human:<you>   # -> SITE_NEEDS_CONFIRMATION
 .venv/bin/house-ai site confirm project-data/site-demo --confirmer <you> --units m --elevation-units m \
     --epsg 25832 --vertical-datum DHHN2016 --vertical-epsg 7837 --boundary-verified   # interactive
 .venv/bin/house-ai site report project-data/site-demo --id site --out project-data/site-demo-report
@@ -174,7 +174,8 @@ Validate any file against its schema:
 | `tests/` | Automated tests (synthetic data only) |
 | `projects/` | One folder per house project; `my-house/` is the owner's own (committed, private repository) |
 | `project-data/` | Private scratch space, git-ignored |
-| `apps/reviewer/`, `skills/` | Placeholders for later milestones |
+| `skills/` | Canonical agent skills, linked into `.claude/skills/` and `.agents/skills/` ([skills/README.md](skills/README.md)) |
+| `apps/reviewer/` | Placeholder for later milestones |
 
 AI agents: start with [AGENTS.md](AGENTS.md), [CLAUDE.md](CLAUDE.md) or
 [GEMINI.md](GEMINI.md), which all point to the agent contract.

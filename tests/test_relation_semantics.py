@@ -16,10 +16,10 @@ from house_ai.domain.codepack import CodePack
 from house_ai.domain.model import HouseModel
 from house_ai.domain.plan import PlanVersion
 from house_ai.domain.program import (
-    AdjacencyKind,
-    AdjacencyRequirement,
     SpaceFunction,
     SpaceProgram,
+    SpaceRelationship,
+    SpaceRelationshipKind,
     Strength,
 )
 from house_ai.domain.provenance import Actor, ActorKind, ArtifactKind, ArtifactRef
@@ -32,6 +32,8 @@ from house_ai.evaluation.explain import explanation_markdown, soft_objectives_re
 from house_ai.evaluation.report import evaluate_plan
 from house_ai.generation.generator import CpSatPlanGenerator, GenerationRequest
 from house_ai.storage.hashing import content_hash, load_document
+
+Kind = SpaceRelationshipKind
 
 REPO = Path(__file__).resolve().parents[1]
 HILLSIDE = REPO / "examples" / "projects" / "synthetic-hillside"
@@ -179,20 +181,20 @@ def test_adjacent_semantics_thresholds():
     # Sharing 1.5m >= SHARED_WALL_MIN_M (0.9m) -> ADJACENT satisfied
     m_touch = _build_simple_two_room_model(wall_length=1.5, has_door=False)
     graph = {"sp-a": set(), "sp-b": set()}
-    ok, method = is_relation_satisfied(AdjacencyKind.ADJACENT, m_touch, graph, ["sp-a"], ["sp-b"])
+    ok, method = is_relation_satisfied(Kind.ADJACENT, m_touch, graph, ["sp-a"], ["sp-b"])
     assert ok is True
     assert method == "shared_boundary"
 
     # Sharing 0.5m < SHARED_WALL_MIN_M (0.9m) -> ADJACENT not satisfied
     m_narrow = _build_simple_two_room_model(wall_length=0.5, has_door=False)
     ok_narrow, _ = is_relation_satisfied(
-        AdjacencyKind.ADJACENT, m_narrow, graph, ["sp-a"], ["sp-b"]
+        SpaceRelationshipKind.ADJACENT, m_narrow, graph, ["sp-a"], ["sp-b"]
     )
     assert ok_narrow is False
 
     # Exterior adjacency: sp-a has 4.0m exterior wall >= 1.0m
     m_ext = _build_simple_two_room_model(is_exterior=True)
-    ok_ext, _ = is_relation_satisfied(AdjacencyKind.ADJACENT, m_ext, graph, ["sp-a"], [EXTERIOR])
+    ok_ext, _ = is_relation_satisfied(Kind.ADJACENT, m_ext, graph, ["sp-a"], [EXTERIOR])
     assert ok_ext is True
 
 
@@ -200,7 +202,7 @@ def test_connected_semantics():
     # Direct door connects sp-a and sp-b
     m_door = _build_simple_two_room_model(wall_length=2.0, has_door=True)
     graph = {"sp-a": {"sp-b"}, "sp-b": {"sp-a"}}
-    ok, method = is_relation_satisfied(AdjacencyKind.CONNECTED, m_door, graph, ["sp-a"], ["sp-b"])
+    ok, method = is_relation_satisfied(Kind.CONNECTED, m_door, graph, ["sp-a"], ["sp-b"])
     assert ok is True
     assert method == "graph_analysis"
 
@@ -208,7 +210,7 @@ def test_connected_semantics():
     m_no_door = _build_simple_two_room_model(wall_length=2.0, has_door=False)
     graph_no = {"sp-a": set(), "sp-b": set()}
     ok_no, _ = is_relation_satisfied(
-        AdjacencyKind.CONNECTED, m_no_door, graph_no, ["sp-a"], ["sp-b"]
+        SpaceRelationshipKind.CONNECTED, m_no_door, graph_no, ["sp-a"], ["sp-b"]
     )
     assert ok_no is False
 
@@ -216,7 +218,7 @@ def test_connected_semantics():
     m_ext_door = _build_simple_two_room_model(has_door=True, is_exterior=True)
     graph_ext = {"sp-a": {EXTERIOR}, EXTERIOR: {"sp-a"}}
     ok_ext, _ = is_relation_satisfied(
-        AdjacencyKind.CONNECTED, m_ext_door, graph_ext, ["sp-a"], [EXTERIOR]
+        SpaceRelationshipKind.CONNECTED, m_ext_door, graph_ext, ["sp-a"], [EXTERIOR]
     )
     assert ok_ext is True
 
@@ -225,7 +227,7 @@ def test_near_semantics_hops():
     # 2 hops: sp-a -> sp-hall -> sp-b
     graph_2 = {"sp-a": {"sp-hall"}, "sp-hall": {"sp-a", "sp-b"}, "sp-b": {"sp-hall"}}
     m = _build_simple_two_room_model(wall_length=2.0)
-    ok, method = is_relation_satisfied(AdjacencyKind.NEAR, m, graph_2, ["sp-a"], ["sp-b"])
+    ok, method = is_relation_satisfied(Kind.NEAR, m, graph_2, ["sp-a"], ["sp-b"])
     assert ok is True
     assert method == "graph_analysis"
 
@@ -236,7 +238,7 @@ def test_near_semantics_hops():
         "h2": {"h1", "sp-b"},
         "sp-b": {"h2"},
     }
-    ok_far, _ = is_relation_satisfied(AdjacencyKind.NEAR, m, graph_3, ["sp-a"], ["sp-b"])
+    ok_far, _ = is_relation_satisfied(Kind.NEAR, m, graph_3, ["sp-a"], ["sp-b"])
     assert ok_far is False
 
 
@@ -244,18 +246,18 @@ def test_separated_and_acoustic_separation():
     # Sharing a 2m wall fails SEPARATED and ACOUSTIC_SEPARATION
     m_touch = _build_simple_two_room_model(wall_length=2.0, has_door=False)
     graph = {"sp-a": set(), "sp-b": set()}
-    ok_sep, _ = is_relation_satisfied(AdjacencyKind.SEPARATED, m_touch, graph, ["sp-a"], ["sp-b"])
+    ok_sep, _ = is_relation_satisfied(Kind.SEPARATED, m_touch, graph, ["sp-a"], ["sp-b"])
     assert ok_sep is False
 
     ok_ac, _ = is_relation_satisfied(
-        AdjacencyKind.ACOUSTIC_SEPARATION, m_touch, graph, ["sp-a"], ["sp-b"]
+        SpaceRelationshipKind.ACOUSTIC_SEPARATION, m_touch, graph, ["sp-a"], ["sp-b"]
     )
     assert ok_ac is False
 
     # Sharing 0.05m (<= 0.1m tolerance) passes
     m_tiny = _build_simple_two_room_model(wall_length=0.05, has_door=False)
     ok_sep_tiny, _ = is_relation_satisfied(
-        AdjacencyKind.SEPARATED, m_tiny, graph, ["sp-a"], ["sp-b"]
+        SpaceRelationshipKind.SEPARATED, m_tiny, graph, ["sp-a"], ["sp-b"]
     )
     assert ok_sep_tiny is True
 
@@ -263,7 +265,7 @@ def test_separated_and_acoustic_separation():
 def test_visual_reported_as_line_of_sight_analysis():
     m = _build_simple_two_room_model()
     graph = {"sp-a": set(), "sp-b": set()}
-    ok, method = is_relation_satisfied(AdjacencyKind.VISUAL, m, graph, ["sp-a"], ["sp-b"])
+    ok, method = is_relation_satisfied(Kind.VISUAL, m, graph, ["sp-a"], ["sp-b"])
     assert ok is None
     assert method == "line_of_sight_analysis"
 
@@ -457,16 +459,18 @@ def test_soft_connected_produces_doors_when_touching():
     site, program = _load(HILLSIDE)
 
     # Add a soft CONNECTED requirement between two living/dining spaces that touch
-    adj = AdjacencyRequirement(
+    adj = SpaceRelationship(
         id="adj-soft-living-dining",
         a="pi-living",
         b="pi-dining",
-        kind=AdjacencyKind.CONNECTED,
+        kind=SpaceRelationshipKind.CONNECTED,
         strength=Strength.SOFT,
         weight=2.0,
         rationale="open plan connection",
     )
-    mod_program = program.model_copy(update={"adjacencies": [*program.adjacencies, adj]})
+    mod_program = program.model_copy(
+        update={"space_relationships": [*program.space_relationships, adj]}
+    )
     cs = compile_constraints(mod_program, site, created_at=WHEN, actor=TOOL).constraints
 
     req = GenerationRequest(
