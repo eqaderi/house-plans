@@ -391,16 +391,16 @@ def cmd_plan_ground(args: argparse.Namespace) -> int:
 def cmd_plan_review(args: argparse.Namespace) -> int:
     svc = PlanService(ProjectStore(resolve_project_dir(args.dir)))
     try:
-        ref, ev = svc.request_review(args.option, args.actor, args.version)
+        ref, gate = svc.request_review(args.option, args.actor, args.version)
     except PlanWorkflowError as exc:
         _out(f"refused: {exc}")
         return EXIT_FAIL
-    for r in ev.payload["open_reasons"]:
+    for r in gate.open_reasons:
         _out(f"OPEN {r}")
-    for r in ev.payload.get("attention", []):
+    for r in gate.attention:
         _out(f"ATTENTION {r}")
     _out(f"plan review requested for {ref.id} v{ref.version}")
-    if not ev.payload["open_reasons"]:
+    if not gate.blockers:
         _out(
             f"next: the owner runs `house-ai workflow approve {args.dir} plan --id {ref.id} "
             f"--version {ref.version} --approver <name>` in their own terminal"

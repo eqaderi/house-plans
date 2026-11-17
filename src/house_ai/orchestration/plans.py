@@ -49,7 +49,7 @@ from house_ai.domain.proposal import ConceptProposal
 from house_ai.domain.provenance import Actor, ArtifactKind, ArtifactRef, Provenance
 from house_ai.domain.records import AssumptionsFile, Severity
 from house_ai.domain.site import Site
-from house_ai.domain.workflow import Gate, WorkflowEvent, WorkflowState
+from house_ai.domain.workflow import Gate, WorkflowState
 from house_ai.evaluation.explain import (
     comparison_markdown,
     explanation_markdown,
@@ -71,7 +71,7 @@ from house_ai.storage import ProjectStore
 from house_ai.storage.hashing import content_hash, pretty_json
 from house_ai.validation.topology import validate_proposal
 
-from .workflow import Workflow
+from .workflow import GateStatus, Workflow
 
 S = WorkflowState
 EXPLORATORY_BANNER = (
@@ -974,7 +974,7 @@ class PlanService:
 
     def request_review(
         self, option_id: str, actor: Actor, version: int | None = None
-    ) -> tuple[ArtifactRef, WorkflowEvent]:
+    ) -> tuple[ArtifactRef, GateStatus]:
         refs = self.store.refs(ArtifactKind.PLAN, option_id)
         ref = (
             next((r for r in refs if r.version == version), None)

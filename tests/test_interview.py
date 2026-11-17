@@ -134,8 +134,8 @@ def test_normal_interview_produces_a_confirmed_brief_and_a_valid_program(svc):
     fact_ids = {f.id for f in svc.brief().facts}
     assert all(fid in fact_ids for i in program.space_requirements for fid in i.source_fact_ids)
 
-    build, reasons = svc.review_program(AGENT)
-    assert reasons == []
+    build, gate = svc.review_program(AGENT)
+    assert gate.blockers == []
     wf = svc.workflow
     assert wf.state is WorkflowState.PROGRAM_REVIEW
     wf.approve(Gate.PROGRAM, build.program_ref, HUMAN, "synthetic owner approves")
@@ -399,8 +399,10 @@ def test_an_ai_cannot_approve_the_program(svc, tmp_path):
 
 def test_unconfirmed_interpretations_block_the_program_gate(svc):
     _run(svc)  # nothing confirmed
-    build, reasons = svc.review_program(AGENT)
-    assert any("unconfirmed_interpretation" in r for r in reasons)
+    build, gate = svc.review_program(AGENT)
+    assert ("program_check", "unconfirmed_interpretation") in [
+        (b.kind.value, b.code) for b in gate.blockers
+    ]
     with pytest.raises(GateBlocked):
         svc.workflow.approve(Gate.PROGRAM, build.program_ref, HUMAN, "too early")
 
@@ -427,9 +429,9 @@ def test_program_review_makes_its_own_move_out_of_site_approved(svc):
     svc.confirm(HUMAN)
     assert svc.workflow.state is WorkflowState.SITE_APPROVED
 
-    _, reasons = svc.review_program(AGENT)
+    _, gate = svc.review_program(AGENT)
 
-    assert reasons == []
+    assert gate.blockers == []
     assert svc.workflow.state is WorkflowState.PROGRAM_REVIEW
     assert _moves(svc.store)[-2:] == [
         ("SITE_APPROVED", "INTERVIEWING"),

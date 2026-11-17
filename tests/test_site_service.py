@@ -28,6 +28,18 @@ SURVEY_BLOCKERS = [
     "a local benchmark",
     "parcel boundary status is inference, not verified",
 ]
+#: The same Blockers as (kind, code).
+SURVEY_CODES = [
+    ("site_fact", "source_units"),
+    ("site_fact", "horizontal_crs"),
+    ("site_fact", "elevation_units"),
+    ("site_fact", "vertical_datum"),
+    ("site_fact", "boundary_unverified"),
+]
+
+
+def _codes(blockers) -> list[tuple[str, str]]:
+    return [(b.kind.value, b.code) for b in blockers]
 
 
 @pytest.fixture
@@ -53,7 +65,8 @@ def test_ingest_from_a_new_project_starts_ingestion_and_stops_an_ambiguous_site(
     result = sites.ingest(source_id, load_layer_mapping(SURVEY_LAYERS), AGENT)
 
     assert result.state is WorkflowState.SITE_NEEDS_CONFIRMATION
-    assert result.blockers == SURVEY_BLOCKERS
+    assert _codes(result.blockers) == SURVEY_CODES
+    assert [b.message for b in result.blockers] == SURVEY_BLOCKERS
     assert (result.site_ref.id, result.site_ref.version) == ("site", 1)
     assert [r.id for r in result.cad_refs] == ["cad-src-survey"]
     assert _transitions(store) == [
@@ -82,13 +95,14 @@ def test_reassessing_a_site_that_needs_confirmation_reports_and_moves_nothing(su
 
     again = sites.assess(first.site_ref, AGENT)
 
-    assert (again.state, again.blockers) == (WorkflowState.SITE_NEEDS_CONFIRMATION, SURVEY_BLOCKERS)
+    assert again.state is WorkflowState.SITE_NEEDS_CONFIRMATION
+    assert _codes(again.blockers) == SURVEY_CODES
     assert len(store.events()) == events
-    assert sites.blockers() == SURVEY_BLOCKERS
+    assert _codes(sites.blockers()) == SURVEY_CODES
 
 
 def test_the_site_gate_is_blocked_before_any_site_exists(new_store):
-    assert SiteService(new_store()).blockers() == ["no site 'site' has been ingested yet"]
+    assert _codes(SiteService(new_store()).blockers()) == [("artifact", "no_site")]
 
 
 # ------------------------------------------------------------------ confirmation
@@ -129,7 +143,7 @@ def test_a_confirmation_that_leaves_a_blocker_open_moves_nothing(ingested):
     result = SiteService(store).confirm("site", HUMAN, SiteConfirmation(units=LengthUnit.METRE))
 
     assert result.state is WorkflowState.SITE_NEEDS_CONFIRMATION
-    assert result.blockers == SURVEY_BLOCKERS[1:]
+    assert _codes(result.blockers) == SURVEY_CODES[1:]
     assert not [e for e in store.events()[events:] if e.type is EventType.TRANSITION]
 
 
@@ -176,7 +190,7 @@ def test_the_site_review_package_is_written_for_a_site_version(ingested, tmp_pat
         "terrain.svg",
     ]
     assert sorted(p.name for p in out.iterdir()) == sorted(p.name for p in package.files)
-    assert package.blockers == SURVEY_BLOCKERS
+    assert _codes(package.blockers) == SURVEY_CODES
 
 
 def test_the_review_package_defaults_to_the_reviews_folder(ingested):

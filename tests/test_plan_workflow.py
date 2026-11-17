@@ -202,7 +202,7 @@ def test_plan_gate_stays_human_only_and_freezes_the_plan(tmp_path):
     )
     with pytest.raises(ApprovalRequiresHuman):
         wf.approve(Gate.PLAN, ref, AGENT, "looks good")
-    assert wf.check_gate(Gate.PLAN, ref) == []
+    assert wf.gate_status(Gate.PLAN, ref).blockers == []
     wf.approve(Gate.PLAN, ref, HUMAN, "this is the one")
     assert wf.state is WorkflowState.PLAN_APPROVED
     before = len(store.events())

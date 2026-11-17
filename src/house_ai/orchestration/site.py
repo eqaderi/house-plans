@@ -27,8 +27,8 @@ from pathlib import Path
 
 from house_ai.cad.layers import LayerMapping
 from house_ai.domain.provenance import Actor, ArtifactKind, ArtifactRef
-from house_ai.domain.site import CadImportProvenance, Site, site_verification_blockers
-from house_ai.domain.workflow import EventType, WorkflowState
+from house_ai.domain.site import CadImportProvenance, Site, site_blockers
+from house_ai.domain.workflow import Blocker, BlockerKind, EventType, WorkflowState
 from house_ai.geospatial.validation import report_markdown, validate_site
 from house_ai.render2d.review_html import render_review_html
 from house_ai.render2d.site_svg import render_site_svg
@@ -48,7 +48,7 @@ class SiteOutcome:
     """A Site version, what still blocks the site gate, and the workflow state after."""
 
     site_ref: ArtifactRef
-    blockers: list[str]
+    blockers: list[Blocker]
     state: WorkflowState
     #: The ``cad_import`` records written by this call, one per survey file.
     cad_refs: list[ArtifactRef] = field(default_factory=list)
@@ -60,7 +60,7 @@ class ReviewPackage:
 
     out: Path
     files: list[Path]
-    blockers: list[str]
+    blockers: list[Blocker]
 
 
 class SiteService:
@@ -70,12 +70,13 @@ class SiteService:
 
     # ------------------------------------------------------------------ read
 
-    def blockers(self, site_id: str = "site") -> list[str]:
+    def blockers(self, site_id: str = "site") -> list[Blocker]:
         """What keeps the site gate closed for the newest version of the Site now."""
         ref = self.store.latest(ArtifactKind.SITE, site_id)
         if ref is None:
-            return [f"no site {site_id!r} has been ingested yet"]
-        return site_verification_blockers(self.store.get(ref, Site))
+            message = f"no site {site_id!r} has been ingested yet"
+            return [Blocker(kind=BlockerKind.ARTIFACT, code="no_site", message=message)]
+        return site_blockers(self.store.get(ref, Site))
 
     # ----------------------------------------------------------------- write
 
@@ -107,7 +108,7 @@ class SiteService:
         """
         if site_ref.kind is not ArtifactKind.SITE:
             raise TransitionNotAllowed(f"site assessment reads a site, not {site_ref.kind}")
-        blockers = site_verification_blockers(self.store.get(site_ref, Site))
+        blockers = site_blockers(self.store.get(site_ref, Site))
         state = self.workflow.state
         if state is S.NEW_PROJECT:
             self.workflow.transition(S.SITE_INGESTION, actor, "site ingestion started")
@@ -119,7 +120,11 @@ class SiteService:
                 from_state=S.SITE_INGESTION,
                 to_state=S.SITE_NEEDS_CONFIRMATION,
                 reason="site needs human verification before anything else",
-                payload={"site": site_ref.model_dump(mode="json"), "blockers": blockers},
+                # The saved shape (ADR 0003): the Blockers as sentences.
+                payload={
+                    "site": site_ref.model_dump(mode="json"),
+                    "blockers": [b.message for b in blockers],
+                },
             )
             state = S.SITE_NEEDS_CONFIRMATION
         return SiteOutcome(site_ref, blockers, state)
@@ -134,7 +139,7 @@ class SiteService:
         remains, the workflow state does not change.
         """
         site_ref = confirm_site(self.store, site_id, confirmer, conf)
-        blockers = site_verification_blockers(self.store.get(site_ref, Site))
+        blockers = site_blockers(self.store.get(site_ref, Site))
         state = self.workflow.state
         if state is S.SITE_NEEDS_CONFIRMATION and not blockers:
             self.workflow.transition(
@@ -179,4 +184,4 @@ class SiteService:
         for name, text in texts.items():
             (out / name).write_text(text, encoding="utf-8")
             files.append(out / name)
-        return ReviewPackage(out, files, list(report.blockers))
+        return ReviewPackage(out, files, site_blockers(site))

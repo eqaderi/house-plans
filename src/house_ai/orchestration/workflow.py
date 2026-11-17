@@ -15,11 +15,15 @@ Two kinds of moves exist:
 
 ``reopen`` steps back to a gate's review state and supersedes that gate's
 approval and every approval downstream of it.
+
+:meth:`Workflow.gate_status` says where a gate stands for one pinned artifact
+version: its typed Blockers and attention items (ADR 0029).
 """
 
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from typing import Any
 
 from house_ai.constants.evaluations import PLAN_GATE_BLOCKING_CODES, PLAN_REVIEW_ATTENTION_CODES
 from house_ai.domain.brief import DesignBrief
@@ -30,10 +34,12 @@ from house_ai.domain.plan import PlanVersion
 from house_ai.domain.program import SpaceProgram, Strength
 from house_ai.domain.provenance import Actor, ArtifactKind, ArtifactRef, refuse_non_human
 from house_ai.domain.records import OpenQuestionsFile
-from house_ai.domain.site import Site, site_verification_blockers
+from house_ai.domain.site import Site, site_blockers
 from house_ai.domain.workflow import (
     GATE_ARTIFACT_KIND,
     Approval,
+    Blocker,
+    BlockerKind,
     EventType,
     Gate,
     WorkflowEvent,
@@ -97,10 +103,49 @@ class TransitionNotAllowed(WorkflowError):
 
 
 class GateBlocked(WorkflowError):
-    def __init__(self, gate: Gate, reasons: list[str]) -> None:
+    def __init__(self, gate: Gate, blockers: list[Blocker]) -> None:
         self.gate = gate
-        self.reasons = reasons
-        super().__init__(f"{gate.value} gate blocked: " + "; ".join(reasons))
+        self.blockers = blockers
+        self.reasons = [b.message for b in blockers]
+        super().__init__(f"{gate.value} gate blocked: " + "; ".join(self.reasons))
+
+
+@dataclass(frozen=True)
+class GateStatus:
+    """Where one gate stands for one pinned artifact version (ADR 0029)."""
+
+    gate: Gate
+    artifact: ArtifactRef
+    #: Whether the project is in the state this gate is approved from.
+    in_review_state: bool
+    #: Every reason the gate cannot be approved for this version now.
+    blockers: list[Blocker]
+    #: Findings the Approver should see that do not block (plan gate, ADR 0024).
+    attention: list[str]
+
+    @property
+    def open_reasons(self) -> list[str]:
+        """The Blockers as the sentences saved in the approval-requested event."""
+        return [b.message for b in self.blockers]
+
+    @property
+    def approvable(self) -> bool:
+        return self.in_review_state and not self.blockers
+
+    def to_json(self) -> dict[str, Any]:
+        return {
+            "gate": self.gate.value,
+            "artifact": self.artifact.model_dump(mode="json"),
+            "in_review_state": self.in_review_state,
+            "approvable": self.approvable,
+            "open_reasons": self.open_reasons,
+            "blockers": [b.model_dump(mode="json") for b in self.blockers],
+            "attention": list(self.attention),
+        }
+
+
+def _blocker(kind: BlockerKind, code: str, message: str, *subject_ids: str) -> Blocker:
+    return Blocker(kind=kind, code=code, subject_ids=list(subject_ids), message=message)
 
 
 @dataclass
@@ -212,21 +257,42 @@ class Workflow:
 
     # ------------------------------------------------------------------ gates
 
-    def check_gate(self, gate: Gate, ref: ArtifactRef) -> list[str]:
+    def gate_status(self, gate: Gate, ref: ArtifactRef) -> GateStatus:
+        """Where ``gate`` stands for one pinned artifact version now (ADR 0029)."""
+        status = self.status()
+        return GateStatus(
+            gate=gate,
+            artifact=ref,
+            in_review_state=status.state is GATES[gate].review_state,
+            blockers=self._blockers(gate, ref, status),
+            attention=self._plan_attention(ref) if gate is Gate.PLAN else [],
+        )
+
+    def _blockers(self, gate: Gate, ref: ArtifactRef, status: WorkflowStatus) -> list[Blocker]:
         """Every reason the gate cannot be approved for this artifact version now."""
         spec = GATES[gate]
-        status = self.status()
         if status.state is not spec.review_state:
             return [
-                f"the {gate.value} gate is approved from {spec.review_state.value}; "
-                f"the project is in {status.state.value}"
+                _blocker(
+                    BlockerKind.WORKFLOW_STATE,
+                    "wrong_state",
+                    f"the {gate.value} gate is approved from {spec.review_state.value}; "
+                    f"the project is in {status.state.value}",
+                )
             ]
         if ref.kind is not spec.artifact_kind:
-            return [f"the {gate.value} gate approves a {spec.artifact_kind.value}, not {ref.kind}"]
+            return [
+                _blocker(
+                    BlockerKind.ARTIFACT,
+                    "wrong_kind",
+                    f"the {gate.value} gate approves a {spec.artifact_kind.value}, not {ref.kind}",
+                    ref.id,
+                )
+            ]
         try:
             artifact = self.store.get(ref)
         except StoreError as exc:
-            return [str(exc)]
+            return [_blocker(BlockerKind.ARTIFACT, "not_in_store", str(exc), ref.id)]
         check = {
             Gate.SITE: self._check_site_gate,
             Gate.PROGRAM: self._check_program_gate,
@@ -235,21 +301,34 @@ class Workflow:
         }[gate]
         return check(artifact, ref, status)
 
-    def _upstream(self, status: WorkflowStatus, *gates: Gate) -> list[str]:
+    def _upstream(self, status: WorkflowStatus, *gates: Gate) -> list[Blocker]:
         return [
-            f"the {g.value} gate has no valid approval" for g in gates if g not in status.approvals
+            _blocker(
+                BlockerKind.UPSTREAM_GATE, g.value, f"the {g.value} gate has no valid approval"
+            )
+            for g in gates
+            if g not in status.approvals
         ]
 
-    def _check_site_gate(self, site: Site, ref: ArtifactRef, status: WorkflowStatus) -> list[str]:
-        return site_verification_blockers(site)
+    def _check_site_gate(
+        self, site: Site, ref: ArtifactRef, status: WorkflowStatus
+    ) -> list[Blocker]:
+        return site_blockers(site)
 
     def _check_program_gate(
         self, program: SpaceProgram, ref: ArtifactRef, status: WorkflowStatus
-    ) -> list[str]:
-        reasons = self._upstream(status, Gate.SITE)
+    ) -> list[Blocker]:
+        blockers = self._upstream(status, Gate.SITE)
         for q_ref in self.store.latest_of_kind(ArtifactKind.OPEN_QUESTIONS):
             for q in self.store.get(q_ref, OpenQuestionsFile).blocking_open():
-                reasons.append(f"blocking open question {q.id}: {q.question}")
+                blockers.append(
+                    _blocker(
+                        BlockerKind.OPEN_QUESTION,
+                        q.id,
+                        f"blocking open question {q.id}: {q.question}",
+                        q.id,
+                    )
+                )
         # The cited brief, or every stored brief's latest version if none is cited.
         brief_refs = (
             [program.brief_ref]
@@ -262,12 +341,26 @@ class Workflow:
             try:
                 brief = self.store.get(b_ref, DesignBrief)
             except StoreError as exc:
-                reasons.append(f"program cites a brief that is not in the store: {exc}")
+                blockers.append(
+                    _blocker(
+                        BlockerKind.ARTIFACT,
+                        "brief_not_in_store",
+                        f"program cites a brief that is not in the store: {exc}",
+                        b_ref.id,
+                    )
+                )
                 continue
             loaded_any_brief = True
             known_facts.update(f.id for f in brief.facts)
             for c in brief.unresolved_contradictions():
-                reasons.append(f"unresolved contradiction {c.id}: {c.statement}")
+                blockers.append(
+                    _blocker(
+                        BlockerKind.CONTRADICTION,
+                        c.id,
+                        f"unresolved contradiction {c.id}: {c.statement}",
+                        c.id,
+                    )
+                )
         if loaded_any_brief and len(brief_refs) == 1:
             site = None
             if Gate.SITE in status.approvals:
@@ -277,51 +370,111 @@ class Workflow:
                 )
             for finding in blocking(validate_program(program, brief, site)):
                 if finding.code != "contradiction":  # reported above
-                    reasons.append(f"program check {finding.code}: {finding.message}")
+                    blockers.append(
+                        _blocker(
+                            BlockerKind.PROGRAM_CHECK,
+                            finding.code,
+                            f"program check {finding.code}: {finding.message}",
+                            *finding.subject_ids,
+                        )
+                    )
         if loaded_any_brief:
             for item in program.space_requirements:
                 for fid in item.source_fact_ids:
                     if fid not in known_facts:
-                        reasons.append(
-                            f"space requirement {item.id} cites unknown brief fact {fid!r}"
+                        blockers.append(
+                            _blocker(
+                                BlockerKind.PROGRAM_CHECK,
+                                "unknown_fact",
+                                f"space requirement {item.id} cites unknown brief fact {fid!r}",
+                                item.id,
+                                fid,
+                            )
                         )
             for adj in program.space_relationships:
                 for fid in adj.source_fact_ids:
                     if fid not in known_facts:
-                        reasons.append(f"adjacency {adj.id} cites unknown brief fact {fid!r}")
-        return reasons
+                        blockers.append(
+                            _blocker(
+                                BlockerKind.PROGRAM_CHECK,
+                                "unknown_fact",
+                                f"adjacency {adj.id} cites unknown brief fact {fid!r}",
+                                adj.id,
+                                fid,
+                            )
+                        )
+        return blockers
 
     def _check_plan_gate(
         self, plan: PlanVersion, ref: ArtifactRef, status: WorkflowStatus
-    ) -> list[str]:
-        reasons = self._upstream(status, Gate.SITE, Gate.PROGRAM)
-        if reasons:
-            return reasons
+    ) -> list[Blocker]:
+        blockers = self._upstream(status, Gate.SITE, Gate.PROGRAM)
+        if blockers:
+            return blockers
         site_approval = status.approvals[Gate.SITE]
         program_approval = status.approvals[Gate.PROGRAM]
         if not _same(site_approval.artifact, plan.model.site_ref):
-            reasons.append("plan is not drawn on the approved site version")
+            blockers.append(
+                _blocker(
+                    BlockerKind.PINNED_INPUT,
+                    "site_version",
+                    "plan is not drawn on the approved site version",
+                    site_approval.artifact.id,
+                )
+            )
         if not _same(program_approval.artifact, plan.model.program_ref):
-            reasons.append("plan is not derived from the approved program version")
+            blockers.append(
+                _blocker(
+                    BlockerKind.PINNED_INPUT,
+                    "program_version",
+                    "plan is not derived from the approved program version",
+                    program_approval.artifact.id,
+                )
+            )
         site = self.store.get(site_approval.artifact, Site)
         program = self.store.get(program_approval.artifact, SpaceProgram)
         for finding in errors(check_model(plan.model, site, program)):
-            reasons.append(f"integrity {finding.code}: {finding.message}")
+            blockers.append(
+                _blocker(
+                    BlockerKind.INTEGRITY,
+                    finding.code,
+                    f"integrity {finding.code}: {finding.message}",
+                    *finding.subject_ids,
+                )
+            )
+        for report in self._evaluations_of(ref):
+            for v in report.hard_violations:
+                blockers.append(
+                    _blocker(
+                        BlockerKind.HARD_VIOLATION,
+                        v.code,
+                        f"hard violation {v.id} ({report.id}): {v.message}",
+                        *v.subject_ids,
+                    )
+                )
+            for v in report.violations:
+                # Unbuildable or unwalkable as drawn, whatever its strength (ADR 0024).
+                if v.strength is not Strength.HARD and v.code in PLAN_GATE_BLOCKING_CODES:
+                    blockers.append(
+                        _blocker(
+                            BlockerKind.UNBUILDABLE,
+                            v.code,
+                            f"unbuildable {v.code} ({report.id}): {v.message}",
+                            *v.subject_ids,
+                        )
+                    )
+        return blockers
+
+    def _evaluations_of(self, ref: ArtifactRef) -> list[EvaluationReport]:
+        """The newest version of each Evaluation of this plan version."""
         latest_for_plan: dict[str, EvaluationReport] = {}
         for e_ref in self.store.refs(ArtifactKind.EVALUATION_REPORT):
             report = self.store.get(e_ref, EvaluationReport)
             if _same(report.plan_ref, ref):
                 latest_for_plan[report.id] = report
-        for report in latest_for_plan.values():
-            for v in report.hard_violations:
-                reasons.append(f"hard violation {v.id} ({report.id}): {v.message}")
-            for v in report.violations:
-                # Unbuildable or unwalkable as drawn, whatever its strength (ADR 0024).
-                if v.strength is not Strength.HARD and v.code in PLAN_GATE_BLOCKING_CODES:
-                    reasons.append(f"unbuildable {v.code} ({report.id}): {v.message}")
-        return reasons
+        return list(latest_for_plan.values())
 
-    def plan_attention(self, ref: ArtifactRef) -> list[str]:
+    def _plan_attention(self, ref: ArtifactRef) -> list[str]:
         """Findings the owner should see at plan review that do not block it (ADR 0024)."""
         out = []
         for e_ref in self.store.refs(ArtifactKind.EVALUATION_REPORT):
@@ -335,32 +488,53 @@ class Workflow:
 
     def _check_model_gate(
         self, record: BuildRecord, ref: ArtifactRef, status: WorkflowStatus
-    ) -> list[str]:
-        reasons = self._upstream(status, Gate.PLAN)
-        if reasons:
-            return reasons
+    ) -> list[Blocker]:
+        blockers = self._upstream(status, Gate.PLAN)
+        if blockers:
+            return blockers
         if record.target is not BuildTarget.BLENDER:
-            reasons.append(f"the model gate approves a Blender build, not {record.target.value}")
-        if not _same(record.input_plan, status.approvals[Gate.PLAN].artifact):
-            reasons.append("build was not generated from the approved plan version")
-        return reasons
+            blockers.append(
+                _blocker(
+                    BlockerKind.PINNED_INPUT,
+                    "build_target",
+                    f"the model gate approves a Blender build, not {record.target.value}",
+                    ref.id,
+                )
+            )
+        plan_approval = status.approvals[Gate.PLAN]
+        if not _same(record.input_plan, plan_approval.artifact):
+            blockers.append(
+                _blocker(
+                    BlockerKind.PINNED_INPUT,
+                    "plan_version",
+                    "build was not generated from the approved plan version",
+                    plan_approval.artifact.id,
+                )
+            )
+        return blockers
 
-    def request_approval(self, gate: Gate, ref: ArtifactRef, actor: Actor) -> WorkflowEvent:
-        """Ask a human to review; anyone (including an agent) may do this."""
-        reasons = self.check_gate(gate, ref)
-        payload = {
+    def request_approval(self, gate: Gate, ref: ArtifactRef, actor: Actor) -> GateStatus:
+        """Ask a human to review; anyone (including an agent) may do this.
+
+        The event keeps its saved shape (ADR 0003): ``open_reasons`` are the
+        Blockers' messages, and a plan request adds ``attention``.
+        """
+        gate_status = self.gate_status(gate, ref)
+        reasons = gate_status.open_reasons
+        payload: dict[str, Any] = {
             "gate": gate.value,
             "artifact": ref.model_dump(mode="json"),
             "open_reasons": reasons,
         }
         if gate is Gate.PLAN:
-            payload["attention"] = self.plan_attention(ref)
-        return self.store.append_event(
+            payload["attention"] = gate_status.attention
+        self.store.append_event(
             EventType.APPROVAL_REQUESTED,
             actor,
             reason=f"{gate.value} ready for human review" if not reasons else "review requested",
             payload=payload,
         )
+        return gate_status
 
     def approve(
         self,
@@ -371,9 +545,9 @@ class Workflow:
         conditions: list[str] | None = None,
     ) -> Approval:
         refuse_non_human(approver, f"approve the {gate.value} gate")
-        reasons = self.check_gate(gate, ref)
-        if reasons:
-            raise GateBlocked(gate, reasons)
+        blockers = self.gate_status(gate, ref).blockers
+        if blockers:
+            raise GateBlocked(gate, blockers)
         spec = GATES[gate]
         seq = len(self.store.events()) + 1
         approval = Approval(
@@ -411,4 +585,3 @@ class Workflow:
             reason=reason,
             payload={"gate": gate.value},
         )
-

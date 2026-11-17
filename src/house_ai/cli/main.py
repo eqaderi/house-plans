@@ -179,6 +179,7 @@ def _status_dict(store: ProjectStore) -> dict:
     site_ctx = svc.site()
     site_info = None
     if site_ctx is not None and site_ctx.site_ref is not None:
+        site_blockers = svc.site_blockers()
         site_info = {
             "site_ref": site_ctx.site_ref.model_dump(mode="json"),
             "verified": site_ctx.verified,
@@ -186,7 +187,8 @@ def _status_dict(store: ProjectStore) -> dict:
             "relief_m": site_ctx.relief_m,
             "mean_slope_pct": site_ctx.mean_slope_pct,
             "frontage_m": site_ctx.frontage_m,
-            "verification_blockers": svc.site_blockers(),
+            "verification_blockers": [b.message for b in site_blockers],
+            "blockers": [b.model_dump(mode="json") for b in site_blockers],
         }
     approvals_dict: dict[str, dict] = {}
     stale_approvals: list[str] = []
@@ -342,7 +344,7 @@ def cmd_example_load(args: argparse.Namespace) -> int:
     site_ref = next(r for r in refs if r.kind is ArtifactKind.SITE)
     outcome = SiteService(store).assess(site_ref, args.actor)
     for b in outcome.blockers:
-        _out(f"SITE BLOCKER {b}")
+        _out(f"SITE BLOCKER {b.message}")
     _out(f"state {outcome.state.value}")
     if not outcome.blockers:
         _out(f"next: a human runs `house-ai workflow approve {args.dir} site --id {site_ref.id}`")
@@ -374,7 +376,7 @@ def cmd_assess_site(args: argparse.Namespace) -> int:
     ref = _ref(store, ArtifactKind.SITE, args.id, args.version)
     outcome = SiteService(store).assess(ref, args.actor)
     for b in outcome.blockers:
-        _out(f"BLOCKER {b}")
+        _out(f"BLOCKER {b.message}")
     _out(f"state {outcome.state.value}")
     return EXIT_OK
 
@@ -383,8 +385,8 @@ def cmd_request_approval(args: argparse.Namespace) -> int:
     store = ProjectStore(resolve_project_dir(args.dir))
     gate = Gate(args.gate)
     ref = _ref(store, GATES[gate].artifact_kind, args.id, args.version)
-    ev = Workflow(store).request_approval(gate, ref, args.actor)
-    for r in ev.payload["open_reasons"]:
+    status = Workflow(store).request_approval(gate, ref, args.actor)
+    for r in status.open_reasons:
         _out(f"OPEN {r}")
     _out(f"approval of {gate.value} requested for {ref.kind.value}/{ref.id} v{ref.version}")
     return EXIT_OK
@@ -396,11 +398,11 @@ def cmd_approve(args: argparse.Namespace) -> int:
     wf = Workflow(store)
     gate = Gate(args.gate)
     ref = _ref(store, GATES[gate].artifact_kind, args.id, args.version)
-    reasons = wf.check_gate(gate, ref)
-    if reasons:
+    blockers = wf.gate_status(gate, ref).blockers
+    if blockers:
         _err(f"the {gate.value} gate cannot be approved yet:")
-        for r in reasons:
-            _err(f"  - {r}")
+        for b in blockers:
+            _err(f"  - {b.message}")
         return EXIT_FAIL
     phrase = f"approve {gate.value} {ref.id} v{ref.version}"
     _out(f"You are approving {ref.kind.value}/{ref.id} v{ref.version} (sha256 {ref.sha256[:12]}).")
@@ -464,7 +466,7 @@ def cmd_site_ingest(args: argparse.Namespace) -> int:
     for ref in (*result.cad_refs, result.site_ref):
         _out(f"stored {ref.kind.value}/{ref.id} v{ref.version} sha256 {ref.sha256}")
     for b in result.blockers:
-        _out(f"BLOCKER {b}")
+        _out(f"BLOCKER {b.message}")
     _out(f"state {result.state.value}")
     return EXIT_OK
 
@@ -503,7 +505,7 @@ def cmd_site_confirm(args: argparse.Namespace) -> int:
             "is your property (a wrong UTM zone moves it by 6° of longitude)"
         )
     for b in result.blockers:
-        _out(f"BLOCKER {b}")
+        _out(f"BLOCKER {b.message}")
     _out(f"state {result.state.value}")
     return EXIT_OK
 
@@ -515,7 +517,7 @@ def cmd_site_report(args: argparse.Namespace) -> int:
     for path in package.files:
         _out(f"wrote {path}")
     for b in package.blockers:
-        _out(f"BLOCKER {b}")
+        _out(f"BLOCKER {b.message}")
     return EXIT_OK
 
 
@@ -977,13 +979,13 @@ def cmd_program_build(args: argparse.Namespace) -> int:
 
 def cmd_program_review(args: argparse.Namespace) -> int:
     svc = InterviewService(ProjectStore(resolve_project_dir(args.dir)))
-    build, reasons = svc.review_program(args.actor)
+    build, gate = svc.review_program(args.actor)
     _show_findings(build.findings)
-    for r in reasons:
+    for r in gate.open_reasons:
         _out(f"OPEN {r}")
     ref = build.program_ref
     _out(f"state PROGRAM_REVIEW; the owner reviews space_program/{ref.id} v{ref.version}")
-    if not reasons:
+    if not gate.blockers:
         _out(f"next: the owner runs `house-ai workflow approve {args.dir} program --id {ref.id} "
              "--approver <name>` or `house-ai program reject`")  # fmt: skip
     if args.out:
