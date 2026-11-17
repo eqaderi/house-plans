@@ -393,6 +393,24 @@ def test_model_gate_rejects_a_build_of_another_plan(project):
     assert refusal == [("pinned_input", "plan_version")]
 
 
+def test_gate_status_reports_a_stale_approval_and_the_newer_version(project):
+    project.to_program_approved()
+    status = project.wf.gate_status(Gate.PROGRAM, project.program)
+    assert status.approval is not None and status.approval.artifact == project.program
+    assert (status.stale, status.stale_against) == (False, None)
+
+    doc = example_doc("space_program.yaml")
+    doc["target_gross_area_m2"] = (doc.get("target_gross_area_m2") or 100.0) + 50.0
+    v2 = project.store.put(K.SPACE_PROGRAM, "program", doc, AGENT)
+
+    status = project.wf.gate_status(Gate.PROGRAM, project.program)
+    assert (status.stale, status.stale_against) == (True, v2)
+    assert status.stale_against.version == 2
+    # A gate with no approval is never stale.
+    assert project.wf.gate_status(Gate.PLAN, project.plan).approval is None
+    assert project.wf.gate_status(Gate.PLAN, project.plan).stale is False
+
+
 # ---------------------------------------------------------------------- reopen
 
 

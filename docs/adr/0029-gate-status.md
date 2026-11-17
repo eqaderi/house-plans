@@ -51,6 +51,13 @@ reported prose too.
   brief's Contradictions and one `unknown_fact` itself. The gate still reads
   the latest Open questions, not those written with the program version
   being approved (tracker ISS-39).
+- **Stale approval.** The gate status carries the gate's current approval
+  and, when a newer version of what it approved has been written,
+  `stale_against` (that version). The definition is unchanged from the CLI
+  copy it replaces (ISS-05): the latest version of the approved artifact id
+  has a higher version or another hash. `project status` reads it, and its
+  `--json` keeps `stale`, `latest_version` and `stale_approvals` with the same
+  values.
 - `request_approval` returns the `GateStatus` it recorded; no caller reads
   the event payload by key. `--json` output that lists site blockers gains
   `blockers` (typed) beside `verification_blockers` (sentences).

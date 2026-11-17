@@ -193,18 +193,12 @@ def _status_dict(store: ProjectStore) -> dict:
     approvals_dict: dict[str, dict] = {}
     stale_approvals: list[str] = []
     for g, a in status.approvals.items():
-        spec = GATES[g]
-        latest_ref = store.latest(spec.artifact_kind, a.artifact.id)
-        is_stale = False
-        if latest_ref and (
-            latest_ref.version > a.artifact.version or latest_ref.sha256 != a.artifact.sha256
-        ):
-            is_stale = True
-            stale_approvals.append(g.value)
+        gate_status = wf.gate_status(g, a.artifact)
         data = a.model_dump(mode="json")
-        data["stale"] = is_stale
-        if is_stale and latest_ref:
-            data["latest_version"] = latest_ref.version
+        data["stale"] = gate_status.stale
+        if gate_status.stale_against is not None:
+            stale_approvals.append(g.value)
+            data["latest_version"] = gate_status.stale_against.version
         approvals_dict[g.value] = data
 
     iv_exists = svc.exists()

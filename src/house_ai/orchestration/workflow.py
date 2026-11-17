@@ -122,6 +122,15 @@ class GateStatus:
     blockers: list[Blocker]
     #: Findings the Approver should see that do not block (plan gate, ADR 0024).
     attention: list[str]
+    #: The gate's current approval, if any (whatever version it pins).
+    approval: Approval | None = None
+    #: The newer version of the approved artifact, when the approval is stale.
+    stale_against: ArtifactRef | None = None
+
+    @property
+    def stale(self) -> bool:
+        """An approval exists and a newer version of what it approved has been written."""
+        return self.stale_against is not None
 
     @property
     def open_reasons(self) -> list[str]:
@@ -141,6 +150,10 @@ class GateStatus:
             "open_reasons": self.open_reasons,
             "blockers": [b.model_dump(mode="json") for b in self.blockers],
             "attention": list(self.attention),
+            "stale": self.stale,
+            "stale_against": (
+                self.stale_against.model_dump(mode="json") if self.stale_against else None
+            ),
         }
 
 
@@ -290,13 +303,24 @@ class Workflow:
     def gate_status(self, gate: Gate, ref: ArtifactRef) -> GateStatus:
         """Where ``gate`` stands for one pinned artifact version now (ADR 0029)."""
         status = self.status()
+        approval = status.approvals.get(gate)
         return GateStatus(
             gate=gate,
             artifact=ref,
             in_review_state=status.state is GATES[gate].review_state,
             blockers=self._blockers(gate, ref, status),
             attention=self._plan_attention(ref) if gate is Gate.PLAN else [],
+            approval=approval,
+            stale_against=self._newer_than(approval) if approval else None,
         )
+
+    def _newer_than(self, approval: Approval) -> ArtifactRef | None:
+        """The latest version of the approved artifact, if it is not the approved one."""
+        latest = self.store.latest(GATES[approval.gate].artifact_kind, approval.artifact.id)
+        approved = approval.artifact
+        if latest and (latest.version > approved.version or latest.sha256 != approved.sha256):
+            return latest
+        return None
 
     def _blockers(self, gate: Gate, ref: ArtifactRef, status: WorkflowStatus) -> list[Blocker]:
         """Every reason the gate cannot be approved for this artifact version now."""

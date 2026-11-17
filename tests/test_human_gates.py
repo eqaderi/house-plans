@@ -312,13 +312,9 @@ def test_program_v2_after_approval_marks_gate_stale(clean_project, capsys):
     ref2 = clean_project.put(K.SPACE_PROGRAM, "program", p2, HUMAN)
     assert ref2.version == 2
 
-    # Check project status JSON
+    # project status --json shows the gate status's staleness, as before (ADR 0029).
     assert main(["project", "status", str(clean_project.root), "--json"]) == 0
     status2 = json.loads(capsys.readouterr().out)
     assert status2["approvals"]["program"]["stale"] is True
-    assert "program" in status2["stale_approvals"]
-
-    # Check project status text output
-    assert main(["project", "status", str(clean_project.root)]) == 0
-    text_out = capsys.readouterr().out
-    assert "STALE: v2 exists" in text_out
+    assert status2["approvals"]["program"]["latest_version"] == 2
+    assert status2["stale_approvals"] == ["program"]
