@@ -8,10 +8,11 @@ from __future__ import annotations
 
 import pytest
 
+from house_ai.domain.geometry import Polygon2D
 from house_ai.domain.integrity import check_model, errors
-from house_ai.domain.model import Level, OpeningKind, WallKind
+from house_ai.domain.model import Level, OpeningKind, Stair, StairKind, WallKind
+from house_ai.domain.program import Privacy, ProgramZone, SpaceProgram, SpaceRelationship
 from house_ai.domain.program import SpaceFunction as S
-from house_ai.domain.program import SpaceProgram
 from house_ai.domain.site import Site
 from house_ai.generation.assemble2d import assemble_2d
 from house_ai.generation.enclosure import EnclosedSpace, Enclosure, Rect
@@ -257,6 +258,122 @@ def test_retaining_and_party_walls_take_no_exterior_opening():
     assert all(w.kind is WallKind.EXTERIOR for w in enc.walls if w.c == 0 and w.orient == "h")
 
 
+# --------------------------------------------- slabs, ceilings, Zones, relationships
+
+UPPER = Level(id="lv-upper", name="Upper", elevation_m=3.0, floor_to_floor_m=3.0)
+
+
+def stacked() -> Enclosure:
+    """A 4 m x 3 m room, half of it built over by a 2 m x 3 m room, and a terrace beside it."""
+    return Enclosure(
+        [UPPER, ENTRY],
+        [
+            space("sp-living", S.LIVING, (0, 0, 40, 30), zone_id="z-day", program_item_id="pi-a"),
+            space("sp-terrace", S.TERRACE, (40, 0, 60, 30), zone_id="z-x", program_item_id="pi-t"),
+            space("sp-bed", S.BEDROOM, (0, 0, 20, 30), "lv-upper", zone_id="z-night"),
+            space("sp-stair", S.STAIR, (20, 0, 40, 10), "lv-upper", program_item_id="pi-a"),
+        ],
+        FRAME,
+        Flat(),
+    )
+
+
+def flight(to_level="lv-upper") -> Stair:
+    return Stair(
+        id="st-1",
+        kind=StairKind.STRAIGHT,
+        from_level_id="lv-entry",
+        to_level_id=to_level,
+        footprint=Polygon2D(outer=[(0.5, 0.5), (1.5, 0.5), (1.5, 2.5), (0.5, 2.5)]),
+        bottom_space_id="sp-living",
+        top_space_id="sp-bed",
+        width_m=1.0,
+    )
+
+
+def test_slabs_floor_each_level_roof_what_nothing_covers_and_void_each_arriving_flight():
+    slabs = {s.id: s for s in stacked().slabs([flight()])}
+    # Terrace slabs first, then the levels from the lowest up.
+    assert list(slabs) == [
+        "slab-terrace-terrace",
+        "slab-floor-entry",
+        "slab-roof-entry",
+        "slab-floor-upper",
+        "slab-roof-upper",
+    ]
+    area = {k: s.boundary.to_shapely().area for k, s in slabs.items()}
+    assert area["slab-terrace-terrace"] == pytest.approx(6.0)
+    assert area["slab-floor-entry"] == pytest.approx(12.0)
+    # The upper rooms (2 m x 3 m and 2 m x 1 m) cover 8 m² of the 12 m² below.
+    assert area["slab-roof-entry"] == pytest.approx(4.0)
+    # The 1 m x 2 m flight arriving on the upper level leaves a hole in its floor.
+    assert area["slab-floor-upper"] == pytest.approx(8.0 - 2.0)
+    assert len(slabs["slab-floor-upper"].boundary.holes) == 1
+    assert area["slab-roof-upper"] == pytest.approx(8.0)
+    assert slabs["slab-roof-upper"].top_offset_m == 3.0
+    assert slabs["slab-terrace-terrace"].thickness_m == 0.15
+    assert {s.thickness_m for k, s in slabs.items() if "terrace" not in k} == {0.25}
+    assert {s.material_id for s in slabs.values()} == {"m-slab"}
+
+
+def test_slab_slivers_under_half_a_square_metre_are_dropped():
+    enc = Enclosure(
+        [ENTRY, UPPER],
+        [
+            space("sp-a", S.LIVING, (0, 0, 40, 30)),
+            space("sp-b", S.BEDROOM, (0, 0, 40, 29), "lv-upper"),
+        ],
+        FRAME,
+        Flat(),
+    )
+    # The 4 m x 0.1 m strip not built over is 0.4 m²: no roof slab on the entry level.
+    assert "slab-roof-entry" not in {s.id for s in enc.slabs([])}
+
+
+def test_ceilings_everywhere_but_over_stairs_and_terraces():
+    ceilings = stacked().ceilings()
+    assert [(c.id, c.space_id, c.height_m) for c in ceilings] == [
+        ("ceil-living", "sp-living", 2.7),
+        ("ceil-bed", "sp-bed", 2.7),
+    ]
+    enc = Enclosure(
+        [ENTRY], [space("sp-well", S.STAIR, (0, 0, 20, 30), ceiling=True)], FRAME, Flat()
+    )
+    assert [c.space_id for c in enc.ceilings()] == ["sp-well"]
+
+
+def test_zones_are_those_the_spaces_use_and_someone_defines():
+    zones = stacked().zones(
+        [
+            ProgramZone(id="z-day", name="Day", privacy=Privacy.PUBLIC),
+            ProgramZone(id="z-night", name="Night", privacy=Privacy.PRIVATE),
+            ProgramZone(id="z-day", name="Second definition", privacy=Privacy.PRIVATE),
+            ProgramZone(id="z-unused", name="Unused", privacy=Privacy.SERVICE),
+        ]
+    )
+    # Sorted by id; the first definition counts; z-x has no definition and is left out.
+    assert [(z.id, z.name, z.space_ids) for z in zones] == [
+        ("z-day", "Day", ["sp-living"]),
+        ("z-night", "Night", ["sp-bed"]),
+    ]
+
+
+def test_relationships_join_the_first_space_of_each_item():
+    required = [
+        SpaceRelationship(id="adj-1", a="pi-a", b="pi-t", kind="connected", strength="hard"),
+        SpaceRelationship(id="adj-2", a="pi-t", b="exterior", kind="connected", strength="hard"),
+        SpaceRelationship(
+            id="adj-3", a="pi-a", b="pi-t", kind="acoustic_separation", strength="hard"
+        ),
+    ]
+    rels = stacked().relationships(required)
+    # pi-a is met by sp-living and sp-stair; the first one listed stands for it.
+    assert [(r.id, r.a, r.b, r.kind.value, r.requirement_id) for r in rels] == [
+        ("rel-1", "sp-living", "sp-terrace", "connected", "adj-1"),
+        ("rel-3", "sp-living", "sp-terrace", "separated", "adj-3"),
+    ]
+
+
 # --------------------------------------------------------------- the 2D adapter
 
 HILLSIDE = REPO / "examples" / "projects" / "synthetic-hillside"
@@ -332,4 +449,32 @@ def test_2d_kitchen_door_keeps_to_a_corner_like_a_bar_plan():
     (door,) = [o for o in model.openings if set(o.connects) == {"sp-kitchen", "sp-bed"}]
     # 0.3 m from the end of the 3 m wall, where a centred door would sit at 1.1 m.
     assert (door.offset_m, door.width_m) == (0.3, 0.8)
+    assert not errors(check_model(model))
+
+
+def test_2d_plan_records_its_space_relationships_zones_and_slabs():
+    site, program = hillside()
+    rooms = [
+        placed("sp-kitchen", S.KITCHEN, (0, 0, 40, 30), "pi-kitchen", "z-day"),
+        placed("sp-living", S.LIVING, (40, 0, 80, 30), "pi-living", "z-day"),
+        placed("sp-terrace", S.TERRACE, (0, 30, 80, 50), "pi-terrace", "z-unknown"),
+    ]
+    shared = [
+        SharedWall("sp-kitchen", "sp-living", "lv-entry", "v", 40, 0, 30),
+        SharedWall("sp-living", "sp-terrace", "lv-entry", "h", 30, 40, 80),
+    ]
+    model = assemble_2d(solution(rooms, shared), site, FRAME, Flat(), program, AGENT)
+    # The program asks for kitchen-living (adj-02) and terrace-living (adj-13).
+    assert {(r.id, r.a, r.b) for r in model.relationships} == {
+        ("rel-02-kitchen-living", "sp-kitchen", "sp-living"),
+        ("rel-13-terrace-living", "sp-terrace", "sp-living"),
+    }
+    assert [(z.id, z.space_ids) for z in model.zones] == [("z-day", ["sp-kitchen", "sp-living"])]
+    assert model.space("sp-terrace").zone_id is None
+    assert [c.space_id for c in model.ceilings] == ["sp-kitchen", "sp-living"]
+    assert [(s.id, s.material_id, s.thickness_m) for s in model.slabs] == [
+        ("slab-terrace-terrace", "m-slab", 0.15),
+        ("slab-floor-entry", "m-slab", 0.25),
+        ("slab-roof-entry", "m-slab", 0.25),
+    ]
     assert not errors(check_model(model))

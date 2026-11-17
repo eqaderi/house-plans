@@ -10,35 +10,31 @@ from __future__ import annotations
 import math
 from dataclasses import dataclass, field
 
-from shapely.geometry import Polygon as ShapelyPolygon
 from shapely.geometry import box
-from shapely.ops import unary_union
 
 from house_ai.constants.placement2d import (
     TERRACE_DOOR_DEFAULT_WIDTH_M,
-    TERRACE_SLAB_THICKNESS_M,
 )
 from house_ai.domain.base import EXTERIOR
 from house_ai.domain.epistemics import Epistemic
-from house_ai.domain.geometry import Polygon2D
 from house_ai.domain.model import (
-    Ceiling,
     HouseModel,
     Level,
     Opening,
     OpeningKind,
     Operation,
-    PlanRelationship,
-    RelationshipKind,
-    Slab,
-    SlabKind,
     Space,
     Stair,
     StairKind,
     WallKind,
-    Zone,
 )
-from house_ai.domain.program import Privacy, SpaceFunction, SpaceProgram, SpaceRelationshipKind
+from house_ai.domain.program import (
+    Privacy,
+    ProgramZone,
+    SpaceFunction,
+    SpaceProgram,
+    SpaceRelationshipKind,
+)
 from house_ai.domain.provenance import Actor, ArtifactRef
 from house_ai.domain.records import Assumption, Issue, Severity
 from house_ai.domain.site import Site
@@ -74,7 +70,8 @@ from .solver import Solution
 from .stairs import LANDING_STRIP_DM, SLAB_M, TREAD_M, stair_risers, u_layout
 
 S = SpaceFunction
-CEILING_M = 2.7
+#: Corridors, link halls and stairs of the bars, unless the program defines the Zone.
+CIRCULATION_ZONE = ProgramZone(id="z-circulation", name="Circulation", privacy=Privacy.SEMI_PRIVATE)
 
 
 @dataclass
@@ -338,7 +335,18 @@ class _Builder:
     def build_walls(self) -> None:
         self.enclosure = Enclosure(
             self.levels,
-            [EnclosedSpace(s.id, s.level_id, s.rect, s.function, s.zone_id) for s in self.spaces],
+            [
+                EnclosedSpace(
+                    s.id,
+                    s.level_id,
+                    s.rect,
+                    s.function,
+                    s.zone_id,
+                    s.program_item_id,
+                    ceiling=s.kind not in ("stair", "terrace"),
+                )
+                for s in self.spaces
+            ],
             self.frame,
             self.ground,
         )
@@ -1015,7 +1023,7 @@ class _Builder:
             )
             for s in self.spaces
         ]
-        zones = self._zones(spaces)
+        zones = self.enclosure.zones([*self.program.zones, CIRCULATION_ZONE])
         for sp in spaces:
             if sp.zone_id is not None and sp.zone_id not in {z.id for z in zones}:
                 sp.zone_id = None
@@ -1030,172 +1038,40 @@ class _Builder:
             spaces=spaces,
             walls=walls,
             openings=self.openings,
-            slabs=self._slabs(),
-            ceilings=[
-                Ceiling(
-                    id=f"ceil-{_short(s.id)}"[:64],
-                    space_id=s.id,
-                    height_m=CEILING_M,
-                    material_id="m-int-wall",
-                )
-                for s in self.spaces
-                if s.kind not in ("stair", "terrace")
-            ],
+            slabs=self.enclosure.slabs(self.stairs, self._upper_landings()),
+            ceilings=self.enclosure.ceilings(),
             stairs=self.stairs,
             zones=zones,
-            relationships=self._relationships(),
+            relationships=self.enclosure.relationships(self.program.space_relationships),
             materials=self.enclosure.materials(),
             assumptions=self._assumptions(),
             issues=self._issues(),
         )
         return with_fixtures(model, self.actor)
 
-    def _zones(self, spaces: list[Space]) -> list[Zone]:
-        program_zones = {z.id: z for z in self.program.zones}
-        used: dict[str, list[str]] = {}
-        for sp in spaces:
-            if sp.zone_id:
-                used.setdefault(sp.zone_id, []).append(sp.id)
-        out = []
-        for zid in sorted(used):
-            if zid in program_zones:
-                pz = program_zones[zid]
-                out.append(Zone(id=zid, name=pz.name, privacy=pz.privacy, space_ids=used[zid]))
-            elif zid == "z-circulation":
-                out.append(
-                    Zone(
-                        id=zid,
-                        name="Circulation",
-                        privacy=Privacy.SEMI_PRIVATE,
-                        space_ids=used[zid],
-                    )
-                )
-        return out
-
-    def _slabs(self) -> list[Slab]:
-        out: list[Slab] = []
-        polys = {}
-        for lv in self.levels:
-            rects = [s.rect for s in self.spaces if s.level_id == lv.id and s.kind != "terrace"]
-            polys[lv.id] = unary_union([box(r.u0, r.v0, r.u1, r.v1) for r in rects])
-        for t in (s for s in self.spaces if s.kind == "terrace"):
-            r = t.rect
-            out.append(
-                Slab(
-                    id=f"slab-terrace-{_short(t.id)}"[:64],
-                    level_id=t.level_id,
-                    kind=SlabKind.TERRACE,
-                    boundary=self.frame.rect(r.u0, r.v0, r.u1, r.v1),
-                    thickness_m=TERRACE_SLAB_THICKNESS_M,
-                    material_id="m-slab",
-                )
-            )
-        for lv in self.levels:
-            above = [polys[o.id] for o in self.levels if o.elevation_m > lv.elevation_m]
-            roof = polys[lv.id].difference(unary_union(above)) if above else polys[lv.id]
-            floor = polys[lv.id]
-            for stair in self.stairs:
-                if stair.to_level_id != lv.id:
-                    continue
-                # Canonical floor slabs must leave a real opening over the flight.
-                # Retain a landing on the corridor side of a stacked U stair.
-                # Snap back to the decimetre grid the flight was built on: frame round-trip
-                # noise would leave slivers against stairwell edges (ADR 0023).
-                flight = ShapelyPolygon(
-                    [
-                        tuple(round(v * 10) for v in self.frame.to_design(xy))
-                        for xy in stair.footprint.outer
-                    ]
-                )
-                if stair.kind is StairKind.U_SHAPED:
-                    top = self.space(stair.top_space_id)
-                    row = self.m.bar_of_row(top.row_id).row(top.row_id.rsplit("-", 1)[-1])
-                    r = top.rect
-                    landing = math.ceil(stair.width_m * 10)
-                    bar = self.m.bar(top.bar_id)
-                    if bar.axis == "u":
-                        region = (
-                            box(r.u0, r.v1 - landing, r.u1, r.v1)
-                            if row.side == "front"
-                            else box(r.u0, r.v0, r.u1, r.v0 + landing)
-                        )
-                    else:
-                        region = (
-                            box(r.u1 - landing, r.v0, r.u1, r.v1)
-                            if row.side == "front"
-                            else box(r.u0, r.v0, r.u0 + landing, r.v1)
-                        )
-                    flight = flight.difference(region)
-                floor = floor.difference(flight)
-            for kind, geom, offset in (
-                (SlabKind.FLOOR, floor, 0.0),
-                (SlabKind.ROOF, roof, FLOOR_TO_FLOOR_M),
-            ):
-                parts = [g for g in getattr(geom, "geoms", [geom]) if g.area >= 50]
-                for k, part in enumerate(parts, start=1):
-                    part = part.simplify(0)
-                    ring = [
-                        self.frame.to_local(round(x), round(y))
-                        for x, y in part.exterior.coords[:-1]
-                    ]
-                    holes = [
-                        [self.frame.to_local(round(x), round(y)) for x, y in h.coords[:-1]]
-                        for h in part.interiors
-                    ]
-                    suffix = f"-{k}" if len(parts) > 1 else ""
-                    out.append(
-                        Slab(
-                            id=f"slab-{kind.value}-{lv.id.removeprefix('lv-')}{suffix}",
-                            level_id=lv.id,
-                            kind=kind,
-                            boundary=Polygon2D(outer=ring, holes=holes),
-                            thickness_m=SLAB_M,
-                            top_offset_m=offset,
-                            material_id="m-slab",
-                        )
-                    )
-        return out
-
-    def _relationships(self) -> list[PlanRelationship]:
-        ids = {s.id for s in self.spaces}
-        hall_space = next(
-            (
-                s.id
-                for s in self.spaces
-                if s.program_item_id
-                and self.rooms.hall_item
-                and s.program_item_id == self.rooms.hall_item.id
-            ),
-            None,
-        )
-        first: dict[str, str] = {}
-        for s in self.spaces:
-            if s.program_item_id and s.program_item_id not in first:
-                first[s.program_item_id] = s.id
-        if hall_space and self.rooms.hall_item:
-            first[self.rooms.hall_item.id] = hall_space
-        K = SpaceRelationshipKind
-        mapping = {
-            K.CONNECTED: RelationshipKind.CONNECTED,
-            K.ADJACENT: RelationshipKind.ADJACENT,
-            K.VISUAL: RelationshipKind.VISUAL,
-            K.SEPARATED: RelationshipKind.SEPARATED,
-            K.ACOUSTIC_SEPARATION: RelationshipKind.SEPARATED,
-        }
-        out = []
-        for adj in self.program.space_relationships:
-            a, b = first.get(adj.a), first.get(adj.b)
-            if a is None or b is None or adj.kind not in mapping or a not in ids or b not in ids:
+    def _upper_landings(self) -> dict[str, Rect]:
+        """Floor kept over each stacked U stair, on the corridor side of its top space."""
+        out = {}
+        for stair in self.stairs:
+            if stair.kind is not StairKind.U_SHAPED:
                 continue
-            out.append(
-                PlanRelationship(
-                    id=f"rel-{adj.id.removeprefix('adj-')}"[:64].rstrip("-"),
-                    a=a,
-                    b=b,
-                    kind=mapping[adj.kind],
-                    requirement_id=adj.id,
+            top = self.space(stair.top_space_id)
+            row = self.m.bar_of_row(top.row_id).row(top.row_id.rsplit("-", 1)[-1])
+            r = top.rect
+            landing = math.ceil(stair.width_m * 10)
+            front = row.side == "front"
+            if self.m.bar(top.bar_id).axis == "u":
+                out[stair.id] = (
+                    Rect(r.u0, r.v1 - landing, r.u1, r.v1)
+                    if front
+                    else Rect(r.u0, r.v0, r.u1, r.v0 + landing)
                 )
-            )
+            else:
+                out[stair.id] = (
+                    Rect(r.u1 - landing, r.v0, r.u1, r.v1)
+                    if front
+                    else Rect(r.u0, r.v0, r.u0 + landing, r.v1)
+                )
         return out
 
     def _assumptions(self) -> list[Assumption]:
@@ -1249,7 +1125,7 @@ class _Builder:
             out.append(
                 A(
                     id="asm-gen-stairs",
-                    statement="Stair risers at most 0.18 m with 0.28 m goings; "
+                    statement=f"Stair risers at most 0.18 m with {TREAD_M:g} m goings; "
                     "typical comfortable geometry, not checked against any code.",
                     basis="typical stair proportions",
                     affects=stair_ids,

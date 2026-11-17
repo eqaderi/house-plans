@@ -12,38 +12,67 @@ everything that encloses them from those rectangles and the terrain (ADR 0031):
 - Openings: doors and windows are fitted into those walls without overlap, at least
   their minimum width, with the width-shrink fit and corner doors for kitchens and
   garages, and never across a face with another Space just beyond it.
+- Slabs, ceilings, Zones and relationships: a floor slab per Level with a void over each
+  flight arriving on it, a roof wherever no higher Level covers it, terrace slabs,
+  ceilings except over stairs and terraces, the Zones the Spaces use and the plan's
+  Space relationships.
 """
 
 from __future__ import annotations
 
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
 from typing import Protocol
 
-from house_ai.constants.placement2d import PARAPET_HEIGHT_M, PARAPET_THICKNESS_M
+from shapely.geometry import Polygon as ShapelyPolygon
+from shapely.geometry import box
+from shapely.ops import unary_union
+
+from house_ai.constants.placement2d import (
+    PARAPET_HEIGHT_M,
+    PARAPET_THICKNESS_M,
+    TERRACE_SLAB_THICKNESS_M,
+)
 from house_ai.constants.reviewer import DOOR_APPROACH_CLEAR_DM
 from house_ai.domain.base import EXTERIOR
+from house_ai.domain.geometry import Polygon2D
 from house_ai.domain.integrity import OPENING_END_INSET_M, PROBE_BEYOND_FACE_M
 from house_ai.domain.model import (
     STOREY_HEIGHT_M,
+    Ceiling,
     Level,
     MaterialCategory,
     MaterialRef,
     Opening,
     OpeningKind,
     Operation,
+    PlanRelationship,
+    RelationshipKind,
+    Slab,
+    SlabKind,
+    Stair,
     Wall,
     WallKind,
+    Zone,
 )
-from house_ai.domain.program import SpaceFunction
+from house_ai.domain.program import (
+    ProgramZone,
+    SpaceFunction,
+    SpaceRelationship,
+    SpaceRelationshipKind,
+)
 
 from .frame import DesignFrame, from_dm
+from .stairs import SLAB_M
 
 S = SpaceFunction
 EXTERIOR_WALL_M = 0.30
 INTERIOR_WALL_M = 0.15
 WALL_HEIGHT_M = 2.8
 DOOR_H_M = 2.1
+CEILING_M = 2.7
+#: Slab parts smaller than this (dm², 0.5 m²) are slivers, not slabs.
+MIN_SLAB_PART_DM2 = 50
 #: Ground this far above the floor outside an exterior face makes it a retaining wall.
 RETAINING_M = 0.6
 
@@ -116,6 +145,15 @@ class EnclosedSpace:
     rect: Rect
     function: SpaceFunction
     zone_id: str | None = None
+    program_item_id: str | None = None
+    #: Whether the Space gets a ceiling; by default all but stairs and terraces do.
+    ceiling: bool | None = None
+
+    @property
+    def has_ceiling(self) -> bool:
+        if self.ceiling is not None:
+            return self.ceiling
+        return self.function not in (S.STAIR, S.TERRACE)
 
 
 @dataclass
@@ -419,6 +457,142 @@ class Enclosure:
                 return False
         return True
 
+    # --------------------------------------------- slabs, ceilings, Zones, relationships
+
+    def slabs(
+        self, stairs: Sequence[Stair], landings: Mapping[str, Rect] | None = None
+    ) -> list[Slab]:
+        """Terrace slabs, then per Level (lowest first) its floor and roof slabs.
+
+        A floor is open over each flight arriving on its Level, except a ``landings``
+        rectangle kept for that stair; a roof sits at storey height wherever no higher
+        Level covers this one (ADR 0023).
+        """
+        landings = landings or {}
+        out: list[Slab] = []
+        levels = sorted(self.levels, key=lambda lv: lv.elevation_m)
+        polys = {
+            lv.id: unary_union(
+                [
+                    box(s.rect.u0, s.rect.v0, s.rect.u1, s.rect.v1)
+                    for s in self.spaces
+                    if s.level_id == lv.id and s.function is not S.TERRACE
+                ]
+            )
+            for lv in levels
+        }
+        for t in (s for s in self.spaces if s.function is S.TERRACE):
+            r = t.rect
+            out.append(
+                Slab(
+                    id=f"slab-terrace-{_short(t.id)}"[:64],
+                    level_id=t.level_id,
+                    kind=SlabKind.TERRACE,
+                    boundary=self.frame.rect(r.u0, r.v0, r.u1, r.v1),
+                    thickness_m=TERRACE_SLAB_THICKNESS_M,
+                    material_id="m-slab",
+                )
+            )
+        for lv in levels:
+            above = [polys[o.id] for o in levels if o.elevation_m > lv.elevation_m]
+            roof = polys[lv.id].difference(unary_union(above)) if above else polys[lv.id]
+            floor = polys[lv.id]
+            for stair in stairs:
+                if stair.to_level_id != lv.id:
+                    continue
+                # Snap back to the decimetre grid the flight was built on: frame round-trip
+                # noise would leave slivers against stairwell edges (ADR 0023).
+                flight = ShapelyPolygon(
+                    [
+                        tuple(round(v * 10) for v in self.frame.to_design(xy))
+                        for xy in stair.footprint.outer
+                    ]
+                )
+                if stair.id in landings:
+                    r = landings[stair.id]
+                    flight = flight.difference(box(r.u0, r.v0, r.u1, r.v1))
+                floor = floor.difference(flight)
+            for kind, geom, offset in (
+                (SlabKind.FLOOR, floor, 0.0),
+                (SlabKind.ROOF, roof, lv.floor_to_floor_m or STOREY_HEIGHT_M),
+            ):
+                parts = [g for g in getattr(geom, "geoms", [geom]) if g.area >= MIN_SLAB_PART_DM2]
+                for k, part in enumerate(parts, start=1):
+                    part = part.simplify(0)
+                    ring = [
+                        self.frame.to_local(round(x), round(y))
+                        for x, y in part.exterior.coords[:-1]
+                    ]
+                    holes = [
+                        [self.frame.to_local(round(x), round(y)) for x, y in h.coords[:-1]]
+                        for h in part.interiors
+                    ]
+                    suffix = f"-{k}" if len(parts) > 1 else ""
+                    out.append(
+                        Slab(
+                            id=f"slab-{kind.value}-{lv.id.removeprefix('lv-')}{suffix}",
+                            level_id=lv.id,
+                            kind=kind,
+                            boundary=Polygon2D(outer=ring, holes=holes),
+                            thickness_m=SLAB_M,
+                            top_offset_m=offset,
+                            material_id="m-slab",
+                        )
+                    )
+        return out
+
+    def ceilings(self) -> list[Ceiling]:
+        return [
+            Ceiling(
+                id=f"ceil-{_short(s.id)}"[:64],
+                space_id=s.id,
+                height_m=CEILING_M,
+                material_id="m-int-wall",
+            )
+            for s in self.spaces
+            if s.has_ceiling
+        ]
+
+    def zones(self, definitions: Sequence[ProgramZone]) -> list[Zone]:
+        """The Zones the Spaces use, in id order; the first definition of an id counts.
+
+        A Zone id nobody defines is left out; the adapter clears it from its Space.
+        """
+        known: dict[str, ProgramZone] = {}
+        for z in definitions:
+            known.setdefault(z.id, z)
+        used: dict[str, list[str]] = {}
+        for s in self.spaces:
+            if s.zone_id:
+                used.setdefault(s.zone_id, []).append(s.id)
+        return [
+            Zone(id=zid, name=known[zid].name, privacy=known[zid].privacy, space_ids=used[zid])
+            for zid in sorted(used)
+            if zid in known
+        ]
+
+    def relationships(self, required: Sequence[SpaceRelationship]) -> list[PlanRelationship]:
+        """The program's Space relationships, each between the first Space of its two items."""
+        first: dict[str, str] = {}
+        for s in self.spaces:
+            if s.program_item_id and s.program_item_id not in first:
+                first[s.program_item_id] = s.id
+        out = []
+        for adj in required:
+            a, b = first.get(adj.a), first.get(adj.b)
+            if a is None or b is None or adj.kind not in _RELATIONSHIP_KINDS:
+                continue
+            out.append(
+                PlanRelationship(
+                    id=f"rel-{adj.id.removeprefix('adj-')}"[:64].rstrip("-"),
+                    a=a,
+                    b=b,
+                    kind=_RELATIONSHIP_KINDS[adj.kind],
+                    requirement_id=adj.id,
+                )
+            )
+        return out
+
     # ----------------------------------------------------------------- model
 
     def wall_model(self, seg: WallSeg) -> Wall:
@@ -445,6 +619,15 @@ class Enclosure:
     @staticmethod
     def materials() -> list[MaterialRef]:
         return list(MATERIALS)
+
+
+_RELATIONSHIP_KINDS = {
+    SpaceRelationshipKind.CONNECTED: RelationshipKind.CONNECTED,
+    SpaceRelationshipKind.ADJACENT: RelationshipKind.ADJACENT,
+    SpaceRelationshipKind.VISUAL: RelationshipKind.VISUAL,
+    SpaceRelationshipKind.SEPARATED: RelationshipKind.SEPARATED,
+    SpaceRelationshipKind.ACOUSTIC_SEPARATION: RelationshipKind.SEPARATED,
+}
 
 
 def _short(sid: str) -> str:

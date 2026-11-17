@@ -7,7 +7,6 @@ door candidates, open-plan openings, courtyards and stacked stair cores.
 
 from __future__ import annotations
 
-from shapely.geometry import Polygon as ShapelyPolygon
 from shapely.geometry import box
 from shapely.ops import unary_union
 
@@ -20,28 +19,23 @@ from house_ai.constants.placement2d import (
     STAIR_CORE_RISERS,
     STOREY_HEIGHT_M,
     TERRACE_DOOR_DEFAULT_WIDTH_M,
-    TERRACE_SLAB_THICKNESS_M,
     WINDOW_HEIGHT_DEFAULT_M,
     WINDOW_WIDTH_DEFAULT_M,
 )
 from house_ai.constants.strategies import STRATEGY_OPEN_PLAN
 from house_ai.domain.geometry import Polygon2D
 from house_ai.domain.model import (
-    Ceiling,
     CompositeSpace,
     HouseModel,
     Level,
     Opening,
     OpeningKind,
     Operation,
-    Slab,
-    SlabKind,
     Space,
     Stair,
     StairKind,
-    Zone,
 )
-from house_ai.domain.program import Privacy, SpaceFunction, SpaceProgram
+from house_ai.domain.program import SpaceFunction, SpaceProgram
 from house_ai.domain.provenance import Actor, ArtifactKind, ArtifactRef
 from house_ai.domain.records import Assumption, Issue, Severity
 from house_ai.domain.site import Site
@@ -52,9 +46,7 @@ from house_ai.generation.solver2d import (
     OPEN_PLAN_FUNCTIONS,
     Solution2D,
 )
-from house_ai.generation.stairs import LANDING_STRIP_DM, u_layout
-
-CEILING_M = 2.7
+from house_ai.generation.stairs import LANDING_STRIP_DM, TREAD_M, u_layout
 
 
 def _short(s: str) -> str:
@@ -97,6 +89,7 @@ class Builder2D:
             )
 
         self.walls: list[WallSeg] = []
+        self._program_items = {it.id for it in program.space_requirements}
         self.openings: list[Opening] = []
         self.issues: list[Issue] = []
 
@@ -129,7 +122,14 @@ class Builder2D:
         self.enclosure = Enclosure(
             self.levels,
             [
-                EnclosedSpace(r.space_id, r.level_id, Rect(r.u0, r.v0, r.u1, r.v1), r.function)
+                EnclosedSpace(
+                    r.space_id,
+                    r.level_id,
+                    Rect(r.u0, r.v0, r.u1, r.v1),
+                    r.function,
+                    r.zone_id,
+                    r.program_item_id if r.program_item_id in self._program_items else None,
+                )
                 for r in self.sol.rooms
             ],
             self.frame,
@@ -278,29 +278,6 @@ class Builder2D:
                         )
                         break
 
-    def _slab_parts(self, slabs: list[Slab], lv: str, kind: SlabKind, geom) -> None:
-        """Append one slab per polygon part of ``geom`` (design dm) on level ``lv``."""
-        parts = [g for g in getattr(geom, "geoms", [geom]) if g.area >= 1]
-        for idx, part in enumerate(parts, start=1):
-            part = part.simplify(0)
-            outer = [self.frame.to_local(round(x), round(y)) for x, y in part.exterior.coords[:-1]]
-            holes = [
-                [self.frame.to_local(round(x), round(y)) for x, y in ring.coords[:-1]]
-                for ring in part.interiors
-            ]
-            suffix = f"-{idx}" if len(parts) > 1 else ""
-            slabs.append(
-                Slab(
-                    id=f"slab-{kind.value}-{lv.removeprefix('lv-')}{suffix}",
-                    level_id=lv,
-                    kind=kind,
-                    boundary=Polygon2D(outer=outer, holes=holes),
-                    thickness_m=0.25,
-                    top_offset_m=STOREY_HEIGHT_M if kind is SlabKind.ROOF else 0.0,
-                    material_id="m-slab",
-                )
-            )
-
     def _u_flight(self, core, walls):
         """Footprint, width, walking line and fit of a U-shaped flight in a stair core.
 
@@ -349,11 +326,7 @@ class Builder2D:
         spaces: list[Space] = []
         for r in all_rooms:
             poly = self._space_boundary(r, all_rooms)
-            prog_item_id = (
-                r.program_item_id
-                if any(it.id == r.program_item_id for it in self.program.space_requirements)
-                else None
-            )
+            prog_item_id = r.program_item_id if r.program_item_id in self._program_items else None
             spaces.append(
                 Space(
                     id=r.space_id,
@@ -367,20 +340,11 @@ class Builder2D:
                 )
             )
 
-        # Zones
-        zones: list[Zone] = []
-        used_zones: dict[str, list[str]] = {}
-        for s in spaces:
-            if s.zone_id:
-                used_zones.setdefault(s.zone_id, []).append(s.id)
-
-        program_zones = {z.id: z for z in [*self.program.zones, *self.sol.zone_definitions]}
-        for zid, sids in used_zones.items():
-            if zid in program_zones:
-                pz = program_zones[zid]
-                zones.append(Zone(id=zid, name=pz.name, privacy=pz.privacy, space_ids=sids))
-            else:
-                zones.append(Zone(id=zid, name=zid, privacy=Privacy.SEMI_PRIVATE, space_ids=sids))
+        zones = self.enclosure.zones([*self.sol.zone_definitions, *self.program.zones])
+        known = {z.id for z in zones}
+        for sp in spaces:
+            if sp.zone_id is not None and sp.zone_id not in known:
+                sp.zone_id = None
 
         composites = []
         if self.sol.strategy == STRATEGY_OPEN_PLAN:
@@ -463,70 +427,11 @@ class Builder2D:
                         width_m=width,
                         riser_count=STAIR_CORE_RISERS,
                         riser_height_m=(upper.elevation_m - lower.elevation_m) / STAIR_CORE_RISERS,
-                        tread_depth_m=0.28,
+                        tread_depth_m=TREAD_M,
                         walking_line=line,
                         landing_segments=[1],
                     )
                 )
-
-        # Slabs per level
-        slabs: list[Slab] = []
-        for lv in self.sol.levels:
-            rooms_on_lv = [r for r in all_rooms if r.level_id == lv]
-            int_boxes = [
-                box(r.u0, r.v0, r.u1, r.v1)
-                for r in rooms_on_lv
-                if r.function is not SpaceFunction.TERRACE
-            ]
-            terrace_rooms = [r for r in rooms_on_lv if r.function is SpaceFunction.TERRACE]
-
-            if int_boxes:
-                fp_u = unary_union(int_boxes)
-                # The floor is open over each flight arriving on this level; a roof sits at
-                # storey height wherever no higher level covers this one (ADR 0023).
-                flights = [
-                    ShapelyPolygon(
-                        [
-                            tuple(round(c * 10) for c in self.frame.to_design(xy))
-                            for xy in st.footprint.outer
-                        ]
-                    )
-                    for st in stairs
-                    if st.to_level_id == lv
-                ]
-                floor_u = fp_u.difference(unary_union(flights)) if flights else fp_u
-                above = [
-                    box(r.u0, r.v0, r.u1, r.v1)
-                    for r in all_rooms
-                    if r.function is not SpaceFunction.TERRACE
-                    and self.sol.levels.index(r.level_id) > self.sol.levels.index(lv)
-                ]
-                roof_u = fp_u.difference(unary_union(above)) if above else fp_u
-                for kind, geom in ((SlabKind.FLOOR, floor_u), (SlabKind.ROOF, roof_u)):
-                    self._slab_parts(slabs, lv, kind, geom)
-
-            for tr in terrace_rooms:
-                t_poly = self.frame.rect(tr.u0, tr.v0, tr.u1, tr.v1)
-                slabs.append(
-                    Slab(
-                        id=f"slab-terrace-{tr.space_id.removeprefix('sp-')}",
-                        level_id=lv,
-                        kind=SlabKind.TERRACE,
-                        boundary=t_poly,
-                        thickness_m=TERRACE_SLAB_THICKNESS_M,
-                        material_id="m-slab",
-                    )
-                )
-
-        ceilings = [
-            Ceiling(
-                id=f"ceil-{_short(s.id)}"[:64],
-                space_id=s.id,
-                height_m=CEILING_M,
-                material_id="m-int-wall",
-            )
-            for s in spaces
-        ]
 
         return HouseModel(
             id=model_id,
@@ -539,11 +444,11 @@ class Builder2D:
             composite_spaces=composites,
             walls=walls,
             openings=self.openings,
-            slabs=slabs,
-            ceilings=ceilings,
+            slabs=self.enclosure.slabs(stairs),
+            ceilings=self.enclosure.ceilings(),
             stairs=stairs,
             zones=zones,
-            relationships=[],
+            relationships=self.enclosure.relationships(self.program.space_relationships),
             materials=self.enclosure.materials(),
             assumptions=[
                 Assumption(
