@@ -5,7 +5,7 @@ Status: accepted (2026-10-17, owner's decision)
 ## Context
 
 The owner decided that the software is personal-first: its first purpose is
-to design the owner's own house on their own land. Reuse for other houses is
+to design the owner's own house on their own parcel. Reuse for other houses is
 a secondary requirement. They want their real project to be a permanent part
 of the repository, not disposable test data, and they authorised committing
 and pushing their survey DWG files, project configuration, site drawings and
@@ -16,8 +16,8 @@ next to loose folders (`project-data/surveys/`, `project-data/my-house-review/`,
 `project-data/my-house-layers.yaml`). MASTER_SPEC (Data / privacy) says owner
 material "should be gitignored by default"; contract §5 forbade committing it.
 
-The owner also gave facts about the land in chat (UTM coordinates, heights in
-metres above sea level, the 12–12.5 m drop is correct, the land is steep)
+The owner also gave facts about the site in chat (UTM coordinates, heights in
+metres above sea level, the 12–12.5 m drop is correct, the site is steep)
 while the UTM zone, datum/EPSG and vertical datum stay unknown. Only a human
 may confirm site facts, through `site confirm` in a terminal (§8).
 
@@ -67,9 +67,9 @@ may confirm site facts, through `site confirm` in a terminal (§8).
 - The real project opens from any checkout: `house-ai project status my-house`.
   A git checkout restores store files without their read-only bits; integrity
   is still checked by hash (`project verify`).
-- The repository now holds the owner's property data. Making it public would
+- The repository now holds the owner's site data. Making it public would
   publish that data; changing visibility is the owner's decision only.
-- A new house is `house-ai project new <name>`; nothing about the owner's land
+- A new house is `house-ai project new <name>`; nothing about the owner's site
   is in application code.
 - New schema `owner_statements`; every schema that embeds `ArtifactKind`
   changed with the new kind.

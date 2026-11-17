@@ -1,6 +1,6 @@
-# ADR 0019 — Canonical placements and derived usability studies
+# ADR 0019: Canonical placements and derived usability studies
 
-Date: 2026-10-18. Status: accepted for S6; revised after S6 review 1. The owner read
+Status: accepted (Stage S6, 2026-10-18); revised after S6 review 1. The owner read
 this ADR on 2026-10-18 ("I read 0019-usability-geometry-and-assumptions.md") and
 requested no changes (task S6-02).
 
@@ -12,10 +12,10 @@ template ID, space, position, rotation, width and depth. Existing fixed `Fixture
 elements keep their meaning. A clearance zone records its purpose and assumption
 basis. Template dimensions and automatically searched arrangements are derived
 studies, never canonical placements. No critic edits a plan or places furniture
-on the homeowner's behalf. The generator learns to avoid findings in S7.
+on the owner's behalf. The generator learns to avoid findings in S7.
 
 `SpaceProgram.usability` optionally records household seats, requested vehicle
-envelopes, an arrival polyline and bed variants by program item ID. Null vehicle
+envelopes, an arrival polyline and bed variants by space requirement ID. Null vehicle
 data means unknown; an empty vehicle list explicitly requests none. The program
 builder carries the sum of explicitly supplied adult and child counts, plus stated
 older relatives, into seats; it does not assume a missing child count is zero or
@@ -27,9 +27,9 @@ Stairs optionally carry a walking line ordered bottom to top; the generator emit
 centre line of each straight flight (U-shaped flights have none). Slab voids use the
 existing `Polygon2D.holes`; a second opening representation is unnecessary.
 
-The front (user side) of every template, `Fixture` and `Furniture` is its local
+The front (the side a person uses) of every template, `Fixture` and `Furniture` is its local
 negative Y before rotation. The synthetic bungalow's WC, basin, shower and sink were
-re-authored to face their rooms under this rule; only `rotation_deg` changed, not
+re-authored to face their spaces under this rule; only `rotation_deg` changed, not
 footprints.
 `SiteFeatureKind.DRIVEWAY` distinguishes drive surfaces from roads. Metrics and
 violations optionally carry `assumption_basis`; violations also carry `method`.
@@ -48,10 +48,10 @@ reviewer types describe the optional additions.
   end that meets another wall's end is extended by half its thickness, closing the
   notch a butt joint leaves at a reflex corner. Explicit floor/terrace slabs of the
   level, at any top offset, bound the supported floor and exclude their voids. The
-  aperture recess contributes to the adjacent room up to the centreline. Missing wall
+  aperture recess contributes to the adjacent space up to the centreline. Missing wall
   edges produce an incomplete-basis finding and the net area becomes `inferred` (an
   upper bound). Net dimension metrics are enclosing rectangle extents, not a promise
-  a concave room fits a rectangle; an empty net floor reports them not checked.
+  a concave space fits a rectangle; an empty net floor reports them not checked.
 - Door handedness is viewed along wall start to end: left hinges at the near
   opening end, right at the far end. `opens_into` selects the swing side. Double
   swing means two half-width hinged leaves, not a double-action pivot. Sweep
@@ -62,7 +62,7 @@ reviewer types describe the optional additions.
 - Fixed/placed object access envelopes may overlap other clear envelopes, but
   cannot hit another object's body or leave the net floor. Door sweeps are kept
   out of access envelopes; door approaches are kept out of proposed solid bodies.
-- Furniture studies work in the room's own frame (its longest boundary edge), so a
+- Furniture studies work in the space's own frame (its longest boundary edge), so a
   verdict does not change when the plan is rotated. They search four orthogonal
   rotations over a 0.1 m translation grid plus placements aligned with every finish
   face (door recesses widen the bounds, so bounds alone misalign the grid). Templates
@@ -80,13 +80,13 @@ reviewer types describe the optional additions.
   aisle is a finding. Without a facing pair the aisle is not checked.
 - Routes use a per-space visibility graph over net-floor polygons with fixture,
   furniture and (where a walking line is declared) stair-flight obstacles, including
-  concave vertices and hole vertices. Only explicit passable portals join rooms;
+  concave vertices and hole vertices. Only explicit passable portals join spaces;
   a door with a threshold joins at the nearest finish-face point on each side.
   Exterior exits are not interconnected. Stairs with a walking line join their
   ordered endpoints with pitch-line 3D length. A stair without one, but with riser
   data, joins the free-floor points nearest its footprint centroid with an
   estimated hypot((risers − 1) × going, rise); any route using it is `inferred`.
-  Representative room points are the named destinations. Routes measure point paths;
+  Representative space points are the named destinations. Routes measure point paths;
   body width, escape and wheelchair certification are outside this check. The
   maximum entrance route is reported only when every space is reached: measured,
   or inferred if an estimated stair is used. Generated plans carry ~1e-7 m
@@ -105,7 +105,7 @@ reviewer types describe the optional additions.
 - Dead-end length is the farthest net-corner point path for a corridor with one
   portal. Multi-portal branching dead ends are not classified by this heuristic.
   Narrow residual floor is measured by morphological opening. Desire lines across
-  central work/seating zones are warnings about possible traffic, not proof that
+  central work/seating areas are warnings about possible traffic, not proof that
   people must take that route. Bathroom visibility assumes open doors and tests
   wall-occluded rays from representative shared-space points.
 - Noisy activity touching/stacking with sleeping space is a geometric privacy
@@ -134,7 +134,7 @@ The source of independently chosen illustrative sizes is **this ADR**. A cited
 precedent does not adopt that jurisdiction, edition or standard for a project.
 No source fetch is needed at runtime or in tests.
 
-| Assumption | Default | Basis |
+| Assumption | Assumed value | Basis |
 |---|---|---|
 | Rise range; going; headroom | 0.15–0.22 m; 0.22 m; 2 m | Selected study bounds using [England Approved Document K, 2013](https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/996860/Approved_Document_K.pdf), Table 1.1 and §1.11 as precedent |
 | Stair width, landing strip, door approach | 0.9 m each | Project planning assumption; these simplified rectangles do not implement ADA manoeuvring rules |
@@ -150,7 +150,7 @@ No source fetch is needed at runtime or in tests.
 | Turning circle | 1.5 m diameter | Project conceptual screen, not an accessibility certification |
 | Excess circulation / long dead end / long daily route | 25% / 6 m / 15 m | Project heuristics |
 | Narrow residual width / residual share | 0.9 m / 50% | Project morphology heuristic |
-| Central work-zone inset / traffic intersection | 0.75 m / 0.1 m | Project desire-line heuristic; explicit canonical clear zones take precedence |
+| Central work-zone inset / traffic intersection | 0.75 m / 0.1 m | Project desire-line heuristic; explicit canonical `ClearanceZone`s take precedence |
 | Potential sill / glazing ratio / facade separation | 0.9 m / 10% / 45° | Project opportunity heuristics, not daylight or ventilation compliance |
 | Outdoor threshold-to-grade warning | 0.2 m | Project conceptual warning |
 
@@ -162,15 +162,15 @@ tolerances and sampling resolutions are numerical choices, not architectural rul
 
 ## Review and consequences
 
-Hand-check: a 4×3 m centreline room bounded by 0.15 m partitions has
+Hand-check: a 4×3 m centreline space bounded by 0.15 m partitions has
 `(4−0.15)×(3−0.15) = 10.9725 m²` net floor before doorway recesses. An L route
 from (5,1) to (1,5), around (2,2), is `2√10 = 6.324555… m`. A 2.6 m wide
-centreline room has 2.45 m clear width: neither orientation of the assumed double
+centreline space has 2.45 m clear width: neither orientation of the assumed double
 bed's 2.8×2.75 m envelope fits; its 3.4 m wide clean twin can hold bed and wardrobe.
 Automated analytical and seeded/clean tests live in `tests/benchmarks/`.
 
 These critics expose current generator shortcomings. They do not make existing
-concepts good architecture, approve a design, or populate the missing physical
+plan options good architecture, approve a design, or populate the missing physical
 data. Furniture drawing/picking in the reviewer and avoidance in generation
 remain later S7 work. Existing SVG gross labels keep their centreline basis;
 the report exposes both net and gross metrics.

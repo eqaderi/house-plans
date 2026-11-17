@@ -1,4 +1,4 @@
-# ADR 0004: Repository layout additions to the spec's suggested tree
+# ADR 0004: A dependency-free domain package beside the spec's package tree
 
 Status: accepted (Milestone A, 2026-10-17)
 
@@ -7,8 +7,7 @@ Status: accepted (Milestone A, 2026-10-17)
 MASTER_SPEC suggests `src/house_ai/{cad, geospatial, interview, program,
 constraints, generation, evaluation, render2d, bim, blender, unreal,
 providers, orchestration, cli}`. It has no obvious home for the canonical
-schemas shared by all of them, for project storage, or for the workflow
-state machine.
+schemas shared by all of them or for project storage.
 
 ## Decision
 
@@ -18,8 +17,6 @@ state machine.
   because "one model" is easier to keep coherent when it lives in one
   place, and so that the domain depends on nothing else.
 - Add `house_ai/storage/` for the project store, hashing and importer.
-- Put the workflow state machine in `house_ai/orchestration/workflow.py`,
-  where agent composition will also live.
 - Keep every suggested package. Packages for later milestones contain a
   docstring and, where a boundary matters now (`cad`, `generation`,
   `evaluation`, `providers`), a `Protocol` in `base.py`. No placeholder

@@ -2,7 +2,7 @@
 
 Status: accepted (Milestone C, 2026-10-17); §6 superseded by
 [ADR 0011](0011-agent-first-interview-interface.md) so coding agents (Claude
-Code, Gemini CLI, Codex) can record homeowner answers, revisions, confirmations
+Code, Gemini CLI, Codex) can record the owner's answers, revisions, confirmations
 and contradiction resolutions via the CLI while approval gates remain
 human-only.
 
@@ -33,14 +33,15 @@ Three facts shape the design:
 2. **Two facts per answer.** The owner's words become a `BriefFact` with
    source `owner_answer` (`preference`, or `verified_fact` for statements
    about the household), recorded as stated. What the system understood
-   (e.g. `bedroom_count = 3`) becomes separate facts with source
+   (an interpretation, e.g. `bedroom_count = 3`) becomes separate facts with source
    `agent_inference` and status `inference`, linked to the answer. Only a
    human can confirm an interpretation; confirming rewrites it as an
    `owner_answer` fact with ref `confirmed:<answer id>`. Rejecting it removes
    the interpretation and asks the question again.
 3. **The program uses only confirmed or explicit values.** The program
-   builder derives items, areas, adjacencies, zones and levels from the
-   brief. Program items cite the facts they come from. The program gate is
+   builder derives space requirements, areas, space relationships, zones and
+   storeys from the design brief. Space requirements cite the facts they come
+   from. The program gate is
    blocked while any cited fact is still an unconfirmed inference, while a
    contradiction is unresolved, or while program validation reports a
    blocking finding. Sizes the owner did not give come from a small table of
@@ -50,7 +51,7 @@ Three facts shape the design:
    bank with conditions and follow-ups), answer parsing (numbers, yes/no,
    unknown/undecided, must/nice-to-have), contradiction rules, program
    building and validation are deterministic. An LLM may only (a) rephrase
-   the chosen question and (b) propose slot values from a free-text answer.
+   the chosen question and (b) propose interpretations of a free-text answer.
    Its output is parsed against a Pydantic model; anything invalid is
    discarded and the deterministic parser's result (or "unparsed, ask
    again") is used. LLM proposals are still `inference` until the owner
@@ -59,10 +60,10 @@ Three facts shape the design:
    always through `providers.base.send`. Tests use a scripted provider.
    No vendor adapter ships yet.
 5. **The interview may run before the site is approved; the gate may not.**
-   Interview commands write brief, program, assumptions and open-question
+   Interview commands write design brief, space program, assumptions and open-question
    versions in any state up to `PROGRAM_REVIEW`. No transition is added.
    Site values used by the interview (parcel area, slope, frontage) are
-   labelled `unverified` until the site gate is approved for that site
+   labelled unconfirmed until the site gate is approved for that site
    version, and they only produce warnings and questions, never hard limits.
    Program review (`INTERVIEWING -> PROGRAM_REVIEW`) and the program gate
    still need the approved site.
@@ -73,7 +74,7 @@ Three facts shape the design:
    phrase; `Workflow.approve` rejects non-human actors).
 7. **Rejection keeps the owner's words.** `program reject` moves
    `PROGRAM_REVIEW -> INTERVIEWING` with the owner's words as the reason and
-   records them as an `owner_answer` fact in a new brief version.
+   records them as an `owner_answer` fact in a new design brief version.
 
 ## Consequences
 

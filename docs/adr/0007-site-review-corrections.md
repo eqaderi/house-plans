@@ -4,7 +4,7 @@ Status: accepted (Milestone B corrections, 2026-10-17)
 
 ## Context
 
-Verifying the Milestone B review commit (ec25922) and running the pipeline on
+Checking the Milestone B review commit (ec25922) and running the pipeline on
 a real survey delivered as two DWG files showed:
 
 - DXF handles restart in every file. A bare handle in `boundary_handle` or
@@ -31,16 +31,9 @@ a real survey delivered as two DWG files showed:
    elevations.
 3. A `cad_import` record states its own file's declared unit; the site's
    confirmed unit replaces it only if the file declares none or the same.
-4. `site confirm` builds the new site before writing anything, so a failed
-   confirmation writes no record.
-5. Entity ids from long source ids use a 15-character head plus an 8-digit
-   SHA-256 of the full id, and `Site` rejects duplicate ids.
-6. Validation reports TIN triangles steeper than 100 % (45°) as a warning
-   naming the points (a wall or kerb, or an elevation error), and the
-   separation of road lines that run parallel. `site report` also writes
-   `terrain.svg` (TIN by slope class, contours interpolated from the TIN and
-   labelled as such) and a static `index.html` that tags each value as
-   measured, calculated, interpretation, unknown or confirmed.
+4. Entity ids from long source ids use a 15-character head plus an 8-digit
+   SHA-256 of the full id, and `Site` rejects duplicate ids. Ids are saved in
+   site records, so this scheme cannot change without renaming every entity.
 
 ## Consequences
 
