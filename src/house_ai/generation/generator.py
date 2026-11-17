@@ -1,31 +1,27 @@
 """Solver-backed multi-concept plan generator.
 
-For each requested strategy the generator builds the strategy's massing for a
-few row-depth patterns, solves each with CP-SAT, assembles a canonical
-:class:`HouseModel`, runs :func:`check_model` on it and keeps the best result:
-the integrity-clean solution with the lowest objective, or, if none is
-clean, the best one marked invalid (never silently dropped). A strategy that
-cannot be laid out at all is reported with the reason.
+For each requested strategy the generator chooses an engine (``engines.py``, ADR 0032): the
+bar engine or the 2D engine. The engine lays the strategy out and assembles a canonical
+:class:`HouseModel` for each attempt; the generator runs :func:`check_model` on each and keeps
+the best: the integrity-clean layout with the lowest objective, or, if none is clean, the best
+one marked invalid (never silently dropped). A strategy that cannot be laid out at all is
+reported with the engine's reason. The generator builds the generation record and the Plan
+version for every engine.
 """
 
 from __future__ import annotations
 
 import hashlib
-from dataclasses import dataclass, field
+from collections.abc import Mapping
+from dataclasses import dataclass, field, replace
 from datetime import datetime
-
-import ortools
 
 from house_ai.constants.evaluations import REQUESTED_STOREYS_ASSUMPTION_ID
 from house_ai.constants.strategies import (
     STRATEGY_COMPACT,
     STRATEGY_CORRIDOR_FREE,
-    STRATEGY_COURTYARD,
     STRATEGY_LINEAR,
     STRATEGY_OPEN_PLAN,
-    STRATEGY_SPLIT_LEVEL,
-    STRATEGY_SPLIT_WALKOUT,
-    STRATEGY_TWO_WING,
 )
 from house_ai.domain.constraints import (
     ConstraintSet,
@@ -34,58 +30,21 @@ from house_ai.domain.constraints import (
     ObjectiveRule,
 )
 from house_ai.domain.integrity import IntegrityFinding, check_model, errors
-from house_ai.domain.plan import (
-    ChangeRequest,
-    GenerationRecord,
-    PlanVersion,
-    RoomPlacement,
-)
-from house_ai.domain.program import SpaceProgram, SpaceRelationship
+from house_ai.domain.plan import ChangeRequest, GenerationRecord, PlanVersion
+from house_ai.domain.program import SpaceProgram
 from house_ai.domain.proposal import ConceptProposal
 from house_ai.domain.provenance import Actor, ActorKind, ArtifactRef, Provenance
 from house_ai.domain.records import Assumption
 from house_ai.domain.site import Site
 
-from .assemble import assemble
-from .assemble2d import assemble_2d
-from .frame import FrameError, Ground, design_frame, from_dm, limit_polygon, to_dm
-from .massing import (
-    CORRIDOR_DM,
-    STRATEGY_LABELS,
-    STRATEGY_ORDER,
-    Infeasible,
-    MassingContext,
-    build_massing,
-)
-from .rooms import ProgramRooms, expand_program
-from .solver import SolveFailed, SolverOptions, solve
-from .solver2d import Solve2DFailed, solve_2d_placement
+from .engines import BarEngine, Engine, EngineContext, EngineKind, Layout, NoLayout, TwoDEngine
+from .frame import FrameError, Ground, design_frame, limit_polygon
+from .massing import STRATEGY_LABELS, STRATEGY_ORDER
+from .solver import SolverOptions
 
 GENERATOR = "house-ai-cpsat-bars"
 GENERATOR_VERSION = "0.2.0"
 GENERATOR_ACTOR = Actor(kind=ActorKind.SYSTEM, id="house-ai-plan-generator")
-
-#: Row-depth patterns (front, back) in decimetres tried for each strategy.
-DEPTH_PATTERNS: dict[str, list[tuple[int, int]]] = {
-    STRATEGY_LINEAR: [(42, 42), (48, 42)],
-    STRATEGY_COMPACT: [(54, 48), (48, 48)],
-    STRATEGY_SPLIT_LEVEL: [(48, 42), (54, 48)],
-    STRATEGY_SPLIT_WALKOUT: [(48, 42), (54, 48)],
-    STRATEGY_TWO_WING: [(48, 42), (42, 42)],
-    STRATEGY_COURTYARD: [(48, 42), (42, 42)],
-}
-
-
-def _patterns(strategy: str, rooms: ProgramRooms) -> list[tuple[int, int]]:
-    """The strategy's row depths, plus one deep enough for every stacked cluster slot."""
-    need = 0
-    for cl in rooms.clusters:
-        for slot in cl.slots:
-            if slot.stacked:
-                need = max(need, sum(max(15, to_dm(r.item.min_width_m or 0)) for r in slot.rooms))
-    base = DEPTH_PATTERNS[strategy]
-    deep = (max(base[0][0], need), max(base[0][1], need))
-    return [*base, deep] if need and deep not in base else base
 
 
 def option_id_for(strategy: str, proposal_id: str | None = None) -> str:
@@ -112,7 +71,6 @@ class Candidate:
     reason: str | None = None
     plan: PlanVersion | None = None
     findings: list[IntegrityFinding] = field(default_factory=list)
-    attempts: list[str] = field(default_factory=list)
 
     @property
     def valid(self) -> bool:
@@ -170,34 +128,43 @@ def objective_weights(constraints: ConstraintSet | None) -> dict[str, float]:
     return out
 
 
+#: Strategies only the 2D engine lays out (ADR 0013).
+TWO_D_STRATEGIES = frozenset({STRATEGY_CORRIDOR_FREE, STRATEGY_OPEN_PLAN})
+
+
+def route(strategy: str, req: GenerationRequest) -> EngineKind:
+    """The engine that lays out ``strategy`` for ``req`` (ADR 0032).
+
+    The 2D engine takes its own strategies, every topology proposal, and any request for a
+    stair position or an outdoor link, which only it can place; the bar engine takes the rest.
+    """
+    opts = req.solver
+    if (
+        strategy in TWO_D_STRATEGIES
+        or req.proposal is not None
+        or (opts is not None and (opts.stair_position or opts.outdoor_links))
+    ):
+        return EngineKind.TWO_D
+    return EngineKind.BAR
+
+
 class CpSatPlanGenerator:
-    """Plan options from OR-Tools CP-SAT, one candidate per massing strategy (ADR 0013)."""
+    """Plan options from OR-Tools CP-SAT, one candidate per massing strategy (ADR 0013).
+
+    Each strategy is routed to one engine (ADR 0032); the generator checks every layout the
+    engine returns and keeps the integrity-clean one with the lowest objective.
+    """
 
     name = GENERATOR
 
+    def __init__(self, engines: Mapping[EngineKind, Engine] | None = None) -> None:
+        self.engines: Mapping[EngineKind, Engine] = engines or {
+            EngineKind.BAR: BarEngine(),
+            EngineKind.TWO_D: TwoDEngine(),
+        }
+
     def candidates(self, req: GenerationRequest) -> list[Candidate]:
         hard_areas, hard_widths = hard_dimension_bounds(req.constraints)
-        program = req.program
-        if req.proposal and req.proposal.adjacency_graph:
-            existing_ids = {a.id for a in program.space_relationships}
-            extra_adj = [
-                SpaceRelationship(
-                    id=padj.id,
-                    a=padj.a,
-                    b=padj.b,
-                    kind=padj.kind,
-                    strength=padj.strength,
-                    weight=padj.weight,
-                    rationale=padj.rationale,
-                )
-                for padj in req.proposal.adjacency_graph
-                if padj.id not in existing_ids
-            ]
-            if extra_adj:
-                program = program.model_copy(
-                    update={"space_relationships": [*program.space_relationships, *extra_adj]}
-                )
-        rooms = expand_program(program, hard_min_areas=hard_areas, hard_min_widths=hard_widths)
         proposal_id = req.proposal.id if req.proposal is not None else None
         try:
             frame = design_frame(req.site)
@@ -207,11 +174,6 @@ class CpSatPlanGenerator:
                 Candidate(s, req.option_id or option_id_for(s, proposal_id), "infeasible", str(exc))
                 for s in (req.strategies or STRATEGY_ORDER)
             ]
-        ground = Ground(req.site, frame)
-        corridor = CORRIDOR_DM
-        if rooms.hall_item is not None and rooms.hall_item.min_width_m:
-            corridor = max(corridor, to_dm(rooms.hall_item.min_width_m))
-        ctx = MassingContext(frame, limit, ground, rooms, program, corridor)
         opts = req.solver or SolverOptions()
         opts.min_areas = hard_areas
         opts.min_widths = hard_widths
@@ -221,15 +183,28 @@ class CpSatPlanGenerator:
         if req.proposal and req.proposal.level_assignments:
             for la in req.proposal.level_assignments:
                 opts.level_prefs[la.program_item_id] = la.level_id
+        ctx = EngineContext(
+            site=req.site,
+            program=req.program,
+            frame=frame,
+            limit=limit,
+            ground=Ground(req.site, frame),
+            options=opts,
+            min_areas=hard_areas,
+            min_widths=hard_widths,
+            proposal=req.proposal,
+            sectional_strategy=req.sectional_strategy,
+            depth_patterns=req.depth_patterns,
+            site_ref=req.site_ref,
+            program_ref=req.program_ref,
+            actor=GENERATOR_ACTOR,
+        )
         strategies = req.strategies
         if strategies is None and req.proposal and req.proposal.target_strategy:
             strategies = [req.proposal.target_strategy]
-        out = []
-        for strategy in strategies or STRATEGY_ORDER:
-            out.append(self._strategy(strategy, ctx, rooms, frame, ground, req, opts))
-        return out
+        return [self._strategy(strategy, ctx, req) for strategy in strategies or STRATEGY_ORDER]
 
-    def _strategy(self, strategy, ctx, rooms, frame, ground, req, opts) -> Candidate:
+    def _strategy(self, strategy: str, ctx: EngineContext, req: GenerationRequest) -> Candidate:
         option = req.option_id or option_id_for(
             strategy, req.proposal.id if req.proposal is not None else None
         )
@@ -239,182 +214,53 @@ class CpSatPlanGenerator:
         if strategy not in STRATEGY_LABELS:
             cand.reason = f"unknown strategy {strategy!r}; known: {', '.join(STRATEGY_LABELS)}"
             return cand
-
-        use_2d = (
-            strategy in (STRATEGY_CORRIDOR_FREE, STRATEGY_OPEN_PLAN)
-            or (req.proposal is not None)
-            or getattr(opts, "force_2d", False)
-            or bool(getattr(opts, "stair_position", None))
-            or bool(getattr(opts, "outdoor_links", None))
+        label = STRATEGY_LABELS[strategy]
+        engine = self.engines[route(strategy, req)]
+        laid = engine.lay_out(
+            strategy,
+            replace(ctx, model_id=f"house-{option.removeprefix('concept-')}", name=label),
         )
-        if use_2d:
-            if req.sectional_strategy is not None:
-                cand.reason = (
-                    "sectional intent currently requires a bar massing; "
-                    "2D placement has fixed stacked levels and cannot solve this intent"
-                )
-                return cand
-            try:
-                sol2d = solve_2d_placement(
-                    req.program,
-                    req.site,
-                    frame,
-                    opts,
-                    strategy=strategy,
-                    proposal=req.proposal,
-                )
-            except (Infeasible, Solve2DFailed) as exc:
-                cand.attempts.append(f"2D placement: {exc}")
-                cand.reason = f"2D placement infeasible: {exc}"
-                return cand
-
-            model = assemble_2d(
-                sol2d,
-                req.site,
-                frame,
-                ground,
-                req.program,
-                actor=GENERATOR_ACTOR,
-                model_id=f"house-{option.removeprefix('concept-')}",
-                name=f"{STRATEGY_LABELS[strategy]}",
-                site_ref=req.site_ref,
-                program_ref=req.program_ref,
-            )
-            findings = check_model(model, req.site, req.program)
-            record = GenerationRecord(
-                generator=GENERATOR,
-                generator_version=GENERATOR_VERSION,
-                solver="ortools-cp-sat-nooverlap2d",
-                solver_version=ortools.__version__,
-                solver_status=sol2d.status,
-                objective=float(sol2d.objective),
-                seed=req.seed,
-                deterministic_time_limit=req.deterministic_time,
-                parameters={
-                    "strategy": strategy,
-                    "engine": "2d_nooverlap",
-                    "circulation_share": sol2d.circulation_share,
-                    "platform": sol2d.platform_info,
-                    "deterministic_time": sol2d.deterministic_time,
-                    "wall_time_s": sol2d.wall_time_s,
-                    "optimised_objectives": ",".join(sol2d.optimised_objectives),
-                    **({"proposal_id": req.proposal.id} if req.proposal else {}),
-                },
-                placements=[
-                    RoomPlacement(
-                        space_id=r.space_id,
-                        bar_id="wing-main",
-                        row_id=r.level_id,
-                        start_m=from_dm(r.u0),
-                    )
-                    for r in sol2d.rooms
-                ],
-                revision_ops=list(req.revision_ops),
-            )
-            cand.plan = PlanVersion(
-                option_id=option,
-                label=f"{STRATEGY_LABELS[strategy]}",
-                strategy=strategy,
-                parent=req.parent,
-                change_request=req.change_request,
-                model=model,
-                generation=record,
-                provenance=Provenance(
-                    created_at=req.created_at,
-                    created_by=GENERATOR_ACTOR,
-                    method="cpsat_2d_placement",
-                    tool=GENERATOR,
-                    tool_version=GENERATOR_VERSION,
-                    inputs=[
-                        r
-                        for r in (req.site_ref, req.program_ref, req.proposal_ref, *req.inputs)
-                        if r is not None
-                    ],
-                    notes=(
-                        "Generated by a constraint solver from the program; a design exploration, "
-                        "not a reviewed or engineered design."
-                    ),
-                ),
-            )
-            cand.status = "generated"
-            cand.findings = findings
-            _explain_storey_count(cand.plan, req.program)
+        if isinstance(laid, NoLayout):
+            cand.reason = laid.reason
             return cand
-
-        best = None
-        for depths in req.depth_patterns or _patterns(strategy, rooms):
-            tag = f"rows {from_dm(depths[0]):g}/{from_dm(depths[1]):g} m"
-            try:
-                m = build_massing(strategy, ctx, depths)
-                from .terrain_levels import configure_section
-
-                configure_section(m, req.sectional_strategy)
-                opts.terrain_context = ctx
-                opts.sectional_strategy = req.sectional_strategy
-                sol = solve(m, rooms, opts)
-            except (Infeasible, SolveFailed) as exc:
-                cand.attempts.append(f"{tag}: {exc}")
-                continue
-            asm = assemble(
-                m,
-                sol,
-                rooms,
-                frame,
-                ground,
-                req.program,
-                req.site,
-                model_id=f"house-{option.removeprefix('concept-')}",
-                name=f"{STRATEGY_LABELS[strategy]}",
-                site_ref=req.site_ref,
-                program_ref=req.program_ref,
-                actor=GENERATOR_ACTOR,
-            )
-            findings = check_model(asm.model, req.site, req.program)
-            n_err = len(errors(findings))
-            cand.attempts.append(
-                f"{tag}: {sol.status}, objective {sol.objective:.0f}, {n_err} integrity error(s)"
-            )
-            key = (n_err, sol.objective)
+        best: tuple[tuple[int, float], Layout, list[IntegrityFinding]] | None = None
+        for layout in laid:
+            findings = check_model(layout.model, req.site, req.program)
+            key = (len(errors(findings)), layout.objective)
             if best is None or key < best[0]:
-                best = (key, m, sol, asm, findings)
+                best = (key, layout, findings)
         if best is None:
-            cand.reason = "; ".join(cand.attempts) or "no attempt"
+            cand.reason = "no attempt"
             return cand
-        _, m, sol, asm, findings = best
+        _, layout, cand.findings = best
         record = GenerationRecord(
             generator=GENERATOR,
             generator_version=GENERATOR_VERSION,
-            solver="ortools-cp-sat",
-            solver_version=ortools.__version__,
-            solver_status=sol.status,
-            objective=float(sol.objective),
+            solver=layout.solver,
+            solver_version=layout.solver_version,
+            solver_status=layout.status,
+            objective=layout.objective,
             seed=req.seed,
             deterministic_time_limit=req.deterministic_time,
             parameters={
-                **m.params,
-                **{f"{b}_start_m": from_dm(v) for b, v in sol.bar_start.items()},
-                **{f"{b}_length_m": from_dm(v) for b, v in sol.bar_length.items()},
+                **layout.parameters,
                 **({"proposal_id": req.proposal.id} if req.proposal else {}),
             },
-            placements=[
-                RoomPlacement(
-                    space_id=s.id, bar_id=s.bar_id, row_id=s.row_id, start_m=from_dm(s.start_dm)
-                )
-                for s in asm.spaces
-                if s.bar_id is not None and s.row_id is not None
-            ],
+            placements=layout.placements,
             revision_ops=list(req.revision_ops),
         )
         cand.plan = PlanVersion(
             option_id=option,
-            label=f"{STRATEGY_LABELS[strategy]}",
+            label=label,
             strategy=strategy,
             parent=req.parent,
             change_request=req.change_request,
+            model=layout.model,
+            generation=record,
             provenance=Provenance(
                 created_at=req.created_at,
                 created_by=GENERATOR_ACTOR,
-                method="cpsat_generation",
+                method=layout.method,
                 tool=GENERATOR,
                 tool_version=GENERATOR_VERSION,
                 inputs=[
@@ -425,10 +271,7 @@ class CpSatPlanGenerator:
                 notes="Generated by a constraint solver from the program; a design exploration, "
                 "not a reviewed or engineered design.",
             ),
-            model=asm.model,
-            generation=record,
         )
-        cand.findings = findings
         cand.status = "generated"
         _explain_storey_count(cand.plan, req.program)
         return cand

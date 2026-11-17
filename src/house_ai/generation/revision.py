@@ -193,11 +193,9 @@ def compile_revision(
                     )
         elif verb is V.STAIR:
             opts.stair_position = op.target
-            opts.force_2d = True
         elif verb is V.OUTDOOR:
             for sid in resolve_spaces(op.target, program):
                 opts.outdoor_links.append((sid, op.outdoor_kind))
-            opts.force_2d = True
         elif verb is V.RETHINK:
             if op.target == "all":
                 rethink |= spaces

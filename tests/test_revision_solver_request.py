@@ -112,7 +112,6 @@ def test_topology_operations_become_stair_and_outdoor_input() -> None:
     opts = req.options
     assert opts.stair_position == "perimeter"
     assert opts.outdoor_links == [("sp-living", "terrace"), ("sp-kitchen", "balcony")]
-    assert opts.force_2d
     (rel,) = opts.relations
     assert (rel.a, rel.b, rel.kind) == ("sp-kitchen", "sp-dining", SpaceRelationshipKind.CONNECTED)
 

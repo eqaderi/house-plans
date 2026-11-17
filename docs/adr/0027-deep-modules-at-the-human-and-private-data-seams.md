@@ -61,7 +61,9 @@ across many callers. Four places carried the security-relevant rules of the
 - Deleted as pass-throughs: the `generation.base.PlanGenerator` protocol and
   `CpSatPlanGenerator.generate` (one adapter; production code calls
   `candidates`), and the CLI's `_dir` wrapper around `resolve_project_dir`.
-  A generator protocol returns when a second generator exists.
+  A generator protocol returns when a second generator exists. (This means
+  the whole generator; the bar and 2D engines are a seam inside it,
+  [ADR 0032](0032-engine-seam-inside-the-generator.md).)
 
 `plan ground` still reads a `plan.json` file rather than a stored plan
 version: exploratory plans, which it exists to check, are never stored

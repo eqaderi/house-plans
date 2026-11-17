@@ -83,8 +83,6 @@ class SolverOptions:
     stair_position: str | None = None
     #: Outdoor links (space_id, kind) (S7-19, S7-21).
     outdoor_links: list[tuple[str, str]] = field(default_factory=list)
-    #: Force 2D placement solver (S7-10).
-    force_2d: bool = False
     min_areas: dict[str, float] = field(default_factory=dict)
     min_widths: dict[str, float] = field(default_factory=dict)
     terrain_context: MassingContext | None = None
