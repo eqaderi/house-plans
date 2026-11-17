@@ -1,6 +1,7 @@
 """Revision operations become solver input in one place: ``generation.revision``.
 
-No store and no solver: a Space program from the synthetic example and a stored concept.
+No store and no solver: a Space program from the synthetic example and a stored concept. The
+position hints a revision keeps are recovered by the engine that reads them (ADR 0032).
 """
 
 from __future__ import annotations
@@ -12,6 +13,7 @@ import pytest
 from house_ai.domain.plan import PlanVersion
 from house_ai.domain.program import SpaceProgram, SpaceRelationshipKind
 from house_ai.domain.revision_ops import RevisionOp, RevisionOpError, parse_ops
+from house_ai.generation.engines import BarEngine
 from house_ai.generation.revision import compile_revision, resolve_spaces
 from house_ai.storage.hashing import load_document
 
@@ -30,6 +32,10 @@ def _concept(ops: list[str] | None = None) -> PlanVersion:
     return plan.model_copy(
         update={"generation": plan.generation.model_copy(update={"revision_ops": ops})}
     )
+
+
+def _hints(req, program: SpaceProgram | None = None):
+    return BarEngine().position_hints(req.requests, program or _program())
 
 
 def _strings(ops: list[RevisionOp]) -> list[str]:
@@ -55,21 +61,21 @@ def test_modify_inherits_intent_and_overrides_item_space_aliases() -> None:
     ]
     parent = _concept(prior)
     req = compile_revision(parent, program, [], inherit=True)
-    assert req.options.targets == {"sp-kitchen": 16.0}
-    assert req.options.level_prefs == {"sp-study-1": "lower"}
-    assert [r.kind for r in req.options.relations] == [SpaceRelationshipKind.SEPARATED]
+    assert req.requests.targets == {"sp-kitchen": 16.0}
+    assert req.requests.level_prefs == {"sp-study-1": "lower"}
+    assert [r.kind for r in req.requests.relations] == [SpaceRelationshipKind.SEPARATED]
     assert _strings(req.operations) == prior[:3]
     assert _strings(req.parent_operations) == prior
-    assert req.options.hints  # one-run rethink was not inherited
+    assert _hints(req, program)[0]  # one-run rethink was not inherited
     assert req.strategy == "compact"
 
     new = parse_ops(
         ["area:sp-kitchen=18", "level:sp-study-1=entry", "adjacent:sp-bed-child-1,sp-bed-main"]
     )
     req = compile_revision(parent, program, new, inherit=True)
-    assert req.options.targets == {"sp-kitchen": 18.0}
-    assert req.options.level_prefs == {"sp-study-1": "entry"}
-    assert [r.kind for r in req.options.relations] == [SpaceRelationshipKind.ADJACENT]
+    assert req.requests.targets == {"sp-kitchen": 18.0}
+    assert req.requests.level_prefs == {"sp-study-1": "entry"}
+    assert [r.kind for r in req.requests.relations] == [SpaceRelationshipKind.ADJACENT]
     effective = _strings(req.operations)
     assert effective == [
         "area:sp-kitchen=18",
@@ -80,10 +86,11 @@ def test_modify_inherits_intent_and_overrides_item_space_aliases() -> None:
     child = _concept(effective)
     again = compile_revision(child, program, [], inherit=True)
     assert _strings(again.operations) == effective
-    assert again.options.targets == {"sp-kitchen": 18.0}
+    assert again.requests.targets == {"sp-kitchen": 18.0}
     fresh = compile_revision(child, program, [], inherit=False)
-    assert fresh.options.targets == fresh.options.level_prefs == fresh.options.hints == {}
-    assert fresh.options.relations == fresh.operations == []
+    assert fresh.requests.targets == fresh.requests.level_prefs == {}
+    assert _hints(fresh, program) == ({}, {})
+    assert fresh.requests.relations == fresh.operations == []
 
 
 def test_partial_quantity_override_keeps_other_room_requests() -> None:
@@ -95,7 +102,7 @@ def test_partial_quantity_override_keeps_other_room_requests() -> None:
     program = program.model_copy(update={"space_requirements": items})
     parent = _concept(["area:pi-study-1=12"])
     req = compile_revision(parent, program, parse_ops(["area:sp-study-1-1=14"]), inherit=True)
-    assert req.options.targets == {"sp-study-1-1": 14.0, "sp-study-1-2": 12.0}
+    assert req.requests.targets == {"sp-study-1-1": 14.0, "sp-study-1-2": 12.0}
     assert _strings(req.operations) == ["area:sp-study-1-2=12", "area:sp-study-1-1=14"]
 
 
@@ -109,10 +116,9 @@ def test_topology_operations_become_stair_and_outdoor_input() -> None:
         ),
         inherit=True,
     )
-    opts = req.options
+    opts = req.requests
     assert opts.stair_position == "perimeter"
     assert opts.outdoor_links == [("sp-living", "terrace"), ("sp-kitchen", "balcony")]
-    assert opts.force_2d
     (rel,) = opts.relations
     assert (rel.a, rel.b, rel.kind) == ("sp-kitchen", "sp-dining", SpaceRelationshipKind.CONNECTED)
 
@@ -123,11 +129,12 @@ def test_strategy_and_rethink_apply_to_one_solve() -> None:
         parent, _program(), parse_ops(["strategy:linear", "rethink:all"]), inherit=True
     )
     assert req.strategy == "linear"
-    assert req.options.hints == {}  # a new strategy starts from no parent positions
+    assert _hints(req) == ({}, {})  # a new strategy starts from no parent positions
     assert _strings(req.operations) == ["strategy:linear", "rethink:all"]
     same = compile_revision(parent, _program(), parse_ops(["rethink:pi-kitchen"]), inherit=True)
-    assert "sp-kitchen" not in same.options.hints
-    assert same.options.hints and same.options.bar_hints == {}
+    hints, bar_hints = _hints(same)
+    assert "sp-kitchen" not in hints
+    assert hints and bar_hints == {}
 
 
 def test_outdoor_kinds_are_the_ones_the_2d_solver_places() -> None:

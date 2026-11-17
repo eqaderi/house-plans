@@ -18,8 +18,12 @@ from house_ai.domain.relations import is_relation_satisfied
 from house_ai.generation.assemble2d import assemble_2d
 from house_ai.generation.frame import Ground, design_frame
 from house_ai.generation.generator import CpSatPlanGenerator, GenerationRequest
-from house_ai.generation.solver import SolverOptions
-from house_ai.generation.solver2d import Solve2DFailed, extract_placement_rooms, solve_2d_placement
+from house_ai.generation.solver2d import (
+    PlacementOptions,
+    Solve2DFailed,
+    extract_placement_rooms,
+    solve_2d_placement,
+)
 
 WHEN = datetime(2026, 10, 18, tzinfo=UTC)
 ACTOR = Actor(kind=ActorKind.AGENT, id="codex")
@@ -78,7 +82,7 @@ def solve_model(program, *, site=None, proposal=None, opts=None, strategy="corri
         program,
         site,
         frame,
-        opts or SolverOptions(seed=42, deterministic_time=2),
+        opts or PlacementOptions(seed=42, deterministic_time=2),
         proposal=proposal,
         strategy=strategy,
     )
@@ -212,7 +216,7 @@ def test_lower_levels_zones_and_outdoor_links_are_applied():
 def test_level_revision_uses_space_id():
     p = small_program()
     _, model = solve_model(
-        p, opts=SolverOptions(seed=42, deterministic_time=2, level_prefs={"sp-bed": "lower"})
+        p, opts=PlacementOptions(seed=42, deterministic_time=2, level_prefs={"sp-bed": "lower"})
     )
     assert model.space("sp-bed").level_id == "lv-lower"
 

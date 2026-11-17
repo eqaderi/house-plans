@@ -63,7 +63,9 @@ HABITABLE_GROUPS = {"day", "night", "guest"}
 
 
 @dataclass
-class SolverOptions:
+class BarOptions:
+    """What the bar solver reads (ADR 0032); the bar engine fills it in."""
+
     seed: int = 0
     #: CP-SAT deterministic time budget (solver work units, not wall-clock seconds).
     deterministic_time: float = 4.0
@@ -79,14 +81,7 @@ class SolverOptions:
     bar_hints: dict[str, int] = field(default_factory=dict)
     #: Objective scales from the constraint set (objective name -> weight).
     objective_weights: dict[str, float] = field(default_factory=dict)
-    #: Stair position override ("entry", "perimeter", "central", "rear") (S7-16, S7-21).
-    stair_position: str | None = None
-    #: Outdoor links (space_id, kind) (S7-19, S7-21).
-    outdoor_links: list[tuple[str, str]] = field(default_factory=list)
-    #: Force 2D placement solver (S7-10).
-    force_2d: bool = False
-    min_areas: dict[str, float] = field(default_factory=dict)
-    min_widths: dict[str, float] = field(default_factory=dict)
+    #: The massing context and sectional strategy the joint level variables read.
     terrain_context: MassingContext | None = None
     sectional_strategy: str | None = None
 
@@ -272,7 +267,7 @@ def _level_penalty(pref: str | None, bar: Bar, m: Massing) -> int:
     return 0
 
 
-def solve(m: Massing, rooms: ProgramRooms, opts: SolverOptions) -> Solution:
+def solve(m: Massing, rooms: ProgramRooms, opts: BarOptions) -> Solution:
     units, problems = build_units(m, rooms)
     if problems:
         raise SolveFailed("; ".join(problems))
