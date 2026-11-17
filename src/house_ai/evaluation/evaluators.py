@@ -29,7 +29,7 @@ from house_ai.domain.constraints import MinAreaRule, MinDimensionRule
 from house_ai.domain.epistemics import ClaimStatus, Epistemic
 from house_ai.domain.evaluation import EvaluatorRun, EvaluatorRunStatus, MetricClaim, Violation
 from house_ai.domain.integrity import FindingSeverity, check_model, circulation_graph
-from house_ai.domain.model import HouseModel, OpeningKind, Space, WallKind
+from house_ai.domain.model import HouseModel, Opening, OpeningKind, OpeningRole, Space, WallKind
 from house_ai.domain.program import (
     DaylightNeed,
     Privacy,
@@ -521,6 +521,16 @@ class AdjacencyEvaluator:
 
 # ------------------------------------------------------------------ circulation
 
+#: Id prefixes that marked entrances before openings carried a role (ADR 0031).
+_ROLE_PREFIX = {OpeningRole.MAIN_ENTRANCE: "d-front", OpeningRole.VEHICLE_ENTRANCE: "d-garage"}
+
+
+def _is_entrance(o: Opening, role: OpeningRole) -> bool:
+    """Whether ``o`` is the ``role`` entrance: by its role, else by its legacy id prefix."""
+    if o.role is not None:
+        return o.role is role
+    return o.id.startswith(_ROLE_PREFIX[role])
+
 
 def _pedestrian_entrances(model: HouseModel) -> tuple[set[str], str]:
     """Identify route origins without treating vehicle access as a front door."""
@@ -531,7 +541,7 @@ def _pedestrian_entrances(model: HouseModel) -> tuple[set[str], str]:
         and EXTERIOR in o.connects
         and model.space(next(s for s in o.connects if s != EXTERIOR)).function is not S.GARAGE
     ]
-    front = [o for o in candidates if o.id.startswith("d-front")]
+    front = [o for o in candidates if _is_entrance(o, OpeningRole.MAIN_ENTRANCE)]
     if front:
         return {o.id for o in front}, "front_door_identifier"
     entry = [
@@ -692,12 +702,16 @@ class PrivacyEvaluator:
             out.metric(
                 "bedrooms_on_separate_level", not (bed_levels & living_levels), "level_lookup"
             )
-        out.metric(
-            "entrance_sightline_private_spaces",
-            self._sightline(model, privacy),
-            "ray_from_front_door_8m_ignoring_door_leaves",
-            INF,
-        )
+        sightline = self._sightline(model, privacy)
+        if sightline is None:
+            out.metric("entrance_sightline_private_spaces", None, "no_main_entrance", NC)
+        else:
+            out.metric(
+                "entrance_sightline_private_spaces",
+                sightline,
+                "ray_from_front_door_8m_ignoring_door_leaves",
+                INF,
+            )
         if on_entry:
             out.violation(
                 "bedroom_opens_on_entrance",
@@ -723,14 +737,17 @@ class PrivacyEvaluator:
         return found
 
     @staticmethod
-    def _sightline(model: HouseModel, privacy: dict[str, Privacy]) -> int:
+    def _sightline(model: HouseModel, privacy: dict[str, Privacy]) -> int | None:
+        """Private Spaces an 8 m ray from the front door crosses; None without a front door."""
         fronts = [
             o
             for o in model.openings
-            if o.kind is OpeningKind.DOOR and EXTERIOR in o.connects and o.id.startswith("d-front")
+            if o.kind is OpeningKind.DOOR
+            and EXTERIOR in o.connects
+            and _is_entrance(o, OpeningRole.MAIN_ENTRANCE)
         ]
         if not fronts:
-            return 0
+            return None
         o = fronts[0]
         w = model.wall(o.host_wall_id)
         inside = o.connects[0] if o.connects[1] == EXTERIOR else o.connects[1]
@@ -825,15 +842,18 @@ class SiteEvaluator:
             out.metric("entrance_to_road_m", None, "no_road_on_record", NC)
             return
         road = unary_union(shapes)
-        for prefix, metric in (
-            ("d-front", "entrance_to_road_m"),
-            ("d-garage", "garage_door_to_road_m"),
+        has_garage = any(s.function is S.GARAGE for s in model.spaces)
+        for role, metric in (
+            (OpeningRole.MAIN_ENTRANCE, "entrance_to_road_m"),
+            (OpeningRole.VEHICLE_ENTRANCE, "garage_door_to_road_m"),
         ):
             door = next(
-                (o for o in model.openings if o.id.startswith(prefix) and EXTERIOR in o.connects),
+                (o for o in model.openings if _is_entrance(o, role) and EXTERIOR in o.connects),
                 None,
             )
             if door is None:
+                if role is OpeningRole.MAIN_ENTRANCE or has_garage:
+                    out.metric(metric, None, f"no_{role.value}", NC)
                 continue
             w = model.wall(door.host_wall_id)
             t = door.offset_m + door.width_m / 2

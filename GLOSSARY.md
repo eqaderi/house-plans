@@ -136,6 +136,11 @@ a Space. The system either acts on it or refuses it; the next Plan version
 records it.
 _Avoid_: Op, edit, revision (alone)
 
+**Enclosure**:
+The walls, openings, slabs and ceilings derived around the spaces of a plan
+version, whichever strategy placed the spaces.
+_Avoid_: Envelope (a buildable envelope is something else), shell
+
 ## Evidence
 
 **Confirmed** (تأییدشده):

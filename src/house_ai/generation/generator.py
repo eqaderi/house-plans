@@ -307,7 +307,7 @@ class CpSatPlanGenerator:
                         row_id=r.level_id,
                         start_m=from_dm(r.u0),
                     )
-                    for r in [*sol2d.rooms, *sol2d.circulation_rooms]
+                    for r in sol2d.rooms
                 ],
                 revision_ops=list(req.revision_ops),
             )

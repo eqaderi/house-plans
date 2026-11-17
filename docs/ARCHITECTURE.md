@@ -215,7 +215,9 @@ double-loaded bars (rows either side of a corridor) whose cross positions,
 row depths and level elevations come from the strategy, the envelope and the
 surveyed terrain; CP-SAT then decides each bar's position and length and each
 room cluster's row, order and widths on a 10 cm grid. The result is assembled
-into a canonical `HouseModel`: walls are derived from space edges so every
+into a canonical `HouseModel`. Both the bar assembler and the 2D placement
+assembler feed one Enclosure (`generation.enclosure`,
+[ADR 0031](adr/0031-enclosure.md)): walls are derived from space edges so every
 wall segment has one space (or the outside) per side, exterior faces against
 the ground become retaining walls without windows, and stairs join levels.
 `check_model` runs on every candidate; one with errors is kept and reported

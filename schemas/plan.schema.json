@@ -1175,6 +1175,17 @@
           "$ref": "#/$defs/Operation",
           "default": "none"
         },
+        "role": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/OpeningRole"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
         "sill_m": {
           "default": 0.0,
           "minimum": 0,
@@ -1206,6 +1217,15 @@
         "opening"
       ],
       "title": "OpeningKind",
+      "type": "string"
+    },
+    "OpeningRole": {
+      "description": "What an exterior opening is for, where the evaluators need to know (ADR 0031).",
+      "enum": [
+        "main_entrance",
+        "vehicle_entrance"
+      ],
+      "title": "OpeningRole",
       "type": "string"
     },
     "Operation": {
