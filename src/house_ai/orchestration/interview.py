@@ -15,7 +15,10 @@ from __future__ import annotations
 import json
 import re
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import Any
+
+import yaml
 
 from house_ai.domain.brief import DesignBrief, FactValue
 from house_ai.domain.interview import (
@@ -36,8 +39,7 @@ from house_ai.domain.provenance import (
     Provenance,
     refuse_non_human,
 )
-from house_ai.domain.site import Site, site_blockers
-from house_ai.domain.workflow import Blocker, EventType, Gate, WorkflowState
+from house_ai.domain.workflow import EventType, Gate, WorkflowState
 from house_ai.interview import parsing
 from house_ai.interview.brief_builder import build_brief, describe
 from house_ai.interview.questions import (
@@ -48,7 +50,7 @@ from house_ai.interview.questions import (
     question_for,
 )
 from house_ai.interview.rules import Finding
-from house_ai.interview.slot_types import BOOL, CHOICE, INT, OUTDOOR, InvalidValue, check
+from house_ai.interview.slot_types import InvalidValue, check
 from house_ai.interview.state import (
     RESOLVE_PREFIX,
     Prompt,
@@ -61,6 +63,7 @@ from house_ai.interview.state import (
 )
 from house_ai.interview.summary import summary_markdown
 from house_ai.program.builder import ProgramResult, build_program
+from house_ai.program.report import program_markdown
 from house_ai.program.validation import ProgramFinding, validate_program
 from house_ai.providers.base import (
     DataFlowPolicy,
@@ -71,7 +74,17 @@ from house_ai.providers.base import (
 from house_ai.storage import ProjectStore, StoreError
 
 from .interview_llm import LlmAssist
-from .site_context import latest_site_context
+from .interview_views import (
+    Checklist,
+    ChecklistItem,
+    CustomTurn,
+    Interpretation,
+    SlotCoverage,
+    contradiction_json,
+    prompt_json,
+    slot_kind_and_choices,
+)
+from .site_context import SiteSummary, latest_site_context, site_summary
 from .statements import owner_statements
 from .workflow import (
     GateStatus,
@@ -89,17 +102,6 @@ PROGRAM_ID = "program"
 #: as unknown so the interview moves on.
 MAX_ATTEMPTS = 2
 
-STEEP_HILLSIDE_CONSIDERATIONS: tuple[str, ...] = (
-    "Split-level layouts stepping with the slope",
-    "Hillside construction and stepped foundations",
-    "Road access and parking at the road frontage",
-    "Excavation volume and rock/earthwork limits",
-    "Retaining walls along cut and fill zones",
-    "Surface and subsurface slope drainage",
-    "Structural implications on steep grade",
-    "Full parcel area is not assumed buildable (setbacks and coverage rules pending)",
-)
-
 _CHOICE_ALIASES: dict[tuple[str, str], str] = {
     ("slope_strategy", "split_level"): "step_down",
     ("slope_strategy", "split"): "step_down",
@@ -112,31 +114,13 @@ class InterviewLocked(WorkflowError):
     pass
 
 
-def _slot_kind_and_choices(slot: str) -> tuple[str, list[str]]:
-    if slot in INT:
-        return "int", []
-    if slot in BOOL:
-        return "bool", []
-    if slot in CHOICE:
-        return "choice", sorted(CHOICE[slot])
-    if slot == "outdoor":
-        return "list", sorted(OUTDOOR)
-    if slot in ("relationships", "room_sizes", "priorities"):
-        return "list", []
-    if slot == "target_area":
-        return "number", []
-    if slot == "budget":
-        return "money", []
-    return "text", []
-
-
 def parse_slot_value(slot: str, raw: Any) -> FactValue:
     """Coerce and validate an explicit slot value (from CLI ``--set`` or JSON)."""
     if slot not in SLOTS:
         raise ValueError(f"unknown slot {slot!r}; valid slots are: {', '.join(SLOTS)}")
     if raw is None:
         return None
-    kind, choices = _slot_kind_and_choices(slot)
+    kind, choices = slot_kind_and_choices(slot)
     val: Any = raw
     if isinstance(raw, str):
         stripped = raw.strip()
@@ -237,6 +221,18 @@ class TurnResult:
     contradictions: list[Finding] = field(default_factory=list)
     notes: list[str] = field(default_factory=list)
 
+    def to_json(self) -> dict[str, Any]:
+        """The one serialisation of a turn result (``interview answer --json`` and friends)."""
+        return {
+            "session_ref": self.session_ref.model_dump(mode="json"),
+            "brief_ref": self.brief_ref.model_dump(mode="json"),
+            "understood": [Interpretation.of(u).to_json() for u in self.understood],
+            "asked_again": self.asked_again,
+            "notes": list(self.notes),
+            "contradictions": [contradiction_json(f) for f in self.contradictions],
+            "next_prompt": prompt_json(self.prompt),
+        }
+
     def message(self) -> str:
         lines = list(self.notes)
         if self.understood:
@@ -270,6 +266,15 @@ class ProgramBuild:
     assumptions_ref: ArtifactRef
     open_questions_ref: ArtifactRef
     findings: list[ProgramFinding]
+
+    def to_json(self) -> dict[str, Any]:
+        """The one serialisation of a program build (``program build --json``)."""
+        return {
+            "program_ref": self.program_ref.model_dump(mode="json"),
+            "assumptions_ref": self.assumptions_ref.model_dump(mode="json"),
+            "open_questions_ref": self.open_questions_ref.model_dump(mode="json"),
+            "findings": [f.to_json() for f in self.findings],
+        }
 
 
 class InterviewService:
@@ -312,12 +317,9 @@ class InterviewService:
     def site(self) -> SiteContext | None:
         return latest_site_context(self.store, self.workflow.status().approvals.get(Gate.SITE))
 
-    def site_blockers(self) -> list[Blocker]:
-        site_ctx = self.site()
-        if site_ctx is None or site_ctx.site_ref is None:
-            return []
-        site_obj = self.store.get(site_ctx.site_ref, Site)
-        return site_blockers(site_obj)
+    def site_summary(self) -> SiteSummary:
+        """The one site summary agents read (project status, checklist, AI context)."""
+        return site_summary(self.store, self.workflow.status().approvals.get(Gate.SITE))
 
     def pending(self) -> Prompt | None:
         s = self.session()
@@ -341,62 +343,32 @@ class InterviewService:
             raise StoreError("no design brief yet")
         return self.store.get(ref, DesignBrief)
 
-    def checklist(self) -> dict[str, Any]:
+    def checklist(self) -> Checklist:
         """Structured completeness checklist and context for coding agents and humans."""
         exists = self.exists()
         session = self.session() if exists else None
         state = fold(session) if session else State()
-        site = session.site if (session and session.site) else self.site()
-        blockers = self.site_blockers()
-        is_steep = bool(
-            site and ((site.relief_m or 0.0) >= 8.0 or (site.mean_slope_pct or 0.0) >= 20.0)
-        )
+        summary = self.site_summary()
+        site = summary.context if summary.exists else None
         sloped = bool(site and (site.relief_m or 0.0) >= 2.0)
-        statements = [
-            {"id": st.id, "subject": st.subject, "words": st.words, "stated_by": st.stated_by}
-            for st in owner_statements(self.store)
-        ]
-        items: list[dict[str, Any]] = []
+        items: list[ChecklistItem] = []
         for q in QUESTIONS:
-            applicable = bool(q.when(state.values, site))
             answered = state.answered(q.id)
-            covered = answered or all(s in state.slots for s in q.slots)
-            slot_entries = []
+            slots = []
             for s_name in q.slots:
                 st = state.slots.get(s_name)
-                s_kind, s_choices = _slot_kind_and_choices(s_name)
-                slot_entries.append(
-                    {
-                        "slot": s_name,
-                        "label": SLOTS[s_name].label,
-                        "kind": s_kind,
-                        "choices": s_choices,
-                        "required": s_name in q.required,
-                        "status": st.status if st else "unanswered",
-                        "value": st.value if st else None,
-                        "display": describe(st.value) if st else None,
-                        "method": st.method if st else None,
-                    }
-                )
-            items.append(
-                {
-                    "id": q.id,
-                    "topic": q.topic.value,
-                    "applicable": applicable,
-                    "answered": answered,
-                    "covered": covered,
-                    "question": q.render(state.values, site),
-                    "slots": slot_entries,
-                }
-            )
+                slots.append(SlotCoverage(
+                    s_name, s_name in q.required, st.status if st else "unanswered",
+                    st.value if st else None, st.method if st else None,
+                ))  # fmt: skip
+            items.append(ChecklistItem(
+                q.id, q.topic.value, bool(q.when(state.values, site)), answered,
+                answered or all(s in state.slots for s in q.slots), q.render(state.values, site),
+                slots,
+            ))  # fmt: skip
         custom_turns = [
-            {
-                "seq": t.seq,
-                "question_id": qid,
-                "question_text": t.question_text,
-                "text": t.text,
-                "understood": [u.model_dump() for u in t.understood],
-            }
+            CustomTurn(t.seq, qid, t.question_text, t.text,
+                       [Interpretation.of(u) for u in t.understood])  # fmt: skip
             for qid, t in state.answers.items()
             if qid.partition("#")[0] not in QUESTION_BY_ID
         ]
@@ -407,86 +379,34 @@ class InterviewService:
             s for s in required_slots if s not in state.slots or state.slots[s].value is None
         ]
         unconfirmed = [
-            {
-                "slot": s,
-                "label": SLOTS[s].label,
-                "value": state.slots[s].value,
-                "display": describe(state.slots[s].value),
-                "method": state.slots[s].method,
-            }
+            Interpretation(s, state.slots[s].value, state.slots[s].method, state.slots[s].status)
             for s in state.unconfirmed()
         ]
-        conflicts = [
-            {
-                "id": f.id,
-                "statement": f.statement,
-                "tradeoff": f.tradeoff,
-                "slots": list(f.slots),
-                "options": [
-                    {"option": i + 1, "label": o.label, "updates": dict(o.updates)}
-                    for i, o in enumerate(f.options)
-                ],
-            }
-            for f in open_contradictions(state)
-        ]
-        nxt = self.pending() if exists else next_prompt(state, site)
-        applicable_items = [i for i in items if i["applicable"]]
-        covered_items = [i for i in applicable_items if i["covered"]]
-        return {
-            "project_id": self.store.project_id,
-            "workflow_state": self.workflow.state.value,
-            "session_status": session.status.value if session else "not_started",
-            "turn_count": len(session.turns) if session else 0,
-            "site": {
-                "site_ref": site.site_ref.model_dump() if (site and site.site_ref) else None,
-                "verified": bool(site and site.verified),
-                "parcel_area_m2": site.parcel_area_m2 if site else None,
-                "relief_m": site.relief_m if site else None,
-                "mean_slope_pct": site.mean_slope_pct if site else None,
-                "frontage_m": site.frontage_m if site else None,
-                "verification_blockers": [b.message for b in blockers],
-                "blockers": [b.model_dump(mode="json") for b in blockers],
-                "steep_hillside": is_steep,
-                "hillside_considerations": list(STEEP_HILLSIDE_CONSIDERATIONS) if is_steep else [],
-            },
-            "owner_statements": statements,
-            "counts": {
-                "total_checklist_questions": len(items),
-                "applicable_questions": len(applicable_items),
-                "covered_questions": len(covered_items),
-                "remaining_questions": len(applicable_items) - len(covered_items),
-                "confirmed_slots": sum(
-                    1 for st in state.slots.values() if st.status == "confirmed"
-                ),
-                "unconfirmed_slots": len(unconfirmed),
-                "unknown_slots": sum(1 for st in state.slots.values() if st.status == "unknown"),
-                "open_contradictions": len(conflicts),
-            },
-            "missing_required_slots": missing_required,
-            "unconfirmed": unconfirmed,
-            "contradictions": conflicts,
-            "custom_turns": custom_turns,
-            "suggested_next": (
-                {"id": nxt.id, "kind": nxt.kind, "text": nxt.text} if nxt is not None else None
-            ),
-            "checklist": items,
-        }
+        return Checklist(
+            project_id=self.store.project_id,
+            workflow_state=self.workflow.state.value,
+            session_status=session.status.value if session else "not_started",
+            turn_count=len(session.turns) if session else 0,
+            site=summary,
+            owner_statements=owner_statements(self.store),
+            items=items,
+            custom_turns=custom_turns,
+            missing_required_slots=missing_required,
+            unconfirmed=unconfirmed,
+            contradictions=open_contradictions(state),
+            suggested_next=self.pending() if exists else next_prompt(state, site),
+            confirmed_slots=sum(1 for st in state.slots.values() if st.status == "confirmed"),
+            unknown_slots=sum(1 for st in state.slots.values() if st.status == "unknown"),
+        )
 
     def ai_context(self) -> str:
         """What the AI may know when wording a question: site values with their status, the
         owner's own statements and what has been understood so far."""
         session = self.session()
-        site = session.site
+        summary = self.site_summary()
         context: dict = {}
-        if site is not None and site.site_ref is not None:
-            context["site"] = {
-                "status": "confirmed by the owner" if site.verified
-                else "from the survey; NOT yet confirmed by the owner",
-                "parcel_area_m2": site.parcel_area_m2,
-                "relief_m": site.relief_m,
-                "mean_slope_pct": site.mean_slope_pct,
-                "frontage_m": site.frontage_m,
-            }  # fmt: skip
+        if summary.exists:
+            context["site"] = summary.ai_json()
         statements = owner_statements(self.store)
         if statements:
             context["owner_said"] = [{"about": st.subject, "words": st.words} for st in statements]
@@ -522,8 +442,8 @@ class InterviewService:
         if phrased.model is None:
             return AskedQuestion(prompt.id, prompt.text)
         # The AI saw the site values, so any wording it gives may use them.
-        site = self.session().site
-        unconfirmed = site is not None and site.site_ref is not None and not site.verified
+        summary = self.site_summary()
+        unconfirmed = summary.exists and not summary.context.verified
         notes = [UNCONFIRMED_SITE_LABEL] if unconfirmed else []
         return AskedQuestion(prompt.id, phrased.text, assist.provider.name, phrased.model, notes)
 
@@ -987,6 +907,35 @@ class InterviewService:
         )
         findings = validate_program(result.program, brief, site)
         return ProgramBuild(result, p_ref, a_ref, q_ref, findings)
+
+    def design_export(self, build: ProgramBuild) -> dict[str, str]:
+        """The six design files for a program build, by file name; writes nothing."""
+
+        def dump(model) -> str:
+            return yaml.safe_dump(model.model_dump(mode="json"), sort_keys=False,
+                                  allow_unicode=True)  # fmt: skip
+
+        brief = self.brief()
+        result = build.result
+        return {
+            "design_brief.yaml": dump(brief),
+            "space_program.yaml": dump(result.program),
+            "assumptions.yaml": dump(result.assumptions),
+            "open_questions.yaml": dump(result.open_questions),
+            "interview-summary.md": self.summary(),
+            "program-review.md": program_markdown(
+                result.program, brief, build.findings, result.assumptions, result.open_questions
+            ),
+        }
+
+    def write_design_export(self, build: ProgramBuild, out: Path) -> list[Path]:
+        """Write :meth:`design_export` into ``out``; the files are exports, not project state."""
+        out.mkdir(parents=True, exist_ok=True)
+        written = []
+        for name, text in self.design_export(build).items():
+            (out / name).write_text(text, encoding="utf-8")
+            written.append(out / name)
+        return written
 
     def review_program(self, actor: Actor) -> tuple[ProgramBuild, GateStatus]:
         """Build the program, move to PROGRAM_REVIEW and ask the owner to review it.

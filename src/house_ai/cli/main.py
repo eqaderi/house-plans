@@ -44,6 +44,8 @@ from house_ai.geospatial.validation import validate_site
 from house_ai.interview.brief_builder import describe
 from house_ai.interview.questions import SLOTS
 from house_ai.orchestration.interview import InterviewService
+from house_ai.orchestration.interview_views import prompt_json
+from house_ai.orchestration.project_status import project_status
 from house_ai.orchestration.site import SiteService
 from house_ai.orchestration.site_ingestion import SiteConfirmation
 from house_ai.orchestration.statements import owner_statements, record_owner_statement
@@ -56,7 +58,6 @@ from house_ai.orchestration.workflow import (
     Workflow,
     WorkflowError,
 )
-from house_ai.program.report import program_markdown
 from house_ai.providers.base import ModelProvider, ProviderError
 from house_ai.storage import ProjectStore, StoreError
 from house_ai.storage.hashing import load_document, pretty_json
@@ -170,72 +171,9 @@ def cmd_project_list(args: argparse.Namespace) -> int:
     return EXIT_OK
 
 
-def _status_dict(store: ProjectStore, project: str) -> dict:
-    wf = Workflow(store)
-    status = wf.status()
-    gate = wf.gate_available()
-    current = wf.current_gate_status()
-    next_action = current.next_action if current else None
-    latest: dict[str, list[dict]] = {}
-    for kind in ArtifactKind:
-        for ref in store.latest_of_kind(kind):
-            latest.setdefault(kind.value, []).append(ref.model_dump(mode="json"))
-    svc = InterviewService(store)
-    site_ctx = svc.site()
-    site_info = None
-    if site_ctx is not None and site_ctx.site_ref is not None:
-        site_blockers = svc.site_blockers()
-        site_info = {
-            "site_ref": site_ctx.site_ref.model_dump(mode="json"),
-            "verified": site_ctx.verified,
-            "parcel_area_m2": site_ctx.parcel_area_m2,
-            "relief_m": site_ctx.relief_m,
-            "mean_slope_pct": site_ctx.mean_slope_pct,
-            "frontage_m": site_ctx.frontage_m,
-            "verification_blockers": [b.message for b in site_blockers],
-            "blockers": [b.model_dump(mode="json") for b in site_blockers],
-        }
-    approvals_dict: dict[str, dict] = {}
-    stale_approvals: list[str] = []
-    for g, a in status.approvals.items():
-        gate_status = wf.gate_status(g, a.artifact)
-        data = a.model_dump(mode="json")
-        data["stale"] = gate_status.stale
-        if gate_status.stale_against is not None:
-            stale_approvals.append(g.value)
-            data["latest_version"] = gate_status.stale_against.version
-        approvals_dict[g.value] = data
-
-    iv_exists = svc.exists()
-    iv_state = svc.state() if iv_exists else None
-    return {
-        "project": store.manifest().model_dump(mode="json"),
-        "state": status.state.value,
-        "allowed_transitions": [s.value for s in wf.allowed_transitions()],
-        "gate_available": gate.value if gate else None,
-        "approvals": approvals_dict,
-        "stale_approvals": sorted(stale_approvals),
-        "gate_status": current.to_json() if current else None,
-        "next_human_command": human.command_for(next_action, project) if next_action else None,
-        "superseded_approvals": [a.id for a in status.superseded],
-        "pending_approval_requests": {
-            g.value: r.model_dump(mode="json") for g, r in status.pending_requests.items()
-        },
-        "latest_artifacts": latest,
-        "site": site_info,
-        "owner_statements_count": len(owner_statements(store)),
-        "interview": {
-            "exists": iv_exists,
-            "status": svc.session().status.value if iv_exists else "not_started",
-            "turn_count": len(svc.session().turns) if iv_exists else 0,
-            "unconfirmed_slots": len(iv_state.unconfirmed()) if iv_state else 0,
-        },
-    }
-
-
 def cmd_project_status(args: argparse.Namespace) -> int:
-    store = ProjectStore(resolve_project_dir(args.dir))
-    info = _status_dict(store, args.dir)
+    status = project_status(ProjectStore(resolve_project_dir(args.dir)))
+    info = status.to_json(human.renderer(args.dir))
     if args.json:
         _out(json.dumps(info, indent=2, sort_keys=True))
         return EXIT_OK
@@ -590,43 +528,9 @@ def _parse_set_args(
     return out
 
 
-def _turn_dict(result) -> dict:
-    return {
-        "session_ref": result.session_ref.model_dump(mode="json"),
-        "brief_ref": result.brief_ref.model_dump(mode="json"),
-        "understood": [
-            {
-                "slot": u.slot,
-                "label": SLOTS[u.slot].label,
-                "value": u.value,
-                "display": describe(u.value),
-                "method": u.method,
-                "status": "unknown" if u.value is None else "inference",
-            }
-            for u in result.understood
-        ],
-        "asked_again": result.asked_again,
-        "notes": list(result.notes),
-        "contradictions": [
-            {
-                "id": f.id,
-                "statement": f.statement,
-                "tradeoff": f.tradeoff,
-                "options": [o.label for o in f.options],
-            }
-            for f in result.contradictions
-        ],
-        "next_prompt": (
-            {"id": result.prompt.id, "kind": result.prompt.kind, "text": result.prompt.text}
-            if result.prompt is not None
-            else None
-        ),
-    }
-
-
 def _show_turn(result, *, prompt: bool = True, as_json: bool = False) -> None:
     if as_json:
-        _out(json.dumps(_turn_dict(result), indent=2, ensure_ascii=False))
+        _out(json.dumps(result.to_json(), indent=2, ensure_ascii=False))
         return
     text = result.message()
     if text:
@@ -653,12 +557,7 @@ def cmd_interview_next(args: argparse.Namespace) -> int:
     svc = InterviewService(ProjectStore(resolve_project_dir(args.dir)))
     prompt = svc.pending()
     if getattr(args, "json", False):
-        payload = (
-            {"id": prompt.id, "kind": prompt.kind, "text": prompt.text}
-            if prompt is not None
-            else None
-        )
-        _out(json.dumps({"next_prompt": payload}, indent=2, ensure_ascii=False))
+        _out(json.dumps({"next_prompt": prompt_json(prompt)}, indent=2, ensure_ascii=False))
         return EXIT_OK
     _out(f"[{prompt.id}] {prompt.text}" if prompt else "No question pending.")
     return EXIT_OK
@@ -666,7 +565,7 @@ def cmd_interview_next(args: argparse.Namespace) -> int:
 
 def cmd_interview_checklist(args: argparse.Namespace) -> int:
     svc = InterviewService(ProjectStore(resolve_project_dir(args.dir)))
-    info = svc.checklist()
+    info = svc.checklist().to_json()
     if getattr(args, "json", False):
         _out(json.dumps(info, indent=2, ensure_ascii=False))
         return EXIT_OK
@@ -919,28 +818,8 @@ def cmd_interview_run(args: argparse.Namespace) -> int:
 
 
 def _export(svc: InterviewService, build, out: Path) -> None:
-    import yaml
-
-    out.mkdir(parents=True, exist_ok=True)
-
-    def dump(model) -> str:
-        return yaml.safe_dump(model.model_dump(mode="json"), sort_keys=False, allow_unicode=True)
-
-    brief = svc.brief()
-    files = {
-        "design_brief.yaml": dump(brief),
-        "space_program.yaml": dump(build.result.program),
-        "assumptions.yaml": dump(build.result.assumptions),
-        "open_questions.yaml": dump(build.result.open_questions),
-        "interview-summary.md": svc.summary(),
-        "program-review.md": program_markdown(
-            build.result.program, brief, build.findings, build.result.assumptions,
-            build.result.open_questions,
-        ),
-    }  # fmt: skip
-    for name, text in files.items():
-        (out / name).write_text(text, encoding="utf-8")
-        _out(f"wrote {out / name}")
+    for path in svc.write_design_export(build, out):
+        _out(f"wrote {path}")
 
 
 def _show_findings(findings) -> None:
@@ -956,27 +835,7 @@ def cmd_program_build(args: argparse.Namespace) -> int:
     if args.out:
         _export(svc, build, Path(args.out))
     if getattr(args, "json", False):
-        _out(
-            json.dumps(
-                {
-                    "program_ref": build.program_ref.model_dump(mode="json"),
-                    "assumptions_ref": build.assumptions_ref.model_dump(mode="json"),
-                    "open_questions_ref": build.open_questions_ref.model_dump(mode="json"),
-                    "findings": [
-                        {
-                            "code": f.code,
-                            "severity": f.severity.value,
-                            "message": f.message,
-                            "subject_ids": list(f.subject_ids),
-                            "options": list(f.options),
-                        }
-                        for f in build.findings
-                    ],
-                },
-                indent=2,
-                ensure_ascii=False,
-            )
-        )
+        _out(json.dumps(build.to_json(), indent=2, ensure_ascii=False))
         return EXIT_OK
     for ref in (build.program_ref, build.assumptions_ref, build.open_questions_ref):
         _out(f"stored {ref.kind.value}/{ref.id} v{ref.version}")
