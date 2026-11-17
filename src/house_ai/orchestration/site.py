@@ -9,6 +9,9 @@ caller has to know the order:
 * :meth:`SiteService.ingest` extracts stored survey sources, starts site
   ingestion on a new project and assesses the Site;
 * :meth:`SiteService.assess` (re-)assesses a stored Site version;
+* :meth:`SiteService.confirm` applies a human confirmation and, once no
+  Blocker remains, moves the project back to SITE_INGESTION under the
+  confirmer's name, where the site gate can be approved;
 * :meth:`SiteService.blockers` says what keeps the site gate closed now.
 
 Approving the site gate stays a human act in :mod:`.workflow`.
@@ -25,7 +28,7 @@ from house_ai.domain.site import Site, site_verification_blockers
 from house_ai.domain.workflow import EventType, WorkflowState
 from house_ai.storage import ProjectStore
 
-from .site_ingestion import ingest_site
+from .site_ingestion import SiteConfirmation, confirm_site, ingest_site
 from .workflow import TransitionNotAllowed, Workflow
 
 S = WorkflowState
@@ -101,4 +104,26 @@ class SiteService:
                 payload={"site": site_ref.model_dump(mode="json"), "blockers": blockers},
             )
             state = S.SITE_NEEDS_CONFIRMATION
+        return SiteOutcome(site_ref, blockers, state)
+
+    def confirm(self, site_id: str, confirmer: Actor, conf: SiteConfirmation) -> SiteOutcome:
+        """Write the human-confirmed Site version and re-assess it.
+
+        Human-only (agent contract §8). If the confirmation clears every
+        Blocker while the project waits in SITE_NEEDS_CONFIRMATION, the project
+        moves back to SITE_INGESTION, recorded under the confirmer's name, and
+        the site gate can be approved with no further step. If any Blocker
+        remains, the workflow state does not change.
+        """
+        site_ref = confirm_site(self.store, site_id, confirmer, conf)
+        blockers = site_verification_blockers(self.store.get(site_ref, Site))
+        state = self.workflow.state
+        if state is S.SITE_NEEDS_CONFIRMATION and not blockers:
+            self.workflow.transition(
+                S.SITE_INGESTION,
+                confirmer,
+                f"{confirmer.id} confirmed {site_ref.id} v{site_ref.version}; no site blocker "
+                "remains, the site gate can be approved",
+            )
+            state = S.SITE_INGESTION
         return SiteOutcome(site_ref, blockers, state)

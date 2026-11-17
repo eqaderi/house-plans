@@ -2,12 +2,19 @@
 
 from __future__ import annotations
 
+import sys
+
 import pytest
 
 from house_ai.cad.layers import load_layer_mapping
-from house_ai.domain.provenance import ArtifactKind, DataClassification
-from house_ai.domain.workflow import EventType, WorkflowState
+from house_ai.cli.exit_codes import EXIT_OK
+from house_ai.cli.main import main
+from house_ai.domain.provenance import ApprovalRequiresHuman, ArtifactKind, DataClassification
+from house_ai.domain.units import LengthUnit
+from house_ai.domain.workflow import EventType, Gate, WorkflowState
 from house_ai.orchestration.site import SiteService
+from house_ai.orchestration.site_ingestion import SiteConfirmation
+from house_ai.orchestration.workflow import Workflow
 
 from .conftest import AGENT, HUMAN, SURVEY_DXF, SURVEY_LAYERS
 
@@ -82,3 +89,67 @@ def test_reassessing_a_site_that_needs_confirmation_reports_and_moves_nothing(su
 
 def test_the_site_gate_is_blocked_before_any_site_exists(new_store):
     assert SiteService(new_store()).blockers() == ["no site 'site' has been ingested yet"]
+
+
+# ------------------------------------------------------------------ confirmation
+
+#: Everything the synthetic survey needs from a human (local-only keeps PROJ out of it).
+FULL = SiteConfirmation(
+    units=LengthUnit.METRE, elevation_units=LengthUnit.METRE, local_only=True,
+    vertical_datum="synthetic benchmark", vertical_local=True, boundary_verified=True,
+)  # fmt: skip
+
+
+@pytest.fixture
+def ingested(survey_project):
+    """The synthetic survey ingested: SITE_NEEDS_CONFIRMATION, five Blockers."""
+    store, source_id = survey_project
+    SiteService(store).ingest(source_id, load_layer_mapping(SURVEY_LAYERS), AGENT)
+    return store
+
+
+def test_a_confirmation_that_clears_every_blocker_leaves_the_site_gate_approvable(ingested):
+    store = ingested
+    result = SiteService(store).confirm("site", HUMAN, FULL)
+
+    assert (result.state, result.blockers) == (WorkflowState.SITE_INGESTION, [])
+    assert (result.site_ref.id, result.site_ref.version) == ("site", 2)
+    assert _transitions(store)[-1] == ("SITE_NEEDS_CONFIRMATION", "SITE_INGESTION", "owner")
+    assert store.events()[-1].actor == HUMAN
+
+    approval = Workflow(store).approve(Gate.SITE, result.site_ref, HUMAN, "owner approves")
+    assert approval.artifact == result.site_ref
+    assert Workflow(store).state is WorkflowState.SITE_APPROVED
+
+
+def test_a_confirmation_that_leaves_a_blocker_open_moves_nothing(ingested):
+    store = ingested
+    events = len(store.events())
+
+    result = SiteService(store).confirm("site", HUMAN, SiteConfirmation(units=LengthUnit.METRE))
+
+    assert result.state is WorkflowState.SITE_NEEDS_CONFIRMATION
+    assert result.blockers == SURVEY_BLOCKERS[1:]
+    assert not [e for e in store.events()[events:] if e.type is EventType.TRANSITION]
+
+
+def test_an_agent_cannot_confirm_site_facts(ingested):
+    store = ingested
+    events = len(store.events())
+    with pytest.raises(ApprovalRequiresHuman):
+        SiteService(store).confirm("site", AGENT, FULL)
+    assert len(store.events()) == events
+
+
+def test_cli_site_confirm_goes_through_site_service(ingested, monkeypatch, capsys):
+    """Argument wiring and exit code only; the rule is tested through SiteService above."""
+    store = ingested
+    monkeypatch.setattr(sys.stdin, "isatty", lambda: True)
+    monkeypatch.setattr("builtins.input", lambda _: "confirm site site")
+    argv = ["site", "confirm", str(store.root), "--confirmer", "owner", "--units", "m",
+            "--elevation-units", "m", "--local-only", "--vertical-datum", "synthetic benchmark",
+            "--vertical-local", "--boundary-verified"]  # fmt: skip
+
+    assert main(argv) == EXIT_OK
+    assert Workflow(store).state is WorkflowState.SITE_INGESTION
+    assert _transitions(store)[-1] == ("SITE_NEEDS_CONFIRMATION", "SITE_INGESTION", "owner")

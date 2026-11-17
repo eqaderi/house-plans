@@ -18,7 +18,8 @@ from house_ai.cli.main import main
 from house_ai.domain.provenance import Actor, ActorKind, ArtifactKind, DataClassification
 from house_ai.domain.units import LengthUnit
 from house_ai.domain.workflow import Gate, WorkflowState
-from house_ai.orchestration.site_ingestion import SiteConfirmation, confirm_site
+from house_ai.orchestration.site import SiteService
+from house_ai.orchestration.site_ingestion import SiteConfirmation
 from house_ai.orchestration.workflow import Workflow
 from house_ai.storage import ProjectStore
 from house_ai.validation.grounding import collect_canonical_ids, validate_cited_ids
@@ -195,10 +196,9 @@ def test_architectural_programming_skill_workflow(tmp_path: Path):
         vertical_epsg=7837,
         boundary_verified=True,
     )
-    confirm_site(store, "site", OWNER, conf)
-    wf = Workflow(store)
-    wf.transition(WorkflowState.SITE_INGESTION, AGENT, "ingesting site")
-    wf.approve(Gate.SITE, store.latest(ArtifactKind.SITE, "site"), OWNER, "synthetic site approved")
+    # The owner's confirmation clears every blocker; the site gate is then approvable.
+    site_ref = SiteService(store).confirm("site", OWNER, conf).site_ref
+    Workflow(store).approve(Gate.SITE, site_ref, OWNER, "synthetic site approved")
 
 
     # 1. Start the interview (works in SITE_APPROVED; no transition needed yet)

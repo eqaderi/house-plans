@@ -330,15 +330,16 @@ def test_agents_cannot_confirm_site_facts(ingest):
 def test_human_confirmation_clears_blockers_and_the_human_approves(ingest):
     store, result = ingest()
     wf = Workflow(store)
-    SiteService(store).assess(result.site_ref, AGENT)
-    ref = confirm_site(store, "site", HUMAN, FULL)
+    sites = SiteService(store)
+    sites.assess(result.site_ref, AGENT)
+    confirmed = sites.confirm("site", HUMAN, FULL)
+    ref = confirmed.site_ref
     site = _site(store, ref)
-    assert ref.version == 2 and site_verification_blockers(site) == []
+    assert ref.version == 2 and confirmed.blockers == []
+    assert confirmed.state is WorkflowState.SITE_INGESTION
     assert site.provenance.created_by == HUMAN
     assert site.coordinates.horizontal_crs.epsg == 25832
     assert site.coordinates.local.grid_to_true_north_deg == pytest.approx(-0.00103, abs=5e-5)
-    wf.transition(WorkflowState.SITE_INGESTION, HUMAN, "verified")
-    assert SiteService(store).assess(ref, AGENT).blockers == []
     with pytest.raises(ApprovalRequiresHuman):
         wf.approve(Gate.SITE, ref, AGENT, "agent tries")
     with pytest.raises(GateBlocked):

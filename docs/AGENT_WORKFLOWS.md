@@ -90,6 +90,7 @@ supported yet: ask the owner which parts matter and express them as `--area`,
 The site is in `SITE_NEEDS_CONFIRMATION` and no interview has been recorded,
 so there is no space program: `plan generate my-house` (gated or
 `--exploratory`) refuses and writes nothing. The order is: the owner confirms
-the site facts (`site confirm`) and approves the site gate; the agent runs the
+the site facts (`site confirm`); once that clears every blocker the project is
+back in `SITE_INGESTION` and the owner approves the site gate; the agent runs the
 interview and `program build`/`program review`; the owner approves the
 program gate; then `plan generate my-house`.

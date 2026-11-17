@@ -99,6 +99,11 @@ Guide the agent through inspecting raw CAD survey files, ingesting survey entiti
     --boundary-verified --confirmer <name>
   .venv/bin/house-ai workflow approve <project> site --id site --version <v> --approver <name>
   ```
+  `site confirm` writes the confirmed site version and re-assesses it. If it
+  prints no `BLOCKER` line, the project is back in `SITE_INGESTION` (recorded
+  under the confirmer's name) and the owner approves the site gate next, with
+  no step in between. If a blocker remains, the project stays in
+  `SITE_NEEDS_CONFIRMATION`; never run `workflow transition` to get around it.
 
 ## Failure handling
 - **ODA File Converter missing**: if DWG conversion is unavailable, ask the owner to convert DWG to DXF or install ODA File Converter.

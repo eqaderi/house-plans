@@ -117,7 +117,7 @@ stateDiagram-v2
     [*] --> NEW_PROJECT
     NEW_PROJECT --> SITE_INGESTION
     SITE_INGESTION --> SITE_NEEDS_CONFIRMATION: units/CRS/datum ambiguous
-    SITE_NEEDS_CONFIRMATION --> SITE_INGESTION
+    SITE_NEEDS_CONFIRMATION --> SITE_INGESTION: human site confirm clears every blocker
     SITE_INGESTION --> SITE_APPROVED: human approves site
     SITE_APPROVED --> INTERVIEWING
     INTERVIEWING --> PROGRAM_REVIEW
@@ -140,7 +140,10 @@ stateDiagram-v2
 can never target a gated state (`SITE_APPROVED`, `PROGRAM_APPROVED`,
 `PLAN_APPROVED`, `MODEL_APPROVED`). Guards: program review needs a program,
 concept review needs a plan, Blender/Unreal review need a build record made
-from the approved plan.
+from the approved plan. Each stage's module makes its own ordinary moves
+([ADR 0028](adr/0028-site-service-and-stage-modules-move-their-own-state.md)):
+`SiteService` enters and leaves `SITE_NEEDS_CONFIRMATION` and `plan generate`
+leaves `PROGRAM_APPROVED`; `workflow transition` remains for recovery.
 
 **Gates** are crossed only by `Workflow.approve`, which:
 
@@ -180,7 +183,8 @@ detect format ─▶ CAD adapter (ezdxf | ODA→ezdxf) ─▶ raw entities, SOUR
    ─▶ boundary · contours · spots · features · ambiguous entities
    ─▶ TIN, frontage, issues ─▶ cad_import + site artifacts
    ─▶ SiteService assesses ─▶ SITE_NEEDS_CONFIRMATION while a blocker is open
-   ─▶ site confirm (human, TTY) ─▶ new site version ─▶ site gate (human)
+   ─▶ site confirm (human, TTY) ─▶ new site version; no blocker left
+      ─▶ SITE_INGESTION (under the confirmer's name) ─▶ site gate (human)
 site report ─▶ validation report (JSON/Markdown) + site SVG, derived on demand
 ```
 

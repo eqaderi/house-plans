@@ -36,7 +36,7 @@ from house_ai.domain.provenance import (
     DataClassification,
 )
 from house_ai.domain.registry import SCHEMAS, export_schemas, stale_schemas
-from house_ai.domain.site import CadImportProvenance, Site, site_verification_blockers
+from house_ai.domain.site import CadImportProvenance, Site
 from house_ai.domain.units import LengthUnit
 from house_ai.domain.workflow import Gate, WorkflowState
 from house_ai.geospatial.crs import describe_epsg, utm_candidates
@@ -45,7 +45,7 @@ from house_ai.interview.brief_builder import describe
 from house_ai.interview.questions import SLOTS
 from house_ai.orchestration.interview import InterviewService
 from house_ai.orchestration.site import SiteService
-from house_ai.orchestration.site_ingestion import SiteConfirmation, confirm_site
+from house_ai.orchestration.site_ingestion import SiteConfirmation
 from house_ai.orchestration.statements import owner_statements, record_owner_statement
 from house_ai.orchestration.survey_inspection import inspect_files, inspection_markdown
 from house_ai.orchestration.workflow import (
@@ -496,17 +496,18 @@ def cmd_site_confirm(args: argparse.Namespace) -> int:
         _out(f"  - {item}")
     _out("This is recorded permanently in the project event log under your name.")
     human.require_phrase(human.CONFIRM_SITE, f"confirm site {args.id}")
-    ref = confirm_site(store, args.id, confirmer, conf)
-    site = store.get(ref, Site)
+    result = SiteService(store).confirm(args.id, confirmer, conf)
+    ref = result.site_ref
     _out(f"stored site/{ref.id} v{ref.version} sha256 {ref.sha256}")
-    lonlat = validate_site(site).coordinates.origin_lon_lat
+    lonlat = validate_site(store.get(ref, Site)).coordinates.origin_lon_lat
     if lonlat:
         _out(
             f"the local origin is at lon {lonlat[0]:.6f}, lat {lonlat[1]:.6f}: check that this "
             "is your property (a wrong UTM zone moves it by 6° of longitude)"
         )
-    for b in site_verification_blockers(site):
+    for b in result.blockers:
         _out(f"BLOCKER {b}")
+    _out(f"state {result.state.value}")
     return EXIT_OK
 
 

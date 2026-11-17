@@ -144,7 +144,8 @@ S=examples/surveys/synthetic
 .venv/bin/house-ai source add project-data/site-demo $S/survey.dxf --classification synthetic --actor human:<you>
 .venv/bin/house-ai site ingest project-data/site-demo --source src-survey --layers $S/layers.yaml --actor human:<you>   # -> SITE_NEEDS_CONFIRMATION
 .venv/bin/house-ai site confirm project-data/site-demo --confirmer <you> --units m --elevation-units m \
-    --epsg 25832 --vertical-datum DHHN2016 --vertical-epsg 7837 --boundary-verified   # interactive
+    --epsg 25832 --vertical-datum DHHN2016 --vertical-epsg 7837 --boundary-verified   # interactive; -> SITE_INGESTION
+.venv/bin/house-ai workflow approve project-data/site-demo site --id site --approver <you>   # interactive
 .venv/bin/house-ai site report project-data/site-demo --id site --out project-data/site-demo-report
 ```
 

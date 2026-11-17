@@ -33,7 +33,7 @@ from house_ai.interview.state import pick_option
 from house_ai.orchestration.interview import InterviewLocked, InterviewService
 from house_ai.orchestration.interview_llm import LlmAssist
 from house_ai.orchestration.site import SiteService
-from house_ai.orchestration.site_ingestion import SiteConfirmation, confirm_site
+from house_ai.orchestration.site_ingestion import SiteConfirmation
 from house_ai.orchestration.workflow import (
     GateBlocked,
     TransitionNotAllowed,
@@ -61,9 +61,7 @@ def _project(new_store, *, approve_site: bool = True):
     sites = SiteService(store)
     sites.ingest(doc.id, load_layer_mapping(SURVEY_LAYERS), AGENT)
     if approve_site:
-        ref = confirm_site(store, "site", HUMAN, FULL)
-        wf.transition(WorkflowState.SITE_INGESTION, HUMAN, "verified")
-        assert sites.assess(ref, AGENT).blockers == []
+        ref = sites.confirm("site", HUMAN, FULL).site_ref
         wf.approve(Gate.SITE, ref, HUMAN, "synthetic owner approves the synthetic site")
         wf.transition(WorkflowState.INTERVIEWING, AGENT, "start the interview")
     return store
