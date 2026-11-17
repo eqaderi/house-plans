@@ -108,9 +108,6 @@ class OdaDwgAdapter:
         self.converter = converter
         self.dxf = dxf or EzdxfAdapter()
 
-    def can_read(self, path: Path) -> bool:
-        return detect_format(path).format is FileFormat.DWG
-
     def _annotate(self, path: Path, dxf_path: Path, inspection: CadInspection) -> CadInspection:
         version = detect_format(path).version
         # $ACADVER of the converted DXF is the converter's output release, not the DWG's.

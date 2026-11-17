@@ -2,6 +2,11 @@
  * Constants for House AI Plan Reviewer UI.
  */
 
+/**
+ * Revision operations the reviewer offers. Every value must be a verb of the one table in
+ * src/house_ai/domain/revision_ops.py (`REVISION_VERBS`); tests/test_revision_operations.py
+ * checks this. Operations the solver cannot honour yet (orientation, daylight) are not offered.
+ */
 export const REVISION_OPS = [
   { value: "area", label: "--area", description: "Change target room area" },
   { value: "separate", label: "--separate", description: "Enforce separation between spaces" },
@@ -11,8 +16,8 @@ export const REVISION_OPS = [
   { value: "rethink", label: "--rethink", description: "Rethink/re-explore room layout" },
   { value: "strategy", label: "--strategy", description: "Switch massing strategy" },
   { value: "connect", label: "--connect", description: "Add direct door connection" },
-  { value: "orientation", label: "--orientation", description: "Orient room towards direction" },
-  { value: "daylight", label: "--daylight", description: "Require daylight for room" },
+  { value: "stair", label: "--stair", description: "Move the stair core (entry, perimeter, central, rear)" },
+  { value: "outdoor", label: "--outdoor", description: "Link a room to a terrace, balcony or courtyard" },
 ] as const;
 
 export type SupportedRevisionOpType = (typeof REVISION_OPS)[number]["value"];

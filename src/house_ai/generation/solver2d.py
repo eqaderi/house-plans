@@ -30,8 +30,6 @@ from house_ai.constants.placement2d import (
     STAIR_CORE_DEFAULT_DEPTH_DM,
     STAIR_CORE_DEFAULT_WIDTH_DM,
     STAIR_CORE_RISERS,
-    STAIR_CORE_SPACE_ID_ENTRY,
-    STAIR_CORE_SPACE_ID_UPPER,
     ZONE_FAMILY,
     ZONE_GUEST,
     ZONE_OUTDOOR,
@@ -42,6 +40,7 @@ from house_ai.constants.proposals import (
     STAIR_CORE_ENTRY,
     STAIR_CORE_PERIMETER,
     STAIR_CORE_REAR,
+    VALID_OUTDOOR_LINKS,
 )
 from house_ai.constants.relations import (
     SHARED_WALL_MIN_M,
@@ -432,71 +431,6 @@ def _apply_courtyard_constraints(
     md.Add(has_n + has_s + has_e + has_w >= 3)
 
 
-def _apply_stair_constraints(
-    md: cp_model.CpModel,
-    proposal: ConceptProposal | None,
-    entry_r: PlacementRoom | None,
-    x_vars: dict[str, cp_model.IntVar],
-    y_vars: dict[str, cp_model.IntVar],
-    xe_vars: dict[str, cp_model.IntVar],
-    ye_vars: dict[str, cp_model.IntVar],
-    touch_vars: dict[tuple[str, str], cp_model.BoolVar],
-    max_x: cp_model.IntVar,
-    max_y: cp_model.IntVar,
-    rooms: list[PlacementRoom],
-    obj_terms: list[cp_model.LinearExpr],
-    env_w_dm: int,
-    env_h_dm: int,
-    opts: SolverOptions | None = None,
-) -> None:
-    """Enforce stair vertical alignment and target placement input (S7-16)."""
-    # Vertical alignment across levels
-    md.Add(x_vars[STAIR_CORE_SPACE_ID_ENTRY] == x_vars[STAIR_CORE_SPACE_ID_UPPER])
-    md.Add(y_vars[STAIR_CORE_SPACE_ID_ENTRY] == y_vars[STAIR_CORE_SPACE_ID_UPPER])
-    md.Add(xe_vars[STAIR_CORE_SPACE_ID_ENTRY] == xe_vars[STAIR_CORE_SPACE_ID_UPPER])
-    md.Add(ye_vars[STAIR_CORE_SPACE_ID_ENTRY] == ye_vars[STAIR_CORE_SPACE_ID_UPPER])
-
-    pos = STAIR_CORE_CENTRAL
-    if opts and opts.stair_position:
-        pos = opts.stair_position
-    elif proposal and proposal.stair_cores:
-        pos = proposal.stair_cores[0].position
-
-    if pos == STAIR_CORE_ENTRY and entry_r:
-        pair = (
-            min(STAIR_CORE_SPACE_ID_ENTRY, entry_r.space_id),
-            max(STAIR_CORE_SPACE_ID_ENTRY, entry_r.space_id),
-        )
-        if pair in touch_vars:
-            md.Add(touch_vars[pair] == 1)
-    elif pos == STAIR_CORE_PERIMETER:
-        b_l = md.NewBoolVar("st_l")
-        b_r = md.NewBoolVar("st_r")
-        b_b = md.NewBoolVar("st_b")
-        b_t = md.NewBoolVar("st_t")
-        md.Add(x_vars[STAIR_CORE_SPACE_ID_ENTRY] == 0).OnlyEnforceIf(b_l)
-        md.Add(xe_vars[STAIR_CORE_SPACE_ID_ENTRY] == max_x).OnlyEnforceIf(b_r)
-        md.Add(y_vars[STAIR_CORE_SPACE_ID_ENTRY] == 0).OnlyEnforceIf(b_b)
-        md.Add(ye_vars[STAIR_CORE_SPACE_ID_ENTRY] == max_y).OnlyEnforceIf(b_t)
-        md.Add(b_l + b_r + b_b + b_t >= 1)
-    elif pos == STAIR_CORE_REAR:
-        md.Add(ye_vars[STAIR_CORE_SPACE_ID_ENTRY] == max_y)
-    else:
-        # STAIR_CORE_CENTRAL: pull stair towards center of plan
-        stair_x = x_vars[STAIR_CORE_SPACE_ID_ENTRY]
-        stair_y = y_vars[STAIR_CORE_SPACE_ID_ENTRY]
-        for r in rooms:
-            if r.space_id in (STAIR_CORE_SPACE_ID_ENTRY, STAIR_CORE_SPACE_ID_UPPER):
-                continue
-            dx = md.NewIntVar(0, env_w_dm, f"dx_st_{r.space_id}")
-            dy = md.NewIntVar(0, env_h_dm, f"dy_st_{r.space_id}")
-            md.Add(dx >= x_vars[r.space_id] - stair_x)
-            md.Add(dx >= stair_x - x_vars[r.space_id])
-            md.Add(dy >= y_vars[r.space_id] - stair_y)
-            md.Add(dy >= stair_y - y_vars[r.space_id])
-            obj_terms.append(W_STAIR_CENTRAL * (dx + dy))
-
-
 def _apply_zoning_objectives(
     md: cp_model.CpModel,
     rooms: list[PlacementRoom],
@@ -651,7 +585,7 @@ def solve_2d_placement(
             outdoor_links.extend(
                 (r.space_id, link.kind) for r in rooms if r.item_id == link.program_item_id
             )
-    unsupported = {k for _, k in outdoor_links} - {"terrace", "balcony", "courtyard"}
+    unsupported = {k for _, k in outdoor_links} - VALID_OUTDOOR_LINKS
     if unsupported:
         raise Solve2DFailed(f"outdoor geometry not supported for {sorted(unsupported)}")
     courtyard = strategy == STRATEGY_COURTYARD or any(k == "courtyard" for _, k in outdoor_links)

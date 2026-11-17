@@ -19,9 +19,9 @@
       "severity": "warning",
       "suggested_ops": [
         {
-          "op_type": "connect",
-          "target": "win-buried-001",
-          "value": "w-down-300-013",
+          "op_type": "rethink",
+          "target": "sp-study-1",
+          "value": null,
           "notes": null
         }
       ],

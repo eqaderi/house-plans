@@ -16,6 +16,7 @@ from pathlib import Path
 from house_ai.domain.evaluation import EvaluationReport
 from house_ai.domain.plan import PlanVersion
 from house_ai.domain.provenance import Actor
+from house_ai.domain.revision_ops import RevisionOp
 from house_ai.domain.visual_critique import VisualCritiqueFile
 from house_ai.orchestration.plans import PlanService
 from house_ai.storage.project_store import ProjectStore
@@ -186,9 +187,9 @@ def apply_visual_critique_loop(
     grounding.raise_if_ungrounded()
 
     # 2. Extract suggested ops
-    all_ops: list[str] = []
+    all_ops: list[RevisionOp] = []
     for claim in critique.claims:
-        all_ops.extend(op.to_cli_string() for op in claim.suggested_ops)
+        all_ops.extend(claim.suggested_ops)
 
     if not all_ops:
         raise VisualFixVerificationError(

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import type { RevisionOpsFile, RevisionOp, RevisionComment } from "../types/schemas";
+import type { RevisionOpsFile, RevisionOp, RevisionComment, RevisionVerb } from "../types/schemas";
 import { REVISION_OPS } from "../constants";
 
 interface FeedbackPanelProps {
@@ -22,7 +22,7 @@ export const FeedbackPanel: React.FC<FeedbackPanelProps> = ({
 
   // Form states for new comment / op
   const [commentText, setCommentText] = useState<string>("");
-  const [opType, setOpType] = useState<string>("area");
+  const [opType, setOpType] = useState<RevisionVerb>("area");
   const [opTarget, setOpTarget] = useState<string>(selectedId || "pi-kitchen");
   const [opValue, setOpValue] = useState<string>("18.0");
 
@@ -198,7 +198,7 @@ export const FeedbackPanel: React.FC<FeedbackPanelProps> = ({
           <select
             data-testid="op-type-select"
             value={opType}
-            onChange={(e) => setOpType(e.target.value)}
+            onChange={(e) => setOpType(e.target.value as RevisionVerb)}
             style={{
               background: "#0f172a",
               border: "1px solid #334155",

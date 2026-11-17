@@ -51,6 +51,7 @@ from house_ai.evaluation.explain import detect_near_duplicates, footprint_iou, t
 from house_ai.orchestration.interview import InterviewService
 from house_ai.orchestration.plans import PlanService, PlanWorkflowError, StoredOption
 from house_ai.orchestration.reviewer_bundle import export_reviewer_bundle
+from house_ai.orchestration.site import SiteService
 from house_ai.orchestration.workflow import GateBlocked, Workflow
 from house_ai.render2d.rasterize import find_rasterizer, rasterize_svg_to_png
 from house_ai.storage import ProjectStore
@@ -189,7 +190,7 @@ def run(out: Path, strategies: list[str] | None = None, with_proposal: bool = Tr
             lambda: wf.approve(Gate.SITE, site_ref, AGENT, "agent tries"), ApprovalRequiresHuman
         ),
     }
-    blockers = wf.assess_site(site_ref, AGENT)
+    blockers = SiteService(store).assess(site_ref, AGENT).blockers
     wf.approve(Gate.SITE, site_ref, OWNER, "synthetic owner approves the synthetic site")
 
     # 2. Agent-operated interview.

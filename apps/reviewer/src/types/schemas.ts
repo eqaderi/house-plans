@@ -674,13 +674,19 @@ export interface RevisionComment {
   text: string;
 }
 
-/** One structured revision operation matching plan revise arguments. */
+/** One Revision operation, checked against the verb table.
+
+The target is the Space or requirement name (a,b for a relation, the position for a
+stair, the strategy, the proposal path); the value is the area, the level word or the
+outdoor kind. */
 export interface RevisionOp {
   notes?: string | null;
-  op_type: string;
+  op_type: RevisionVerb;
   target: string;
   value?: string | number | null;
 }
+
+export type RevisionVerb = "area" | "level" | "separate" | "adjacent" | "near" | "connect" | "outdoor" | "stair" | "proposal" | "rethink" | "strategy";
 
 /** Where the solver put one space in the strategy's massing (bar, row, order). */
 export interface RoomPlacement {

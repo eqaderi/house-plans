@@ -146,7 +146,7 @@ test.describe("House AI Plan Reviewer - Local 2D Reviewer E2E", () => {
       .locator('[data-testid="verbatim-request-input"]')
       .fill("Make the kitchen larger and add pantry");
 
-    // Verify all supported revision CLI ops are available in dropdown
+    // Verify the revision CLI ops are available in dropdown, and none the solver cannot honour
     const opSelect = page.locator('[data-testid="op-type-select"]');
     const options = await opSelect.locator("option").allTextContents();
     expect(options).toEqual(
@@ -159,10 +159,13 @@ test.describe("House AI Plan Reviewer - Local 2D Reviewer E2E", () => {
         "--rethink",
         "--strategy",
         "--connect",
-        "--orientation",
-        "--daylight",
+        "--stair",
+        "--outdoor",
       ])
     );
+
+    expect(options).not.toContain("--orientation");
+    expect(options).not.toContain("--daylight");
 
     // Add structured revision op
     await page.locator('[data-testid="op-target-input"]').fill("pi-kitchen");

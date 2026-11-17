@@ -7,11 +7,8 @@ CAD parsing.
 
 from __future__ import annotations
 
-from typing import Protocol
-
-from house_ai.domain.coordinates import HorizontalCRS, LocalCoordinateSystem
+from house_ai.domain.coordinates import HorizontalCRS
 from house_ai.domain.epistemics import ConfirmationStatus
-from house_ai.domain.geometry import Point3
 from house_ai.domain.provenance import Actor, refuse_non_human
 from house_ai.domain.site import Contour, SpotElevation, Terrain, TerrainStatus, TinSurface
 
@@ -41,24 +38,6 @@ def set_coordinate_reference_system(
     return HorizontalCRS(status=status, epsg=epsg, declared_epsg=declared_epsg, name=name)
 
 
-def create_local_coordinate_system(
-    *,
-    frame_id: str,
-    origin: Point3,
-    rotation_deg: float = 0.0,
-    name: str | None = None,
-    grid_to_true_north_deg: float | None = None,
-) -> LocalCoordinateSystem:
-    """Create the local metric project coordinate frame from a GRID origin."""
-    return LocalCoordinateSystem(
-        id=frame_id,
-        name=name,
-        origin=origin,
-        rotation_deg=rotation_deg,
-        grid_to_true_north_deg=grid_to_true_north_deg,
-    )
-
-
 def build_terrain(
     spot_elevations: list[SpotElevation],
     contours: list[Contour],
@@ -80,11 +59,3 @@ def build_terrain(
         surface_ref=surface_ref,
         surface=surface,
     )
-
-
-class TerrainBuilder(Protocol):
-    """Protocol for Milestone B surface triangulation (TIN) builders."""
-
-    def build_surface(
-        self, spot_elevations: list[SpotElevation], contours: list[Contour]
-    ) -> Terrain: ...

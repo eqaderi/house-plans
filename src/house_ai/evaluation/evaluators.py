@@ -36,8 +36,9 @@ from house_ai.domain.program import (
     SpaceFunction,
     SpaceRelationshipKind,
     Strength,
+    level_preference_met,
 )
-from house_ai.domain.relations import hops_between, is_relation_satisfied, shared_wall_length
+from house_ai.domain.relations import hops_between, is_relation_satisfied
 from house_ai.domain.site import PointGeometry, PolygonGeometry, PolylineGeometry, SiteFeatureKind
 from house_ai.domain.terrain import elevation_at, site_surface
 
@@ -133,10 +134,6 @@ def _privacy(model: HouseModel) -> dict[str, Privacy]:
 
 def _hops(graph: dict[str, set[str]], origin: str) -> dict[str, int]:
     return hops_between(graph, origin)
-
-
-def _shared_length(model: HouseModel, a: str, b: str) -> float:
-    return shared_wall_length(model, a, b)
 
 
 def _spaces_for(model: HouseModel, item_id: str) -> list[str]:
@@ -378,7 +375,7 @@ class ProgramEvaluator:
                     )
                 if item.function in (S.STAIR, S.LIFT):
                     continue
-                ok = _level_ok(
+                ok = level_preference_met(
                     item.level_preference,
                     model.level(sp.level_id).elevation_m,
                     entry.elevation_m if entry else None,
@@ -431,20 +428,6 @@ class ProgramEvaluator:
                 [],
             )
         return out.result()
-
-
-def _level_ok(pref: str | None, z: float, entry: float | None, n_levels: int) -> bool | None:
-    if entry is None or pref in (None, "any"):
-        return None
-    if pref in ("entry", "ground"):
-        return abs(z - entry) < 1e-6
-    if pref == "not_entry":
-        return n_levels == 1 or abs(z - entry) > 1e-6
-    if pref == "upper":
-        return z > entry + 1e-6
-    if pref == "lower":
-        return z < entry - 1e-6
-    return None
 
 
 def _step_free(model: HouseModel, target: str) -> bool:
@@ -534,11 +517,6 @@ class AdjacencyEvaluator:
         else:
             out.metric("soft_adjacency_score", None, "no_soft_requirements", NC)
         return out.result()
-
-    @staticmethod
-    def _satisfied(kind, model, graph, a_s, b_s) -> bool | None:
-        ok, _ = is_relation_satisfied(kind, model, graph, a_s, b_s)
-        return ok
 
 
 # ------------------------------------------------------------------ circulation

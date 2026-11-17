@@ -210,26 +210,6 @@ class Workflow:
             return [f"no {target.value} build record generated from the approved plan"]
         return []
 
-    def assess_site(self, site_ref: ArtifactRef, actor: Actor) -> list[str]:
-        """During site ingestion, stop at SITE_NEEDS_CONFIRMATION if the site is ambiguous.
-
-        Returns the blockers; an empty list means the site is ready for a human
-        to review and approve.
-        """
-        if self.state is not S.SITE_INGESTION:
-            raise TransitionNotAllowed(f"site assessment runs in SITE_INGESTION, not {self.state}")
-        blockers = site_verification_blockers(self.store.get(site_ref, Site))
-        if blockers:
-            self.store.append_event(
-                EventType.TRANSITION,
-                actor,
-                from_state=S.SITE_INGESTION,
-                to_state=S.SITE_NEEDS_CONFIRMATION,
-                reason="site needs human verification before anything else",
-                payload={"site": site_ref.model_dump(mode="json"), "blockers": blockers},
-            )
-        return blockers
-
     # ------------------------------------------------------------------ gates
 
     def check_gate(self, gate: Gate, ref: ArtifactRef) -> list[str]:

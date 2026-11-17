@@ -51,7 +51,7 @@ def test_demonstration_critique_schema_and_grounding():
     assert "w-down-300-001" in claim.element_ids
     assert claim.status.value == "ai_judgment"
     assert len(claim.suggested_ops) == 1
-    assert claim.suggested_ops[0].op_type == "connect"
+    assert str(claim.suggested_ops[0]) == "rethink:sp-study-1"
 
 
 def test_demonstration_screenshots_valid_and_distinct():
