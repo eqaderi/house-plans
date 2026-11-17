@@ -15,7 +15,7 @@ from house_ai.domain.plan import ChangeRequestKind, PlanVersion
 from house_ai.domain.program import SpaceProgram
 from house_ai.domain.provenance import ArtifactKind
 from house_ai.domain.records import AssumptionsFile
-from house_ai.domain.revision_ops import parse_ops
+from house_ai.domain.revision_ops import parse_operations
 from house_ai.domain.site import Site
 from house_ai.domain.workflow import Gate, WorkflowState
 from house_ai.generation.revision import unmet_requests
@@ -27,10 +27,10 @@ from .test_plan_workflow import _approve_site_and_program, _load
 
 def _unmet(ops: list[str], model, base: PlanVersion, program: SpaceProgram) -> list[str]:
     return unmet_requests(
-        parse_ops(ops),
+        parse_operations(ops),
         model,
         program,
-        parent_ops=parse_ops(base.generation.revision_ops),
+        parent_ops=parse_operations(base.generation.revision_ops),
         parent_model=base.model,
     )
 

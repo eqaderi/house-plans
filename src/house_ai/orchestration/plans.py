@@ -38,7 +38,7 @@ from house_ai.domain.program import SpaceProgram
 from house_ai.domain.proposal import ConceptProposal
 from house_ai.domain.provenance import Actor, ArtifactKind, ArtifactRef, Provenance
 from house_ai.domain.records import AssumptionsFile, Severity
-from house_ai.domain.revision_ops import RevisionOp, RevisionOpError, RevisionVerb
+from house_ai.domain.revision_ops import RevisionOp, RevisionOperationError, RevisionVerb
 from house_ai.domain.site import Site
 from house_ai.domain.workflow import Gate, WorkflowState
 from house_ai.evaluation.explain import (
@@ -425,7 +425,7 @@ class PlanService:
     ) -> RevisionOutcome:
         try:
             ops = [op if isinstance(op, RevisionOp) else RevisionOp.parse(op) for op in ops or []]
-        except RevisionOpError as exc:
+        except RevisionOperationError as exc:
             raise PlanWorkflowError(str(exc)) from exc
         if not text.strip():
             raise PlanWorkflowError("a revision needs the owner's request, verbatim")
@@ -545,7 +545,7 @@ class PlanService:
                 ops,
                 inherit=kind in (ChangeRequestKind.MODIFY, ChangeRequestKind.COMBINE),
             )
-        except RevisionOpError as exc:
+        except RevisionOperationError as exc:
             raise PlanWorkflowError(str(exc)) from exc
         strategy, asked = request.strategy, request.requests
 
@@ -599,7 +599,7 @@ class PlanService:
                 for ol in loaded_proposal.outdoor_links:
                     try:
                         sids = resolve_spaces(ol.program_item_id, inp.program)
-                    except RevisionOpError as exc:
+                    except RevisionOperationError as exc:
                         raise PlanWorkflowError(str(exc)) from exc
                     for sid in sids:
                         asked.outdoor_links.append((sid, ol.kind))

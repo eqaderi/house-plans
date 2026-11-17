@@ -23,7 +23,13 @@ from house_ai.constants.strategies import (
 from house_ai.domain.plan import ChangeRequestKind
 from house_ai.domain.program import LEVEL_PREFERENCES
 from house_ai.domain.proposal import ConceptProposal
-from house_ai.domain.revision_ops import RevisionOp, RevisionOpError, RevisionOpsFile, parse_ops
+from house_ai.domain.revision_ops import (
+    REVISION_VERBS,
+    RevisionOp,
+    RevisionOperationError,
+    RevisionOpsFile,
+    parse_operations,
+)
 from house_ai.domain.workflow import Gate
 from house_ai.orchestration.plans import (
     GenerationOutcome,
@@ -188,23 +194,17 @@ def cmd_plan_propose(args: argparse.Namespace) -> int:
     return _render_generation_outcome(res, args, extra_json={"proposal_id": proposal.id})
 
 
-def _ops(args: argparse.Namespace) -> list[RevisionOp]:
-    """The Revision operations the flags ask for, parsed once through the verb table."""
-    texts = [f"area:{a}" for a in getattr(args, "area", [])]
-    texts += [f"level:{a}" for a in getattr(args, "level", [])]
-    texts += [f"separate:{a}" for a in getattr(args, "separate", [])]
-    texts += [f"adjacent:{a}" for a in getattr(args, "adjacent", [])]
-    texts += [f"near:{a}" for a in getattr(args, "near", [])]
-    texts += [f"connect:{a}" for a in getattr(args, "connect", [])]
-    texts += [f"outdoor:{a}" for a in getattr(args, "outdoor", [])]
-    if getattr(args, "stair", None):
-        texts.append(f"stair:{args.stair}")
-    if getattr(args, "proposal", None):
-        texts.append(f"proposal:{args.proposal}")
-    texts += [f"rethink:{a}" for a in getattr(args, "rethink", [])]
-    if getattr(args, "strategy", None):
-        texts.append(f"strategy:{args.strategy}")
-    return parse_ops(texts)
+def _revision_operations(args: argparse.Namespace) -> list[RevisionOp]:
+    """The Revision operations the flags ask for, in verb-table order, parsed once.
+
+    Each verb's flag is named after it (``--area``, ``--stair``); a repeatable flag gives a
+    list, a single one a value or None.
+    """
+    texts = []
+    for verb in REVISION_VERBS:
+        given = getattr(args, verb.value, None) or []
+        texts += [f"{verb.value}:{v}" for v in (given if isinstance(given, list) else [given])]
+    return parse_operations(texts)
 
 
 def _render_revision_outcome(res: RevisionOutcome, args: argparse.Namespace) -> int:
@@ -216,7 +216,7 @@ def _render_revision_outcome(res: RevisionOutcome, args: argparse.Namespace) -> 
                 {
                     "plan_ref": ref.model_dump(mode="json"),
                     "revision": rev.model_dump(mode="json"),
-                    "findings": res.findings.as_json(),
+                    "findings": res.findings.to_json(),
                     "export_dir": str(res.export_dir),
                 },
                 indent=2,
@@ -246,59 +246,45 @@ def _render_revision_outcome(res: RevisionOutcome, args: argparse.Namespace) -> 
     return EXIT_OK
 
 
-def cmd_plan_revise(args: argparse.Namespace) -> int:
+def _revise(args: argparse.Namespace, option: str, **request) -> int:
+    """Store a revision of ``option``: operations refused before the project is opened."""
     try:
-        ops = _ops(args)
-    except RevisionOpError as exc:
+        ops = _revision_operations(args)
+    except RevisionOperationError as exc:
         _out(f"refused: {exc}")
         return EXIT_FAIL
     store = ProjectStore(resolve_project_dir(args.dir))
     out = Path(args.out) if args.out else _default_out(store, False)
-    bases = getattr(args, "bases", None)
     try:
         res = PlanService(store).revise(
-            args.option,
-            args.text,
-            args.actor,
-            ops=ops,
-            kind=ChangeRequestKind(args.kind),
-            version=args.version,
-            seed=args.seed,
-            out_dir=out,
-            base_versions=bases,
-            features=getattr(args, "features", None),
-            feature_confirmation=getattr(args, "feature_confirmation", None),
+            option, args.text, args.actor, ops=ops, seed=args.seed, out_dir=out, **request
         )
     except PlanWorkflowError as exc:
         return _refused(exc, args.dir)
     return _render_revision_outcome(res, args)
+
+
+def cmd_plan_revise(args: argparse.Namespace) -> int:
+    return _revise(
+        args,
+        args.option,
+        kind=ChangeRequestKind(args.kind),
+        version=args.version,
+        base_versions=getattr(args, "bases", None),
+        features=getattr(args, "features", None),
+        feature_confirmation=getattr(args, "feature_confirmation", None),
+    )
 
 
 def cmd_plan_combine(args: argparse.Namespace) -> int:
-    try:
-        ops = _ops(args)
-    except RevisionOpError as exc:
-        _out(f"refused: {exc}")
-        return EXIT_FAIL
-    store = ProjectStore(resolve_project_dir(args.dir))
-    out = Path(args.out) if args.out else _default_out(store, False)
-    target = getattr(args, "target", None) or args.bases[0]
-    try:
-        res = PlanService(store).revise(
-            target,
-            args.text,
-            args.actor,
-            ops=ops,
-            kind=ChangeRequestKind.COMBINE,
-            base_versions=args.bases,
-            features=args.features,
-            feature_confirmation=args.feature_confirmation,
-            seed=args.seed,
-            out_dir=out,
-        )
-    except PlanWorkflowError as exc:
-        return _refused(exc, args.dir)
-    return _render_revision_outcome(res, args)
+    return _revise(
+        args,
+        getattr(args, "target", None) or args.bases[0],
+        kind=ChangeRequestKind.COMBINE,
+        base_versions=args.bases,
+        features=args.features,
+        feature_confirmation=args.feature_confirmation,
+    )
 
 
 def cmd_plan_list(args: argparse.Namespace) -> int:

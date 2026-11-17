@@ -15,7 +15,7 @@ from house_ai.cli.main import main
 from house_ai.domain.revision_ops import (
     REVISION_VERBS,
     RevisionOp,
-    RevisionOpError,
+    RevisionOperationError,
     RevisionOpsFile,
     RevisionVerb,
 )
@@ -67,7 +67,7 @@ def test_parse_reads_verb_target_and_value() -> None:
 
 @pytest.mark.parametrize("text", ["orientation:sp-living=south", "daylight:sp-living", "void:a,b"])
 def test_unknown_verb_is_refused_with_one_message(text: str) -> None:
-    with pytest.raises(RevisionOpError) as err:
+    with pytest.raises(RevisionOperationError) as err:
         RevisionOp.parse(text)
     verb = text.partition(":")[0]
     assert str(err.value) == (
@@ -97,7 +97,7 @@ def test_unknown_verb_is_refused_with_one_message(text: str) -> None:
     ],
 )
 def test_illegal_targets_are_refused_at_parse_time(text: str, message: str) -> None:
-    with pytest.raises(RevisionOpError) as err:
+    with pytest.raises(RevisionOperationError) as err:
         RevisionOp.parse(text)
     assert message in str(err.value)
 

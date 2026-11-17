@@ -12,7 +12,7 @@ import pytest
 
 from house_ai.domain.plan import PlanVersion
 from house_ai.domain.program import SpaceProgram, SpaceRelationshipKind
-from house_ai.domain.revision_ops import RevisionOp, RevisionOpError, parse_ops
+from house_ai.domain.revision_ops import RevisionOp, RevisionOperationError, parse_operations
 from house_ai.generation.engines import BarEngine
 from house_ai.generation.revision import compile_revision, resolve_spaces, targeted_ids
 from house_ai.storage.hashing import load_document
@@ -46,7 +46,7 @@ def test_resolve_spaces_reads_requirement_and_space_names() -> None:
     program = _program()
     assert resolve_spaces("pi-kitchen", program) == ["sp-kitchen"]
     assert resolve_spaces("sp-kitchen", program) == ["sp-kitchen"]
-    with pytest.raises(RevisionOpError, match="unknown room 'pi-attic'"):
+    with pytest.raises(RevisionOperationError, match="unknown room 'pi-attic'"):
         resolve_spaces("pi-attic", program)
 
 
@@ -69,7 +69,7 @@ def test_modify_inherits_intent_and_overrides_item_space_aliases() -> None:
     assert _hints(req, program)[0]  # one-run rethink was not inherited
     assert req.strategy == "compact"
 
-    new = parse_ops(
+    new = parse_operations(
         ["area:sp-kitchen=18", "level:sp-study-1=entry", "adjacent:sp-bed-child-1,sp-bed-main"]
     )
     req = compile_revision(parent, program, new, inherit=True)
@@ -101,7 +101,8 @@ def test_partial_quantity_override_keeps_other_room_requests() -> None:
     ]
     program = program.model_copy(update={"space_requirements": items})
     parent = _concept(["area:pi-study-1=12"])
-    req = compile_revision(parent, program, parse_ops(["area:sp-study-1-1=14"]), inherit=True)
+    ops = parse_operations(["area:sp-study-1-1=14"])
+    req = compile_revision(parent, program, ops, inherit=True)
     assert req.requests.targets == {"sp-study-1-1": 14.0, "sp-study-1-2": 12.0}
     assert _strings(req.operations) == ["area:sp-study-1-2=12", "area:sp-study-1-1=14"]
 
@@ -110,7 +111,7 @@ def test_topology_operations_become_stair_and_outdoor_input() -> None:
     req = compile_revision(
         _concept(),
         _program(),
-        parse_ops(
+        parse_operations(
             ["connect:sp-kitchen,sp-dining", "stair:perimeter", "outdoor:sp-living",
              "outdoor:pi-kitchen,balcony"]
         ),
@@ -126,12 +127,13 @@ def test_topology_operations_become_stair_and_outdoor_input() -> None:
 def test_strategy_and_rethink_apply_to_one_solve() -> None:
     parent = _concept()
     req = compile_revision(
-        parent, _program(), parse_ops(["strategy:linear", "rethink:all"]), inherit=True
+        parent, _program(), parse_operations(["strategy:linear", "rethink:all"]), inherit=True
     )
     assert req.strategy == "linear"
     assert _hints(req) == ({}, {})  # a new strategy starts from no parent positions
     assert _strings(req.operations) == ["strategy:linear", "rethink:all"]
-    same = compile_revision(parent, _program(), parse_ops(["rethink:pi-kitchen"]), inherit=True)
+    rethink = parse_operations(["rethink:pi-kitchen"])
+    same = compile_revision(parent, _program(), rethink, inherit=True)
     hints, bar_hints = _hints(same)
     assert "sp-kitchen" not in hints
     assert hints and bar_hints == {}
@@ -151,7 +153,8 @@ def test_area_below_the_program_minimum_is_refused() -> None:
     kitchen = next(i for i in program.space_requirements if i.id == "pi-kitchen")
     assert kitchen.min_area_m2 is not None
     too_small = kitchen.min_area_m2 / 2
-    with pytest.raises(RevisionOpError, match="below the approved program minimum for pi-kitchen"):
+    below = "below the approved program minimum for pi-kitchen"
+    with pytest.raises(RevisionOperationError, match=below):
         compile_revision(
             _concept(), program, [RevisionOp.parse(f"area:pi-kitchen={too_small:g}")],
             inherit=True,
@@ -160,7 +163,9 @@ def test_area_below_the_program_minimum_is_refused() -> None:
 
 def test_the_ids_a_request_targets_are_its_names_and_the_spaces_they_mean() -> None:
     program = _program()
-    ops = parse_ops(["area:pi-kitchen=16", "separate:sp-living,pi-bed-main", "strategy:compact"])
+    ops = parse_operations(
+        ["area:pi-kitchen=16", "separate:sp-living,pi-bed-main", "strategy:compact"]
+    )
     assert targeted_ids(ops, program) == {
         "pi-kitchen",
         "sp-kitchen",
@@ -169,7 +174,7 @@ def test_the_ids_a_request_targets_are_its_names_and_the_spaces_they_mean() -> N
         "sp-bed-main",
     }
     # A Zone means its Spaces; ``all`` means every Space.
-    assert targeted_ids(parse_ops(["rethink:z-night"]), program) == {
+    assert targeted_ids(parse_operations(["rethink:z-night"]), program) == {
         "z-night",
         "sp-bed-main",
         "sp-bed-child-1",
@@ -177,6 +182,6 @@ def test_the_ids_a_request_targets_are_its_names_and_the_spaces_they_mean() -> N
         "sp-bath-ensuite",
         "sp-bath-1",
     }
-    everything = targeted_ids(parse_ops(["rethink:all"]), program)
+    everything = targeted_ids(parse_operations(["rethink:all"]), program)
     assert {"sp-kitchen", "sp-garage", "sp-bed-main"} <= everything
     assert "all" not in everything
