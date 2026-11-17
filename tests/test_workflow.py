@@ -295,6 +295,13 @@ def test_only_program_reject_leaves_program_review(project, actor):
     assert len(project.store.events()) == events
 
 
+def test_program_review_advertises_no_transition(project):
+    # Only the Owner's program reject leaves PROGRAM_REVIEW (backwards); approval is the
+    # gate. Nothing a transition would refuse is offered as an allowed move.
+    project.to_program_review()
+    assert project.wf.allowed_transitions() == []
+
+
 def test_program_review_needs_a_program(store):
     wf = Workflow(store)
     store.put(K.SITE, "site", example_doc("site.yaml"), AGENT)

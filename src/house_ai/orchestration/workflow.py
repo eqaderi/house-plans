@@ -54,14 +54,15 @@ from .site_context import site_context_for
 
 S = WorkflowState
 
-#: Ordinary (non-gate) transitions.
+#: Ordinary (non-gate) transitions. PROGRAM_REVIEW has none: leaving it backwards is the
+#: Owner's ``program reject`` (``InterviewService.reject_program``, ADR 0029), never a
+#: transition, and forwards is the program gate.
 TRANSITIONS: dict[WorkflowState, frozenset[WorkflowState]] = {
     S.NEW_PROJECT: frozenset({S.SITE_INGESTION}),
     S.SITE_INGESTION: frozenset({S.SITE_NEEDS_CONFIRMATION}),
     S.SITE_NEEDS_CONFIRMATION: frozenset({S.SITE_INGESTION}),
     S.SITE_APPROVED: frozenset({S.INTERVIEWING}),
     S.INTERVIEWING: frozenset({S.PROGRAM_REVIEW}),
-    S.PROGRAM_REVIEW: frozenset({S.INTERVIEWING}),
     S.PROGRAM_APPROVED: frozenset({S.PLAN_GENERATION}),
     S.PLAN_GENERATION: frozenset({S.PLAN_REVIEW}),
     S.PLAN_REVIEW: frozenset({S.PLAN_GENERATION}),
@@ -323,6 +324,8 @@ class Workflow:
                 f"{to.value} is behind an approval gate; it can only be reached by a human "
                 "approval (approve), never by a transition"
             )
+        if current is S.PROGRAM_REVIEW and to is S.INTERVIEWING:
+            raise UseProgramReject()
         if to not in TRANSITIONS.get(current, frozenset()):
             allowed = ", ".join(s.value for s in self.allowed_transitions()) or "none"
             raise TransitionNotAllowed(
@@ -330,8 +333,6 @@ class Workflow:
             )
         if not reason.strip():
             raise TransitionNotAllowed("a transition needs a reason")
-        if current is S.PROGRAM_REVIEW and to is S.INTERVIEWING:
-            raise UseProgramReject()
         problems = self._transition_guard(current, to)
         if problems:
             raise TransitionNotAllowed(f"{current.value} -> {to.value}: " + "; ".join(problems))
