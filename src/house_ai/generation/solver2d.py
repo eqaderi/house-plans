@@ -63,8 +63,7 @@ from house_ai.domain.program import (
 from house_ai.domain.proposal import ConceptProposal
 from house_ai.domain.site import Site
 from house_ai.generation.frame import ENVELOPE_MARGIN_M, DesignFrame, Ground
-from house_ai.generation.rooms import garage_dims_dm, space_id_for
-from house_ai.generation.solver import SolverOptions
+from house_ai.generation.rooms import Relation, garage_dims_dm, space_id_for
 from house_ai.generation.stairs import u_core_fits
 
 #: Space relationship kinds that keep two spaces apart.
@@ -538,11 +537,35 @@ def _obstacles(poly, width: int, height: int):
     return result
 
 
+@dataclass
+class PlacementOptions:
+    """What the 2D placement solver reads (ADR 0032); the 2D engine fills it in."""
+
+    seed: int = 0
+    #: CP-SAT deterministic time budget (solver work units, not wall-clock seconds).
+    deterministic_time: float = 4.0
+    #: space id -> target area override (m²) from a revision.
+    targets: dict[str, float] = field(default_factory=dict)
+    #: space id (or Space requirement id) -> level preference override.
+    level_prefs: dict[str, str] = field(default_factory=dict)
+    #: Extra soft relations from a revision.
+    relations: list[Relation] = field(default_factory=list)
+    #: Objective scales from the constraint set (objective name -> weight).
+    objective_weights: dict[str, float] = field(default_factory=dict)
+    #: Stair position override ("entry", "perimeter", "central", "rear") (S7-16, S7-21).
+    stair_position: str | None = None
+    #: Outdoor links (space_id, kind) (S7-19, S7-21).
+    outdoor_links: list[tuple[str, str]] = field(default_factory=list)
+    #: Hard minimum areas and widths per Space requirement, from the constraint set.
+    min_areas: dict[str, float] = field(default_factory=dict)
+    min_widths: dict[str, float] = field(default_factory=dict)
+
+
 def solve_2d_placement(
     program: SpaceProgram,
     site: Site,
     frame: DesignFrame,
-    opts: SolverOptions,
+    opts: PlacementOptions,
     strategy: str = STRATEGY_CORRIDOR_FREE,
     proposal: ConceptProposal | None = None,
     multi_level: bool = False,

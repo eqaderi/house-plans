@@ -81,8 +81,8 @@ from house_ai.evaluation.evaluators import AdjacencyEvaluator, SiteEvaluator
 from house_ai.generation.assemble2d import assemble_2d
 from house_ai.generation.frame import Ground, design_frame
 from house_ai.generation.generator import CpSatPlanGenerator, GenerationRequest
-from house_ai.generation.solver import SolverOptions
 from house_ai.generation.solver2d import (
+    PlacementOptions,
     solve_2d_placement,
 )
 
@@ -103,7 +103,7 @@ def test_2d_placement_basic_and_check_model_clean():
 
     frame = design_frame(site)
     ground = Ground(site, frame)
-    opts = SolverOptions(seed=42, deterministic_time=4.0)
+    opts = PlacementOptions(seed=42, deterministic_time=4.0)
 
     sol = solve_2d_placement(program, site, frame, opts, strategy=STRATEGY_CORRIDOR_FREE)
     assert sol.status in ("OPTIMAL", "FEASIBLE")
@@ -143,7 +143,7 @@ def test_corridor_free_circulation_pattern():
 
     frame = design_frame(site)
     ground = Ground(site, frame)
-    opts = SolverOptions(seed=42, deterministic_time=4.0)
+    opts = PlacementOptions(seed=42, deterministic_time=4.0)
 
     sol = solve_2d_placement(program, site, frame, opts, strategy=STRATEGY_CORRIDOR_FREE)
 
@@ -180,7 +180,7 @@ def test_open_plan_living_arrangement():
 
     frame = design_frame(site)
     ground = Ground(site, frame)
-    opts = SolverOptions(seed=42, deterministic_time=4.0)
+    opts = PlacementOptions(seed=42, deterministic_time=4.0)
 
     sol = solve_2d_placement(program, site, frame, opts, strategy=STRATEGY_OPEN_PLAN)
     assert sol.status in ("OPTIMAL", "FEASIBLE")
@@ -210,7 +210,7 @@ def test_solver_reproducibility_budget():
     program = fix.program
     frame = design_frame(site)
 
-    opts = SolverOptions(seed=123, deterministic_time=3.0)
+    opts = PlacementOptions(seed=123, deterministic_time=3.0)
 
     sol1 = solve_2d_placement(program, site, frame, opts, strategy=STRATEGY_CORRIDOR_FREE)
     sol2 = solve_2d_placement(program, site, frame, opts, strategy=STRATEGY_CORRIDOR_FREE)
@@ -230,7 +230,7 @@ def test_two_wing_l_shaped_arrangement_free_positioning():
     program = fix.program
     frame = design_frame(site)
     ground = Ground(site, frame)
-    opts = SolverOptions(seed=42, deterministic_time=4.0)
+    opts = PlacementOptions(seed=42, deterministic_time=4.0)
 
     sol = solve_2d_placement(program, site, frame, opts, strategy=STRATEGY_TWO_WING)
     assert sol.status in ("OPTIMAL", "FEASIBLE")
@@ -293,7 +293,7 @@ def test_courtyard_geometry_with_open_court():
     program = fix.program
     frame = design_frame(site)
     ground = Ground(site, frame)
-    opts = SolverOptions(seed=42, deterministic_time=4.0)
+    opts = PlacementOptions(seed=42, deterministic_time=4.0)
 
     sol = solve_2d_placement(program, site, frame, opts, strategy=STRATEGY_COURTYARD)
     assert sol.status in ("OPTIMAL", "FEASIBLE")
@@ -334,7 +334,7 @@ def test_multi_level_alternative_stair_cores():
     program = fix.program
     frame = design_frame(site)
     ground = Ground(site, frame)
-    opts = SolverOptions(seed=42, deterministic_time=4.0)
+    opts = PlacementOptions(seed=42, deterministic_time=4.0)
 
     prop = ConceptProposal(
         id="prop-multi",
@@ -389,7 +389,7 @@ def test_privacy_driven_zoning():
     site = _load_benchmark_fixture().site
     frame = design_frame(site)
     ground = Ground(site, frame)
-    opts = SolverOptions(seed=42, deterministic_time=4.0)
+    opts = PlacementOptions(seed=42, deterministic_time=4.0)
 
     # Construct zoned program
     zones = [
@@ -550,7 +550,7 @@ def test_terrace_geometry_and_placement_s7_19():
     program = fix.program
     frame = design_frame(site)
     ground = Ground(site, frame)
-    opts = SolverOptions(seed=42, deterministic_time=4.0)
+    opts = PlacementOptions(seed=42, deterministic_time=4.0)
 
     sol = solve_2d_placement(program, site, frame, opts, strategy=STRATEGY_CORRIDOR_FREE)
     assert sol.status in ("OPTIMAL", "FEASIBLE")
@@ -595,7 +595,7 @@ def test_indoor_outdoor_relationships_evaluated_s7_20():
     program = fix.program
     frame = design_frame(site)
     ground = Ground(site, frame)
-    opts = SolverOptions(seed=42, deterministic_time=4.0)
+    opts = PlacementOptions(seed=42, deterministic_time=4.0)
 
     sol = solve_2d_placement(program, site, frame, opts, strategy=STRATEGY_CORRIDOR_FREE)
     assert sol.status in ("OPTIMAL", "FEASIBLE")
@@ -644,7 +644,7 @@ def test_adversarial_generation_s7_25():
     fix = _load_benchmark_fixture("large-terrace")
     site = fix.site
     frame = design_frame(site)
-    opts = SolverOptions(seed=42, deterministic_time=4.0)
+    opts = PlacementOptions(seed=42, deterministic_time=4.0)
 
     # 1. Contradictory hard requirements: room A and room B simultaneously
     # MUST be adjacent AND separated
@@ -680,7 +680,6 @@ def test_adversarial_generation_s7_25():
         program_ref=None,
         created_at=fix.program.provenance.created_at,
         strategies=[STRATEGY_CORRIDOR_FREE],
-        solver=opts,
     )
     cands = CpSatPlanGenerator().candidates(req_contra)
     assert len(cands) == 1
@@ -704,7 +703,6 @@ def test_adversarial_generation_s7_25():
         program_ref=None,
         created_at=fix.program.provenance.created_at,
         strategies=[STRATEGY_CORRIDOR_FREE],
-        solver=opts,
     )
     cands_over = CpSatPlanGenerator().candidates(req_oversized)
     assert cands_over[0].status == "infeasible"

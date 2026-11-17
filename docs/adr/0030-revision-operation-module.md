@@ -33,7 +33,8 @@ and it understood three of the six level words the command accepts.
 - `house_ai.generation.revision` turns operations and a Space program into
   the solver request (`compile_revision`: area targets, level preferences,
   Space relationships, stair position, outdoor links, strategy, rethink and
-  the parent's position hints), merges inherited operations with the same
+  the parent's position hints; since [ADR 0032](0032-engine-seam-inside-the-generator.md)
+  the bar engine recovers the hints from the parent's generation record), merges inherited operations with the same
   override rules as before (`merge_operations`), and answers "was this
   request met" (`unmet_requests`) with the shared definitions: "separate"
   through `domain.relations.is_relation_satisfied` (ADR 0020), levels through
