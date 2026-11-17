@@ -9,7 +9,7 @@ answers:
   - {question: q-children-rooms, answer: "Each child gets their own room."}
   - {question: q-bedrooms, answer: "Three bedrooms."}
   - {question: q-bathrooms, answer: "Two bathrooms, with an en-suite for us."}
-  - {question: q-floors, answer: "Two floors."}
+  - {question: q-storeys, answer: "Two floors."}
   - {question: q-slope, answer: "Let the house step down the slope with a garden level below."}
   - {question: q-entry, answer: "Yes, entrance and parking at the road."}
   - {question: q-living, answer: "One open space for living, dining and kitchen."}

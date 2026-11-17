@@ -23,7 +23,7 @@ from shapely.ops import unary_union
 from .base import EPS_M, EXTERIOR, StrictModel
 from .geometry import left_normal, unit_direction
 from .model import HouseModel, Opening, Wall
-from .program import AdjacencyKind, SpaceProgram, Strength
+from .program import SpaceProgram, SpaceRelationshipKind, Strength
 from .records import IssueStatus, Severity
 from .site import Site
 
@@ -166,8 +166,8 @@ def _check_references(
     zones = {z.id for z in model.zones}
     materials = {m.id for m in model.materials}
     all_entities = set(model.all_ids())
-    program_items = {i.id for i in program.items} if program is not None else None
-    program_adjs = {a.id for a in program.adjacencies} if program is not None else None
+    program_items = {i.id for i in program.space_requirements} if program is not None else None
+    program_adjs = {a.id for a in program.space_relationships} if program is not None else None
     out: list[IntegrityFinding] = []
 
     def need(owner: str, field: str, ref: str | None, valid: set[str]) -> None:
@@ -552,8 +552,8 @@ def _check_site(model: HouseModel, site: Site) -> list[IntegrityFinding]:
 
 def _check_program(model: HouseModel, program: SpaceProgram) -> list[IntegrityFinding]:
     out: list[IntegrityFinding] = []
-    items_by_id = {i.id: i for i in program.items}
-    spaces_by_item: dict[str, list[str]] = {i.id: [] for i in program.items}
+    items_by_id = {i.id: i for i in program.space_requirements}
+    spaces_by_item: dict[str, list[str]] = {i.id: [] for i in program.space_requirements}
     for s in model.spaces:
         if s.program_item_id and s.program_item_id in items_by_id:
             spaces_by_item[s.program_item_id].append(s.id)
@@ -568,8 +568,8 @@ def _check_program(model: HouseModel, program: SpaceProgram) -> list[IntegrityFi
                     )
                 )
     graph = circulation_graph(model)
-    for adj in program.adjacencies:
-        if adj.strength is Strength.HARD and adj.kind is AdjacencyKind.CONNECTED:
+    for adj in program.space_relationships:
+        if adj.strength is Strength.HARD and adj.kind is SpaceRelationshipKind.CONNECTED:
             a_spaces = [EXTERIOR] if adj.a == EXTERIOR else spaces_by_item.get(adj.a, [])
             b_spaces = [EXTERIOR] if adj.b == EXTERIOR else spaces_by_item.get(adj.b, [])
             connected = any(b in graph.get(a, set()) for a in a_spaces for b in b_spaces)

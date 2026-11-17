@@ -16,10 +16,10 @@ from house_ai.domain.brief import DesignBrief, FactSourceKind
 from house_ai.domain.epistemics import Epistemic
 from house_ai.domain.interview import InterviewSession, SiteContext, TurnKind
 from house_ai.domain.program import (
-    AdjacencyKind,
-    AdjacencyRequirement,
     SpaceFunction,
     SpaceProgram,
+    SpaceRelationship,
+    SpaceRelationshipKind,
     Strength,
 )
 from house_ai.domain.provenance import ArtifactKind as K
@@ -123,20 +123,20 @@ def test_normal_interview_produces_a_confirmed_brief_and_a_valid_program(svc):
     build = svc.build_program(AGENT)
     program = build.result.program
     assert blocking(build.findings) == [], [f.message for f in build.findings]
-    funcs = [i.function for i in program.items]
+    funcs = [i.function for i in program.space_requirements]
     assert funcs.count(SpaceFunction.BEDROOM) == 3
     assert funcs.count(SpaceFunction.BATHROOM) == 2
     assert SpaceFunction.STAIR in funcs and SpaceFunction.GARAGE in funcs
-    assert program.levels == 2 and program.site_verified
-    living = next(i for i in program.items if i.id == "pi-living")
+    assert program.storeys == 2 and program.site_approved
+    living = next(i for i in program.space_requirements if i.id == "pi-living")
     assert living.target_area_m2 == 30.0  # the owner's size, not the typical 25
-    kinds = {(a.a, a.b, a.kind) for a in program.adjacencies}
-    assert ("pi-kitchen", "pi-living", AdjacencyKind.CONNECTED) in kinds  # open plan
-    assert ("pi-bed-main", "pi-bath-ensuite", AdjacencyKind.CONNECTED) in kinds
-    assert ("pi-kitchen", "exterior", AdjacencyKind.NEAR) in kinds  # kitchen next to garden
+    kinds = {(a.a, a.b, a.kind) for a in program.space_relationships}
+    assert ("pi-kitchen", "pi-living", SpaceRelationshipKind.CONNECTED) in kinds  # open plan
+    assert ("pi-bed-main", "pi-bath-ensuite", SpaceRelationshipKind.CONNECTED) in kinds
+    assert ("pi-kitchen", "exterior", SpaceRelationshipKind.NEAR) in kinds  # kitchen next to garden
     # Every program item that came from an answer cites a fact that is in the brief.
     fact_ids = {f.id for f in svc.brief().facts}
-    assert all(fid in fact_ids for i in program.items for fid in i.source_fact_ids)
+    assert all(fid in fact_ids for i in program.space_requirements for fid in i.source_fact_ids)
 
     build, reasons = svc.review_program(AGENT)
     assert reasons == []
@@ -162,12 +162,12 @@ def test_questions_are_asked_one_at_a_time_and_never_repeated(svc):
 def test_an_answer_that_already_covers_a_later_question_is_not_asked_again(svc):
     svc.answer("Two adults, one child; we need 3 bedrooms and two floors.", HUMAN)
     state = svc.state()
-    assert state.values["bedrooms"] == 3 and state.values["floors"] == 2
+    assert state.values["bedrooms"] == 3 and state.values["storeys"] == 2
     asked = []
     while (p := svc.pending()) is not None and len(asked) < 6:
         asked.append(p.id)
         svc.answer("not sure", HUMAN)
-    assert "q-bedrooms" not in asked and "q-floors" not in asked
+    assert "q-bedrooms" not in asked and "q-storeys" not in asked
 
 
 # ----------------------------------------------------------- incomplete answers
@@ -191,7 +191,8 @@ def test_unknown_and_unreadable_answers_are_recorded_not_invented(svc):
     assert "missing_information" in codes
     questions = {q.id: q for q in build.result.open_questions.questions}
     assert questions["oq-bedrooms"].blocking and questions["oq-bathrooms"].blocking
-    assert not any(i.function is SpaceFunction.BEDROOM for i in build.result.program.items)
+    reqs = build.result.program.space_requirements
+    assert not any(i.function is SpaceFunction.BEDROOM for i in reqs)
 
 
 def test_missing_room_sizes_use_typical_sizes_recorded_as_assumptions(svc):
@@ -200,7 +201,7 @@ def test_missing_room_sizes_use_typical_sizes_recorded_as_assumptions(svc):
     build = svc.build_program(AGENT)
     typical = next(a for a in build.result.assumptions.assumptions if a.id == "asm-typical-sizes")
     assert "pi-living" in typical.affects and "not building-code minimums" in typical.statement
-    living = next(i for i in build.result.program.items if i.id == "pi-living")
+    living = next(i for i in build.result.program.space_requirements if i.id == "pi-living")
     assert living.target_area_m2 == 25.0 and living.min_area_m2 == 16.0
 
 
@@ -229,7 +230,7 @@ def test_a_contradiction_is_explained_and_resolved_only_by_the_owner(svc):
     from house_ai.domain.provenance import Actor, ActorKind
 
     system_actor = Actor(id="cron", kind=ActorKind.SYSTEM)
-    with pytest.raises(ValueError, match="only the homeowner"):
+    with pytest.raises(ValueError, match="only the owner"):
         svc.answer("2", system_actor)
 
 
@@ -279,7 +280,8 @@ def test_changing_an_earlier_answer_keeps_the_history(svc):
     assert _fact(brief, "f-bedrooms").status is Epistemic.INFERENCE  # reconfirm the change
     svc.confirm(HUMAN, ["bedrooms"])
     build = svc.build_program(AGENT)
-    beds = [i for i in build.result.program.items if i.function is SpaceFunction.BEDROOM]
+    reqs = build.result.program.space_requirements
+    beds = [i for i in reqs if i.function is SpaceFunction.BEDROOM]
     assert len(beds) == 4
 
 
@@ -292,7 +294,7 @@ def test_rejecting_an_interpretation_asks_again(svc):
     assert svc.state().values["children"] == 3
     rejection = next(t for t in svc.session().turns if t.kind is TurnKind.REJECTION)
     assert rejection.text == "No, three kids."
-    # Coding agents can also record the homeowner's rejection of a proposed interpretation.
+    # Coding agents can also record the owner's rejection of a proposed interpretation.
     svc.reject(AGENT, ["children"], "Actually two children.")
     assert svc.pending().id == "q-household#children"
 
@@ -314,12 +316,14 @@ def test_conflicting_hard_adjacencies_in_a_program_block(svc):
     _run(svc)
     svc.confirm(HUMAN)
     program = svc.build_program(AGENT).result.program
-    clash = AdjacencyRequirement(id="adj-clash", a="pi-kitchen", b="pi-living",
-                                 kind=AdjacencyKind.SEPARATED, strength=Strength.HARD)  # fmt: skip
-    bad = SpaceProgram.model_validate(
-        {**program.model_dump(), "adjacencies": [*program.model_dump()["adjacencies"],
-                                                  clash.model_dump()]}
+    clash = SpaceRelationship(
+        id="adj-clash", a="pi-kitchen", b="pi-living",
+        kind=SpaceRelationshipKind.SEPARATED, strength=Strength.HARD,
     )  # fmt: skip
+    doc = program.model_dump()
+    bad = SpaceProgram.model_validate(
+        {**doc, "space_relationships": [*doc["space_relationships"], clash.model_dump()]}
+    )
     found = [f for f in validate_program(bad, svc.brief()) if f.code == "adjacency_conflict"]
     assert found and found[0].severity.value == "blocking" and len(found[0].options) == 2
 
@@ -337,7 +341,7 @@ def test_an_unrealistic_total_area_is_infeasible_with_options(svc):
     tiny = SiteContext(parcel_area_m2=50.0, verified=True)
     over = next(f for f in validate_program(build.result.program, svc.brief(), tiny)
                 if f.code == "exceeds_parcel")  # fmt: skip
-    assert over.severity.value == "blocking" and "Add a floor" in over.options
+    assert over.severity.value == "blocking" and "Add a storey" in over.options
 
 
 # --------------------------------------------------------- interrupt / resume
@@ -419,7 +423,7 @@ def test_answers_cannot_change_once_the_program_is_approved(svc):
 
 def test_the_interview_runs_before_the_site_is_approved_but_review_waits(new_store):
     store = _project(new_store, approve_site=False)
-    assert Workflow(store).state is WorkflowState.SITE_NEEDS_VERIFICATION
+    assert Workflow(store).state is WorkflowState.SITE_NEEDS_CONFIRMATION
     svc = InterviewService(store)
     result = svc.start(AGENT)
     assert any("not confirmed" in n for n in result.notes)
@@ -430,7 +434,7 @@ def test_the_interview_runs_before_the_site_is_approved_but_review_waits(new_sto
     _run(svc, ANSWERS[5:])
     svc.confirm(HUMAN)
     build = svc.build_program(AGENT)
-    assert not build.result.program.site_verified
+    assert not build.result.program.site_approved
     assert any(a.id == "asm-site-unverified" for a in build.result.assumptions.assumptions)
     with pytest.raises(TransitionNotAllowed, match="site is not approved"):
         svc.review_program(AGENT)
@@ -532,7 +536,7 @@ def test_cli_interview_commands(tmp_path, capsys, new_store, monkeypatch):
     assert main(["interview", "start", d, "--actor", "agent:claude-code"]) == 0
     out = capsys.readouterr().out
     assert "Who will live in the house?" in out
-    # Agent can record homeowner answers in a non-interactive shell, while consent and approvals
+    # Agent can record owner answers in a non-interactive shell, while consent and approvals
     # still require an interactive human terminal (exit code 2).
     assert main(["interview", "consent", d, "anthropic", "--actor", "human:owner"]) == 2
     assert main(["interview", "answer", d, "Two adults.", "--actor", "agent:claude-code"]) == 0
@@ -646,7 +650,7 @@ def test_agent_first_end_to_end_workflow_with_persian_english_and_mixed_answers(
     start_payload = json.loads(capsys.readouterr().out)
     assert start_payload["next_prompt"]["id"] == "q-household"
 
-    # 2. Homeowner gives the free-form opening statement out of checklist order;
+    # 2. Owner gives the free-form opening statement out of checklist order;
     #    the agent records the exact words and proposes structured interpretations.
     opening_words = (
         "I want a modern house on my steep land, with parking from the road "
@@ -684,7 +688,7 @@ def test_agent_first_end_to_end_workflow_with_persian_english_and_mixed_answers(
     assert understood_slots["room_sizes"] == (["living=36"], "agent:gemini")
 
     # 3. Agent asks an adaptive follow-up question outside the 30-question checklist and
-    #    records the homeowner's mixed Persian/English answer verbatim.
+    #    records the owner's mixed Persian/English answer verbatim.
     followup_q = "How should the road-level garage connect to the main living level on the slope?"
     followup_a = (
         "پارکینگ هم‌سطح جاده در بالا باشد و با پله داخلی و آسانسور به نشیمن پایین وصل شود "
@@ -706,7 +710,7 @@ def test_agent_first_end_to_end_workflow_with_persian_english_and_mixed_answers(
                 "--set",
                 "lift=true",
                 "--set",
-                "floors=2",
+                "storeys=2",
                 "--json",
                 "--actor",
                 "agent:gemini",
@@ -747,7 +751,7 @@ def test_agent_first_end_to_end_workflow_with_persian_english_and_mixed_answers(
     )
     capsys.readouterr()
 
-    # 5. Homeowner initially says 2 bedrooms -> triggers contradiction c-too-few-bedrooms!
+    # 5. Owner initially says 2 bedrooms -> triggers contradiction c-too-few-bedrooms!
     assert (
         main(
             [
@@ -769,7 +773,7 @@ def test_agent_first_end_to_end_workflow_with_persian_english_and_mixed_answers(
     ans_bed = json.loads(capsys.readouterr().out)
     assert ans_bed["next_prompt"]["id"] == "resolve:c-too-few-bedrooms"
 
-    # 6. Agent resolves the contradiction after asking the homeowner, recording their choice.
+    # 6. Agent resolves the contradiction after asking the owner, recording their choice.
     assert (
         main(
             [
@@ -876,7 +880,7 @@ def test_agent_first_end_to_end_workflow_with_persian_english_and_mixed_answers(
     cl = json.loads(capsys.readouterr().out)
     assert cl["counts"]["remaining_questions"] == 0
 
-    # 8. Homeowner confirms interpretations, then revises bedrooms to 4.
+    # 8. Owner confirms interpretations, then revises bedrooms to 4.
     assert (
         main(
             [
@@ -1023,7 +1027,7 @@ def test_steep_hillside_site_records_engineering_assumptions_and_warns_on_flat_p
 
 def test_agent_inspects_synthetic_project_without_modifying_it(tmp_path, capsys):
     """Verify status and blockers report an unverified steep site in
-    SITE_NEEDS_VERIFICATION without modifying any files in the project.
+    SITE_NEEDS_CONFIRMATION without modifying any files in the project.
     """
     from house_ai.cli.main import main
     from house_ai.domain.geometry import Polygon2D
@@ -1059,7 +1063,7 @@ def test_agent_inspects_synthetic_project_without_modifying_it(tmp_path, capsys)
     before_events = len(store.events())
     assert main(["project", "status", str(proj_dir), "--json"]) == 0
     status = json.loads(capsys.readouterr().out)
-    assert status["state"] == "SITE_NEEDS_VERIFICATION"
+    assert status["state"] == "SITE_NEEDS_CONFIRMATION"
     assert status["site"]["verified"] is False
     assert len(status["site"]["verification_blockers"]) >= 1
     assert main(["interview", "status", str(proj_dir), "--json"]) == 0

@@ -1,6 +1,6 @@
 ---
 name: architectural-programming
-description: Conduct an adaptive homeowner interview (English, Persian, or mixed), record verbatim answers and slot inferences, resolve contradictions, build the space program, and request program gate review.
+description: Conduct an adaptive owner interview (English, Persian, or mixed), record verbatim answers and interpretations, resolve contradictions, build the space program, and request program gate review.
 ---
 
 # Architectural Programming
@@ -10,11 +10,11 @@ Follow [docs/AGENT_CONTRACT.md](../../docs/AGENT_CONTRACT.md) (§4 provenance,
 own tool name: `claude-code`, `codex` or `gemini`.
 
 ## Purpose
-Guide the agent through an adaptive, high-information architectural interview with the homeowner, recording verbatim statements in English, Persian, or mixed language, interpreting structured slots as provisional inferences, resolving trade-offs and contradictions, building the validated space program, and requesting the human program gate.
+Guide the agent through an adaptive, high-information architectural interview with the owner, recording verbatim answers in English, Persian, or mixed language, recording interpretations as unconfirmed inferences, resolving trade-offs and contradictions, building the validated space program, and requesting the human program gate.
 
 ## When to invoke
-- When starting or resuming the homeowner interview for a project.
-- When capturing household, lifestyle, room, relationship and hillside wishes.
+- When starting or resuming the owner interview for a project.
+- When capturing household, lifestyle, space, relationship and hillside wishes.
 - When resolving contradictions between wishes, budget and the site.
 - When compiling `design_brief.yaml` and `space_program.yaml`.
 - When requesting review at the program approval gate.
@@ -22,10 +22,10 @@ Guide the agent through an adaptive, high-information architectural interview wi
 ## Inputs
 - Project folder or name under `projects/` (`<project>`).
 - Site context from `interview status --json` (relief, slope, frontage; marked unconfirmed until the site gate is approved).
-- The homeowner's answers in their own words (Persian, English, or mixed).
+- The owner's answers in their own words (Persian, English, or mixed).
 
 ## Outputs
-- Interview events in the project store (`owner_answer` text and `inference` slot values).
+- Interview events in the project store (`owner_answer` text and `inference` interpretations).
 - `design_brief.yaml`, `space_program.yaml`, `assumptions.yaml`, `open_questions.yaml`.
 - `interview-summary.md` and `program-review.md`.
 
@@ -38,7 +38,7 @@ Guide the agent through an adaptive, high-information architectural interview wi
    .venv/bin/house-ai interview checklist <project> --json   # the 30 checklist questions and their slots
    .venv/bin/house-ai interview start <project> --json --actor agent:<tool>
    ```
-   `interview start` works while the site is still in `SITE_NEEDS_VERIFICATION`.
+   `interview start` works while the site is still in `SITE_NEEDS_CONFIRMATION`.
 
 2. **Ask in rounds.** Each round asks 2–4 open, high-information questions,
    chosen from the slots `interview status` reports as missing, in the
@@ -48,7 +48,7 @@ Guide the agent through an adaptive, high-information architectural interview wi
 
    **Hillside questions** (ask early on a steep site; record with `--topic site`):
    - Should the entrance and parking sit at road level, with the house stepping down the slope? (`entry_at_road`)
-   - Split levels following the ground, a walk-out lower floor, or a compact stacked house? (`slope_strategy`, `floors`)
+   - Split levels following the ground, a walk-out lower storey, or a compact stacked house? How many storeys? (`slope_strategy`, `storeys`)
    - Does anyone need to avoid stairs now or later; would a lift be acceptable? (`elder_step_free`, `accessibility`, `lift`)
    - Which rooms should open to the downhill view or garden, and which may be partly below ground? (`outdoor`, `light_wishes`)
    - Is earthwork and retaining walls cost a concern compared with keeping the garden level? (`budget`, `priorities`)
@@ -69,7 +69,7 @@ Guide the agent through an adaptive, high-information architectural interview wi
      --question <qid> --unknown <slot> --actor agent:<tool>
    ```
 
-4. **Confirm interpretations with the owner.** Show each inferred value; once the owner confirms in chat:
+4. **Confirm interpretations with the owner.** Show each interpretation; once the owner confirms in chat:
    ```bash
    .venv/bin/house-ai interview confirm <project> [slot1 slot2 ...] \
      --text "<owner's confirmation words>" --actor agent:<tool>
@@ -121,6 +121,6 @@ Guide the agent through an adaptive, high-information architectural interview wi
 
 ## Failure handling
 - **Unconfirmed inferences block review**: show them to the owner and confirm, reject or revise each.
-- **Program validation errors**: ask the owner the questions that resolve them, record the answers, rebuild.
+- **Blocking program findings**: ask the owner the questions that resolve them, record the answers, rebuild.
 - **Open contradictions**: resolve or defer each with `interview resolve`.
 - **`program review` refused because the site gate is not approved**: stop; the owner must finish the site gate first.

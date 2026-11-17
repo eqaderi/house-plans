@@ -9,7 +9,7 @@ from __future__ import annotations
 from enum import StrEnum
 from typing import Any
 
-from pydantic import Field, model_validator
+from pydantic import Field, PrivateAttr, model_serializer, model_validator
 
 from .base import SCHEMA_VERSION, Id, Sha256, StrictModel, UtcDatetime
 from .provenance import Actor, ActorKind, ArtifactKind, ArtifactRef, DataClassification
@@ -18,19 +18,34 @@ from .provenance import Actor, ActorKind, ArtifactKind, ArtifactRef, DataClassif
 class WorkflowState(StrEnum):
     NEW_PROJECT = "NEW_PROJECT"
     SITE_INGESTION = "SITE_INGESTION"
-    SITE_NEEDS_VERIFICATION = "SITE_NEEDS_VERIFICATION"
+    #: Awaiting the owner's confirmation of site facts and the site gate.
+    SITE_NEEDS_CONFIRMATION = "SITE_NEEDS_CONFIRMATION"
     SITE_APPROVED = "SITE_APPROVED"
     INTERVIEWING = "INTERVIEWING"
     PROGRAM_REVIEW = "PROGRAM_REVIEW"
     PROGRAM_APPROVED = "PROGRAM_APPROVED"
-    CONCEPT_GENERATION = "CONCEPT_GENERATION"
-    CONCEPT_REVIEW = "CONCEPT_REVIEW"
+    PLAN_GENERATION = "PLAN_GENERATION"
+    PLAN_REVIEW = "PLAN_REVIEW"
     PLAN_APPROVED = "PLAN_APPROVED"
     BLENDER_BUILD = "BLENDER_BUILD"
     BLENDER_REVIEW = "BLENDER_REVIEW"
     MODEL_APPROVED = "MODEL_APPROVED"
     UNREAL_BUILD = "UNREAL_BUILD"
     UNREAL_REVIEW = "UNREAL_REVIEW"
+
+    @classmethod
+    def _missing_(cls, value: object) -> WorkflowState | None:
+        """Accept state names saved before ADR 0025."""
+        new = RENAMED_STATES.get(value) if isinstance(value, str) else None
+        return cls(new) if new else None
+
+
+#: ADR 0025: state names saved before the glossary rename -> current names.
+RENAMED_STATES: dict[str, str] = {
+    "SITE_NEEDS_VERIFICATION": "SITE_NEEDS_CONFIRMATION",
+    "CONCEPT_GENERATION": "PLAN_GENERATION",
+    "CONCEPT_REVIEW": "PLAN_REVIEW",
+}
 
 
 class Gate(StrEnum):
@@ -85,7 +100,11 @@ class EventType(StrEnum):
 
 
 class WorkflowEvent(StrictModel):
-    """One line of events.jsonl. ``hash`` chains each event to the previous one."""
+    """One line of events.jsonl. ``hash`` chains each event to the previous one.
+
+    An event saved with an old state name (ADR 0025) reads as the current state
+    and is written back with the name it was saved with, so its hash holds.
+    """
 
     seq: int = Field(ge=1)
     at: UtcDatetime
@@ -97,6 +116,27 @@ class WorkflowEvent(StrictModel):
     payload: dict[str, Any] = Field(default_factory=dict)
     prev_hash: Sha256 | None = None
     hash: Sha256
+
+    #: Field -> old state name this event was saved with.
+    _old_states: dict[str, str] = PrivateAttr(default_factory=dict)
+
+    @model_validator(mode="wrap")
+    @classmethod
+    def _accept_old_states(cls, data: Any, handler: Any) -> Any:
+        event = handler(data)
+        if isinstance(data, dict):
+            event._old_states = {
+                f: data[f] for f in ("from_state", "to_state") if data.get(f) in RENAMED_STATES
+            }
+        return event
+
+    @model_serializer(mode="wrap")
+    def _write_old_states(self, handler: Any) -> dict[str, Any]:
+        data = handler(self)
+        for field, old in self._old_states.items():
+            if field in data:
+                data[field] = old
+        return data
 
 
 class ProjectManifest(StrictModel):

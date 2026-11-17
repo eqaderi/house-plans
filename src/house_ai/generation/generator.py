@@ -16,6 +16,7 @@ from datetime import datetime
 
 import ortools
 
+from house_ai.constants.evaluations import REQUESTED_STOREYS_ASSUMPTION_ID
 from house_ai.constants.strategies import (
     STRATEGY_COMPACT,
     STRATEGY_CORRIDOR_FREE,
@@ -39,7 +40,7 @@ from house_ai.domain.plan import (
     PlanVersion,
     RoomPlacement,
 )
-from house_ai.domain.program import AdjacencyRequirement, SpaceProgram
+from house_ai.domain.program import SpaceProgram, SpaceRelationship
 from house_ai.domain.proposal import ConceptProposal
 from house_ai.domain.provenance import Actor, ActorKind, ArtifactRef, Provenance
 from house_ai.domain.records import Assumption
@@ -201,9 +202,9 @@ class CpSatPlanGenerator:
         hard_areas, hard_widths = hard_dimension_bounds(req.constraints)
         program = req.program
         if req.proposal and req.proposal.adjacency_graph:
-            existing_ids = {a.id for a in program.adjacencies}
+            existing_ids = {a.id for a in program.space_relationships}
             extra_adj = [
-                AdjacencyRequirement(
+                SpaceRelationship(
                     id=padj.id,
                     a=padj.a,
                     b=padj.b,
@@ -217,7 +218,7 @@ class CpSatPlanGenerator:
             ]
             if extra_adj:
                 program = program.model_copy(
-                    update={"adjacencies": [*program.adjacencies, *extra_adj]}
+                    update={"space_relationships": [*program.space_relationships, *extra_adj]}
                 )
         rooms = expand_program(program, hard_min_areas=hard_areas, hard_min_widths=hard_widths)
         proposal_id = req.proposal.id if req.proposal is not None else None
@@ -360,7 +361,7 @@ class CpSatPlanGenerator:
             )
             cand.status = "generated"
             cand.findings = findings
-            _explain_level_count(cand.plan, req.program)
+            _explain_storey_count(cand.plan, req.program)
             return cand
 
         best = None
@@ -452,13 +453,17 @@ class CpSatPlanGenerator:
         )
         cand.findings = findings
         cand.status = "generated"
-        _explain_level_count(cand.plan, req.program)
+        _explain_storey_count(cand.plan, req.program)
         return cand
 
 
-def _explain_level_count(plan: PlanVersion, program: SpaceProgram) -> None:
-    """Record departures from owner intent alongside the generated geometry (S10-12)."""
-    requested, actual = program.levels, len(plan.model.levels)
+def _explain_storey_count(plan: PlanVersion, program: SpaceProgram) -> None:
+    """Record departures from owner intent alongside the generated geometry (S10-12).
+
+    The program asks for storeys; the plan's levels come from the massing and the
+    slope, and its storey count is derived from them (S11-02).
+    """
+    requested, actual = program.storeys, plan.model.storey_count
     if requested is None or requested == actual:
         return
     if plan.strategy == STRATEGY_LINEAR:
@@ -466,17 +471,15 @@ def _explain_level_count(plan: PlanVersion, program: SpaceProgram) -> None:
     elif plan.strategy == STRATEGY_COMPACT:
         reason = "The compact strategy requires at least two stacked levels."
     else:
-        reason = (
-            "This strategy derives its floor levels from the massing and terrain; "
-            "split floor levels need not represent full stacked storeys."
-        )
+        reason = "This strategy derives its levels from the massing and the slope."
     plan.model.assumptions.append(
         Assumption(
-            id="asm-gen-requested-levels",
-            statement=f"Requested storeys: {requested}; generated floor levels: {actual}. "
+            id=REQUESTED_STOREYS_ASSUMPTION_ID,
+            statement=f"Requested storeys: {requested}; this plan option has {actual} "
+            f"storey(s) on {len(plan.model.levels)} level(s). "
             + reason
             + " The requested storey count is not enforced by this strategy; owner review needed.",
-            basis="program.levels compared with canonical model.levels",
+            basis="program.storeys compared with the storeys the model's levels span",
             made_by=GENERATOR_ACTOR,
             affects=[lv.id for lv in plan.model.levels],
             confirm_with="owner",

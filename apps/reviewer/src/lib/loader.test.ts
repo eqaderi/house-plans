@@ -6,7 +6,7 @@ describe("Reviewer bundle loader validation (Task S4-05)", () => {
     schema_version: "1.0.0",
     project: {
       name: "synthetic-hillside",
-      state: "CONCEPT_REVIEW",
+      state: "PLAN_REVIEW",
     },
     gates: {
       site: { approved: true, name: "Site Gate", approve_command: "cmd", description: "desc" },
@@ -73,7 +73,7 @@ describe("Reviewer bundle loader validation (Task S4-05)", () => {
   });
 
   it("reports missing project fields with path", () => {
-    const corrupt = { ...validMinimalBundle, project: { state: "CONCEPT_REVIEW" } };
+    const corrupt = { ...validMinimalBundle, project: { state: "PLAN_REVIEW" } };
     const result = validateReviewerBundle(corrupt);
     expect(result.success).toBe(false);
     if (!result.success) {

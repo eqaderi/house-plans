@@ -259,7 +259,7 @@ def cmd_project_status(args: argparse.Namespace) -> int:
         )
     if info["site"] is not None:
         s_info = info["site"]
-        v_tag = "verified" if s_info["verified"] else "needs verification"
+        v_tag = "approved" if s_info["verified"] else "needs confirmation"
         _out(
             f"site      {v_tag}; area={s_info['parcel_area_m2']} m², "
             f"relief={s_info['relief_m']} m, slope={s_info['mean_slope_pct']}%, "
@@ -365,11 +365,11 @@ def cmd_example_load(args: argparse.Namespace) -> int:
 
 def cmd_transition(args: argparse.Namespace) -> int:
     wf = Workflow(ProjectStore(_dir(args.dir)))
-    if wf.state is WorkflowState.PROGRAM_REVIEW and args.state == "INTERVIEWING":
+    if wf.state is WorkflowState.PROGRAM_REVIEW and args.state is WorkflowState.INTERVIEWING:
         _err("leaving PROGRAM_REVIEW requires 'program reject' in a human terminal")
         return EXIT_USAGE
     try:
-        ev = wf.transition(WorkflowState(args.state), args.actor, args.reason)
+        ev = wf.transition(args.state, args.actor, args.reason)
     except ApprovalRequiresHuman as exc:
         _err(str(exc))
         return EXIT_USAGE
@@ -508,7 +508,7 @@ def cmd_site_ingest(args: argparse.Namespace) -> int:
     if result.blockers:
         _out(
             "next: house-ai workflow assess-site "
-            f"{args.dir} --id {args.site_id} --actor <you>   # records SITE_NEEDS_VERIFICATION"
+            f"{args.dir} --id {args.site_id} --actor <you>   # records SITE_NEEDS_CONFIRMATION"
         )
     return EXIT_OK
 
@@ -640,7 +640,7 @@ def _owner_terminal(what: str) -> bool:
     if sys.stdin.isatty():
         return True
     _err(
-        f"{what} requires an interactive terminal run by the homeowner."
+        f"{what} requires an interactive terminal run by the owner."
     )
     return False
 
@@ -757,7 +757,7 @@ def cmd_interview_checklist(args: argparse.Namespace) -> int:
     )
     site = info["site"]
     if site["site_ref"] is not None:
-        v_str = "verified" if site["verified"] else "SITE_NEEDS_VERIFICATION"
+        v_str = "approved" if site["verified"] else "needs confirmation"
         _out(
             f"site: {v_str} | area={site['parcel_area_m2']} m² | "
             f"relief={site['relief_m']} m | mean_slope={site['mean_slope_pct']}% | "
@@ -775,7 +775,7 @@ def cmd_interview_checklist(args: argparse.Namespace) -> int:
     _out(
         f"checklist: {c['covered_questions']}/{c['applicable_questions']} applicable covered | "
         f"confirmed slots={c['confirmed_slots']} | "
-        f"unconfirmed (inference)={c['unconfirmed_slots']} | "
+        f"unconfirmed interpretations={c['unconfirmed_slots']} | "
         f"open contradictions={c['open_contradictions']}"
     )
     if info["missing_required_slots"]:
@@ -1298,7 +1298,7 @@ def build_parser() -> argparse.ArgumentParser:
         help="record the owner's verbatim answer and optional structured slot interpretations",
     )
     s.add_argument("dir")
-    s.add_argument("text", help="the homeowner's exact original words")
+    s.add_argument("text", help="the owner's exact original words")
     s.add_argument("--question", help="question id, slot name, or custom follow-up id")
     s.add_argument("--question-text", help="exact wording of an adaptive follow-up question")
     s.add_argument("--topic", help="topic for an adaptive follow-up (e.g. site_response, views)")
@@ -1327,7 +1327,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     s.add_argument("dir")
     s.add_argument("question", help="question id (e.g. q-bedrooms), slot name, or custom id")
-    s.add_argument("text", help="the homeowner's exact new words")
+    s.add_argument("text", help="the owner's exact new words")
     s.add_argument("--question-text", help="exact wording of the question asked")
     s.add_argument(
         "--set",
@@ -1341,16 +1341,16 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--json", action="store_true")
     actor_arg(s)
     s.set_defaults(func=cmd_interview_revise)
-    s = iv.add_parser("confirm", help="record the owner's confirmation of interpreted slot values")
+    s = iv.add_parser("confirm", help="record the owner's confirmation of interpretations")
     s.add_argument("dir")
     s.add_argument("slots", nargs="*", help="optional slot names to confirm (default: all pending)")
     s.add_argument("--slot", action="append", default=[])
-    s.add_argument("--text", help="the homeowner's confirmation words")
+    s.add_argument("--text", help="the owner's confirmation words")
     s.add_argument("--yes", action="store_true", help="skip interactive prompt")
     s.add_argument("--json", action="store_true")
     actor_arg(s)
     s.set_defaults(func=cmd_interview_confirm)
-    s = iv.add_parser("reject", help="record the owner's rejection of an interpreted slot value")
+    s = iv.add_parser("reject", help="record the owner's rejection of an interpretation")
     s.add_argument("dir")
     s.add_argument("--slot", action="append", required=True)
     s.add_argument("--text", help="what is wrong, in the owner's words")
@@ -1360,8 +1360,8 @@ def build_parser() -> argparse.ArgumentParser:
     s = iv.add_parser("resolve", help="record the owner's resolution of an open contradiction")
     s.add_argument("dir")
     s.add_argument("contradiction", help="contradiction id, e.g. c-too-few-bedrooms")
-    s.add_argument("text", help="the homeowner's exact resolution words")
-    s.add_argument("--option", type=int, help="1-based option index chosen by the homeowner")
+    s.add_argument("text", help="the owner's exact resolution words")
+    s.add_argument("--option", type=int, help="1-based option index chosen by the owner")
     s.add_argument("--defer", action="store_true", help="defer deciding on this contradiction")
     s.add_argument("--json", action="store_true")
     actor_arg(s)
@@ -1408,7 +1408,11 @@ def build_parser() -> argparse.ArgumentParser:
     wf = sub.add_parser("workflow").add_subparsers(dest="sub", required=True)
     s = wf.add_parser("transition")
     s.add_argument("dir")
-    s.add_argument("state", choices=[st.value for st in WorkflowState])
+    s.add_argument(
+        "state", type=WorkflowState, metavar="STATE",
+        help="target workflow state: " + ", ".join(st.value for st in WorkflowState)
+        + " (names used before ADR 0025 are accepted)",
+    )
     s.add_argument("--reason", required=True)
     actor_arg(s)
     s.set_defaults(func=cmd_transition)

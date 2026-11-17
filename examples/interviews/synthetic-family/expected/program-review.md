@@ -28,9 +28,9 @@ This is a list of spaces and how they relate, for the floor-plan step. It is not
 
 - Rooms: 116–164 m² net; with halls, walls and structure (+20%): about 139–197 m²
 - Your total floor area: 180 m²
-- Floors: 2; about 98 m² per floor
+- Storeys: 2; about 98 m² per storey
 - Budget: 450,000 EUR (cost not checked)
-- Site: confirmed
+- Site: approved
 
 ## How spaces relate
 

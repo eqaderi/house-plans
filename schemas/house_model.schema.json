@@ -898,6 +898,59 @@
       "title": "Operation",
       "type": "string"
     },
+    "PlanRelationship": {
+      "additionalProperties": false,
+      "description": "A declared design intent between two spaces of a plan (geometry decides if it holds).",
+      "properties": {
+        "a": {
+          "maxLength": 64,
+          "minLength": 1,
+          "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+          "title": "A",
+          "type": "string"
+        },
+        "b": {
+          "maxLength": 64,
+          "minLength": 1,
+          "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+          "title": "B",
+          "type": "string"
+        },
+        "id": {
+          "maxLength": 64,
+          "minLength": 1,
+          "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "$ref": "#/$defs/RelationshipKind"
+        },
+        "requirement_id": {
+          "anyOf": [
+            {
+              "maxLength": 64,
+              "minLength": 1,
+              "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Requirement Id"
+        }
+      },
+      "required": [
+        "id",
+        "a",
+        "b",
+        "kind"
+      ],
+      "title": "PlanRelationship",
+      "type": "object"
+    },
     "Polygon2D": {
       "additionalProperties": false,
       "description": "A simple polygon, optionally with holes. Rings are not closed explicitly.",
@@ -1161,59 +1214,6 @@
       ],
       "title": "SpaceFunction",
       "type": "string"
-    },
-    "SpaceRelationship": {
-      "additionalProperties": false,
-      "description": "A declared design intent between two spaces (geometry decides if it holds).",
-      "properties": {
-        "a": {
-          "maxLength": 64,
-          "minLength": 1,
-          "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
-          "title": "A",
-          "type": "string"
-        },
-        "b": {
-          "maxLength": 64,
-          "minLength": 1,
-          "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
-          "title": "B",
-          "type": "string"
-        },
-        "id": {
-          "maxLength": 64,
-          "minLength": 1,
-          "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
-          "title": "Id",
-          "type": "string"
-        },
-        "kind": {
-          "$ref": "#/$defs/RelationshipKind"
-        },
-        "requirement_id": {
-          "anyOf": [
-            {
-              "maxLength": 64,
-              "minLength": 1,
-              "pattern": "^[a-z][a-z0-9]*(?:[-_][a-z0-9]+)*$",
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null,
-          "title": "Requirement Id"
-        }
-      },
-      "required": [
-        "id",
-        "a",
-        "b",
-        "kind"
-      ],
-      "title": "SpaceRelationship",
-      "type": "object"
     },
     "Stair": {
       "additionalProperties": false,
@@ -1643,7 +1643,7 @@
     },
     "relationships": {
       "items": {
-        "$ref": "#/$defs/SpaceRelationship"
+        "$ref": "#/$defs/PlanRelationship"
       },
       "title": "Relationships",
       "type": "array"

@@ -32,10 +32,10 @@ def evaluate_plan(
     constraints: ConstraintSet | None,
     codepack: CodePack | None,
     created_at: datetime,
-    site_verified: bool | None = None,
+    site_approved: bool | None = None,
     inputs: list[ArtifactRef] | None = None,
 ) -> EvaluationReport:
-    ctx = EvaluationContext(plan.model, site, program, constraints, site_verified)
+    ctx = EvaluationContext(plan.model, site, program, constraints, site_approved)
     runs, metrics, violations = [], [], []
     for ev in [*REQUIRED, *USABILITY_EVALUATORS]:
         res = ev.evaluate(ctx)

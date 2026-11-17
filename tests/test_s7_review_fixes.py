@@ -11,7 +11,7 @@ from house_ai.constraints.compiler import compile_constraints
 from house_ai.domain.benchmark import BenchmarkFixture
 from house_ai.domain.constraints import Constraint, ConstraintSource, MinAreaRule, MinDimensionRule
 from house_ai.domain.integrity import check_model, circulation_graph, errors
-from house_ai.domain.program import AdjacencyRequirement, ProgramItem, SpaceProgram
+from house_ai.domain.program import SpaceProgram, SpaceRelationship, SpaceRequirement
 from house_ai.domain.proposal import ConceptProposal
 from house_ai.domain.provenance import Actor, ActorKind, Provenance
 from house_ai.domain.relations import is_relation_satisfied
@@ -35,9 +35,9 @@ def small_program(*, relation=None, quantity=1):
     return SpaceProgram(
         id="program-review",
         project_id="proj-demo",
-        levels=2,
-        items=[
-            ProgramItem(
+        storeys=2,
+        space_requirements=[
+            SpaceRequirement(
                 id="pi-entry",
                 name="Entry",
                 function="entry",
@@ -46,7 +46,7 @@ def small_program(*, relation=None, quantity=1):
                 target_area_m2=9,
                 min_width_m=3,
             ),
-            ProgramItem(
+            SpaceRequirement(
                 id="pi-bed",
                 name="Bedroom",
                 function="bedroom",
@@ -56,7 +56,7 @@ def small_program(*, relation=None, quantity=1):
                 min_width_m=3,
                 quantity=quantity,
             ),
-            ProgramItem(
+            SpaceRequirement(
                 id="pi-living",
                 name="Living",
                 function="living",
@@ -66,7 +66,7 @@ def small_program(*, relation=None, quantity=1):
                 min_width_m=3,
             ),
         ],
-        adjacencies=[relation] if relation else [],
+        space_relationships=[relation] if relation else [],
         provenance=Provenance(created_at=WHEN, created_by=ACTOR, method="synthetic_fixture"),
     )
 
@@ -132,7 +132,7 @@ def test_compiled_bounds_reach_the_2d_generator():
 
 @pytest.mark.parametrize("kind", ["separated", "acoustic_separation", "connected", "near"])
 def test_hard_relation_agrees_with_canonical_geometry(kind):
-    adj = AdjacencyRequirement(
+    adj = SpaceRelationship(
         id="review-rel", a="pi-living", b="pi-bed", kind=kind, strength="hard"
     )
     p = small_program(relation=adj)
@@ -145,7 +145,7 @@ def test_hard_relation_agrees_with_canonical_geometry(kind):
 
 
 def test_hard_exterior_connection_is_real_door():
-    adj = AdjacencyRequirement(
+    adj = SpaceRelationship(
         id="review-ext", a="pi-living", b="exterior", kind="connected", strength="hard"
     )
     _, model = solve_model(small_program(relation=adj))
@@ -176,7 +176,7 @@ def test_lower_levels_zones_and_outdoor_links_are_applied():
                     "program_item_id": i.id,
                     "level_id": "lv-lower" if i.id == "pi-bed" else "lv-entry",
                 }
-                for i in p.items
+                for i in p.space_requirements
             ],
             "stair_cores": [
                 {
@@ -254,7 +254,8 @@ def test_pinned_proposal_preserved_during_ordinary_revision(tmp_path):
             "name": "Pinned Compact Proposal",
             "intent": "Pin kitchen-living direct connection",
             "level_assignments": [
-                {"program_item_id": i.id, "level_id": "lv-entry"} for i in inp.program.items
+                {"program_item_id": i.id, "level_id": "lv-entry"}
+                for i in inp.program.space_requirements
             ],
             "adjacency_graph": [
                 {
@@ -292,9 +293,9 @@ def test_open_plan_three_functions_composite_space():
     program = SpaceProgram(
         id="prog-open-3",
         project_id="proj-demo",
-        levels=1,
-        items=[
-            ProgramItem(
+        storeys=1,
+        space_requirements=[
+            SpaceRequirement(
                 id="pi-entry",
                 name="Entry",
                 function="entry",
@@ -302,7 +303,7 @@ def test_open_plan_three_functions_composite_space():
                 min_area_m2=6,
                 min_width_m=2,
             ),
-            ProgramItem(
+            SpaceRequirement(
                 id="pi-living",
                 name="Living",
                 function="living",
@@ -310,7 +311,7 @@ def test_open_plan_three_functions_composite_space():
                 min_area_m2=20,
                 min_width_m=4,
             ),
-            ProgramItem(
+            SpaceRequirement(
                 id="pi-dining",
                 name="Dining",
                 function="dining",
@@ -318,7 +319,7 @@ def test_open_plan_three_functions_composite_space():
                 min_area_m2=12,
                 min_width_m=3,
             ),
-            ProgramItem(
+            SpaceRequirement(
                 id="pi-kitchen",
                 name="Kitchen",
                 function="kitchen",
@@ -327,15 +328,15 @@ def test_open_plan_three_functions_composite_space():
                 min_width_m=3,
             ),
         ],
-        adjacencies=[
-            AdjacencyRequirement(
+        space_relationships=[
+            SpaceRelationship(
                 id="adj-live-dine",
                 a="pi-living",
                 b="pi-dining",
                 kind="connected",
                 strength="hard",
             ),
-            AdjacencyRequirement(
+            SpaceRelationship(
                 id="adj-dine-kitch",
                 a="pi-dining",
                 b="pi-kitchen",

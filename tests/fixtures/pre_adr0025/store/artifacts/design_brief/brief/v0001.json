@@ -1,0 +1,33 @@
+{
+  "budget": null,
+  "contradictions": [],
+  "facts": [],
+  "household": [],
+  "id": "brief",
+  "interview_rounds_completed": 0,
+  "project_id": "pre-adr0025",
+  "provenance": {
+    "created_at": "2026-11-17T09:00:09Z",
+    "created_by": {
+      "display_name": null,
+      "id": "house-ai-interview",
+      "kind": "system",
+      "model": null,
+      "provider": null
+    },
+    "inputs": [
+      {
+        "id": "interview",
+        "kind": "interview_session",
+        "sha256": "e1aeec60b825720ed9fece2f452dc1cad9006a743cc45ca39b331277be58908c",
+        "version": 1
+      }
+    ],
+    "method": "owner_interview",
+    "notes": "Derived from the interview session; the owner's words are kept verbatim.",
+    "tool": "house-ai interview",
+    "tool_version": null
+  },
+  "schema_version": "0.1.0",
+  "target_gross_area_m2": null
+}

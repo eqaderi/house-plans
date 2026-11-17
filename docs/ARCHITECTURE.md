@@ -116,17 +116,17 @@ Details and trade-offs: [ADR 0003](adr/0003-file-based-store-and-event-log.md).
 stateDiagram-v2
     [*] --> NEW_PROJECT
     NEW_PROJECT --> SITE_INGESTION
-    SITE_INGESTION --> SITE_NEEDS_VERIFICATION: units/CRS/datum ambiguous
-    SITE_NEEDS_VERIFICATION --> SITE_INGESTION
+    SITE_INGESTION --> SITE_NEEDS_CONFIRMATION: units/CRS/datum ambiguous
+    SITE_NEEDS_CONFIRMATION --> SITE_INGESTION
     SITE_INGESTION --> SITE_APPROVED: human approves site
     SITE_APPROVED --> INTERVIEWING
     INTERVIEWING --> PROGRAM_REVIEW
     PROGRAM_REVIEW --> INTERVIEWING
     PROGRAM_REVIEW --> PROGRAM_APPROVED: human approves program
-    PROGRAM_APPROVED --> CONCEPT_GENERATION
-    CONCEPT_GENERATION --> CONCEPT_REVIEW
-    CONCEPT_REVIEW --> CONCEPT_GENERATION
-    CONCEPT_REVIEW --> PLAN_APPROVED: human approves plan
+    PROGRAM_APPROVED --> PLAN_GENERATION
+    PLAN_GENERATION --> PLAN_REVIEW
+    PLAN_REVIEW --> PLAN_GENERATION
+    PLAN_REVIEW --> PLAN_APPROVED: human approves plan
     PLAN_APPROVED --> BLENDER_BUILD
     BLENDER_BUILD --> BLENDER_REVIEW
     BLENDER_REVIEW --> BLENDER_BUILD
@@ -179,7 +179,7 @@ detect format ─▶ CAD adapter (ezdxf | ODA→ezdxf) ─▶ raw entities, SOUR
    ─▶ layer mapping (human) ─▶ SurveyTransform SOURCE→GRID→LOCAL
    ─▶ boundary · contours · spots · features · ambiguous entities
    ─▶ TIN, frontage, issues ─▶ cad_import + site artifacts
-   ─▶ workflow assess-site ─▶ SITE_NEEDS_VERIFICATION
+   ─▶ workflow assess-site ─▶ SITE_NEEDS_CONFIRMATION
    ─▶ site confirm (human, TTY) ─▶ new site version ─▶ site gate (human)
 site report ─▶ validation report (JSON/Markdown) + site SVG, derived on demand
 ```
@@ -216,8 +216,8 @@ the ground become retaining walls without windows, and stairs join levels.
 `check_model` runs on every candidate; one with errors is kept and reported
 as invalid, never dropped. Six evaluators then measure it. Plans, evaluation
 reports, constraint sets and revision reports are stored as new immutable
-versions; the workflow moves PROGRAM_APPROVED → CONCEPT_GENERATION →
-CONCEPT_REVIEW and the plan gate stays human-only. Details and limits:
+versions; the workflow moves PROGRAM_APPROVED → PLAN_GENERATION →
+PLAN_REVIEW and the plan gate stays human-only. Details and limits:
 [ADR 0013](adr/0013-solver-backed-plan-generation.md), [Milestone D](milestones/D.md).
 
 ## Boundaries kept open

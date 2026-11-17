@@ -67,7 +67,8 @@ def _make_valid_proposal(store: ProjectStore, tmp_path: Path) -> Path:
             }
         ],
         "level_assignments": [
-            {"program_item_id": item.id, "level_id": "lv-entry"} for item in program.items
+            {"program_item_id": item.id, "level_id": "lv-entry"}
+            for item in program.space_requirements
         ],
         "adjacency_graph": [
             {
@@ -147,9 +148,9 @@ def test_plan_propose_stored_workflow(tmp_path):
     )
     assert code == 0
 
-    # Workflow moved to CONCEPT_REVIEW
+    # Workflow moved to PLAN_REVIEW
     wf = Workflow(store)
-    assert wf.state is WorkflowState.CONCEPT_REVIEW
+    assert wf.state is WorkflowState.PLAN_REVIEW
 
     # Proposal stored as artifact
     proposals = store.latest_of_kind(ArtifactKind.CONCEPT_PROPOSAL)

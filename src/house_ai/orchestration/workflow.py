@@ -49,14 +49,14 @@ S = WorkflowState
 #: Ordinary (non-gate) transitions.
 TRANSITIONS: dict[WorkflowState, frozenset[WorkflowState]] = {
     S.NEW_PROJECT: frozenset({S.SITE_INGESTION}),
-    S.SITE_INGESTION: frozenset({S.SITE_NEEDS_VERIFICATION}),
-    S.SITE_NEEDS_VERIFICATION: frozenset({S.SITE_INGESTION}),
+    S.SITE_INGESTION: frozenset({S.SITE_NEEDS_CONFIRMATION}),
+    S.SITE_NEEDS_CONFIRMATION: frozenset({S.SITE_INGESTION}),
     S.SITE_APPROVED: frozenset({S.INTERVIEWING}),
     S.INTERVIEWING: frozenset({S.PROGRAM_REVIEW}),
     S.PROGRAM_REVIEW: frozenset({S.INTERVIEWING}),
-    S.PROGRAM_APPROVED: frozenset({S.CONCEPT_GENERATION}),
-    S.CONCEPT_GENERATION: frozenset({S.CONCEPT_REVIEW}),
-    S.CONCEPT_REVIEW: frozenset({S.CONCEPT_GENERATION}),
+    S.PROGRAM_APPROVED: frozenset({S.PLAN_GENERATION}),
+    S.PLAN_GENERATION: frozenset({S.PLAN_REVIEW}),
+    S.PLAN_REVIEW: frozenset({S.PLAN_GENERATION}),
     S.PLAN_APPROVED: frozenset({S.BLENDER_BUILD}),
     S.BLENDER_BUILD: frozenset({S.BLENDER_REVIEW}),
     S.BLENDER_REVIEW: frozenset({S.BLENDER_BUILD}),
@@ -79,7 +79,7 @@ GATES: dict[Gate, GateSpec] = {
     Gate.PROGRAM: GateSpec(
         Gate.PROGRAM, S.PROGRAM_REVIEW, S.PROGRAM_APPROVED, ArtifactKind.SPACE_PROGRAM
     ),
-    Gate.PLAN: GateSpec(Gate.PLAN, S.CONCEPT_REVIEW, S.PLAN_APPROVED, ArtifactKind.PLAN),
+    Gate.PLAN: GateSpec(Gate.PLAN, S.PLAN_REVIEW, S.PLAN_APPROVED, ArtifactKind.PLAN),
     Gate.MODEL: GateSpec(Gate.MODEL, S.BLENDER_REVIEW, S.MODEL_APPROVED, ArtifactKind.BUILD_RECORD),
 }
 assert all(spec.artifact_kind is GATE_ARTIFACT_KIND[g] for g, spec in GATES.items())
@@ -206,7 +206,7 @@ class Workflow:
     def _transition_guard(self, current: WorkflowState, to: WorkflowState) -> list[str]:
         if to is S.PROGRAM_REVIEW and not self.store.refs(ArtifactKind.SPACE_PROGRAM):
             return ["no space program has been written yet"]
-        if to is S.CONCEPT_REVIEW and not self.store.refs(ArtifactKind.PLAN):
+        if to is S.PLAN_REVIEW and not self.store.refs(ArtifactKind.PLAN):
             return ["no plan has been written yet"]
         if to in (S.BLENDER_REVIEW, S.UNREAL_REVIEW):
             target = BuildTarget.BLENDER if to is S.BLENDER_REVIEW else BuildTarget.UNREAL
@@ -219,7 +219,7 @@ class Workflow:
         return []
 
     def assess_site(self, site_ref: ArtifactRef, actor: Actor) -> list[str]:
-        """During site ingestion, stop at SITE_NEEDS_VERIFICATION if the site is ambiguous.
+        """During site ingestion, stop at SITE_NEEDS_CONFIRMATION if the site is ambiguous.
 
         Returns the blockers; an empty list means the site is ready for a human
         to review and approve.
@@ -232,7 +232,7 @@ class Workflow:
                 EventType.TRANSITION,
                 actor,
                 from_state=S.SITE_INGESTION,
-                to_state=S.SITE_NEEDS_VERIFICATION,
+                to_state=S.SITE_NEEDS_CONFIRMATION,
                 reason="site needs human verification before anything else",
                 payload={"site": site_ref.model_dump(mode="json"), "blockers": blockers},
             )
@@ -307,11 +307,13 @@ class Workflow:
                 if finding.code != "contradiction":  # reported above
                     reasons.append(f"program check {finding.code}: {finding.message}")
         if loaded_any_brief:
-            for item in program.items:
+            for item in program.space_requirements:
                 for fid in item.source_fact_ids:
                     if fid not in known_facts:
-                        reasons.append(f"program item {item.id} cites unknown brief fact {fid!r}")
-            for adj in program.adjacencies:
+                        reasons.append(
+                            f"space requirement {item.id} cites unknown brief fact {fid!r}"
+                        )
+            for adj in program.space_relationships:
                 for fid in adj.source_fact_ids:
                     if fid not in known_facts:
                         reasons.append(f"adjacency {adj.id} cites unknown brief fact {fid!r}")

@@ -156,7 +156,7 @@ def plan_a_report():
         constraints=cs.constraints,
         codepack=pack,
         created_at=WHEN,
-        site_verified=True,
+        site_approved=True,
     )
 
 
@@ -270,7 +270,7 @@ def test_hillside_site_metrics_expose_cut_fill_and_retaining(hillside_reports):
     assert _metric(by["linear"], "level_count").value == 1
     # A one-level concept for a two-storey program is flagged, not hidden.
     codes = {v.code for v in by["linear"].violations}
-    assert "level_count_differs" in codes
+    assert "storey_count_differs" in codes
     assert all(
         v.strength is Strength.SOFT
         for v in by["linear"].violations

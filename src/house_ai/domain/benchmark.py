@@ -1,4 +1,4 @@
-"""Synthetic benchmark contracts, separate from homeowner project artifacts."""
+"""Synthetic benchmark contracts, separate from the owner's project artifacts."""
 
 from __future__ import annotations
 

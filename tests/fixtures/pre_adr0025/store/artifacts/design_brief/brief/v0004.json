@@ -1,0 +1,160 @@
+{
+  "budget": null,
+  "contradictions": [],
+  "facts": [
+    {
+      "id": "ans-q-household-1",
+      "key": "answer",
+      "priority": null,
+      "source": {
+        "interview_round": 1,
+        "kind": "owner_answer",
+        "ref": "q-household"
+      },
+      "statement": "Two adults and two kids, 6 and 9.",
+      "status": "verified_fact",
+      "topic": "household",
+      "value": null
+    },
+    {
+      "id": "ans-q-children-rooms-2",
+      "key": "answer",
+      "priority": null,
+      "source": {
+        "interview_round": 2,
+        "kind": "owner_answer",
+        "ref": "q-children-rooms"
+      },
+      "statement": "Each child should have their own room.",
+      "status": "preference",
+      "topic": "bedrooms_bathrooms",
+      "value": null
+    },
+    {
+      "id": "ans-q-bedrooms-3",
+      "key": "answer",
+      "priority": null,
+      "source": {
+        "interview_round": 3,
+        "kind": "owner_answer",
+        "ref": "q-bedrooms"
+      },
+      "statement": "Three bedrooms.",
+      "status": "preference",
+      "topic": "bedrooms_bathrooms",
+      "value": null
+    },
+    {
+      "id": "f-adults",
+      "key": "adults",
+      "priority": null,
+      "source": {
+        "interview_round": 1,
+        "kind": "agent_inference",
+        "ref": "ans-q-household-1 via parser"
+      },
+      "statement": "Adults: 2 (understood from your answer; please confirm)",
+      "status": "inference",
+      "topic": "household",
+      "value": 2
+    },
+    {
+      "id": "f-bedrooms",
+      "key": "bedrooms",
+      "priority": null,
+      "source": {
+        "interview_round": 3,
+        "kind": "agent_inference",
+        "ref": "ans-q-bedrooms-3 via parser"
+      },
+      "statement": "Bedrooms: 3 (understood from your answer; please confirm)",
+      "status": "inference",
+      "topic": "bedrooms_bathrooms",
+      "value": 3
+    },
+    {
+      "id": "f-children",
+      "key": "children",
+      "priority": null,
+      "source": {
+        "interview_round": 1,
+        "kind": "agent_inference",
+        "ref": "ans-q-household-1 via parser"
+      },
+      "statement": "Children: 2 (understood from your answer; please confirm)",
+      "status": "inference",
+      "topic": "household",
+      "value": 2
+    },
+    {
+      "id": "f-children_own_rooms",
+      "key": "children_own_rooms",
+      "priority": null,
+      "source": {
+        "interview_round": 2,
+        "kind": "agent_inference",
+        "ref": "ans-q-children-rooms-2 via parser"
+      },
+      "statement": "Each child has their own bedroom: yes (understood from your answer; please confirm)",
+      "status": "inference",
+      "topic": "bedrooms_bathrooms",
+      "value": true
+    },
+    {
+      "id": "f-elders",
+      "key": "elders",
+      "priority": null,
+      "source": {
+        "interview_round": 1,
+        "kind": "agent_inference",
+        "ref": "ans-q-household-1 via parser"
+      },
+      "statement": "Older relatives living with you: 0 (understood from your answer; please confirm)",
+      "status": "inference",
+      "topic": "multigenerational",
+      "value": 0
+    },
+    {
+      "id": "f-household_size",
+      "key": "household_size",
+      "priority": null,
+      "source": {
+        "interview_round": 1,
+        "kind": "agent_inference",
+        "ref": "ans-q-household-1 via parser"
+      },
+      "statement": "People in the household: 4 (understood from your answer; please confirm)",
+      "status": "inference",
+      "topic": "household",
+      "value": 4
+    }
+  ],
+  "household": [],
+  "id": "brief",
+  "interview_rounds_completed": 3,
+  "project_id": "pre-adr0025",
+  "provenance": {
+    "created_at": "2026-11-17T09:00:21Z",
+    "created_by": {
+      "display_name": null,
+      "id": "house-ai-interview",
+      "kind": "system",
+      "model": null,
+      "provider": null
+    },
+    "inputs": [
+      {
+        "id": "interview",
+        "kind": "interview_session",
+        "sha256": "dc82f7fb4c6cdb3c1162ff0f97b9c48598c59232407c077d6849509e0960cd80",
+        "version": 4
+      }
+    ],
+    "method": "owner_interview",
+    "notes": "Derived from the interview session; the owner's words are kept verbatim.",
+    "tool": "house-ai interview",
+    "tool_version": null
+  },
+  "schema_version": "0.1.0",
+  "target_gross_area_m2": null
+}

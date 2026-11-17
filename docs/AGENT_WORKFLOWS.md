@@ -22,14 +22,14 @@ Use the project venv (`.venv/bin/house-ai`) and identify yourself with
   "ورودی اصلی و پارکینگ هم‌سطح جاده باشد و نشیمن یک طبقه پایین‌تر رو به منظره." \
   --question q-follow-section \
   --question-text "Should the main living level sit one level below the road-level garage?" \
-  --topic site --set floors=2 --json --actor agent:claude-code
+  --topic site --set storeys=2 --json --actor agent:claude-code
 
 # After the owner confirms in chat:
 .venv/bin/house-ai interview confirm my-house --text "بله، تایید است." --json --actor agent:claude-code
 .venv/bin/house-ai program build my-house --out projects/my-house/design --actor agent:claude-code
 ```
 
-## Plan concepts (Milestone D)
+## Plan options (Milestone D)
 
 On the synthetic steep hillside (no private data). Loading the example does
 not approve anything; a preview needs no approval because it stores nothing:
@@ -52,7 +52,7 @@ program does not contain:
 ```
 
 After the human has approved the site and program gates in their own
-terminal, the gated run stores everything and moves to CONCEPT_REVIEW:
+terminal, the gated run stores everything and moves to PLAN_REVIEW:
 
 ```bash
 .venv/bin/house-ai plan generate <project> --actor agent:claude-code
@@ -87,7 +87,7 @@ supported yet: ask the owner which parts matter and express them as `--area`,
 
 ## `projects/my-house` today
 
-The site is in `SITE_NEEDS_VERIFICATION` and no interview has been recorded,
+The site is in `SITE_NEEDS_CONFIRMATION` and no interview has been recorded,
 so there is no space program: `plan generate my-house` (gated or
 `--exploratory`) refuses and writes nothing. The order is: the owner confirms
 the site facts (`site confirm`) and approves the site gate; the agent runs the

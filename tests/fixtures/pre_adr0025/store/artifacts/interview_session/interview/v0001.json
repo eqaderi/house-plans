@@ -1,0 +1,26 @@
+{
+  "brief_id": "brief",
+  "id": "interview",
+  "pending_attempts": 0,
+  "pending_question_id": "q-household",
+  "project_id": "pre-adr0025",
+  "provenance": {
+    "created_at": "2026-11-17T09:00:07Z",
+    "created_by": {
+      "display_name": null,
+      "id": "claude-code",
+      "kind": "agent",
+      "model": null,
+      "provider": null
+    },
+    "inputs": [],
+    "method": "owner_interview",
+    "notes": null,
+    "tool": "house-ai interview",
+    "tool_version": null
+  },
+  "schema_version": "0.1.0",
+  "site": null,
+  "status": "active",
+  "turns": []
+}

@@ -116,9 +116,9 @@ to reopen A–D):
 
 | | |
 |---|---|
-| **Current stage** | none (all 10 software stages S1–S10 complete; readiness gate met) |
-| **Awaiting review** | none |
-| **Next eligible stage** | S11 Align code vocabulary with the glossary; H1 Real site verification (human parallel track), H2 Real interview and program (human parallel track), or X1 Optional tool research |
+| **Current stage** | S11 Align code vocabulary with the glossary (IN_PROGRESS, review PENDING) |
+| **Awaiting review** | S11 (branch `stage/S11-glossary-vocabulary`) |
+| **Next eligible stage** | none until S11 is reviewed; H1 Real site verification and H2 Real interview and program (human parallel tracks), or X1 Optional tool research |
 | **Path to good floor plans** | S1 (done) → S2 (done) → S3 (done) → S4 (done) → S5 (done) → S6 (done) → S7 (done) → S8 (done) → S10 (done) → S9 (done; 10 stages complete) |
 | **Blocked** | H1 site facts (owner or surveyor input); program gate (needs site gate); H3 real design (needs H1 and H2) |
 | **Human parallel tracks** | H1 site verification with the owner any time; H2 interview any time (S1-09 closed) |
@@ -1684,8 +1684,8 @@ claimed without a recorded professional verification.
 | Field | Value |
 |---|---|
 | Kind | implementation |
-| Status | NOT_STARTED |
-| Review | NOT_REQUESTED |
+| Status | IN_PROGRESS |
+| Review | PENDING |
 | Branch | `stage/S11-glossary-vocabulary` |
 | Depends on | S9 |
 | Tasks | S11-01, S11-02, S11-03 |
@@ -1696,22 +1696,22 @@ claimed without a recorded professional verification.
 | Demonstration | Old and new space program and plan records loaded side by side |
 | Artifacts | Updated ADR 0025 table, schemas, `DOMAIN_MODEL.md`, skills |
 | Review requirements | Reviewer confirms no stored record changed (`git diff main -- projects/` empty) and spot-checks the aliases |
-| Evidence | — |
+| Evidence | Branch `stage/S11-glossary-vocabulary` (PR to `main`); ADR 0025 mapping table settled; `tests/test_glossary_renames.py` on the pre-rename store `tests/fixtures/pre_adr0025/store` written by `386be0d`; `house-ai project verify my-house` intact (13 events, 10 artifact versions); `git diff main -- projects/` empty; handoff in §N S11 records |
 
 #### Renames
 
-- [ ] **S11-01** Rename saved names with validation aliases (ADR 0025 rows marked saved) — `NOT_STARTED` · P2 · deps: none
+- [ ] **S11-01** Rename saved names with validation aliases (ADR 0025 rows marked saved) — `IN_PROGRESS` · P2 · deps: none
   - Accept: new records use new names; old records load unchanged and keep their hashes
   - Verify: alias tests; `project verify my-house`
-  - Evidence: pending
-- [ ] **S11-02** Record the owner's floor count as storeys (`SpaceProgram.levels`), levels derived from the plan — `NOT_STARTED` · P2 · deps: S11-01
+  - Evidence: space programs schema 0.2.0 (`domain/program.py::RENAMED_FIELDS`, 0.1.0 written back with old names); `domain/workflow.py::RENAMED_STATES` and `WorkflowEvent._old_states`; `domain/interview.py::current_slot`, `current_question_id`; `tests/test_glossary_renames.py` (17 old artifacts keep their hashes, files byte-identical, chain intact, old state names on the CLI); `project verify my-house` intact; issue #2
+- [ ] **S11-02** Record the owner's floor count as storeys (`SpaceProgram.levels`), levels derived from the plan — `IN_PROGRESS` · P2 · deps: S11-01
   - Accept: interview and program builder ask and store a storey count; the plan derives the level count
   - Verify: program builder test on a split-level fixture
-  - Evidence: pending
-- [ ] **S11-03** Rename unsaved identifiers, CLI text, docs and skills to the glossary terms — `NOT_STARTED` · P2 · deps: none
+  - Evidence: question `q-storeys`, slot `storeys`; `SpaceProgram.storeys`; `HouseModel.storey_count` (levels less than a storey apart share one); evaluator metric `storey_count` and violation `storey_count_differs`; `tests/test_glossary_renames.py::test_the_program_asks_for_storeys_and_the_plan_derives_its_levels` (synthetic hillside: program 2 storeys, split-walkout 3 levels in 2 storeys) and `::test_storeys_are_counted_from_level_elevations` (4 split levels in 2 storeys); issue #3
+- [ ] **S11-03** Rename unsaved identifiers, CLI text, docs and skills to the glossary terms — `IN_PROGRESS` · P2 · deps: none
   - Accept: no avoided term from GLOSSARY.md remains in CLI help or skills, except in quoted history
   - Verify: grep of the _Avoid_ lists over `src/house_ai/cli` and `skills/`
-  - Evidence: pending
+  - Evidence: classes `SpaceRequirement`, `SpaceRelationship`, `SpaceRelationshipKind`, `PlanRelationship`; CLI help and messages; skill `generate-plan-options`; new exports in `design/plan-options/`; `AGENT_CONTRACT.md` (11,974 characters), `AGENT_WORKFLOWS.md`, `DOMAIN_MODEL.md`, README; the _Avoid_ grep over `src/house_ai/cli` and `skills/` finds only literal ids, command names and allowed senses; issue #4
 
 ### Stage X1 — Optional tool research
 
@@ -2466,6 +2466,7 @@ changed), **decision** (owner must choose), **risk**.
 | ISS-35 | The hand-written steep fixture `examples/projects/synthetic-hillside/site.yaml` has no TIN surface and no FRONTAGE features, and `validate_site` only reads stored ones. Slope and frontage therefore reach the interview as unknown although 35 spot heights and a road polygon exist. `apps/reviewer/README.md` still says "Nothing is implemented yet" | stale doc | `geospatial/validation.py:416`; `orchestration/site_context.py:15-40`; demo record "Site" | Regenerate the fixture through ingestion, or derive TIN and frontage when absent; update the reviewer README | S10 |
 | ISS-36 | Generated garages cannot hold their cars. The bar generator assumes 5.4 m garage depth (`generation/massing.py::GARAGE_DEPTH_DM`); a typical car (4.5 m) with the vehicle template's 0.9 m front and 0.3 m back clearance needs 5.7 m clear, about 5.93 m between wall centrelines, and the person door's 0.9 m approach on the back wall cannot overlap the car. With the S10-10 program cars, `garage_sampled_fit` is False on every demo concept. Sizing garages from the program's cars (6.0 m deep, 3.3 m wide for one car) makes the 2D garage (3.3 × 6.1 m) pass, but on the synthetic hillside the deeper entry row makes split-level and split-walkout infeasible ("no room behind the entry bar for a lower split level") and bar garages still fail because of the back-wall door approach | decision | demo re-runs 2026-10-19 (S10-10); trial resize not committed | Decided (DEC-12): (c) a separate road-level garage volume or carport, sized for the program's cars, its house side wide enough for the person door's approach; implemented in S10-19 | S10-19 |
 | ISS-37 | Generated kitchens and wet rooms are not sized for their fixture sets. After S10-19 the synthetic hillside compact kitchen is 4.1 × 2.4 m: the 3.0 m run misses the 1.8 m kitchen-living passage's 0.9 m approach by about 2.5 cm, and in a 2.4 m wide kitchen the run's 1.22 m clear zone leaves no wall for the appliance. A trial minimum derived from the fixture templates (sets in line along one wall beside a door approach: kitchen 2.2 × 4.8 m, bathroom 1.8 × 3.5 m, WC 1.8 × 2.6 m, laundry 1.9 × 3.0 m) fixed the kitchen but exceeds the approved program (ensuite target 5 m², min width 1.6 m), made linear infeasible on the hillside and the 2D ensuite unplaceable; reverted. `tests/test_generated_fixtures.py` marks both compact tests strict xfail | decision | S10-19 trial 2026-10-19, not committed | Decided (DEC-13): (c) support L-shaped or opposite-wall fixture arrangements; implementation pending. Approved program areas and existing clearances remain unchanged. | S10-09 |
+| ISS-38 | Saved names that still use avoided terms: `program_item_id` (`Space`, constraints, proposals), `program_item_ids`, `near_program_item_ids`, `adjacency_graph` (proposals), `SiteContext.verified` (interview sessions), brief topic `levels`, finding codes and metrics with `program_item` or `adjacency`; `MASTER_SPEC.md` prose still says homeowner | stale doc | ADR 0025 mapping table, rows marked kept | A later rename stage, using the same old-name reading as S11 | S11 (recorded) |
 
 ## L. Decisions
 
@@ -2547,6 +2548,20 @@ Closure record template:
 - CI on main: <run id, result>
 - Closed by: <agent:tool> on the owner's "Close stage <ID>"
 ```
+
+### S11 records
+
+#### S11 handoff 1 — all three tasks implemented, review PENDING
+- Branch: `stage/S11-glossary-vocabulary` from `main` at `386be0d`; implementer: agent:claude-code (Claude Opus 5.5) on the owner's request to implement issues #2, #3 and #4 in one PR, 2026-11-17. The docs and skills pass was done by a delegated subagent and checked by the implementer.
+- Done:
+  - S11-01: space programs of schema 0.2.0 use `space_requirements`, `space_relationships`, `storeys`, `site_approved` and `*_space_requirement_ids`; schema 0.1.0 records are written back with their old names. Workflow states `SITE_NEEDS_CONFIRMATION`, `PLAN_GENERATION`, `PLAN_REVIEW`; events keep the state names they were saved with. Interview slot `storeys`, question `q-storeys`; old names read through `current_slot` / `current_question_id`.
+  - S11-02: the interview asks for storeys, the builder stores them, and plans derive `storey_count` from their levels; evaluation compares storeys with storeys, not with levels.
+  - S11-03: class, CLI, skill, export folder and docs renames per the ADR 0025 table.
+  - Pre-rename fixture `tests/fixtures/pre_adr0025/store` written by `386be0d` code (README there says how).
+  - Regenerated synthetic examples: synthetic-hillside fixture and its exploratory preview (the preview also picked up generator drift since S10-10; it is illustrative, only its program hash is tested), synthetic-family expected outputs, reviewer bundles (public hillside copy re-synced), reviewer TypeScript types, JSON Schemas. The bungalow golden plan and benchmark fixtures are unchanged.
+- Not done: the saved names kept in ISS-38.
+- Checks: see the review prompt in the PR; `git diff main -- projects/` is empty.
+- Resume: review with "Review stage S11".
 
 ### S10 records
 
@@ -3662,6 +3677,7 @@ homeowner approval of any site, program, plan or model.
 
 ### Current handoff note
 
+- Stage S11 (glossary vocabulary, issues #2–#4) is implemented on `stage/S11-glossary-vocabulary`, review PENDING; see §N S11 handoff 1.
 - Stage S9 Floor-plan readiness gate closed with merge `d8a38b1` (CI run 39336825673 green).
 - All 10 software stages (S1–S10) on the path to good floor plans are complete. The software pipeline is verified ready to design the real house.
 - Next steps are human-dependent: H1 site verification with the owner (confirming UTM, CRS, datum, boundary), and H2 interview rounds. Stage X1 (optional tool research) can be explored any time.

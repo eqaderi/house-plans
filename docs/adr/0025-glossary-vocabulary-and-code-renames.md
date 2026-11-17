@@ -33,29 +33,52 @@ would invalidate every pinned approval).
 
 ## Mapping
 
-First draft, from a scan of `src/house_ai/domain/` on 2026-11-17. "Saved"
-means the name appears in stored records, so it needs a validation alias.
-New names in brackets are proposals; the rename stage settles them.
+First drafted from a scan of `src/house_ai/domain/` on 2026-11-17 and
+settled by Stage S11. "Saved" means the name appears in stored records, so
+readers still accept the old name.
 
 | Old name | Saved | Glossary term | Status |
 |---|---|---|---|
-| `ProgramItem` (class) | no | Space requirement | to rename |
-| `SpaceProgram.items` | yes | Space requirement (`space_requirements`) | to rename |
-| `AdjacencyRequirement`, `AdjacencyKind` | no | Space relationship | to rename |
-| `SpaceProgram.adjacencies` | yes | Space relationship (`space_relationships`) | to rename |
-| `ProgramZone` (class) | no | Zone | to rename |
-| `SpaceProgram.levels` | yes | Storey count (`storeys`); the owner's "how many floors" is a storey count, levels come from the plan | to rename |
-| `SpaceProgram.site_verified` | yes | Approved (`site_approved`) | to rename |
-| `SITE_NEEDS_VERIFICATION` (state) | yes | Workflow state awaiting site confirmation and approval (`SITE_NEEDS_CONFIRMATION`) | to rename |
-| `CONCEPT_GENERATION`, `CONCEPT_REVIEW` (states) | yes | Plan option generation and review (`PLAN_GENERATION`, `PLAN_REVIEW`) | to rename |
-| `BriefFact` (class) | no | Interpretation or answer, by its source | to decide in the rename stage |
-| "slot value", "slot inference" (CLI text, docs) | no | Interpretation | to rename |
-| "homeowner" (CLI help, docs) | no | Owner | to rename |
-| "concept" for a stored plan (CLI text, `design/concepts/`) | export folder | Plan option / plan version | to rename; old export folders stay |
-| "floor" meaning a storey (comments, docs) | no | Storey | to rename |
+| `ProgramItem` (class) | no | Space requirement | renamed `SpaceRequirement` |
+| `SpaceProgram.items` | yes | Space requirement | renamed `space_requirements` (schema 0.2.0) |
+| `AdjacencyRequirement`, `AdjacencyKind` (classes) | no | Space relationship | renamed `SpaceRelationship`, `SpaceRelationshipKind` |
+| `SpaceRelationship` (house model class) | no | none; it names the plan's side | renamed `PlanRelationship` to free the name |
+| `SpaceProgram.adjacencies` | yes | Space relationship | renamed `space_relationships` (schema 0.2.0) |
+| `ProgramZone` (class) | no | Zone | kept: `domain.model.Zone` is the zone in a house model; `ProgramZone` is the zone a program asks for and uses no avoided word |
+| `SpaceProgram.levels` | yes | Storey | renamed `storeys` (schema 0.2.0); the plan derives its levels and `HouseModel.storey_count` |
+| `SpaceProgram.site_verified` | yes | Approved | renamed `site_approved` (schema 0.2.0) |
+| `UsabilityRequirements.double_bed_program_item_ids`, `single_bed_program_item_ids` | yes | Space requirement | renamed `*_space_requirement_ids` (inside space programs of schema 0.2.0) |
+| `SITE_NEEDS_VERIFICATION` (state) | yes | Workflow state awaiting site confirmation and approval | renamed `SITE_NEEDS_CONFIRMATION` |
+| `CONCEPT_GENERATION`, `CONCEPT_REVIEW` (states) | yes | Plan option generation and review | renamed `PLAN_GENERATION`, `PLAN_REVIEW` |
+| Interview slot `floors`, question `q-floors` | yes | Storey | renamed `storeys`, `q-storeys` |
+| Evaluation metric `site_verified`, violation `level_count_differs`, plan assumption `asm-gen-requested-levels` | yes | Approved, Storey | renamed `site_approved`, `storey_count_differs`, `asm-gen-requested-storeys` |
+| `BriefFact` (class) | no | none | kept: a brief fact can be an answer, an interpretation, a confirmed value or an assumption, so neither term fits |
+| `program_item_id` (`Space`, constraints, proposals), `program_item_ids`, `near_program_item_ids`, `adjacency_graph` (proposals) | yes | Space requirement, Space relationship | kept: these records have no rename schema version; follow-up candidate |
+| Evaluation and proposal finding codes `program_item_missing`, `unknown_program_item`, `hard_adjacency_unmet`, `soft_adjacency_unmet`, `hard_adjacency_violation`, `program_hard_adjacency_violation`; metrics `hard_adjacencies_met`, `soft_adjacency_score`, `adjacency_satisfied` | yes | Space requirement, Space relationship | kept: saved in evaluations and matched by agents and skills; follow-up candidate |
+| `SiteContext.verified` (interview sessions), brief topic `levels` | yes | Approved; levels | kept: not in the S11 scope; follow-up candidate |
+| Plan option ids `concept-<strategy>` | yes (artifact ids) | Plan option | kept: renaming the prefix would split one option into two when a project regenerates |
+| Relationship ids `adj-*`, item ids `pi-*` | yes (ids) | none | kept: ids, not words |
+| "slot value", "slot inference" (CLI text, docs) | no | Interpretation | renamed |
+| "homeowner" (CLI help, docs, skills) | no | Owner | renamed; `MASTER_SPEC.md` and history keep it |
+| "concept" for a stored plan (CLI text, skills, exports) | export folder | Plan option / plan version | renamed; new exports go to `design/plan-options/`, old `design/concepts/` folders stay and are still read; `--concepts-dir` stays as an alias of `--plan-options-dir`; the committed example `examples/projects/synthetic-hillside/concepts/` keeps its name (Milestone D history links it) |
+| Skill `generate-concepts` | no | Plan option | renamed `generate-plan-options` |
+| "floor" meaning a storey (comments, docs, interview and review text) | no | Storey | renamed |
 
 `PlanVersion.option_id`, `ConceptProposal`, `OwnerStatement`, `Finding`,
 `Violation` and `Issue` already match the glossary.
+
+How old names are read:
+
+- Space programs: schema 0.1.0 records are written back with their old
+  field names, so their hashes hold; new programs are schema 0.2.0. Either
+  name is accepted on input, never both.
+- Events have no schema version: an event read with an old state name
+  remembers it and is written back with it. `WorkflowState` maps old values
+  to the current members, so code and the CLI accept old names.
+- Interview sessions and briefs are read through `current_slot` and
+  `current_question_id`; saved turns are never rewritten.
+- JSON Schemas list only the new names; a document with old names is valid
+  for the Python readers, not for the exported schema.
 
 ## Consequences
 

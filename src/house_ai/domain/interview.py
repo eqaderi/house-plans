@@ -16,6 +16,22 @@ from .base import SCHEMA_VERSION, Id, StrictModel, UtcDatetime
 from .brief import FactValue
 from .provenance import Actor, ActorKind, ArtifactRef, Provenance
 
+#: ADR 0025: slot names saved before the glossary rename -> current slot names.
+RENAMED_SLOTS: dict[str, str] = {"floors": "storeys"}
+#: ADR 0025: question ids saved before the glossary rename -> current question ids.
+RENAMED_QUESTIONS: dict[str, str] = {"q-floors": "q-storeys"}
+
+
+def current_slot(slot: str) -> str:
+    """The current name of a slot that a saved turn or brief may name by its old name."""
+    return RENAMED_SLOTS.get(slot, slot)
+
+
+def current_question_id(question_id: str) -> str:
+    """The current id of a question (or ``<question>#<slot>`` follow-up) saved by an old id."""
+    base, sep, slot = question_id.partition("#")
+    return RENAMED_QUESTIONS.get(base, base) + sep + (current_slot(slot) if sep else "")
+
 
 class TurnKind(StrEnum):
     #: The owner answered the pending question.
@@ -70,7 +86,7 @@ class InterviewTurn(StrictModel):
     def _owner_turns_are_human(self) -> InterviewTurn:
         if self.actor.kind is ActorKind.SYSTEM:
             raise ValueError(
-                f"{self.kind.value} turns record only the homeowner's decisions; "
+                f"{self.kind.value} turns record only the owner's decisions; "
                 f"system actor {self.actor.id!r} cannot make them"
             )
         if self.kind in (TurnKind.CONSENT, TurnKind.PROGRAM_REJECTION) and (

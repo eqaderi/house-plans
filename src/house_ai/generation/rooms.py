@@ -18,11 +18,11 @@ from itertools import permutations
 from house_ai.domain.base import EXTERIOR
 from house_ai.domain.brief import Priority
 from house_ai.domain.program import (
-    AdjacencyKind,
     DaylightNeed,
-    ProgramItem,
     SpaceFunction,
     SpaceProgram,
+    SpaceRelationshipKind,
+    SpaceRequirement,
     Strength,
 )
 from house_ai.domain.usability_templates import TEMPLATES
@@ -61,7 +61,7 @@ MAX_CLUSTER = 6
 @dataclass(frozen=True)
 class RoomSpec:
     space_id: str
-    item: ProgramItem
+    item: SpaceRequirement
     index: int
     effective_min_area_m2: float | None = None
     effective_min_width_m: float | None = None
@@ -131,7 +131,7 @@ class Cluster:
 class Relation:
     a: str
     b: str
-    kind: AdjacencyKind
+    kind: SpaceRelationshipKind
     strength: Strength
     weight: float
     requirement_id: str
@@ -142,8 +142,8 @@ class ProgramRooms:
     rooms: list[RoomSpec]
     clusters: list[Cluster]
     #: The item the entry bar's corridor stands for (a hall), if the program has one.
-    hall_item: ProgramItem | None
-    stair_item: ProgramItem | None
+    hall_item: SpaceRequirement | None
+    stair_item: SpaceRequirement | None
     #: Room the front door opens into; None means the corridor (hall) itself.
     entry_room: RoomSpec | None
     relations: list[Relation]
@@ -151,18 +151,18 @@ class ProgramRooms:
     hall_connected: set[str]
     skipped: list[tuple[str, str]]
     #: The garage item: a separate road-level volume beside the house (DEC-12, S10-19).
-    garage_item: ProgramItem | None = None
+    garage_item: SpaceRequirement | None = None
 
     def room(self, space_id: str) -> RoomSpec:
         return next(r for r in self.rooms if r.space_id == space_id)
 
 
-def space_id_for(item: ProgramItem, index: int) -> str:
+def space_id_for(item: SpaceRequirement, index: int) -> str:
     base = "sp-" + item.id.removeprefix("pi-")
     return base if item.quantity == 1 else f"{base}-{index}"
 
 
-def is_indoor(item: ProgramItem) -> bool:
+def is_indoor(item: SpaceRequirement) -> bool:
     if item.function in OUTDOOR_FUNCTIONS or item.level_preference in OUTDOOR_LEVELS:
         return False
     # Garden, pool and similar wishes carry no area and are not rooms.
@@ -210,8 +210,8 @@ def expand_program(
     skipped: list[tuple[str, str]] = []
     hall_item = stair_item = garage_item = None
     first_space: dict[str, str] = {}
-    entry_item = next((i for i in program.items if i.function is S.ENTRY), None)
-    for item in program.items:
+    entry_item = next((i for i in program.space_requirements if i.function is S.ENTRY), None)
+    for item in program.space_requirements:
         if not is_indoor(item):
             skipped.append((item.id, "outdoor item; Milestone D places indoor rooms only"))
             continue
@@ -242,20 +242,20 @@ def expand_program(
     relations: list[Relation] = []
     hard_pairs: list[tuple[str, str]] = []
     hall_connected: set[str] = set()
-    for adj in program.adjacencies:
+    for adj in program.space_relationships:
         a_id, b_id = adj.a, adj.b
         if EXTERIOR in (a_id, b_id):
             continue
         if hall_key in (a_id, b_id):
             other = b_id if a_id == hall_key else a_id
-            if adj.kind is AdjacencyKind.CONNECTED and other in first_space:
+            if adj.kind is SpaceRelationshipKind.CONNECTED and other in first_space:
                 hall_connected.add(first_space[other])
             continue
         if a_id not in first_space or b_id not in first_space:
             continue
         a, b = first_space[a_id], first_space[b_id]
         relations.append(Relation(a, b, adj.kind, adj.strength, adj.weight or 0.0, adj.id))
-        if adj.kind is AdjacencyKind.CONNECTED and adj.strength is Strength.HARD:
+        if adj.kind is SpaceRelationshipKind.CONNECTED and adj.strength is Strength.HARD:
             hard_pairs.append((a, b))
     entry_room = next((r for r in rooms if entry_item and r.item.id == entry_item.id), None)
     clusters = _clusters(rooms, hard_pairs)

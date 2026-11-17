@@ -12,7 +12,7 @@ import pytest
 from house_ai.domain.integrity import check_model, errors
 from house_ai.domain.model import OpeningKind, WallKind
 from house_ai.domain.plan import PlanVersion
-from house_ai.domain.program import AdjacencyKind, SpaceProgram, Strength
+from house_ai.domain.program import SpaceProgram, SpaceRelationshipKind, Strength
 from house_ai.domain.site import Site
 from house_ai.domain.terrain import elevation_at, site_surface
 from house_ai.evaluation.explain import concept_signature, footprint_iou, zoning_difference
@@ -101,7 +101,7 @@ def test_steep_site_gets_at_least_three_valid_structurally_different_concepts(
 
 def test_every_room_meets_its_program_minimum_and_width(hillside, hillside_plans):
     _, program = hillside
-    items = {i.id: i for i in program.items}
+    items = {i.id: i for i in program.space_requirements}
     for plan in hillside_plans.values():
         for s in plan.model.spaces:
             item = items.get(s.program_item_id or "")
@@ -120,8 +120,8 @@ def test_hard_connections_are_doors_or_openings(hillside, hillside_plans):
     _, program = hillside
     hard = [
         a
-        for a in program.adjacencies
-        if a.strength is Strength.HARD and a.kind is AdjacencyKind.CONNECTED
+        for a in program.space_relationships
+        if a.strength is Strength.HARD and a.kind is SpaceRelationshipKind.CONNECTED
     ]
     assert hard, "the fixture should exercise hard connections (open-plan living)"
     for plan in hillside_plans.values():

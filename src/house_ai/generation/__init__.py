@@ -1,1 +1,1 @@
-"""Floor-plan concept generation (Milestone D)."""
+"""Floor-plan option generation (Milestone D)."""

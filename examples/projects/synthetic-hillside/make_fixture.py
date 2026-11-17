@@ -134,7 +134,7 @@ ANSWERS: list[tuple[str, str, object]] = [
     ("vehicles", "cars", 2),
     ("vehicles", "parking_type", "garage"),
     ("site_response", "entry_at_road", True),
-    ("levels", "floors", 2),
+    ("levels", "storeys", 2),
     ("laundry", "laundry_room", True),
     ("work_study", "workspaces", 1),
     ("work_study", "office_quiet", True),

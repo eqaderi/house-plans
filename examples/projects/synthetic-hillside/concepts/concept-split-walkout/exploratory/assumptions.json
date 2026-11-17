@@ -119,6 +119,25 @@
         "model": null,
         "provider": null
       },
+      "statement": "Garage: separate road-level volume 6 × 6 m beside the entry bar (DEC-12).",
+      "status": "assumption"
+    },
+    {
+      "affects": [
+        "lv-down-450",
+        "lv-down-300",
+        "lv-entry"
+      ],
+      "basis": "massing strategy",
+      "confirm_with": null,
+      "id": "asm-gen-note-4",
+      "made_by": {
+        "display_name": null,
+        "id": "house-ai-plan-generator",
+        "kind": "system",
+        "model": null,
+        "provider": null
+      },
       "statement": "Floor elevations and bar positions/lengths solved jointly with TIN lookup; sectional contact bands and circulation/daylight objectives, no excavation/void penalty. Earthworks evaluated exactly afterward.",
       "status": "assumption"
     },
@@ -142,7 +161,7 @@
     },
     {
       "affects": [],
-      "basis": "typical car length plus clearance; not in the program",
+      "basis": "program cars (or a typical car) with the vehicle template's clearances and walls (S10-19)",
       "confirm_with": "owner",
       "id": "asm-gen-garage-depth",
       "made_by": {
@@ -152,14 +171,13 @@
         "model": null,
         "provider": null
       },
-      "statement": "A garage needs at least 5.4 m depth for a car.",
+      "statement": "The garage is a separate road-level volume, 6 m wide and 6 m deep for its cars (DEC-12).",
       "status": "assumption"
     },
     {
       "affects": [
-        "sp-flex-b-walkout-back",
         "sp-flex-b-walkout-front",
-        "sp-flex-b1-front"
+        "sp-flex-b0-front"
       ],
       "basis": "solver closes every row of the massing",
       "confirm_with": "owner",
@@ -226,12 +244,28 @@
         "w-down-300-001",
         "w-down-300-002",
         "w-down-300-003",
-        "w-down-300-004",
-        "w-down-300-020",
-        "w-down-300-031",
-        "w-down-300-032"
+        "w-down-300-025",
+        "w-down-300-026",
+        "w-down-450-001"
       ],
       "title": "Retaining walls, excavation, slope drainage and foundations need geotechnical and structural engineering; nothing here is engineered."
+    },
+    {
+      "description": null,
+      "id": "iss-no-fixtures-kitchen",
+      "raised_by": {
+        "display_name": null,
+        "id": "house-ai-plan-generator",
+        "kind": "system",
+        "model": null,
+        "provider": null
+      },
+      "severity": "warning",
+      "status": "open",
+      "subject_ids": [
+        "sp-kitchen"
+      ],
+      "title": "No fixture layout found for sp-kitchen; the sampled study reports on it"
     }
   ],
   "program": [
@@ -330,5 +364,5 @@
       "status": "assumption"
     }
   ],
-  "site_verified": false
+  "site_approved": false
 }

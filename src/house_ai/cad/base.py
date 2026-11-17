@@ -4,7 +4,7 @@ The rest of the application depends only on these protocols, never on a CAD
 library. Adapters: DXF via ezdxf (:mod:`house_ai.cad.dxf_ezdxf`) and DWG via
 an external DWG->DXF converter (:mod:`house_ai.cad.dwg_oda`). Every import
 produces a :class:`~house_ai.domain.site.CadImportProvenance` and stops at
-SITE_NEEDS_VERIFICATION when units or CRS are ambiguous.
+SITE_NEEDS_CONFIRMATION when units or CRS are ambiguous.
 
 Raw CAD entities extracted by :meth:`CadAdapter.extract_cad` remain in SOURCE
 coordinates and units until units and the local project coordinate system are

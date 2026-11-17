@@ -32,7 +32,7 @@ export const VersionDiff: React.FC<VersionDiffProps> = ({ revision }) => {
       </div>
 
       <div style={{ background: "rgba(51, 65, 85, 0.4)", padding: "8px 12px", borderRadius: 4 }}>
-        <div style={{ color: "#94a3b8", fontSize: 11 }}>Homeowner verbatim request:</div>
+        <div style={{ color: "#94a3b8", fontSize: 11 }}>Owner's verbatim request:</div>
         <div style={{ fontStyle: "italic", marginTop: 2, fontWeight: 600 }}>
           "{revision.requested_change}"
         </div>

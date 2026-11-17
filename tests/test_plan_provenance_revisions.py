@@ -1,4 +1,4 @@
-"""Regression coverage for pinned exports and continuing homeowner revision intent."""
+"""Regression coverage for pinned exports and continuing owner revision intent."""
 
 import json
 from dataclasses import replace
@@ -12,7 +12,7 @@ from house_ai.constants.evaluations import (
     REQUESTED_AREA_TOLERANCE_M2,
 )
 from house_ai.domain.plan import ChangeRequestKind, PlanVersion
-from house_ai.domain.program import AdjacencyKind, SpaceProgram
+from house_ai.domain.program import SpaceProgram, SpaceRelationshipKind
 from house_ai.domain.provenance import ArtifactKind
 from house_ai.domain.records import AssumptionsFile
 from house_ai.domain.site import Site
@@ -50,7 +50,7 @@ def test_modify_inherits_intent_and_overrides_item_space_aliases(tmp_path):
     assert opts.targets == {"sp-kitchen": 16.0}
     assert opts.level_prefs == {"sp-study-1": "lower"}
     assert len(opts.relations) == 1
-    assert opts.relations[0].kind is AdjacencyKind.SEPARATED
+    assert opts.relations[0].kind is SpaceRelationshipKind.SEPARATED
     assert effective == prior[:3]
     assert opts.hints  # one-run rethink was not inherited
 
@@ -66,7 +66,7 @@ def test_modify_inherits_intent_and_overrides_item_space_aliases(tmp_path):
     )
     assert opts.targets == {"sp-kitchen": 18.0}
     assert opts.level_prefs == {"sp-study-1": "entry"}
-    assert [r.kind for r in opts.relations] == [AdjacencyKind.ADJACENT]
+    assert [r.kind for r in opts.relations] == [SpaceRelationshipKind.ADJACENT]
     assert effective == [
         "area:sp-kitchen=18",
         "level:sp-study-1=entry",
@@ -90,9 +90,9 @@ def test_partial_quantity_override_keeps_other_room_requests(tmp_path):
     program = svc.inputs(exploratory=True).program
     items = [
         item.model_copy(update={"quantity": 2}) if item.id == "pi-study-1" else item
-        for item in program.items
+        for item in program.space_requirements
     ]
-    program = program.model_copy(update={"items": items})
+    program = program.model_copy(update={"space_requirements": items})
     parent = _concept()
     parent = parent.model_copy(
         update={
@@ -204,9 +204,9 @@ def test_historical_cli_export_uses_pinned_site_and_program(tmp_path, monkeypatc
     assert observed[0].program_ref == original.program_ref
     assert observed[0].site == store.get(original.site_ref, Site)
     assert observed[0].program == store.get(original.program_ref, SpaceProgram)
-    assert observed[0].site_verified is False
+    assert observed[0].site_approved is False
     assumptions = json.loads((out / ref.id / "v0001" / "assumptions.json").read_text("utf-8"))
-    assert assumptions["site_verified"] is False
+    assert assumptions["site_approved"] is False
     assert assumptions["program"] == [
         a.model_dump(mode="json") for a in old_assumptions.assumptions
     ]

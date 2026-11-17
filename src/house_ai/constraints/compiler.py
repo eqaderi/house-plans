@@ -161,7 +161,7 @@ def compile_constraints(
             rationale=why,
         )
 
-    for item in program.items:
+    for item in program.space_requirements:
         src = ConstraintSource(kind=K.PROGRAM, ref=item.id)
         if item.min_area_m2 is not None:
             add(
@@ -177,7 +177,7 @@ def compile_constraints(
                 MinDimensionRule(program_item_id=item.id, min_width_m=item.min_width_m),
                 src,
             )
-    for adj in program.adjacencies:
+    for adj in program.space_relationships:
         src = ConstraintSource(kind=K.PROGRAM, ref=adj.id)
         if adj.strength is Strength.HARD:
             add(
@@ -223,7 +223,7 @@ def compile_constraints(
 
     compiled, not_checked = [], []
     if codepack is not None:
-        functions = {i.function for i in program.items}
+        functions = {i.function for i in program.space_requirements}
         for rule in codepack.rules:
             params = rule.parameters
             fn = params.get("function")
@@ -247,7 +247,7 @@ def compile_constraints(
             strength = H if codepack.verified else Sf
             weight = None if codepack.verified else 1.0
             src = ConstraintSource(kind=K.CODEPACK, ref=codepack.id)
-            for item in program.items:
+            for item in program.space_requirements:
                 if item.function is not function:
                     continue
                 if "min_area_m2" in params:

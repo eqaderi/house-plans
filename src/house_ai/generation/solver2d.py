@@ -54,11 +54,11 @@ from house_ai.constants.strategies import (
 )
 from house_ai.domain.base import EXTERIOR
 from house_ai.domain.program import (
-    AdjacencyKind,
-    AdjacencyRequirement,
     ProgramZone,
     SpaceFunction,
     SpaceProgram,
+    SpaceRelationship,
+    SpaceRelationshipKind,
     Strength,
 )
 from house_ai.domain.proposal import ConceptProposal
@@ -67,6 +67,11 @@ from house_ai.generation.frame import ENVELOPE_MARGIN_M, DesignFrame, Ground
 from house_ai.generation.rooms import garage_dims_dm, space_id_for
 from house_ai.generation.solver import SolverOptions
 from house_ai.generation.stairs import u_core_fits
+
+#: Space relationship kinds that keep two spaces apart.
+SEPARATING_KINDS = frozenset(
+    {SpaceRelationshipKind.SEPARATED, SpaceRelationshipKind.ACOUSTIC_SEPARATION}
+)
 
 SHARED_WALL_MIN_DM = int(round(SHARED_WALL_MIN_M * 10))
 OPEN_PLAN_WALL_MIN_DM = int(round(OPEN_PLAN_SHARED_WALL_MIN_M * 10))
@@ -250,7 +255,7 @@ def extract_placement_rooms(
     """Expand every program instance with the same IDs used by revisions/evaluation."""
     rooms = []
     garage_depth, garage_width = garage_dims_dm(program)
-    for item in program.items:
+    for item in program.space_requirements:
         is_garage = item.function is SpaceFunction.GARAGE
         for index in range(1, item.quantity + 1):
             minimum = max(item.min_area_m2 or 0, (min_areas or {}).get(item.id, 0))
@@ -711,8 +716,11 @@ def solve_2d_placement(
         for core in proposal.stair_cores:
             levels.update(_level_id(lv) for lv in core.connects_levels)
     levels = [lv for lv in level_order if lv in levels]
-    if program.levels is not None and len(levels) > program.levels:
-        raise Solve2DFailed(f"layout needs {len(levels)} levels; program permits {program.levels}")
+    # 2D levels are stacked a whole storey apart (terrain_levels.py), so each is a storey.
+    if program.storeys is not None and len(levels) > program.storeys:
+        raise Solve2DFailed(
+            f"layout needs {len(levels)} storeys; the program asks for {program.storeys}"
+        )
     cores = {}
     if len(levels) > 1:
         for lv in levels:
@@ -826,16 +834,16 @@ def solve_2d_placement(
     def ends(endpoint):
         return by_item.get(endpoint, [endpoint] if endpoint in ids or endpoint == EXTERIOR else [])
 
-    requirements = list(program.adjacencies)
+    requirements = list(program.space_relationships)
     if proposal:
         requirements += [
-            AdjacencyRequirement(
+            SpaceRelationship(
                 id=a.id, a=a.a, b=a.b, kind=a.kind, strength=a.strength, weight=a.weight
             )
             for a in proposal.adjacency_graph
         ]
     requirements += [
-        AdjacencyRequirement(
+        SpaceRelationship(
             id=f"rev-{i}",
             a=r.a,
             b=r.b,
@@ -846,13 +854,13 @@ def solve_2d_placement(
         for i, r in enumerate(opts.relations)
     ]
     requirements += [
-        AdjacencyRequirement(id=f"outdoor-{i}", a=a, b=b, kind="connected", strength="hard")
+        SpaceRelationship(id=f"outdoor-{i}", a=a, b=b, kind="connected", strength="hard")
         for i, (a, b) in enumerate(link_pairs)
     ]
     hard_connected = {
         frozenset((a, b))
         for req in requirements
-        if req.kind is AdjacencyKind.CONNECTED and req.strength is Strength.HARD
+        if req.kind is SpaceRelationshipKind.CONNECTED and req.strength is Strength.HARD
         for a, b in product(ends(req.a), ends(req.b))
     }
     touch, contact, directions, doors = {}, {}, {}, {}
@@ -917,8 +925,8 @@ def solve_2d_placement(
     ext_ids = {entry.space_id}
     for req in requirements:
         if EXTERIOR in (req.a, req.b) and req.kind in (
-            AdjacencyKind.CONNECTED,
-            AdjacencyKind.ADJACENT,
+            SpaceRelationshipKind.CONNECTED,
+            SpaceRelationshipKind.ADJACENT,
         ):
             ext_ids.update(ends(req.a if req.b == EXTERIOR else req.b))
     ext_flags = {}
@@ -1000,7 +1008,7 @@ def solve_2d_placement(
         for a, b in pairs:
             if a == b:
                 continue
-            if req.kind in (AdjacencyKind.SEPARATED, AdjacencyKind.ACOUSTIC_SEPARATION):
+            if req.kind in SEPARATING_KINDS:
                 if EXTERIOR in (a, b):
                     if req.strength is Strength.HARD:
                         raise Solve2DFailed(
@@ -1008,15 +1016,15 @@ def solve_2d_placement(
                         )
                     continue
                 v = contact.get((a, b), md.NewConstant(0)).Not()
-            elif req.kind is AdjacencyKind.CONNECTED:
+            elif req.kind is SpaceRelationshipKind.CONNECTED:
                 v = doors.get((a, b), md.NewConstant(0))
-            elif req.kind is AdjacencyKind.ADJACENT:
+            elif req.kind is SpaceRelationshipKind.ADJACENT:
                 v = (
                     ext_flags[b if a == EXTERIOR else a]
                     if EXTERIOR in (a, b)
                     else touch.get((a, b), md.NewConstant(0))
                 )
-            elif req.kind is AdjacencyKind.NEAR:
+            elif req.kind is SpaceRelationshipKind.NEAR:
                 paths = [doors[a, b]] if (a, b) in doors else []
                 for middle in [*ids, EXTERIOR]:
                     if (a, middle) in doors and (middle, b) in doors:
@@ -1027,14 +1035,14 @@ def solve_2d_placement(
                             )
                         )
                 v = disjunction(f"near_{req.id}_{a}_{b}", paths)
-            elif req.kind is AdjacencyKind.VISUAL:
+            elif req.kind is SpaceRelationshipKind.VISUAL:
                 if req.strength is Strength.HARD:
                     raise Solve2DFailed(f"hard VISUAL sightline constraint not supported: {req.id}")
                 continue
             else:
                 continue
             satisfied.append(v)
-        separating = req.kind in (AdjacencyKind.SEPARATED, AdjacencyKind.ACOUSTIC_SEPARATION)
+        separating = req.kind in SEPARATING_KINDS
         ok = (
             conjunction(f"req_{req.id}", satisfied)
             if separating

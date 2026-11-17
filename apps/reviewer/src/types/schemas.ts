@@ -15,19 +15,6 @@ export interface Actor {
 
 export type ActorKind = "human" | "agent" | "system";
 
-export type AdjacencyKind = "connected" | "adjacent" | "near" | "visual" | "separated" | "acoustic_separation";
-
-export interface AdjacencyRequirement {
-  a: string;
-  b: string;
-  id: string;
-  kind: AdjacencyKind;
-  rationale?: string | null;
-  source_fact_ids?: string[];
-  strength: Strength;
-  weight?: number | null;
-}
-
 export interface AdjacencyRule {
   kind?: string;
   requirement_id: string;
@@ -396,7 +383,7 @@ export interface HouseModel {
   name: string;
   openings?: Opening[];
   program_ref?: ArtifactRef | null;
-  relationships?: SpaceRelationship[];
+  relationships?: PlanRelationship[];
   schema_version?: string;
   site_ref?: ArtifactRef | null;
   slabs?: Slab[];
@@ -590,6 +577,15 @@ export interface OwnerStatement {
   words: string;
 }
 
+/** A declared design intent between two spaces of a plan (geometry decides if it holds). */
+export interface PlanRelationship {
+  a: string;
+  b: string;
+  id: string;
+  kind: RelationshipKind;
+  requirement_id?: string | null;
+}
+
 export interface PointGeometry {
   type?: string;
   xy: any[];
@@ -620,25 +616,6 @@ export type Priority = "must" | "should" | "could" | "wont";
 
 export type Privacy = "public" | "semi_private" | "private" | "service";
 
-export interface ProgramItem {
-  accessible?: boolean;
-  daylight?: DaylightNeed;
-  function: SpaceFunction;
-  id: string;
-  level_preference?: string | null;
-  max_area_m2?: number | null;
-  min_area_m2?: number | null;
-  min_width_m?: number | null;
-  name: string;
-  notes?: string | null;
-  priority?: Priority;
-  privacy: Privacy;
-  quantity?: number;
-  source_fact_ids?: string[];
-  target_area_m2?: number | null;
-  zone_id?: string | null;
-}
-
 export interface ProgramZone {
   id: string;
   name: string;
@@ -650,7 +627,7 @@ export interface ProposalAdjacency {
   a: string;
   b: string;
   id: string;
-  kind?: AdjacencyKind;
+  kind?: SpaceRelationshipKind;
   rationale?: string | null;
   strength?: Strength;
   weight?: number | null;
@@ -828,31 +805,62 @@ export interface Space {
 
 export type SpaceFunction = "entry" | "hall" | "corridor" | "living" | "family" | "reception" | "dining" | "kitchen" | "pantry" | "bedroom" | "bathroom" | "wc" | "ablution" | "prayer" | "study" | "gym" | "play" | "storage" | "laundry" | "mechanical" | "garage" | "stair" | "lift" | "guest_suite" | "terrace" | "balcony" | "other";
 
+/** The space requirements and relationships the program gate approves.
+
+Old field names (``items``, ``adjacencies``, ``levels``, ``site_verified``)
+are accepted on input; ``levels`` changed meaning, so only on schema 0.1.0.
+A record of schema 0.1.0 is written back with them, so programs saved before
+ADR 0025 keep their content hash. */
 export interface SpaceProgram {
-  adjacencies?: AdjacencyRequirement[];
   brief_ref?: ArtifactRef | null;
   budget?: Money | null;
   circulation_factor?: number | null;
   id: string;
-  items: ProgramItem[];
-  levels?: number | null;
   project_id: string;
   provenance: Provenance;
   schema_version?: string;
+  site_approved?: boolean;
   site_ref?: ArtifactRef | null;
-  site_verified?: boolean;
+  space_relationships?: SpaceRelationship[];
+  space_requirements: SpaceRequirement[];
+  storeys?: number | null;
   target_gross_area_m2?: number | null;
   usability?: UsabilityRequirements;
   zones?: ProgramZone[];
 }
 
-/** A declared design intent between two spaces (geometry decides if it holds). */
+/** How two spaces should relate (GLOSSARY.md). */
 export interface SpaceRelationship {
   a: string;
   b: string;
   id: string;
-  kind: RelationshipKind;
-  requirement_id?: string | null;
+  kind: SpaceRelationshipKind;
+  rationale?: string | null;
+  source_fact_ids?: string[];
+  strength: Strength;
+  weight?: number | null;
+}
+
+export type SpaceRelationshipKind = "connected" | "adjacent" | "near" | "visual" | "separated" | "acoustic_separation";
+
+/** A kind of space the Owner needs, with a quantity and a size (GLOSSARY.md). */
+export interface SpaceRequirement {
+  accessible?: boolean;
+  daylight?: DaylightNeed;
+  function: SpaceFunction;
+  id: string;
+  level_preference?: string | null;
+  max_area_m2?: number | null;
+  min_area_m2?: number | null;
+  min_width_m?: number | null;
+  name: string;
+  notes?: string | null;
+  priority?: Priority;
+  privacy: Privacy;
+  quantity?: number;
+  source_fact_ids?: string[];
+  target_area_m2?: number | null;
+  zone_id?: string | null;
 }
 
 export interface SpotElevation {
@@ -951,9 +959,9 @@ export interface UnitDeclaration {
 
 export interface UsabilityRequirements {
   arrival_path?: any[][] | null;
-  double_bed_program_item_ids?: string[];
+  double_bed_space_requirement_ids?: string[];
   household_seats?: number | null;
-  single_bed_program_item_ids?: string[];
+  single_bed_space_requirement_ids?: string[];
   vehicles?: VehicleEnvelope[] | null;
 }
 
@@ -1023,7 +1031,7 @@ export interface WithinEnvelopeRule {
   kind?: string;
 }
 
-export type WorkflowState = "NEW_PROJECT" | "SITE_INGESTION" | "SITE_NEEDS_VERIFICATION" | "SITE_APPROVED" | "INTERVIEWING" | "PROGRAM_REVIEW" | "PROGRAM_APPROVED" | "CONCEPT_GENERATION" | "CONCEPT_REVIEW" | "PLAN_APPROVED" | "BLENDER_BUILD" | "BLENDER_REVIEW" | "MODEL_APPROVED" | "UNREAL_BUILD" | "UNREAL_REVIEW";
+export type WorkflowState = "NEW_PROJECT" | "SITE_INGESTION" | "SITE_NEEDS_CONFIRMATION" | "SITE_APPROVED" | "INTERVIEWING" | "PROGRAM_REVIEW" | "PROGRAM_APPROVED" | "PLAN_GENERATION" | "PLAN_REVIEW" | "PLAN_APPROVED" | "BLENDER_BUILD" | "BLENDER_REVIEW" | "MODEL_APPROVED" | "UNREAL_BUILD" | "UNREAL_REVIEW";
 
 export interface Zone {
   id: string;
@@ -1299,7 +1307,10 @@ export interface VisualCritiqueFile {
   verified?: boolean;
 }
 
-/** One line of events.jsonl. ``hash`` chains each event to the previous one. */
+/** One line of events.jsonl. ``hash`` chains each event to the previous one.
+
+An event saved with an old state name (ADR 0025) reads as the current state
+and is written back with the name it was saved with, so its hash holds. */
 export interface WorkflowEvent {
   actor: Actor;
   at: string;

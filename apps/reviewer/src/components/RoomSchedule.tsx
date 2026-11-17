@@ -20,10 +20,13 @@ export const RoomSchedule: React.FC<RoomScheduleProps> = ({ model, program, eval
     spacesByLevel[lvl].push(sp);
   });
 
-  // Calculate areas and program targets
+  // Calculate areas and program targets. Space programs saved before
+  // schema 0.2.0 (ADR 0025) name their space requirements `items`.
   const programItemsMap = new Map<string, number>();
-  if (program && program.items) {
-    program.items.forEach((item: any) => {
+  const saved = program as (SpaceProgram & { items?: SpaceProgram["space_requirements"] }) | null | undefined;
+  const requirements = saved?.space_requirements ?? saved?.items;
+  if (requirements) {
+    requirements.forEach((item: any) => {
       if (item.target_area_m2) {
         programItemsMap.set(item.id, item.target_area_m2);
       }

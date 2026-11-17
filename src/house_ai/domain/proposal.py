@@ -15,7 +15,7 @@ from house_ai.constants.proposals import (
 )
 
 from .base import SCHEMA_VERSION, Id, StrictModel
-from .program import AdjacencyKind, Privacy, Strength
+from .program import Privacy, SpaceRelationshipKind, Strength
 from .provenance import Provenance
 
 
@@ -41,7 +41,7 @@ class ProposalAdjacency(StrictModel):
     id: Id
     a: Id
     b: Id
-    kind: AdjacencyKind = AdjacencyKind.ADJACENT
+    kind: SpaceRelationshipKind = SpaceRelationshipKind.ADJACENT
     strength: Strength = Strength.SOFT
     weight: float | None = Field(default=None, gt=0)
     rationale: str | None = None

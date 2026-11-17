@@ -223,5 +223,5 @@ def test_grounding_reads_a_plan_json_and_the_references_of_its_spaces():
     errors = validate_critique_grounding(["pi-kitchen=18", "lv-entry", "level-entry"], plan)
     assert errors == [
         "Unknown entity ID 'level-entry' in critique. "
-        "Must reference an existing space, program item, zone, or level in the plan."
+        "Must reference an existing space, space requirement, zone, or level in the plan."
     ]

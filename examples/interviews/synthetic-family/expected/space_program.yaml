@@ -1,12 +1,12 @@
-schema_version: 0.1.0
+schema_version: 0.2.0
 id: program
 project_id: synthetic-family
 brief_ref:
   kind: design_brief
   id: brief
   version: 27
-  sha256: 8fa870f80cd88ad1ffecaa1c55352b209319e6846318591ea4a0accbae79258d
-items:
+  sha256: 63a5b66c0cb5589db8f16968aabea98ca8125b21f4670ab27ed44c27e2eb1775
+space_requirements:
 - id: pi-entry
   name: Entrance hall
   function: entry
@@ -281,8 +281,8 @@ items:
   daylight: preferred
   accessible: false
   source_fact_ids:
-  - f-floors
-  notes: connects 2 floors
+  - f-storeys
+  notes: connects 2 storeys
 - id: pi-terrace
   name: Terrace
   function: terrace
@@ -317,7 +317,7 @@ items:
   source_fact_ids:
   - f-outdoor
   notes: outdoor; not a room and not part of the floor area
-adjacencies:
+space_relationships:
 - id: adj-01-entry-exterior
   a: pi-entry
   b: exterior
@@ -444,7 +444,7 @@ adjacencies:
   weight: 1.0
   rationale: Stair reached from the hall
   source_fact_ids:
-  - f-floors
+  - f-storeys
 - id: adj-15-kitchen-exterior
   a: pi-kitchen
   b: exterior
@@ -472,7 +472,7 @@ zones:
   privacy: public
 target_gross_area_m2: 180.0
 circulation_factor: 0.2
-levels: 2
+storeys: 2
 budget:
   amount: 450000.0
   currency: EUR
@@ -481,7 +481,7 @@ site_ref:
   id: site
   version: 2
   sha256: 8e88070011e84b47d1b6019d38f81b521b5a817b2c41a42ec79ba10fd6bc24ab
-site_verified: true
+site_approved: true
 usability:
   household_seats: 4
   vehicles:
@@ -492,9 +492,9 @@ usability:
     turning_radius_m: null
     source: typical car envelope (assumption until the owner gives the car size)
   arrival_path: null
-  double_bed_program_item_ids:
+  double_bed_space_requirement_ids:
   - pi-bed-main
-  single_bed_program_item_ids:
+  single_bed_space_requirement_ids:
   - pi-bed-child-1
   - pi-bed-child-2
 provenance:
@@ -512,5 +512,5 @@ provenance:
   - kind: design_brief
     id: brief
     version: 27
-    sha256: 8fa870f80cd88ad1ffecaa1c55352b209319e6846318591ea4a0accbae79258d
+    sha256: 63a5b66c0cb5589db8f16968aabea98ca8125b21f4670ab27ed44c27e2eb1775
   notes: Deterministic; sizes not given by the owner are typical values (assumptions).
