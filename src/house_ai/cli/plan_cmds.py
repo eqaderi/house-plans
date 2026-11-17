@@ -265,12 +265,13 @@ def cmd_plan_combine(args: argparse.Namespace) -> int:
     out = Path(args.out) if args.out else _default_out(store, False)
     target = getattr(args, "target", None) or args.bases[0]
     try:
-        res = PlanService(store).combine(
+        res = PlanService(store).revise(
             target,
-            args.bases,
             args.text,
             args.actor,
             ops=ops,
+            kind=ChangeRequestKind.COMBINE,
+            base_versions=args.bases,
             features=args.features,
             feature_confirmation=args.feature_confirmation,
             seed=args.seed,
