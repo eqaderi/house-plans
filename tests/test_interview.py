@@ -572,6 +572,25 @@ def test_cli_interview_commands(tmp_path, capsys, new_store, monkeypatch):
     assert store.refs(K.INTERVIEW_SESSION)
 
 
+def test_cli_program_build_json_names_the_subject_of_each_finding(svc, capsys):
+    from house_ai.cli.main import main
+
+    svc.answer("Two adults.", HUMAN)
+    svc.answer("One bedroom.", HUMAN)
+    svc.answer("One bathroom, en-suite please.", HUMAN)
+    svc.answer("One floor. We want a lift too.", HUMAN)
+    svc.answer("not sure yet", HUMAN)  # defers c-lift-one-level
+    capsys.readouterr()
+    assert main(["program", "build", str(svc.store.root), "--actor", "agent:claude-code",
+                 "--json"]) == 0  # fmt: skip
+    findings = json.loads(capsys.readouterr().out)["findings"]
+    contradiction = next(f for f in findings if f["code"] == "contradiction")
+    assert contradiction["severity"] == "blocking"
+    assert contradiction["subject_ids"] == ["c-lift-one-level"]
+    assert all(set(f) == {"code", "severity", "message", "subject_ids", "options"}
+               for f in findings)  # fmt: skip
+
+
 def test_committed_example_outputs_match_the_pipeline():
     import runpy
 

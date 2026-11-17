@@ -37,7 +37,7 @@ def _format_gate_commands(project_name: str) -> dict[str, dict[str, Any]]:
             "name": "Site Gate",
             "confirm_command": (
                 f"house-ai site confirm {project_name} "
-                "--crs EPSG:XXXX --vertical-datum <datum> --confirmer <your-name>"
+                "--epsg <epsg-code> --vertical-datum <datum> --confirmer <your-name>"
             ),
             "approve_command": (
                 f"house-ai workflow approve {project_name} site --id site --approver <your-name>"

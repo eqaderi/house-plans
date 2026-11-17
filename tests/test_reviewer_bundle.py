@@ -3,9 +3,11 @@
 from __future__ import annotations
 
 import json
+import re
+import shlex
 from pathlib import Path
 
-from house_ai.cli.main import main
+from house_ai.cli.main import build_parser, main
 from house_ai.constants.reviewer import (
     APPROVAL_GATES,
     GATE_PLAN,
@@ -132,6 +134,30 @@ def test_reviewer_bundle_is_strictly_read_only(tmp_path: Path) -> None:
     assert post_verification == []
     assert len(store.events()) == initial_event_count
     assert len(store.latest_of_kind(ArtifactKind.PLAN)) == initial_plan_count
+
+
+def test_reviewer_bundle_commands_use_flags_the_cli_has(new_store) -> None:
+    """Every human command the bundle prints parses once its placeholders are filled in."""
+    gates = build_reviewer_bundle(new_store("synthetic-hillside"))["gates"]
+    commands = [
+        gate[key]
+        for gate in gates.values()
+        for key in ("confirm_command", "approve_command")
+        if key in gate
+    ]
+    assert len(commands) == 5  # site confirm, and one approve per gate
+    assert gates[GATE_SITE]["confirm_command"] == (
+        "house-ai site confirm synthetic-hillside "
+        "--epsg <epsg-code> --vertical-datum <datum> --confirmer <your-name>"
+    )
+    parser = build_parser()
+    for command in commands:
+        program, *argv = shlex.split(re.sub(r"<[^>]+>", "1", command))
+        assert program == "house-ai"
+        try:
+            parser.parse_args(argv)
+        except SystemExit:
+            raise AssertionError(f"the CLI does not accept: {command}") from None
 
 
 def test_reviewer_bundle_approval_commands_and_no_mutation(tmp_path: Path) -> None:
