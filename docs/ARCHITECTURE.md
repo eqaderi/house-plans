@@ -226,7 +226,7 @@ PLAN_REVIEW and the plan gate stays human-only. Details and limits:
 |---|---|---|
 | CAD ingestion | `cad.base.CadAdapter`, `cad.dwg_oda.adapter_for` (ezdxf, ODA) | B |
 | Terrain | `geospatial.base.TerrainBuilder` (`DelaunayTerrainBuilder`) | B |
-| Plan generation | `generation.base.PlanGenerator` (`CpSatPlanGenerator`) | D |
+| Plan generation | `generation.generator.CpSatPlanGenerator.candidates` (one generator; a protocol returns with a second, [ADR 0027](adr/0027-deep-modules-at-the-human-and-private-data-seams.md)) | D |
 | Evaluation | `evaluation.base.Evaluator` + `EvaluationReport` schema; future evaluators reported as not run | D, later |
 | AI providers | `providers.base.ModelProvider`, `DataFlowPolicy` | C |
 | Blender / Unreal builds | `domain.build.BuildRecord` (input plan pinned) | F, G |

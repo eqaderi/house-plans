@@ -126,6 +126,7 @@
       "type": "integer"
     },
     "stored_path": {
+      "pattern": "^source/[0-9a-f]{12}-[^/\\\\]+$",
       "title": "Stored Path",
       "type": "string"
     }

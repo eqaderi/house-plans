@@ -28,7 +28,7 @@ from house_ai.domain.evaluation import EvaluationReport
 from house_ai.domain.integrity import check_model, errors
 from house_ai.domain.plan import PlanVersion
 from house_ai.domain.program import SpaceProgram, Strength
-from house_ai.domain.provenance import Actor, ActorKind, ArtifactKind, ArtifactRef
+from house_ai.domain.provenance import Actor, ArtifactKind, ArtifactRef, refuse_non_human
 from house_ai.domain.records import OpenQuestionsFile
 from house_ai.domain.site import Site, site_verification_blockers
 from house_ai.domain.workflow import (
@@ -101,10 +101,6 @@ class GateBlocked(WorkflowError):
         self.gate = gate
         self.reasons = reasons
         super().__init__(f"{gate.value} gate blocked: " + "; ".join(reasons))
-
-
-class ApprovalRequiresHuman(WorkflowError):
-    pass
 
 
 @dataclass
@@ -191,11 +187,7 @@ class Workflow:
         if not reason.strip():
             raise TransitionNotAllowed("a transition needs a reason")
         if current is S.PROGRAM_REVIEW and to is S.INTERVIEWING:
-            if actor.kind is not ActorKind.HUMAN:
-                raise ApprovalRequiresHuman(
-                    "leaving PROGRAM_REVIEW back to INTERVIEWING requires a human actor "
-                    "(use 'program reject')"
-                )
+            refuse_non_human(actor, "leave PROGRAM_REVIEW for INTERVIEWING (use 'program reject')")
         problems = self._transition_guard(current, to)
         if problems:
             raise TransitionNotAllowed(f"{current.value} -> {to.value}: " + "; ".join(problems))
@@ -398,11 +390,7 @@ class Workflow:
         statement: str,
         conditions: list[str] | None = None,
     ) -> Approval:
-        if approver.kind is not ActorKind.HUMAN:
-            raise ApprovalRequiresHuman(
-                f"{approver.kind.value} {approver.id!r} cannot approve the {gate.value} gate; "
-                "only a human can"
-            )
+        refuse_non_human(approver, f"approve the {gate.value} gate")
         reasons = self.check_gate(gate, ref)
         if reasons:
             raise GateBlocked(gate, reasons)
@@ -429,11 +417,7 @@ class Workflow:
 
     def reopen(self, gate: Gate, actor: Actor, reason: str) -> WorkflowEvent:
         """Go back to a gate's review state; supersede it and every later approval."""
-        if actor.kind is not ActorKind.HUMAN:
-            raise ApprovalRequiresHuman(
-                f"{actor.kind.value} {actor.id!r} cannot reopen the {gate.value} gate; "
-                "only a human can supersede a human approval"
-            )
+        refuse_non_human(actor, f"reopen the {gate.value} gate")
         status = self.status()
         if gate not in status.approvals:
             raise TransitionNotAllowed(f"the {gate.value} gate is not approved; nothing to reopen")

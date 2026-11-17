@@ -16,8 +16,8 @@ from house_ai.cli.main import main
 from house_ai.domain.codepack import find_prohibited_claims
 from house_ai.domain.epistemics import ConfirmationStatus as C
 from house_ai.domain.epistemics import Epistemic
+from house_ai.domain.provenance import ApprovalRequiresHuman, DataClassification
 from house_ai.domain.provenance import ArtifactKind as K
-from house_ai.domain.provenance import DataClassification
 from house_ai.domain.records import IssueStatus
 from house_ai.domain.site import (
     CadImportProvenance,
@@ -32,7 +32,7 @@ from house_ai.geospatial.terrain import elevation_at
 from house_ai.geospatial.validation import report_markdown, validate_site
 from house_ai.orchestration.site_ingestion import SiteConfirmation, confirm_site, ingest_site
 from house_ai.orchestration.survey_inspection import inspect_file, inspection_markdown
-from house_ai.orchestration.workflow import ApprovalRequiresHuman, GateBlocked, Workflow
+from house_ai.orchestration.workflow import GateBlocked, Workflow
 from house_ai.render2d.site_svg import render_site_svg
 from house_ai.storage.hashing import file_sha256
 

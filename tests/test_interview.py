@@ -22,8 +22,8 @@ from house_ai.domain.program import (
     SpaceRelationshipKind,
     Strength,
 )
+from house_ai.domain.provenance import ApprovalRequiresHuman, DataClassification
 from house_ai.domain.provenance import ArtifactKind as K
-from house_ai.domain.provenance import DataClassification
 from house_ai.domain.units import LengthUnit
 from house_ai.domain.workflow import Gate, WorkflowState
 from house_ai.interview import parsing
@@ -34,7 +34,6 @@ from house_ai.orchestration.interview import InterviewLocked, InterviewService
 from house_ai.orchestration.interview_llm import LlmAssist
 from house_ai.orchestration.site_ingestion import SiteConfirmation, confirm_site, ingest_site
 from house_ai.orchestration.workflow import (
-    ApprovalRequiresHuman,
     GateBlocked,
     TransitionNotAllowed,
     Workflow,
@@ -448,12 +447,11 @@ def test_llm_values_are_used_only_with_consent_and_only_if_valid(svc):
         [json.dumps({"values": [{"slot": "adults", "value": 2}, {"slot": "children",
                                                                    "value": "many"}]})]
     )  # fmt: skip
-    svc.assist = LlmAssist(provider, svc.policy())
+    svc.use_ai(provider)
     # Without the owner's consent nothing is sent; the parser result stands.
     result = svc.answer("The two of us, plus our little ones", HUMAN)
     assert provider.requests == [] and result.asked_again is False
-    svc.consent(HUMAN, "scripted")
-    svc.assist = LlmAssist(provider, svc.policy())
+    svc.consent(HUMAN, "scripted")  # applies to the assist already attached
     svc.reject(HUMAN, ["children"])
     svc.answer("our little ones, you know", HUMAN)
     assert len(provider.requests) == 1
@@ -466,7 +464,7 @@ def test_llm_output_is_validated_and_stays_an_inference(svc):
     provider = ScriptedProvider([
         json.dumps({"values": [{"slot": "adults", "value": 2}, {"slot": "elders", "value": -1}]}),
     ])  # fmt: skip
-    svc.assist = LlmAssist(provider, svc.policy())
+    svc.use_ai(provider)
     result = svc.answer("Just us, the happy pair.", HUMAN)  # the parser cannot read this
     got = {u.slot: (u.value, u.method) for u in result.understood}
     assert got["adults"] == (2, "llm:scripted") and "elders" not in got  # -1 is invalid
@@ -477,15 +475,28 @@ def test_llm_output_is_validated_and_stays_an_inference(svc):
 
 def test_private_data_never_reaches_a_provider_without_consent():
     provider = ScriptedProvider(['{"values": []}'])
-    assist = LlmAssist(provider, DataFlowPolicy())
+    assist = LlmAssist(provider, lambda: DataFlowPolicy())  # no consent recorded
     with pytest.raises(PrivateDataFlowError):
         assist.extract("How many bedrooms?", ["bedrooms"], "three")
     assert provider.requests == []
 
 
+def test_the_assist_reads_the_owners_consent_on_every_request():
+    policies = [
+        DataFlowPolicy(frozenset({"scripted"}), HUMAN),  # allowed for the first request
+        DataFlowPolicy(),  # withdrawn before the second
+    ]
+    provider = ScriptedProvider(['{"values": []}', '{"values": []}'])
+    assist = LlmAssist(provider, lambda: policies.pop(0))
+    assert assist.extract("How many bedrooms?", ["bedrooms"], "three") == {}
+    with pytest.raises(PrivateDataFlowError):
+        assist.extract("How many bedrooms?", ["bedrooms"], "three")
+    assert len(provider.requests) == 1 and policies == []
+
+
 def test_garbage_from_the_llm_is_ignored(svc):
     svc.consent(HUMAN, "scripted")
-    svc.assist = LlmAssist(ScriptedProvider(["not json at all"]), svc.policy())
+    svc.use_ai(ScriptedProvider(["not json at all"]))
     result = svc.answer("the usual crowd", HUMAN)
     assert result.asked_again and result.understood == []
 
@@ -586,6 +597,19 @@ def test_cli_interactive_run_confirms_each_answer_and_can_stop(new_store, monkey
     rejected = [t for t in svc.session().turns if t.kind is TurnKind.REJECTION]
     assert rejected and rejected[0].slots == ["bedrooms"]
     assert "Your answers are saved" in out
+
+
+@pytest.mark.parametrize("owner", ["claude-code", "agent:gemini", "codex"])
+def test_cli_run_refuses_an_agent_looking_owner(new_store, monkeypatch, capsys, owner):
+    from house_ai.cli.main import EXIT_USAGE, main
+
+    store = _project(new_store)
+    before = len(store.events())
+    monkeypatch.setattr("sys.stdin.isatty", lambda: True)
+    monkeypatch.setattr("builtins.input", lambda *_: pytest.fail("asked a question"))
+    assert main(["interview", "run", str(store.root), "--owner", owner]) == EXIT_USAGE
+    assert "disallowed owner" in capsys.readouterr().err
+    assert len(store.events()) == before
 
 
 def test_an_empty_confirmation_confirms_nothing(svc, monkeypatch):

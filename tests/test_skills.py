@@ -17,10 +17,10 @@ from house_ai.constants.skills import (
     PROVIDER_SKILLS_DIRS,
     REQUIRED_SKILL_SECTIONS,
 )
-from house_ai.evaluation.grounding import (
+from house_ai.validation.grounding import (
     collect_canonical_ids,
     extract_entity_ids_from_text,
-    validate_critique_grounding,
+    validate_cited_ids,
 )
 from tools.sync_skills import get_canonical_skills, sync_skills, validate_skill_content
 
@@ -220,7 +220,7 @@ def test_grounding_reads_a_plan_json_and_the_references_of_its_spaces():
         },
     }
     assert collect_canonical_ids(plan) == {"lv-entry", "z-day", "sp-kitchen", "pi-kitchen"}
-    errors = validate_critique_grounding(["pi-kitchen=18", "lv-entry", "level-entry"], plan)
+    errors = validate_cited_ids(["pi-kitchen=18", "lv-entry", "level-entry"], plan)
     assert errors == [
         "Unknown entity ID 'level-entry' in critique. "
         "Must reference an existing space, space requirement, zone, or level in the plan."

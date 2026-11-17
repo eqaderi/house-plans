@@ -14,7 +14,7 @@ from house_ai.orchestration.reviewer_bundle import export_reviewer_bundle
 from house_ai.storage import ProjectStore
 from house_ai.storage.projects import resolve_project_dir
 
-EXIT_OK, EXIT_FAIL = 0, 1
+from .exit_codes import EXIT_FAIL, EXIT_OK
 
 
 def _out(text: str = "") -> None:

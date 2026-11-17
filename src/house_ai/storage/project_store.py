@@ -30,9 +30,9 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, TypeVar
 
-from pydantic import BaseModel, ValidationError
+from pydantic import BaseModel, TypeAdapter, ValidationError
 
-from house_ai.domain.base import utc_now
+from house_ai.domain.base import Id, utc_now
 from house_ai.domain.provenance import (
     Actor,
     ArtifactKind,
@@ -50,6 +50,8 @@ M = TypeVar("M", bound=BaseModel)
 
 READ_ONLY = stat.S_IRUSR | stat.S_IRGRP | stat.S_IROTH
 HEAD_ANCHOR_REQUIRED = "head_anchor_required"
+#: An artifact id becomes a folder name, so it must be a valid ``Id`` (no ``/`` or ``..``).
+_ARTIFACT_ID = TypeAdapter(Id)
 
 
 class StoreError(Exception):
@@ -327,8 +329,16 @@ class ProjectStore:
 
     # -------------------------------------------------------------- artifacts
 
+    def _artifact_dir(self, kind: ArtifactKind, artifact_id: str) -> Path:
+        """The folder of an artifact's versions; refuses any id that could leave artifacts/."""
+        try:
+            _ARTIFACT_ID.validate_python(artifact_id)
+        except ValidationError:
+            raise StoreError(f"invalid artifact id {artifact_id!r}") from None
+        return self.root / "artifacts" / kind.value / artifact_id
+
     def _artifact_path(self, kind: ArtifactKind, artifact_id: str, version: int) -> Path:
-        return self.root / "artifacts" / kind.value / artifact_id / f"v{version:04d}.json"
+        return self._artifact_dir(kind, artifact_id) / f"v{version:04d}.json"
 
     def refs(
         self, kind: ArtifactKind | None = None, artifact_id: str | None = None
@@ -365,6 +375,7 @@ class ProjectStore:
         reason: str | None = None,
     ) -> ArtifactRef:
         """Validate and store a new immutable version of an artifact."""
+        self._artifact_dir(kind, artifact_id)  # before anything is read or written
         with self._locked():
             return self._put_unlocked(kind, artifact_id, data, actor, reason=reason)
 
@@ -415,7 +426,7 @@ class ProjectStore:
         A crash between writing a version file and appending its event leaves an
         unregistered file. Skipping past it keeps the id usable; verify() reports it.
         """
-        folder = self.root / "artifacts" / kind.value / artifact_id
+        folder = self._artifact_dir(kind, artifact_id)
         numbers = [int(p.stem[1:]) for p in folder.glob("v[0-9][0-9][0-9][0-9].json")]
         return max(numbers, default=0)
 

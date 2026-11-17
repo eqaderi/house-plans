@@ -54,6 +54,23 @@ class Actor(StrictModel):
         return cls(kind=ActorKind(kind), id=ident)
 
 
+class ApprovalRequiresHuman(ValueError):
+    """An agent or the system attempted a step only a human may take."""
+
+
+def refuse_non_human(actor: Actor, what: str) -> None:
+    """Refuse ``actor`` unless it is a human: the one library check for human-only steps.
+
+    Gate approval and reopening, site and CRS confirmation, provider consent and
+    program rejection all pass through here; the CLI adds the terminal check on
+    top (``house_ai.cli.human``).
+    """
+    if actor.kind is not ActorKind.HUMAN:
+        raise ApprovalRequiresHuman(
+            f"{actor.kind.value} {actor.id!r} cannot {what}; only a human can"
+        )
+
+
 class DataClassification(StrEnum):
     #: Owner-specific material. Never sent to a model provider implicitly.
     PRIVATE = "private"
@@ -112,8 +129,8 @@ class SourceDocument(StrictModel):
     sha256: Sha256
     size_bytes: int = Field(ge=0)
     media_type: str | None = None
-    #: Path relative to the project root.
-    stored_path: str
+    #: Relative to the project folder, always ``source/<sha12>-<name>``: never outside it.
+    stored_path: str = Field(pattern=r"^source/[0-9a-f]{12}-[^/\\]+$")
     classification: DataClassification
     imported_at: UtcDatetime
     imported_by: Actor
