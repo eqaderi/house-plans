@@ -67,7 +67,7 @@ the orchestration layer.
 | `house_ai.orchestration` | A-D | Workflow state machine, transition guards, approval gates, reopen; site ingestion, human site confirmation, read-only survey inspection; agent-first interview service (store, workflow, site context, checklist, structured slot interpretations), optional LLM assist through `providers.base.send`; plan service (`plans.py`: gated or exploratory generation, evaluation, revisions, exports, plan review request) |
 | `house_ai.cli` | A-D | `house-ai` command, a thin layer over the library with `--json` and `--set` for coding agents; `plan` commands in `cli/plan_cmds.py` |
 | `house_ai.providers` | A, C | `ModelProvider` protocol, `DataFlowPolicy`, `send()`; `ScriptedProvider` for tests; optional `ClaudeProvider` (`providers/claude.py`, ADR 0010) |
-| `house_ai.cad` | B | `CadAdapter` / `CadSiteExtractor` protocols; format detection from bytes; ezdxf DXF adapter; DWG via ODA File Converter; layer roles from a human mapping; raw SOURCE-frame extraction and site interpretation with explicit ambiguity |
+| `house_ai.cad` | B | `CadAdapter` protocol; format detection from bytes; ezdxf DXF adapter; DWG via ODA File Converter; layer roles from a human mapping; raw SOURCE-frame extraction and site interpretation with explicit ambiguity |
 | `house_ai.geospatial` | B | CRS lookup and validation (pyproj/PROJ), UTM candidates, grid-to-true-north, Delaunay TIN, parcel measurements and frontage, site validation report |
 | `house_ai.render2d` | B (site), D (plans) | Site plan SVG, terrain slope SVG and the static site review page from the canonical site; dimensioned plan SVG per level with a terrain section (`plan_svg.py`) |
 | `house_ai.interview` | C | Question bank (completeness checklist) with conditions and follow-ups, deterministic answer parsers, slot types, contradiction rules with options, session fold and planner, brief builder, summary (pure, domain only) |
@@ -225,7 +225,7 @@ PLAN_REVIEW and the plan gate stays human-only. Details and limits:
 | Boundary | Interface | Milestone |
 |---|---|---|
 | CAD ingestion | `cad.base.CadAdapter`, `cad.dwg_oda.adapter_for` (ezdxf, ODA) | B |
-| Terrain | `geospatial.base.TerrainBuilder` (`DelaunayTerrainBuilder`) | B |
+| Terrain | `geospatial.terrain.terrain_from_survey` (one Delaunay TIN builder; a protocol returns with a second, [ADR 0006](adr/0006-site-ingestion-pipeline.md) §4) | B |
 | Plan generation | `generation.generator.CpSatPlanGenerator.candidates` (one generator; a protocol returns with a second, [ADR 0027](adr/0027-deep-modules-at-the-human-and-private-data-seams.md)) | D |
 | Evaluation | `evaluation.base.Evaluator` + `EvaluationReport` schema; future evaluators reported as not run | D, later |
 | AI providers | `providers.base.ModelProvider`, `DataFlowPolicy` | C |
