@@ -1,6 +1,6 @@
-# ADR 0022 — Hillside quantities, true cuts and coupled level decisions
+# ADR 0022: Hillside quantities, true cuts and coupled level decisions
 
-Date: 2026-10-19. Status: implemented, awaiting stage S8 review.
+Status: accepted (Stage S8, closed 2026-10-19)
 
 ## Context
 
@@ -48,7 +48,7 @@ constraints that cannot be enforced produce conflicts and no surface. A
 mapped breakline without a built surface never falls back to unconstrained
 Delaunay. Shapely >=2.1 supplies polygon constrained triangulation.
 
-For bar layouts, the **same CP-SAT model** chooses room placement, bar start,
+For bar layouts, the **same CP-SAT model** chooses space placement, bar start,
 bar length and floor Z. `2*start + length` indexes surveyed centre/face
 heights at 5 cm XY and 1 cm Z resolution. The entry follows the road-side
 face. Other levels obey declared sectional contact bands and stacked/stepped
@@ -74,10 +74,10 @@ labelled orthographic projections in LOCAL axes; hidden-line removal and
 true geographic orientation are not claimed.
 
 Export `sections.json/svg`, `elevations.json/svg`, `hillside.json` and
-`engineering-risks.md` alongside every concept. Risks retain canonical IDs
+`engineering-risks.md` alongside every plan option. Risks retain canonical IDs
 and mark structure, foundations, retaining, drainage, waterproofing and
 slope stability as **needs professional**. Exterior thresholds sample 0.5 m
-outside the door. Garage ramp metrics describe an unverified straight
+outside the door. Garage ramp metrics describe an unchecked straight
 candidate approach to the nearest frontage; no turning, vertical-curve,
 clearance or legal-access feasibility is implied. Terrace edges preserve
 piecewise ground profiles, signed deltas and candidate at-grade contact.
@@ -88,7 +88,7 @@ piecewise ground profiles, signed deltas and candidate at-grade contact.
 `test_hillside_levels.py` cover numerical integrals, independent mesh booleans,
 slab-underside gaps, partial terrain, sections/openings, breakline mapping,
 road-high/road-low coupled decisions, large void triggers and extreme slopes.
-`examples/hillside/run_demo.py` generates synthetic alternatives and their
+`examples/hillside/run_demo.py` generates synthetic plan options and their
 risk register without writing project state or crossing approval gates.
 
 Quantities remain **inferred** because survey interpolation and design

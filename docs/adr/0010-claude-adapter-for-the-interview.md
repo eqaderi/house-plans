@@ -10,7 +10,7 @@ API key; this SDK adapter is strictly optional).
 Milestone C shipped a deterministic interview and an LLM hook (`LlmAssist`:
 word a question, read an answer the parser cannot) tested only with the
 scripted provider. The owner wants a real AI-assisted architectural interview
-that uses the selected project's site, labels unverified facts, keeps the
+that uses the selected project's site, labels site facts the owner has not confirmed, keeps the
 conversation, never approves anything, and never puts keys in git. Their
 consumer subscriptions (ChatGPT Plus, Claude Code Team, Google AI Pro) are not
 API credentials.

@@ -1,6 +1,6 @@
-# ADR 0026 — Support and test Python 3.13 only
+# ADR 0026: Support and test Python 3.13 only
 
-Date: 2026-11-17. Status: accepted. Supersedes the Python 3.11 support stated
+Status: accepted (2026-11-17). Supersedes the Python 3.11 support stated
 in Milestone A (task A-05) and the "wheels for Python 3.11 and 3.13" point in
 [ADR 0013](0013-solver-backed-plan-generation.md).
 

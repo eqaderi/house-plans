@@ -1,6 +1,6 @@
-# ADR 0025 — Glossary vocabulary and renaming saved names
+# ADR 0025: Glossary vocabulary and renaming saved names
 
-Date: 2026-11-17. Status: accepted.
+Status: accepted (Stage S11, 2026-11-17)
 
 ## Context
 

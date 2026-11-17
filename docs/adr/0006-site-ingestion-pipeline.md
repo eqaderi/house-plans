@@ -4,7 +4,7 @@ Status: accepted (Milestone B, 2026-10-17)
 
 ## Context
 
-Milestone B turns a land survey into a verified site model. Real surveys
+Milestone B turns a survey into a site the owner can approve. Real surveys
 arrive as DWG or DXF (sometimes PDF or point lists), in drawing units that
 may be undeclared, with coordinates that look like UTM but declare nothing.
 The spec forbids guessing the CRS from coordinate magnitudes and requires

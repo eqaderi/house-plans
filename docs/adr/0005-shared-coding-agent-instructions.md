@@ -34,11 +34,11 @@ files contain only a pointer to the contract and tool-specific details:
 No `.claude/`, `.agents/` or `.gemini/` rules or skills directories are
 added. Skills will be added when a recurring task justifies one.
 
-## Verification (2026-10-17)
+## Checks (2026-10-17)
 
-- **Claude Code 2.1.302:** verified in a live session. The contract text
+- **Claude Code 2.1.302:** observed in a live session. The contract text
   appeared in the model context under `CLAUDE.md`'s import.
-- **Codex CLI 0.146.0:** verified locally, with no model call, using
+- **Codex CLI 0.146.0:** checked locally, with no model call, using
   `codex debug prompt-input "hi"` from the repository root. The rendered
   prompt contains `AGENTS.md` verbatim but none of the contract's text, so
   links are not followed. Hence the explicit "read the contract" sentence.

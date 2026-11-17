@@ -1,7 +1,6 @@
 # ADR 0017: Synthetic benchmark contracts and observed expectations
 
-Date: 2026-10-17
-Status: proposed (S3; awaiting independent stage review)
+Status: accepted (Stage S3, closed 2026-10-17)
 
 ## Context
 
@@ -51,8 +50,8 @@ bungalow geometry supplies checked reference cases and explicitly seeded
 defects. No generated plan is presented as an approved design.
 
 Preference comparisons evaluate the same two fixed reference layouts on the
-same site under opposite cooking relationships. They show adjacency
-satisfaction and kitchen area separately. They do not demonstrate solver
+same site under opposite cooking relationships. They show space
+relationship satisfaction and kitchen area separately. They do not demonstrate solver
 diversity or compute a single architectural quality score.
 
 ## Consequences
@@ -60,6 +59,6 @@ diversity or compute a single architectural quality score.
 Later stages can consume typed fixtures and add actual probes without silently
 turning missing capability into success. Generated JSON is larger because
 each fixture is self-contained, but regeneration and drift checks are simple.
-Adding the benchmark schema does not change homeowner artifact schemas or
+Adding the benchmark schema does not change project artifact schemas or
 introduce runtime dependencies. Versioned solver revisions, visual review,
 full usability and hillside support remain their scheduled stages.
