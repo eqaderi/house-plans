@@ -50,6 +50,9 @@ from house_ai.orchestration.statements import owner_statements, record_owner_sta
 from house_ai.orchestration.survey_inspection import inspect_files, inspection_markdown
 from house_ai.orchestration.workflow import (
     GATES,
+    HumanAction,
+    NextHumanAction,
+    UseProgramReject,
     Workflow,
     WorkflowError,
 )
@@ -167,10 +170,12 @@ def cmd_project_list(args: argparse.Namespace) -> int:
     return EXIT_OK
 
 
-def _status_dict(store: ProjectStore) -> dict:
+def _status_dict(store: ProjectStore, project: str) -> dict:
     wf = Workflow(store)
     status = wf.status()
     gate = wf.gate_available()
+    current = wf.current_gate_status()
+    next_action = current.next_action if current else None
     latest: dict[str, list[dict]] = {}
     for kind in ArtifactKind:
         for ref in store.latest_of_kind(kind):
@@ -179,6 +184,7 @@ def _status_dict(store: ProjectStore) -> dict:
     site_ctx = svc.site()
     site_info = None
     if site_ctx is not None and site_ctx.site_ref is not None:
+        site_blockers = svc.site_blockers()
         site_info = {
             "site_ref": site_ctx.site_ref.model_dump(mode="json"),
             "verified": site_ctx.verified,
@@ -186,23 +192,18 @@ def _status_dict(store: ProjectStore) -> dict:
             "relief_m": site_ctx.relief_m,
             "mean_slope_pct": site_ctx.mean_slope_pct,
             "frontage_m": site_ctx.frontage_m,
-            "verification_blockers": svc.site_blockers(),
+            "verification_blockers": [b.message for b in site_blockers],
+            "blockers": [b.model_dump(mode="json") for b in site_blockers],
         }
     approvals_dict: dict[str, dict] = {}
     stale_approvals: list[str] = []
     for g, a in status.approvals.items():
-        spec = GATES[g]
-        latest_ref = store.latest(spec.artifact_kind, a.artifact.id)
-        is_stale = False
-        if latest_ref and (
-            latest_ref.version > a.artifact.version or latest_ref.sha256 != a.artifact.sha256
-        ):
-            is_stale = True
-            stale_approvals.append(g.value)
+        gate_status = wf.gate_status(g, a.artifact)
         data = a.model_dump(mode="json")
-        data["stale"] = is_stale
-        if is_stale and latest_ref:
-            data["latest_version"] = latest_ref.version
+        data["stale"] = gate_status.stale
+        if gate_status.stale_against is not None:
+            stale_approvals.append(g.value)
+            data["latest_version"] = gate_status.stale_against.version
         approvals_dict[g.value] = data
 
     iv_exists = svc.exists()
@@ -214,6 +215,8 @@ def _status_dict(store: ProjectStore) -> dict:
         "gate_available": gate.value if gate else None,
         "approvals": approvals_dict,
         "stale_approvals": sorted(stale_approvals),
+        "gate_status": current.to_json() if current else None,
+        "next_human_command": human.command_for(next_action, project) if next_action else None,
         "superseded_approvals": [a.id for a in status.superseded],
         "pending_approval_requests": {
             g.value: r.model_dump(mode="json") for g, r in status.pending_requests.items()
@@ -232,7 +235,7 @@ def _status_dict(store: ProjectStore) -> dict:
 
 def cmd_project_status(args: argparse.Namespace) -> int:
     store = ProjectStore(resolve_project_dir(args.dir))
-    info = _status_dict(store)
+    info = _status_dict(store, args.dir)
     if args.json:
         _out(json.dumps(info, indent=2, sort_keys=True))
         return EXIT_OK
@@ -241,6 +244,10 @@ def cmd_project_status(args: argparse.Namespace) -> int:
     _out(f"next      {', '.join(info['allowed_transitions']) or '-'}")
     if info["gate_available"]:
         _out(f"gate      {info['gate_available']} can be approved by a human from this state")
+    for b in (info["gate_status"] or {}).get("blockers", []):
+        _out(f"blocker   {b['kind']} {b['code']}: {b['message']}")
+    if info["next_human_command"]:
+        _out(f"human     {info['next_human_command']}")
     for gate, appr in info["approvals"].items():
         art = appr["artifact"]
         stale_msg = f" (STALE: v{appr['latest_version']} exists)" if appr.get("stale") else ""
@@ -342,10 +349,11 @@ def cmd_example_load(args: argparse.Namespace) -> int:
     site_ref = next(r for r in refs if r.kind is ArtifactKind.SITE)
     outcome = SiteService(store).assess(site_ref, args.actor)
     for b in outcome.blockers:
-        _out(f"SITE BLOCKER {b}")
+        _out(f"SITE BLOCKER {b.message}")
     _out(f"state {outcome.state.value}")
-    if not outcome.blockers:
-        _out(f"next: a human runs `house-ai workflow approve {args.dir} site --id {site_ref.id}`")
+    action = Workflow(store).gate_status(Gate.SITE, site_ref).next_action
+    if action is not None:
+        _out(human.next_line(action, args.dir))
     return EXIT_OK
 
 
@@ -354,11 +362,12 @@ def cmd_example_load(args: argparse.Namespace) -> int:
 
 def cmd_transition(args: argparse.Namespace) -> int:
     wf = Workflow(ProjectStore(resolve_project_dir(args.dir)))
-    if wf.state is WorkflowState.PROGRAM_REVIEW and args.state is WorkflowState.INTERVIEWING:
-        _err("leaving PROGRAM_REVIEW requires 'program reject' in a human terminal")
-        return EXIT_USAGE
     try:
         ev = wf.transition(args.state, args.actor, args.reason)
+    except UseProgramReject as exc:
+        _err(str(exc))
+        _err(human.next_line(exc.next_action, args.dir))  # type: ignore[arg-type]
+        return EXIT_USAGE
     except ApprovalRequiresHuman as exc:
         _err(str(exc))
         return EXIT_USAGE
@@ -374,7 +383,7 @@ def cmd_assess_site(args: argparse.Namespace) -> int:
     ref = _ref(store, ArtifactKind.SITE, args.id, args.version)
     outcome = SiteService(store).assess(ref, args.actor)
     for b in outcome.blockers:
-        _out(f"BLOCKER {b}")
+        _out(f"BLOCKER {b.message}")
     _out(f"state {outcome.state.value}")
     return EXIT_OK
 
@@ -383,8 +392,8 @@ def cmd_request_approval(args: argparse.Namespace) -> int:
     store = ProjectStore(resolve_project_dir(args.dir))
     gate = Gate(args.gate)
     ref = _ref(store, GATES[gate].artifact_kind, args.id, args.version)
-    ev = Workflow(store).request_approval(gate, ref, args.actor)
-    for r in ev.payload["open_reasons"]:
+    status = Workflow(store).request_approval(gate, ref, args.actor)
+    for r in status.open_reasons:
         _out(f"OPEN {r}")
     _out(f"approval of {gate.value} requested for {ref.kind.value}/{ref.id} v{ref.version}")
     return EXIT_OK
@@ -396,11 +405,11 @@ def cmd_approve(args: argparse.Namespace) -> int:
     wf = Workflow(store)
     gate = Gate(args.gate)
     ref = _ref(store, GATES[gate].artifact_kind, args.id, args.version)
-    reasons = wf.check_gate(gate, ref)
-    if reasons:
+    blockers = wf.gate_status(gate, ref).blockers
+    if blockers:
         _err(f"the {gate.value} gate cannot be approved yet:")
-        for r in reasons:
-            _err(f"  - {r}")
+        for b in blockers:
+            _err(f"  - {b.message}")
         return EXIT_FAIL
     phrase = f"approve {gate.value} {ref.id} v{ref.version}"
     _out(f"You are approving {ref.kind.value}/{ref.id} v{ref.version} (sha256 {ref.sha256[:12]}).")
@@ -464,7 +473,7 @@ def cmd_site_ingest(args: argparse.Namespace) -> int:
     for ref in (*result.cad_refs, result.site_ref):
         _out(f"stored {ref.kind.value}/{ref.id} v{ref.version} sha256 {ref.sha256}")
     for b in result.blockers:
-        _out(f"BLOCKER {b}")
+        _out(f"BLOCKER {b.message}")
     _out(f"state {result.state.value}")
     return EXIT_OK
 
@@ -503,7 +512,7 @@ def cmd_site_confirm(args: argparse.Namespace) -> int:
             "is your property (a wrong UTM zone moves it by 6° of longitude)"
         )
     for b in result.blockers:
-        _out(f"BLOCKER {b}")
+        _out(f"BLOCKER {b.message}")
     _out(f"state {result.state.value}")
     return EXIT_OK
 
@@ -515,7 +524,7 @@ def cmd_site_report(args: argparse.Namespace) -> int:
     for path in package.files:
         _out(f"wrote {path}")
     for b in package.blockers:
-        _out(f"BLOCKER {b}")
+        _out(f"BLOCKER {b.message}")
     return EXIT_OK
 
 
@@ -977,15 +986,16 @@ def cmd_program_build(args: argparse.Namespace) -> int:
 
 def cmd_program_review(args: argparse.Namespace) -> int:
     svc = InterviewService(ProjectStore(resolve_project_dir(args.dir)))
-    build, reasons = svc.review_program(args.actor)
+    build, gate = svc.review_program(args.actor)
     _show_findings(build.findings)
-    for r in reasons:
+    for r in gate.open_reasons:
         _out(f"OPEN {r}")
     ref = build.program_ref
     _out(f"state PROGRAM_REVIEW; the owner reviews space_program/{ref.id} v{ref.version}")
-    if not reasons:
-        _out(f"next: the owner runs `house-ai workflow approve {args.dir} program --id {ref.id} "
-             "--approver <name>` or `house-ai program reject`")  # fmt: skip
+    if gate.next_action is not None:
+        reject = NextHumanAction(HumanAction.REJECT_PROGRAM, Gate.PROGRAM)
+        _out(f"{human.next_line(gate.next_action, args.dir)}, or rejects it with "
+             f"`{human.command_for(reject, args.dir)}`")  # fmt: skip
     if args.out:
         _export(svc, build, Path(args.out))
     return EXIT_OK
@@ -1350,7 +1360,12 @@ def main(argv: Sequence[str] | None = None) -> int:
     except ApprovalRequiresHuman as exc:
         _err(f"error: {exc}")
         return EXIT_USAGE
-    except (StoreError, WorkflowError, ValidationError, ValueError, DwgConversionError) as exc:
+    except WorkflowError as exc:
+        _err(f"error: {exc}")
+        if exc.next_action is not None:
+            _err(human.next_line(exc.next_action, args.dir))
+        return EXIT_FAIL
+    except (StoreError, ValidationError, ValueError, DwgConversionError) as exc:
         _err(f"error: {exc}")
         return EXIT_FAIL
 

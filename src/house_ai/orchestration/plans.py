@@ -40,7 +40,7 @@ from house_ai.domain.provenance import Actor, ArtifactKind, ArtifactRef, Provena
 from house_ai.domain.records import AssumptionsFile, Severity
 from house_ai.domain.revision_ops import RevisionOp, RevisionOpError, RevisionVerb
 from house_ai.domain.site import Site
-from house_ai.domain.workflow import Gate, WorkflowEvent, WorkflowState
+from house_ai.domain.workflow import Gate, WorkflowState
 from house_ai.evaluation.explain import (
     comparison_markdown,
     explanation_markdown,
@@ -62,7 +62,7 @@ from house_ai.storage import ProjectStore
 from house_ai.storage.hashing import content_hash, pretty_json
 from house_ai.validation.topology import validate_proposal
 
-from .workflow import Workflow
+from .workflow import GateStatus, HumanAction, NextHumanAction, Workflow, WorkflowError
 
 S = WorkflowState
 V = RevisionVerb
@@ -73,7 +73,7 @@ EXPLORATORY_BANNER = (
 GENERATION_STATES = {S.PROGRAM_APPROVED, S.PLAN_GENERATION, S.PLAN_REVIEW}
 
 
-class PlanWorkflowError(Exception):
+class PlanWorkflowError(WorkflowError):
     """The project is not in a state where this plan command may run; nothing was written."""
 
 
@@ -439,7 +439,8 @@ class PlanService:
             raise PlanWorkflowError(
                 f"plans can be revised during plan generation or review; the project is in "
                 f"{status.state.value}. An approved plan is frozen: a human must reopen the plan "
-                "gate (`house-ai workflow reopen <dir> plan`)."
+                "gate.",
+                next_action=NextHumanAction(HumanAction.REOPEN, Gate.PLAN),
             )
 
         base_refs: list[ArtifactRef] = []
@@ -728,7 +729,7 @@ class PlanService:
 
     def request_review(
         self, option_id: str, actor: Actor, version: int | None = None
-    ) -> tuple[ArtifactRef, WorkflowEvent]:
+    ) -> tuple[ArtifactRef, GateStatus]:
         refs = self.store.refs(ArtifactKind.PLAN, option_id)
         ref = (
             next((r for r in refs if r.version == version), None)

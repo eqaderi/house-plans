@@ -231,6 +231,16 @@ the surveyed hull.
   schema), timestamp, statement and conditions.
 - `WorkflowEvent`: one line of `events.jsonl` with sequence number, actor,
   type, states, reason, payload and the hash chain fields.
+- `Blocker` (`blocker.schema.json`, ADR 0029): one reason a gate cannot be
+  approved for a pinned artifact version now. `kind` (`workflow_state`,
+  `artifact`, `upstream_gate`, `site_fact`, `site_issue`, `open_question`,
+  `contradiction`, `program_check`, `pinned_input`, `integrity`,
+  `hard_violation`, `unbuildable`), `code` (a stable code such as
+  `horizontal_crs` or `stair_low_headroom`, or the id of the record the
+  Blocker is: an Open question, a Contradiction, an Issue, a gate),
+  `subject_ids` (what it is about) and `message` (the sentence a person reads).
+  Blockers are computed, never stored: the approval-requested event keeps its
+  saved `open_reasons` strings, which are the Blockers' messages (ADR 0003).
 - `ProjectManifest`: identity only; the state comes from the events.
 - `BuildRecord`: target (`blender`, `unreal`, `ifc`), the plan version it
   was generated from, tool, script and output file hashes.

@@ -76,6 +76,9 @@ export interface BenchmarkCase {
   seeded_defect?: boolean;
 }
 
+/** What sort of thing keeps a gate closed (ADR 0029). */
+export type BlockerKind = "workflow_state" | "artifact" | "upstream_gate" | "site_fact" | "site_issue" | "open_question" | "contradiction" | "program_check" | "pinned_input" | "integrity" | "hard_violation" | "unbuildable";
+
 export interface BriefFact {
   id: string;
   key: string;
@@ -1082,6 +1085,18 @@ export interface BenchmarkFixture {
   program: SpaceProgram;
   schema_version?: string;
   site: Site;
+}
+
+/** One reason a gate cannot be approved for a pinned artifact version now (ADR 0029).
+
+``message`` is the sentence a person reads; it is also the ``open_reasons``
+string saved in the approval-requested event. Agents act on ``kind`` and
+``code``. */
+export interface Blocker {
+  code: string;
+  kind: BlockerKind;
+  message: string;
+  subject_ids?: string[];
 }
 
 export interface BuildRecord {

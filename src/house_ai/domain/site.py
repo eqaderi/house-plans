@@ -20,6 +20,7 @@ from .geometry import Point2, Point3, Polygon2D, Polyline2D
 from .provenance import DataClassification, Provenance
 from .records import Assumption, Issue, IssueStatus, Severity
 from .units import UnitDeclaration
+from .workflow import Blocker, BlockerKind
 
 
 class PointGeometry(StrictModel):
@@ -289,21 +290,32 @@ class Site(StrictModel):
 
 
 def site_verification_blockers(site: Site) -> list[str]:
-    """Reasons the site cannot yet be approved as site truth. Empty means ready."""
-    blockers: list[str] = []
+    """Reasons the site cannot yet be approved as site truth, as sentences. Empty means ready."""
+    return [b.message for b in site_blockers(site)]
+
+
+def site_blockers(site: Site) -> list[Blocker]:
+    """What keeps the site gate closed for this Site version, typed (ADR 0029)."""
+    blockers: list[Blocker] = []
+
+    def fact(code: str, message: str) -> None:
+        blockers.append(Blocker(kind=BlockerKind.SITE_FACT, code=code, message=message))
+
     coords = site.coordinates
     if not coords.source_units.confirmed:
-        blockers.append(
+        fact(
+            "source_units",
             f"drawing units are {coords.source_units.status.value}"
             + (f" ({coords.source_units.unit.value})" if coords.source_units.unit else "")
-            + "; a human must confirm them"
+            + "; a human must confirm them",
         )
     if not coords.horizontal_crs.resolved:
         crs = coords.horizontal_crs
         detail = f" (source declares EPSG:{crs.declared_epsg})" if crs.declared_epsg else ""
-        blockers.append(
+        fact(
+            "horizontal_crs",
             f"horizontal CRS is {crs.status.value}{detail}; a human must confirm the EPSG code "
-            "or confirm the survey is local-only"
+            "or confirm the survey is local-only",
         )
     has_elevations = bool(
         site.terrain.spot_elevations
@@ -312,23 +324,35 @@ def site_verification_blockers(site: Site) -> list[str]:
         or site.terrain.surface is not None
     )
     if has_elevations and not coords.elevation_units.confirmed:
-        blockers.append(
+        fact(
+            "elevation_units",
             f"elevation units are {coords.elevation_units.status.value}"
             + (f" ({coords.elevation_units.unit.value})" if coords.elevation_units.unit else "")
-            + "; a human must confirm them"
+            + "; a human must confirm them",
         )
     if not coords.vertical_datum.resolved:
-        blockers.append(
+        fact(
+            "vertical_datum",
             f"vertical datum is {coords.vertical_datum.status.value}; a human must confirm it "
-            "or confirm elevations are relative to a local benchmark"
+            "or confirm elevations are relative to a local benchmark",
         )
     if coords.local is None:
-        blockers.append("no local project coordinate system has been created")
+        fact("local_frame", "no local project coordinate system has been created")
     if site.boundary is None:
-        blockers.append("parcel boundary is missing")
+        fact("boundary_missing", "parcel boundary is missing")
     elif site.boundary_status is not Epistemic.VERIFIED_FACT:
-        blockers.append(f"parcel boundary status is {site.boundary_status.value}, not verified")
+        fact(
+            "boundary_unverified",
+            f"parcel boundary status is {site.boundary_status.value}, not verified",
+        )
     for issue in site.issues:
         if issue.severity is Severity.BLOCKING and issue.status is IssueStatus.OPEN:
-            blockers.append(f"blocking issue {issue.id}: {issue.title}")
+            blockers.append(
+                Blocker(
+                    kind=BlockerKind.SITE_ISSUE,
+                    code=issue.id,
+                    subject_ids=[issue.id],
+                    message=f"blocking issue {issue.id}: {issue.title}",
+                )
+            )
     return blockers
