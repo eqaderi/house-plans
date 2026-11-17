@@ -9,6 +9,9 @@ everything that encloses them from those rectangles and the terrain (ADR 0031):
   faces are classified with the terrain: a face with ground well above its floor is a
   retaining wall; a face against a neighbour on another Level is a party wall; a
   terrace's open edge is a parapet.
+- Openings: doors and windows are fitted into those walls without overlap, at least
+  their minimum width, with the width-shrink fit and corner doors for kitchens and
+  garages, and never across a face with another Space just beyond it.
 """
 
 from __future__ import annotations
@@ -18,11 +21,17 @@ from dataclasses import dataclass, field
 from typing import Protocol
 
 from house_ai.constants.placement2d import PARAPET_HEIGHT_M, PARAPET_THICKNESS_M
+from house_ai.constants.reviewer import DOOR_APPROACH_CLEAR_DM
+from house_ai.domain.base import EXTERIOR
+from house_ai.domain.integrity import OPENING_END_INSET_M, PROBE_BEYOND_FACE_M
 from house_ai.domain.model import (
     STOREY_HEIGHT_M,
     Level,
     MaterialCategory,
     MaterialRef,
+    Opening,
+    OpeningKind,
+    Operation,
     Wall,
     WallKind,
 )
@@ -34,6 +43,7 @@ S = SpaceFunction
 EXTERIOR_WALL_M = 0.30
 INTERIOR_WALL_M = 0.15
 WALL_HEIGHT_M = 2.8
+DOOR_H_M = 2.1
 #: Ground this far above the floor outside an exterior face makes it a retaining wall.
 RETAINING_M = 0.6
 
@@ -167,6 +177,8 @@ class Enclosure:
         self._elevation = {lv.id: lv.elevation_m for lv in self.levels}
         self._storey = {lv.id: lv.floor_to_floor_m or STOREY_HEIGHT_M for lv in self.levels}
         self.walls: list[WallSeg] = []
+        self.openings: list[Opening] = []
+        self._ids: set[str] = set()
         self._derive_walls()
 
     def space(self, sid: str) -> EnclosedSpace:
@@ -238,6 +250,177 @@ class Enclosure:
             and (b is not None or not w.party and w.kind is not WallKind.RETAINING)
         ]
 
+    # -------------------------------------------------------------- openings
+
+    def new_id(self, base: str) -> str:
+        """A unique opening id from ``base``, numbered from 2 on a clash."""
+        base = base[:60].rstrip("-_")
+        ident, n = base, 2
+        while ident in self._ids:
+            ident = f"{base[:57]}-{n}"
+            n += 1
+        self._ids.add(ident)
+        return ident
+
+    def place(
+        self,
+        level: str,
+        a: str,
+        b: str | None,
+        kind: OpeningKind,
+        width_m: float,
+        *,
+        min_width_m: float = 0.7,
+        clear_m: float = 0.3,
+        height_m: float = DOOR_H_M,
+        sill_m: float = 0.0,
+        operation: Operation = Operation.NONE,
+        opens_into: str | None = None,
+        prefer: tuple[int, int] | None = None,
+        require_direction: bool = False,
+        material: str | None = None,
+        prefix: str = "d",
+        walls: Sequence[WallSeg] | None = None,
+    ) -> Opening | None:
+        """Fit an opening between ``a`` and ``b`` (None: the outside), or return None.
+
+        The candidate walls are ``walls`` or every wall between the two; the longest comes
+        first, or those facing ``prefer`` (an outward direction) when given. An opening keeps
+        ``clear_m`` from the wall ends and shrinks to ``min_width_m`` before a wall is given
+        up. Person doors of a kitchen or garage keep to a wall's end (S10-09, S10-19) and
+        widen to leave exactly a door approach beside them.
+        """
+        candidates = list(walls) if walls is not None else self.walls_between(level, a, b)
+        ends = (
+            kind is not OpeningKind.WINDOW
+            and not (b is None and self.space(a).function is S.GARAGE)
+            and any(
+                sid is not None and self.space(sid).function in (S.KITCHEN, S.GARAGE)
+                for sid in (a, b)
+            )
+        )
+        if prefer is not None:
+            if require_direction:
+                candidates = [w for w in candidates if w.outward() == prefer]
+            candidates.sort(key=lambda w: (w.outward() != prefer, -w.length, w.id))
+        else:
+            candidates.sort(key=lambda w: (-w.length, w.id))
+        outside = a if b is None else None
+        for seg in candidates:
+            width = round(width_m * 10)
+            clear = round(clear_m * 10)
+            if ends and seg.length - clear - width < DOOR_APPROACH_CLEAR_DM:
+                target_w = seg.length - clear - DOOR_APPROACH_CLEAR_DM
+                if target_w >= round(min_width_m * 10):
+                    width = target_w
+            off = self._fit(seg, width, clear, ends, outside)
+            while off is None and width > round(min_width_m * 10):
+                width -= 1
+                off = self._fit(seg, width, clear, ends, outside)
+            if off is None and clear > 1:
+                clear = 1
+                width = round(min_width_m * 10)
+                off = self._fit(seg, width, clear, ends, outside)
+            if off is None:
+                continue
+            other = b if b is not None else EXTERIOR
+            return self.cut(
+                seg,
+                off,
+                width,
+                kind=kind,
+                connects=(a, other),
+                ident=self.new_id(f"{prefix}-{_short(a)}-{_short(other)}"),
+                height_m=height_m,
+                sill_m=sill_m,
+                operation=operation,
+                opens_into=opens_into,
+                material=material,
+            )
+        return None
+
+    def cut(
+        self,
+        seg: WallSeg,
+        offset_dm: int,
+        width_dm: int,
+        *,
+        kind: OpeningKind,
+        connects: tuple[str, str],
+        ident: str,
+        height_m: float,
+        sill_m: float = 0.0,
+        operation: Operation = Operation.NONE,
+        opens_into: str | None = None,
+        material: str | None = None,
+    ) -> Opening:
+        """Record an opening at a chosen place in ``seg``: the span is then taken."""
+        seg.used.append((offset_dm, offset_dm + width_dm))
+        op = Opening(
+            id=ident,
+            kind=kind,
+            host_wall_id=seg.id,
+            offset_m=from_dm(offset_dm),
+            width_m=from_dm(width_dm),
+            height_m=height_m,
+            sill_m=sill_m,
+            connects=connects,
+            operation=operation,
+            opens_into=opens_into,
+            material_id=material,
+        )
+        self.openings.append(op)
+        return op
+
+    def _fit(
+        self, seg: WallSeg, width: int, clear: int, ends: bool, outside: str | None
+    ) -> int | None:
+        """Offset (dm, from seg.a) for an opening of ``width`` avoiding used spans.
+
+        Openings are centred, or with ``ends`` placed nearest a wall end, so the rest of
+        the wall stays one run (S10-09: a kitchen's counter needs 3 m of plain wall). An
+        opening to the outside of ``outside`` must have only that Space and the outside
+        on its two faces.
+        """
+        lo, hi = clear, seg.length - clear - width
+        if hi < lo:
+            return None
+        centre = (seg.length - width) // 2
+        key = (lambda o: (min(o - lo, hi - o), o)) if ends else (lambda o: (abs(o - centre), o))
+        for off in sorted(range(lo, hi + 1), key=key):
+            if all(off + width + 1 <= a or off >= b + 1 for a, b in seg.used) and (
+                outside is None or self._clear_outside(seg, off, width, outside)
+            ):
+                return off
+        return None
+
+    def _clear_outside(self, seg: WallSeg, offset: int, width: int, inside: str) -> bool:
+        """Whether the faces of an exterior opening see ``inside`` and nothing else.
+
+        A narrow crevice between two Spaces can leave a room just beyond a nominal exterior
+        face; the probes are those of the integrity check.
+        """
+        rooms = [s for s in self.spaces if s.level_id == seg.level_id]
+        reach = (seg.thickness / 2 + PROBE_BEYOND_FACE_M) * 10
+        inset = min(OPENING_END_INSET_M * 10, width * 0.1)
+        for t in (offset + inset, offset + width / 2, offset + width - inset):
+            sides = []
+            for sign in (1, -1):
+                u, v = (
+                    (seg.a + t, seg.c + sign * reach)
+                    if seg.orient == "h"
+                    else (seg.c + sign * reach, seg.a + t)
+                )
+                hits = [
+                    r.id for r in rooms if r.rect.u0 < u < r.rect.u1 and r.rect.v0 < v < r.rect.v1
+                ]
+                sides.append(hits[0] if len(hits) == 1 else EXTERIOR if not hits else None)
+            if set(sides) != {inside, EXTERIOR}:
+                return False
+        return True
+
+    # ----------------------------------------------------------------- model
+
     def wall_model(self, seg: WallSeg) -> Wall:
         (u0, v0), (u1, v1) = seg.points()
         material = {
@@ -262,6 +445,10 @@ class Enclosure:
     @staticmethod
     def materials() -> list[MaterialRef]:
         return list(MATERIALS)
+
+
+def _short(sid: str) -> str:
+    return sid.removeprefix("sp-") if sid != EXTERIOR else "ext"
 
 
 def _sweep(level_id: str, spaces: list[EnclosedSpace]) -> list[WallSeg]:

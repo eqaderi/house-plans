@@ -18,7 +18,6 @@ from house_ai.constants.placement2d import (
     TERRACE_DOOR_DEFAULT_WIDTH_M,
     TERRACE_SLAB_THICKNESS_M,
 )
-from house_ai.constants.reviewer import DOOR_APPROACH_CLEAR_DM
 from house_ai.domain.base import EXTERIOR
 from house_ai.domain.epistemics import Epistemic
 from house_ai.domain.geometry import Polygon2D
@@ -76,7 +75,6 @@ from .stairs import LANDING_STRIP_DM, SLAB_M, TREAD_M, stair_risers, u_layout
 
 S = SpaceFunction
 CEILING_M = 2.7
-DOOR_H_M = 2.1
 
 
 @dataclass
@@ -200,7 +198,6 @@ class _Builder:
         self.terrace_hosts: dict[str, str] = {}
         self.issues: list[Issue] = []
         self.notes: list[str] = list(m.notes)
-        self._ids: set[str] = set()
 
     # ---------------------------------------------------------------- spaces
 
@@ -346,112 +343,19 @@ class _Builder:
             self.ground,
         )
         self.walls = self.enclosure.walls
+        self.openings = self.enclosure.openings
         for seg in self.walls:
             self._stairwell_wall(seg)
 
     # -------------------------------------------------------------- openings
 
-    def _new_id(self, base: str) -> str:
-        base = base[:60].rstrip("-_")
-        ident, n = base, 2
-        while ident in self._ids:
-            ident = f"{base[:57]}-{n}"
-            n += 1
-        self._ids.add(ident)
-        return ident
-
     def _walls_between(self, level: str, a: str, b: str | None) -> list[WallSeg]:
         return self.enclosure.walls_between(level, a, b)
 
-    def _fit(self, seg: WallSeg, width: int, clear: int, ends: bool = False) -> int | None:
-        """Offset (dm, from seg.a) for an opening of ``width`` avoiding used spans.
-
-        Openings are centred, or with ``ends`` placed nearest a wall end, so the rest of
-        the wall stays one run (S10-09: a kitchen's counter needs 3 m of plain wall).
-        """
-        lo, hi = clear, seg.length - clear - width
-        if hi < lo:
-            return None
-        centre = (seg.length - width) // 2
-        key = (lambda o: (min(o - lo, hi - o), o)) if ends else (lambda o: (abs(o - centre), o))
-        candidates = sorted(range(lo, hi + 1), key=key)
-        for off in candidates:
-            if all(off + width + 1 <= a or off >= b + 1 for a, b in seg.used):
-                return off
-        return None
-
-    def place(
-        self,
-        level: str,
-        a: str,
-        b: str | None,
-        kind: OpeningKind,
-        width_m: float,
-        *,
-        min_width_m: float = 0.7,
-        clear_m: float = 0.3,
-        height_m: float = DOOR_H_M,
-        sill_m: float = 0.0,
-        operation: Operation = Operation.NONE,
-        opens_into: str | None = None,
-        prefer: tuple[int, int] | None = None,
-        material: str | None = None,
-        prefix: str = "d",
-        host: WallSeg | None = None,
-        require_direction: bool = False,
-    ) -> Opening | None:
-        walls = [host] if host is not None else self._walls_between(level, a, b)
-        # Person doors keep to the corners of a kitchen's or garage's walls (S10-09, S10-19).
-        ends = (
-            kind is not OpeningKind.WINDOW
-            and not (b is None and self.space(a).function is S.GARAGE)
-            and any(
-                sid is not None and self.space(sid).function in (S.KITCHEN, S.GARAGE)
-                for sid in (a, b)
-            )
-        )
-        if prefer is not None:
-            if require_direction:
-                walls = [w for w in walls if w.outward() == prefer]
-            walls.sort(key=lambda w: (w.outward() != prefer, -w.length, w.id))
-        else:
-            walls.sort(key=lambda w: (-w.length, w.id))
-        for seg in walls:
-            width = round(width_m * 10)
-            clear = round(clear_m * 10)
-            if ends and seg.length - clear - width < DOOR_APPROACH_CLEAR_DM:
-                target_w = seg.length - clear - DOOR_APPROACH_CLEAR_DM
-                min_w = round(min_width_m * 10)
-                if target_w >= min_w:
-                    width = target_w
-            off = self._fit(seg, width, clear, ends)
-            while off is None and width > round(min_width_m * 10):
-                width -= 1
-                off = self._fit(seg, width, clear, ends)
-            if off is None and clear > 1:
-                clear = 1
-                width = round(min_width_m * 10)
-                off = self._fit(seg, width, clear, ends)
-            if off is None:
-                continue
-            seg.used.append((off, off + width))
-            other = b if b is not None else EXTERIOR
-            op = Opening(
-                id=self._new_id(f"{prefix}-{_short(a)}-{_short(other)}"),
-                kind=kind,
-                host_wall_id=seg.id,
-                offset_m=from_dm(off),
-                width_m=from_dm(width),
-                height_m=height_m,
-                sill_m=sill_m,
-                connects=(a, other),
-                operation=operation,
-                opens_into=opens_into,
-                material_id=material,
-            )
-            self.openings.append(op)
-            return op
-        return None
+    def place(self, level: str, a: str, b: str | None, kind: OpeningKind, width_m: float, **kw):
+        if "host" in kw:
+            kw["walls"] = [kw.pop("host")]
+        return self.enclosure.place(level, a, b, kind, width_m, **kw)
 
     def _issue(self, ident: str, title: str, severity: Severity, subjects: list[str]) -> None:
         if any(i.id == ident for i in self.issues):
@@ -1048,17 +952,14 @@ class _Builder:
                         [stair_space, other],
                     )
                     continue
-                seg.used.append((w.c0 - seg.a, w.c1 - seg.a))
-                self.openings.append(
-                    Opening(
-                        id=self._new_id(f"o-{_short(stair_space)}-{_short(other)}"),
-                        kind=OpeningKind.OPENING,
-                        host_wall_id=seg.id,
-                        offset_m=from_dm(w.c0 - seg.a),
-                        width_m=from_dm(w.c1 - w.c0),
-                        height_m=seg.height_m,
-                        connects=(stair_space, other),
-                    )
+                self.enclosure.cut(
+                    seg,
+                    w.c0 - seg.a,
+                    w.c1 - w.c0,
+                    kind=OpeningKind.OPENING,
+                    connects=(stair_space, other),
+                    ident=self.enclosure.new_id(f"o-{_short(stair_space)}-{_short(other)}"),
+                    height_m=seg.height_m,
                 )
 
     def _stairwell_wall(self, seg: WallSeg) -> None:

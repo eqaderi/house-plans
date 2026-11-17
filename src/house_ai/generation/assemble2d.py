@@ -7,8 +7,8 @@ door candidates, open-plan openings, courtyards and stacked stair cores.
 
 from __future__ import annotations
 
-from shapely.geometry import Point, box
 from shapely.geometry import Polygon as ShapelyPolygon
+from shapely.geometry import box
 from shapely.ops import unary_union
 
 from house_ai.constants.placement2d import (
@@ -25,9 +25,7 @@ from house_ai.constants.placement2d import (
     WINDOW_WIDTH_DEFAULT_M,
 )
 from house_ai.constants.strategies import STRATEGY_OPEN_PLAN
-from house_ai.domain.base import EXTERIOR
 from house_ai.domain.geometry import Polygon2D
-from house_ai.domain.integrity import OPENING_END_INSET_M, PROBE_BEYOND_FACE_M
 from house_ai.domain.model import (
     Ceiling,
     CompositeSpace,
@@ -49,7 +47,7 @@ from house_ai.domain.records import Assumption, Issue, Severity
 from house_ai.domain.site import Site
 from house_ai.generation.enclosure import WALL_HEIGHT_M, EnclosedSpace, Enclosure, Rect, WallSeg
 from house_ai.generation.fixtures import with_fixtures
-from house_ai.generation.frame import DesignFrame, Ground, from_dm
+from house_ai.generation.frame import DesignFrame, Ground
 from house_ai.generation.solver2d import (
     OPEN_PLAN_FUNCTIONS,
     Solution2D,
@@ -138,6 +136,7 @@ class Builder2D:
             self.ground,
         )
         self.walls = self.enclosure.walls
+        self.openings = self.enclosure.openings
 
     def _walls_between(self, a: str, b: str | None) -> list[WallSeg]:
         level = next(r.level_id for r in self.sol.rooms if r.space_id == a)
@@ -157,79 +156,32 @@ class Builder2D:
         prefix: str = "d",
         road_facing: bool = False,
     ) -> Opening | None:
+        """Choose candidate walls for an opening; Enclosure fits it (ADR 0031)."""
+        level = next(r.level_id for r in self.sol.rooms if r.space_id == a)
         walls = self._walls_between(a, b)
         if road_facing:
             walls = [w for w in walls if w.orient == "h" and w.c == self.sol.road_front_dm]
         if b is None:
-            rooms = [
-                r
-                for r in self.sol.rooms
-                if r.level_id == next(r.level_id for r in self.sol.rooms if r.space_id == a)
-            ]
-            # Use a genuinely exposed outer face, not a narrow inter-room crevice that
-            # lies within the wall/door side probes used by canonical integrity checks.
+            rooms = [r for r in self.sol.rooms if r.level_id == level]
+            # Prefer a face on the outline of the level's rooms to one in a recess.
             outer_x = {min(r.u0 for r in rooms), max(r.u1 for r in rooms)}
             outer_y = {min(r.v0 for r in rooms), max(r.v1 for r in rooms)}
             outer_walls = [w for w in walls if w.c in (outer_y if w.orient == "h" else outer_x)]
             if outer_walls:
                 walls = outer_walls
-        walls.sort(key=lambda w: (-w.length, w.id))
-        for seg in walls:
-            width_dm = int(round(width_m * 10))
-            if seg.length < width_dm + 2:
-                width_dm = max(7, seg.length - 2)
-                width_m = from_dm(width_dm)
-            if width_dm < 7 or seg.length < width_dm:
-                continue
-
-            off_dm = (seg.length - width_dm) // 2
-            if any(off_dm + width_dm > u0 and off_dm < u1 for u0, u1 in seg.used):
-                continue
-
-            # A narrow crevice can have a room just beyond the nominal exterior side.
-            # Use the same side probes as canonical integrity before choosing a host.
-            if b is None and not self._exterior_span_is_clear(seg, off_dm, width_dm, a):
-                continue
-
-            seg.used.append((off_dm, off_dm + width_dm))
-            connects = (a, b) if b is not None else (a, EXTERIOR)
-            op_id = f"{prefix}-{_short(seg.id)}-{len(self.openings) + 1:02d}"
-            mat = material or ("m-door" if kind is OpeningKind.DOOR else "m-glass")
-            op = Opening(
-                id=op_id,
-                host_wall_id=seg.id,
-                kind=kind,
-                offset_m=from_dm(off_dm),
-                width_m=from_dm(width_dm),
-                height_m=height_m,
-                sill_m=sill_m,
-                operation=operation,
-                material_id=mat,
-                connects=connects,
-            )
-            self.openings.append(op)
-            return op
-        return None
-
-    def _exterior_span_is_clear(self, seg, offset_dm, width_dm, space_id):
-        rooms = [r for r in self.sol.rooms if r.level_id == seg.level_id]
-        reach = (seg.thickness / 2 + PROBE_BEYOND_FACE_M) * 10
-        inset = min(OPENING_END_INSET_M * 10, width_dm * 0.1)
-        for t in (offset_dm + inset, offset_dm + width_dm / 2, offset_dm + width_dm - inset):
-            sides = []
-            for sign in (1, -1):
-                pt = (
-                    (seg.a + t, seg.c + sign * reach)
-                    if seg.orient == "h"
-                    else (seg.c + sign * reach, seg.a + t)
-                )
-                hits = [
-                    r.space_id for r in rooms if box(r.u0, r.v0, r.u1, r.v1).contains(Point(pt))
-                ]
-                sides.append(hits[0] if len(hits) == 1 else EXTERIOR if not hits else None)
-            if set(sides) != {space_id, EXTERIOR}:
-                return False
-        return True
+        return self.enclosure.place(
+            level,
+            a,
+            b,
+            kind,
+            width_m,
+            height_m=height_m,
+            sill_m=sill_m,
+            operation=operation,
+            material=material or ("m-door" if kind is OpeningKind.DOOR else "m-glass"),
+            prefix=prefix,
+            walls=walls,
+        )
 
     def build_openings(self) -> None:
         all_rooms = self.sol.rooms
@@ -269,19 +221,15 @@ class Builder2D:
                 # The whole interface is open: these are functional zones of a
                 # composite physical room, not separate rooms linked by a small door.
                 seg = max(self._walls_between(ra.space_id, rb.space_id), key=lambda w: w.length)
-                self.openings.append(
-                    Opening(
-                        id=f"op-open-{len(self.openings) + 1}",
-                        host_wall_id=seg.id,
-                        kind=OpeningKind.OPENING,
-                        offset_m=0,
-                        width_m=seg.length_m,
-                        height_m=WALL_HEIGHT_M,
-                        connects=(ra.space_id, rb.space_id),
-                        operation=Operation.NONE,
-                    )
+                self.enclosure.cut(
+                    seg,
+                    0,
+                    seg.length,
+                    kind=OpeningKind.OPENING,
+                    connects=(ra.space_id, rb.space_id),
+                    ident=self.enclosure.new_id(f"o-{_short(ra.space_id)}-{_short(rb.space_id)}"),
+                    height_m=WALL_HEIGHT_M,
                 )
-                seg.used.append((0, seg.length))
             elif ra.function is SpaceFunction.TERRACE or rb.function is SpaceFunction.TERRACE:
                 prefix = (
                     "d-court"

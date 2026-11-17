@@ -9,7 +9,7 @@ from __future__ import annotations
 import pytest
 
 from house_ai.domain.integrity import check_model, errors
-from house_ai.domain.model import Level, WallKind
+from house_ai.domain.model import Level, OpeningKind, WallKind
 from house_ai.domain.program import SpaceFunction as S
 from house_ai.domain.program import SpaceProgram
 from house_ai.domain.site import Site
@@ -168,6 +168,95 @@ def test_terrace_edges_are_parapets_and_its_wall_to_the_room_is_exterior():
     assert {(w.kind, w.thickness, w.height_m) for w in edges} == {(WallKind.PARAPET, 0.2, 1.0)}
 
 
+# --------------------------------------------------------------------- openings
+
+
+def pair(fa=S.BEDROOM, fb=S.CORRIDOR, depth=30, gap=0) -> Enclosure:
+    """Room A (4 m wide) beside room B (3 m wide); the shared wall is ``depth`` dm long."""
+    return Enclosure(
+        [ENTRY],
+        [space("sp-a", fa, (0, 0, 40, depth)), space("sp-b", fb, (40 + gap, 0, 70 + gap, depth))],
+        FRAME,
+        Flat(),
+    )
+
+
+def test_a_door_is_centred_and_the_next_one_cannot_overlap_it():
+    enc = pair(depth=15)
+    door = enc.place("lv-entry", "sp-a", "sp-b", OpeningKind.DOOR, 0.9)
+    assert door is not None
+    # (1.5 m - 0.9 m) / 2 from the wall's start, 0.3 m clear of either end.
+    assert (door.offset_m, door.width_m) == (0.3, 0.9)
+    assert door.connects == ("sp-a", "sp-b") and door.id == "d-a-b"
+    # Even shrunk to 0.7 m and 0.1 m from the ends, a second door would overlap the first.
+    assert enc.place("lv-entry", "sp-a", "sp-b", OpeningKind.DOOR, 0.9) is None
+    assert len(enc.openings) == 1
+
+
+def test_a_door_shrinks_to_its_minimum_width_before_a_wall_is_given_up():
+    enc = pair(depth=10)
+    door = enc.place("lv-entry", "sp-a", "sp-b", OpeningKind.DOOR, 0.9, min_width_m=0.7)
+    # 0.9 m does not fit 0.3 m clear of both ends of a 1.0 m wall; 0.7 m does 0.1 m clear.
+    assert door is not None and (door.offset_m, door.width_m) == (0.1, 0.7)
+    narrow = pair(depth=8)
+    assert narrow.place("lv-entry", "sp-a", "sp-b", OpeningKind.DOOR, 0.9) is None
+
+
+@pytest.mark.parametrize("function", [S.KITCHEN, S.GARAGE])
+def test_kitchen_and_garage_doors_keep_to_a_corner(function):
+    enc = pair(fa=function)
+    door = enc.place("lv-entry", "sp-a", "sp-b", OpeningKind.DOOR, 0.8)
+    # 0.3 m from the wall's start, not centred at 1.1 m: the rest stays one run.
+    assert door is not None and (door.offset_m, door.width_m) == (0.3, 0.8)
+    centred = pair(fa=S.BEDROOM).place("lv-entry", "sp-a", "sp-b", OpeningKind.DOOR, 0.8)
+    assert centred is not None and centred.offset_m == 1.1
+
+
+def test_a_corner_door_narrows_to_leave_a_door_approach_beside_it():
+    enc = pair(fa=S.KITCHEN, depth=19)
+    door = enc.place("lv-entry", "sp-a", "sp-b", OpeningKind.DOOR, 0.8)
+    # 1.9 m - 0.3 m clear - 0.9 m approach leaves a 0.7 m door at the corner.
+    assert door is not None and (door.offset_m, door.width_m) == (0.3, 0.7)
+
+
+def test_a_garage_opening_to_the_outside_is_centred():
+    enc = Enclosure([ENTRY], [space("sp-garage", S.GARAGE, (0, 0, 60, 60))], FRAME, Flat())
+    front = next(w for w in enc.walls if w.orient == "h" and w.c == 0)
+    door = enc.place("lv-entry", "sp-garage", None, OpeningKind.DOOR, 2.6, walls=[front])
+    assert door is not None and (door.offset_m, door.width_m) == (1.7, 2.6)
+    assert door.connects == ("sp-garage", "exterior") and door.id == "d-garage-ext"
+
+
+def test_preferred_direction_picks_the_road_face_first():
+    enc = Enclosure([ENTRY], [space("sp-a", S.ENTRY, (0, 0, 30, 60))], FRAME, Flat())
+    door = enc.place("lv-entry", "sp-a", None, OpeningKind.DOOR, 1.0, prefer=(0, -1))
+    # The 3 m road face (outward -v) wins over the longer 6 m side faces.
+    host = next(w for w in enc.walls if w.id == door.host_wall_id)
+    assert (host.orient, host.c) == ("h", 0)
+
+
+def test_no_exterior_opening_across_a_crevice_with_a_room_just_beyond():
+    # A 0.1 m gap between A and B does not clear a 0.15 m half wall plus the 0.05 m probe.
+    enc = pair(fa=S.KITCHEN, fb=S.LIVING, gap=1)
+    crevice = next(w for w in enc.walls if w.orient == "v" and w.c == 40)
+    assert crevice.sides() == {"sp-a", None} and crevice.length_m == 3.0
+    assert enc.place("lv-entry", "sp-a", None, OpeningKind.WINDOW, 1.2, walls=[crevice]) is None
+    window = enc.place("lv-entry", "sp-a", None, OpeningKind.WINDOW, 1.2, min_width_m=0.6)
+    assert window is not None and window.host_wall_id != crevice.id
+
+
+def test_retaining_and_party_walls_take_no_exterior_opening():
+    enc = Enclosure([ENTRY], [space("sp-a", S.LIVING, (0, 0, 40, 30))], FRAME, RisingAway())
+    # Back and both sides hold back ground; only the road face can take a window.
+    windows = [
+        enc.place("lv-entry", "sp-a", None, OpeningKind.WINDOW, 1.2, min_width_m=0.6)
+        for _ in range(3)
+    ]
+    hosts = {next(w for w in enc.walls if w.id == o.host_wall_id).c for o in windows if o}
+    assert hosts == {0}
+    assert all(w.kind is WallKind.EXTERIOR for w in enc.walls if w.c == 0 and w.orient == "h")
+
+
 # --------------------------------------------------------------- the 2D adapter
 
 HILLSIDE = REPO / "examples" / "projects" / "synthetic-hillside"
@@ -229,4 +318,18 @@ def test_2d_plan_on_a_slope_has_retaining_walls_where_the_ground_is_held_back():
     # No opening is cut into a wall that holds back ground.
     retaining_ids = {w.id for w in model.walls if w.kind is WallKind.RETAINING}
     assert not [o for o in model.openings if o.host_wall_id in retaining_ids]
+    assert not errors(check_model(model))
+
+
+def test_2d_kitchen_door_keeps_to_a_corner_like_a_bar_plan():
+    site, program = hillside()
+    rooms = [
+        placed("sp-kitchen", S.KITCHEN, (0, 0, 40, 30), "pi-kitchen", "z-day"),
+        placed("sp-bed", S.BEDROOM, (40, 0, 70, 30), "pi-bed-main", "z-night"),
+    ]
+    shared = [SharedWall("sp-kitchen", "sp-bed", "lv-entry", "v", 40, 0, 30)]
+    model = assemble_2d(solution(rooms, shared), site, FRAME, Flat(), program, AGENT)
+    (door,) = [o for o in model.openings if set(o.connects) == {"sp-kitchen", "sp-bed"}]
+    # 0.3 m from the end of the 3 m wall, where a centred door would sit at 1.1 m.
+    assert (door.offset_m, door.width_m) == (0.3, 0.8)
     assert not errors(check_model(model))
