@@ -50,6 +50,8 @@ from house_ai.orchestration.statements import owner_statements, record_owner_sta
 from house_ai.orchestration.survey_inspection import inspect_files, inspection_markdown
 from house_ai.orchestration.workflow import (
     GATES,
+    HumanAction,
+    NextHumanAction,
     Workflow,
     WorkflowError,
 )
@@ -167,10 +169,12 @@ def cmd_project_list(args: argparse.Namespace) -> int:
     return EXIT_OK
 
 
-def _status_dict(store: ProjectStore) -> dict:
+def _status_dict(store: ProjectStore, project: str) -> dict:
     wf = Workflow(store)
     status = wf.status()
     gate = wf.gate_available()
+    current = wf.current_gate_status()
+    next_action = current.next_action if current else None
     latest: dict[str, list[dict]] = {}
     for kind in ArtifactKind:
         for ref in store.latest_of_kind(kind):
@@ -210,6 +214,8 @@ def _status_dict(store: ProjectStore) -> dict:
         "gate_available": gate.value if gate else None,
         "approvals": approvals_dict,
         "stale_approvals": sorted(stale_approvals),
+        "gate_status": current.to_json() if current else None,
+        "next_human_command": human.command_for(next_action, project) if next_action else None,
         "superseded_approvals": [a.id for a in status.superseded],
         "pending_approval_requests": {
             g.value: r.model_dump(mode="json") for g, r in status.pending_requests.items()
@@ -228,7 +234,7 @@ def _status_dict(store: ProjectStore) -> dict:
 
 def cmd_project_status(args: argparse.Namespace) -> int:
     store = ProjectStore(resolve_project_dir(args.dir))
-    info = _status_dict(store)
+    info = _status_dict(store, args.dir)
     if args.json:
         _out(json.dumps(info, indent=2, sort_keys=True))
         return EXIT_OK
@@ -237,6 +243,10 @@ def cmd_project_status(args: argparse.Namespace) -> int:
     _out(f"next      {', '.join(info['allowed_transitions']) or '-'}")
     if info["gate_available"]:
         _out(f"gate      {info['gate_available']} can be approved by a human from this state")
+    for b in (info["gate_status"] or {}).get("blockers", []):
+        _out(f"blocker   {b['kind']} {b['code']}: {b['message']}")
+    if info["next_human_command"]:
+        _out(f"human     {info['next_human_command']}")
     for gate, appr in info["approvals"].items():
         art = appr["artifact"]
         stale_msg = f" (STALE: v{appr['latest_version']} exists)" if appr.get("stale") else ""
@@ -340,8 +350,9 @@ def cmd_example_load(args: argparse.Namespace) -> int:
     for b in outcome.blockers:
         _out(f"SITE BLOCKER {b.message}")
     _out(f"state {outcome.state.value}")
-    if not outcome.blockers:
-        _out(f"next: a human runs `house-ai workflow approve {args.dir} site --id {site_ref.id}`")
+    action = Workflow(store).gate_status(Gate.SITE, site_ref).next_action
+    if action is not None:
+        _out(human.next_line(action, args.dir))
     return EXIT_OK
 
 
@@ -979,9 +990,10 @@ def cmd_program_review(args: argparse.Namespace) -> int:
         _out(f"OPEN {r}")
     ref = build.program_ref
     _out(f"state PROGRAM_REVIEW; the owner reviews space_program/{ref.id} v{ref.version}")
-    if not gate.blockers:
-        _out(f"next: the owner runs `house-ai workflow approve {args.dir} program --id {ref.id} "
-             "--approver <name>` or `house-ai program reject`")  # fmt: skip
+    if gate.next_action is not None:
+        reject = NextHumanAction(HumanAction.REJECT_PROGRAM, Gate.PROGRAM)
+        _out(f"{human.next_line(gate.next_action, args.dir)}, or rejects it with "
+             f"`{human.command_for(reject, args.dir)}`")  # fmt: skip
     if args.out:
         _export(svc, build, Path(args.out))
     return EXIT_OK
@@ -1346,7 +1358,12 @@ def main(argv: Sequence[str] | None = None) -> int:
     except ApprovalRequiresHuman as exc:
         _err(f"error: {exc}")
         return EXIT_USAGE
-    except (StoreError, WorkflowError, ValidationError, ValueError, DwgConversionError) as exc:
+    except WorkflowError as exc:
+        _err(f"error: {exc}")
+        if exc.next_action is not None:
+            _err(human.next_line(exc.next_action, args.dir))
+        return EXIT_FAIL
+    except (StoreError, ValidationError, ValueError, DwgConversionError) as exc:
         _err(f"error: {exc}")
         return EXIT_FAIL
 

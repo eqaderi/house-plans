@@ -73,7 +73,14 @@ from house_ai.storage import ProjectStore, StoreError
 from .interview_llm import LlmAssist
 from .site_context import latest_site_context
 from .statements import owner_statements
-from .workflow import GateStatus, TransitionNotAllowed, Workflow, WorkflowError
+from .workflow import (
+    GateStatus,
+    HumanAction,
+    NextHumanAction,
+    TransitionNotAllowed,
+    Workflow,
+    WorkflowError,
+)
 
 SESSION_ID = "interview"
 BRIEF_ID = "brief"
@@ -535,8 +542,8 @@ class InterviewService:
     def _check_open(self) -> None:
         if Gate.PROGRAM in self.workflow.status().approvals:
             raise InterviewLocked(
-                "the program gate is approved; the owner must reopen it "
-                "(`house-ai workflow reopen <dir> program`) before answers can change"
+                "the program gate is approved; the owner must reopen it before answers can change",
+                next_action=NextHumanAction(HumanAction.REOPEN, Gate.PROGRAM),
             )
 
     def _write(

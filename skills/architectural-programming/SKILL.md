@@ -117,6 +117,9 @@ Guide the agent through an adaptive, high-information architectural interview wi
   ```bash
   .venv/bin/house-ai workflow approve <project> program --id program --version <v> --approver <name>
   ```
+  Give the owner the exact command the CLI printed on its `next:` line, or
+  `next_human_command` from `project status --json`: it is rendered in one place,
+  pins the version and names the human (ADR 0029).
 
 ## Failure handling
 - **Unconfirmed inferences block review**: show them to the owner and confirm, reject or revise each.

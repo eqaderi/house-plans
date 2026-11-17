@@ -58,6 +58,23 @@ reported prose too.
   has a higher version or another hash. `project status` reads it, and its
   `--json` keeps `stale`, `latest_version` and `stale_approvals` with the same
   values.
+- **Next human action, rendered once.** The gate status carries a structured
+  `NextHumanAction` (action, gate, artifact id, version, and for a site
+  confirmation the site Blockers it must clear): approve this version when
+  nothing blocks it, or confirm the site facts that block the site gate.
+  Refusals only a human can lift carry one too (`InterviewLocked` and a
+  frozen plan's `PlanWorkflowError`: reopen the gate). Orchestration holds no
+  flag names. `house_ai.cli.human.command_for` is the one function that
+  renders an action as a command line; it always names the human
+  (`--approver`, `--confirmer`, `--actor human:<name>`) and a site
+  confirmation asks for the options its Blockers need. `project status`
+  (`next_human_command`, `gate_status`), `example load`, `program review`,
+  `plan generate`, `plan review`, the refusals and the reviewer bundle all
+  print it. The reviewer bundle receives the rendered text from the command
+  that builds it (`render=`); its shape is unchanged. A test feeds every
+  rendered command to the real parser. Hand-written copies are gone; two of
+  them were wrong (`example load` had no `--approver`, the reopen hints had
+  no `--reason` or `--actor`).
 - `request_approval` returns the `GateStatus` it recorded; no caller reads
   the event payload by key. `--json` output that lists site blockers gains
   `blockers` (typed) beside `verification_blockers` (sentences).

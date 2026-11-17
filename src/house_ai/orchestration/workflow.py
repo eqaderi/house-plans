@@ -23,6 +23,7 @@ version: its typed Blockers and attention items (ADR 0029).
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from enum import StrEnum
 from typing import Any
 
 from house_ai.constants.evaluations import PLAN_GATE_BLOCKING_CODES, PLAN_REVIEW_ATTENTION_CODES
@@ -94,8 +95,46 @@ GATE_ORDER: list[Gate] = [Gate.SITE, Gate.PROGRAM, Gate.PLAN, Gate.MODEL]
 STATE_ORDER: list[WorkflowState] = list(WorkflowState)
 
 
+class HumanAction(StrEnum):
+    """What only a human can do next (agent contract §8)."""
+
+    APPROVE = "approve"
+    CONFIRM_SITE = "confirm_site"
+    REOPEN = "reopen"
+    REJECT_PROGRAM = "reject_program"
+
+
+@dataclass(frozen=True)
+class NextHumanAction:
+    """The next thing a human must do at a gate, without any command syntax (ADR 0029).
+
+    The CLI renders it as a command line (``house_ai.cli.human.command_for``);
+    orchestration never holds flag names. ``artifact_id`` and ``version`` are
+    ``None`` when the caller does not know which version (a template).
+    """
+
+    action: HumanAction
+    gate: Gate
+    artifact_id: str | None = None
+    version: int | None = None
+    #: For a site confirmation: the site Blockers the confirmation must clear.
+    clears: tuple[Blocker, ...] = ()
+
+    def to_json(self) -> dict[str, Any]:
+        return {
+            "action": self.action.value,
+            "gate": self.gate.value,
+            "artifact_id": self.artifact_id,
+            "version": self.version,
+            "clears": [b.model_dump(mode="json") for b in self.clears],
+        }
+
+
 class WorkflowError(Exception):
-    pass
+    def __init__(self, *args: object, next_action: NextHumanAction | None = None) -> None:
+        super().__init__(*args)
+        #: What a human can do about the refusal, when only a human can.
+        self.next_action = next_action
 
 
 class TransitionNotAllowed(WorkflowError):
@@ -126,6 +165,9 @@ class GateStatus:
     approval: Approval | None = None
     #: The newer version of the approved artifact, when the approval is stale.
     stale_against: ArtifactRef | None = None
+    #: What a human does next at this gate, if anything: approve this version
+    #: when nothing blocks it, or confirm the site facts that block the site gate.
+    next_action: NextHumanAction | None = None
 
     @property
     def stale(self) -> bool:
@@ -154,6 +196,7 @@ class GateStatus:
             "stale_against": (
                 self.stale_against.model_dump(mode="json") if self.stale_against else None
             ),
+            "next_action": self.next_action.to_json() if self.next_action else None,
         }
 
 
@@ -304,15 +347,54 @@ class Workflow:
         """Where ``gate`` stands for one pinned artifact version now (ADR 0029)."""
         status = self.status()
         approval = status.approvals.get(gate)
+        in_review = status.state is GATES[gate].review_state
+        blockers = self._blockers(gate, ref, status)
         return GateStatus(
             gate=gate,
             artifact=ref,
-            in_review_state=status.state is GATES[gate].review_state,
-            blockers=self._blockers(gate, ref, status),
+            in_review_state=in_review,
+            blockers=blockers,
             attention=self._plan_attention(ref) if gate is Gate.PLAN else [],
             approval=approval,
             stale_against=self._newer_than(approval) if approval else None,
+            next_action=self._next_action(gate, ref, status, in_review and not blockers),
         )
+
+    def current_gate_status(self) -> GateStatus | None:
+        """The gate the project is working towards now, for its pinned version.
+
+        The site gate while the site is ingested or needs confirmation; else the
+        gate approved from the current state. The pinned version is the one a
+        review was requested for, or the newest version when only one artifact
+        of the gate's kind exists. ``None`` when there is no such gate or version.
+        """
+        status = self.status()
+        if status.state in (S.SITE_INGESTION, S.SITE_NEEDS_CONFIRMATION):
+            gate: Gate | None = Gate.SITE
+        else:
+            gate = next((g for g, s in GATES.items() if s.review_state is status.state), None)
+        if gate is None:
+            return None
+        ref = status.pending_requests.get(gate)
+        if ref is None:
+            latest = self.store.latest_of_kind(GATES[gate].artifact_kind)
+            ref = latest[0] if len(latest) == 1 else None
+        return self.gate_status(gate, ref) if ref is not None else None
+
+    def _next_action(
+        self, gate: Gate, ref: ArtifactRef, status: WorkflowStatus, approvable: bool
+    ) -> NextHumanAction | None:
+        if approvable:
+            return NextHumanAction(HumanAction.APPROVE, gate, ref.id, ref.version)
+        site_states = (S.SITE_INGESTION, S.SITE_NEEDS_CONFIRMATION)
+        if gate is Gate.SITE and status.state in site_states and ref.kind is ArtifactKind.SITE:
+            try:
+                clears = site_blockers(self.store.get(ref, Site))
+            except StoreError:
+                return None
+            if clears:
+                return NextHumanAction(HumanAction.CONFIRM_SITE, gate, ref.id, clears=tuple(clears))
+        return None
 
     def _newer_than(self, approval: Approval) -> ArtifactRef | None:
         """The latest version of the approved artifact, if it is not the approved one."""

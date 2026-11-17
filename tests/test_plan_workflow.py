@@ -14,7 +14,7 @@ from house_ai.domain.plan import PlanVersion, RevisionReport
 from house_ai.domain.provenance import Actor, ActorKind, ApprovalRequiresHuman, ArtifactKind
 from house_ai.domain.workflow import Gate, WorkflowState
 from house_ai.orchestration.plans import PlanService, PlanWorkflowError
-from house_ai.orchestration.workflow import Workflow
+from house_ai.orchestration.workflow import HumanAction, NextHumanAction, Workflow
 from house_ai.storage import ProjectStore
 
 from .conftest import AGENT, HUMAN
@@ -206,10 +206,11 @@ def test_plan_gate_stays_human_only_and_freezes_the_plan(tmp_path):
     wf.approve(Gate.PLAN, ref, HUMAN, "this is the one")
     assert wf.state is WorkflowState.PLAN_APPROVED
     before = len(store.events())
-    with pytest.raises(PlanWorkflowError, match="frozen"):
+    with pytest.raises(PlanWorkflowError, match="frozen") as frozen:
         PlanService(store).revise(
             "concept-compact", "bigger living room", AGENT, ops=["area:pi-living=40"]
         )
+    assert frozen.value.next_action == NextHumanAction(HumanAction.REOPEN, Gate.PLAN)
     with pytest.raises(PlanWorkflowError):
         PlanService(store).generate(AGENT)
     assert len(store.events()) == before

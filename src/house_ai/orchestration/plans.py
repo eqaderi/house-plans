@@ -71,7 +71,7 @@ from house_ai.storage import ProjectStore
 from house_ai.storage.hashing import content_hash, pretty_json
 from house_ai.validation.topology import validate_proposal
 
-from .workflow import GateStatus, Workflow
+from .workflow import GateStatus, HumanAction, NextHumanAction, Workflow, WorkflowError
 
 S = WorkflowState
 EXPLORATORY_BANNER = (
@@ -82,7 +82,7 @@ GENERATION_STATES = {S.PROGRAM_APPROVED, S.PLAN_GENERATION, S.PLAN_REVIEW}
 LEVEL_PREFS = {"entry", "not_entry", "upper", "lower", "any", "ground"}
 
 
-class PlanWorkflowError(Exception):
+class PlanWorkflowError(WorkflowError):
     """The project is not in a state where this plan command may run; nothing was written."""
 
 
@@ -459,7 +459,8 @@ class PlanService:
             raise PlanWorkflowError(
                 f"plans can be revised during plan generation or review; the project is in "
                 f"{status.state.value}. An approved plan is frozen: a human must reopen the plan "
-                "gate (`house-ai workflow reopen <dir> plan`)."
+                "gate.",
+                next_action=NextHumanAction(HumanAction.REOPEN, Gate.PLAN),
             )
 
         base_refs: list[ArtifactRef] = []

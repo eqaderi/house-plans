@@ -34,6 +34,7 @@ from pathlib import Path
 
 import yaml
 
+from house_ai.cli.human import renderer
 from house_ai.domain.plan import PlanVersion
 from house_ai.domain.program import Strength
 from house_ai.domain.proposal import ConceptProposal
@@ -392,7 +393,8 @@ def run(out: Path, strategies: list[str] | None = None, with_proposal: bool = Tr
     rec["refusals"] = refusals
 
     # 9. Reviewer bundle and provenance.
-    bundle = export_reviewer_bundle(store, out / "bundle", plan_options_dir=concepts)
+    bundle = export_reviewer_bundle(store, out / "bundle", render=renderer(store.project_id),
+                                    plan_options_dir=concepts)  # fmt: skip
     status = wf.status()
     rec["bundle"] = {"path": str(bundle.relative_to(out)), "bytes": bundle.stat().st_size}
     rec["provenance"] = {
