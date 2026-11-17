@@ -44,6 +44,7 @@ from house_ai.geospatial.validation import validate_site
 from house_ai.interview.brief_builder import describe
 from house_ai.interview.questions import SLOTS
 from house_ai.orchestration.interview import InterviewService
+from house_ai.orchestration.project_status import project_status
 from house_ai.orchestration.site import SiteService
 from house_ai.orchestration.site_ingestion import SiteConfirmation
 from house_ai.orchestration.statements import owner_statements, record_owner_statement
@@ -170,72 +171,9 @@ def cmd_project_list(args: argparse.Namespace) -> int:
     return EXIT_OK
 
 
-def _status_dict(store: ProjectStore, project: str) -> dict:
-    wf = Workflow(store)
-    status = wf.status()
-    gate = wf.gate_available()
-    current = wf.current_gate_status()
-    next_action = current.next_action if current else None
-    latest: dict[str, list[dict]] = {}
-    for kind in ArtifactKind:
-        for ref in store.latest_of_kind(kind):
-            latest.setdefault(kind.value, []).append(ref.model_dump(mode="json"))
-    svc = InterviewService(store)
-    site_ctx = svc.site()
-    site_info = None
-    if site_ctx is not None and site_ctx.site_ref is not None:
-        site_blockers = svc.site_blockers()
-        site_info = {
-            "site_ref": site_ctx.site_ref.model_dump(mode="json"),
-            "verified": site_ctx.verified,
-            "parcel_area_m2": site_ctx.parcel_area_m2,
-            "relief_m": site_ctx.relief_m,
-            "mean_slope_pct": site_ctx.mean_slope_pct,
-            "frontage_m": site_ctx.frontage_m,
-            "verification_blockers": [b.message for b in site_blockers],
-            "blockers": [b.model_dump(mode="json") for b in site_blockers],
-        }
-    approvals_dict: dict[str, dict] = {}
-    stale_approvals: list[str] = []
-    for g, a in status.approvals.items():
-        gate_status = wf.gate_status(g, a.artifact)
-        data = a.model_dump(mode="json")
-        data["stale"] = gate_status.stale
-        if gate_status.stale_against is not None:
-            stale_approvals.append(g.value)
-            data["latest_version"] = gate_status.stale_against.version
-        approvals_dict[g.value] = data
-
-    iv_exists = svc.exists()
-    iv_state = svc.state() if iv_exists else None
-    return {
-        "project": store.manifest().model_dump(mode="json"),
-        "state": status.state.value,
-        "allowed_transitions": [s.value for s in wf.allowed_transitions()],
-        "gate_available": gate.value if gate else None,
-        "approvals": approvals_dict,
-        "stale_approvals": sorted(stale_approvals),
-        "gate_status": current.to_json() if current else None,
-        "next_human_command": human.command_for(next_action, project) if next_action else None,
-        "superseded_approvals": [a.id for a in status.superseded],
-        "pending_approval_requests": {
-            g.value: r.model_dump(mode="json") for g, r in status.pending_requests.items()
-        },
-        "latest_artifacts": latest,
-        "site": site_info,
-        "owner_statements_count": len(owner_statements(store)),
-        "interview": {
-            "exists": iv_exists,
-            "status": svc.session().status.value if iv_exists else "not_started",
-            "turn_count": len(svc.session().turns) if iv_exists else 0,
-            "unconfirmed_slots": len(iv_state.unconfirmed()) if iv_state else 0,
-        },
-    }
-
-
 def cmd_project_status(args: argparse.Namespace) -> int:
-    store = ProjectStore(resolve_project_dir(args.dir))
-    info = _status_dict(store, args.dir)
+    status = project_status(ProjectStore(resolve_project_dir(args.dir)))
+    info = status.to_json(human.renderer(args.dir))
     if args.json:
         _out(json.dumps(info, indent=2, sort_keys=True))
         return EXIT_OK
