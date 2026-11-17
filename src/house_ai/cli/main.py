@@ -36,11 +36,11 @@ from house_ai.domain.provenance import (
     DataClassification,
 )
 from house_ai.domain.registry import SCHEMAS, export_schemas, stale_schemas
-from house_ai.domain.site import CadImportProvenance, Site
+from house_ai.domain.site import Site
 from house_ai.domain.units import LengthUnit
 from house_ai.domain.workflow import Gate, WorkflowState
 from house_ai.geospatial.crs import describe_epsg, utm_candidates
-from house_ai.geospatial.validation import report_markdown, validate_site
+from house_ai.geospatial.validation import validate_site
 from house_ai.interview.brief_builder import describe
 from house_ai.interview.questions import SLOTS
 from house_ai.orchestration.interview import InterviewService
@@ -55,9 +55,6 @@ from house_ai.orchestration.workflow import (
 )
 from house_ai.program.report import program_markdown
 from house_ai.providers.base import ModelProvider, ProviderError
-from house_ai.render2d.review_html import render_review_html
-from house_ai.render2d.site_svg import render_site_svg
-from house_ai.render2d.terrain_svg import render_terrain_svg
 from house_ai.storage import ProjectStore, StoreError
 from house_ai.storage.hashing import load_document, pretty_json
 from house_ai.storage.importer import import_folder
@@ -514,31 +511,10 @@ def cmd_site_confirm(args: argparse.Namespace) -> int:
 def cmd_site_report(args: argparse.Namespace) -> int:
     store = ProjectStore(resolve_project_dir(args.dir))
     ref = _ref(store, ArtifactKind.SITE, args.id, args.version)
-    site = store.get(ref, Site)
-    report = validate_site(site, ref)
-    statements = owner_statements(store)
-    out = Path(args.out) if args.out else store.root / "reviews" / f"{ref.id}-v{ref.version}"
-    out.mkdir(parents=True, exist_ok=True)
-    site_svg, terrain_svg = render_site_svg(site, report), render_terrain_svg(site, report)
-    cad_inputs = [r for r in site.provenance.inputs if r.kind is ArtifactKind.CAD_IMPORT]
-    cads = [store.get(r, CadImportProvenance) for r in cad_inputs]
-    files = {
-        "site.json": pretty_json(site),
-        "site-report.json": pretty_json(report),
-        "site-report.md": report_markdown(report, statements),
-        "site.svg": site_svg,
-        "terrain.svg": terrain_svg,
-        "index.html": render_review_html(site, report, site_svg, terrain_svg, cads, statements),
-    }
-    if cad_inputs:
-        files["cad-import.json"] = pretty_json(store.get(cad_inputs[0]))
-    if len(cad_inputs) > 1:
-        for r in cad_inputs:
-            files[f"{r.id}.json"] = pretty_json(store.get(r))
-    for name, text in files.items():
-        (out / name).write_text(text, encoding="utf-8")
-        _out(f"wrote {out / name}")
-    for b in report.blockers:
+    package = SiteService(store).write_review_package(ref, Path(args.out) if args.out else None)
+    for path in package.files:
+        _out(f"wrote {path}")
+    for b in package.blockers:
         _out(f"BLOCKER {b}")
     return EXIT_OK
 

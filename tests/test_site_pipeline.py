@@ -510,16 +510,7 @@ def test_cli_pipeline(tmp_path, capsys):
     assert "state SITE_NEEDS_CONFIRMATION" in capsys.readouterr().out
     out = tmp_path / "out"
     assert main(["site", "report", p, "--id", "site", "--out", str(out)]) == 0
-    names = sorted(f.name for f in out.iterdir())
-    assert names == [
-        "cad-import.json",
-        "index.html",
-        "site-report.json",
-        "site-report.md",
-        "site.json",
-        "site.svg",
-        "terrain.svg",
-    ]
+    assert (out / "site-report.md").is_file()  # the file list is pinned in test_site_service
     assert main(["project", "verify", p]) == 0
 
 
@@ -796,8 +787,8 @@ def test_multifile_boundary_handle_with_source_prefix_and_report_outputs(
     assert not any(i.id.startswith("iss-conflict-") for i in site1.issues)
 
     out_dir = tmp_path / "multi-report"
-    assert main(["site", "report", str(store1.root), "--id", "site", "--out", str(out_dir)]) == 0
-    written = sorted(f.name for f in out_dir.iterdir())
+    package = SiteService(store1).write_review_package(res1.site_ref, out_dir)
+    written = sorted(f.name for f in package.files)
     assert "cad-import.json" in written
     assert sum(name.startswith("cad-src-") for name in written) == 2
 

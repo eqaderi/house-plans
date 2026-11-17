@@ -153,3 +153,36 @@ def test_cli_site_confirm_goes_through_site_service(ingested, monkeypatch, capsy
     assert main(argv) == EXIT_OK
     assert Workflow(store).state is WorkflowState.SITE_INGESTION
     assert _transitions(store)[-1] == ("SITE_NEEDS_CONFIRMATION", "SITE_INGESTION", "owner")
+
+
+# ---------------------------------------------------------------- review package
+
+
+def test_the_site_review_package_is_written_for_a_site_version(ingested, tmp_path):
+    store = ingested
+    ref = store.latest(ArtifactKind.SITE, "site")
+    out = tmp_path / "review"
+
+    package = SiteService(store).write_review_package(ref, out)
+
+    assert package.out == out
+    assert sorted(p.name for p in package.files) == [
+        "cad-import.json",
+        "index.html",
+        "site-report.json",
+        "site-report.md",
+        "site.json",
+        "site.svg",
+        "terrain.svg",
+    ]
+    assert sorted(p.name for p in out.iterdir()) == sorted(p.name for p in package.files)
+    assert package.blockers == SURVEY_BLOCKERS
+
+
+def test_the_review_package_defaults_to_the_reviews_folder(ingested):
+    store = ingested
+    ref = store.latest(ArtifactKind.SITE, "site")
+
+    package = SiteService(store).write_review_package(ref)
+
+    assert package.out == store.root / "reviews" / "site-v1"
