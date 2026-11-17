@@ -28,7 +28,7 @@ version behind the human plan gate. Blender and Unreal come in later milestones.
 
 ## Setup
 
-Requires Python 3.11 or newer (developed and tested on 3.11 and 3.13).
+Requires Python 3.13 or newer (developed and tested on 3.13 only; see [ADR 0026](docs/adr/0026-python-3-13-only.md)).
 
 ```bash
 python3.13 -m venv .venv

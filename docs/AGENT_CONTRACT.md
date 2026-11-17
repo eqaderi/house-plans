@@ -183,7 +183,7 @@ Worked command examples: [AGENT_WORKFLOWS.md](AGENT_WORKFLOWS.md).
 - Never call output permit-ready, construction-ready, structurally certified,
   code-compliant, MEP-engineered or geotechnically verified without a recorded
   professional approval ([PROFESSIONAL_HANDOFF.md](PROFESSIONAL_HANDOFF.md)).
-- Python ≥ 3.11 (3.11 and 3.13), `ruff` line length 100, Pydantic `StrictModel`,
+- Python 3.13 only (ADR 0026), `ruff` line length 100, Pydantic `StrictModel`,
   canonical units metres/degrees. External tools and vendor SDKs sit behind
   optional adapters.
 - Every behaviour change or bug fix has a deterministic offline test asserting

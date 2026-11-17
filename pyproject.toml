@@ -7,7 +7,7 @@ name = "house-ai"
 version = "0.1.0"
 description = "HOUSE DESIGN AI: a canonical semantic house model with explicit human approval gates"
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.13"
 # Compatible bounds for installation; exact schema-generation versions are
 # pinned in requirements-lock.txt. After bumping pydantic, re-run
 # `house-ai schemas export`.
@@ -48,7 +48,7 @@ addopts = "-ra"
 
 [tool.ruff]
 line-length = 100
-target-version = "py311"
+target-version = "py313"
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B"]
