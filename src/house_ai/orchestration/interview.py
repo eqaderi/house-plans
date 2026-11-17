@@ -63,6 +63,7 @@ from house_ai.interview.state import (
 )
 from house_ai.interview.summary import summary_markdown
 from house_ai.program.builder import ProgramResult, build_program
+from house_ai.program.needed_slots import needed_slots
 from house_ai.program.report import program_markdown
 from house_ai.program.validation import ProgramFinding, validate_program
 from house_ai.providers.base import (
@@ -350,7 +351,6 @@ class InterviewService:
         state = fold(session) if session else State()
         summary = self.site_summary()
         site = summary.context if summary.exists else None
-        sloped = bool(site and (site.relief_m or 0.0) >= 2.0)
         items: list[ChecklistItem] = []
         for q in QUESTIONS:
             answered = state.answered(q.id)
@@ -372,12 +372,10 @@ class InterviewService:
             for qid, t in state.answers.items()
             if qid.partition("#")[0] not in QUESTION_BY_ID
         ]
-        required_slots = ["adults", "bedrooms", "bathrooms"] + (
-            ["slope_strategy"] if sloped else []
-        )
         missing_required = [
-            s for s in required_slots if s not in state.slots or state.slots[s].value is None
-        ]
+            n.slot for n in needed_slots(site)
+            if n.slot not in state.slots or state.slots[n.slot].value is None
+        ]  # fmt: skip
         unconfirmed = [
             Interpretation(s, state.slots[s].value, state.slots[s].method, state.slots[s].status)
             for s in state.unconfirmed()

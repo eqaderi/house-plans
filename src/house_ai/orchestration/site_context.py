@@ -87,9 +87,14 @@ class SiteSummary:
         return self.context.site_ref is not None
 
     @property
+    def sloped(self) -> bool:
+        """Relief of 2 m or more (``constants.slopes``)."""
+        return self.exists and self.context.sloped
+
+    @property
     def steep(self) -> bool:
-        c = self.context
-        return self.exists and ((c.relief_m or 0.0) >= 8.0 or (c.mean_slope_pct or 0.0) >= 20.0)
+        """Relief of 8 m or more, or a mean slope of 20 % or more (``constants.slopes``)."""
+        return self.exists and self.context.steep
 
     def to_json(self) -> dict[str, Any]:
         c = self.context
