@@ -986,7 +986,7 @@ def cmd_program_build(args: argparse.Namespace) -> int:
                             "code": f.code,
                             "severity": f.severity.value,
                             "message": f.message,
-                            "refs": list(f.refs),
+                            "subject_ids": list(f.subject_ids),
                             "options": list(f.options),
                         }
                         for f in build.findings
