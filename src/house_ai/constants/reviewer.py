@@ -69,27 +69,9 @@ ELEMENT_KINDS: tuple[str, ...] = (
     KIND_ELEVATION_MARKER,
 )
 
-# Defect types for visual and geometric defect detectors
-DEFECT_WINDOW_ON_RETAINING_WALL: str = "window_on_retaining_wall"
-DEFECT_MISSING_STAIR_LEVEL: str = "missing_stair_level"
-DEFECT_MISSING_STAIR_ARRIVAL: str = "missing_stair_arrival"
-DEFECT_MISSING_HOST_WALL: str = "missing_host_wall"
-DEFECT_DOOR_EXCEEDS_WALL: str = "door_exceeds_wall"
-DEFECT_STAIR_THROUGH_SLAB: str = "stair_through_slab"
-
-DEFECT_TYPES: tuple[str, ...] = (
-    DEFECT_WINDOW_ON_RETAINING_WALL,
-    DEFECT_MISSING_STAIR_LEVEL,
-    DEFECT_MISSING_STAIR_ARRIVAL,
-    DEFECT_MISSING_HOST_WALL,
-    DEFECT_DOOR_EXCEEDS_WALL,
-    DEFECT_STAIR_THROUGH_SLAB,
-)
-
-# 2D Plan rendering and defect detection geometry constants
+# 2D Plan rendering geometry constants
 PANEL_W: float = 560.0
 MARGIN: float = 36.0
-MIN_SLAB_INTERSECTION_AREA_M2: float = 0.05
 DOOR_APPROACH_CLEAR_DM: int = 9
 
 # Visual critique severities

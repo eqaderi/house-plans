@@ -51,6 +51,18 @@ loop.
   a Space requirement's Spaces changed); otherwise it remains, because the
   parent's Evaluation may come from an earlier evaluator. The stored
   `RevisionReport` artifact is unchanged.
+- **The detectors that repeated evaluator rules are deleted**, with
+  `DefectFinding` and the `DEFECT_*` constants. Each seeded defect is a Finding
+  of the Evaluation or of the integrity check: a window in a retaining wall is
+  `window_buried` from `DaylightOpportunityEvaluator`, measured from the wall's
+  kind (no terrain needed, any room; method `host_wall_is_retaining`); a stair
+  through a slab is `stair_low_headroom` from `StairUsabilityEvaluator`, which
+  honours `UsabilityPolicy.min_headroom_m`; a door wider than what is left of
+  its wall is `opening_outside_wall` and a missing host wall, stair Level or
+  arrival Space is `dangling_reference` (`check_model`). No private name is
+  imported across packages for these rules. No Finding suggests a Revision
+  operation now; a visual claim's suggestions are `RevisionOp`s (ADR 0030) and
+  the `void:` suggestion is gone.
 - The visual-review loop function and the claim-by-claim verifier are deleted.
   Fix verification is the revise report; the visual-review skill reads it.
   The reviewer demonstration keeps its critique and images as a record and no
@@ -61,6 +73,8 @@ loop.
 - Every Evaluation gains one evaluator run (`LabelCollisionEvaluator`), the
   `label_collisions` metric and any `label_collision` Findings. Stored
   Evaluations are untouched; re-evaluating a stored Plan version reports them.
+- A window in a retaining wall is reported once per window, whatever the
+  room, from the wall's kind; with terrain it is no longer also sampled.
 - A revision whose request names no Space (only `--strategy` or `--stair`)
   reports three empty lists.
 - Findings about ids the request did not target are not in the three lists;

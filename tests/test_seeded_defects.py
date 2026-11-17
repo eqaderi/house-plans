@@ -1,19 +1,22 @@
-"""Tests for seeded visual defects and detection on synthetic fixtures (Stage S5, Task S5-07)."""
+"""Seeded defects are reported by the Evaluation or the integrity check (S5-07, ADR 0033).
+
+Each test seeds one defect into a hand-built model and asserts on the Evaluation (the
+evaluators, as `plan generate` runs them) or on ``check_model``; no solver, no store.
+"""
 
 from __future__ import annotations
 
 import pytest
 
-from house_ai.constants.reviewer import (
-    DEFECT_DOOR_EXCEEDS_WALL,
-    DEFECT_MISSING_STAIR_ARRIVAL,
-    DEFECT_MISSING_STAIR_LEVEL,
-    DEFECT_STAIR_THROUGH_SLAB,
-    DEFECT_WINDOW_ON_RETAINING_WALL,
-)
 from house_ai.domain.epistemics import ClaimStatus
 from house_ai.domain.evaluation import EvaluationReport, Violation
 from house_ai.domain.geometry import Polygon2D
+from house_ai.domain.integrity import (
+    CODE_DANGLING_REFERENCE,
+    CODE_OPENING_OUTSIDE_WALL,
+    check_model,
+    errors,
+)
 from house_ai.domain.model import (
     HouseModel,
     Level,
@@ -28,22 +31,27 @@ from house_ai.domain.model import (
     WallKind,
 )
 from house_ai.domain.plan import PlanVersion
+from house_ai.domain.program import Strength
 from house_ai.domain.provenance import Actor, ActorKind, ArtifactKind, ArtifactRef, Provenance
 from house_ai.domain.site import Site
+from house_ai.evaluation.base import EvaluationContext
 from house_ai.evaluation.report import evaluate_plan
+from house_ai.evaluation.templates import UsabilityPolicy
+from house_ai.evaluation.usability import StairUsabilityEvaluator
 from house_ai.storage.hashing import load_document
-from house_ai.validation.defect_detectors import (
-    detect_door_into_wall_clash,
-    detect_stair_arrival_defects,
-    detect_stair_through_slab,
-    detect_windows_on_retaining_walls,
-    scan_all_model_defects,
-)
 
 from .conftest import REPO
 
 HILLSIDE = REPO / "examples" / "projects" / "synthetic-hillside"
 WHEN = "2026-11-17T00:00:00Z"
+#: The codes the seeded defects below are reported with.
+SEEDED_CODES = {
+    "window_buried",
+    "label_collision",
+    "stair_low_headroom",
+    CODE_OPENING_OUTSIDE_WALL,
+    CODE_DANGLING_REFERENCE,
+}
 
 
 def _evaluation(model: HouseModel, site: Site | None = None) -> EvaluationReport:
@@ -124,46 +132,21 @@ def clean_model() -> HouseModel:
                 width_m=1.0,
                 kind=StairKind.STRAIGHT,
                 footprint=Polygon2D(outer=[[0, 3], [2, 3], [2, 5], [0, 5]]),
+                walking_line=[[1, 3], [1, 5]],
             )
         ],
     )
 
 
-def test_clean_model_has_no_defects(clean_model):
-    """A clean plan model produces zero defect findings."""
-    defects = scan_all_model_defects(clean_model)
-    assert len(defects) == 0
-
-
-def test_detects_window_on_retaining_wall(clean_model):
-    """Detects when a window is hosted on a retaining wall buried in earth."""
-    # Add a retaining wall with a window
-    ret_wall = Wall(
-        id="w-ret-hillside",
+def _roof_over_the_flight(holes: list) -> Slab:
+    return Slab(
+        id="slab-roof-low",
         level_id="lvl-0",
-        kind=WallKind.RETAINING,
-        start=[0, 5],
-        end=[6, 5],
-        thickness_m=0.4,
-        height_m=2.8,
+        kind=SlabKind.ROOF,
+        boundary=Polygon2D(outer=[[-1, 2], [3, 2], [3, 6], [-1, 6]], holes=holes),
+        thickness_m=0.25,
+        top_offset_m=1.5,
     )
-    buried_window = Opening(
-        id="win-buried-1",
-        host_wall_id="w-ret-hillside",
-        kind=OpeningKind.WINDOW,
-        offset_m=1.5,
-        width_m=1.2,
-        height_m=1.0,
-        connects=("sp-living", "exterior"),
-    )
-    clean_model.walls.append(ret_wall)
-    clean_model.openings.append(buried_window)
-
-    findings = detect_windows_on_retaining_walls(clean_model)
-    assert len(findings) == 1
-    assert findings[0].defect_type == DEFECT_WINDOW_ON_RETAINING_WALL
-    assert "win-buried-1" in findings[0].element_ids
-    assert "w-ret-hillside" in findings[0].element_ids
 
 
 def test_overlapping_space_labels_are_a_finding_of_the_evaluation(clean_model):
@@ -194,85 +177,167 @@ def test_overlapping_space_labels_are_a_finding_of_the_evaluation(clean_model):
     assert findings[0].evaluator == "LabelCollisionEvaluator"
 
 
-def test_detects_missing_stair_arrival(clean_model):
-    """Detects stairs whose top space or destination level does not exist."""
-    ghost_stair = Stair(
-        id="st-dead-end",
-        from_level_id="lvl-0",
-        to_level_id="lvl-nonexistent",
-        bottom_space_id="sp-living",
-        top_space_id="sp-phantom-attic",
-        width_m=1.0,
-        kind=StairKind.STRAIGHT,
-        footprint=Polygon2D(outer=[[4, 0], [5, 0], [5, 3], [4, 3]]),
+def test_clean_model_has_no_seeded_defect_findings(clean_model):
+    """A clean model: the Evaluation reports none of the seeded defects below."""
+    report = _evaluation(clean_model)
+    assert not {v.code for v in report.violations} & SEEDED_CODES
+    headroom = next(m for m in report.metrics if m.metric == "stair_min_headroom_m")
+    assert headroom.status is ClaimStatus.NOT_CHECKED  # no slab over the flight
+    # Its integrity errors are only that the hand-built rooms have no doors.
+    assert {f.code for f in errors(check_model(clean_model))} == {"space_unreachable"}
+
+
+def test_window_on_retaining_wall_is_a_measured_finding_even_without_terrain(clean_model):
+    """The wall's own kind says the window faces earth: no Site is needed to report it."""
+    clean_model.walls.append(
+        Wall(
+            id="w-ret-hillside",
+            level_id="lvl-0",
+            kind=WallKind.RETAINING,
+            start=[0, 5],
+            end=[6, 5],
+            thickness_m=0.4,
+            height_m=2.8,
+        )
     )
-    clean_model.stairs.append(ghost_stair)
-
-    findings = detect_stair_arrival_defects(clean_model)
-    assert len(findings) >= 2
-    types = [f.defect_type for f in findings]
-    assert DEFECT_MISSING_STAIR_LEVEL in types
-    assert DEFECT_MISSING_STAIR_ARRIVAL in types
-    arrival_finding = next(f for f in findings if f.defect_type == DEFECT_MISSING_STAIR_ARRIVAL)
-    assert "sp-phantom-attic" in arrival_finding.element_ids
-
-
-def test_detects_door_clash(clean_model):
-    """Detects doors that extend beyond host wall length into corners/intersections."""
-    bad_door = Opening(
-        id="d-overshoot",
-        host_wall_id="w-ext-1",  # length is 6.0m
-        kind=OpeningKind.DOOR,
-        offset_m=5.5,  # 5.5 + 1.0 = 6.5m > 6.0m
-        width_m=1.0,
-        height_m=2.1,
-        connects=("sp-living", "exterior"),
+    clean_model.openings.append(
+        Opening(
+            id="win-buried-1",
+            host_wall_id="w-ret-hillside",
+            kind=OpeningKind.WINDOW,
+            offset_m=1.5,
+            width_m=1.2,
+            height_m=1.0,
+            connects=("sp-living", "exterior"),
+        )
     )
-    clean_model.openings.append(bad_door)
-
-    findings = detect_door_into_wall_clash(clean_model)
-    assert len(findings) == 1
-    assert findings[0].defect_type == DEFECT_DOOR_EXCEEDS_WALL
-    assert "d-overshoot" in findings[0].element_ids
-    assert "w-ext-1" in findings[0].element_ids
+    (finding,) = _findings(_evaluation(clean_model), "window_buried")
+    assert finding.subject_ids == ["win-buried-1", "w-ret-hillside", "sp-living"]
+    assert finding.status is ClaimStatus.MEASURED
+    assert finding.method == "host_wall_is_retaining"
 
 
-def test_detects_stair_through_slab(clean_model):
-    """Detects when a stair flight intersects a floor or roof slab without a void."""
-    # Stair st-main climbs from lvl-0 (0m) to lvl-1 (3m), footprint [[0, 3], [2, 3], [2, 5], [0, 5]]
-    # Add a roof slab over lvl-0 at elevation 1.5m that covers the stair flight without a void
-    slab_unvoided = Slab(
-        id="slab-roof-low",
-        level_id="lvl-0",
-        kind=SlabKind.ROOF,
-        boundary=Polygon2D(outer=[[-1, 2], [3, 2], [3, 6], [-1, 6]]),
-        thickness_m=0.25,
-        top_offset_m=1.5,
+def test_window_on_a_retaining_wall_of_a_room_that_is_not_habitable_is_reported(clean_model):
+    clean_model.spaces[0].function = "storage"
+    clean_model.walls.append(
+        Wall(
+            id="w-ret-store",
+            level_id="lvl-0",
+            kind=WallKind.RETAINING,
+            start=[6, 0],
+            end=[6, 5],
+            thickness_m=0.4,
+            height_m=2.8,
+        )
     )
-    clean_model.slabs = [slab_unvoided]
-
-    findings = detect_stair_through_slab(clean_model)
-    assert len(findings) == 1
-    assert findings[0].defect_type == DEFECT_STAIR_THROUGH_SLAB
-    assert "st-main" in findings[0].element_ids
-    assert "slab-roof-low" in findings[0].element_ids
-    assert "lvl-0" in findings[0].element_ids
-    assert "lvl-1" in findings[0].element_ids
-
-    # When a void is cut into the slab over the flight footprint, the clash is resolved
-    slab_voided = Slab(
-        id="slab-roof-low",
-        level_id="lvl-0",
-        kind=SlabKind.ROOF,
-        boundary=Polygon2D(
-            outer=[[-1, 2], [3, 2], [3, 6], [-1, 6]],
-            holes=[[[0, 3], [2, 3], [2, 5], [0, 5]]],
-        ),
-        thickness_m=0.25,
-        top_offset_m=1.5,
+    clean_model.openings.append(
+        Opening(
+            id="win-store",
+            host_wall_id="w-ret-store",
+            kind=OpeningKind.WINDOW,
+            offset_m=1.0,
+            width_m=1.0,
+            height_m=1.0,
+            connects=("sp-living", "exterior"),
+        )
     )
-    clean_model.slabs = [slab_voided]
-    assert len(detect_stair_through_slab(clean_model)) == 0
+    (finding,) = _findings(_evaluation(clean_model), "window_buried")
+    assert finding.subject_ids == ["win-store", "w-ret-store", "sp-living"]
+
+
+def test_missing_stair_level_and_arrival_space_are_dangling_references(clean_model):
+    clean_model.stairs.append(
+        Stair(
+            id="st-dead-end",
+            from_level_id="lvl-0",
+            to_level_id="lvl-nonexistent",
+            bottom_space_id="sp-living",
+            top_space_id="sp-phantom-attic",
+            width_m=1.0,
+            kind=StairKind.STRAIGHT,
+            footprint=Polygon2D(outer=[[4, 0], [5, 0], [5, 3], [4, 3]]),
+        )
+    )
+    found = [(f.code, f.message) for f in check_model(clean_model)]
+    assert found == [
+        (CODE_DANGLING_REFERENCE, "st-dead-end.to_level_id -> unknown 'lvl-nonexistent'"),
+        (CODE_DANGLING_REFERENCE, "st-dead-end.top_space_id -> unknown 'sp-phantom-attic'"),
+    ]
+
+
+def test_door_with_a_missing_host_wall_is_a_dangling_reference(clean_model):
+    clean_model.openings.append(
+        Opening(
+            id="d-floating",
+            host_wall_id="w-gone",
+            kind=OpeningKind.DOOR,
+            offset_m=0.5,
+            width_m=0.9,
+            height_m=2.1,
+            connects=("sp-living", "exterior"),
+        )
+    )
+    (finding,) = check_model(clean_model)
+    assert (finding.code, finding.subject_ids) == (CODE_DANGLING_REFERENCE, ["d-floating"])
+    assert finding.message == "d-floating.host_wall_id -> unknown 'w-gone'"
+
+
+def test_door_wider_than_what_is_left_of_its_wall_is_a_hard_finding(clean_model):
+    clean_model.openings.append(
+        Opening(
+            id="d-overshoot",
+            host_wall_id="w-ext-1",  # 6.0 m long
+            kind=OpeningKind.DOOR,
+            offset_m=5.5,  # 5.5 + 1.0 = 6.5 m > 6.0 m
+            width_m=1.0,
+            height_m=2.1,
+            connects=("sp-living", "exterior"),
+        )
+    )
+    (finding,) = _findings(_evaluation(clean_model), CODE_OPENING_OUTSIDE_WALL)
+    assert finding.subject_ids == ["d-overshoot", "w-ext-1"]
+    assert finding.strength is Strength.HARD
+    assert finding.message == "d-overshoot runs to 6.500 m along w-ext-1, which is 6.000 m long"
+
+
+def test_stair_through_a_slab_without_a_void_is_low_headroom_in_the_evaluation(clean_model):
+    # The flight rises 3 m over its 2 m walking line (x = 1, y 3 -> 5); the roof slab's
+    # underside is at 1.5 - 0.25 = 1.25 m over the whole flight: 1.25 - 3.0 = -1.75 m.
+    clean_model.slabs = [_roof_over_the_flight(holes=[])]
+    report = _evaluation(clean_model)
+    (finding,) = _findings(report, "stair_low_headroom")
+    assert finding.subject_ids == ["st-main", "slab-roof-low"]
+    headroom = next(m for m in report.metrics if m.metric == "stair_min_headroom_m")
+    assert headroom.value == pytest.approx(-1.75)
+
+    # A void over the flight's footprint clears it.
+    clean_model.slabs = [_roof_over_the_flight(holes=[[[0, 3], [2, 3], [2, 5], [0, 5]]])]
+    assert _findings(_evaluation(clean_model), "stair_low_headroom") == []
+
+
+def test_stair_headroom_honours_the_usability_policy(clean_model):
+    # A slab over the first 0.1 m of the flight, underside 2.15 - 0.25 = 1.90 m; the pitch
+    # line there is 0.1 / 2 * 3 = 0.15 m up: 1.75 m of headroom.
+    clean_model.slabs = [
+        Slab(
+            id="slab-low-beam",
+            level_id="lvl-0",
+            kind=SlabKind.ROOF,
+            boundary=Polygon2D(outer=[[-1, 2], [3, 2], [3, 3.1], [-1, 3.1]]),
+            thickness_m=0.25,
+            top_offset_m=2.15,
+        )
+    ]
+    ctx = EvaluationContext(clean_model, None, None, None)
+
+    def low(policy: UsabilityPolicy) -> list[list[str]]:
+        result = StairUsabilityEvaluator(policy).evaluate(ctx)
+        metric = next(m for m in result.metrics if m.metric == "stair_min_headroom_m")
+        assert metric.value == pytest.approx(1.75)
+        return [v.subject_ids for v in result.violations if v.code == "stair_low_headroom"]
+
+    assert low(UsabilityPolicy()) == [["st-main", "slab-low-beam"]]  # 2.0 m assumption
+    assert low(UsabilityPolicy(min_headroom_m=1.7)) == []
 
 
 def _two_wing_v1() -> HouseModel:
@@ -396,14 +461,11 @@ def _two_wing_v1() -> HouseModel:
     return model
 
 
-def test_detects_s9_concept_two_wing_stair_through_slab():
-    model = _two_wing_v1()
-    # 1. Stair through slab defect detector flags st-0 penetrating slab-roof-down-450
-    stair_findings = detect_stair_through_slab(model)
-    assert len(stair_findings) >= 1
-    stair_defect = next(f for f in stair_findings if f.defect_type == DEFECT_STAIR_THROUGH_SLAB)
-    assert "st-0" in stair_defect.element_ids
-    assert "slab-roof-down-450" in stair_defect.element_ids
+def test_s9_concept_two_wing_stair_through_slab_is_low_headroom_in_the_evaluation():
+    report = _evaluation(_two_wing_v1())
+    assert [v.subject_ids for v in _findings(report, "stair_low_headroom")] == [
+        ["st-0", "slab-roof-down-450"]
+    ]
 
 
 def test_s9_concept_two_wing_lower_labels_overlap_on_the_drawing_with_the_site():

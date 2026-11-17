@@ -56,7 +56,6 @@ from house_ai.orchestration.workflow import GateBlocked, Workflow
 from house_ai.render2d.rasterize import find_rasterizer, rasterize_svg_to_png
 from house_ai.storage import ProjectStore
 from house_ai.storage.hashing import load_document
-from house_ai.validation.defect_detectors import scan_all_model_defects
 from house_ai.validation.grounding import collect_canonical_ids
 
 HERE = Path(__file__).resolve().parent
@@ -319,9 +318,11 @@ def run(out: Path, strategies: list[str] | None = None, with_proposal: bool = Tr
             "ungrounded_ids": critique.ungrounded_ids(valid),
             "png_sha256": png_hash,
             "critique_made_on_this_rendering": png_hash == critique.screenshot_hash,
-            "detector_findings": [
-                {"type": f.defect_type, "elements": f.element_ids}
-                for f in scan_all_model_defects(visual.candidate.plan.model)
+            # The same version's Findings, from its Evaluation (ADR 0033).
+            "evaluation_findings": [
+                {"code": v.code, "subjects": list(v.subject_ids)}
+                for v in visual.report.violations
+                if v.code in DEFECT_CODES
             ],
         }
 
@@ -486,8 +487,8 @@ def record_markdown(rec: dict) -> str:
                      f"{vr['critique_made_on_this_rendering']}.")  # fmt: skip
         lines += [""] + [f"- {c['id']} [{c['status']}] {c['elements']}: {c['text']}"
                          for c in vr["claims"]]  # fmt: skip
-        lines += ["", "Automated S5 defect detectors on the same version: "
-                  + (", ".join(f"{d['type']} {d['elements']}" for d in vr["detector_findings"])
+        lines += ["", "Findings of the same version's Evaluation: "
+                  + (", ".join(f"{d['code']} {d['subjects']}" for d in vr["evaluation_findings"])
                      or "no findings")]  # fmt: skip
     else:
         lines.append(f"not checked: {vr['reason']}")
