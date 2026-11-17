@@ -14,7 +14,7 @@ from house_ai.domain.plan import PlanVersion
 from house_ai.domain.program import SpaceProgram, SpaceRelationshipKind
 from house_ai.domain.revision_ops import RevisionOp, RevisionOpError, parse_ops
 from house_ai.generation.engines import BarEngine
-from house_ai.generation.revision import compile_revision, resolve_spaces
+from house_ai.generation.revision import compile_revision, resolve_spaces, targeted_ids
 from house_ai.storage.hashing import load_document
 
 EXAMPLE = Path(__file__).resolve().parents[1] / "examples/projects/synthetic-hillside"
@@ -156,3 +156,27 @@ def test_area_below_the_program_minimum_is_refused() -> None:
             _concept(), program, [RevisionOp.parse(f"area:pi-kitchen={too_small:g}")],
             inherit=True,
         )
+
+
+def test_the_ids_a_request_targets_are_its_names_and_the_spaces_they_mean() -> None:
+    program = _program()
+    ops = parse_ops(["area:pi-kitchen=16", "separate:sp-living,pi-bed-main", "strategy:compact"])
+    assert targeted_ids(ops, program) == {
+        "pi-kitchen",
+        "sp-kitchen",
+        "sp-living",
+        "pi-bed-main",
+        "sp-bed-main",
+    }
+    # A Zone means its Spaces; ``all`` means every Space.
+    assert targeted_ids(parse_ops(["rethink:z-night"]), program) == {
+        "z-night",
+        "sp-bed-main",
+        "sp-bed-child-1",
+        "sp-bed-child-2",
+        "sp-bath-ensuite",
+        "sp-bath-1",
+    }
+    everything = targeted_ids(parse_ops(["rethink:all"]), program)
+    assert {"sp-kitchen", "sp-garage", "sp-bed-main"} <= everything
+    assert "all" not in everything

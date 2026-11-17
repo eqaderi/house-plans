@@ -4,9 +4,11 @@ Creates:
 1. before.svg and before.png (seeded visual defect on synthetic-hillside concept)
 2. visual_critique.json (grounded critique citing canonical element IDs)
 3. revision_ops.json (structured revision operations)
-4. after.svg and after.png (verified revised plan with defect resolved)
-5. revision_report.json (verification report confirming resolution)
-6. README.md (demonstration documentation and replay guide)
+4. after.svg and after.png (a hand-edited illustration of the requested change)
+5. README.md (demonstration documentation and replay guide)
+
+Fix verification is not part of this demonstration: it is what `plan revise` reports, from
+the Evaluations of the parent Plan version and the new one (ADR 0033).
 """
 
 from __future__ import annotations
@@ -22,7 +24,6 @@ from house_ai.domain.provenance import Actor, Provenance
 from house_ai.domain.revision_ops import RevisionOp, RevisionOpsFile
 from house_ai.domain.site import Site
 from house_ai.domain.visual_critique import VisualClaim, VisualCritiqueFile
-from house_ai.orchestration.visual_review import verify_visual_critique_fixes
 from house_ai.render2d.plan_svg import render_plan_svg
 from house_ai.render2d.rasterize import rasterize_svg_to_png
 from house_ai.storage.hashing import load_document
@@ -135,49 +136,35 @@ def generate_demonstration_artifacts() -> None:
     after_png_path = DEMO_DIR / "after.png"
     rasterize_svg_to_png(after_svg, after_png_path, width=800, height=600)
 
-    # 6. Verify visual critique fixes
-    report = verify_visual_critique_fixes(plan_v1, plan_v2, critique)
-    report_dict = {
-        "critique_id": report.critique_id,
-        "from_version": report.from_version,
-        "to_version": report.to_version,
-        "all_resolved": report.all_resolved,
-        "results": [
-            {
-                "claim_id": r.claim_id,
-                "is_resolved": r.is_resolved,
-                "evidence": r.evidence,
-                "remaining_defects": r.remaining_defects,
-            }
-            for r in report.results
-        ],
-    }
-    report_path = DEMO_DIR / "revision_report.json"
-    report_path.write_text(json.dumps(report_dict, indent=2) + "\n", encoding="utf-8")
-
-    # 7. Write README.md documentation
+    # 6. Write README.md documentation
     readme_path = DEMO_DIR / "README.md"
     readme_content = f"""# Synthetic Hillside Visual Plan Review Demonstration
 
 Demonstration of Stage S5 agent visual review loop on `synthetic-hillside`.
 
 ## Overview
-This demonstration shows the complete visual critique and fix verification loop:
-1. **Defect Identification**: Detection of seeded visual defect `window_on_retaining_wall`
-   hosted on retaining wall `{retaining_wall_id}`.
+This demonstration shows a grounded visual critique and the revision it asks for:
+1. **Seeded defect**: a window `win-buried-001` hosted on retaining wall
+   `{retaining_wall_id}`.
 2. **Grounded Critique**: Generation of `visual_critique.json` citing only canonical element
    IDs (`win-buried-001`, `{retaining_wall_id}`).
-3. **Structured Revision**: Proposed `revision_ops.json` relocating the window to
-   exterior wall `{exterior_wall_id}`.
-4. **Fix Verification**: Execution of `verify_visual_critique_fixes()` proving that
-   the revised plan resolves the defect without leaving open claims.
+3. **Structured Revision**: Proposed `revision_ops.json` with a Revision operation
+   `plan revise` can run (`rethink:sp-study-1`).
+4. **After**: a hand-edited illustration that moves the window to `{exterior_wall_id}`.
+   It is not a Plan version and nothing verifies it.
+
+Fix verification is what `plan revise` reports: for the ids the request targeted, the
+Findings of the parent's Evaluation that disappeared, that remain and that are new
+(`findings` in `plan revise --json`, ADR 0033). The hand-edited states here would not pass
+it: the seeded window is 1.2 m wide at 1.0 m along a 2.0 m wall and opens onto `sp-study`,
+which the plan does not have, and the interior wall it is moved to is already filled by an
+opening.
 
 ## Artifacts
 - **Before**: [`before.svg`](before.svg), [`before.png`](before.png) (SHA-256: `{before_hash}`)
 - **Critique Record**: [`visual_critique.json`](visual_critique.json)
 - **Revision Operations**: [`revision_ops.json`](revision_ops.json)
 - **After**: [`after.svg`](after.svg), [`after.png`](after.png)
-- **Verification Report**: [`revision_report.json`](revision_report.json)
 
 ## Replay Instructions
 
@@ -186,7 +173,7 @@ To regenerate all demonstration artifacts, run:
 .venv/bin/python examples/reviewer/demonstration/make_demonstration.py
 ```
 
-To run the automated verification test:
+To run the tests on these artifacts:
 ```bash
 .venv/bin/python -m pytest tests/test_visual_demonstration.py
 ```

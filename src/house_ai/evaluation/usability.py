@@ -16,7 +16,7 @@ from shapely.ops import unary_union
 
 from house_ai.domain.base import EXTERIOR
 from house_ai.domain.epistemics import ClaimStatus
-from house_ai.domain.model import Operation, WallKind
+from house_ai.domain.model import OpeningKind, Operation, WallKind
 from house_ai.domain.program import Privacy, SpaceFunction, Strength
 from house_ai.domain.terrain import elevation_at, site_surface
 
@@ -980,6 +980,19 @@ class DaylightOpportunityEvaluator(Critic):
             and site.coordinates.local.id == model.coordinate_system_id
         )
         surface = site_surface(site) if site and frame_matches else None
+        # A window in a retaining wall has earth behind it: the wall's kind says so, with or
+        # without terrain, whatever the room (ADR 0033).
+        walls = {w.id: w for w in model.walls}
+        for window in model.openings:
+            host = walls.get(window.host_wall_id)
+            if window.kind is OpeningKind.WINDOW and host and host.kind is WallKind.RETAINING:
+                out.flag(
+                    "window_buried",
+                    [window.id, host.id, *(e for e in window.connects if e != EXTERIOR)],
+                    "This window is in a retaining wall: earth is behind it.",
+                    method="host_wall_is_retaining",
+                    status=M,
+                )
         for s in model.spaces:
             if s.function not in HABITABLE:
                 continue
@@ -1017,6 +1030,8 @@ class DaylightOpportunityEvaluator(Critic):
                         contact.length * sum(z <= floor_z + p.potential_sill_m for z in zs) / count
                     )
                 for window in windows:
+                    if wall.kind == WallKind.RETAINING:
+                        continue  # no glazing, reported above
                     wseg = opening_segment(model, window)
                     samples = [wseg.interpolate(t, normalized=True) for t in (0, 0.5, 1)]
                     ground = [
@@ -1026,9 +1041,7 @@ class DaylightOpportunityEvaluator(Critic):
                         unknown_ground = True
                         continue
                     available = (
-                        0
-                        if wall.kind == WallKind.RETAINING
-                        else sum(
+                        sum(
                             min(
                                 window.height_m,
                                 max(0, floor_z + window.sill_m + window.height_m - z),

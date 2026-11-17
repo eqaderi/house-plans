@@ -47,6 +47,7 @@ from house_ai.evaluation.explain import (
     revision_markdown,
     revision_report,
 )
+from house_ai.evaluation.findings import FindingsChange, compare_findings
 from house_ai.evaluation.report import evaluate_plan, report_id
 from house_ai.generation.engines import optimised_objectives
 from house_ai.generation.generator import (
@@ -55,7 +56,12 @@ from house_ai.generation.generator import (
     GenerationRequest,
 )
 from house_ai.generation.massing import STRATEGY_LABELS
-from house_ai.generation.revision import compile_revision, resolve_spaces, unmet_requests
+from house_ai.generation.revision import (
+    compile_revision,
+    resolve_spaces,
+    targeted_ids,
+    unmet_requests,
+)
 from house_ai.generation.rooms import space_id_for
 from house_ai.render2d.plan_svg import render_plan_svg
 from house_ai.storage import ProjectStore
@@ -119,6 +125,8 @@ class RevisionOutcome:
     revision: RevisionReport
     revision_ref: ArtifactRef
     export_dir: Path | None
+    #: The Findings about the ids the request targeted: disappeared, remaining, new.
+    findings: FindingsChange = field(default_factory=lambda: FindingsChange(targets=()))
 
 
 class PlanService:
@@ -667,6 +675,16 @@ class PlanService:
             ArtifactKind.EVALUATION_REPORT, report.id, report, actor, reason="evaluated revision"
         )
         before_eval = self._report_for(base_ref)
+        # A parent stored without an Evaluation is evaluated now (not stored), so that its
+        # Findings are not all reported as new.
+        parent_eval = before_eval or self._evaluate(base, base_ref, inp, constraints, c_ref)
+        findings = compare_findings(
+            parent_eval.violations,
+            report.violations,
+            targets=targeted_ids(ops, inp.program),
+            before_model=base.model,
+            after_model=plan.model,
+        )
         rev = revision_report(
             report_id=f"rev-{option_id}-v{plan_ref.version}"[:64],
             text=text,
@@ -712,10 +730,10 @@ class PlanService:
         export = None
         if out_dir is not None:
             export = self.export(plan, plan_ref, report, inp, out_dir, constraints=constraints)
-            (export / "revision.md").write_text(revision_markdown(rev), encoding="utf-8")
+            (export / "revision.md").write_text(revision_markdown(rev, findings), encoding="utf-8")
             (export / "revision.json").write_text(pretty_json(rev), encoding="utf-8")
             opt.export_dir = export
-        return RevisionOutcome(opt, rev, rev_ref, export)
+        return RevisionOutcome(opt, rev, rev_ref, export, findings)
 
     def _report_for(self, ref: ArtifactRef) -> EvaluationReport | None:
         found = None

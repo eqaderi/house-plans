@@ -86,3 +86,15 @@ def test_soft_unbuildable_stair_finding_blocks_plan_approval(tmp_path, capsys):
     assert wf.gate_status(Gate.PLAN, ref).blockers == []
     wf.approve(Gate.PLAN, ref, OWNER, "synthetic owner approves")
     assert store.verify() == []
+
+
+def test_colliding_labels_never_close_the_plan_gate(tmp_path):
+    """A drawing defect is shown in the Evaluation and never blocks (ADR 0024, ADR 0033)."""
+    store = _load(tmp_path)
+    _approve_site_and_program(store)
+    PlanService(store).generate(AGENT, strategies=["compact"])
+    ref = store.latest(ArtifactKind.PLAN, "concept-compact")
+    _with(store, ref, [_finding("label_collision", "The labels of a and b overlap.")])
+    status = Workflow(store).gate_status(Gate.PLAN, ref)
+    assert status.blockers == [] and status.attention == []
+    assert status.approvable
