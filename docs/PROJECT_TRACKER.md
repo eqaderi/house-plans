@@ -968,12 +968,12 @@ rejected.
   - Accept: critiques map to explicit `plan revise` ops; new version re-captured
   - Verify: loop test
   - Evidence: `src/house_ai/orchestration/visual_review.py`; `tests/test_visual_review_loop.py`
-  - Notes: closed with merge `b79595e`
+  - Notes: closed with merge `b79595e`. Spec #9 part 8 (ADR 0033): the uncalled loop function and `visual_review.py` are deleted; the loop is the visual-review skill's `plan revise --json`, whose `findings` lists the Findings about the targeted ids (`evaluation/findings.py`, `tests/test_revision_findings.py`)
 - [x] **S5-10** Fix verification — `DONE` · P0 · deps: S5-09
   - Accept: each "fixed" claim is checked by the evaluator or a new capture; unverified claims stay open
   - Verify: test where a fake fix is rejected
   - Evidence: `src/house_ai/orchestration/visual_review.py`; `tests/test_visual_review_loop.py`
-  - Notes: closed with merge `b79595e`
+  - Notes: closed with merge `b79595e`. Spec #9 part 8 (ADR 0033): fix verification now compares the parent's and the new Evaluation in `plan revise` (`evaluation/findings.py::compare_findings`); a Finding whose cited geometry did not change is never reported as disappeared (`tests/test_findings_change.py`, `tests/test_revision_findings.py`)
 - [x] **S5-11** visual-review skill — `DONE` · P1 · deps: S5-09
   - Accept: follows the S2 template; forbids ungrounded claims
   - Verify: skill drift and workflow tests
@@ -983,7 +983,7 @@ rejected.
   - Accept: before/after screenshots, critique records and revision report for synthetic-hillside
   - Verify: reviewer replays it
   - Evidence: `examples/reviewer/demonstration/` (`before.svg`, `before.png`, `visual_critique.json`, `revision_ops.json`, `after.svg`, `after.png`, `revision_report.json`, `README.md`, `make_demonstration.py`); `tests/test_visual_demonstration.py`
-  - Notes: closed with merge `b79595e`
+  - Notes: closed with merge `b79595e`. Spec #9 part 8 (ADR 0033): `revision_report.json` is deleted; the hand-edited after-state was not a fix the Evaluation confirms, and fix verification is the `plan revise` report
 
 ### Stage S6 — Usability critics
 

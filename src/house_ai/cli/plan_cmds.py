@@ -206,6 +206,7 @@ def _render_revision_outcome(res: RevisionOutcome, args: argparse.Namespace) -> 
                 {
                     "plan_ref": ref.model_dump(mode="json"),
                     "revision": rev.model_dump(mode="json"),
+                    "findings": res.findings.as_json(),
                     "export_dir": str(res.export_dir),
                 },
                 indent=2,
@@ -222,6 +223,15 @@ def _render_revision_outcome(res: RevisionOutcome, args: argparse.Namespace) -> 
         _out(f"new violation: {v}")
     for v in rev.resolved_violations:
         _out(f"resolved: {v}")
+    if res.findings.targets:
+        _out(f"findings about {', '.join(res.findings.targets)}:")
+        for label, items in (
+            ("disappeared", res.findings.disappeared),
+            ("remains", res.findings.remaining),
+            ("new", res.findings.new),
+        ):
+            for v in items:
+                _out(f"  {label}: {v.code} {v.subject_ids}")
     _out(f"files: {res.export_dir}")
     return EXIT_OK
 

@@ -6,7 +6,13 @@ from datetime import datetime
 
 from house_ai.domain.codepack import CodePack, compliance_statement
 from house_ai.domain.constraints import ConstraintSet
-from house_ai.domain.evaluation import EvaluationReport, EvaluatorRun, EvaluatorRunStatus
+from house_ai.domain.evaluation import (
+    EvaluationReport,
+    EvaluatorRun,
+    EvaluatorRunStatus,
+    Violation,
+)
+from house_ai.domain.model import HouseModel
 from house_ai.domain.plan import PlanVersion
 from house_ai.domain.program import SpaceProgram
 from house_ai.domain.provenance import Actor, ActorKind, ArtifactRef, Provenance
@@ -24,6 +30,25 @@ def report_id(option_id: str) -> str:
     return f"eval-{option_id}"[:64]
 
 
+#: Every evaluator an Evaluation runs, in report order.
+EVALUATORS = [*REQUIRED, *USABILITY_EVALUATORS, *DRAWING_EVALUATORS]
+
+
+def _run(ctx: EvaluationContext):
+    return [ev.evaluate(ctx) for ev in EVALUATORS]
+
+
+def model_findings(
+    model: HouseModel,
+    site: Site | None = None,
+    program: SpaceProgram | None = None,
+    constraints: ConstraintSet | None = None,
+) -> list[Violation]:
+    """The Findings an Evaluation of ``model`` reports, before they are numbered."""
+    ctx = EvaluationContext(model, site, program, constraints)
+    return [v for res in _run(ctx) for v in res.violations]
+
+
 def evaluate_plan(
     plan: PlanVersion,
     plan_ref: ArtifactRef,
@@ -38,8 +63,7 @@ def evaluate_plan(
 ) -> EvaluationReport:
     ctx = EvaluationContext(plan.model, site, program, constraints, site_approved)
     runs, metrics, violations = [], [], []
-    for ev in [*REQUIRED, *USABILITY_EVALUATORS, *DRAWING_EVALUATORS]:
-        res = ev.evaluate(ctx)
+    for res in _run(ctx):
         runs.append(res.run)
         metrics.extend(res.metrics)
         violations.extend(res.violations)
