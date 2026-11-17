@@ -130,6 +130,11 @@ request to change an option makes its next version; a gate approves exactly one
 version.
 _Avoid_: Plan (alone), revision, draft
 
+**Enclosure**:
+The walls, openings, slabs and ceilings derived around the spaces of a plan
+version, whichever strategy placed the spaces.
+_Avoid_: Envelope (a buildable envelope is something else), shell
+
 ## Evidence
 
 **Confirmed** (تأییدشده):

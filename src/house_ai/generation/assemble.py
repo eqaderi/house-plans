@@ -1,11 +1,8 @@
 """A solved massing -> a canonical :class:`HouseModel`.
 
-Spaces are rectangles on the design grid. Walls are derived from the space
-edges on each level: every wall segment has exactly one space (or the
-outside) on each side, so an opening placed inside a wall lies between the
-two spaces it claims to connect. Exterior faces are classified with the
-surveyed terrain: a face with ground well above its floor is a retaining
-wall and gets no windows.
+Spaces are rectangles on the design grid: bars, their rows, links, stairwells and the
+garage strip (ADR 0023). Walls around them come from :mod:`.enclosure` (ADR 0031); this
+module adds what only bars have, such as stairwell walls that do not span a plain storey.
 """
 
 from __future__ import annotations
@@ -18,8 +15,6 @@ from shapely.geometry import box
 from shapely.ops import unary_union
 
 from house_ai.constants.placement2d import (
-    PARAPET_HEIGHT_M,
-    PARAPET_THICKNESS_M,
     TERRACE_DOOR_DEFAULT_WIDTH_M,
     TERRACE_SLAB_THICKNESS_M,
 )
@@ -31,8 +26,6 @@ from house_ai.domain.model import (
     Ceiling,
     HouseModel,
     Level,
-    MaterialCategory,
-    MaterialRef,
     Opening,
     OpeningKind,
     Operation,
@@ -43,7 +36,6 @@ from house_ai.domain.model import (
     Space,
     Stair,
     StairKind,
-    Wall,
     WallKind,
     Zone,
 )
@@ -52,6 +44,15 @@ from house_ai.domain.provenance import Actor, ArtifactRef
 from house_ai.domain.records import Assumption, Issue, Severity
 from house_ai.domain.site import Site
 
+from .enclosure import (
+    EXTERIOR_WALL_M,
+    INTERIOR_WALL_M,
+    WALL_HEIGHT_M,
+    EnclosedSpace,
+    Enclosure,
+    Rect,
+    WallSeg,
+)
 from .fixtures import with_fixtures
 from .frame import DesignFrame, Ground, from_dm, limit_polygon
 from .massing import (
@@ -74,64 +75,8 @@ from .solver import Solution
 from .stairs import LANDING_STRIP_DM, SLAB_M, TREAD_M, stair_risers, u_layout
 
 S = SpaceFunction
-EXTERIOR_WALL_M = 0.30
-INTERIOR_WALL_M = 0.15
-WALL_HEIGHT_M = 2.8
 CEILING_M = 2.7
 DOOR_H_M = 2.1
-#: Ground this far above the floor outside an exterior face makes it a retaining wall.
-RETAINING_M = 0.6
-
-MATERIALS = [
-    MaterialRef(
-        id="m-ext-wall",
-        name="Exterior wall (placeholder)",
-        category=MaterialCategory.WALL,
-        base_color_hex="#E8E2D6",
-    ),
-    MaterialRef(
-        id="m-int-wall",
-        name="Interior partition (placeholder)",
-        category=MaterialCategory.WALL,
-        base_color_hex="#F4F4F2",
-    ),
-    MaterialRef(
-        id="m-retaining",
-        name="Retaining wall, concrete (placeholder)",
-        category=MaterialCategory.WALL,
-        base_color_hex="#9A9A96",
-    ),
-    MaterialRef(
-        id="m-floor",
-        name="Floor finish (placeholder)",
-        category=MaterialCategory.FLOOR,
-        base_color_hex="#C8A97E",
-    ),
-    MaterialRef(
-        id="m-slab",
-        name="Concrete slab (placeholder)",
-        category=MaterialCategory.FLOOR,
-        base_color_hex="#A0A09C",
-    ),
-    MaterialRef(id="m-glass", name="Glazing (placeholder)", category=MaterialCategory.GLAZING),
-    MaterialRef(id="m-door", name="Door leaf (placeholder)", category=MaterialCategory.DOOR),
-]
-
-
-@dataclass
-class Rect:
-    u0: int
-    v0: int
-    u1: int
-    v1: int
-
-    @property
-    def w(self) -> int:
-        return self.u1 - self.u0
-
-    @property
-    def h(self) -> int:
-        return self.v1 - self.v0
 
 
 @dataclass
@@ -148,38 +93,6 @@ class SpaceInfo:
     room: RoomSpec | None = None
     program_item_id: str | None = None
     zone_id: str | None = None
-
-
-@dataclass
-class WallSeg:
-    level_id: str
-    orient: str  # "h" (constant v) | "v" (constant u)
-    c: int
-    a: int
-    b: int
-    neg: str | None
-    pos: str | None
-    id: str = ""
-    kind: WallKind = WallKind.INTERIOR
-    thickness: float = INTERIOR_WALL_M
-    party: bool = False
-    retained_m: float = 0.0
-    used: list[tuple[int, int]] = field(default_factory=list)
-    #: Overrides for stairwell enclosures, which do not span a plain storey (ADR 0023).
-    height_m: float = WALL_HEIGHT_M
-    base_offset_m: float = 0.0
-
-    @property
-    def length(self) -> int:
-        return self.b - self.a
-
-    def sides(self) -> set[str | None]:
-        return {self.neg, self.pos}
-
-    def outward(self) -> tuple[int, int]:
-        """Direction from the space to the outside, for an exterior segment."""
-        sign = -1 if self.neg is None else 1
-        return (0, sign) if self.orient == "h" else (sign, 0)
 
 
 @dataclass
@@ -426,108 +339,15 @@ class _Builder:
     # ----------------------------------------------------------------- walls
 
     def build_walls(self) -> None:
-        by_level: dict[str, list[SpaceInfo]] = {}
-        for s in self.spaces:
-            by_level.setdefault(s.level_id, []).append(s)
-        for lv in sorted(by_level):
-            segs: list[WallSeg] = []
-            for orient in ("h", "v"):
-                lines: dict[int, list[tuple[int, int, str, str]]] = {}
-                for s in by_level[lv]:
-                    r = s.rect
-                    if orient == "h":
-                        lines.setdefault(r.v0, []).append((r.u0, r.u1, "pos", s.id))
-                        lines.setdefault(r.v1, []).append((r.u0, r.u1, "neg", s.id))
-                    else:
-                        lines.setdefault(r.u0, []).append((r.v0, r.v1, "pos", s.id))
-                        lines.setdefault(r.u1, []).append((r.v0, r.v1, "neg", s.id))
-                for c in sorted(lines):
-                    edges = lines[c]
-                    pts = sorted({p for e in edges for p in e[:2]})
-                    run: WallSeg | None = None
-                    for p, q in zip(pts, pts[1:], strict=False):
-                        neg = next(
-                            (e[3] for e in edges if e[2] == "neg" and e[0] <= p and q <= e[1]), None
-                        )
-                        pos = next(
-                            (e[3] for e in edges if e[2] == "pos" and e[0] <= p and q <= e[1]), None
-                        )
-                        if neg is None and pos is None:
-                            if run:
-                                segs.append(run)
-                                run = None
-                            continue
-                        if run and run.b == p and run.neg == neg and run.pos == pos:
-                            run.b = q
-                        else:
-                            if run:
-                                segs.append(run)
-                            run = WallSeg(lv, orient, c, p, q, neg, pos)
-                    if run:
-                        segs.append(run)
-            suffix = lv.removeprefix("lv-")
-            for n, seg in enumerate(segs, start=1):
-                seg.id = f"w-{suffix}-{n:03d}"
-                self._classify(seg)
-                self._stairwell_wall(seg)
-                self._terrace_wall(seg)
-            self.walls.extend(segs)
-
-    def _seg_points(self, seg: WallSeg) -> tuple[tuple[int, int], tuple[int, int]]:
-        if seg.orient == "h":
-            return (seg.a, seg.c), (seg.b, seg.c)
-        return (seg.c, seg.a), (seg.c, seg.b)
-
-    def _classify(self, seg: WallSeg) -> None:
-        if seg.neg is not None and seg.pos is not None:
-            seg.kind, seg.thickness = WallKind.INTERIOR, INTERIOR_WALL_M
-            return
-        seg.thickness = EXTERIOR_WALL_M
-        du, dv = seg.outward()
-        (u0, v0), (u1, v1) = self._seg_points(seg)
-        n = max(2, seg.length // 10 + 1)
-        samples = [
-            (
-                from_dm(u0 + (u1 - u0) * (i + 0.5) / n) + du * 0.6,
-                from_dm(v0 + (v1 - v0) * (i + 0.5) / n) + dv * 0.6,
-            )
-            for i in range(n)
-        ]
-        z = next(lv.elevation_m for lv in self.levels if lv.id == seg.level_id)
-        mid = samples[len(samples) // 2]
-        probe = (mid[0] - du * 0.35, mid[1] - dv * 0.35)  # 0.25 m outside the face
-        for o in self.spaces:
-            if o.level_id == seg.level_id or not (
-                from_dm(o.rect.u0) < probe[0] < from_dm(o.rect.u1)
-                and from_dm(o.rect.v0) < probe[1] < from_dm(o.rect.v1)
-            ):
-                continue
-            z_other = next(lv.elevation_m for lv in self.levels if lv.id == o.level_id)
-            if z_other + FLOOR_TO_FLOOR_M > z + 0.05:
-                # The neighbour's rooms or substructure stand against this face.
-                seg.kind, seg.party = WallKind.INTERIOR, True
-                return
-        g = self.ground.mean_along(samples)
-        seg.retained_m = 0.0 if g is None else max(0.0, g - z)
-        seg.kind = WallKind.RETAINING if seg.retained_m > RETAINING_M else WallKind.EXTERIOR
-
-    def wall_model(self, seg: WallSeg) -> Wall:
-        (u0, v0), (u1, v1) = self._seg_points(seg)
-        material = {
-            WallKind.RETAINING: "m-retaining",
-            WallKind.EXTERIOR: "m-ext-wall",
-        }.get(seg.kind, "m-ext-wall" if seg.party else "m-int-wall")
-        return Wall(
-            id=seg.id,
-            level_id=seg.level_id,
-            start=self.frame.to_local(u0, v0),
-            end=self.frame.to_local(u1, v1),
-            thickness_m=seg.thickness,
-            height_m=seg.height_m,
-            base_offset_m=seg.base_offset_m,
-            kind=seg.kind,
-            material_id=material,
+        self.enclosure = Enclosure(
+            self.levels,
+            [EnclosedSpace(s.id, s.level_id, s.rect, s.function, s.zone_id) for s in self.spaces],
+            self.frame,
+            self.ground,
         )
+        self.walls = self.enclosure.walls
+        for seg in self.walls:
+            self._stairwell_wall(seg)
 
     # -------------------------------------------------------------- openings
 
@@ -541,13 +361,7 @@ class _Builder:
         return ident
 
     def _walls_between(self, level: str, a: str, b: str | None) -> list[WallSeg]:
-        return [
-            w
-            for w in self.walls
-            if w.level_id == level
-            and w.sides() == {a, b}
-            and (b is not None or not w.party and w.kind is not WallKind.RETAINING)
-        ]
+        return self.enclosure.walls_between(level, a, b)
 
     def _fit(self, seg: WallSeg, width: int, clear: int, ends: bool = False) -> int | None:
         """Offset (dm, from seg.a) for an opening of ``width`` avoiding used spans.
@@ -1247,17 +1061,6 @@ class _Builder:
                     )
                 )
 
-    def _terrace_wall(self, seg: WallSeg) -> None:
-        """A terrace's edge: the house's exterior wall where it meets a room, else a
-        parapet (S10-11, as in the 2D path)."""
-        if not {seg.neg, seg.pos} & set(self.terrace_hosts):
-            return
-        if seg.neg is not None and seg.pos is not None:
-            seg.kind, seg.thickness, seg.party = WallKind.EXTERIOR, EXTERIOR_WALL_M, False
-        else:
-            seg.kind, seg.thickness, seg.retained_m = WallKind.PARAPET, PARAPET_THICKNESS_M, 0.0
-            seg.height_m = PARAPET_HEIGHT_M
-
     def _stairwell_wall(self, seg: WallSeg) -> None:
         """Height and kind of a stairwell's outer wall: it does not span a plain storey."""
         w = next((x for x in self.stairwells if {seg.neg, seg.pos} & x.created), None)
@@ -1271,13 +1074,11 @@ class _Builder:
             # From the lower roof slab's underside to the higher storey's wall head.
             seg.base_offset_m = round(FLOOR_TO_FLOOR_M - SLAB_M - w.rise_m, 4)
             seg.height_m = round(WALL_HEIGHT_M - seg.base_offset_m, 4)
-        (u0, v0), (u1, v1) = self._seg_points(seg)
+        (u0, v0), (u1, v1) = seg.points()
         ground = self.ground.mean_line((from_dm(u0), from_dm(v0)), (from_dm(u1), from_dm(v1)))
-        base_z = z + seg.base_offset_m
         seg.party = False
         seg.thickness = EXTERIOR_WALL_M
-        seg.retained_m = 0.0 if ground is None else max(0.0, ground - base_z)
-        seg.kind = WallKind.RETAINING if seg.retained_m > RETAINING_M else WallKind.EXTERIOR
+        Enclosure.retain(seg, z + seg.base_offset_m, ground)
 
     # ----------------------------------------------------------------- model
 
@@ -1317,7 +1118,7 @@ class _Builder:
         for sp in spaces:
             if sp.zone_id is not None and sp.zone_id not in {z.id for z in zones}:
                 sp.zone_id = None
-        walls = [self.wall_model(w) for w in self.walls]
+        walls = self.enclosure.wall_models()
         model = HouseModel(
             id=model_id,
             name=name,
@@ -1342,7 +1143,7 @@ class _Builder:
             stairs=self.stairs,
             zones=zones,
             relationships=self._relationships(),
-            materials=list(MATERIALS),
+            materials=self.enclosure.materials(),
             assumptions=self._assumptions(),
             issues=self._issues(),
         )
