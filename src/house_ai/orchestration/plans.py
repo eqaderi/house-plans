@@ -741,32 +741,27 @@ class PlanService:
         """The proposal a revision follows: a proposal operation's file, the one passed in,
         or the base's (except when restarting from the program); with its stored ref, which
         is None for a proposal not yet stored."""
-        loaded = proposal
-        ref: ArtifactRef | None = None
-        if loaded is None and kind is not ChangeRequestKind.RESTART_FROM_PROGRAM:
-            ref = next(
-                (
-                    r
-                    for r in reversed(base.provenance.inputs)
-                    if r.kind is ArtifactKind.CONCEPT_PROPOSAL
-                ),
-                None,
-            )
-            if ref:
-                loaded = self.store.get(ref, ConceptProposal)
         op = next((op for op in ops if op.op_type is V.PROPOSAL), None)
         if op is not None:
-            p_path = Path(op.target)
-            if not p_path.exists():
-                raise PlanWorkflowError(f"proposal file not found: {p_path}")
-            try:
-                raw = yaml.safe_load(p_path.read_text(encoding="utf-8"))
-                loaded = ConceptProposal.model_validate(raw)
-            except Exception as exc:
-                raise PlanWorkflowError(f"invalid proposal file {p_path}: {exc}") from exc
-            # The file replaces the base's proposal, so the base's ref no longer describes it.
-            ref = None
-        return loaded, ref
+            return _proposal_file(Path(op.target)), None
+        if proposal is not None or kind is ChangeRequestKind.RESTART_FROM_PROGRAM:
+            return proposal, None
+        proposal_refs = [
+            r for r in base.provenance.inputs if r.kind is ArtifactKind.CONCEPT_PROPOSAL
+        ]
+        if not proposal_refs:
+            return None, None
+        ref = proposal_refs[-1]
+        # Before ISS-42 was fixed, a revision from a proposal file recorded the base's
+        # proposal instead of the file's; following that record would silently revert.
+        generated_from = base.generation.parameters.get("proposal_id") if base.generation else None
+        if generated_from is not None and generated_from != ref.id:
+            raise PlanWorkflowError(
+                f"this version of {base.option_id} was generated from proposal "
+                f"{generated_from!r} but records {ref.id!r} as its input; revise it with "
+                "proposal:<file> naming the proposal to follow"
+            )
+        return self.store.get(ref, ConceptProposal), ref
 
     def _store_proposal(
         self,
@@ -926,6 +921,17 @@ class PlanService:
             Path(out_dir).mkdir(parents=True, exist_ok=True)
             (Path(out_dir) / "comparison.md").write_text(text, encoding="utf-8")
         return text
+
+
+def _proposal_file(path: Path) -> ConceptProposal:
+    """The proposal a `proposal:<file>` operation names, validated."""
+    if not path.exists():
+        raise PlanWorkflowError(f"proposal file not found: {path}")
+    try:
+        raw = yaml.safe_load(path.read_text(encoding="utf-8"))
+        return ConceptProposal.model_validate(raw)
+    except Exception as exc:
+        raise PlanWorkflowError(f"invalid proposal file {path}: {exc}") from exc
 
 
 def _follow_proposal(

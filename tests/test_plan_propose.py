@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import pytest
 import yaml
 
 from house_ai.cli.main import main
@@ -264,9 +265,8 @@ def test_proposal_option_ids_stay_valid_and_distinct():
     assert a.startswith("concept-corridor-free-p-aaa")
 
 
-def test_revision_from_a_proposal_file_records_that_proposal(tmp_path):
-    """A proposal file in a revision replaces the base's proposal in the new version's
-    provenance; it is stored, and the base's proposal is no longer an input."""
+def _proposed_option(tmp_path: Path):
+    """A stored option generated from a valid proposal, with its service and proposal."""
     from house_ai.orchestration.plans import PlanService
 
     store = _load_project(tmp_path)
@@ -277,20 +277,93 @@ def test_revision_from_a_proposal_file_records_that_proposal(tmp_path):
         yaml.safe_load(proposal_file.read_text(encoding="utf-8"))
     )
     (opt,) = svc.propose(AGENT, first).generated
+    return store, svc, opt, first
 
+
+def _proposal_file(tmp_path: Path, proposal: ConceptProposal) -> Path:
+    path = tmp_path / f"{proposal.id}-{proposal.name.replace(' ', '-')}.yaml"
+    path.write_text(yaml.safe_dump(proposal.model_dump(mode="json")), encoding="utf-8")
+    return path
+
+
+def _proposal_inputs(plan: PlanVersion) -> list:
+    return [r for r in plan.provenance.inputs if r.kind is ArtifactKind.CONCEPT_PROPOSAL]
+
+
+def test_revision_from_a_proposal_file_records_that_proposal(tmp_path):
+    """ISS-42: a proposal file in a revision replaces the base's proposal in the new
+    version's provenance; it is stored, and the base's proposal is no longer an input."""
+    store, svc, opt, first = _proposed_option(tmp_path)
     alt = first.model_copy(update={"id": "prop-linear-alt", "name": "Alternative concept"})
-    alt_file = tmp_path / "alt_proposal.yaml"
-    alt_file.write_text(yaml.safe_dump(alt.model_dump(mode="json")), encoding="utf-8")
     revised = svc.revise(
-        opt.plan_ref.id, "Try the alternative concept.", AGENT, ops=[f"proposal:{alt_file}"]
+        opt.plan_ref.id,
+        "Try the alternative concept.",
+        AGENT,
+        ops=[f"proposal:{_proposal_file(tmp_path, alt)}"],
     )
 
     plan = store.get(revised.option.plan_ref, PlanVersion)
+    assert [r.id for r in _proposal_inputs(plan)] == ["prop-linear-alt"]
     assert plan.generation.parameters["proposal_id"] == "prop-linear-alt"
-    proposal_inputs = [
-        r.id for r in plan.provenance.inputs if r.kind is ArtifactKind.CONCEPT_PROPOSAL
-    ]
-    assert proposal_inputs == ["prop-linear-alt"]
     stored = {r.id for r in store.latest_of_kind(ArtifactKind.CONCEPT_PROPOSAL)}
     assert stored == {"prop-linear-day-night", "prop-linear-alt"}
+    assert store.verify() == []
+
+
+def test_revision_from_a_changed_proposal_with_the_same_id_records_the_new_version(tmp_path):
+    """ISS-42: a proposal file that keeps the base's proposal id but changes its content is
+    stored as version 2 of that proposal, and the revision records version 2."""
+    store, svc, opt, first = _proposed_option(tmp_path)
+    changed = first.model_copy(update={"name": "Day-night concept, renamed"})
+    revised = svc.revise(
+        opt.plan_ref.id,
+        "Use the renamed concept.",
+        AGENT,
+        ops=[f"proposal:{_proposal_file(tmp_path, changed)}"],
+    )
+
+    plan = store.get(revised.option.plan_ref, PlanVersion)
+    (ref,) = _proposal_inputs(plan)
+    assert (ref.id, ref.version) == ("prop-linear-day-night", 2)
+    assert store.get(ref, ConceptProposal).name == "Day-night concept, renamed"
+    assert store.verify() == []
+
+
+def test_revising_a_version_that_records_the_wrong_proposal_is_refused(tmp_path):
+    """ISS-42: a version stored before the fix, generated from one proposal but recording
+    another, is not silently revised from the recorded one; naming the file again works."""
+    from house_ai.orchestration.plans import PlanWorkflowError
+
+    store, svc, opt, first = _proposed_option(tmp_path)
+    alt = first.model_copy(update={"id": "prop-linear-alt", "name": "Alternative concept"})
+    alt_file = _proposal_file(tmp_path, alt)
+    revised = svc.revise(
+        opt.plan_ref.id, "Try the alternative.", AGENT, ops=[f"proposal:{alt_file}"]
+    )
+    plan = store.get(revised.option.plan_ref, PlanVersion)
+    # What the defect stored: the file's proposal generated it, the base's is recorded.
+    (base_proposal,) = _proposal_inputs(store.get(opt.plan_ref, PlanVersion))
+    wrong = plan.model_copy(
+        update={
+            "provenance": plan.provenance.model_copy(
+                update={
+                    "inputs": [
+                        base_proposal if r.kind is ArtifactKind.CONCEPT_PROPOSAL else r
+                        for r in plan.provenance.inputs
+                    ]
+                }
+            )
+        }
+    )
+    wrong_ref = store.put(ArtifactKind.PLAN, opt.plan_ref.id, wrong, AGENT, reason="as stored")
+
+    with pytest.raises(PlanWorkflowError, match="generated from proposal 'prop-linear-alt'"):
+        svc.revise(opt.plan_ref.id, "Make the kitchen bigger.", AGENT, ops=["area:pi-kitchen=14"])
+    assert store.refs(ArtifactKind.PLAN, opt.plan_ref.id)[-1] == wrong_ref
+
+    again = svc.revise(
+        opt.plan_ref.id, "Keep the alternative.", AGENT, ops=[f"proposal:{alt_file}"]
+    )
+    fixed = store.get(again.option.plan_ref, PlanVersion)
+    assert [r.id for r in _proposal_inputs(fixed)] == ["prop-linear-alt"]
     assert store.verify() == []
