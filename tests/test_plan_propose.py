@@ -262,3 +262,35 @@ def test_proposal_option_ids_stay_valid_and_distinct():
     a, b = option_id_for("corridor_free", long_a), option_id_for("corridor_free", long_b)
     assert len(a) <= 64 and len(b) <= 64 and a != b
     assert a.startswith("concept-corridor-free-p-aaa")
+
+
+def test_revision_from_a_proposal_file_records_that_proposal(tmp_path):
+    """A proposal file in a revision replaces the base's proposal in the new version's
+    provenance; it is stored, and the base's proposal is no longer an input."""
+    from house_ai.orchestration.plans import PlanService
+
+    store = _load_project(tmp_path)
+    _approve_site_and_program(store)
+    svc = PlanService(store)
+    proposal_file = _make_valid_proposal(store, tmp_path)
+    first = ConceptProposal.model_validate(
+        yaml.safe_load(proposal_file.read_text(encoding="utf-8"))
+    )
+    (opt,) = svc.propose(AGENT, first).generated
+
+    alt = first.model_copy(update={"id": "prop-linear-alt", "name": "Alternative concept"})
+    alt_file = tmp_path / "alt_proposal.yaml"
+    alt_file.write_text(yaml.safe_dump(alt.model_dump(mode="json")), encoding="utf-8")
+    revised = svc.revise(
+        opt.plan_ref.id, "Try the alternative concept.", AGENT, ops=[f"proposal:{alt_file}"]
+    )
+
+    plan = store.get(revised.option.plan_ref, PlanVersion)
+    assert plan.generation.parameters["proposal_id"] == "prop-linear-alt"
+    proposal_inputs = [
+        r.id for r in plan.provenance.inputs if r.kind is ArtifactKind.CONCEPT_PROPOSAL
+    ]
+    assert proposal_inputs == ["prop-linear-alt"]
+    stored = {r.id for r in store.latest_of_kind(ArtifactKind.CONCEPT_PROPOSAL)}
+    assert stored == {"prop-linear-day-night", "prop-linear-alt"}
+    assert store.verify() == []

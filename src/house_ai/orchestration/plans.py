@@ -715,7 +715,8 @@ class PlanService:
         kind: ChangeRequestKind,
     ) -> tuple[ConceptProposal | None, ArtifactRef | None]:
         """The proposal a revision follows: a proposal operation's file, the one passed in,
-        or the base's (except when restarting from the program); with its stored ref."""
+        or the base's (except when restarting from the program); with its stored ref, which
+        is None for a proposal not yet stored."""
         loaded = proposal
         ref: ArtifactRef | None = None
         if loaded is None and kind is not ChangeRequestKind.RESTART_FROM_PROGRAM:
@@ -739,6 +740,8 @@ class PlanService:
                 loaded = ConceptProposal.model_validate(raw)
             except Exception as exc:
                 raise PlanWorkflowError(f"invalid proposal file {p_path}: {exc}") from exc
+            # The file replaces the base's proposal, so the base's ref no longer describes it.
+            ref = None
         return loaded, ref
 
     def _adopt_proposal(
