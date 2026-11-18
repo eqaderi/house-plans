@@ -13,7 +13,9 @@ from __future__ import annotations
 import math
 import platform
 import time
+from collections.abc import Callable
 from dataclasses import dataclass, field
+from itertools import combinations, product
 
 from ortools.sat.python import cp_model
 
@@ -62,7 +64,7 @@ from house_ai.domain.program import (
 )
 from house_ai.domain.proposal import ConceptProposal
 from house_ai.domain.site import Site
-from house_ai.generation.frame import ENVELOPE_MARGIN_M, DesignFrame, Ground
+from house_ai.generation.frame import ENVELOPE_MARGIN_M, DesignFrame, Ground, limit_polygon
 from house_ai.generation.rooms import Relation, garage_dims_dm, space_id_for
 from house_ai.generation.stairs import u_core_fits
 
@@ -571,15 +573,87 @@ def solve_2d_placement(
     multi_level: bool = False,
 ) -> Solution2D:
     """Place a fully connected, envelope-contained model with exact contact indicators."""
-    from itertools import combinations, product
-
-    from house_ai.generation.frame import limit_polygon
+    from .terrain_levels import placement_level_variables
 
     started = time.perf_counter()
-    md = cp_model.CpModel()
     rooms = extract_placement_rooms(program, opts.min_areas, opts.min_widths)
     if not rooms:
         raise Solve2DFailed("no rooms to place in space program")
+    road_front, env_w, env_h, obstacles = _envelope(site, frame)
+    _apply_room_preferences(rooms, opts, proposal)
+    outdoor_links = _outdoor_links(rooms, opts, proposal)
+    courtyard = strategy == STRATEGY_COURTYARD or any(k == "courtyard" for _, k in outdoor_links)
+    if courtyard:
+        rooms.append(_courtyard_room())
+    link_pairs = _add_outdoor_rooms(rooms, outdoor_links)
+    levels = _levels(rooms, program, proposal, multi_level)
+    cores = _add_stair_cores(rooms, levels)
+
+    pm = _PlacementModel(opts, env_w, env_h, road_front)
+    pm.add_rooms(rooms, levels, obstacles)
+    ends = _endpoints(rooms)
+    requirements = _requirements(program, proposal, opts, link_pairs)
+    pm.add_contacts(strategy, _hard_connected(requirements, ends))
+    entry = _entry_room(rooms)
+    pm.anchor_to_road(entry)
+    elevations = placement_level_variables(
+        pm.md,
+        levels,
+        pm.x[entry.space_id],
+        pm.xe[entry.space_id],
+        road_front,
+        env_w,
+        Ground(site, frame),
+    )
+    ext_ids = _exterior_ids(requirements, ends, entry)
+    pm.add_exterior_walls(ext_ids)
+    if cores:
+        pm.add_stair_cores(cores, entry, _stair_position(opts, proposal))
+    pm.add_connectivity(entry)
+    for req in requirements:
+        pm.add_requirement(req, ends)
+    pm.add_strategy_constraints(strategy, courtyard)
+    pm.add_zoning_objectives()
+    solver, status = pm.solve()
+    placed = pm.placed_rooms(solver)
+    return Solution2D(
+        status=solver.StatusName(status),
+        objective=solver.ObjectiveValue(),
+        rooms=placed,
+        shared_walls=pm.shared_walls(solver, placed),
+        levels=levels,
+        deterministic_time=solver.deterministic_time,
+        wall_time_s=time.perf_counter() - started,
+        seed=opts.seed,
+        platform_info=f"{platform.system()} {platform.machine()}",
+        strategy=strategy,
+        circulation_share=_circulation_share(placed),
+        has_courtyard=courtyard,
+        has_stairs=bool(cores),
+        zone_definitions=[
+            ProgramZone(id=z.id, name=z.name, privacy=z.privacy or "semi_private")
+            for z in proposal.zones
+        ]
+        if proposal
+        else [],
+        exterior_connections=sorted(ext_ids),
+        optimised_objectives=[
+            "adjacency_quality",
+            "circulation_efficiency",
+            "envelope_simplicity",
+            "site_response",
+            "daylight_opportunity",
+        ],
+        level_elevations_m={lv: solver.Value(z) / 100 for lv, z in elevations.items()},
+        road_front_dm=road_front,
+    )
+
+
+# ------------------------------------------------------------ placement inputs
+
+
+def _envelope(site: Site, frame: DesignFrame) -> tuple[int, int, int, list]:
+    """Road front, envelope width and depth (dm), and the obstacles inside the envelope."""
     poly = frame.polygon_to_design(limit_polygon(site)[0])
     _, ymin, xmax, ymax = poly.bounds
     # Same road-side band as bar massings. An entry is a hard access requirement,
@@ -588,7 +662,13 @@ def solve_2d_placement(
     env_w, env_h = math.floor(xmax * 10 + 1e-7), math.floor(ymax * 10 + 1e-7)
     if min(env_w, env_h) < MIN_ROOM_DIM_DM:
         raise Solve2DFailed("envelope is too narrow for a layout")
-    obstacles = _obstacles(poly, env_w, env_h)
+    return road_front, env_w, env_h, _obstacles(poly, env_w, env_h)
+
+
+def _apply_room_preferences(
+    rooms: list[PlacementRoom], opts: PlacementOptions, proposal: ConceptProposal | None
+) -> None:
+    """Level, zone and target area of each room, from the revision and then the proposal."""
     assignments = (
         {a.program_item_id: a.level_id for a in proposal.level_assignments} if proposal else {}
     )
@@ -602,6 +682,11 @@ def solve_2d_placement(
         if r.space_id in opts.targets:
             r.target_area_m2 = max(opts.targets[r.space_id], r.min_area_m2 or 0)
 
+
+def _outdoor_links(
+    rooms: list[PlacementRoom], opts: PlacementOptions, proposal: ConceptProposal | None
+) -> list[tuple[str, str]]:
+    """(space id, outdoor kind) links from the revision and the proposal."""
     outdoor_links = list(opts.outdoor_links)
     if proposal:
         for link in proposal.outdoor_links:
@@ -611,181 +696,134 @@ def solve_2d_placement(
     unsupported = {k for _, k in outdoor_links} - VALID_OUTDOOR_LINKS
     if unsupported:
         raise Solve2DFailed(f"outdoor geometry not supported for {sorted(unsupported)}")
-    courtyard = strategy == STRATEGY_COURTYARD or any(k == "courtyard" for _, k in outdoor_links)
-    if courtyard:
-        rooms.append(
-            PlacementRoom(
-                COURTYARD_SPACE_ID,
-                COURTYARD_NAME,
-                SpaceFunction.TERRACE,
-                "pi-courtyard",
-                ZONE_OUTDOOR,
-                LEVEL_ENTRY,
-                16,
-                min_width_m=3,
-            )
-        )
+    return outdoor_links
+
+
+def _courtyard_room() -> PlacementRoom:
+    return PlacementRoom(
+        COURTYARD_SPACE_ID,
+        COURTYARD_NAME,
+        SpaceFunction.TERRACE,
+        "pi-courtyard",
+        ZONE_OUTDOOR,
+        LEVEL_ENTRY,
+        16,
+        min_width_m=3,
+    )
+
+
+def _add_outdoor_rooms(
+    rooms: list[PlacementRoom], outdoor_links: list[tuple[str, str]]
+) -> list[tuple[str, str]]:
+    """(source, outdoor room) pairs to connect, adding the outdoor rooms the layout lacks."""
     link_pairs = []
     for sid, kind in sorted(set(outdoor_links)):
         source = next((r for r in rooms if r.space_id == sid), None)
         if source is None:
             raise Solve2DFailed(f"unknown outdoor source {sid!r}")
-        if kind == "courtyard":
-            target_id = COURTYARD_SPACE_ID
-        else:
-            target_id = f"sp-{kind}-{sid.removeprefix('sp-')}"[:64]
-            existing = next(
-                (
-                    r
-                    for r in rooms
-                    if r.function.value == kind and r.level_pref == source.level_pref
-                ),
-                None,
-            )
-            if existing:
-                target_id = existing.space_id
-            elif not any(r.space_id == target_id for r in rooms):
-                rooms.append(
-                    PlacementRoom(
-                        target_id,
-                        f"{source.name} {kind}",
-                        SpaceFunction(kind),
-                        f"pi-{target_id[3:]}"[:64],
-                        ZONE_OUTDOOR,
-                        source.level_pref,
-                        12,
-                        min_area_m2=9,
-                        min_width_m=3,
-                    )
-                )
+        target_id = (
+            COURTYARD_SPACE_ID if kind == "courtyard" else _outdoor_room(rooms, source, kind)
+        )
         link_pairs.append((sid, target_id))
+    return link_pairs
 
+
+def _outdoor_room(rooms: list[PlacementRoom], source: PlacementRoom, kind: str) -> str:
+    """The outdoor room of `kind` on the source's level, added when there is none."""
+    target_id = f"sp-{kind}-{source.space_id.removeprefix('sp-')}"[:64]
+    existing = next(
+        (r for r in rooms if r.function.value == kind and r.level_pref == source.level_pref),
+        None,
+    )
+    if existing:
+        return existing.space_id
+    if not any(r.space_id == target_id for r in rooms):
+        rooms.append(
+            PlacementRoom(
+                target_id,
+                f"{source.name} {kind}",
+                SpaceFunction(kind),
+                f"pi-{target_id[3:]}"[:64],
+                ZONE_OUTDOOR,
+                source.level_pref,
+                12,
+                min_area_m2=9,
+                min_width_m=3,
+            )
+        )
+    return target_id
+
+
+def _levels(
+    rooms: list[PlacementRoom],
+    program: SpaceProgram,
+    proposal: ConceptProposal | None,
+    multi_level: bool,
+) -> list[str]:
+    """The levels in use, lowest first; each is a whole storey (terrain_levels.py)."""
     level_order = [LEVEL_LOWER, LEVEL_ENTRY, LEVEL_UPPER]
-    levels = {r.level_pref for r in rooms} | {LEVEL_ENTRY}
+    used = {r.level_pref for r in rooms} | {LEVEL_ENTRY}
     if multi_level:
-        levels.add(LEVEL_UPPER)
+        used.add(LEVEL_UPPER)
     if proposal:
         for core in proposal.stair_cores:
-            levels.update(_level_id(lv) for lv in core.connects_levels)
-    levels = [lv for lv in level_order if lv in levels]
-    # 2D levels are stacked a whole storey apart (terrain_levels.py), so each is a storey.
+            used.update(_level_id(lv) for lv in core.connects_levels)
+    levels = [lv for lv in level_order if lv in used]
     if program.storeys is not None and len(levels) > program.storeys:
         raise Solve2DFailed(
             f"layout needs {len(levels)} storeys; the program asks for {program.storeys}"
         )
+    return levels
+
+
+def _add_stair_cores(rooms: list[PlacementRoom], levels: list[str]) -> dict[str, str]:
+    """One stair core room per level (replacing a programmed stair); level -> space id."""
     cores = {}
-    if len(levels) > 1:
-        for lv in levels:
-            sid = f"sp-stair-{lv}"
-            cores[lv] = sid
-            existing = next(
-                (r for r in rooms if r.function is SpaceFunction.STAIR and r.level_pref == lv), None
-            )
-            if existing:
-                rooms.remove(existing)
-            rooms.append(
-                PlacementRoom(
-                    sid,
-                    f"Stair core ({lv})",
-                    SpaceFunction.STAIR,
-                    existing.item_id if existing else f"pi-stair-{lv}",
-                    "z-circulation",
-                    lv,
-                    6,
-                    min_width_m=2,
-                )
-            )
-
-    rooms_by_level = {lv: [r for r in rooms if r.level_pref == lv] for lv in levels}
-    x, y, xe, ye, widths, heights = {}, {}, {}, {}, {}, {}
-    obj = []
-    ix, iy = {lv: [] for lv in levels}, {lv: [] for lv in levels}
-
-    def weight(name, default):
-        return round(default * opts.objective_weights.get(name, 1))
-
-    def flag(name, comparison, complement):
-        b = md.NewBoolVar(name)
-        md.Add(comparison).OnlyEnforceIf(b)
-        md.Add(complement).OnlyEnforceIf(b.Not())
-        return b
-
-    def conjunction(name, terms):
-        b = md.NewBoolVar(name)
-        if not terms:
-            md.Add(b == 1)
-        else:
-            md.AddBoolAnd(terms).OnlyEnforceIf(b)
-            md.AddBoolOr([t.Not() for t in terms]).OnlyEnforceIf(b.Not())
-        return b
-
-    def disjunction(name, terms):
-        b = md.NewBoolVar(name)
-        if terms:
-            md.AddMaxEquality(b, terms)
-        else:
-            md.Add(b == 0)
-        return b
-
-    max_x, max_y = md.NewIntVar(0, env_w, "max_x"), md.NewIntVar(0, env_h, "max_y")
-    for r in rooms:
-        sid = r.space_id
-        dims = compute_candidate_dimensions(r, env_w, env_h)
-        x[sid], y[sid] = md.NewIntVar(0, env_w, f"x_{sid}"), md.NewIntVar(0, env_h, f"y_{sid}")
-        widths[sid] = md.NewIntVar(min(w for w, h in dims), max(w for w, h in dims), f"w_{sid}")
-        heights[sid] = md.NewIntVar(min(h for w, h in dims), max(h for w, h in dims), f"h_{sid}")
-        xe[sid], ye[sid] = md.NewIntVar(0, env_w, f"xe_{sid}"), md.NewIntVar(0, env_h, f"ye_{sid}")
-        md.Add(xe[sid] == x[sid] + widths[sid])
-        md.Add(ye[sid] == y[sid] + heights[sid])
-        md.Add(xe[sid] <= max_x)
-        md.Add(ye[sid] <= max_y)
-        md.AddAllowedAssignments([widths[sid], heights[sid]], dims)
-        ix[r.level_pref].append(md.NewIntervalVar(x[sid], widths[sid], xe[sid], f"ix_{sid}"))
-        iy[r.level_pref].append(md.NewIntervalVar(y[sid], heights[sid], ye[sid], f"iy_{sid}"))
-        for j, (a, b, c, d) in enumerate(obstacles):
-            outside = [
-                flag(f"obs_{sid}_{j}_{k}", expr, inv)
-                for k, (expr, inv) in enumerate(
-                    [
-                        (xe[sid] <= a, xe[sid] > a),
-                        (x[sid] >= b, x[sid] < b),
-                        (ye[sid] <= c, ye[sid] > c),
-                        (y[sid] >= d, y[sid] < d),
-                    ]
-                )
-            ]
-            md.AddBoolOr(outside)
-        if r.function in (SpaceFunction.ENTRY, SpaceFunction.HALL, SpaceFunction.GARAGE):
-            obj.append(weight("site_response", W_ROAD_FACING_SOFT) * y[sid])
-        if r.daylight_required:
-            obj.append(weight("daylight_opportunity", W_DAYLIGHT_SOFT) * (x[sid] + y[sid]))
-        area = md.NewIntVar(0, env_w * env_h, f"area_{sid}")
-        md.AddMultiplicationEquality(area, [widths[sid], heights[sid]])
-        dev = md.NewIntVar(0, env_w * env_h + r.target_area_dm2, f"area_dev_{sid}")
-        md.AddAbsEquality(dev, area - r.target_area_dm2)
-        obj.append(W_AREA_DEV * r.priority_weight * dev)
-        if r.function in (
-            SpaceFunction.HALL,
-            SpaceFunction.CORRIDOR,
-            SpaceFunction.ENTRY,
-            SpaceFunction.STAIR,
-            SpaceFunction.LIFT,
-        ):
-            obj.append(weight("circulation_efficiency", 20) * area)
+    if len(levels) < 2:
+        return cores
     for lv in levels:
-        md.AddNoOverlap2D(ix[lv], iy[lv])
-    md.AddMaxEquality(max_x, list(xe.values()))
-    md.AddMaxEquality(max_y, list(ye.values()))
-    obj.append(weight("envelope_simplicity", W_COMPACTNESS) * (max_x + max_y))
+        sid = f"sp-stair-{lv}"
+        cores[lv] = sid
+        existing = next(
+            (r for r in rooms if r.function is SpaceFunction.STAIR and r.level_pref == lv), None
+        )
+        if existing:
+            rooms.remove(existing)
+        rooms.append(
+            PlacementRoom(
+                sid,
+                f"Stair core ({lv})",
+                SpaceFunction.STAIR,
+                existing.item_id if existing else f"pi-stair-{lv}",
+                "z-circulation",
+                lv,
+                6,
+                min_width_m=2,
+            )
+        )
+    return cores
 
-    by_item = {}
+
+def _endpoints(rooms: list[PlacementRoom]) -> Callable[[str], list[str]]:
+    """Resolve a relationship endpoint (item id, space id or EXTERIOR) to space ids."""
+    by_item: dict[str, list[str]] = {}
     for r in rooms:
         by_item.setdefault(r.item_id, []).append(r.space_id)
-    ids = {r.space_id: r for r in rooms}
+    ids = {r.space_id for r in rooms}
 
-    def ends(endpoint):
+    def ends(endpoint: str) -> list[str]:
         return by_item.get(endpoint, [endpoint] if endpoint in ids or endpoint == EXTERIOR else [])
 
+    return ends
+
+
+def _requirements(
+    program: SpaceProgram,
+    proposal: ConceptProposal | None,
+    opts: PlacementOptions,
+    link_pairs: list[tuple[str, str]],
+) -> list[SpaceRelationship]:
+    """Program, proposal, revision and outdoor-link relationships, in that order."""
     requirements = list(program.space_relationships)
     if proposal:
         requirements += [
@@ -809,71 +847,33 @@ def solve_2d_placement(
         SpaceRelationship(id=f"outdoor-{i}", a=a, b=b, kind="connected", strength="hard")
         for i, (a, b) in enumerate(link_pairs)
     ]
-    hard_connected = {
+    return requirements
+
+
+def _hard_connected(
+    requirements: list[SpaceRelationship], ends: Callable[[str], list[str]]
+) -> set[frozenset[str]]:
+    return {
         frozenset((a, b))
         for req in requirements
         if req.kind is SpaceRelationshipKind.CONNECTED and req.strength is Strength.HARD
         for a, b in product(ends(req.a), ends(req.b))
     }
-    touch, contact, directions, doors = {}, {}, {}, {}
-    for ra, rb in combinations(rooms, 2):
-        a, b = ra.space_id, rb.space_id
-        if ra.level_pref != rb.level_pref:
-            continue
 
-        def contact_at(minimum, a=a, b=b):
-            checks = {}
-            for direction, eq, neq, p, q, r, t in [
-                ("east", xe[a] == x[b], xe[a] != x[b], ye[a], y[b], ye[b], y[a]),
-                ("west", xe[b] == x[a], xe[b] != x[a], ye[a], y[b], ye[b], y[a]),
-                ("north", ye[a] == y[b], ye[a] != y[b], xe[a], x[b], xe[b], x[a]),
-                ("south", ye[b] == y[a], ye[b] != y[a], xe[a], x[b], xe[b], x[a]),
-            ]:
-                name = f"{a}_{b}_{minimum}_{direction}"
-                checks[direction] = conjunction(
-                    name,
-                    [
-                        flag(name + "eq", eq, neq),
-                        flag(name + "lo", p >= q + minimum, p < q + minimum),
-                        flag(name + "hi", r >= t + minimum, r < t + minimum),
-                    ],
-                )
-            return disjunction(f"contact_{a}_{b}_{minimum}", list(checks.values())), checks
 
-        minimum = (
-            OPEN_PLAN_WALL_MIN_DM
-            if strategy == STRATEGY_OPEN_PLAN
-            and (ra.function in OPEN_PLAN_FUNCTIONS and rb.function in OPEN_PLAN_FUNCTIONS)
-            else SHARED_WALL_MIN_DM
-        )
-        touching, dirs = contact_at(minimum)
-        contact[a, b], _ = contact_at(2)  # shared length > canonical 0.1 m tolerance
-        contact[b, a] = contact[a, b]
-        touch[a, b] = touch[b, a] = touching
-        directions[a, b] = dirs
-        directions[b, a] = {
-            "east": dirs["west"],
-            "west": dirs["east"],
-            "north": dirs["south"],
-            "south": dirs["north"],
-        }
-        allowed = not is_privacy_separated(ra, rb) or frozenset((a, b)) in hard_connected
-        if allowed:
-            doors[a, b] = doors[b, a] = touching
-        obj.append(-weight("adjacency_quality", 30) * touching)
-
-    entry = next(
+def _entry_room(rooms: list[PlacementRoom]) -> PlacementRoom:
+    return next(
         (r for r in rooms if r.function is SpaceFunction.ENTRY),
         next((r for r in rooms if r.function is SpaceFunction.HALL), rooms[0]),
     )
-    md.Add(y[entry.space_id] == road_front)
-    for r in rooms:
-        md.Add(y[r.space_id] >= road_front)
-    from .terrain_levels import placement_level_variables
 
-    elevations = placement_level_variables(
-        md, levels, x[entry.space_id], xe[entry.space_id], road_front, env_w, Ground(site, frame)
-    )
+
+def _exterior_ids(
+    requirements: list[SpaceRelationship],
+    ends: Callable[[str], list[str]],
+    entry: PlacementRoom,
+) -> set[str]:
+    """Spaces that need an exterior wall: the entry and those related to EXTERIOR."""
     ext_ids = {entry.space_id}
     for req in requirements:
         if EXTERIOR in (req.a, req.b) and req.kind in (
@@ -881,185 +881,18 @@ def solve_2d_placement(
             SpaceRelationshipKind.ADJACENT,
         ):
             ext_ids.update(ends(req.a if req.b == EXTERIOR else req.b))
-    ext_flags = {}
-    for sid in ids:
-        # A complete face on the occupied layout's outer bounds guarantees a usable exterior wall.
-        edge = disjunction(
-            f"ext_{sid}",
-            [
-                flag(f"ext_{sid}_{i}", expr, inv)
-                for i, (expr, inv) in enumerate(
-                    [
-                        (x[sid] == 0, x[sid] != 0),
-                        (y[sid] == road_front, y[sid] != road_front),
-                        (xe[sid] == max_x, xe[sid] != max_x),
-                        (ye[sid] == max_y, ye[sid] != max_y),
-                    ]
-                )
-            ],
-        )
-        ext_flags[sid] = edge
-        if sid in ext_ids:
-            md.Add(edge == 1)
-            doors[sid, EXTERIOR] = doors[EXTERIOR, sid] = edge
+    return ext_ids
 
-    if cores:
-        core_ids = list(cores.values())
-        for sid in core_ids[1:]:
-            md.Add(x[sid] == x[core_ids[0]])
-            md.Add(y[sid] == y[core_ids[0]])
-            md.Add(xe[sid] == xe[core_ids[0]])
-            md.Add(ye[sid] == ye[core_ids[0]])
-        pos = opts.stair_position or (
-            proposal.stair_cores[0].position
-            if proposal and proposal.stair_cores
-            else STAIR_CORE_CENTRAL
-        )
-        sid = cores[LEVEL_ENTRY]
-        if pos == STAIR_CORE_ENTRY and (sid, entry.space_id) in touch:
-            md.Add(touch[sid, entry.space_id] == 1)
-        elif pos == STAIR_CORE_REAR:
-            md.Add(ye[sid] == max_y)
-        elif pos == STAIR_CORE_PERIMETER:
-            md.Add(ext_flags[sid] == 1)
-        elif pos == STAIR_CORE_CENTRAL:
-            for r in rooms:
-                if r.space_id in core_ids:
-                    continue
-                for name, axis, limit in [("x", x, env_w), ("y", y, env_h)]:
-                    dev = md.NewIntVar(0, limit, f"stair_{name}_{r.space_id}")
-                    md.AddAbsEquality(dev, axis[r.space_id] - axis[sid])
-                    obj.append(W_STAIR_CENTRAL * dev)
-        else:
-            raise Solve2DFailed(f"unsupported stair position {pos!r}")
-        for a, b in zip(core_ids, core_ids[1:], strict=False):
-            one = md.NewConstant(1)
-            doors[a, b] = doors[b, a] = one
 
-    # A unit flow from entry to every other room enforces real passable connectivity.
-    count = len(rooms)
-    flows = {}
-    for (a, b), edge in doors.items():
-        if EXTERIOR in (a, b):
-            continue
-        flow = md.NewIntVar(0, count - 1, f"flow_{a}_{b}")
-        md.Add(flow <= (count - 1) * edge)
-        flows[a, b] = flow
-    for sid in ids:
-        incoming = sum(v for (a, b), v in flows.items() if b == sid)
-        outgoing = sum(v for (a, b), v in flows.items() if a == sid)
-        md.Add(
-            outgoing - incoming == count - 1 if sid == entry.space_id else incoming - outgoing == 1
-        )
+def _stair_position(opts: PlacementOptions, proposal: ConceptProposal | None) -> str:
+    return opts.stair_position or (
+        proposal.stair_cores[0].position
+        if proposal and proposal.stair_cores
+        else STAIR_CORE_CENTRAL
+    )
 
-    for req in requirements:
-        pairs = list(product(ends(req.a), ends(req.b)))
-        if not pairs:
-            raise Solve2DFailed(f"unknown endpoint in {req.id}")
-        satisfied = []
-        for a, b in pairs:
-            if a == b:
-                continue
-            if req.kind in SEPARATING_KINDS:
-                if EXTERIOR in (a, b):
-                    if req.strength is Strength.HARD:
-                        raise Solve2DFailed(
-                            f"internal-only EXTERIOR separation not supported: {req.id}"
-                        )
-                    continue
-                v = contact.get((a, b), md.NewConstant(0)).Not()
-            elif req.kind is SpaceRelationshipKind.CONNECTED:
-                v = doors.get((a, b), md.NewConstant(0))
-            elif req.kind is SpaceRelationshipKind.ADJACENT:
-                v = (
-                    ext_flags[b if a == EXTERIOR else a]
-                    if EXTERIOR in (a, b)
-                    else touch.get((a, b), md.NewConstant(0))
-                )
-            elif req.kind is SpaceRelationshipKind.NEAR:
-                paths = [doors[a, b]] if (a, b) in doors else []
-                for middle in [*ids, EXTERIOR]:
-                    if (a, middle) in doors and (middle, b) in doors:
-                        paths.append(
-                            conjunction(
-                                f"near_{req.id}_{a}_{b}_{middle}",
-                                [doors[a, middle], doors[middle, b]],
-                            )
-                        )
-                v = disjunction(f"near_{req.id}_{a}_{b}", paths)
-            elif req.kind is SpaceRelationshipKind.VISUAL:
-                if req.strength is Strength.HARD:
-                    raise Solve2DFailed(f"hard VISUAL sightline constraint not supported: {req.id}")
-                continue
-            else:
-                continue
-            satisfied.append(v)
-        separating = req.kind in SEPARATING_KINDS
-        ok = (
-            conjunction(f"req_{req.id}", satisfied)
-            if separating
-            else disjunction(f"req_{req.id}", satisfied)
-        )
-        if req.strength is Strength.HARD:
-            md.Add(ok == 1)
-        else:
-            obj.append(round(W_ADJACENCY_SOFT * (req.weight or 1)) * (1 - ok))
 
-    if strategy == STRATEGY_TWO_WING:
-        _apply_two_wing_constraints(md, rooms, x, y, xe, ye, touch, env_w, env_h)
-    if courtyard:
-        _apply_courtyard_constraints(
-            md,
-            COURTYARD_SPACE_ID,
-            [r for r in rooms_by_level[LEVEL_ENTRY] if r.space_id != COURTYARD_SPACE_ID],
-            directions,
-        )
-    if strategy == STRATEGY_OPEN_PLAN:
-        for ra, rb in combinations([r for r in rooms if r.function in OPEN_PLAN_FUNCTIONS], 2):
-            if ra.function == SpaceFunction.DINING or rb.function == SpaceFunction.DINING:
-                md.Add(touch.get((ra.space_id, rb.space_id), md.NewConstant(0)) == 1)
-    _apply_zoning_objectives(md, rooms, x, y, xe, ye, obj, env_w, env_h)
-    md.Minimize(sum(obj))
-    solver = cp_model.CpSolver()
-    solver.parameters.num_workers = 1
-    solver.parameters.random_seed = opts.seed
-    solver.parameters.max_deterministic_time = opts.deterministic_time
-    status = solver.Solve(md)
-    if status not in (cp_model.OPTIMAL, cp_model.FEASIBLE):
-        raise Solve2DFailed(
-            f"CP-SAT found no contained connected layout ({solver.StatusName(status)})"
-        )
-    placed = [
-        PlacedRoom2D(
-            r.space_id,
-            r.name,
-            r.function,
-            r.level_pref,
-            solver.Value(x[r.space_id]),
-            solver.Value(y[r.space_id]),
-            solver.Value(xe[r.space_id]),
-            solver.Value(ye[r.space_id]),
-            r.item_id,
-            r.zone_id,
-        )
-        for r in rooms
-    ]
-    walls = []
-    placed_by_id = {r.space_id: r for r in placed}
-    for a, b in combinations(ids, 2):
-        if (a, b) not in touch or not solver.Value(touch[a, b]):
-            continue
-        ra, rb = placed_by_id[a], placed_by_id[b]
-        dirs = directions[a, b]
-        if solver.Value(dirs["east"]) or solver.Value(dirs["west"]):
-            orientation = "v"
-            coord = ra.u1 if solver.Value(dirs["east"]) else rb.u1
-            lo, hi = max(ra.v0, rb.v0), min(ra.v1, rb.v1)
-        else:
-            orientation = "h"
-            coord = ra.v1 if solver.Value(dirs["north"]) else rb.v1
-            lo, hi = max(ra.u0, rb.u0), min(ra.u1, rb.u1)
-        walls.append(SharedWall(a, b, ra.level_id, orientation, coord, lo, hi, (a, b) in doors))
+def _circulation_share(placed: list[PlacedRoom2D]) -> float:
     total = sum(r.area_m2 for r in placed)
     circ = sum(
         r.area_m2
@@ -1067,34 +900,422 @@ def solve_2d_placement(
         if r.function
         in (SpaceFunction.HALL, SpaceFunction.CORRIDOR, SpaceFunction.STAIR, SpaceFunction.ENTRY)
     )
-    return Solution2D(
-        status=solver.StatusName(status),
-        objective=solver.ObjectiveValue(),
-        rooms=placed,
-        shared_walls=walls,
-        levels=levels,
-        deterministic_time=solver.deterministic_time,
-        wall_time_s=time.perf_counter() - started,
-        seed=opts.seed,
-        platform_info=f"{platform.system()} {platform.machine()}",
-        strategy=strategy,
-        circulation_share=circ / total if total else 0,
-        has_courtyard=courtyard,
-        has_stairs=bool(cores),
-        zone_definitions=[
-            ProgramZone(id=z.id, name=z.name, privacy=z.privacy or "semi_private")
-            for z in proposal.zones
+    return circ / total if total else 0
+
+
+# ------------------------------------------------------------- the CP-SAT model
+
+
+class _PlacementModel:
+    """The CP-SAT model of one placement: room boxes, contacts, doors and the objective.
+
+    Variables are created in a fixed order; with one worker and a fixed seed, that order
+    is part of what makes a placement reproducible.
+    """
+
+    def __init__(self, opts: PlacementOptions, env_w: int, env_h: int, road_front: int) -> None:
+        self.md = cp_model.CpModel()
+        self.opts = opts
+        self.env_w, self.env_h, self.road_front = env_w, env_h, road_front
+        self.obj: list = []
+        self.x: dict[str, cp_model.IntVar] = {}
+        self.y: dict[str, cp_model.IntVar] = {}
+        self.xe: dict[str, cp_model.IntVar] = {}
+        self.ye: dict[str, cp_model.IntVar] = {}
+        self.widths: dict[str, cp_model.IntVar] = {}
+        self.heights: dict[str, cp_model.IntVar] = {}
+        self.touch: dict[tuple[str, str], cp_model.IntVar] = {}
+        self.contact: dict[tuple[str, str], cp_model.IntVar] = {}
+        self.directions: dict[tuple[str, str], dict[str, cp_model.IntVar]] = {}
+        self.doors: dict[tuple[str, str], cp_model.IntVar] = {}
+        self.ext_flags: dict[str, cp_model.IntVar] = {}
+
+    # Boolean helpers
+
+    def weight(self, name: str, default: float) -> int:
+        return round(default * self.opts.objective_weights.get(name, 1))
+
+    def flag(self, name, comparison, complement):
+        b = self.md.NewBoolVar(name)
+        self.md.Add(comparison).OnlyEnforceIf(b)
+        self.md.Add(complement).OnlyEnforceIf(b.Not())
+        return b
+
+    def conjunction(self, name, terms):
+        b = self.md.NewBoolVar(name)
+        if not terms:
+            self.md.Add(b == 1)
+        else:
+            self.md.AddBoolAnd(terms).OnlyEnforceIf(b)
+            self.md.AddBoolOr([t.Not() for t in terms]).OnlyEnforceIf(b.Not())
+        return b
+
+    def disjunction(self, name, terms):
+        b = self.md.NewBoolVar(name)
+        if terms:
+            self.md.AddMaxEquality(b, terms)
+        else:
+            self.md.Add(b == 0)
+        return b
+
+    # Rooms
+
+    def add_rooms(self, rooms: list[PlacementRoom], levels: list[str], obstacles: list) -> None:
+        md = self.md
+        self.rooms, self.levels = rooms, levels
+        self.ids = {r.space_id: r for r in rooms}
+        self.max_x = md.NewIntVar(0, self.env_w, "max_x")
+        self.max_y = md.NewIntVar(0, self.env_h, "max_y")
+        ix: dict[str, list] = {lv: [] for lv in levels}
+        iy: dict[str, list] = {lv: [] for lv in levels}
+        for r in rooms:
+            self._add_room(r, obstacles, ix, iy)
+        for lv in levels:
+            md.AddNoOverlap2D(ix[lv], iy[lv])
+        md.AddMaxEquality(self.max_x, list(self.xe.values()))
+        md.AddMaxEquality(self.max_y, list(self.ye.values()))
+        self.obj.append(
+            self.weight("envelope_simplicity", W_COMPACTNESS) * (self.max_x + self.max_y)
+        )
+
+    def _add_room(self, r: PlacementRoom, obstacles: list, ix: dict, iy: dict) -> None:
+        md, env_w, env_h = self.md, self.env_w, self.env_h
+        x, y, xe, ye, widths, heights = self.x, self.y, self.xe, self.ye, self.widths, self.heights
+        sid = r.space_id
+        dims = compute_candidate_dimensions(r, env_w, env_h)
+        x[sid], y[sid] = md.NewIntVar(0, env_w, f"x_{sid}"), md.NewIntVar(0, env_h, f"y_{sid}")
+        widths[sid] = md.NewIntVar(min(w for w, h in dims), max(w for w, h in dims), f"w_{sid}")
+        heights[sid] = md.NewIntVar(min(h for w, h in dims), max(h for w, h in dims), f"h_{sid}")
+        xe[sid], ye[sid] = md.NewIntVar(0, env_w, f"xe_{sid}"), md.NewIntVar(0, env_h, f"ye_{sid}")
+        md.Add(xe[sid] == x[sid] + widths[sid])
+        md.Add(ye[sid] == y[sid] + heights[sid])
+        md.Add(xe[sid] <= self.max_x)
+        md.Add(ye[sid] <= self.max_y)
+        md.AddAllowedAssignments([widths[sid], heights[sid]], dims)
+        ix[r.level_pref].append(md.NewIntervalVar(x[sid], widths[sid], xe[sid], f"ix_{sid}"))
+        iy[r.level_pref].append(md.NewIntervalVar(y[sid], heights[sid], ye[sid], f"iy_{sid}"))
+        for j, (a, b, c, d) in enumerate(obstacles):
+            outside = [
+                self.flag(f"obs_{sid}_{j}_{k}", expr, inv)
+                for k, (expr, inv) in enumerate(
+                    [
+                        (xe[sid] <= a, xe[sid] > a),
+                        (x[sid] >= b, x[sid] < b),
+                        (ye[sid] <= c, ye[sid] > c),
+                        (y[sid] >= d, y[sid] < d),
+                    ]
+                )
+            ]
+            md.AddBoolOr(outside)
+        if r.function in (SpaceFunction.ENTRY, SpaceFunction.HALL, SpaceFunction.GARAGE):
+            self.obj.append(self.weight("site_response", W_ROAD_FACING_SOFT) * y[sid])
+        if r.daylight_required:
+            self.obj.append(
+                self.weight("daylight_opportunity", W_DAYLIGHT_SOFT) * (x[sid] + y[sid])
+            )
+        area = md.NewIntVar(0, env_w * env_h, f"area_{sid}")
+        md.AddMultiplicationEquality(area, [widths[sid], heights[sid]])
+        dev = md.NewIntVar(0, env_w * env_h + r.target_area_dm2, f"area_dev_{sid}")
+        md.AddAbsEquality(dev, area - r.target_area_dm2)
+        self.obj.append(W_AREA_DEV * r.priority_weight * dev)
+        if r.function in (
+            SpaceFunction.HALL,
+            SpaceFunction.CORRIDOR,
+            SpaceFunction.ENTRY,
+            SpaceFunction.STAIR,
+            SpaceFunction.LIFT,
+        ):
+            self.obj.append(self.weight("circulation_efficiency", 20) * area)
+
+    # Contacts and doors
+
+    def add_contacts(self, strategy: str, hard_connected: set[frozenset[str]]) -> None:
+        for ra, rb in combinations(self.rooms, 2):
+            if ra.level_pref == rb.level_pref:
+                self._add_contact(ra, rb, strategy, hard_connected)
+
+    def _add_contact(
+        self,
+        ra: PlacementRoom,
+        rb: PlacementRoom,
+        strategy: str,
+        hard_connected: set[frozenset[str]],
+    ) -> None:
+        a, b = ra.space_id, rb.space_id
+        minimum = (
+            OPEN_PLAN_WALL_MIN_DM
+            if strategy == STRATEGY_OPEN_PLAN
+            and (ra.function in OPEN_PLAN_FUNCTIONS and rb.function in OPEN_PLAN_FUNCTIONS)
+            else SHARED_WALL_MIN_DM
+        )
+        touching, dirs = self._contact_at(a, b, minimum)
+        # Contact means a shared length over the canonical 0.1 m tolerance.
+        self.contact[a, b], _ = self._contact_at(a, b, 2)
+        self.contact[b, a] = self.contact[a, b]
+        self.touch[a, b] = self.touch[b, a] = touching
+        self.directions[a, b] = dirs
+        self.directions[b, a] = {
+            "east": dirs["west"],
+            "west": dirs["east"],
+            "north": dirs["south"],
+            "south": dirs["north"],
+        }
+        allowed = not is_privacy_separated(ra, rb) or frozenset((a, b)) in hard_connected
+        if allowed:
+            self.doors[a, b] = self.doors[b, a] = touching
+        self.obj.append(-self.weight("adjacency_quality", 30) * touching)
+
+    def _contact_at(self, a: str, b: str, minimum: int):
+        """Whether a and b share at least `minimum` dm of wall, and on which side of a."""
+        x, y, xe, ye = self.x, self.y, self.xe, self.ye
+        checks = {}
+        for direction, eq, neq, p, q, r, t in [
+            ("east", xe[a] == x[b], xe[a] != x[b], ye[a], y[b], ye[b], y[a]),
+            ("west", xe[b] == x[a], xe[b] != x[a], ye[a], y[b], ye[b], y[a]),
+            ("north", ye[a] == y[b], ye[a] != y[b], xe[a], x[b], xe[b], x[a]),
+            ("south", ye[b] == y[a], ye[b] != y[a], xe[a], x[b], xe[b], x[a]),
+        ]:
+            name = f"{a}_{b}_{minimum}_{direction}"
+            checks[direction] = self.conjunction(
+                name,
+                [
+                    self.flag(name + "eq", eq, neq),
+                    self.flag(name + "lo", p >= q + minimum, p < q + minimum),
+                    self.flag(name + "hi", r >= t + minimum, r < t + minimum),
+                ],
+            )
+        return self.disjunction(f"contact_{a}_{b}_{minimum}", list(checks.values())), checks
+
+    # Site access and the exterior
+
+    def anchor_to_road(self, entry: PlacementRoom) -> None:
+        self.md.Add(self.y[entry.space_id] == self.road_front)
+        for r in self.rooms:
+            self.md.Add(self.y[r.space_id] >= self.road_front)
+
+    def add_exterior_walls(self, ext_ids: set[str]) -> None:
+        x, y, xe, ye = self.x, self.y, self.xe, self.ye
+        for sid in self.ids:
+            # A complete face on the occupied layout's outer bounds guarantees a usable
+            # exterior wall.
+            edge = self.disjunction(
+                f"ext_{sid}",
+                [
+                    self.flag(f"ext_{sid}_{i}", expr, inv)
+                    for i, (expr, inv) in enumerate(
+                        [
+                            (x[sid] == 0, x[sid] != 0),
+                            (y[sid] == self.road_front, y[sid] != self.road_front),
+                            (xe[sid] == self.max_x, xe[sid] != self.max_x),
+                            (ye[sid] == self.max_y, ye[sid] != self.max_y),
+                        ]
+                    )
+                ],
+            )
+            self.ext_flags[sid] = edge
+            if sid in ext_ids:
+                self.md.Add(edge == 1)
+                self.doors[sid, EXTERIOR] = self.doors[EXTERIOR, sid] = edge
+
+    # Stairs
+
+    def add_stair_cores(self, cores: dict[str, str], entry: PlacementRoom, pos: str) -> None:
+        md, x, y, xe, ye = self.md, self.x, self.y, self.xe, self.ye
+        core_ids = list(cores.values())
+        for sid in core_ids[1:]:
+            md.Add(x[sid] == x[core_ids[0]])
+            md.Add(y[sid] == y[core_ids[0]])
+            md.Add(xe[sid] == xe[core_ids[0]])
+            md.Add(ye[sid] == ye[core_ids[0]])
+        sid = cores[LEVEL_ENTRY]
+        if pos == STAIR_CORE_ENTRY and (sid, entry.space_id) in self.touch:
+            md.Add(self.touch[sid, entry.space_id] == 1)
+        elif pos == STAIR_CORE_REAR:
+            md.Add(ye[sid] == self.max_y)
+        elif pos == STAIR_CORE_PERIMETER:
+            md.Add(self.ext_flags[sid] == 1)
+        elif pos == STAIR_CORE_CENTRAL:
+            self._centre_stair(sid, core_ids)
+        else:
+            raise Solve2DFailed(f"unsupported stair position {pos!r}")
+        for a, b in zip(core_ids, core_ids[1:], strict=False):
+            one = md.NewConstant(1)
+            self.doors[a, b] = self.doors[b, a] = one
+
+    def _centre_stair(self, sid: str, core_ids: list[str]) -> None:
+        for r in self.rooms:
+            if r.space_id in core_ids:
+                continue
+            for name, axis, limit in [("x", self.x, self.env_w), ("y", self.y, self.env_h)]:
+                dev = self.md.NewIntVar(0, limit, f"stair_{name}_{r.space_id}")
+                self.md.AddAbsEquality(dev, axis[r.space_id] - axis[sid])
+                self.obj.append(W_STAIR_CENTRAL * dev)
+
+    # Connectivity and relationships
+
+    def add_connectivity(self, entry: PlacementRoom) -> None:
+        """A unit flow from entry to every other room enforces real passable connectivity."""
+        md = self.md
+        count = len(self.rooms)
+        flows = {}
+        for (a, b), edge in self.doors.items():
+            if EXTERIOR in (a, b):
+                continue
+            flow = md.NewIntVar(0, count - 1, f"flow_{a}_{b}")
+            md.Add(flow <= (count - 1) * edge)
+            flows[a, b] = flow
+        for sid in self.ids:
+            incoming = sum(v for (a, b), v in flows.items() if b == sid)
+            outgoing = sum(v for (a, b), v in flows.items() if a == sid)
+            md.Add(
+                outgoing - incoming == count - 1
+                if sid == entry.space_id
+                else incoming - outgoing == 1
+            )
+
+    def add_requirement(self, req: SpaceRelationship, ends: Callable[[str], list[str]]) -> None:
+        pairs = list(product(ends(req.a), ends(req.b)))
+        if not pairs:
+            raise Solve2DFailed(f"unknown endpoint in {req.id}")
+        satisfied = []
+        for a, b in pairs:
+            if a == b:
+                continue
+            v = self._pair_satisfies(req, a, b)
+            if v is not None:
+                satisfied.append(v)
+        ok = (
+            self.conjunction(f"req_{req.id}", satisfied)
+            if req.kind in SEPARATING_KINDS
+            else self.disjunction(f"req_{req.id}", satisfied)
+        )
+        if req.strength is Strength.HARD:
+            self.md.Add(ok == 1)
+        else:
+            self.obj.append(round(W_ADJACENCY_SOFT * (req.weight or 1)) * (1 - ok))
+
+    def _pair_satisfies(self, req: SpaceRelationship, a: str, b: str):
+        """The literal true when a and b satisfy `req`, or None when the pair is not modelled."""
+        md, doors = self.md, self.doors
+        if req.kind in SEPARATING_KINDS:
+            if EXTERIOR in (a, b):
+                if req.strength is Strength.HARD:
+                    raise Solve2DFailed(
+                        f"internal-only EXTERIOR separation not supported: {req.id}"
+                    )
+                return None
+            return self.contact.get((a, b), md.NewConstant(0)).Not()
+        if req.kind is SpaceRelationshipKind.CONNECTED:
+            return doors.get((a, b), md.NewConstant(0))
+        if req.kind is SpaceRelationshipKind.ADJACENT:
+            return (
+                self.ext_flags[b if a == EXTERIOR else a]
+                if EXTERIOR in (a, b)
+                else self.touch.get((a, b), md.NewConstant(0))
+            )
+        if req.kind is SpaceRelationshipKind.NEAR:
+            paths = [doors[a, b]] if (a, b) in doors else []
+            for middle in [*self.ids, EXTERIOR]:
+                if (a, middle) in doors and (middle, b) in doors:
+                    paths.append(
+                        self.conjunction(
+                            f"near_{req.id}_{a}_{b}_{middle}",
+                            [doors[a, middle], doors[middle, b]],
+                        )
+                    )
+            return self.disjunction(f"near_{req.id}_{a}_{b}", paths)
+        if req.kind is SpaceRelationshipKind.VISUAL and req.strength is Strength.HARD:
+            raise Solve2DFailed(f"hard VISUAL sightline constraint not supported: {req.id}")
+        return None
+
+    # Strategy, zoning and solving
+
+    def add_strategy_constraints(self, strategy: str, courtyard: bool) -> None:
+        md, rooms = self.md, self.rooms
+        if strategy == STRATEGY_TWO_WING:
+            _apply_two_wing_constraints(
+                md, rooms, self.x, self.y, self.xe, self.ye, self.touch, self.env_w, self.env_h
+            )
+        if courtyard:
+            _apply_courtyard_constraints(
+                md,
+                COURTYARD_SPACE_ID,
+                [
+                    r
+                    for r in rooms
+                    if r.level_pref == LEVEL_ENTRY and r.space_id != COURTYARD_SPACE_ID
+                ],
+                self.directions,
+            )
+        if strategy == STRATEGY_OPEN_PLAN:
+            for ra, rb in combinations([r for r in rooms if r.function in OPEN_PLAN_FUNCTIONS], 2):
+                if ra.function == SpaceFunction.DINING or rb.function == SpaceFunction.DINING:
+                    md.Add(self.touch.get((ra.space_id, rb.space_id), md.NewConstant(0)) == 1)
+
+    def add_zoning_objectives(self) -> None:
+        _apply_zoning_objectives(
+            self.md,
+            self.rooms,
+            self.x,
+            self.y,
+            self.xe,
+            self.ye,
+            self.obj,
+            self.env_w,
+            self.env_h,
+        )
+
+    def solve(self) -> tuple[cp_model.CpSolver, int]:
+        self.md.Minimize(sum(self.obj))
+        solver = cp_model.CpSolver()
+        solver.parameters.num_workers = 1
+        solver.parameters.random_seed = self.opts.seed
+        solver.parameters.max_deterministic_time = self.opts.deterministic_time
+        status = solver.Solve(self.md)
+        if status not in (cp_model.OPTIMAL, cp_model.FEASIBLE):
+            raise Solve2DFailed(
+                f"CP-SAT found no contained connected layout ({solver.StatusName(status)})"
+            )
+        return solver, status
+
+    # Reading the solution
+
+    def placed_rooms(self, solver: cp_model.CpSolver) -> list[PlacedRoom2D]:
+        return [
+            PlacedRoom2D(
+                r.space_id,
+                r.name,
+                r.function,
+                r.level_pref,
+                solver.Value(self.x[r.space_id]),
+                solver.Value(self.y[r.space_id]),
+                solver.Value(self.xe[r.space_id]),
+                solver.Value(self.ye[r.space_id]),
+                r.item_id,
+                r.zone_id,
+            )
+            for r in self.rooms
         ]
-        if proposal
-        else [],
-        exterior_connections=sorted(ext_ids),
-        optimised_objectives=[
-            "adjacency_quality",
-            "circulation_efficiency",
-            "envelope_simplicity",
-            "site_response",
-            "daylight_opportunity",
-        ],
-        level_elevations_m={lv: solver.Value(z) / 100 for lv, z in elevations.items()},
-        road_front_dm=road_front,
-    )
+
+    def shared_walls(
+        self, solver: cp_model.CpSolver, placed: list[PlacedRoom2D]
+    ) -> list[SharedWall]:
+        walls = []
+        placed_by_id = {r.space_id: r for r in placed}
+        for a, b in combinations(self.ids, 2):
+            if (a, b) not in self.touch or not solver.Value(self.touch[a, b]):
+                continue
+            ra, rb = placed_by_id[a], placed_by_id[b]
+            dirs = self.directions[a, b]
+            if solver.Value(dirs["east"]) or solver.Value(dirs["west"]):
+                orientation = "v"
+                coord = ra.u1 if solver.Value(dirs["east"]) else rb.u1
+                lo, hi = max(ra.v0, rb.v0), min(ra.v1, rb.v1)
+            else:
+                orientation = "h"
+                coord = ra.v1 if solver.Value(dirs["north"]) else rb.v1
+                lo, hi = max(ra.u0, rb.u0), min(ra.u1, rb.u1)
+            walls.append(
+                SharedWall(a, b, ra.level_id, orientation, coord, lo, hi, (a, b) in self.doors)
+            )
+        return walls
