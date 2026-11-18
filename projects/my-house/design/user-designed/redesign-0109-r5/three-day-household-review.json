@@ -1,0 +1,153 @@
+{
+  "method": "Three-day scripted review: school/rain weekday, guests/work day, maintenance/storm/20-year scenario. Not measured behaviour or engineering simulation.",
+  "days": {
+    "Day1": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      9,
+      15
+    ],
+    "Day2": [
+      5,
+      6,
+      7,
+      8,
+      10,
+      11
+    ],
+    "Day3": [
+      12,
+      13,
+      14,
+      16,
+      17,
+      18,
+      19
+    ]
+  },
+  "scenarios": [
+    {
+      "id": 1,
+      "scenario": "Rainy six-person arrival",
+      "design_response": "Garage unloading 2.4 x4.2m; six lockers, stowed folding bench, separate pedestrians, then essential lift. Six people queue; not six abreast.",
+      "limits": "Two car doors + walking route checked; weather cover, gate sequencing and actual road remain unresolved."
+    },
+    {
+      "id": 2,
+      "scenario": "Groceries",
+      "design_response": "Car -> unloading -> lift -> nearby5m\u00b2 pantry -> screened kitchen. Use pantry as initial drop; fridge leg is longer.",
+      "limits": "Lift/pantry and stair/kitchen paths checked; no claim of an8m complete grocery route or guaranteed lift capacity."
+    },
+    {
+      "id": 3,
+      "scenario": "Dirty sports return",
+      "design_response": "Unload gear in garage before lift; four separate bag bays; washable lower laundry near both child rooms.",
+      "limits": "Actual wet storage/boot drying ventilation and six-bike product capacity need design."
+    },
+    {
+      "id": 4,
+      "scenario": "Morning WC queue",
+      "design_response": "Exactly three WCs. Routine child use of one lower shared squat; parents private seated WC not overflow capacity.",
+      "limits": "Four 3min WC visits arriving2min apart produce waits0/1/2/3min. Basin within WC shares lock; waiting is real and accepted, not eliminated."
+    },
+    {
+      "id": 5,
+      "scenario": "One child shower",
+      "design_response": "One routine child shower below; upper shared shower is not counted as a second child fixture for queue claims.",
+      "limits": "Example8min showers at06:20/30/40/50 finish06:58. Not a household observation or DHW sizing."
+    },
+    {
+      "id": 6,
+      "scenario": "Male/female guests seated",
+      "design_response": "Opaque service return and west WC approach, not a closed toilet leaf; screened kitchen has two usable indoor portals.",
+      "limits": "All living-seat posture rays and kitchen living/dining rays checked. Standing service-corridor and reflective surfaces remain separate."
+    },
+    {
+      "id": 7,
+      "scenario": "Father works / games",
+      "design_response": "Separate road-tier room with acoustic door, away from lower sleep corridor.",
+      "limits": "No measured acoustic rating; isolate plant vibration and garage impact noise."
+    },
+    {
+      "id": 8,
+      "scenario": "Prayer / wudu",
+      "design_response": "NE open reading bay; same-floor seated wudu via indoor family route.",
+      "limits": "600mm walking proxy checked; Qibla and fixture direction setting-out unresolved; not a dedicated room."
+    },
+    {
+      "id": 9,
+      "scenario": "Children from garden",
+      "design_response": "Direct lower lounge door at1670.00 -> level link -> flat soil garden. Garden stair only links upper/lower outdoor levels.",
+      "limits": "Children can reach bedrooms without entering parents suite; guard/gates/drainage/support not engineered."
+    },
+    {
+      "id": 10,
+      "scenario": "Laundry and linen",
+      "design_response": "Both shared child rooms on same lower level as7.04m\u00b2 laundry; parents bring laundry down via lift.",
+      "limits": "Avoid claiming all bedrooms next to laundry: parents are now upstairs; measured route trade-off retained."
+    },
+    {
+      "id": 11,
+      "scenario": "Teen friends / adult quiet",
+      "design_response": "Lower guest/quiet room and garden lounge acoustically separable from upper parents and main living.",
+      "limits": "Doors/envelope need an acoustic specification. Parents upstairs trade east bedroom view for fewer essential level changes."
+    },
+    {
+      "id": 12,
+      "scenario": "Grandparents overnight",
+      "design_response": "Lower17.48m\u00b2 guest room, lift to daily living; upper private parents bathroom has only seated toilet.",
+      "limits": "Not independently wheelchair-accessible guest accommodation: using parents ensuite crosses their bedroom. No extra WC silently added."
+    },
+    {
+      "id": 13,
+      "scenario": "One parent cannot climb stairs",
+      "design_response": "Upper parents suite, kitchen/dining/living, seated toilet/shower and terrace all on one principal level.",
+      "limits": "Road-to-upper lift essential from day1; power failure and assisted fire escape unresolved. Squat shared WCs not accessible substitutes."
+    },
+    {
+      "id": 14,
+      "scenario": "Rubbish / recycling",
+      "design_response": "Kitchen sorting -> lift/garage collection; outdoor serviced bin location by approach still needs actual authority/product layout.",
+      "limits": "No bin store in car sweeps or public road. Final external location remains null."
+    },
+    {
+      "id": 15,
+      "scenario": "Technician replaces plant",
+      "design_response": "Road-tier plant west replacement door1.2m -> clear unloading -> garage opening.",
+      "limits": "Walking clearance is not a pallet/large-equipment replacement certification; product sizes and valves remain unknown."
+    },
+    {
+      "id": 16,
+      "scenario": "Night toilet / thirst",
+      "design_response": "Independent lower WC entry hidden from lounge, small snack sink/fridge reservation; parents private upper bath.",
+      "limits": "Night lighting, basin lock queue and closed-door acoustics need specification."
+    },
+    {
+      "id": 17,
+      "scenario": "One drain blocks in storm",
+      "design_response": "Independent roof overflow and retaining/surface-water collection proposed; no reliance on a single garage trench drain.",
+      "limits": "Cannot pass storm failure test without road levels, rainfall, outlet invert, lawful overflow route and pump strategy."
+    },
+    {
+      "id": 18,
+      "scenario": "Fire / security / WUI",
+      "design_response": "Bedroom external aperture reservations and level lower garden exit; independent pedestrian gate and garden stair.",
+      "limits": "Keyless single-action release required as intent. Fire road, detection, separation, rescue openings, WUI and assisted escape need professionals."
+    },
+    {
+      "id": 19,
+      "scenario": "Wheelchair plus companion",
+      "design_response": "Essential2.1 x2.2m gross lift reservation and1.525m bathroom circle; clear upper routes drawn.",
+      "limits": "Disc routes and circle do not prove companion turning, side transfer, safe evacuation, door approaches or selected equipment."
+    },
+    {
+      "id": 20,
+      "scenario": "Twenty/thirty years later",
+      "design_response": "Two beds, two1.4m desks and two1.5m wardrobes per child room; parents on living level; guest room provides later flexibility.",
+      "limits": "Two shared child rooms retained. Conversion to four single bedrooms is not claimed; lift maintenance and shared-WC preference remain long-term decisions."
+    }
+  ]
+}

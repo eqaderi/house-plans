@@ -1,0 +1,20 @@
+{
+  "proposed_works": {
+    "foundation-footings": null,
+    "retaining-footings-and-anchors": null,
+    "temporary-shoring-and-construction-access": null,
+    "soil-stabilisation": null,
+    "legal-road-vertical-tie-in": null,
+    "storm-and-overflow-discharge": null,
+    "foul-drainage-and-sewer-connection": null,
+    "incoming-utilities-and-meter": null,
+    "actual-lift-pit-headroom-equipment": null,
+    "structural-columns-beams-and-seismic-system": null,
+    "fire-separation-and-assisted-escape": null,
+    "ventilation-terminals-and-plant-products": null,
+    "actual-gate-posts-motors-and-safety-zones": null,
+    "garden-soil-retaining-and-settlement": null,
+    "roof-plant-pv-and-access-anchors": null
+  },
+  "necessary_access_crossings": {}
+}

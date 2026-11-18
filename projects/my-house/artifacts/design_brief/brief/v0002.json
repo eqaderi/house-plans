@@ -1,0 +1,160 @@
+{
+  "budget": null,
+  "contradictions": [],
+  "facts": [
+    {
+      "id": "ans-q-followup-household-round-1-1",
+      "key": "answer",
+      "priority": null,
+      "source": {
+        "interview_round": 1,
+        "kind": "owner_answer",
+        "ref": "q-followup-household-round-1"
+      },
+      "statement": "1. a man, his wife, 2 dougters, 2 sons, possibly grandfather and grandmother\n2. find out based on the first answer, just know people can share rooms\n3. yes, yes",
+      "status": "preference",
+      "topic": "household",
+      "value": null
+    },
+    {
+      "id": "f-accessibility",
+      "key": "accessibility",
+      "priority": null,
+      "source": {
+        "interview_round": 1,
+        "kind": "agent_inference",
+        "ref": "ans-q-followup-household-round-1-1 via agent:codex"
+      },
+      "statement": "Accessibility: step free (understood from your answer; please confirm)",
+      "status": "inference",
+      "topic": "accessibility",
+      "value": "step_free"
+    },
+    {
+      "id": "f-adults",
+      "key": "adults",
+      "priority": null,
+      "source": {
+        "interview_round": 1,
+        "kind": "agent_inference",
+        "ref": "ans-q-followup-household-round-1-1 via agent:codex"
+      },
+      "statement": "Adults: 2 (understood from your answer; please confirm)",
+      "status": "inference",
+      "topic": "household",
+      "value": 2
+    },
+    {
+      "id": "f-bedrooms",
+      "key": "bedrooms",
+      "priority": null,
+      "source": {
+        "interview_round": 1,
+        "kind": "owner_answer",
+        "ref": "ans-q-followup-household-round-1-1"
+      },
+      "statement": "Bedrooms: unknown / not decided",
+      "status": "unknown",
+      "topic": "bedrooms_bathrooms",
+      "value": null
+    },
+    {
+      "id": "f-children",
+      "key": "children",
+      "priority": null,
+      "source": {
+        "interview_round": 1,
+        "kind": "agent_inference",
+        "ref": "ans-q-followup-household-round-1-1 via agent:codex"
+      },
+      "statement": "Children: 4 (understood from your answer; please confirm)",
+      "status": "inference",
+      "topic": "household",
+      "value": 4
+    },
+    {
+      "id": "f-children_own_rooms",
+      "key": "children_own_rooms",
+      "priority": null,
+      "source": {
+        "interview_round": 1,
+        "kind": "agent_inference",
+        "ref": "ans-q-followup-household-round-1-1 via agent:codex"
+      },
+      "statement": "Each child has their own bedroom: no (understood from your answer; please confirm)",
+      "status": "inference",
+      "topic": "bedrooms_bathrooms",
+      "value": false
+    },
+    {
+      "id": "f-elders",
+      "key": "elders",
+      "priority": null,
+      "source": {
+        "interview_round": 1,
+        "kind": "owner_answer",
+        "ref": "ans-q-followup-household-round-1-1"
+      },
+      "statement": "Older relatives living with you: unknown / not decided",
+      "status": "unknown",
+      "topic": "multigenerational",
+      "value": null
+    },
+    {
+      "id": "f-household_size",
+      "key": "household_size",
+      "priority": null,
+      "source": {
+        "interview_round": 1,
+        "kind": "owner_answer",
+        "ref": "ans-q-followup-household-round-1-1"
+      },
+      "statement": "People in the household: unknown / not decided",
+      "status": "unknown",
+      "topic": "household",
+      "value": null
+    },
+    {
+      "id": "f-lift",
+      "key": "lift",
+      "priority": null,
+      "source": {
+        "interview_round": 1,
+        "kind": "agent_inference",
+        "ref": "ans-q-followup-household-round-1-1 via agent:codex"
+      },
+      "statement": "Lift: yes (understood from your answer; please confirm)",
+      "status": "inference",
+      "topic": "accessibility",
+      "value": true
+    }
+  ],
+  "household": [],
+  "id": "brief",
+  "interview_rounds_completed": 1,
+  "project_id": "my-house",
+  "provenance": {
+    "created_at": "2026-10-20T07:38:47.503603Z",
+    "created_by": {
+      "display_name": null,
+      "id": "house-ai-interview",
+      "kind": "system",
+      "model": null,
+      "provider": null
+    },
+    "inputs": [
+      {
+        "id": "interview",
+        "kind": "interview_session",
+        "sha256": "f4ff74c51ea8d550132c8c4975c0449e062914cfa0030b4b7437aa4e9ad559ca",
+        "version": 2
+      }
+    ],
+    "method": "owner_interview",
+    "notes": "Derived from the interview session; the owner's words are kept verbatim.",
+    "tool": "house-ai interview",
+    "tool_version": null
+  },
+  "schema_version": "0.1.0",
+  "target_gross_area_m2": null
+}

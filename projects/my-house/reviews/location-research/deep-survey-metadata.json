@@ -1,0 +1,3064 @@
+{
+  "scope": "Deeper read-only inspection: all blocks/entity database, header/custom variables, XRECORDs, external references, string tags and native printable strings. No CRS assigned.",
+  "files": [
+    {
+      "file": "projects/my-house/surveys/seperated.dwg",
+      "original_unchanged": true,
+      "all_text_entities": [
+        {
+          "type": "MTEXT",
+          "handle": "6A",
+          "text": "Pt1"
+        },
+        {
+          "type": "MTEXT",
+          "handle": "6C",
+          "text": "Pt2"
+        },
+        {
+          "type": "MTEXT",
+          "handle": "6E",
+          "text": "Pt3"
+        },
+        {
+          "type": "MTEXT",
+          "handle": "70",
+          "text": "Pt4"
+        },
+        {
+          "type": "MTEXT",
+          "handle": "72",
+          "text": "Pt5"
+        },
+        {
+          "type": "MTEXT",
+          "handle": "74",
+          "text": "Pt6"
+        }
+      ],
+      "custom_objects": [
+        {
+          "type": "XRECORD",
+          "handle": "BB",
+          "tags": [
+            [
+              0,
+              "XRECORD"
+            ],
+            [
+              5,
+              "BB"
+            ],
+            [
+              102,
+              "{ACAD_REACTORS"
+            ],
+            [
+              330,
+              "C"
+            ],
+            [
+              102,
+              "}"
+            ],
+            [
+              330,
+              "C"
+            ],
+            [
+              100,
+              "AcDbXrecord"
+            ],
+            [
+              280,
+              "1"
+            ],
+            [
+              300,
+              "ACD"
+            ],
+            [
+              300,
+              "2022"
+            ],
+            [
+              300,
+              ""
+            ]
+          ]
+        },
+        {
+          "type": "XRECORD",
+          "handle": "EB",
+          "tags": [
+            [
+              0,
+              "XRECORD"
+            ],
+            [
+              5,
+              "EB"
+            ],
+            [
+              102,
+              "{ACAD_REACTORS"
+            ],
+            [
+              330,
+              "C"
+            ],
+            [
+              102,
+              "}"
+            ],
+            [
+              330,
+              "C"
+            ],
+            [
+              100,
+              "AcDbXrecord"
+            ],
+            [
+              280,
+              "1"
+            ],
+            [
+              90,
+              "1"
+            ],
+            [
+              330,
+              "5A"
+            ]
+          ]
+        },
+        {
+          "type": "XRECORD",
+          "handle": "E8",
+          "tags": [
+            [
+              0,
+              "XRECORD"
+            ],
+            [
+              5,
+              "E8"
+            ],
+            [
+              102,
+              "{ACAD_REACTORS"
+            ],
+            [
+              330,
+              "E7"
+            ],
+            [
+              102,
+              "}"
+            ],
+            [
+              330,
+              "E7"
+            ],
+            [
+              100,
+              "AcDbXrecord"
+            ],
+            [
+              280,
+              "1"
+            ],
+            [
+              290,
+              "1"
+            ]
+          ]
+        },
+        {
+          "type": "DICTIONARYVAR",
+          "handle": "76",
+          "tags": [
+            [
+              0,
+              "DICTIONARYVAR"
+            ],
+            [
+              5,
+              "76"
+            ],
+            [
+              102,
+              "{ACAD_REACTORS"
+            ],
+            [
+              330,
+              "75"
+            ],
+            [
+              102,
+              "}"
+            ],
+            [
+              330,
+              "75"
+            ],
+            [
+              100,
+              "DictionaryVariables"
+            ],
+            [
+              280,
+              "0"
+            ],
+            [
+              1,
+              "1:1"
+            ]
+          ]
+        },
+        {
+          "type": "DICTIONARYVAR",
+          "handle": "AF",
+          "tags": [
+            [
+              0,
+              "DICTIONARYVAR"
+            ],
+            [
+              5,
+              "AF"
+            ],
+            [
+              102,
+              "{ACAD_REACTORS"
+            ],
+            [
+              330,
+              "75"
+            ],
+            [
+              102,
+              "}"
+            ],
+            [
+              330,
+              "75"
+            ],
+            [
+              100,
+              "DictionaryVariables"
+            ],
+            [
+              280,
+              "0"
+            ],
+            [
+              1,
+              "Standard"
+            ]
+          ]
+        },
+        {
+          "type": "DICTIONARYVAR",
+          "handle": "AE",
+          "tags": [
+            [
+              0,
+              "DICTIONARYVAR"
+            ],
+            [
+              5,
+              "AE"
+            ],
+            [
+              102,
+              "{ACAD_REACTORS"
+            ],
+            [
+              330,
+              "75"
+            ],
+            [
+              102,
+              "}"
+            ],
+            [
+              330,
+              "75"
+            ],
+            [
+              100,
+              "DictionaryVariables"
+            ],
+            [
+              280,
+              "0"
+            ],
+            [
+              1,
+              "Standard"
+            ]
+          ]
+        },
+        {
+          "type": "DICTIONARYVAR",
+          "handle": "DA",
+          "tags": [
+            [
+              0,
+              "DICTIONARYVAR"
+            ],
+            [
+              5,
+              "DA"
+            ],
+            [
+              102,
+              "{ACAD_REACTORS"
+            ],
+            [
+              330,
+              "75"
+            ],
+            [
+              102,
+              "}"
+            ],
+            [
+              330,
+              "75"
+            ],
+            [
+              100,
+              "DictionaryVariables"
+            ],
+            [
+              280,
+              "0"
+            ],
+            [
+              1,
+              "Imperial24"
+            ]
+          ]
+        },
+        {
+          "type": "DICTIONARYVAR",
+          "handle": "DB",
+          "tags": [
+            [
+              0,
+              "DICTIONARYVAR"
+            ],
+            [
+              5,
+              "DB"
+            ],
+            [
+              102,
+              "{ACAD_REACTORS"
+            ],
+            [
+              330,
+              "75"
+            ],
+            [
+              102,
+              "}"
+            ],
+            [
+              330,
+              "75"
+            ],
+            [
+              100,
+              "DictionaryVariables"
+            ],
+            [
+              280,
+              "0"
+            ],
+            [
+              1,
+              "Imperial24"
+            ]
+          ]
+        },
+        {
+          "type": "DICTIONARYVAR",
+          "handle": "DC",
+          "tags": [
+            [
+              0,
+              "DICTIONARYVAR"
+            ],
+            [
+              5,
+              "DC"
+            ],
+            [
+              102,
+              "{ACAD_REACTORS"
+            ],
+            [
+              330,
+              "75"
+            ],
+            [
+              102,
+              "}"
+            ],
+            [
+              330,
+              "75"
+            ],
+            [
+              100,
+              "DictionaryVariables"
+            ],
+            [
+              280,
+              "0"
+            ],
+            [
+              1,
+              "1"
+            ]
+          ]
+        },
+        {
+          "type": "DICTIONARYVAR",
+          "handle": "DD",
+          "tags": [
+            [
+              0,
+              "DICTIONARYVAR"
+            ],
+            [
+              5,
+              "DD"
+            ],
+            [
+              102,
+              "{ACAD_REACTORS"
+            ],
+            [
+              330,
+              "75"
+            ],
+            [
+              102,
+              "}"
+            ],
+            [
+              330,
+              "75"
+            ],
+            [
+              100,
+              "DictionaryVariables"
+            ],
+            [
+              280,
+              "0"
+            ],
+            [
+              1,
+              "15"
+            ]
+          ]
+        }
+      ],
+      "block_and_xref_records": [
+        {
+          "name": "*Model_Space",
+          "flags": 0,
+          "xref_path": ""
+        },
+        {
+          "name": "*Paper_Space",
+          "flags": 0,
+          "xref_path": ""
+        },
+        {
+          "name": "*Paper_Space0",
+          "flags": 0,
+          "xref_path": ""
+        }
+      ],
+      "header_custom_vars": [],
+      "all_string_tags": [
+        {
+          "code": 2,
+          "value": "HEADER"
+        },
+        {
+          "code": 1,
+          "value": "AC1032"
+        },
+        {
+          "code": 3,
+          "value": "ANSI_1252"
+        },
+        {
+          "code": 1,
+          "value": "ershadqaderi"
+        },
+        {
+          "code": 7,
+          "value": "Standard"
+        },
+        {
+          "code": 8,
+          "value": "0"
+        },
+        {
+          "code": 6,
+          "value": "ByBlock"
+        },
+        {
+          "code": 2,
+          "value": "Standard"
+        },
+        {
+          "code": 1,
+          "value": "."
+        },
+        {
+          "code": 2,
+          "value": "{78717230-6338-3063-3666-63b662376531}"
+        },
+        {
+          "code": 2,
+          "value": "{9679A1B0-8EDB-9843-9BEA-6404EFEBF739}"
+        },
+        {
+          "code": 2,
+          "value": "CLASSES"
+        },
+        {
+          "code": 1,
+          "value": "ACDBDICTIONARYWDFLT"
+        },
+        {
+          "code": 2,
+          "value": "AcDbDictionaryWithDefault"
+        },
+        {
+          "code": 3,
+          "value": "ObjectDBX Classes"
+        },
+        {
+          "code": 1,
+          "value": "VISUALSTYLE"
+        },
+        {
+          "code": 2,
+          "value": "AcDbVisualStyle"
+        },
+        {
+          "code": 1,
+          "value": "MATERIAL"
+        },
+        {
+          "code": 2,
+          "value": "AcDbMaterial"
+        },
+        {
+          "code": 1,
+          "value": "SCALE"
+        },
+        {
+          "code": 2,
+          "value": "AcDbScale"
+        },
+        {
+          "code": 1,
+          "value": "TABLESTYLE"
+        },
+        {
+          "code": 2,
+          "value": "AcDbTableStyle"
+        },
+        {
+          "code": 1,
+          "value": "MLEADERSTYLE"
+        },
+        {
+          "code": 2,
+          "value": "AcDbMLeaderStyle"
+        },
+        {
+          "code": 3,
+          "value": "ACDB_MLEADERSTYLE_CLASS"
+        },
+        {
+          "code": 1,
+          "value": "SUN"
+        },
+        {
+          "code": 2,
+          "value": "AcDbSun"
+        },
+        {
+          "code": 3,
+          "value": "SCENEOE"
+        },
+        {
+          "code": 1,
+          "value": "DICTIONARYVAR"
+        },
+        {
+          "code": 2,
+          "value": "AcDbDictionaryVar"
+        },
+        {
+          "code": 1,
+          "value": "CELLSTYLEMAP"
+        },
+        {
+          "code": 2,
+          "value": "AcDbCellStyleMap"
+        },
+        {
+          "code": 1,
+          "value": "ACDBSECTIONVIEWSTYLE"
+        },
+        {
+          "code": 2,
+          "value": "AcDbSectionViewStyle"
+        },
+        {
+          "code": 1,
+          "value": "ACDBDETAILVIEWSTYLE"
+        },
+        {
+          "code": 2,
+          "value": "AcDbDetailViewStyle"
+        },
+        {
+          "code": 1,
+          "value": "SORTENTSTABLE"
+        },
+        {
+          "code": 2,
+          "value": "AcDbSortentsTable"
+        },
+        {
+          "code": 2,
+          "value": "TABLES"
+        },
+        {
+          "code": 2,
+          "value": "VPORT"
+        },
+        {
+          "code": 2,
+          "value": "*Active"
+        },
+        {
+          "code": 2,
+          "value": "LTYPE"
+        },
+        {
+          "code": 2,
+          "value": "ByBlock"
+        },
+        {
+          "code": 3,
+          "value": "Continuous"
+        },
+        {
+          "code": 2,
+          "value": "ByLayer"
+        },
+        {
+          "code": 2,
+          "value": "Continuous"
+        },
+        {
+          "code": 3,
+          "value": "Solid line"
+        },
+        {
+          "code": 2,
+          "value": "ACAD_ISO02W100"
+        },
+        {
+          "code": 3,
+          "value": "定制线型"
+        },
+        {
+          "code": 2,
+          "value": "ACAD_ISO03W100"
+        },
+        {
+          "code": 2,
+          "value": "ACAD_ISO04W100"
+        },
+        {
+          "code": 2,
+          "value": "ACAD_ISO05W100"
+        },
+        {
+          "code": 2,
+          "value": "ACAD_ISO06W100"
+        },
+        {
+          "code": 2,
+          "value": "CENTER"
+        },
+        {
+          "code": 2,
+          "value": "DASHED"
+        },
+        {
+          "code": 2,
+          "value": "DOT"
+        },
+        {
+          "code": 2,
+          "value": "LAYER"
+        },
+        {
+          "code": 2,
+          "value": "0"
+        },
+        {
+          "code": 6,
+          "value": "Continuous"
+        },
+        {
+          "code": 2,
+          "value": "STYLE"
+        },
+        {
+          "code": 3,
+          "value": "txt_____.ttf"
+        },
+        {
+          "code": 1000,
+          "value": "txt"
+        },
+        {
+          "code": 2,
+          "value": "mxcadcommenttextstyle"
+        },
+        {
+          "code": 3,
+          "value": "txt.shx"
+        },
+        {
+          "code": 4,
+          "value": "hztxt.shx"
+        },
+        {
+          "code": 2,
+          "value": "VIEW"
+        },
+        {
+          "code": 2,
+          "value": "UCS"
+        },
+        {
+          "code": 2,
+          "value": "APPID"
+        },
+        {
+          "code": 2,
+          "value": "ACAD"
+        },
+        {
+          "code": 2,
+          "value": "Mx5A347595-AE13-47C0-A5CD-458388691E2F"
+        },
+        {
+          "code": 2,
+          "value": "ACAD_MLEADERVER"
+        },
+        {
+          "code": 2,
+          "value": "ACAD_EXEMPT_FROM_CAD_STANDARDS"
+        },
+        {
+          "code": 2,
+          "value": "Acad_TC"
+        },
+        {
+          "code": 2,
+          "value": "ACAD_NAV_VCDISPLAY"
+        },
+        {
+          "code": 2,
+          "value": "DIMSTYLE"
+        },
+        {
+          "code": 2,
+          "value": "mxcadcommentdimstyle"
+        },
+        {
+          "code": 2,
+          "value": "BLOCK_RECORD"
+        },
+        {
+          "code": 2,
+          "value": "*Model_Space"
+        },
+        {
+          "code": 2,
+          "value": "*Paper_Space"
+        },
+        {
+          "code": 2,
+          "value": "*Paper_Space0"
+        },
+        {
+          "code": 2,
+          "value": "BLOCKS"
+        },
+        {
+          "code": 3,
+          "value": "*Model_Space"
+        },
+        {
+          "code": 3,
+          "value": "*Paper_Space"
+        },
+        {
+          "code": 3,
+          "value": "*Paper_Space0"
+        },
+        {
+          "code": 2,
+          "value": "ENTITIES"
+        },
+        {
+          "code": 1,
+          "value": "Pt1"
+        },
+        {
+          "code": 1,
+          "value": "Pt2"
+        },
+        {
+          "code": 1,
+          "value": "Pt3"
+        },
+        {
+          "code": 1,
+          "value": "Pt4"
+        },
+        {
+          "code": 1,
+          "value": "Pt5"
+        },
+        {
+          "code": 1,
+          "value": "Pt6"
+        },
+        {
+          "code": 2,
+          "value": "OBJECTS"
+        },
+        {
+          "code": 3,
+          "value": "ACAD_CIP_PREVIOUS_PRODUCT_INFO"
+        },
+        {
+          "code": 3,
+          "value": "ACAD_COLOR"
+        },
+        {
+          "code": 3,
+          "value": "ACAD_DETAILVIEWSTYLE"
+        },
+        {
+          "code": 3,
+          "value": "ACAD_GROUP"
+        },
+        {
+          "code": 3,
+          "value": "ACAD_LAYOUT"
+        },
+        {
+          "code": 3,
+          "value": "ACAD_MATERIAL"
+        },
+        {
+          "code": 3,
+          "value": "ACAD_MLEADERSTYLE"
+        },
+        {
+          "code": 3,
+          "value": "ACAD_MLINESTYLE"
+        },
+        {
+          "code": 3,
+          "value": "ACAD_PLOTSETTINGS"
+        },
+        {
+          "code": 3,
+          "value": "ACAD_PLOTSTYLENAME"
+        },
+        {
+          "code": 3,
+          "value": "ACAD_SCALELIST"
+        },
+        {
+          "code": 3,
+          "value": "ACAD_SECTIONVIEWSTYLE"
+        },
+        {
+          "code": 3,
+          "value": "ACAD_TABLESTYLE"
+        },
+        {
+          "code": 3,
+          "value": "ACAD_VISUALSTYLE"
+        },
+        {
+          "code": 3,
+          "value": "AcDbVariableDictionary"
+        },
+        {
+          "code": 3,
+          "value": "ACDB_RECOMPOSE_DATA"
+        },
+        {
+          "code": 3,
+          "value": "ACAD_LAYERSTATES"
+        },
+        {
+          "code": 3,
+          "value": "ADSK_XREC_LAYER_RECONCILED"
+        },
+        {
+          "code": 3,
+          "value": "ACAD_SORTENTS"
+        },
+        {
+          "code": 300,
+          "value": "ACD"
+        },
+        {
+          "code": 300,
+          "value": "2022"
+        },
+        {
+          "code": 3,
+          "value": "Imperial24"
+        },
+        {
+          "code": 3,
+          "value": "Layout1"
+        },
+        {
+          "code": 3,
+          "value": "Layout2"
+        },
+        {
+          "code": 3,
+          "value": "Model"
+        },
+        {
+          "code": 3,
+          "value": "ByBlock"
+        },
+        {
+          "code": 3,
+          "value": "ByLayer"
+        },
+        {
+          "code": 3,
+          "value": "Global"
+        },
+        {
+          "code": 3,
+          "value": "Standard"
+        },
+        {
+          "code": 3,
+          "value": "Normal"
+        },
+        {
+          "code": 3,
+          "value": "A0"
+        },
+        {
+          "code": 3,
+          "value": "A1"
+        },
+        {
+          "code": 3,
+          "value": "A2"
+        },
+        {
+          "code": 3,
+          "value": "A3"
+        },
+        {
+          "code": 3,
+          "value": "A4"
+        },
+        {
+          "code": 3,
+          "value": "A5"
+        },
+        {
+          "code": 3,
+          "value": "A6"
+        },
+        {
+          "code": 3,
+          "value": "A7"
+        },
+        {
+          "code": 3,
+          "value": "A8"
+        },
+        {
+          "code": 3,
+          "value": "A9"
+        },
+        {
+          "code": 3,
+          "value": "B1"
+        },
+        {
+          "code": 3,
+          "value": "B2"
+        },
+        {
+          "code": 3,
+          "value": "B3"
+        },
+        {
+          "code": 3,
+          "value": "B4"
+        },
+        {
+          "code": 3,
+          "value": "B5"
+        },
+        {
+          "code": 3,
+          "value": "B6"
+        },
+        {
+          "code": 3,
+          "value": "B7"
+        },
+        {
+          "code": 3,
+          "value": "2dWireframe"
+        },
+        {
+          "code": 3,
+          "value": "Basic"
+        },
+        {
+          "code": 3,
+          "value": "Brighten"
+        },
+        {
+          "code": 3,
+          "value": "ColorChange"
+        },
+        {
+          "code": 3,
+          "value": "Conceptual"
+        },
+        {
+          "code": 3,
+          "value": "Dim"
+        },
+        {
+          "code": 3,
+          "value": "EdgeColorOff"
+        },
+        {
+          "code": 3,
+          "value": "Facepattern"
+        },
+        {
+          "code": 3,
+          "value": "Flat"
+        },
+        {
+          "code": 3,
+          "value": "FlatWithEdges"
+        },
+        {
+          "code": 3,
+          "value": "Gouraud"
+        },
+        {
+          "code": 3,
+          "value": "GouraudWithEdges"
+        },
+        {
+          "code": 3,
+          "value": "Hidden"
+        },
+        {
+          "code": 3,
+          "value": "JitterOff"
+        },
+        {
+          "code": 3,
+          "value": "Linepattern"
+        },
+        {
+          "code": 3,
+          "value": "OverhangOff"
+        },
+        {
+          "code": 3,
+          "value": "Realistic"
+        },
+        {
+          "code": 3,
+          "value": "Shaded"
+        },
+        {
+          "code": 3,
+          "value": "Shaded with edges"
+        },
+        {
+          "code": 3,
+          "value": "Shades of Gray"
+        },
+        {
+          "code": 3,
+          "value": "Sketchy"
+        },
+        {
+          "code": 3,
+          "value": "Thicken"
+        },
+        {
+          "code": 3,
+          "value": "Wireframe"
+        },
+        {
+          "code": 3,
+          "value": "X-Ray"
+        },
+        {
+          "code": 3,
+          "value": "CANNOSCALE"
+        },
+        {
+          "code": 3,
+          "value": "CMLEADERSTYLE"
+        },
+        {
+          "code": 3,
+          "value": "CTABLESTYLE"
+        },
+        {
+          "code": 3,
+          "value": "CVIEWDETAILSTYLE"
+        },
+        {
+          "code": 3,
+          "value": "CVIEWSECTIONSTYLE"
+        },
+        {
+          "code": 3,
+          "value": "LAYEREVAL"
+        },
+        {
+          "code": 3,
+          "value": "LAYERNOTIFY"
+        },
+        {
+          "code": 300,
+          "value": "Imperial24"
+        },
+        {
+          "code": 300,
+          "value": "%<\\AcVar ViewType \\f \"%tc1\">% %<\\AcVar ViewDetailId>%\\PSCALE %<\\AcVar ViewScale \\f \"%sn\">%"
+        },
+        {
+          "code": 2,
+          "value": "none_device"
+        },
+        {
+          "code": 4,
+          "value": "ISO_C5_(229.00_x_162.00_MM)"
+        },
+        {
+          "code": 1,
+          "value": "Layout1"
+        },
+        {
+          "code": 1,
+          "value": "Layout2"
+        },
+        {
+          "code": 1,
+          "value": "Model"
+        },
+        {
+          "code": 1,
+          "value": "ByBlock"
+        },
+        {
+          "code": 1,
+          "value": "ByLayer"
+        },
+        {
+          "code": 1,
+          "value": "Global"
+        },
+        {
+          "code": 2,
+          "value": "STANDARD"
+        },
+        {
+          "code": 6,
+          "value": "BYLAYER"
+        },
+        {
+          "code": 300,
+          "value": "1:1"
+        },
+        {
+          "code": 300,
+          "value": "1/128\" = 1'-0\""
+        },
+        {
+          "code": 300,
+          "value": "1/64\" = 1'-0\""
+        },
+        {
+          "code": 300,
+          "value": "1/32\" = 1'-0\""
+        },
+        {
+          "code": 300,
+          "value": "1/16\" = 1'-0\""
+        },
+        {
+          "code": 300,
+          "value": "3/32\" = 1'-0\""
+        },
+        {
+          "code": 300,
+          "value": "1/8\" = 1'-0\""
+        },
+        {
+          "code": 300,
+          "value": "3/16\" = 1'-0\""
+        },
+        {
+          "code": 300,
+          "value": "1/4\" = 1'-0\""
+        },
+        {
+          "code": 300,
+          "value": "3/8\" = 1'-0\""
+        },
+        {
+          "code": 300,
+          "value": "1/2\" = 1'-0\""
+        },
+        {
+          "code": 300,
+          "value": "3/4\" = 1'-0\""
+        },
+        {
+          "code": 300,
+          "value": "1\" = 1'-0\""
+        },
+        {
+          "code": 300,
+          "value": "1-1/2\" = 1'-0\""
+        },
+        {
+          "code": 300,
+          "value": "3\" = 1'-0\""
+        },
+        {
+          "code": 300,
+          "value": "6\" = 1'-0\""
+        },
+        {
+          "code": 300,
+          "value": "1'-0\" = 1'-0\""
+        },
+        {
+          "code": 300,
+          "value": "I, O, Q, S, X, Z"
+        },
+        {
+          "code": 300,
+          "value": "%<\\AcVar ViewType \\f \"%tc1\">% %<\\AcVar ViewSectionStartId>%-%<\\AcVar ViewSectionEndId>%\\PSCALE %<\\AcVar ViewScale \\f \"%sn\">%"
+        },
+        {
+          "code": 300,
+          "value": "ANSI31"
+        },
+        {
+          "code": 2,
+          "value": "2dWireframe"
+        },
+        {
+          "code": 1,
+          "value": "strokes_ogs.tif"
+        },
+        {
+          "code": 2,
+          "value": "Basic"
+        },
+        {
+          "code": 2,
+          "value": "Brighten"
+        },
+        {
+          "code": 2,
+          "value": "ColorChange"
+        },
+        {
+          "code": 2,
+          "value": "Conceptual"
+        },
+        {
+          "code": 2,
+          "value": "Dim"
+        },
+        {
+          "code": 2,
+          "value": "EdgeColorOff"
+        },
+        {
+          "code": 2,
+          "value": "Facepattern"
+        },
+        {
+          "code": 2,
+          "value": "Flat"
+        },
+        {
+          "code": 2,
+          "value": "FlatWithEdges"
+        },
+        {
+          "code": 2,
+          "value": "Gouraud"
+        },
+        {
+          "code": 2,
+          "value": "GouraudWithEdges"
+        },
+        {
+          "code": 2,
+          "value": "Hidden"
+        },
+        {
+          "code": 2,
+          "value": "JitterOff"
+        },
+        {
+          "code": 2,
+          "value": "Linepattern"
+        },
+        {
+          "code": 2,
+          "value": "OverhangOff"
+        },
+        {
+          "code": 2,
+          "value": "Realistic"
+        },
+        {
+          "code": 2,
+          "value": "Shaded"
+        },
+        {
+          "code": 2,
+          "value": "Shaded with edges"
+        },
+        {
+          "code": 2,
+          "value": "Shades of Gray"
+        },
+        {
+          "code": 2,
+          "value": "Sketchy"
+        },
+        {
+          "code": 2,
+          "value": "Thicken"
+        },
+        {
+          "code": 2,
+          "value": "Wireframe"
+        },
+        {
+          "code": 2,
+          "value": "X-Ray"
+        },
+        {
+          "code": 1,
+          "value": "1:1"
+        },
+        {
+          "code": 1,
+          "value": "Standard"
+        },
+        {
+          "code": 1,
+          "value": "Imperial24"
+        },
+        {
+          "code": 1,
+          "value": "1"
+        },
+        {
+          "code": 1,
+          "value": "15"
+        },
+        {
+          "code": 3,
+          "value": "ACAD_ROUNDTRIP_2008_TABLESTYLE_CELLSTYLEMAP"
+        },
+        {
+          "code": 300,
+          "value": "CELLSTYLE"
+        },
+        {
+          "code": 1,
+          "value": "TABLEFORMAT_BEGIN"
+        },
+        {
+          "code": 300,
+          "value": "CONTENTFORMAT"
+        },
+        {
+          "code": 1,
+          "value": "CONTENTFORMAT_BEGIN"
+        },
+        {
+          "code": 309,
+          "value": "CONTENTFORMAT_END"
+        },
+        {
+          "code": 301,
+          "value": "MARGIN"
+        },
+        {
+          "code": 1,
+          "value": "CELLMARGIN_BEGIN"
+        },
+        {
+          "code": 309,
+          "value": "CELLMARGIN_END"
+        },
+        {
+          "code": 302,
+          "value": "GRIDFORMAT"
+        },
+        {
+          "code": 1,
+          "value": "GRIDFORMAT_BEGIN"
+        },
+        {
+          "code": 309,
+          "value": "GRIDFORMAT_END"
+        },
+        {
+          "code": 309,
+          "value": "TABLEFORMAT_END"
+        },
+        {
+          "code": 1,
+          "value": "CELLSTYLE_BEGIN"
+        },
+        {
+          "code": 300,
+          "value": "_TITLE"
+        },
+        {
+          "code": 309,
+          "value": "CELLSTYLE_END"
+        },
+        {
+          "code": 300,
+          "value": "_HEADER"
+        },
+        {
+          "code": 300,
+          "value": "_DATA"
+        }
+      ],
+      "native_ascii_strings": [
+        "AC1032",
+        "RdAkRdAkRdAU_",
+        "PLTE!(0",
+        "33333f33",
+        "3f33ff3f",
+        "f33f3ff3",
+        "ff3fffff",
+        "(((555CCCPPP]]]kkkxxx",
+        "AdAkAdAkAdA",
+        "`dA+`dA",
+        ",$,D,d,",
+        "#D(d+d\"",
+        "6$+$%D.",
+        "X~\\t1x",
+        "fffffg",
+        "03  (B",
+        "x H%_B5",
+        "x h%_k",
+        "G\"  75",
+        "\"-Sc>H",
+        "x!(%_N",
+        "Z6M#2 +",
+        "AP$\"t:;",
+        "R#@`=t1",
+        "-&-F-f-",
+        ".&.F.f.",
+        "$*$_72$",
+        "fQyWXAz",
+        ".v}e][d]",
+        "k.\\%HT]7",
+        "*j.\\eT]",
+        "i.]t]7",
+        "l#5F l",
+        "Q\"d5 #",
+        "A)A`#,",
+        "u@@@\"d|6",
+        "\"Ack\"0d\"",
+        ")\"9Pq#9P5(8P",
+        "db&.Y$=f9G#",
+        "\"BVGcX",
+        "DEADYDEDYD[",
+        " U@bT@",
+        "gdA+gdA+gdA",
+        "fdAKfdAKfdA",
+        "odA+kdA+kdA",
+        "FQJ>@O",
+        "r^;G;V",
+        "ndAkodAkndAkndA",
+        "ndAkmdAkmdA",
+        " & F f ",
+        "(j6j%J",
+        "AcDb:AppInfoHistory",
+        "Preview",
+        "Summary\\T",
+        "Objects",
+        ":ObjFreeSpaceP",
+        "Templat ",
+        "Handle ",
+        "Class ",
+        "AuxHeader"
+      ],
+      "native_utf16_strings": [
+        "AppInfoDataList",
+        "<ProductInformation name =\\\"AutoCAD\\\" build_version=\\\"S.51.0.0(x64)\\\" registry_version=\\\"24.1\\\" install_id_string=\\\"ACAD-5101:409\\\" registry_localeID=\\\"1033\\\" git_commit_id=\\\"679e52adae745bef302efec42858ee85310d9a59",
+        "AppInfoDataList",
+        "<ProductInformation name =\"ODA SDK\" CompanyName = \"Open Design Alliance\" build_version=\"0.0\" registry_version=\"23.11\" install_id_string=\"ODA\" registry_localeID=\"1033\"/>",
+        "<prop_set fmt_id=\"{f29f85e0-4ff9-1068-ab91-08002b27b3d9}\"><prop id=\"8\"><string>13-33</string></prop><prop id=\"258\"><string>AutoCAD 2022</string></prop><prop id=\"259\"><string>S.51.0.0</string></prop><prop id=\"10\"><datetime>2026-09-28T14:30:47</datetime></prop></prop_set>",
+        "<ProductInformation name =\\\"AutoCAD\\\" build_version=\\\"S.51.0.0(x64)\\\" registry_version=\\\"24.1\\\" install_id_string=\\\"ACAD-5101:409\\\" registry_localeID=\\\"1033\\\" git_commit_id=\\\"679e52adae745bef302efec42858ee85310d9a59",
+        "Continuous",
+        "ACAD_COLOR",
+        "MATERIAL",
+        "TSTYLENAME",
+        "ByLayer",
+        "FlatWithEdges",
+        "JitterOff",
+        "Shaded",
+        "Thicken",
+        "ceptual",
+        "h edge",
+        "s of G",
+        "txt.shx",
+        "TANDARD",
+        "5_(229.00_x_16",
+        "{9679A1B0-8EDB-984",
+        "BEA-6404EFEBF739}"
+      ]
+    },
+    {
+      "file": "projects/my-house/surveys/elevation.dwg",
+      "original_unchanged": true,
+      "all_text_entities": [
+        {
+          "type": "MTEXT",
+          "handle": "6A",
+          "text": "Pt1\n1664.884"
+        },
+        {
+          "type": "MTEXT",
+          "handle": "6C",
+          "text": "Pt2\n1665.529"
+        },
+        {
+          "type": "MTEXT",
+          "handle": "6E",
+          "text": "Pt3\n1665.697"
+        },
+        {
+          "type": "MTEXT",
+          "handle": "70",
+          "text": "Pt4\n1665.648"
+        },
+        {
+          "type": "MTEXT",
+          "handle": "72",
+          "text": "Pt5\n1669.394"
+        },
+        {
+          "type": "MTEXT",
+          "handle": "74",
+          "text": "Pt6\n1669.654"
+        },
+        {
+          "type": "MTEXT",
+          "handle": "76",
+          "text": "Pt7\n1669.490"
+        },
+        {
+          "type": "MTEXT",
+          "handle": "78",
+          "text": "Pt8\n1667.925"
+        },
+        {
+          "type": "MTEXT",
+          "handle": "7A",
+          "text": "Pt9\n1669.952"
+        },
+        {
+          "type": "MTEXT",
+          "handle": "7C",
+          "text": "Pt10\n1673.050"
+        },
+        {
+          "type": "MTEXT",
+          "handle": "7E",
+          "text": "Pt11\n1672.913"
+        },
+        {
+          "type": "MTEXT",
+          "handle": "80",
+          "text": "Pt12\n1672.744"
+        },
+        {
+          "type": "MTEXT",
+          "handle": "82",
+          "text": "Pt13\n1674.738"
+        },
+        {
+          "type": "MTEXT",
+          "handle": "84",
+          "text": "Pt14\n1674.855"
+        },
+        {
+          "type": "MTEXT",
+          "handle": "86",
+          "text": "Pt15\n1674.239"
+        },
+        {
+          "type": "MTEXT",
+          "handle": "88",
+          "text": "Pt16\n1677.438"
+        },
+        {
+          "type": "MTEXT",
+          "handle": "8A",
+          "text": "Pt17\n1677.805"
+        },
+        {
+          "type": "MTEXT",
+          "handle": "8C",
+          "text": "Pt18\n1674.675"
+        },
+        {
+          "type": "MTEXT",
+          "handle": "8E",
+          "text": "Pt19\n1677.613"
+        },
+        {
+          "type": "MTEXT",
+          "handle": "90",
+          "text": "Pt20\n1677.632"
+        },
+        {
+          "type": "MTEXT",
+          "handle": "92",
+          "text": "نقطه مبنا\n1677.462"
+        }
+      ],
+      "custom_objects": [
+        {
+          "type": "XRECORD",
+          "handle": "D4",
+          "tags": [
+            [
+              0,
+              "XRECORD"
+            ],
+            [
+              5,
+              "D4"
+            ],
+            [
+              102,
+              "{ACAD_REACTORS"
+            ],
+            [
+              330,
+              "C"
+            ],
+            [
+              102,
+              "}"
+            ],
+            [
+              330,
+              "C"
+            ],
+            [
+              100,
+              "AcDbXrecord"
+            ],
+            [
+              280,
+              "1"
+            ],
+            [
+              90,
+              "1"
+            ],
+            [
+              330,
+              "5A"
+            ]
+          ]
+        },
+        {
+          "type": "DICTIONARYVAR",
+          "handle": "94",
+          "tags": [
+            [
+              0,
+              "DICTIONARYVAR"
+            ],
+            [
+              5,
+              "94"
+            ],
+            [
+              102,
+              "{ACAD_REACTORS"
+            ],
+            [
+              330,
+              "93"
+            ],
+            [
+              102,
+              "}"
+            ],
+            [
+              330,
+              "93"
+            ],
+            [
+              100,
+              "DictionaryVariables"
+            ],
+            [
+              280,
+              "0"
+            ],
+            [
+              1,
+              "1:1"
+            ]
+          ]
+        },
+        {
+          "type": "DICTIONARYVAR",
+          "handle": "CD",
+          "tags": [
+            [
+              0,
+              "DICTIONARYVAR"
+            ],
+            [
+              5,
+              "CD"
+            ],
+            [
+              102,
+              "{ACAD_REACTORS"
+            ],
+            [
+              330,
+              "93"
+            ],
+            [
+              102,
+              "}"
+            ],
+            [
+              330,
+              "93"
+            ],
+            [
+              100,
+              "DictionaryVariables"
+            ],
+            [
+              280,
+              "0"
+            ],
+            [
+              1,
+              "Standard"
+            ]
+          ]
+        },
+        {
+          "type": "DICTIONARYVAR",
+          "handle": "CC",
+          "tags": [
+            [
+              0,
+              "DICTIONARYVAR"
+            ],
+            [
+              5,
+              "CC"
+            ],
+            [
+              102,
+              "{ACAD_REACTORS"
+            ],
+            [
+              330,
+              "93"
+            ],
+            [
+              102,
+              "}"
+            ],
+            [
+              330,
+              "93"
+            ],
+            [
+              100,
+              "DictionaryVariables"
+            ],
+            [
+              280,
+              "0"
+            ],
+            [
+              1,
+              "Standard"
+            ]
+          ]
+        },
+        {
+          "type": "DICTIONARYVAR",
+          "handle": "D5",
+          "tags": [
+            [
+              0,
+              "DICTIONARYVAR"
+            ],
+            [
+              5,
+              "D5"
+            ],
+            [
+              102,
+              "{ACAD_REACTORS"
+            ],
+            [
+              330,
+              "93"
+            ],
+            [
+              102,
+              "}"
+            ],
+            [
+              330,
+              "93"
+            ],
+            [
+              100,
+              "DictionaryVariables"
+            ],
+            [
+              280,
+              "0"
+            ],
+            [
+              1,
+              "Imperial24"
+            ]
+          ]
+        },
+        {
+          "type": "DICTIONARYVAR",
+          "handle": "D6",
+          "tags": [
+            [
+              0,
+              "DICTIONARYVAR"
+            ],
+            [
+              5,
+              "D6"
+            ],
+            [
+              102,
+              "{ACAD_REACTORS"
+            ],
+            [
+              330,
+              "93"
+            ],
+            [
+              102,
+              "}"
+            ],
+            [
+              330,
+              "93"
+            ],
+            [
+              100,
+              "DictionaryVariables"
+            ],
+            [
+              280,
+              "0"
+            ],
+            [
+              1,
+              "Imperial24"
+            ]
+          ]
+        },
+        {
+          "type": "DICTIONARYVAR",
+          "handle": "95",
+          "tags": [
+            [
+              0,
+              "DICTIONARYVAR"
+            ],
+            [
+              5,
+              "95"
+            ],
+            [
+              102,
+              "{ACAD_REACTORS"
+            ],
+            [
+              330,
+              "93"
+            ],
+            [
+              102,
+              "}"
+            ],
+            [
+              330,
+              "93"
+            ],
+            [
+              100,
+              "DictionaryVariables"
+            ],
+            [
+              280,
+              "0"
+            ],
+            [
+              1,
+              "2"
+            ]
+          ]
+        }
+      ],
+      "block_and_xref_records": [
+        {
+          "name": "*Model_Space",
+          "flags": 0,
+          "xref_path": ""
+        },
+        {
+          "name": "*Paper_Space",
+          "flags": 0,
+          "xref_path": ""
+        },
+        {
+          "name": "*Paper_Space0",
+          "flags": 0,
+          "xref_path": ""
+        }
+      ],
+      "header_custom_vars": [],
+      "all_string_tags": [
+        {
+          "code": 2,
+          "value": "HEADER"
+        },
+        {
+          "code": 1,
+          "value": "AC1032"
+        },
+        {
+          "code": 3,
+          "value": "ANSI_1252"
+        },
+        {
+          "code": 1,
+          "value": "ershadqaderi"
+        },
+        {
+          "code": 7,
+          "value": "Standard"
+        },
+        {
+          "code": 8,
+          "value": "0"
+        },
+        {
+          "code": 6,
+          "value": "ByBlock"
+        },
+        {
+          "code": 2,
+          "value": "Standard"
+        },
+        {
+          "code": 1,
+          "value": "."
+        },
+        {
+          "code": 2,
+          "value": "{31707835-73e1-b974-f577-3673f2736634}"
+        },
+        {
+          "code": 2,
+          "value": "{FAEB1C32-E019-11D5-929B-00C0DF256EC4}"
+        },
+        {
+          "code": 2,
+          "value": "CLASSES"
+        },
+        {
+          "code": 1,
+          "value": "ACDBDICTIONARYWDFLT"
+        },
+        {
+          "code": 2,
+          "value": "AcDbDictionaryWithDefault"
+        },
+        {
+          "code": 3,
+          "value": "ObjectDBX Classes"
+        },
+        {
+          "code": 1,
+          "value": "VISUALSTYLE"
+        },
+        {
+          "code": 2,
+          "value": "AcDbVisualStyle"
+        },
+        {
+          "code": 1,
+          "value": "MATERIAL"
+        },
+        {
+          "code": 2,
+          "value": "AcDbMaterial"
+        },
+        {
+          "code": 1,
+          "value": "SCALE"
+        },
+        {
+          "code": 2,
+          "value": "AcDbScale"
+        },
+        {
+          "code": 1,
+          "value": "TABLESTYLE"
+        },
+        {
+          "code": 2,
+          "value": "AcDbTableStyle"
+        },
+        {
+          "code": 1,
+          "value": "MLEADERSTYLE"
+        },
+        {
+          "code": 2,
+          "value": "AcDbMLeaderStyle"
+        },
+        {
+          "code": 3,
+          "value": "ACDB_MLEADERSTYLE_CLASS"
+        },
+        {
+          "code": 1,
+          "value": "SUN"
+        },
+        {
+          "code": 2,
+          "value": "AcDbSun"
+        },
+        {
+          "code": 3,
+          "value": "SCENEOE"
+        },
+        {
+          "code": 1,
+          "value": "DICTIONARYVAR"
+        },
+        {
+          "code": 2,
+          "value": "AcDbDictionaryVar"
+        },
+        {
+          "code": 1,
+          "value": "CELLSTYLEMAP"
+        },
+        {
+          "code": 2,
+          "value": "AcDbCellStyleMap"
+        },
+        {
+          "code": 1,
+          "value": "ACDBDETAILVIEWSTYLE"
+        },
+        {
+          "code": 2,
+          "value": "AcDbDetailViewStyle"
+        },
+        {
+          "code": 1,
+          "value": "ACDBSECTIONVIEWSTYLE"
+        },
+        {
+          "code": 2,
+          "value": "AcDbSectionViewStyle"
+        },
+        {
+          "code": 2,
+          "value": "TABLES"
+        },
+        {
+          "code": 2,
+          "value": "VPORT"
+        },
+        {
+          "code": 2,
+          "value": "*Active"
+        },
+        {
+          "code": 2,
+          "value": "LTYPE"
+        },
+        {
+          "code": 2,
+          "value": "ByBlock"
+        },
+        {
+          "code": 3,
+          "value": "Continuous"
+        },
+        {
+          "code": 2,
+          "value": "ByLayer"
+        },
+        {
+          "code": 2,
+          "value": "Continuous"
+        },
+        {
+          "code": 3,
+          "value": "Solid line"
+        },
+        {
+          "code": 2,
+          "value": "ACAD_ISO02W100"
+        },
+        {
+          "code": 3,
+          "value": "定制线型"
+        },
+        {
+          "code": 2,
+          "value": "ACAD_ISO03W100"
+        },
+        {
+          "code": 2,
+          "value": "ACAD_ISO04W100"
+        },
+        {
+          "code": 2,
+          "value": "ACAD_ISO05W100"
+        },
+        {
+          "code": 2,
+          "value": "ACAD_ISO06W100"
+        },
+        {
+          "code": 2,
+          "value": "CENTER"
+        },
+        {
+          "code": 2,
+          "value": "DASHED"
+        },
+        {
+          "code": 2,
+          "value": "DOT"
+        },
+        {
+          "code": 2,
+          "value": "LAYER"
+        },
+        {
+          "code": 2,
+          "value": "0"
+        },
+        {
+          "code": 6,
+          "value": "Continuous"
+        },
+        {
+          "code": 2,
+          "value": "STYLE"
+        },
+        {
+          "code": 1000,
+          "value": "txt"
+        },
+        {
+          "code": 2,
+          "value": "mxcadcommenttextstyle"
+        },
+        {
+          "code": 3,
+          "value": "txt.shx"
+        },
+        {
+          "code": 4,
+          "value": "hztxt.shx"
+        },
+        {
+          "code": 2,
+          "value": "VIEW"
+        },
+        {
+          "code": 2,
+          "value": "UCS"
+        },
+        {
+          "code": 2,
+          "value": "APPID"
+        },
+        {
+          "code": 2,
+          "value": "ACAD"
+        },
+        {
+          "code": 2,
+          "value": "Mx5A347595-AE13-47C0-A5CD-458388691E2F"
+        },
+        {
+          "code": 2,
+          "value": "ACAD_MLEADERVER"
+        },
+        {
+          "code": 2,
+          "value": "DIMSTYLE"
+        },
+        {
+          "code": 2,
+          "value": "mxcadcommentdimstyle"
+        },
+        {
+          "code": 2,
+          "value": "BLOCK_RECORD"
+        },
+        {
+          "code": 2,
+          "value": "*Model_Space"
+        },
+        {
+          "code": 2,
+          "value": "*Paper_Space"
+        },
+        {
+          "code": 2,
+          "value": "*Paper_Space0"
+        },
+        {
+          "code": 2,
+          "value": "BLOCKS"
+        },
+        {
+          "code": 3,
+          "value": "*Model_Space"
+        },
+        {
+          "code": 3,
+          "value": "*Paper_Space"
+        },
+        {
+          "code": 3,
+          "value": "*Paper_Space0"
+        },
+        {
+          "code": 2,
+          "value": "ENTITIES"
+        },
+        {
+          "code": 1,
+          "value": "Pt1\\P1664.884"
+        },
+        {
+          "code": 1,
+          "value": "Pt2\\P1665.529"
+        },
+        {
+          "code": 1,
+          "value": "Pt3\\P1665.697"
+        },
+        {
+          "code": 1,
+          "value": "Pt4\\P1665.648"
+        },
+        {
+          "code": 1,
+          "value": "Pt5\\P1669.394"
+        },
+        {
+          "code": 1,
+          "value": "Pt6\\P1669.654"
+        },
+        {
+          "code": 1,
+          "value": "Pt7\\P1669.490"
+        },
+        {
+          "code": 1,
+          "value": "Pt8\\P1667.925"
+        },
+        {
+          "code": 1,
+          "value": "Pt9\\P1669.952"
+        },
+        {
+          "code": 1,
+          "value": "Pt10\\P1673.050"
+        },
+        {
+          "code": 1,
+          "value": "Pt11\\P1672.913"
+        },
+        {
+          "code": 1,
+          "value": "Pt12\\P1672.744"
+        },
+        {
+          "code": 1,
+          "value": "Pt13\\P1674.738"
+        },
+        {
+          "code": 1,
+          "value": "Pt14\\P1674.855"
+        },
+        {
+          "code": 1,
+          "value": "Pt15\\P1674.239"
+        },
+        {
+          "code": 1,
+          "value": "Pt16\\P1677.438"
+        },
+        {
+          "code": 1,
+          "value": "Pt17\\P1677.805"
+        },
+        {
+          "code": 1,
+          "value": "Pt18\\P1674.675"
+        },
+        {
+          "code": 1,
+          "value": "Pt19\\P1677.613"
+        },
+        {
+          "code": 1,
+          "value": "Pt20\\P1677.632"
+        },
+        {
+          "code": 1,
+          "value": "نقطه مبنا\\P1677.462"
+        },
+        {
+          "code": 2,
+          "value": "OBJECTS"
+        },
+        {
+          "code": 3,
+          "value": "ACAD_DETAILVIEWSTYLE"
+        },
+        {
+          "code": 3,
+          "value": "ACAD_GROUP"
+        },
+        {
+          "code": 3,
+          "value": "ACAD_LAYOUT"
+        },
+        {
+          "code": 3,
+          "value": "ACAD_MATERIAL"
+        },
+        {
+          "code": 3,
+          "value": "ACAD_MLEADERSTYLE"
+        },
+        {
+          "code": 3,
+          "value": "ACAD_MLINESTYLE"
+        },
+        {
+          "code": 3,
+          "value": "ACAD_PLOTSETTINGS"
+        },
+        {
+          "code": 3,
+          "value": "ACAD_PLOTSTYLENAME"
+        },
+        {
+          "code": 3,
+          "value": "ACAD_SCALELIST"
+        },
+        {
+          "code": 3,
+          "value": "ACAD_SECTIONVIEWSTYLE"
+        },
+        {
+          "code": 3,
+          "value": "ACAD_TABLESTYLE"
+        },
+        {
+          "code": 3,
+          "value": "ACAD_VISUALSTYLE"
+        },
+        {
+          "code": 3,
+          "value": "AcDbVariableDictionary"
+        },
+        {
+          "code": 3,
+          "value": "ACDB_RECOMPOSE_DATA"
+        },
+        {
+          "code": 3,
+          "value": "Imperial24"
+        },
+        {
+          "code": 3,
+          "value": "Layout1"
+        },
+        {
+          "code": 3,
+          "value": "Layout2"
+        },
+        {
+          "code": 3,
+          "value": "Model"
+        },
+        {
+          "code": 3,
+          "value": "ByBlock"
+        },
+        {
+          "code": 3,
+          "value": "ByLayer"
+        },
+        {
+          "code": 3,
+          "value": "Global"
+        },
+        {
+          "code": 3,
+          "value": "Standard"
+        },
+        {
+          "code": 3,
+          "value": "Normal"
+        },
+        {
+          "code": 3,
+          "value": "A0"
+        },
+        {
+          "code": 3,
+          "value": "A1"
+        },
+        {
+          "code": 3,
+          "value": "A2"
+        },
+        {
+          "code": 3,
+          "value": "A3"
+        },
+        {
+          "code": 3,
+          "value": "A4"
+        },
+        {
+          "code": 3,
+          "value": "A5"
+        },
+        {
+          "code": 3,
+          "value": "A6"
+        },
+        {
+          "code": 3,
+          "value": "A7"
+        },
+        {
+          "code": 3,
+          "value": "A8"
+        },
+        {
+          "code": 3,
+          "value": "A9"
+        },
+        {
+          "code": 3,
+          "value": "B1"
+        },
+        {
+          "code": 3,
+          "value": "B2"
+        },
+        {
+          "code": 3,
+          "value": "B3"
+        },
+        {
+          "code": 3,
+          "value": "B4"
+        },
+        {
+          "code": 3,
+          "value": "B5"
+        },
+        {
+          "code": 3,
+          "value": "B6"
+        },
+        {
+          "code": 3,
+          "value": "B7"
+        },
+        {
+          "code": 3,
+          "value": "2dWireframe"
+        },
+        {
+          "code": 3,
+          "value": "Basic"
+        },
+        {
+          "code": 3,
+          "value": "Brighten"
+        },
+        {
+          "code": 3,
+          "value": "ColorChange"
+        },
+        {
+          "code": 3,
+          "value": "Conceptual"
+        },
+        {
+          "code": 3,
+          "value": "Dim"
+        },
+        {
+          "code": 3,
+          "value": "EdgeColorOff"
+        },
+        {
+          "code": 3,
+          "value": "Facepattern"
+        },
+        {
+          "code": 3,
+          "value": "Flat"
+        },
+        {
+          "code": 3,
+          "value": "FlatWithEdges"
+        },
+        {
+          "code": 3,
+          "value": "Gouraud"
+        },
+        {
+          "code": 3,
+          "value": "GouraudWithEdges"
+        },
+        {
+          "code": 3,
+          "value": "Hidden"
+        },
+        {
+          "code": 3,
+          "value": "JitterOff"
+        },
+        {
+          "code": 3,
+          "value": "Linepattern"
+        },
+        {
+          "code": 3,
+          "value": "OverhangOff"
+        },
+        {
+          "code": 3,
+          "value": "Realistic"
+        },
+        {
+          "code": 3,
+          "value": "Shaded"
+        },
+        {
+          "code": 3,
+          "value": "Shaded with edges"
+        },
+        {
+          "code": 3,
+          "value": "Shades of Gray"
+        },
+        {
+          "code": 3,
+          "value": "Sketchy"
+        },
+        {
+          "code": 3,
+          "value": "Thicken"
+        },
+        {
+          "code": 3,
+          "value": "Wireframe"
+        },
+        {
+          "code": 3,
+          "value": "X-Ray"
+        },
+        {
+          "code": 3,
+          "value": "CANNOSCALE"
+        },
+        {
+          "code": 3,
+          "value": "CMLEADERSTYLE"
+        },
+        {
+          "code": 3,
+          "value": "CTABLESTYLE"
+        },
+        {
+          "code": 3,
+          "value": "CVIEWDETAILSTYLE"
+        },
+        {
+          "code": 3,
+          "value": "CVIEWSECTIONSTYLE"
+        },
+        {
+          "code": 3,
+          "value": "XCLIPFRAME"
+        },
+        {
+          "code": 300,
+          "value": "Imperial24"
+        },
+        {
+          "code": 300,
+          "value": "%<\\AcVar ViewType \\f \"%tc1\">% %<\\AcVar ViewDetailId>%\\PSCALE %<\\AcVar ViewScale \\f \"%sn\">%"
+        },
+        {
+          "code": 2,
+          "value": "none_device"
+        },
+        {
+          "code": 4,
+          "value": "ISO_C5_(229.00_x_162.00_MM)"
+        },
+        {
+          "code": 1,
+          "value": "Layout1"
+        },
+        {
+          "code": 1,
+          "value": "Layout2"
+        },
+        {
+          "code": 1,
+          "value": "Model"
+        },
+        {
+          "code": 1,
+          "value": "ByBlock"
+        },
+        {
+          "code": 1,
+          "value": "ByLayer"
+        },
+        {
+          "code": 1,
+          "value": "Global"
+        },
+        {
+          "code": 6,
+          "value": "BYLAYER"
+        },
+        {
+          "code": 300,
+          "value": "1:1"
+        },
+        {
+          "code": 300,
+          "value": "1/128\" = 1'-0\""
+        },
+        {
+          "code": 300,
+          "value": "1/64\" = 1'-0\""
+        },
+        {
+          "code": 300,
+          "value": "1/32\" = 1'-0\""
+        },
+        {
+          "code": 300,
+          "value": "1/16\" = 1'-0\""
+        },
+        {
+          "code": 300,
+          "value": "3/32\" = 1'-0\""
+        },
+        {
+          "code": 300,
+          "value": "1/8\" = 1'-0\""
+        },
+        {
+          "code": 300,
+          "value": "3/16\" = 1'-0\""
+        },
+        {
+          "code": 300,
+          "value": "1/4\" = 1'-0\""
+        },
+        {
+          "code": 300,
+          "value": "3/8\" = 1'-0\""
+        },
+        {
+          "code": 300,
+          "value": "1/2\" = 1'-0\""
+        },
+        {
+          "code": 300,
+          "value": "3/4\" = 1'-0\""
+        },
+        {
+          "code": 300,
+          "value": "1\" = 1'-0\""
+        },
+        {
+          "code": 300,
+          "value": "1-1/2\" = 1'-0\""
+        },
+        {
+          "code": 300,
+          "value": "3\" = 1'-0\""
+        },
+        {
+          "code": 300,
+          "value": "6\" = 1'-0\""
+        },
+        {
+          "code": 300,
+          "value": "1'-0\" = 1'-0\""
+        },
+        {
+          "code": 300,
+          "value": "I, O, Q, S, X, Z"
+        },
+        {
+          "code": 300,
+          "value": "%<\\AcVar ViewType \\f \"%tc1\">% %<\\AcVar ViewSectionStartId>%-%<\\AcVar ViewSectionEndId>%\\PSCALE %<\\AcVar ViewScale \\f \"%sn\">%"
+        },
+        {
+          "code": 300,
+          "value": "ANSI31"
+        },
+        {
+          "code": 2,
+          "value": "2dWireframe"
+        },
+        {
+          "code": 1,
+          "value": "strokes_ogs.tif"
+        },
+        {
+          "code": 2,
+          "value": "Basic"
+        },
+        {
+          "code": 2,
+          "value": "Brighten"
+        },
+        {
+          "code": 2,
+          "value": "ColorChange"
+        },
+        {
+          "code": 2,
+          "value": "Conceptual"
+        },
+        {
+          "code": 2,
+          "value": "Dim"
+        },
+        {
+          "code": 2,
+          "value": "EdgeColorOff"
+        },
+        {
+          "code": 2,
+          "value": "Facepattern"
+        },
+        {
+          "code": 2,
+          "value": "Flat"
+        },
+        {
+          "code": 2,
+          "value": "FlatWithEdges"
+        },
+        {
+          "code": 2,
+          "value": "Gouraud"
+        },
+        {
+          "code": 2,
+          "value": "GouraudWithEdges"
+        },
+        {
+          "code": 2,
+          "value": "Hidden"
+        },
+        {
+          "code": 2,
+          "value": "JitterOff"
+        },
+        {
+          "code": 2,
+          "value": "Linepattern"
+        },
+        {
+          "code": 2,
+          "value": "OverhangOff"
+        },
+        {
+          "code": 2,
+          "value": "Realistic"
+        },
+        {
+          "code": 2,
+          "value": "Shaded"
+        },
+        {
+          "code": 2,
+          "value": "Shaded with edges"
+        },
+        {
+          "code": 2,
+          "value": "Shades of Gray"
+        },
+        {
+          "code": 2,
+          "value": "Sketchy"
+        },
+        {
+          "code": 2,
+          "value": "Thicken"
+        },
+        {
+          "code": 2,
+          "value": "Wireframe"
+        },
+        {
+          "code": 2,
+          "value": "X-Ray"
+        },
+        {
+          "code": 1,
+          "value": "1:1"
+        },
+        {
+          "code": 1,
+          "value": "Standard"
+        },
+        {
+          "code": 1,
+          "value": "Imperial24"
+        },
+        {
+          "code": 1,
+          "value": "2"
+        },
+        {
+          "code": 3,
+          "value": "ACAD_ROUNDTRIP_2008_TABLESTYLE_CELLSTYLEMAP"
+        },
+        {
+          "code": 300,
+          "value": "CELLSTYLE"
+        },
+        {
+          "code": 1,
+          "value": "TABLEFORMAT_BEGIN"
+        },
+        {
+          "code": 300,
+          "value": "CONTENTFORMAT"
+        },
+        {
+          "code": 1,
+          "value": "CONTENTFORMAT_BEGIN"
+        },
+        {
+          "code": 309,
+          "value": "CONTENTFORMAT_END"
+        },
+        {
+          "code": 301,
+          "value": "MARGIN"
+        },
+        {
+          "code": 1,
+          "value": "CELLMARGIN_BEGIN"
+        },
+        {
+          "code": 309,
+          "value": "CELLMARGIN_END"
+        },
+        {
+          "code": 302,
+          "value": "GRIDFORMAT"
+        },
+        {
+          "code": 1,
+          "value": "GRIDFORMAT_BEGIN"
+        },
+        {
+          "code": 309,
+          "value": "GRIDFORMAT_END"
+        },
+        {
+          "code": 309,
+          "value": "TABLEFORMAT_END"
+        },
+        {
+          "code": 1,
+          "value": "CELLSTYLE_BEGIN"
+        },
+        {
+          "code": 300,
+          "value": "_TITLE"
+        },
+        {
+          "code": 309,
+          "value": "CELLSTYLE_END"
+        },
+        {
+          "code": 300,
+          "value": "_HEADER"
+        },
+        {
+          "code": 300,
+          "value": "_DATA"
+        }
+      ],
+      "native_ascii_strings": [
+        "AC1021",
+        "hZ Z!9",
+        "#M(!DW",
+        "i9-Mb;",
+        "E 2` @Ao",
+        "WoXHUE",
+        "u)p79PDXA",
+        "HdXdM$",
+        "80rp\\2",
+        "@Rb!Vl",
+        "jN)R!<<",
+        "@A6QBQ]",
+        "3.P9AHy",
+        "sE\"n<d-n^",
+        "CyO,Z ",
+        "E\\\"D(H",
+        "f7=(KW",
+        ",%O(W1O",
+        "WQ 185",
+        "V  pI01",
+        "O;A`Yr",
+        "O;A`Yr",
+        "O;A`YrIs",
+        "O;A`Yr",
+        "Tf19Pq$A",
+        "Iu29S[",
+        "O;A`Yr",
+        "O;A`Yr",
+        "O;A`YrIs",
+        "O;A`Yr",
+        "Tf19Pq$A",
+        "Iu29S["
+      ],
+      "native_utf16_strings": [
+        "u0_a321",
+        "AppInfoDataList",
+        "Teigha(R) 23.11.0.0",
+        "fThis file was last saved by an Open Design Alliance (ODA) application or an ODA licensed application.",
+        "<ProductInformation name =\"ODA SDK\" CompanyName = \"Open Design Alliance\" build_version=\"0.0\" registry_version=\"23.11\" install_id_string=\"ODA\" registry_localeID=\"1033\"/>",
+        "Acad:Text",
+        "txt.shxB",
+        "/storage/emulated/0/MxDraw/fonts/",
+        "hztxt.shxB",
+        "/storage/emulated/0/MxDraw/fonts/",
+        "/storage/emulated/0/MxDraw/fonts/simplex.shx"
+      ]
+    }
+  ]
+}

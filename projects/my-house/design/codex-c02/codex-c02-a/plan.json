@@ -1,0 +1,5879 @@
+{
+  "schema_version": "0.1.0",
+  "option_id": "codex-c02-a",
+  "label": "Codex C02-A",
+  "strategy": "side-boundary-compact-core",
+  "parent": null,
+  "change_request": null,
+  "provenance": {
+    "created_at": "2026-10-21T19:28:36.335980Z",
+    "created_by": {
+      "kind": "agent",
+      "id": "codex",
+      "display_name": null,
+      "provider": null,
+      "model": null
+    },
+    "method": "cpsat_explicit_topology",
+    "tool": null,
+    "tool_version": null,
+    "inputs": [
+      {
+        "kind": "site",
+        "id": "site",
+        "version": 3,
+        "sha256": "abab9fb2d5433bd08c57b9748b5bc93fad2703b902fb178f1696814c54ff659f"
+      },
+      {
+        "kind": "space_program",
+        "id": "program",
+        "version": 7,
+        "sha256": "f522a494e42a4b89a9647de1b673fe55680e3e4dabcf28edb5bd19c3e428fdf0"
+      }
+    ],
+    "notes": null
+  },
+  "model": {
+    "schema_version": "0.1.0",
+    "id": "codex-c02-a",
+    "name": "Codex C02-A",
+    "units": "m",
+    "coordinate_system_id": "lcs-site",
+    "site_ref": {
+      "kind": "site",
+      "id": "site",
+      "version": 3,
+      "sha256": "abab9fb2d5433bd08c57b9748b5bc93fad2703b902fb178f1696814c54ff659f"
+    },
+    "program_ref": {
+      "kind": "space_program",
+      "id": "program",
+      "version": 7,
+      "sha256": "f522a494e42a4b89a9647de1b673fe55680e3e4dabcf28edb5bd19c3e428fdf0"
+    },
+    "levels": [
+      {
+        "id": "lv-lower",
+        "name": "Lower residential",
+        "elevation_m": 1671.4522982262974,
+        "floor_to_floor_m": 3.0
+      },
+      {
+        "id": "lv-entry",
+        "name": "Upper residential",
+        "elevation_m": 1674.4522982262974,
+        "floor_to_floor_m": 3.0
+      },
+      {
+        "id": "lv-upper",
+        "name": "Road — garage",
+        "elevation_m": 1677.4522982262974,
+        "floor_to_floor_m": 3.0
+      }
+    ],
+    "spaces": [
+      {
+        "id": "sp-stair-lv-lower",
+        "name": "Shared stair",
+        "function": "stair",
+        "level_id": "lv-lower",
+        "boundary": {
+          "outer": [
+            [
+              18.506554,
+              20.175288
+            ],
+            [
+              19.126892,
+              18.700439
+            ],
+            [
+              20.44511,
+              15.566384
+            ],
+            [
+              18.048479,
+              14.558334
+            ],
+            [
+              17.970937,
+              14.742691
+            ],
+            [
+              17.117972,
+              16.770609
+            ],
+            [
+              16.109923,
+              19.167239
+            ],
+            [
+              16.478636,
+              19.322323
+            ]
+          ],
+          "holes": []
+        },
+        "program_item_id": "pi-stair",
+        "zone_id": "z-private",
+        "floor_material_id": "m-floor"
+      },
+      {
+        "id": "sp-lift-lv-lower",
+        "name": "Lift",
+        "function": "lift",
+        "level_id": "lv-lower",
+        "boundary": {
+          "outer": [
+            [
+              17.117972,
+              16.770609
+            ],
+            [
+              17.970937,
+              14.742691
+            ],
+            [
+              16.127375,
+              13.967268
+            ],
+            [
+              15.274411,
+              15.995186
+            ]
+          ],
+          "holes": []
+        },
+        "program_item_id": "pi-lift",
+        "zone_id": "z-private",
+        "floor_material_id": "m-floor"
+      },
+      {
+        "id": "sp-stair-lv-entry",
+        "name": "Shared stair",
+        "function": "stair",
+        "level_id": "lv-entry",
+        "boundary": {
+          "outer": [
+            [
+              18.506554,
+              20.175288
+            ],
+            [
+              20.44511,
+              15.566384
+            ],
+            [
+              18.048479,
+              14.558334
+            ],
+            [
+              17.970937,
+              14.742691
+            ],
+            [
+              17.117972,
+              16.770609
+            ],
+            [
+              16.109923,
+              19.167239
+            ]
+          ],
+          "holes": []
+        },
+        "program_item_id": "pi-stair",
+        "zone_id": "z-day",
+        "floor_material_id": "m-floor"
+      },
+      {
+        "id": "sp-lift-lv-entry",
+        "name": "Lift",
+        "function": "lift",
+        "level_id": "lv-entry",
+        "boundary": {
+          "outer": [
+            [
+              17.117972,
+              16.770609
+            ],
+            [
+              17.970937,
+              14.742691
+            ],
+            [
+              16.127375,
+              13.967268
+            ],
+            [
+              15.274411,
+              15.995186
+            ]
+          ],
+          "holes": []
+        },
+        "program_item_id": "pi-lift",
+        "zone_id": "z-day",
+        "floor_material_id": "m-floor"
+      },
+      {
+        "id": "sp-stair-lv-upper",
+        "name": "Shared stair",
+        "function": "stair",
+        "level_id": "lv-upper",
+        "boundary": {
+          "outer": [
+            [
+              18.506554,
+              20.175288
+            ],
+            [
+              20.44511,
+              15.566384
+            ],
+            [
+              18.048479,
+              14.558334
+            ],
+            [
+              17.970937,
+              14.742691
+            ],
+            [
+              17.117972,
+              16.770609
+            ],
+            [
+              16.109923,
+              19.167239
+            ]
+          ],
+          "holes": []
+        },
+        "program_item_id": "pi-stair",
+        "zone_id": "z-day",
+        "floor_material_id": "m-floor"
+      },
+      {
+        "id": "sp-lift-lv-upper",
+        "name": "Lift",
+        "function": "lift",
+        "level_id": "lv-upper",
+        "boundary": {
+          "outer": [
+            [
+              17.117972,
+              16.770609
+            ],
+            [
+              17.970937,
+              14.742691
+            ],
+            [
+              16.127375,
+              13.967268
+            ],
+            [
+              15.274411,
+              15.995186
+            ]
+          ],
+          "holes": []
+        },
+        "program_item_id": "pi-lift",
+        "zone_id": "z-day",
+        "floor_material_id": "m-floor"
+      },
+      {
+        "id": "sp-garage",
+        "name": "Two-car garage",
+        "function": "garage",
+        "level_id": "lv-upper",
+        "boundary": {
+          "outer": [
+            [
+              12.007364,
+              22.215026
+            ],
+            [
+              13.24804,
+              19.265327
+            ],
+            [
+              14.721342,
+              15.762559
+            ],
+            [
+              10.665506,
+              14.05663
+            ],
+            [
+              8.637588,
+              13.203665
+            ],
+            [
+              5.92361,
+              19.656131
+            ]
+          ],
+          "holes": []
+        },
+        "program_item_id": "pi-garage",
+        "zone_id": "z-day",
+        "floor_material_id": "m-floor"
+      },
+      {
+        "id": "sp-office",
+        "name": "Quiet office",
+        "function": "study",
+        "level_id": "lv-upper",
+        "boundary": {
+          "outer": [
+            [
+              17.062523,
+              24.12431
+            ],
+            [
+              18.225656,
+              21.358967
+            ],
+            [
+              15.64467,
+              20.273376
+            ],
+            [
+              14.538533,
+              19.808122
+            ],
+            [
+              13.375399,
+              22.573465
+            ]
+          ],
+          "holes": []
+        },
+        "program_item_id": "pi-study-1",
+        "zone_id": "z-day",
+        "floor_material_id": "m-floor"
+      },
+      {
+        "id": "sp-plant",
+        "name": "Plant / utilities",
+        "function": "mechanical",
+        "level_id": "lv-upper",
+        "boundary": {
+          "outer": [
+            [
+              10.665506,
+              14.05663
+            ],
+            [
+              11.518471,
+              12.028712
+            ],
+            [
+              9.490553,
+              11.175747
+            ],
+            [
+              8.637588,
+              13.203665
+            ]
+          ],
+          "holes": []
+        },
+        "program_item_id": "pi-mechanical",
+        "zone_id": "z-day",
+        "floor_material_id": "m-floor"
+      },
+      {
+        "id": "sp-top-lobby",
+        "name": "Lift lobby",
+        "function": "hall",
+        "level_id": "lv-upper",
+        "boundary": {
+          "outer": [
+            [
+              15.64467,
+              20.273376
+            ],
+            [
+              16.109923,
+              19.167239
+            ],
+            [
+              17.117972,
+              16.770609
+            ],
+            [
+              15.274411,
+              15.995186
+            ],
+            [
+              14.721342,
+              15.762559
+            ],
+            [
+              13.24804,
+              19.265327
+            ],
+            [
+              14.538533,
+              19.808122
+            ]
+          ],
+          "holes": []
+        },
+        "program_item_id": null,
+        "zone_id": "z-day",
+        "floor_material_id": "m-floor"
+      },
+      {
+        "id": "sp-living",
+        "name": "Living",
+        "function": "living",
+        "level_id": "lv-entry",
+        "boundary": {
+          "outer": [
+            [
+              17.917034,
+              26.219497
+            ],
+            [
+              20.088217,
+              21.057524
+            ],
+            [
+              16.032381,
+              19.351595
+            ],
+            [
+              14.557532,
+              18.731257
+            ],
+            [
+              13.549482,
+              21.127887
+            ],
+            [
+              12.386349,
+              23.89323
+            ]
+          ],
+          "holes": []
+        },
+        "program_item_id": "pi-living",
+        "zone_id": "z-day",
+        "floor_material_id": "m-floor"
+      },
+      {
+        "id": "sp-dining",
+        "name": "Dining",
+        "function": "dining",
+        "level_id": "lv-entry",
+        "boundary": {
+          "outer": [
+            [
+              12.386349,
+              23.89323
+            ],
+            [
+              13.549482,
+              21.127887
+            ],
+            [
+              11.521564,
+              20.274923
+            ],
+            [
+              8.940578,
+              19.189331
+            ],
+            [
+              8.165156,
+              21.032893
+            ],
+            [
+              7.777444,
+              21.954674
+            ]
+          ],
+          "holes": []
+        },
+        "program_item_id": "pi-dining",
+        "zone_id": "z-day",
+        "floor_material_id": "m-floor"
+      },
+      {
+        "id": "sp-kitchen",
+        "name": "Kitchen + daily eating",
+        "function": "kitchen",
+        "level_id": "lv-entry",
+        "boundary": {
+          "outer": [
+            [
+              11.521564,
+              20.274923
+            ],
+            [
+              12.529614,
+              17.878292
+            ],
+            [
+              13.149952,
+              16.403443
+            ],
+            [
+              11.122034,
+              15.550478
+            ],
+            [
+              9.278472,
+              14.775056
+            ],
+            [
+              8.725403,
+              14.542429
+            ],
+            [
+              7.097016,
+              18.413909
+            ],
+            [
+              8.940578,
+              19.189331
+            ]
+          ],
+          "holes": []
+        },
+        "program_item_id": "pi-kitchen",
+        "zone_id": "z-day",
+        "floor_material_id": "m-floor"
+      },
+      {
+        "id": "sp-pantry",
+        "name": "Pantry",
+        "function": "pantry",
+        "level_id": "lv-entry",
+        "boundary": {
+          "outer": [
+            [
+              8.165156,
+              21.032893
+            ],
+            [
+              8.940578,
+              19.189331
+            ],
+            [
+              7.097016,
+              18.413909
+            ],
+            [
+              6.321594,
+              20.257471
+            ]
+          ],
+          "holes": []
+        },
+        "program_item_id": "pi-pantry",
+        "zone_id": "z-day",
+        "floor_material_id": "m-floor"
+      },
+      {
+        "id": "sp-day-lobby",
+        "name": "Entrance / shared landing",
+        "function": "hall",
+        "level_id": "lv-entry",
+        "boundary": {
+          "outer": [
+            [
+              16.032381,
+              19.351595
+            ],
+            [
+              16.109923,
+              19.167239
+            ],
+            [
+              17.117972,
+              16.770609
+            ],
+            [
+              15.274411,
+              15.995186
+            ],
+            [
+              13.615205,
+              15.297306
+            ],
+            [
+              13.149952,
+              16.403443
+            ],
+            [
+              12.529614,
+              17.878292
+            ],
+            [
+              14.557532,
+              18.731257
+            ]
+          ],
+          "holes": []
+        },
+        "program_item_id": null,
+        "zone_id": "z-day",
+        "floor_material_id": "m-floor"
+      },
+      {
+        "id": "sp-bath-vest",
+        "name": "Screened vestibule",
+        "function": "hall",
+        "level_id": "lv-entry",
+        "boundary": {
+          "outer": [
+            [
+              13.149952,
+              16.403443
+            ],
+            [
+              13.615205,
+              15.297306
+            ],
+            [
+              13.692747,
+              15.11295
+            ],
+            [
+              13.508391,
+              15.035407
+            ],
+            [
+              11.664829,
+              14.259985
+            ],
+            [
+              11.122034,
+              15.550478
+            ]
+          ],
+          "holes": []
+        },
+        "program_item_id": null,
+        "zone_id": "z-day",
+        "floor_material_id": "m-floor"
+      },
+      {
+        "id": "sp-day-bath",
+        "name": "Shower / WC",
+        "function": "bathroom",
+        "level_id": "lv-entry",
+        "boundary": {
+          "outer": [
+            [
+              11.122034,
+              15.550478
+            ],
+            [
+              11.664829,
+              14.259985
+            ],
+            [
+              12.207625,
+              12.969492
+            ],
+            [
+              10.364063,
+              12.194069
+            ],
+            [
+              9.278472,
+              14.775056
+            ]
+          ],
+          "holes": []
+        },
+        "program_item_id": "pi-bath-2",
+        "zone_id": "z-day",
+        "floor_material_id": "m-floor"
+      },
+      {
+        "id": "sp-store",
+        "name": "Store",
+        "function": "storage",
+        "level_id": "lv-entry",
+        "boundary": {
+          "outer": [
+            [
+              13.508391,
+              15.035407
+            ],
+            [
+              14.283814,
+              13.191846
+            ],
+            [
+              12.440252,
+              12.416423
+            ],
+            [
+              12.207625,
+              12.969492
+            ],
+            [
+              11.664829,
+              14.259985
+            ]
+          ],
+          "holes": []
+        },
+        "program_item_id": "pi-storage",
+        "zone_id": "z-day",
+        "floor_material_id": "m-floor"
+      },
+      {
+        "id": "sp-main-bed",
+        "name": "Parents",
+        "function": "bedroom",
+        "level_id": "lv-lower",
+        "boundary": {
+          "outer": [
+            [
+              17.363966,
+              25.986871
+            ],
+            [
+              19.302522,
+              21.377966
+            ],
+            [
+              18.196385,
+              20.912713
+            ],
+            [
+              16.168467,
+              20.059748
+            ],
+            [
+              15.548129,
+              21.534597
+            ],
+            [
+              14.229911,
+              24.668652
+            ]
+          ],
+          "holes": []
+        },
+        "program_item_id": "pi-bed-main",
+        "zone_id": "z-private",
+        "floor_material_id": "m-floor"
+      },
+      {
+        "id": "sp-elder-bed",
+        "name": "Grandparents",
+        "function": "bedroom",
+        "level_id": "lv-lower",
+        "boundary": {
+          "outer": [
+            [
+              14.229911,
+              24.668652
+            ],
+            [
+              15.548129,
+              21.534597
+            ],
+            [
+              14.073279,
+              20.914259
+            ],
+            [
+              11.492293,
+              19.828668
+            ],
+            [
+              10.871955,
+              21.303517
+            ],
+            [
+              10.174075,
+              22.962723
+            ]
+          ],
+          "holes": []
+        },
+        "program_item_id": "pi-bed-elder-1",
+        "zone_id": "z-private",
+        "floor_material_id": "m-floor"
+      },
+      {
+        "id": "sp-boys",
+        "name": "Boys / two beds",
+        "function": "bedroom",
+        "level_id": "lv-lower",
+        "boundary": {
+          "outer": [
+            [
+              13.489392,
+              16.112273
+            ],
+            [
+              13.799561,
+              15.374848
+            ],
+            [
+              14.730068,
+              13.162574
+            ],
+            [
+              10.674232,
+              11.456645
+            ],
+            [
+              9.433556,
+              14.406343
+            ],
+            [
+              9.986625,
+              14.63897
+            ],
+            [
+              12.014543,
+              15.491935
+            ]
+          ],
+          "holes": []
+        },
+        "program_item_id": "pi-bed-child-1",
+        "zone_id": "z-private",
+        "floor_material_id": "m-floor"
+      },
+      {
+        "id": "sp-girls",
+        "name": "Girls / two beds",
+        "function": "bedroom",
+        "level_id": "lv-lower",
+        "boundary": {
+          "outer": [
+            [
+              10.871955,
+              21.303517
+            ],
+            [
+              11.492293,
+              19.828668
+            ],
+            [
+              12.345257,
+              17.80075
+            ],
+            [
+              11.23912,
+              17.335497
+            ],
+            [
+              9.211202,
+              16.482532
+            ],
+            [
+              8.658134,
+              16.249905
+            ],
+            [
+              7.184831,
+              19.752673
+            ]
+          ],
+          "holes": []
+        },
+        "program_item_id": "pi-bed-child-2",
+        "zone_id": "z-private",
+        "floor_material_id": "m-floor"
+      },
+      {
+        "id": "sp-ensuite",
+        "name": "En-suite",
+        "function": "bathroom",
+        "level_id": "lv-lower",
+        "boundary": {
+          "outer": [
+            [
+              20.408659,
+              21.84322
+            ],
+            [
+              21.339166,
+              19.630946
+            ],
+            [
+              19.126892,
+              18.700439
+            ],
+            [
+              18.506554,
+              20.175288
+            ],
+            [
+              18.196385,
+              20.912713
+            ],
+            [
+              19.302522,
+              21.377966
+            ]
+          ],
+          "holes": []
+        },
+        "program_item_id": "pi-bath-ensuite",
+        "zone_id": "z-private",
+        "floor_material_id": "m-floor"
+      },
+      {
+        "id": "sp-night-bath",
+        "name": "Shared bathroom",
+        "function": "bathroom",
+        "level_id": "lv-lower",
+        "boundary": {
+          "outer": [
+            [
+              14.073279,
+              20.914259
+            ],
+            [
+              14.926244,
+              18.886342
+            ],
+            [
+              12.898326,
+              18.033377
+            ],
+            [
+              12.345257,
+              17.80075
+            ],
+            [
+              11.492293,
+              19.828668
+            ]
+          ],
+          "holes": []
+        },
+        "program_item_id": "pi-bath-1",
+        "zone_id": "z-private",
+        "floor_material_id": "m-floor"
+      },
+      {
+        "id": "sp-laundry",
+        "name": "Laundry",
+        "function": "laundry",
+        "level_id": "lv-lower",
+        "boundary": {
+          "outer": [
+            [
+              11.23912,
+              17.335497
+            ],
+            [
+              12.014543,
+              15.491935
+            ],
+            [
+              9.986625,
+              14.63897
+            ],
+            [
+              9.211202,
+              16.482532
+            ]
+          ],
+          "holes": []
+        },
+        "program_item_id": "pi-laundry",
+        "zone_id": "z-private",
+        "floor_material_id": "m-floor"
+      },
+      {
+        "id": "sp-night-lobby",
+        "name": "Private family landing",
+        "function": "hall",
+        "level_id": "lv-lower",
+        "boundary": {
+          "outer": [
+            [
+              16.109923,
+              19.167239
+            ],
+            [
+              17.117972,
+              16.770609
+            ],
+            [
+              15.274411,
+              15.995186
+            ],
+            [
+              13.983917,
+              15.45239
+            ],
+            [
+              13.673748,
+              16.189815
+            ],
+            [
+              12.975868,
+              17.849021
+            ],
+            [
+              15.003786,
+              18.701985
+            ]
+          ],
+          "holes": []
+        },
+        "program_item_id": null,
+        "zone_id": "z-private",
+        "floor_material_id": "m-floor"
+      },
+      {
+        "id": "sp-adult-vest",
+        "name": "Adult bedroom vestibule",
+        "function": "hall",
+        "level_id": "lv-lower",
+        "boundary": {
+          "outer": [
+            [
+              15.548129,
+              21.534597
+            ],
+            [
+              16.168467,
+              20.059748
+            ],
+            [
+              16.478636,
+              19.322323
+            ],
+            [
+              16.109923,
+              19.167239
+            ],
+            [
+              15.003786,
+              18.701985
+            ],
+            [
+              14.926244,
+              18.886342
+            ],
+            [
+              14.073279,
+              20.914259
+            ]
+          ],
+          "holes": []
+        },
+        "program_item_id": null,
+        "zone_id": "z-private",
+        "floor_material_id": "m-floor"
+      },
+      {
+        "id": "sp-child-vest",
+        "name": "Children bedroom vestibule",
+        "function": "hall",
+        "level_id": "lv-lower",
+        "boundary": {
+          "outer": [
+            [
+              12.898326,
+              18.033377
+            ],
+            [
+              12.975868,
+              17.849021
+            ],
+            [
+              13.673748,
+              16.189815
+            ],
+            [
+              13.489392,
+              16.112273
+            ],
+            [
+              12.014543,
+              15.491935
+            ],
+            [
+              11.23912,
+              17.335497
+            ],
+            [
+              12.345257,
+              17.80075
+            ]
+          ],
+          "holes": []
+        },
+        "program_item_id": null,
+        "zone_id": "z-private",
+        "floor_material_id": "m-floor"
+      },
+      {
+        "id": "sp-main-entry",
+        "name": "Screened entrance",
+        "function": "entry",
+        "level_id": "lv-entry",
+        "boundary": {
+          "outer": [
+            [
+              15.274411,
+              15.995186
+            ],
+            [
+              16.127375,
+              13.967268
+            ],
+            [
+              16.204918,
+              13.782912
+            ],
+            [
+              14.545712,
+              13.085032
+            ],
+            [
+              13.692747,
+              15.11295
+            ],
+            [
+              13.615205,
+              15.297306
+            ]
+          ],
+          "holes": []
+        },
+        "program_item_id": "pi-entry",
+        "zone_id": "z-day",
+        "floor_material_id": "m-floor"
+      },
+      {
+        "id": "sp-lower-entry",
+        "name": "Garden entrance",
+        "function": "entry",
+        "level_id": "lv-lower",
+        "boundary": {
+          "outer": [
+            [
+              15.274411,
+              15.995186
+            ],
+            [
+              16.127375,
+              13.967268
+            ],
+            [
+              16.204918,
+              13.782912
+            ],
+            [
+              14.730068,
+              13.162574
+            ],
+            [
+              13.799561,
+              15.374848
+            ],
+            [
+              13.983917,
+              15.45239
+            ]
+          ],
+          "holes": []
+        },
+        "program_item_id": null,
+        "zone_id": "z-private",
+        "floor_material_id": "m-floor"
+      },
+      {
+        "id": "sp-balcony",
+        "name": "Upper residential balcony",
+        "function": "balcony",
+        "level_id": "lv-entry",
+        "boundary": {
+          "outer": [
+            [
+              19.760596,
+              26.99492
+            ],
+            [
+              21.931779,
+              21.832947
+            ],
+            [
+              20.088217,
+              21.057524
+            ],
+            [
+              17.917034,
+              26.219497
+            ]
+          ],
+          "holes": []
+        },
+        "program_item_id": "pi-balcony",
+        "zone_id": "z-outdoor",
+        "floor_material_id": "m-floor"
+      }
+    ],
+    "walls": [
+      {
+        "id": "w-lower-001",
+        "level_id": "lv-lower",
+        "start": [
+          10.174075,
+          22.962723
+        ],
+        "end": [
+          14.229911,
+          24.668652
+        ],
+        "thickness_m": 0.3,
+        "height_m": 2.8,
+        "base_offset_m": 0.0,
+        "kind": "exterior",
+        "material_id": "m-ext-wall",
+        "left_material_id": null,
+        "right_material_id": null
+      },
+      {
+        "id": "w-lower-002",
+        "level_id": "lv-lower",
+        "start": [
+          14.229911,
+          24.668652
+        ],
+        "end": [
+          17.363966,
+          25.986871
+        ],
+        "thickness_m": 0.3,
+        "height_m": 2.8,
+        "base_offset_m": 0.0,
+        "kind": "exterior",
+        "material_id": "m-ext-wall",
+        "left_material_id": null,
+        "right_material_id": null
+      },
+      {
+        "id": "w-lower-003",
+        "level_id": "lv-lower",
+        "start": [
+          7.184831,
+          19.752673
+        ],
+        "end": [
+          10.871955,
+          21.303517
+        ],
+        "thickness_m": 0.3,
+        "height_m": 2.8,
+        "base_offset_m": 0.0,
+        "kind": "exterior",
+        "material_id": "m-ext-wall",
+        "left_material_id": null,
+        "right_material_id": null
+      },
+      {
+        "id": "w-lower-004",
+        "level_id": "lv-lower",
+        "start": [
+          11.492293,
+          19.828668
+        ],
+        "end": [
+          14.073279,
+          20.914259
+        ],
+        "thickness_m": 0.15,
+        "height_m": 2.8,
+        "base_offset_m": 0.0,
+        "kind": "interior",
+        "material_id": "m-int-wall",
+        "left_material_id": null,
+        "right_material_id": null
+      },
+      {
+        "id": "w-lower-005",
+        "level_id": "lv-lower",
+        "start": [
+          14.073279,
+          20.914259
+        ],
+        "end": [
+          15.548129,
+          21.534597
+        ],
+        "thickness_m": 0.15,
+        "height_m": 2.8,
+        "base_offset_m": 0.0,
+        "kind": "interior",
+        "material_id": "m-int-wall",
+        "left_material_id": null,
+        "right_material_id": null
+      },
+      {
+        "id": "w-lower-006",
+        "level_id": "lv-lower",
+        "start": [
+          16.168467,
+          20.059748
+        ],
+        "end": [
+          18.196385,
+          20.912713
+        ],
+        "thickness_m": 0.3,
+        "height_m": 2.8,
+        "base_offset_m": 0.0,
+        "kind": "exterior",
+        "material_id": "m-ext-wall",
+        "left_material_id": null,
+        "right_material_id": null
+      },
+      {
+        "id": "w-lower-007",
+        "level_id": "lv-lower",
+        "start": [
+          18.196385,
+          20.912713
+        ],
+        "end": [
+          19.302522,
+          21.377966
+        ],
+        "thickness_m": 0.15,
+        "height_m": 2.8,
+        "base_offset_m": 0.0,
+        "kind": "interior",
+        "material_id": "m-int-wall",
+        "left_material_id": null,
+        "right_material_id": null
+      },
+      {
+        "id": "w-lower-008",
+        "level_id": "lv-lower",
+        "start": [
+          19.302522,
+          21.377966
+        ],
+        "end": [
+          20.408659,
+          21.84322
+        ],
+        "thickness_m": 0.3,
+        "height_m": 2.8,
+        "base_offset_m": 0.0,
+        "kind": "exterior",
+        "material_id": "m-ext-wall",
+        "left_material_id": null,
+        "right_material_id": null
+      },
+      {
+        "id": "w-lower-009",
+        "level_id": "lv-lower",
+        "start": [
+          8.658134,
+          16.249905
+        ],
+        "end": [
+          9.211202,
+          16.482532
+        ],
+        "thickness_m": 0.3,
+        "height_m": 2.8,
+        "base_offset_m": 0.0,
+        "kind": "exterior",
+        "material_id": "m-ext-wall",
+        "left_material_id": null,
+        "right_material_id": null
+      },
+      {
+        "id": "w-lower-010",
+        "level_id": "lv-lower",
+        "start": [
+          9.211202,
+          16.482532
+        ],
+        "end": [
+          11.23912,
+          17.335497
+        ],
+        "thickness_m": 0.15,
+        "height_m": 2.8,
+        "base_offset_m": 0.0,
+        "kind": "interior",
+        "material_id": "m-int-wall",
+        "left_material_id": null,
+        "right_material_id": null
+      },
+      {
+        "id": "w-lower-011",
+        "level_id": "lv-lower",
+        "start": [
+          11.23912,
+          17.335497
+        ],
+        "end": [
+          12.345257,
+          17.80075
+        ],
+        "thickness_m": 0.15,
+        "height_m": 2.8,
+        "base_offset_m": 0.0,
+        "kind": "interior",
+        "material_id": "m-int-wall",
+        "left_material_id": null,
+        "right_material_id": null
+      },
+      {
+        "id": "w-lower-012",
+        "level_id": "lv-lower",
+        "start": [
+          12.345257,
+          17.80075
+        ],
+        "end": [
+          12.898326,
+          18.033377
+        ],
+        "thickness_m": 0.15,
+        "height_m": 2.8,
+        "base_offset_m": 0.0,
+        "kind": "interior",
+        "material_id": "m-int-wall",
+        "left_material_id": null,
+        "right_material_id": null
+      },
+      {
+        "id": "w-lower-013",
+        "level_id": "lv-lower",
+        "start": [
+          12.898326,
+          18.033377
+        ],
+        "end": [
+          14.926244,
+          18.886342
+        ],
+        "thickness_m": 0.3,
+        "height_m": 2.8,
+        "base_offset_m": 0.0,
+        "kind": "exterior",
+        "material_id": "m-ext-wall",
+        "left_material_id": null,
+        "right_material_id": null
+      },
+      {
+        "id": "w-lower-014",
+        "level_id": "lv-lower",
+        "start": [
+          12.975868,
+          17.849021
+        ],
+        "end": [
+          15.003786,
+          18.701985
+        ],
+        "thickness_m": 0.3,
+        "height_m": 2.8,
+        "base_offset_m": 0.0,
+        "kind": "exterior",
+        "material_id": "m-ext-wall",
+        "left_material_id": null,
+        "right_material_id": null
+      },
+      {
+        "id": "w-lower-015",
+        "level_id": "lv-lower",
+        "start": [
+          15.003786,
+          18.701985
+        ],
+        "end": [
+          16.109923,
+          19.167239
+        ],
+        "thickness_m": 0.15,
+        "height_m": 2.8,
+        "base_offset_m": 0.0,
+        "kind": "interior",
+        "material_id": "m-int-wall",
+        "left_material_id": null,
+        "right_material_id": null
+      },
+      {
+        "id": "w-lower-016",
+        "level_id": "lv-lower",
+        "start": [
+          16.109923,
+          19.167239
+        ],
+        "end": [
+          16.478636,
+          19.322323
+        ],
+        "thickness_m": 0.15,
+        "height_m": 2.8,
+        "base_offset_m": 0.0,
+        "kind": "interior",
+        "material_id": "m-int-wall",
+        "left_material_id": null,
+        "right_material_id": null
+      },
+      {
+        "id": "w-lower-017",
+        "level_id": "lv-lower",
+        "start": [
+          16.478636,
+          19.322323
+        ],
+        "end": [
+          18.506554,
+          20.175288
+        ],
+        "thickness_m": 0.3,
+        "height_m": 2.8,
+        "base_offset_m": 0.0,
+        "kind": "exterior",
+        "material_id": "m-ext-wall",
+        "left_material_id": null,
+        "right_material_id": null
+      },
+      {
+        "id": "w-lower-018",
+        "level_id": "lv-lower",
+        "start": [
+          19.126892,
+          18.700439
+        ],
+        "end": [
+          21.339166,
+          19.630946
+        ],
+        "thickness_m": 0.3,
+        "height_m": 2.8,
+        "base_offset_m": 0.0,
+        "kind": "exterior",
+        "material_id": "m-ext-wall",
+        "left_material_id": null,
+        "right_material_id": null
+      },
+      {
+        "id": "w-lower-019",
+        "level_id": "lv-lower",
+        "start": [
+          9.433556,
+          14.406343
+        ],
+        "end": [
+          9.986625,
+          14.63897
+        ],
+        "thickness_m": 0.3,
+        "height_m": 2.8,
+        "base_offset_m": 0.0,
+        "kind": "exterior",
+        "material_id": "m-ext-wall",
+        "left_material_id": null,
+        "right_material_id": null
+      },
+      {
+        "id": "w-lower-020",
+        "level_id": "lv-lower",
+        "start": [
+          9.986625,
+          14.63897
+        ],
+        "end": [
+          12.014543,
+          15.491935
+        ],
+        "thickness_m": 0.15,
+        "height_m": 2.8,
+        "base_offset_m": 0.0,
+        "kind": "interior",
+        "material_id": "m-int-wall",
+        "left_material_id": null,
+        "right_material_id": null
+      },
+      {
+        "id": "w-lower-021",
+        "level_id": "lv-lower",
+        "start": [
+          12.014543,
+          15.491935
+        ],
+        "end": [
+          13.489392,
+          16.112273
+        ],
+        "thickness_m": 0.15,
+        "height_m": 2.8,
+        "base_offset_m": 0.0,
+        "kind": "interior",
+        "material_id": "m-int-wall",
+        "left_material_id": null,
+        "right_material_id": null
+      },
+      {
+        "id": "w-lower-022",
+        "level_id": "lv-lower",
+        "start": [
+          13.489392,
+          16.112273
+        ],
+        "end": [
+          13.673748,
+          16.189815
+        ],
+        "thickness_m": 0.3,
+        "height_m": 2.8,
+        "base_offset_m": 0.0,
+        "kind": "exterior",
+        "material_id": "m-ext-wall",
+        "left_material_id": null,
+        "right_material_id": null
+      },
+      {
+        "id": "w-lower-023",
+        "level_id": "lv-lower",
+        "start": [
+          13.799561,
+          15.374848
+        ],
+        "end": [
+          13.983917,
+          15.45239
+        ],
+        "thickness_m": 0.3,
+        "height_m": 2.8,
+        "base_offset_m": 0.0,
+        "kind": "exterior",
+        "material_id": "m-ext-wall",
+        "left_material_id": null,
+        "right_material_id": null
+      },
+      {
+        "id": "w-lower-024",
+        "level_id": "lv-lower",
+        "start": [
+          13.983917,
+          15.45239
+        ],
+        "end": [
+          15.274411,
+          15.995186
+        ],
+        "thickness_m": 0.15,
+        "height_m": 2.8,
+        "base_offset_m": 0.0,
+        "kind": "interior",
+        "material_id": "m-int-wall",
+        "left_material_id": null,
+        "right_material_id": null
+      },
+      {
+        "id": "w-lower-025",
+        "level_id": "lv-lower",
+        "start": [
+          15.274411,
+          15.995186
+        ],
+        "end": [
+          17.117972,
+          16.770609
+        ],
+        "thickness_m": 0.15,
+        "height_m": 2.8,
+        "base_offset_m": 0.0,
+        "kind": "interior",
+        "material_id": "m-int-wall",
+        "left_material_id": null,
+        "right_material_id": null
+      },
+      {
+        "id": "w-lower-026",
+        "level_id": "lv-lower",
+        "start": [
+          16.127375,
+          13.967268
+        ],
+        "end": [
+          17.970937,
+          14.742691
+        ],
+        "thickness_m": 0.3,
+        "height_m": 2.8,
+        "base_offset_m": 0.0,
+        "kind": "exterior",
+        "material_id": "m-ext-wall",
+        "left_material_id": null,
+        "right_material_id": null
+      },
+      {
+        "id": "w-lower-027",
+        "level_id": "lv-lower",
+        "start": [
+          10.674232,
+          11.456645
+        ],
+        "end": [
+          14.730068,
+          13.162574
+        ],
+        "thickness_m": 0.3,
+        "height_m": 2.8,
+        "base_offset_m": 0.0,
+        "kind": "exterior",
+        "material_id": "m-ext-wall",
+        "left_material_id": null,
+        "right_material_id": null
+      },
+      {
+        "id": "w-lower-028",
+        "level_id": "lv-lower",
+        "start": [
+          14.730068,
+          13.162574
+        ],
+        "end": [
+          16.204918,
+          13.782912
+        ],
+        "thickness_m": 0.3,
+        "height_m": 2.8,
+        "base_offset_m": 0.0,
+        "kind": "exterior",
+        "material_id": "m-ext-wall",
+        "left_material_id": null,
+        "right_material_id": null
+      },
+      {
+        "id": "w-lower-029",
+        "level_id": "lv-lower",
+        "start": [
+          18.048479,
+          14.558334
+        ],
+        "end": [
+          20.44511,
+          15.566384
+        ],
+        "thickness_m": 0.3,
+        "height_m": 2.8,
+        "base_offset_m": 0.0,
+        "kind": "exterior",
+        "material_id": "m-ext-wall",
+        "left_material_id": null,
+        "right_material_id": null
+      },
+      {
+        "id": "w-lower-030",
+        "level_id": "lv-lower",
+        "start": [
+          7.184831,
+          19.752673
+        ],
+        "end": [
+          8.658134,
+          16.249905
+        ],
+        "thickness_m": 0.3,
+        "height_m": 2.8,
+        "base_offset_m": 0.0,
+        "kind": "exterior",
+        "material_id": "m-ext-wall",
+        "left_material_id": null,
+        "right_material_id": null
+      },
+      {
+        "id": "w-lower-031",
+        "level_id": "lv-lower",
+        "start": [
+          9.433556,
+          14.406343
+        ],
+        "end": [
+          10.674232,
+          11.456645
+        ],
+        "thickness_m": 0.3,
+        "height_m": 2.8,
+        "base_offset_m": 0.0,
+        "kind": "exterior",
+        "material_id": "m-ext-wall",
+        "left_material_id": null,
+        "right_material_id": null
+      },
+      {
+        "id": "w-lower-032",
+        "level_id": "lv-lower",
+        "start": [
+          9.211202,
+          16.482532
+        ],
+        "end": [
+          9.986625,
+          14.63897
+        ],
+        "thickness_m": 0.3,
+        "height_m": 2.8,
+        "base_offset_m": 0.0,
+        "kind": "exterior",
+        "material_id": "m-ext-wall",
+        "left_material_id": null,
+        "right_material_id": null
+      },
+      {
+        "id": "w-lower-033",
+        "level_id": "lv-lower",
+        "start": [
+          11.23912,
+          17.335497
+        ],
+        "end": [
+          12.014543,
+          15.491935
+        ],
+        "thickness_m": 0.15,
+        "height_m": 2.8,
+        "base_offset_m": 0.0,
+        "kind": "interior",
+        "material_id": "m-int-wall",
+        "left_material_id": null,
+        "right_material_id": null
+      },
+      {
+        "id": "w-lower-034",
+        "level_id": "lv-lower",
+        "start": [
+          10.174075,
+          22.962723
+        ],
+        "end": [
+          10.871955,
+          21.303517
+        ],
+        "thickness_m": 0.3,
+        "height_m": 2.8,
+        "base_offset_m": 0.0,
+        "kind": "exterior",
+        "material_id": "m-ext-wall",
+        "left_material_id": null,
+        "right_material_id": null
+      },
+      {
+        "id": "w-lower-035",
+        "level_id": "lv-lower",
+        "start": [
+          10.871955,
+          21.303517
+        ],
+        "end": [
+          11.492293,
+          19.828668
+        ],
+        "thickness_m": 0.15,
+        "height_m": 2.8,
+        "base_offset_m": 0.0,
+        "kind": "interior",
+        "material_id": "m-int-wall",
+        "left_material_id": null,
+        "right_material_id": null
+      },
+      {
+        "id": "w-lower-036",
+        "level_id": "lv-lower",
+        "start": [
+          11.492293,
+          19.828668
+        ],
+        "end": [
+          12.345257,
+          17.80075
+        ],
+        "thickness_m": 0.15,
+        "height_m": 2.8,
+        "base_offset_m": 0.0,
+        "kind": "interior",
+        "material_id": "m-int-wall",
+        "left_material_id": null,
+        "right_material_id": null
+      },
+      {
+        "id": "w-lower-037",
+        "level_id": "lv-lower",
+        "start": [
+          13.489392,
+          16.112273
+        ],
+        "end": [
+          13.799561,
+          15.374848
+        ],
+        "thickness_m": 0.3,
+        "height_m": 2.8,
+        "base_offset_m": 0.0,
+        "kind": "exterior",
+        "material_id": "m-ext-wall",
+        "left_material_id": null,
+        "right_material_id": null
+      },
+      {
+        "id": "w-lower-038",
+        "level_id": "lv-lower",
+        "start": [
+          13.799561,
+          15.374848
+        ],
+        "end": [
+          14.730068,
+          13.162574
+        ],
+        "thickness_m": 0.15,
+        "height_m": 2.8,
+        "base_offset_m": 0.0,
+        "kind": "interior",
+        "material_id": "m-int-wall",
+        "left_material_id": null,
+        "right_material_id": null
+      },
+      {
+        "id": "w-lower-039",
+        "level_id": "lv-lower",
+        "start": [
+          12.898326,
+          18.033377
+        ],
+        "end": [
+          12.975868,
+          17.849021
+        ],
+        "thickness_m": 0.3,
+        "height_m": 2.8,
+        "base_offset_m": 0.0,
+        "kind": "exterior",
+        "material_id": "m-ext-wall",
+        "left_material_id": null,
+        "right_material_id": null
+      },
+      {
+        "id": "w-lower-040",
+        "level_id": "lv-lower",
+        "start": [
+          12.975868,
+          17.849021
+        ],
+        "end": [
+          13.673748,
+          16.189815
+        ],
+        "thickness_m": 0.15,
+        "height_m": 2.8,
+        "base_offset_m": 0.0,
+        "kind": "interior",
+        "material_id": "m-int-wall",
+        "left_material_id": null,
+        "right_material_id": null
+      },
+      {
+        "id": "w-lower-041",
+        "level_id": "lv-lower",
+        "start": [
+          13.673748,
+          16.189815
+        ],
+        "end": [
+          13.983917,
+          15.45239
+        ],
+        "thickness_m": 0.3,
+        "height_m": 2.8,
+        "base_offset_m": 0.0,
+        "kind": "exterior",
+        "material_id": "m-ext-wall",
+        "left_material_id": null,
+        "right_material_id": null
+      },
+      {
+        "id": "w-lower-042",
+        "level_id": "lv-lower",
+        "start": [
+          15.274411,
+          15.995186
+        ],
+        "end": [
+          16.127375,
+          13.967268
+        ],
+        "thickness_m": 0.15,
+        "height_m": 2.8,
+        "base_offset_m": 0.0,
+        "kind": "interior",
+        "material_id": "m-int-wall",
+        "left_material_id": null,
+        "right_material_id": null
+      },
+      {
+        "id": "w-lower-043",
+        "level_id": "lv-lower",
+        "start": [
+          16.127375,
+          13.967268
+        ],
+        "end": [
+          16.204918,
+          13.782912
+        ],
+        "thickness_m": 0.3,
+        "height_m": 2.8,
+        "base_offset_m": 0.0,
+        "kind": "exterior",
+        "material_id": "m-ext-wall",
+        "left_material_id": null,
+        "right_material_id": null
+      },
+      {
+        "id": "w-lower-044",
+        "level_id": "lv-lower",
+        "start": [
+          14.073279,
+          20.914259
+        ],
+        "end": [
+          14.926244,
+          18.886342
+        ],
+        "thickness_m": 0.15,
+        "height_m": 2.8,
+        "base_offset_m": 0.0,
+        "kind": "interior",
+        "material_id": "m-int-wall",
+        "left_material_id": null,
+        "right_material_id": null
+      },
+      {
+        "id": "w-lower-045",
+        "level_id": "lv-lower",
+        "start": [
+          14.926244,
+          18.886342
+        ],
+        "end": [
+          15.003786,
+          18.701985
+        ],
+        "thickness_m": 0.3,
+        "height_m": 2.8,
+        "base_offset_m": 0.0,
+        "kind": "exterior",
+        "material_id": "m-ext-wall",
+        "left_material_id": null,
+        "right_material_id": null
+      },
+      {
+        "id": "w-lower-046",
+        "level_id": "lv-lower",
+        "start": [
+          16.109923,
+          19.167239
+        ],
+        "end": [
+          17.117972,
+          16.770609
+        ],
+        "thickness_m": 0.15,
+        "height_m": 2.8,
+        "base_offset_m": 0.0,
+        "kind": "interior",
+        "material_id": "m-int-wall",
+        "left_material_id": null,
+        "right_material_id": null
+      },
+      {
+        "id": "w-lower-047",
+        "level_id": "lv-lower",
+        "start": [
+          17.117972,
+          16.770609
+        ],
+        "end": [
+          17.970937,
+          14.742691
+        ],
+        "thickness_m": 0.15,
+        "height_m": 2.8,
+        "base_offset_m": 0.0,
+        "kind": "interior",
+        "material_id": "m-int-wall",
+        "left_material_id": null,
+        "right_material_id": null
+      },
+      {
+        "id": "w-lower-048",
+        "level_id": "lv-lower",
+        "start": [
+          17.970937,
+          14.742691
+        ],
+        "end": [
+          18.048479,
+          14.558334
+        ],
+        "thickness_m": 0.3,
+        "height_m": 2.8,
+        "base_offset_m": 0.0,
+        "kind": "exterior",
+        "material_id": "m-ext-wall",
+        "left_material_id": null,
+        "right_material_id": null
+      },
+      {
+        "id": "w-lower-049",
+        "level_id": "lv-lower",
+        "start": [
+          14.229911,
+          24.668652
+        ],
+        "end": [
+          15.548129,
+          21.534597
+        ],
+        "thickness_m": 0.15,
+        "height_m": 2.8,
+        "base_offset_m": 0.0,
+        "kind": "interior",
+        "material_id": "m-int-wall",
+        "left_material_id": null,
+        "right_material_id": null
+      },
+      {
+        "id": "w-lower-050",
+        "level_id": "lv-lower",
+        "start": [
+          15.548129,
+          21.534597
+        ],
+        "end": [
+          16.168467,
+          20.059748
+        ],
+        "thickness_m": 0.15,
+        "height_m": 2.8,
+        "base_offset_m": 0.0,
+        "kind": "interior",
+        "material_id": "m-int-wall",
+        "left_material_id": null,
+        "right_material_id": null
+      },
+      {
+        "id": "w-lower-051",
+        "level_id": "lv-lower",
+        "start": [
+          16.168467,
+          20.059748
+        ],
+        "end": [
+          16.478636,
+          19.322323
+        ],
+        "thickness_m": 0.3,
+        "height_m": 2.8,
+        "base_offset_m": 0.0,
+        "kind": "exterior",
+        "material_id": "m-ext-wall",
+        "left_material_id": null,
+        "right_material_id": null
+      },
+      {
+        "id": "w-lower-052",
+        "level_id": "lv-lower",
+        "start": [
+          18.196385,
+          20.912713
+        ],
+        "end": [
+          18.506554,
+          20.175288
+        ],
+        "thickness_m": 0.3,
+        "height_m": 2.8,
+        "base_offset_m": 0.0,
+        "kind": "exterior",
+        "material_id": "m-ext-wall",
+        "left_material_id": null,
+        "right_material_id": null
+      },
+      {
+        "id": "w-lower-053",
+        "level_id": "lv-lower",
+        "start": [
+          18.506554,
+          20.175288
+        ],
+        "end": [
+          19.126892,
+          18.700439
+        ],
+        "thickness_m": 0.15,
+        "height_m": 2.8,
+        "base_offset_m": 0.0,
+        "kind": "interior",
+        "material_id": "m-int-wall",
+        "left_material_id": null,
+        "right_material_id": null
+      },
+      {
+        "id": "w-lower-054",
+        "level_id": "lv-lower",
+        "start": [
+          19.126892,
+          18.700439
+        ],
+        "end": [
+          20.44511,
+          15.566384
+        ],
+        "thickness_m": 0.3,
+        "height_m": 2.8,
+        "base_offset_m": 0.0,
+        "kind": "exterior",
+        "material_id": "m-ext-wall",
+        "left_material_id": null,
+        "right_material_id": null
+      },
+      {
+        "id": "w-lower-055",
+        "level_id": "lv-lower",
+        "start": [
+          17.363966,
+          25.986871
+        ],
+        "end": [
+          19.302522,
+          21.377966
+        ],
+        "thickness_m": 0.3,
+        "height_m": 2.8,
+        "base_offset_m": 0.0,
+        "kind": "exterior",
+        "material_id": "m-ext-wall",
+        "left_material_id": null,
+        "right_material_id": null
+      },
+      {
+        "id": "w-lower-056",
+        "level_id": "lv-lower",
+        "start": [
+          20.408659,
+          21.84322
+        ],
+        "end": [
+          21.339166,
+          19.630946
+        ],
+        "thickness_m": 0.3,
+        "height_m": 2.8,
+        "base_offset_m": 0.0,
+        "kind": "exterior",
+        "material_id": "m-ext-wall",
+        "left_material_id": null,
+        "right_material_id": null
+      },
+      {
+        "id": "w-entry-057",
+        "level_id": "lv-entry",
+        "start": [
+          7.777444,
+          21.954674
+        ],
+        "end": [
+          12.386349,
+          23.89323
+        ],
+        "thickness_m": 0.3,
+        "height_m": 2.8,
+        "base_offset_m": 0.0,
+        "kind": "exterior",
+        "material_id": "m-ext-wall",
+        "left_material_id": null,
+        "right_material_id": null
+      },
+      {
+        "id": "w-entry-058",
+        "level_id": "lv-entry",
+        "start": [
+          12.386349,
+          23.89323
+        ],
+        "end": [
+          17.917034,
+          26.219497
+        ],
+        "thickness_m": 0.3,
+        "height_m": 2.8,
+        "base_offset_m": 0.0,
+        "kind": "exterior",
+        "material_id": "m-ext-wall",
+        "left_material_id": null,
+        "right_material_id": null
+      },
+      {
+        "id": "w-entry-059",
+        "level_id": "lv-entry",
+        "start": [
+          17.917034,
+          26.219497
+        ],
+        "end": [
+          19.760596,
+          26.99492
+        ],
+        "thickness_m": 0.2,
+        "height_m": 1.0,
+        "base_offset_m": 0.0,
+        "kind": "parapet",
+        "material_id": "m-ext-wall",
+        "left_material_id": null,
+        "right_material_id": null
+      },
+      {
+        "id": "w-entry-060",
+        "level_id": "lv-entry",
+        "start": [
+          6.321594,
+          20.257471
+        ],
+        "end": [
+          8.165156,
+          21.032893
+        ],
+        "thickness_m": 0.3,
+        "height_m": 2.8,
+        "base_offset_m": 0.0,
+        "kind": "exterior",
+        "material_id": "m-ext-wall",
+        "left_material_id": null,
+        "right_material_id": null
+      },
+      {
+        "id": "w-entry-061",
+        "level_id": "lv-entry",
+        "start": [
+          7.097016,
+          18.413909
+        ],
+        "end": [
+          8.940578,
+          19.189331
+        ],
+        "thickness_m": 0.15,
+        "height_m": 2.8,
+        "base_offset_m": 0.0,
+        "kind": "interior",
+        "material_id": "m-int-wall",
+        "left_material_id": null,
+        "right_material_id": null
+      },
+      {
+        "id": "w-entry-062",
+        "level_id": "lv-entry",
+        "start": [
+          8.940578,
+          19.189331
+        ],
+        "end": [
+          11.521564,
+          20.274923
+        ],
+        "thickness_m": 0.15,
+        "height_m": 2.8,
+        "base_offset_m": 0.0,
+        "kind": "interior",
+        "material_id": "m-int-wall",
+        "left_material_id": null,
+        "right_material_id": null
+      },
+      {
+        "id": "w-entry-063",
+        "level_id": "lv-entry",
+        "start": [
+          11.521564,
+          20.274923
+        ],
+        "end": [
+          13.549482,
+          21.127887
+        ],
+        "thickness_m": 0.3,
+        "height_m": 2.8,
+        "base_offset_m": 0.0,
+        "kind": "exterior",
+        "material_id": "m-ext-wall",
+        "left_material_id": null,
+        "right_material_id": null
+      },
+      {
+        "id": "w-entry-064",
+        "level_id": "lv-entry",
+        "start": [
+          12.529614,
+          17.878292
+        ],
+        "end": [
+          14.557532,
+          18.731257
+        ],
+        "thickness_m": 0.3,
+        "height_m": 2.8,
+        "base_offset_m": 0.0,
+        "kind": "exterior",
+        "material_id": "m-ext-wall",
+        "left_material_id": null,
+        "right_material_id": null
+      },
+      {
+        "id": "w-entry-065",
+        "level_id": "lv-entry",
+        "start": [
+          14.557532,
+          18.731257
+        ],
+        "end": [
+          16.032381,
+          19.351595
+        ],
+        "thickness_m": 0.15,
+        "height_m": 2.8,
+        "base_offset_m": 0.0,
+        "kind": "interior",
+        "material_id": "m-int-wall",
+        "left_material_id": null,
+        "right_material_id": null
+      },
+      {
+        "id": "w-entry-066",
+        "level_id": "lv-entry",
+        "start": [
+          16.032381,
+          19.351595
+        ],
+        "end": [
+          20.088217,
+          21.057524
+        ],
+        "thickness_m": 0.3,
+        "height_m": 2.8,
+        "base_offset_m": 0.0,
+        "kind": "exterior",
+        "material_id": "m-ext-wall",
+        "left_material_id": null,
+        "right_material_id": null
+      },
+      {
+        "id": "w-entry-067",
+        "level_id": "lv-entry",
+        "start": [
+          20.088217,
+          21.057524
+        ],
+        "end": [
+          21.931779,
+          21.832947
+        ],
+        "thickness_m": 0.2,
+        "height_m": 1.0,
+        "base_offset_m": 0.0,
+        "kind": "parapet",
+        "material_id": "m-ext-wall",
+        "left_material_id": null,
+        "right_material_id": null
+      },
+      {
+        "id": "w-entry-068",
+        "level_id": "lv-entry",
+        "start": [
+          16.109923,
+          19.167239
+        ],
+        "end": [
+          18.506554,
+          20.175288
+        ],
+        "thickness_m": 0.3,
+        "height_m": 2.8,
+        "base_offset_m": 0.0,
+        "kind": "exterior",
+        "material_id": "m-ext-wall",
+        "left_material_id": null,
+        "right_material_id": null
+      },
+      {
+        "id": "w-entry-069",
+        "level_id": "lv-entry",
+        "start": [
+          8.725403,
+          14.542429
+        ],
+        "end": [
+          9.278472,
+          14.775056
+        ],
+        "thickness_m": 0.3,
+        "height_m": 2.8,
+        "base_offset_m": 0.0,
+        "kind": "exterior",
+        "material_id": "m-ext-wall",
+        "left_material_id": null,
+        "right_material_id": null
+      },
+      {
+        "id": "w-entry-070",
+        "level_id": "lv-entry",
+        "start": [
+          9.278472,
+          14.775056
+        ],
+        "end": [
+          11.122034,
+          15.550478
+        ],
+        "thickness_m": 0.15,
+        "height_m": 2.8,
+        "base_offset_m": 0.0,
+        "kind": "interior",
+        "material_id": "m-int-wall",
+        "left_material_id": null,
+        "right_material_id": null
+      },
+      {
+        "id": "w-entry-071",
+        "level_id": "lv-entry",
+        "start": [
+          11.122034,
+          15.550478
+        ],
+        "end": [
+          13.149952,
+          16.403443
+        ],
+        "thickness_m": 0.15,
+        "height_m": 2.8,
+        "base_offset_m": 0.0,
+        "kind": "interior",
+        "material_id": "m-int-wall",
+        "left_material_id": null,
+        "right_material_id": null
+      },
+      {
+        "id": "w-entry-072",
+        "level_id": "lv-entry",
+        "start": [
+          13.615205,
+          15.297306
+        ],
+        "end": [
+          15.274411,
+          15.995186
+        ],
+        "thickness_m": 0.15,
+        "height_m": 2.8,
+        "base_offset_m": 0.0,
+        "kind": "interior",
+        "material_id": "m-int-wall",
+        "left_material_id": null,
+        "right_material_id": null
+      },
+      {
+        "id": "w-entry-073",
+        "level_id": "lv-entry",
+        "start": [
+          15.274411,
+          15.995186
+        ],
+        "end": [
+          17.117972,
+          16.770609
+        ],
+        "thickness_m": 0.15,
+        "height_m": 2.8,
+        "base_offset_m": 0.0,
+        "kind": "interior",
+        "material_id": "m-int-wall",
+        "left_material_id": null,
+        "right_material_id": null
+      },
+      {
+        "id": "w-entry-074",
+        "level_id": "lv-entry",
+        "start": [
+          11.664829,
+          14.259985
+        ],
+        "end": [
+          13.508391,
+          15.035407
+        ],
+        "thickness_m": 0.15,
+        "height_m": 2.8,
+        "base_offset_m": 0.0,
+        "kind": "interior",
+        "material_id": "m-int-wall",
+        "left_material_id": null,
+        "right_material_id": null
+      },
+      {
+        "id": "w-entry-075",
+        "level_id": "lv-entry",
+        "start": [
+          13.508391,
+          15.035407
+        ],
+        "end": [
+          13.692747,
+          15.11295
+        ],
+        "thickness_m": 0.3,
+        "height_m": 2.8,
+        "base_offset_m": 0.0,
+        "kind": "exterior",
+        "material_id": "m-ext-wall",
+        "left_material_id": null,
+        "right_material_id": null
+      },
+      {
+        "id": "w-entry-076",
+        "level_id": "lv-entry",
+        "start": [
+          10.364063,
+          12.194069
+        ],
+        "end": [
+          12.207625,
+          12.969492
+        ],
+        "thickness_m": 0.3,
+        "height_m": 2.8,
+        "base_offset_m": 0.0,
+        "kind": "exterior",
+        "material_id": "m-ext-wall",
+        "left_material_id": null,
+        "right_material_id": null
+      },
+      {
+        "id": "w-entry-077",
+        "level_id": "lv-entry",
+        "start": [
+          12.440252,
+          12.416423
+        ],
+        "end": [
+          14.283814,
+          13.191846
+        ],
+        "thickness_m": 0.3,
+        "height_m": 2.8,
+        "base_offset_m": 0.0,
+        "kind": "exterior",
+        "material_id": "m-ext-wall",
+        "left_material_id": null,
+        "right_material_id": null
+      },
+      {
+        "id": "w-entry-078",
+        "level_id": "lv-entry",
+        "start": [
+          16.127375,
+          13.967268
+        ],
+        "end": [
+          17.970937,
+          14.742691
+        ],
+        "thickness_m": 0.3,
+        "height_m": 2.8,
+        "base_offset_m": 0.0,
+        "kind": "exterior",
+        "material_id": "m-ext-wall",
+        "left_material_id": null,
+        "right_material_id": null
+      },
+      {
+        "id": "w-entry-079",
+        "level_id": "lv-entry",
+        "start": [
+          14.545712,
+          13.085032
+        ],
+        "end": [
+          16.204918,
+          13.782912
+        ],
+        "thickness_m": 0.3,
+        "height_m": 2.8,
+        "base_offset_m": 0.0,
+        "kind": "exterior",
+        "material_id": "m-ext-wall",
+        "left_material_id": null,
+        "right_material_id": null
+      },
+      {
+        "id": "w-entry-080",
+        "level_id": "lv-entry",
+        "start": [
+          18.048479,
+          14.558334
+        ],
+        "end": [
+          20.44511,
+          15.566384
+        ],
+        "thickness_m": 0.3,
+        "height_m": 2.8,
+        "base_offset_m": 0.0,
+        "kind": "exterior",
+        "material_id": "m-ext-wall",
+        "left_material_id": null,
+        "right_material_id": null
+      },
+      {
+        "id": "w-entry-081",
+        "level_id": "lv-entry",
+        "start": [
+          6.321594,
+          20.257471
+        ],
+        "end": [
+          7.097016,
+          18.413909
+        ],
+        "thickness_m": 0.3,
+        "height_m": 2.8,
+        "base_offset_m": 0.0,
+        "kind": "exterior",
+        "material_id": "m-ext-wall",
+        "left_material_id": null,
+        "right_material_id": null
+      },
+      {
+        "id": "w-entry-082",
+        "level_id": "lv-entry",
+        "start": [
+          7.097016,
+          18.413909
+        ],
+        "end": [
+          8.725403,
+          14.542429
+        ],
+        "thickness_m": 0.3,
+        "height_m": 2.8,
+        "base_offset_m": 0.0,
+        "kind": "exterior",
+        "material_id": "m-ext-wall",
+        "left_material_id": null,
+        "right_material_id": null
+      },
+      {
+        "id": "w-entry-083",
+        "level_id": "lv-entry",
+        "start": [
+          9.278472,
+          14.775056
+        ],
+        "end": [
+          10.364063,
+          12.194069
+        ],
+        "thickness_m": 0.3,
+        "height_m": 2.8,
+        "base_offset_m": 0.0,
+        "kind": "exterior",
+        "material_id": "m-ext-wall",
+        "left_material_id": null,
+        "right_material_id": null
+      },
+      {
+        "id": "w-entry-084",
+        "level_id": "lv-entry",
+        "start": [
+          7.777444,
+          21.954674
+        ],
+        "end": [
+          8.165156,
+          21.032893
+        ],
+        "thickness_m": 0.3,
+        "height_m": 2.8,
+        "base_offset_m": 0.0,
+        "kind": "exterior",
+        "material_id": "m-ext-wall",
+        "left_material_id": null,
+        "right_material_id": null
+      },
+      {
+        "id": "w-entry-085",
+        "level_id": "lv-entry",
+        "start": [
+          8.165156,
+          21.032893
+        ],
+        "end": [
+          8.940578,
+          19.189331
+        ],
+        "thickness_m": 0.15,
+        "height_m": 2.8,
+        "base_offset_m": 0.0,
+        "kind": "interior",
+        "material_id": "m-int-wall",
+        "left_material_id": null,
+        "right_material_id": null
+      },
+      {
+        "id": "w-entry-086",
+        "level_id": "lv-entry",
+        "start": [
+          11.122034,
+          15.550478
+        ],
+        "end": [
+          11.664829,
+          14.259985
+        ],
+        "thickness_m": 0.15,
+        "height_m": 2.8,
+        "base_offset_m": 0.0,
+        "kind": "interior",
+        "material_id": "m-int-wall",
+        "left_material_id": null,
+        "right_material_id": null
+      },
+      {
+        "id": "w-entry-087",
+        "level_id": "lv-entry",
+        "start": [
+          11.664829,
+          14.259985
+        ],
+        "end": [
+          12.207625,
+          12.969492
+        ],
+        "thickness_m": 0.15,
+        "height_m": 2.8,
+        "base_offset_m": 0.0,
+        "kind": "interior",
+        "material_id": "m-int-wall",
+        "left_material_id": null,
+        "right_material_id": null
+      },
+      {
+        "id": "w-entry-088",
+        "level_id": "lv-entry",
+        "start": [
+          12.207625,
+          12.969492
+        ],
+        "end": [
+          12.440252,
+          12.416423
+        ],
+        "thickness_m": 0.3,
+        "height_m": 2.8,
+        "base_offset_m": 0.0,
+        "kind": "exterior",
+        "material_id": "m-ext-wall",
+        "left_material_id": null,
+        "right_material_id": null
+      },
+      {
+        "id": "w-entry-089",
+        "level_id": "lv-entry",
+        "start": [
+          13.508391,
+          15.035407
+        ],
+        "end": [
+          14.283814,
+          13.191846
+        ],
+        "thickness_m": 0.3,
+        "height_m": 2.8,
+        "base_offset_m": 0.0,
+        "kind": "exterior",
+        "material_id": "m-ext-wall",
+        "left_material_id": null,
+        "right_material_id": null
+      },
+      {
+        "id": "w-entry-090",
+        "level_id": "lv-entry",
+        "start": [
+          11.521564,
+          20.274923
+        ],
+        "end": [
+          12.529614,
+          17.878292
+        ],
+        "thickness_m": 0.3,
+        "height_m": 2.8,
+        "base_offset_m": 0.0,
+        "kind": "exterior",
+        "material_id": "m-ext-wall",
+        "left_material_id": null,
+        "right_material_id": null
+      },
+      {
+        "id": "w-entry-091",
+        "level_id": "lv-entry",
+        "start": [
+          12.529614,
+          17.878292
+        ],
+        "end": [
+          13.149952,
+          16.403443
+        ],
+        "thickness_m": 0.15,
+        "height_m": 2.8,
+        "base_offset_m": 0.0,
+        "kind": "interior",
+        "material_id": "m-int-wall",
+        "left_material_id": null,
+        "right_material_id": null
+      },
+      {
+        "id": "w-entry-092",
+        "level_id": "lv-entry",
+        "start": [
+          13.149952,
+          16.403443
+        ],
+        "end": [
+          13.615205,
+          15.297306
+        ],
+        "thickness_m": 0.15,
+        "height_m": 2.8,
+        "base_offset_m": 0.0,
+        "kind": "interior",
+        "material_id": "m-int-wall",
+        "left_material_id": null,
+        "right_material_id": null
+      },
+      {
+        "id": "w-entry-093",
+        "level_id": "lv-entry",
+        "start": [
+          13.615205,
+          15.297306
+        ],
+        "end": [
+          13.692747,
+          15.11295
+        ],
+        "thickness_m": 0.15,
+        "height_m": 2.8,
+        "base_offset_m": 0.0,
+        "kind": "interior",
+        "material_id": "m-int-wall",
+        "left_material_id": null,
+        "right_material_id": null
+      },
+      {
+        "id": "w-entry-094",
+        "level_id": "lv-entry",
+        "start": [
+          13.692747,
+          15.11295
+        ],
+        "end": [
+          14.545712,
+          13.085032
+        ],
+        "thickness_m": 0.3,
+        "height_m": 2.8,
+        "base_offset_m": 0.0,
+        "kind": "exterior",
+        "material_id": "m-ext-wall",
+        "left_material_id": null,
+        "right_material_id": null
+      },
+      {
+        "id": "w-entry-095",
+        "level_id": "lv-entry",
+        "start": [
+          15.274411,
+          15.995186
+        ],
+        "end": [
+          16.127375,
+          13.967268
+        ],
+        "thickness_m": 0.15,
+        "height_m": 2.8,
+        "base_offset_m": 0.0,
+        "kind": "interior",
+        "material_id": "m-int-wall",
+        "left_material_id": null,
+        "right_material_id": null
+      },
+      {
+        "id": "w-entry-096",
+        "level_id": "lv-entry",
+        "start": [
+          16.127375,
+          13.967268
+        ],
+        "end": [
+          16.204918,
+          13.782912
+        ],
+        "thickness_m": 0.3,
+        "height_m": 2.8,
+        "base_offset_m": 0.0,
+        "kind": "exterior",
+        "material_id": "m-ext-wall",
+        "left_material_id": null,
+        "right_material_id": null
+      },
+      {
+        "id": "w-entry-097",
+        "level_id": "lv-entry",
+        "start": [
+          12.386349,
+          23.89323
+        ],
+        "end": [
+          13.549482,
+          21.127887
+        ],
+        "thickness_m": 0.15,
+        "height_m": 2.8,
+        "base_offset_m": 0.0,
+        "kind": "interior",
+        "material_id": "m-int-wall",
+        "left_material_id": null,
+        "right_material_id": null
+      },
+      {
+        "id": "w-entry-098",
+        "level_id": "lv-entry",
+        "start": [
+          13.549482,
+          21.127887
+        ],
+        "end": [
+          14.557532,
+          18.731257
+        ],
+        "thickness_m": 0.3,
+        "height_m": 2.8,
+        "base_offset_m": 0.0,
+        "kind": "exterior",
+        "material_id": "m-ext-wall",
+        "left_material_id": null,
+        "right_material_id": null
+      },
+      {
+        "id": "w-entry-099",
+        "level_id": "lv-entry",
+        "start": [
+          16.032381,
+          19.351595
+        ],
+        "end": [
+          16.109923,
+          19.167239
+        ],
+        "thickness_m": 0.3,
+        "height_m": 2.8,
+        "base_offset_m": 0.0,
+        "kind": "exterior",
+        "material_id": "m-ext-wall",
+        "left_material_id": null,
+        "right_material_id": null
+      },
+      {
+        "id": "w-entry-100",
+        "level_id": "lv-entry",
+        "start": [
+          16.109923,
+          19.167239
+        ],
+        "end": [
+          17.117972,
+          16.770609
+        ],
+        "thickness_m": 0.15,
+        "height_m": 2.8,
+        "base_offset_m": 0.0,
+        "kind": "interior",
+        "material_id": "m-int-wall",
+        "left_material_id": null,
+        "right_material_id": null
+      },
+      {
+        "id": "w-entry-101",
+        "level_id": "lv-entry",
+        "start": [
+          17.117972,
+          16.770609
+        ],
+        "end": [
+          17.970937,
+          14.742691
+        ],
+        "thickness_m": 0.15,
+        "height_m": 2.8,
+        "base_offset_m": 0.0,
+        "kind": "interior",
+        "material_id": "m-int-wall",
+        "left_material_id": null,
+        "right_material_id": null
+      },
+      {
+        "id": "w-entry-102",
+        "level_id": "lv-entry",
+        "start": [
+          17.970937,
+          14.742691
+        ],
+        "end": [
+          18.048479,
+          14.558334
+        ],
+        "thickness_m": 0.3,
+        "height_m": 2.8,
+        "base_offset_m": 0.0,
+        "kind": "exterior",
+        "material_id": "m-ext-wall",
+        "left_material_id": null,
+        "right_material_id": null
+      },
+      {
+        "id": "w-entry-103",
+        "level_id": "lv-entry",
+        "start": [
+          18.506554,
+          20.175288
+        ],
+        "end": [
+          20.44511,
+          15.566384
+        ],
+        "thickness_m": 0.3,
+        "height_m": 2.8,
+        "base_offset_m": 0.0,
+        "kind": "exterior",
+        "material_id": "m-ext-wall",
+        "left_material_id": null,
+        "right_material_id": null
+      },
+      {
+        "id": "w-entry-104",
+        "level_id": "lv-entry",
+        "start": [
+          17.917034,
+          26.219497
+        ],
+        "end": [
+          20.088217,
+          21.057524
+        ],
+        "thickness_m": 0.3,
+        "height_m": 2.8,
+        "base_offset_m": 0.0,
+        "kind": "exterior",
+        "material_id": "m-ext-wall",
+        "left_material_id": null,
+        "right_material_id": null
+      },
+      {
+        "id": "w-entry-105",
+        "level_id": "lv-entry",
+        "start": [
+          19.760596,
+          26.99492
+        ],
+        "end": [
+          21.931779,
+          21.832947
+        ],
+        "thickness_m": 0.2,
+        "height_m": 1.0,
+        "base_offset_m": 0.0,
+        "kind": "parapet",
+        "material_id": "m-ext-wall",
+        "left_material_id": null,
+        "right_material_id": null
+      },
+      {
+        "id": "w-upper-106",
+        "level_id": "lv-upper",
+        "start": [
+          5.92361,
+          19.656131
+        ],
+        "end": [
+          12.007364,
+          22.215026
+        ],
+        "thickness_m": 0.3,
+        "height_m": 2.8,
+        "base_offset_m": 0.0,
+        "kind": "exterior",
+        "material_id": "m-ext-wall",
+        "left_material_id": null,
+        "right_material_id": null
+      },
+      {
+        "id": "w-upper-107",
+        "level_id": "lv-upper",
+        "start": [
+          13.375399,
+          22.573465
+        ],
+        "end": [
+          17.062523,
+          24.12431
+        ],
+        "thickness_m": 0.3,
+        "height_m": 2.8,
+        "base_offset_m": 0.0,
+        "kind": "exterior",
+        "material_id": "m-ext-wall",
+        "left_material_id": null,
+        "right_material_id": null
+      },
+      {
+        "id": "w-upper-108",
+        "level_id": "lv-upper",
+        "start": [
+          13.24804,
+          19.265327
+        ],
+        "end": [
+          14.538533,
+          19.808122
+        ],
+        "thickness_m": 0.3,
+        "height_m": 2.8,
+        "base_offset_m": 0.0,
+        "kind": "exterior",
+        "material_id": "m-ext-wall",
+        "left_material_id": null,
+        "right_material_id": null
+      },
+      {
+        "id": "w-upper-109",
+        "level_id": "lv-upper",
+        "start": [
+          14.538533,
+          19.808122
+        ],
+        "end": [
+          15.64467,
+          20.273376
+        ],
+        "thickness_m": 0.15,
+        "height_m": 2.8,
+        "base_offset_m": 0.0,
+        "kind": "interior",
+        "material_id": "m-int-wall",
+        "left_material_id": null,
+        "right_material_id": null
+      },
+      {
+        "id": "w-upper-110",
+        "level_id": "lv-upper",
+        "start": [
+          15.64467,
+          20.273376
+        ],
+        "end": [
+          18.225656,
+          21.358967
+        ],
+        "thickness_m": 0.3,
+        "height_m": 2.8,
+        "base_offset_m": 0.0,
+        "kind": "exterior",
+        "material_id": "m-ext-wall",
+        "left_material_id": null,
+        "right_material_id": null
+      },
+      {
+        "id": "w-upper-111",
+        "level_id": "lv-upper",
+        "start": [
+          16.109923,
+          19.167239
+        ],
+        "end": [
+          18.506554,
+          20.175288
+        ],
+        "thickness_m": 0.3,
+        "height_m": 2.8,
+        "base_offset_m": 0.0,
+        "kind": "exterior",
+        "material_id": "m-ext-wall",
+        "left_material_id": null,
+        "right_material_id": null
+      },
+      {
+        "id": "w-upper-112",
+        "level_id": "lv-upper",
+        "start": [
+          8.637588,
+          13.203665
+        ],
+        "end": [
+          10.665506,
+          14.05663
+        ],
+        "thickness_m": 0.15,
+        "height_m": 2.8,
+        "base_offset_m": 0.0,
+        "kind": "interior",
+        "material_id": "m-int-wall",
+        "left_material_id": null,
+        "right_material_id": null
+      },
+      {
+        "id": "w-upper-113",
+        "level_id": "lv-upper",
+        "start": [
+          10.665506,
+          14.05663
+        ],
+        "end": [
+          14.721342,
+          15.762559
+        ],
+        "thickness_m": 0.3,
+        "height_m": 2.8,
+        "base_offset_m": 0.0,
+        "kind": "exterior",
+        "material_id": "m-ext-wall",
+        "left_material_id": null,
+        "right_material_id": null
+      },
+      {
+        "id": "w-upper-114",
+        "level_id": "lv-upper",
+        "start": [
+          14.721342,
+          15.762559
+        ],
+        "end": [
+          15.274411,
+          15.995186
+        ],
+        "thickness_m": 0.3,
+        "height_m": 2.8,
+        "base_offset_m": 0.0,
+        "kind": "exterior",
+        "material_id": "m-ext-wall",
+        "left_material_id": null,
+        "right_material_id": null
+      },
+      {
+        "id": "w-upper-115",
+        "level_id": "lv-upper",
+        "start": [
+          15.274411,
+          15.995186
+        ],
+        "end": [
+          17.117972,
+          16.770609
+        ],
+        "thickness_m": 0.15,
+        "height_m": 2.8,
+        "base_offset_m": 0.0,
+        "kind": "interior",
+        "material_id": "m-int-wall",
+        "left_material_id": null,
+        "right_material_id": null
+      },
+      {
+        "id": "w-upper-116",
+        "level_id": "lv-upper",
+        "start": [
+          9.490553,
+          11.175747
+        ],
+        "end": [
+          11.518471,
+          12.028712
+        ],
+        "thickness_m": 0.3,
+        "height_m": 2.8,
+        "base_offset_m": 0.0,
+        "kind": "exterior",
+        "material_id": "m-ext-wall",
+        "left_material_id": null,
+        "right_material_id": null
+      },
+      {
+        "id": "w-upper-117",
+        "level_id": "lv-upper",
+        "start": [
+          16.127375,
+          13.967268
+        ],
+        "end": [
+          17.970937,
+          14.742691
+        ],
+        "thickness_m": 0.3,
+        "height_m": 2.8,
+        "base_offset_m": 0.0,
+        "kind": "exterior",
+        "material_id": "m-ext-wall",
+        "left_material_id": null,
+        "right_material_id": null
+      },
+      {
+        "id": "w-upper-118",
+        "level_id": "lv-upper",
+        "start": [
+          18.048479,
+          14.558334
+        ],
+        "end": [
+          20.44511,
+          15.566384
+        ],
+        "thickness_m": 0.3,
+        "height_m": 2.8,
+        "base_offset_m": 0.0,
+        "kind": "exterior",
+        "material_id": "m-ext-wall",
+        "left_material_id": null,
+        "right_material_id": null
+      },
+      {
+        "id": "w-upper-119",
+        "level_id": "lv-upper",
+        "start": [
+          5.92361,
+          19.656131
+        ],
+        "end": [
+          8.637588,
+          13.203665
+        ],
+        "thickness_m": 0.3,
+        "height_m": 2.8,
+        "base_offset_m": 0.0,
+        "kind": "exterior",
+        "material_id": "m-ext-wall",
+        "left_material_id": null,
+        "right_material_id": null
+      },
+      {
+        "id": "w-upper-120",
+        "level_id": "lv-upper",
+        "start": [
+          8.637588,
+          13.203665
+        ],
+        "end": [
+          9.490553,
+          11.175747
+        ],
+        "thickness_m": 0.3,
+        "height_m": 2.8,
+        "base_offset_m": 0.0,
+        "kind": "exterior",
+        "material_id": "m-ext-wall",
+        "left_material_id": null,
+        "right_material_id": null
+      },
+      {
+        "id": "w-upper-121",
+        "level_id": "lv-upper",
+        "start": [
+          10.665506,
+          14.05663
+        ],
+        "end": [
+          11.518471,
+          12.028712
+        ],
+        "thickness_m": 0.3,
+        "height_m": 2.8,
+        "base_offset_m": 0.0,
+        "kind": "exterior",
+        "material_id": "m-ext-wall",
+        "left_material_id": null,
+        "right_material_id": null
+      },
+      {
+        "id": "w-upper-122",
+        "level_id": "lv-upper",
+        "start": [
+          12.007364,
+          22.215026
+        ],
+        "end": [
+          13.24804,
+          19.265327
+        ],
+        "thickness_m": 0.3,
+        "height_m": 2.8,
+        "base_offset_m": 0.0,
+        "kind": "exterior",
+        "material_id": "m-ext-wall",
+        "left_material_id": null,
+        "right_material_id": null
+      },
+      {
+        "id": "w-upper-123",
+        "level_id": "lv-upper",
+        "start": [
+          13.24804,
+          19.265327
+        ],
+        "end": [
+          14.721342,
+          15.762559
+        ],
+        "thickness_m": 0.15,
+        "height_m": 2.8,
+        "base_offset_m": 0.0,
+        "kind": "interior",
+        "material_id": "m-int-wall",
+        "left_material_id": null,
+        "right_material_id": null
+      },
+      {
+        "id": "w-upper-124",
+        "level_id": "lv-upper",
+        "start": [
+          15.274411,
+          15.995186
+        ],
+        "end": [
+          16.127375,
+          13.967268
+        ],
+        "thickness_m": 0.3,
+        "height_m": 2.8,
+        "base_offset_m": 0.0,
+        "kind": "exterior",
+        "material_id": "m-ext-wall",
+        "left_material_id": null,
+        "right_material_id": null
+      },
+      {
+        "id": "w-upper-125",
+        "level_id": "lv-upper",
+        "start": [
+          13.375399,
+          22.573465
+        ],
+        "end": [
+          14.538533,
+          19.808122
+        ],
+        "thickness_m": 0.3,
+        "height_m": 2.8,
+        "base_offset_m": 0.0,
+        "kind": "exterior",
+        "material_id": "m-ext-wall",
+        "left_material_id": null,
+        "right_material_id": null
+      },
+      {
+        "id": "w-upper-126",
+        "level_id": "lv-upper",
+        "start": [
+          15.64467,
+          20.273376
+        ],
+        "end": [
+          16.109923,
+          19.167239
+        ],
+        "thickness_m": 0.3,
+        "height_m": 2.8,
+        "base_offset_m": 0.0,
+        "kind": "exterior",
+        "material_id": "m-ext-wall",
+        "left_material_id": null,
+        "right_material_id": null
+      },
+      {
+        "id": "w-upper-127",
+        "level_id": "lv-upper",
+        "start": [
+          16.109923,
+          19.167239
+        ],
+        "end": [
+          17.117972,
+          16.770609
+        ],
+        "thickness_m": 0.15,
+        "height_m": 2.8,
+        "base_offset_m": 0.0,
+        "kind": "interior",
+        "material_id": "m-int-wall",
+        "left_material_id": null,
+        "right_material_id": null
+      },
+      {
+        "id": "w-upper-128",
+        "level_id": "lv-upper",
+        "start": [
+          17.117972,
+          16.770609
+        ],
+        "end": [
+          17.970937,
+          14.742691
+        ],
+        "thickness_m": 0.15,
+        "height_m": 2.8,
+        "base_offset_m": 0.0,
+        "kind": "interior",
+        "material_id": "m-int-wall",
+        "left_material_id": null,
+        "right_material_id": null
+      },
+      {
+        "id": "w-upper-129",
+        "level_id": "lv-upper",
+        "start": [
+          17.970937,
+          14.742691
+        ],
+        "end": [
+          18.048479,
+          14.558334
+        ],
+        "thickness_m": 0.3,
+        "height_m": 2.8,
+        "base_offset_m": 0.0,
+        "kind": "exterior",
+        "material_id": "m-ext-wall",
+        "left_material_id": null,
+        "right_material_id": null
+      },
+      {
+        "id": "w-upper-130",
+        "level_id": "lv-upper",
+        "start": [
+          18.506554,
+          20.175288
+        ],
+        "end": [
+          20.44511,
+          15.566384
+        ],
+        "thickness_m": 0.3,
+        "height_m": 2.8,
+        "base_offset_m": 0.0,
+        "kind": "exterior",
+        "material_id": "m-ext-wall",
+        "left_material_id": null,
+        "right_material_id": null
+      },
+      {
+        "id": "w-upper-131",
+        "level_id": "lv-upper",
+        "start": [
+          17.062523,
+          24.12431
+        ],
+        "end": [
+          18.225656,
+          21.358967
+        ],
+        "thickness_m": 0.3,
+        "height_m": 2.8,
+        "base_offset_m": 0.0,
+        "kind": "exterior",
+        "material_id": "m-ext-wall",
+        "left_material_id": null,
+        "right_material_id": null
+      }
+    ],
+    "openings": [
+      {
+        "id": "d-exterior-upper-119-01",
+        "kind": "door",
+        "host_wall_id": "w-upper-119",
+        "offset_m": 0.7,
+        "width_m": 5.5,
+        "height_m": 2.1,
+        "sill_m": 0.0,
+        "connects": [
+          "sp-garage",
+          "exterior"
+        ],
+        "opens_into": null,
+        "operation": "sliding",
+        "material_id": "m-door"
+      },
+      {
+        "id": "d-exterior-entry-079-02",
+        "kind": "door",
+        "host_wall_id": "w-entry-079",
+        "offset_m": 0.3,
+        "width_m": 1.1,
+        "height_m": 2.1,
+        "sill_m": 0.0,
+        "connects": [
+          "sp-main-entry",
+          "exterior"
+        ],
+        "opens_into": null,
+        "operation": "sliding",
+        "material_id": "m-door"
+      },
+      {
+        "id": "d-exterior-entry-098-03",
+        "kind": "door",
+        "host_wall_id": "w-entry-098",
+        "offset_m": 0.1,
+        "width_m": 2.4,
+        "height_m": 2.1,
+        "sill_m": 0.0,
+        "connects": [
+          "sp-living",
+          "exterior"
+        ],
+        "opens_into": null,
+        "operation": "sliding",
+        "material_id": "m-door"
+      },
+      {
+        "id": "d-garden-lower-028-04",
+        "kind": "door",
+        "host_wall_id": "w-lower-028",
+        "offset_m": 0.3,
+        "width_m": 1.0,
+        "height_m": 2.1,
+        "sill_m": 0.0,
+        "connects": [
+          "sp-lower-entry",
+          "exterior"
+        ],
+        "opens_into": null,
+        "operation": "sliding",
+        "material_id": "m-door"
+      },
+      {
+        "id": "d-upper-123-05",
+        "kind": "door",
+        "host_wall_id": "w-upper-123",
+        "offset_m": 1.7,
+        "width_m": 0.9,
+        "height_m": 2.1,
+        "sill_m": 0.0,
+        "connects": [
+          "sp-top-lobby",
+          "sp-garage"
+        ],
+        "opens_into": null,
+        "operation": "sliding",
+        "material_id": "m-door"
+      },
+      {
+        "id": "d-upper-127-06",
+        "kind": "door",
+        "host_wall_id": "w-upper-127",
+        "offset_m": 0.8,
+        "width_m": 0.9,
+        "height_m": 2.1,
+        "sill_m": 0.0,
+        "connects": [
+          "sp-top-lobby",
+          "sp-stair-lv-upper"
+        ],
+        "opens_into": null,
+        "operation": "sliding",
+        "material_id": "m-door"
+      },
+      {
+        "id": "d-upper-115-07",
+        "kind": "door",
+        "host_wall_id": "w-upper-115",
+        "offset_m": 0.5,
+        "width_m": 0.9,
+        "height_m": 2.1,
+        "sill_m": 0.0,
+        "connects": [
+          "sp-top-lobby",
+          "sp-lift-lv-upper"
+        ],
+        "opens_into": null,
+        "operation": "sliding",
+        "material_id": "m-door"
+      },
+      {
+        "id": "d-upper-109-09",
+        "kind": "door",
+        "host_wall_id": "w-upper-109",
+        "offset_m": 0.1,
+        "width_m": 0.9,
+        "height_m": 2.1,
+        "sill_m": 0.0,
+        "connects": [
+          "sp-top-lobby",
+          "sp-office"
+        ],
+        "opens_into": null,
+        "operation": "sliding",
+        "material_id": "m-door"
+      },
+      {
+        "id": "op-entry-097-10",
+        "kind": "opening",
+        "host_wall_id": "w-entry-097",
+        "offset_m": 0.1,
+        "width_m": 2.8,
+        "height_m": 2.1,
+        "sill_m": 0.0,
+        "connects": [
+          "sp-living",
+          "sp-dining"
+        ],
+        "opens_into": null,
+        "operation": "none",
+        "material_id": "m-window"
+      },
+      {
+        "id": "d-entry-062-11",
+        "kind": "door",
+        "host_wall_id": "w-entry-062",
+        "offset_m": 0.9,
+        "width_m": 0.9,
+        "height_m": 2.1,
+        "sill_m": 0.0,
+        "connects": [
+          "sp-dining",
+          "sp-kitchen"
+        ],
+        "opens_into": null,
+        "operation": "sliding",
+        "material_id": "m-door"
+      },
+      {
+        "id": "d-entry-061-12",
+        "kind": "door",
+        "host_wall_id": "w-entry-061",
+        "offset_m": 0.5,
+        "width_m": 0.9,
+        "height_m": 2.1,
+        "sill_m": 0.0,
+        "connects": [
+          "sp-kitchen",
+          "sp-pantry"
+        ],
+        "opens_into": null,
+        "operation": "sliding",
+        "material_id": "m-door"
+      },
+      {
+        "id": "d-entry-091-13",
+        "kind": "door",
+        "host_wall_id": "w-entry-091",
+        "offset_m": 0.3,
+        "width_m": 0.9,
+        "height_m": 2.1,
+        "sill_m": 0.0,
+        "connects": [
+          "sp-kitchen",
+          "sp-day-lobby"
+        ],
+        "opens_into": null,
+        "operation": "sliding",
+        "material_id": "m-door"
+      },
+      {
+        "id": "op-entry-065-14",
+        "kind": "opening",
+        "host_wall_id": "w-entry-065",
+        "offset_m": 0.1,
+        "width_m": 1.4,
+        "height_m": 2.1,
+        "sill_m": 0.0,
+        "connects": [
+          "sp-day-lobby",
+          "sp-living"
+        ],
+        "opens_into": null,
+        "operation": "none",
+        "material_id": "m-window"
+      },
+      {
+        "id": "d-entry-092-15",
+        "kind": "door",
+        "host_wall_id": "w-entry-092",
+        "offset_m": 0.1,
+        "width_m": 0.9,
+        "height_m": 2.1,
+        "sill_m": 0.0,
+        "connects": [
+          "sp-day-lobby",
+          "sp-bath-vest"
+        ],
+        "opens_into": null,
+        "operation": "sliding",
+        "material_id": "m-door"
+      },
+      {
+        "id": "d-entry-086-16",
+        "kind": "door",
+        "host_wall_id": "w-entry-086",
+        "offset_m": 0.2,
+        "width_m": 0.9,
+        "height_m": 2.1,
+        "sill_m": 0.0,
+        "connects": [
+          "sp-bath-vest",
+          "sp-day-bath"
+        ],
+        "opens_into": null,
+        "operation": "sliding",
+        "material_id": "m-door"
+      },
+      {
+        "id": "d-entry-074-17",
+        "kind": "door",
+        "host_wall_id": "w-entry-074",
+        "offset_m": 0.5,
+        "width_m": 0.9,
+        "height_m": 2.1,
+        "sill_m": 0.0,
+        "connects": [
+          "sp-bath-vest",
+          "sp-store"
+        ],
+        "opens_into": null,
+        "operation": "sliding",
+        "material_id": "m-door"
+      },
+      {
+        "id": "d-entry-100-18",
+        "kind": "door",
+        "host_wall_id": "w-entry-100",
+        "offset_m": 0.8,
+        "width_m": 0.9,
+        "height_m": 2.1,
+        "sill_m": 0.0,
+        "connects": [
+          "sp-day-lobby",
+          "sp-stair-lv-entry"
+        ],
+        "opens_into": null,
+        "operation": "sliding",
+        "material_id": "m-door"
+      },
+      {
+        "id": "d-entry-073-19",
+        "kind": "door",
+        "host_wall_id": "w-entry-073",
+        "offset_m": 0.5,
+        "width_m": 0.9,
+        "height_m": 2.1,
+        "sill_m": 0.0,
+        "connects": [
+          "sp-day-lobby",
+          "sp-lift-lv-entry"
+        ],
+        "opens_into": null,
+        "operation": "sliding",
+        "material_id": "m-door"
+      },
+      {
+        "id": "d-lower-046-20",
+        "kind": "door",
+        "host_wall_id": "w-lower-046",
+        "offset_m": 0.8,
+        "width_m": 0.9,
+        "height_m": 2.1,
+        "sill_m": 0.0,
+        "connects": [
+          "sp-night-lobby",
+          "sp-stair-lv-lower"
+        ],
+        "opens_into": null,
+        "operation": "sliding",
+        "material_id": "m-door"
+      },
+      {
+        "id": "d-lower-025-21",
+        "kind": "door",
+        "host_wall_id": "w-lower-025",
+        "offset_m": 0.5,
+        "width_m": 0.9,
+        "height_m": 2.1,
+        "sill_m": 0.0,
+        "connects": [
+          "sp-night-lobby",
+          "sp-lift-lv-lower"
+        ],
+        "opens_into": null,
+        "operation": "sliding",
+        "material_id": "m-door"
+      },
+      {
+        "id": "d-lower-015-22",
+        "kind": "door",
+        "host_wall_id": "w-lower-015",
+        "offset_m": 0.1,
+        "width_m": 0.9,
+        "height_m": 2.1,
+        "sill_m": 0.0,
+        "connects": [
+          "sp-night-lobby",
+          "sp-adult-vest"
+        ],
+        "opens_into": null,
+        "operation": "sliding",
+        "material_id": "m-door"
+      },
+      {
+        "id": "d-lower-040-23",
+        "kind": "door",
+        "host_wall_id": "w-lower-040",
+        "offset_m": 0.4,
+        "width_m": 0.9,
+        "height_m": 2.1,
+        "sill_m": 0.0,
+        "connects": [
+          "sp-night-lobby",
+          "sp-child-vest"
+        ],
+        "opens_into": null,
+        "operation": "sliding",
+        "material_id": "m-door"
+      },
+      {
+        "id": "d-lower-050-24",
+        "kind": "door",
+        "host_wall_id": "w-lower-050",
+        "offset_m": 0.3,
+        "width_m": 0.9,
+        "height_m": 2.1,
+        "sill_m": 0.0,
+        "connects": [
+          "sp-adult-vest",
+          "sp-main-bed"
+        ],
+        "opens_into": null,
+        "operation": "sliding",
+        "material_id": "m-door"
+      },
+      {
+        "id": "d-lower-005-25",
+        "kind": "door",
+        "host_wall_id": "w-lower-005",
+        "offset_m": 0.3,
+        "width_m": 0.9,
+        "height_m": 2.1,
+        "sill_m": 0.0,
+        "connects": [
+          "sp-adult-vest",
+          "sp-elder-bed"
+        ],
+        "opens_into": null,
+        "operation": "sliding",
+        "material_id": "m-door"
+      },
+      {
+        "id": "d-lower-044-26",
+        "kind": "door",
+        "host_wall_id": "w-lower-044",
+        "offset_m": 0.6,
+        "width_m": 0.9,
+        "height_m": 2.1,
+        "sill_m": 0.0,
+        "connects": [
+          "sp-adult-vest",
+          "sp-night-bath"
+        ],
+        "opens_into": null,
+        "operation": "sliding",
+        "material_id": "m-door"
+      },
+      {
+        "id": "d-lower-021-27",
+        "kind": "door",
+        "host_wall_id": "w-lower-021",
+        "offset_m": 0.3,
+        "width_m": 0.9,
+        "height_m": 2.1,
+        "sill_m": 0.0,
+        "connects": [
+          "sp-child-vest",
+          "sp-boys"
+        ],
+        "opens_into": null,
+        "operation": "sliding",
+        "material_id": "m-door"
+      },
+      {
+        "id": "d-lower-011-28",
+        "kind": "door",
+        "host_wall_id": "w-lower-011",
+        "offset_m": 0.1,
+        "width_m": 0.9,
+        "height_m": 2.1,
+        "sill_m": 0.0,
+        "connects": [
+          "sp-child-vest",
+          "sp-girls"
+        ],
+        "opens_into": null,
+        "operation": "sliding",
+        "material_id": "m-door"
+      },
+      {
+        "id": "d-lower-033-29",
+        "kind": "door",
+        "host_wall_id": "w-lower-033",
+        "offset_m": 0.5,
+        "width_m": 0.9,
+        "height_m": 2.1,
+        "sill_m": 0.0,
+        "connects": [
+          "sp-child-vest",
+          "sp-laundry"
+        ],
+        "opens_into": null,
+        "operation": "sliding",
+        "material_id": "m-door"
+      },
+      {
+        "id": "d-lower-007-30",
+        "kind": "door",
+        "host_wall_id": "w-lower-007",
+        "offset_m": 0.1,
+        "width_m": 0.9,
+        "height_m": 2.1,
+        "sill_m": 0.0,
+        "connects": [
+          "sp-main-bed",
+          "sp-ensuite"
+        ],
+        "opens_into": null,
+        "operation": "sliding",
+        "material_id": "m-door"
+      },
+      {
+        "id": "d-entry-072-31",
+        "kind": "door",
+        "host_wall_id": "w-entry-072",
+        "offset_m": 0.4,
+        "width_m": 0.9,
+        "height_m": 2.1,
+        "sill_m": 0.0,
+        "connects": [
+          "sp-main-entry",
+          "sp-day-lobby"
+        ],
+        "opens_into": null,
+        "operation": "sliding",
+        "material_id": "m-door"
+      },
+      {
+        "id": "d-lower-024-32",
+        "kind": "door",
+        "host_wall_id": "w-lower-024",
+        "offset_m": 0.2,
+        "width_m": 0.9,
+        "height_m": 2.1,
+        "sill_m": 0.0,
+        "connects": [
+          "sp-lower-entry",
+          "sp-night-lobby"
+        ],
+        "opens_into": null,
+        "operation": "sliding",
+        "material_id": "m-door"
+      },
+      {
+        "id": "d-entry-104-33",
+        "kind": "door",
+        "host_wall_id": "w-entry-104",
+        "offset_m": 1.9,
+        "width_m": 1.8,
+        "height_m": 2.1,
+        "sill_m": 0.0,
+        "connects": [
+          "sp-living",
+          "sp-balcony"
+        ],
+        "opens_into": null,
+        "operation": "sliding",
+        "material_id": "m-door"
+      },
+      {
+        "id": "win-upper-131-34",
+        "kind": "window",
+        "host_wall_id": "w-upper-131",
+        "offset_m": 0.6,
+        "width_m": 1.8,
+        "height_m": 1.4,
+        "sill_m": 0.8,
+        "connects": [
+          "sp-office",
+          "exterior"
+        ],
+        "opens_into": null,
+        "operation": "sliding",
+        "material_id": "m-window"
+      },
+      {
+        "id": "win-entry-058-35",
+        "kind": "window",
+        "host_wall_id": "w-entry-058",
+        "offset_m": 2.1,
+        "width_m": 1.8,
+        "height_m": 1.4,
+        "sill_m": 0.8,
+        "connects": [
+          "sp-living",
+          "exterior"
+        ],
+        "opens_into": null,
+        "operation": "sliding",
+        "material_id": "m-window"
+      },
+      {
+        "id": "win-entry-082-36",
+        "kind": "window",
+        "host_wall_id": "w-entry-082",
+        "offset_m": 1.2,
+        "width_m": 1.8,
+        "height_m": 1.4,
+        "sill_m": 0.8,
+        "connects": [
+          "sp-kitchen",
+          "exterior"
+        ],
+        "opens_into": null,
+        "operation": "sliding",
+        "material_id": "m-window"
+      },
+      {
+        "id": "win-lower-002-37",
+        "kind": "window",
+        "host_wall_id": "w-lower-002",
+        "offset_m": 0.8,
+        "width_m": 1.8,
+        "height_m": 1.4,
+        "sill_m": 0.8,
+        "connects": [
+          "sp-main-bed",
+          "exterior"
+        ],
+        "opens_into": null,
+        "operation": "sliding",
+        "material_id": "m-window"
+      },
+      {
+        "id": "win-lower-001-38",
+        "kind": "window",
+        "host_wall_id": "w-lower-001",
+        "offset_m": 1.3,
+        "width_m": 1.8,
+        "height_m": 1.4,
+        "sill_m": 0.8,
+        "connects": [
+          "sp-elder-bed",
+          "exterior"
+        ],
+        "opens_into": null,
+        "operation": "sliding",
+        "material_id": "m-window"
+      },
+      {
+        "id": "win-lower-027-39",
+        "kind": "window",
+        "host_wall_id": "w-lower-027",
+        "offset_m": 1.3,
+        "width_m": 1.8,
+        "height_m": 1.4,
+        "sill_m": 0.8,
+        "connects": [
+          "sp-boys",
+          "exterior"
+        ],
+        "opens_into": null,
+        "operation": "sliding",
+        "material_id": "m-window"
+      },
+      {
+        "id": "win-lower-030-40",
+        "kind": "window",
+        "host_wall_id": "w-lower-030",
+        "offset_m": 1.0,
+        "width_m": 1.8,
+        "height_m": 1.4,
+        "sill_m": 0.8,
+        "connects": [
+          "sp-girls",
+          "exterior"
+        ],
+        "opens_into": null,
+        "operation": "sliding",
+        "material_id": "m-window"
+      },
+      {
+        "id": "d-plant-court",
+        "kind": "door",
+        "host_wall_id": "w-upper-120",
+        "offset_m": 0.6500000802214754,
+        "width_m": 0.9,
+        "height_m": 2.1,
+        "sill_m": 0.0,
+        "connects": [
+          "sp-plant",
+          "exterior"
+        ],
+        "opens_into": null,
+        "operation": "sliding",
+        "material_id": null
+      }
+    ],
+    "slabs": [
+      {
+        "id": "slab-floor-lower",
+        "level_id": "lv-lower",
+        "kind": "floor",
+        "boundary": {
+          "outer": [
+            [
+              10.174075,
+              22.962723
+            ],
+            [
+              10.871955,
+              21.303517
+            ],
+            [
+              7.184831,
+              19.752673
+            ],
+            [
+              8.658134,
+              16.249905
+            ],
+            [
+              9.211202,
+              16.482532
+            ],
+            [
+              9.986625,
+              14.63897
+            ],
+            [
+              9.433556,
+              14.406343
+            ],
+            [
+              10.674232,
+              11.456645
+            ],
+            [
+              16.204918,
+              13.782912
+            ],
+            [
+              16.127375,
+              13.967268
+            ],
+            [
+              17.970937,
+              14.742691
+            ],
+            [
+              18.048479,
+              14.558334
+            ],
+            [
+              20.44511,
+              15.566384
+            ],
+            [
+              19.126892,
+              18.700439
+            ],
+            [
+              21.339166,
+              19.630946
+            ],
+            [
+              20.408659,
+              21.84322
+            ],
+            [
+              19.302522,
+              21.377966
+            ],
+            [
+              17.363966,
+              25.986871
+            ]
+          ],
+          "holes": [
+            [
+              [
+                13.489392,
+                16.112273
+              ],
+              [
+                13.673748,
+                16.189815
+              ],
+              [
+                13.983917,
+                15.45239
+              ],
+              [
+                13.799561,
+                15.374848
+              ]
+            ],
+            [
+              [
+                12.898326,
+                18.033377
+              ],
+              [
+                14.926244,
+                18.886342
+              ],
+              [
+                15.003786,
+                18.701985
+              ],
+              [
+                12.975868,
+                17.849021
+              ]
+            ],
+            [
+              [
+                18.196385,
+                20.912713
+              ],
+              [
+                18.506554,
+                20.175288
+              ],
+              [
+                16.478636,
+                19.322323
+              ],
+              [
+                16.168467,
+                20.059748
+              ]
+            ]
+          ]
+        },
+        "thickness_m": 0.25,
+        "top_offset_m": 0.0,
+        "material_id": "m-floor"
+      },
+      {
+        "id": "slab-roof-lower-1",
+        "level_id": "lv-lower",
+        "kind": "roof",
+        "boundary": {
+          "outer": [
+            [
+              10.674232,
+              11.456645
+            ],
+            [
+              14.545712,
+              13.085032
+            ],
+            [
+              13.692747,
+              15.11295
+            ],
+            [
+              13.508391,
+              15.035407
+            ],
+            [
+              14.283814,
+              13.191846
+            ],
+            [
+              12.440252,
+              12.416423
+            ],
+            [
+              12.207625,
+              12.969492
+            ],
+            [
+              11.285844,
+              12.581781
+            ],
+            [
+              11.518471,
+              12.028712
+            ],
+            [
+              10.59669,
+              11.641001
+            ]
+          ],
+          "holes": []
+        },
+        "thickness_m": 0.25,
+        "top_offset_m": 3.0,
+        "material_id": "m-floor"
+      },
+      {
+        "id": "slab-roof-lower-2",
+        "level_id": "lv-lower",
+        "kind": "roof",
+        "boundary": {
+          "outer": [
+            [
+              21.339166,
+              19.630946
+            ],
+            [
+              20.408659,
+              21.84322
+            ],
+            [
+              19.85559,
+              21.610593
+            ],
+            [
+              20.088217,
+              21.057524
+            ],
+            [
+              18.429011,
+              20.359644
+            ],
+            [
+              19.126892,
+              18.700439
+            ]
+          ],
+          "holes": []
+        },
+        "thickness_m": 0.25,
+        "top_offset_m": 3.0,
+        "material_id": "m-floor"
+      },
+      {
+        "id": "slab-roof-lower-3",
+        "level_id": "lv-lower",
+        "kind": "roof",
+        "boundary": {
+          "outer": [
+            [
+              16.401093,
+              19.50668
+            ],
+            [
+              16.032381,
+              19.351595
+            ],
+            [
+              16.109923,
+              19.167239
+            ],
+            [
+              16.478636,
+              19.322323
+            ]
+          ],
+          "holes": []
+        },
+        "thickness_m": 0.25,
+        "top_offset_m": 3.0,
+        "material_id": "m-floor"
+      },
+      {
+        "id": "slab-roof-lower-4",
+        "level_id": "lv-lower",
+        "kind": "roof",
+        "boundary": {
+          "outer": [
+            [
+              13.24804,
+              19.265327
+            ],
+            [
+              14.16982,
+              19.653038
+            ],
+            [
+              13.549482,
+              21.127887
+            ],
+            [
+              12.627702,
+              20.740176
+            ]
+          ],
+          "holes": []
+        },
+        "thickness_m": 0.25,
+        "top_offset_m": 3.0,
+        "material_id": "m-floor"
+      },
+      {
+        "id": "slab-floor-entry",
+        "level_id": "lv-entry",
+        "kind": "floor",
+        "boundary": {
+          "outer": [
+            [
+              8.165156,
+              21.032893
+            ],
+            [
+              6.321594,
+              20.257471
+            ],
+            [
+              8.725403,
+              14.542429
+            ],
+            [
+              9.278472,
+              14.775056
+            ],
+            [
+              10.364063,
+              12.194069
+            ],
+            [
+              12.207625,
+              12.969492
+            ],
+            [
+              12.440252,
+              12.416423
+            ],
+            [
+              14.283814,
+              13.191846
+            ],
+            [
+              13.508391,
+              15.035407
+            ],
+            [
+              13.692747,
+              15.11295
+            ],
+            [
+              14.545712,
+              13.085032
+            ],
+            [
+              16.204918,
+              13.782912
+            ],
+            [
+              16.127375,
+              13.967268
+            ],
+            [
+              17.970937,
+              14.742691
+            ],
+            [
+              18.048479,
+              14.558334
+            ],
+            [
+              20.44511,
+              15.566384
+            ],
+            [
+              18.506554,
+              20.175288
+            ],
+            [
+              16.109923,
+              19.167239
+            ],
+            [
+              16.032381,
+              19.351595
+            ],
+            [
+              20.088217,
+              21.057524
+            ],
+            [
+              17.917034,
+              26.219497
+            ],
+            [
+              7.777444,
+              21.954674
+            ]
+          ],
+          "holes": [
+            [
+              [
+                13.549482,
+                21.127887
+              ],
+              [
+                14.557532,
+                18.731257
+              ],
+              [
+                12.529614,
+                17.878292
+              ],
+              [
+                11.521564,
+                20.274923
+              ]
+            ],
+            [
+              [
+                18.74868,
+                19.083787
+              ],
+              [
+                20.183211,
+                15.673198
+              ],
+              [
+                18.155293,
+                14.820233
+              ],
+              [
+                16.720762,
+                18.230822
+              ]
+            ]
+          ]
+        },
+        "thickness_m": 0.25,
+        "top_offset_m": 0.0,
+        "material_id": "m-floor"
+      },
+      {
+        "id": "slab-roof-entry-1",
+        "level_id": "lv-entry",
+        "kind": "roof",
+        "boundary": {
+          "outer": [
+            [
+              8.165156,
+              21.032893
+            ],
+            [
+              6.321594,
+              20.257471
+            ],
+            [
+              6.476678,
+              19.888758
+            ],
+            [
+              12.007364,
+              22.215026
+            ],
+            [
+              12.627702,
+              20.740176
+            ],
+            [
+              13.549482,
+              21.127887
+            ],
+            [
+              14.16982,
+              19.653038
+            ],
+            [
+              14.538533,
+              19.808122
+            ],
+            [
+              13.375399,
+              22.573465
+            ],
+            [
+              17.062523,
+              24.12431
+            ],
+            [
+              18.225656,
+              21.358967
+            ],
+            [
+              15.64467,
+              20.273376
+            ],
+            [
+              16.032381,
+              19.351595
+            ],
+            [
+              20.088217,
+              21.057524
+            ],
+            [
+              17.917034,
+              26.219497
+            ],
+            [
+              7.777444,
+              21.954674
+            ]
+          ],
+          "holes": []
+        },
+        "thickness_m": 0.25,
+        "top_offset_m": 3.0,
+        "material_id": "m-floor"
+      },
+      {
+        "id": "slab-roof-entry-2",
+        "level_id": "lv-entry",
+        "kind": "roof",
+        "boundary": {
+          "outer": [
+            [
+              12.207625,
+              12.969492
+            ],
+            [
+              12.440252,
+              12.416423
+            ],
+            [
+              14.283814,
+              13.191846
+            ],
+            [
+              13.508391,
+              15.035407
+            ],
+            [
+              13.692747,
+              15.11295
+            ],
+            [
+              14.545712,
+              13.085032
+            ],
+            [
+              16.204918,
+              13.782912
+            ],
+            [
+              15.274411,
+              15.995186
+            ],
+            [
+              10.665506,
+              14.05663
+            ],
+            [
+              11.285844,
+              12.581781
+            ]
+          ],
+          "holes": []
+        },
+        "thickness_m": 0.25,
+        "top_offset_m": 3.0,
+        "material_id": "m-floor"
+      },
+      {
+        "id": "slab-terrace-balcony",
+        "level_id": "lv-entry",
+        "kind": "terrace",
+        "boundary": {
+          "outer": [
+            [
+              17.917034,
+              26.219497
+            ],
+            [
+              19.760596,
+              26.99492
+            ],
+            [
+              21.931779,
+              21.832947
+            ],
+            [
+              20.088217,
+              21.057524
+            ]
+          ],
+          "holes": []
+        },
+        "thickness_m": 0.15,
+        "top_offset_m": 0.0,
+        "material_id": "m-floor"
+      },
+      {
+        "id": "slab-floor-upper",
+        "level_id": "lv-upper",
+        "kind": "floor",
+        "boundary": {
+          "outer": [
+            [
+              13.375399,
+              22.573465
+            ],
+            [
+              14.538533,
+              19.808122
+            ],
+            [
+              13.24804,
+              19.265327
+            ],
+            [
+              12.007364,
+              22.215026
+            ],
+            [
+              5.92361,
+              19.656131
+            ],
+            [
+              9.490553,
+              11.175747
+            ],
+            [
+              11.518471,
+              12.028712
+            ],
+            [
+              10.665506,
+              14.05663
+            ],
+            [
+              15.274411,
+              15.995186
+            ],
+            [
+              16.127375,
+              13.967268
+            ],
+            [
+              17.970937,
+              14.742691
+            ],
+            [
+              18.048479,
+              14.558334
+            ],
+            [
+              20.44511,
+              15.566384
+            ],
+            [
+              18.506554,
+              20.175288
+            ],
+            [
+              16.109923,
+              19.167239
+            ],
+            [
+              15.64467,
+              20.273376
+            ],
+            [
+              18.225656,
+              21.358967
+            ],
+            [
+              17.062523,
+              24.12431
+            ]
+          ],
+          "holes": [
+            [
+              [
+                18.74868,
+                19.083787
+              ],
+              [
+                20.183211,
+                15.673198
+              ],
+              [
+                18.155293,
+                14.820233
+              ],
+              [
+                16.720762,
+                18.230822
+              ]
+            ]
+          ]
+        },
+        "thickness_m": 0.25,
+        "top_offset_m": 0.0,
+        "material_id": "m-floor"
+      },
+      {
+        "id": "slab-roof-upper",
+        "level_id": "lv-upper",
+        "kind": "roof",
+        "boundary": {
+          "outer": [
+            [
+              17.062523,
+              24.12431
+            ],
+            [
+              13.375399,
+              22.573465
+            ],
+            [
+              14.538533,
+              19.808122
+            ],
+            [
+              13.24804,
+              19.265327
+            ],
+            [
+              12.007364,
+              22.215026
+            ],
+            [
+              5.92361,
+              19.656131
+            ],
+            [
+              9.490553,
+              11.175747
+            ],
+            [
+              11.518471,
+              12.028712
+            ],
+            [
+              10.665506,
+              14.05663
+            ],
+            [
+              15.274411,
+              15.995186
+            ],
+            [
+              16.127375,
+              13.967268
+            ],
+            [
+              17.970937,
+              14.742691
+            ],
+            [
+              18.048479,
+              14.558334
+            ],
+            [
+              20.44511,
+              15.566384
+            ],
+            [
+              18.506554,
+              20.175288
+            ],
+            [
+              16.109923,
+              19.167239
+            ],
+            [
+              15.64467,
+              20.273376
+            ],
+            [
+              18.225656,
+              21.358967
+            ]
+          ],
+          "holes": []
+        },
+        "thickness_m": 0.25,
+        "top_offset_m": 3.0,
+        "material_id": "m-floor"
+      }
+    ],
+    "ceilings": [
+      {
+        "id": "ceil-stair-lv-lower",
+        "space_id": "sp-stair-lv-lower",
+        "height_m": 2.7,
+        "material_id": "m-int-wall"
+      },
+      {
+        "id": "ceil-lift-lv-lower",
+        "space_id": "sp-lift-lv-lower",
+        "height_m": 2.7,
+        "material_id": "m-int-wall"
+      },
+      {
+        "id": "ceil-stair-lv-entry",
+        "space_id": "sp-stair-lv-entry",
+        "height_m": 2.7,
+        "material_id": "m-int-wall"
+      },
+      {
+        "id": "ceil-lift-lv-entry",
+        "space_id": "sp-lift-lv-entry",
+        "height_m": 2.7,
+        "material_id": "m-int-wall"
+      },
+      {
+        "id": "ceil-stair-lv-upper",
+        "space_id": "sp-stair-lv-upper",
+        "height_m": 2.7,
+        "material_id": "m-int-wall"
+      },
+      {
+        "id": "ceil-lift-lv-upper",
+        "space_id": "sp-lift-lv-upper",
+        "height_m": 2.7,
+        "material_id": "m-int-wall"
+      },
+      {
+        "id": "ceil-garage",
+        "space_id": "sp-garage",
+        "height_m": 2.7,
+        "material_id": "m-int-wall"
+      },
+      {
+        "id": "ceil-office",
+        "space_id": "sp-office",
+        "height_m": 2.7,
+        "material_id": "m-int-wall"
+      },
+      {
+        "id": "ceil-plant",
+        "space_id": "sp-plant",
+        "height_m": 2.7,
+        "material_id": "m-int-wall"
+      },
+      {
+        "id": "ceil-top-lobby",
+        "space_id": "sp-top-lobby",
+        "height_m": 2.7,
+        "material_id": "m-int-wall"
+      },
+      {
+        "id": "ceil-living",
+        "space_id": "sp-living",
+        "height_m": 2.7,
+        "material_id": "m-int-wall"
+      },
+      {
+        "id": "ceil-dining",
+        "space_id": "sp-dining",
+        "height_m": 2.7,
+        "material_id": "m-int-wall"
+      },
+      {
+        "id": "ceil-kitchen",
+        "space_id": "sp-kitchen",
+        "height_m": 2.7,
+        "material_id": "m-int-wall"
+      },
+      {
+        "id": "ceil-pantry",
+        "space_id": "sp-pantry",
+        "height_m": 2.7,
+        "material_id": "m-int-wall"
+      },
+      {
+        "id": "ceil-day-lobby",
+        "space_id": "sp-day-lobby",
+        "height_m": 2.7,
+        "material_id": "m-int-wall"
+      },
+      {
+        "id": "ceil-bath-vest",
+        "space_id": "sp-bath-vest",
+        "height_m": 2.7,
+        "material_id": "m-int-wall"
+      },
+      {
+        "id": "ceil-day-bath",
+        "space_id": "sp-day-bath",
+        "height_m": 2.7,
+        "material_id": "m-int-wall"
+      },
+      {
+        "id": "ceil-store",
+        "space_id": "sp-store",
+        "height_m": 2.7,
+        "material_id": "m-int-wall"
+      },
+      {
+        "id": "ceil-main-bed",
+        "space_id": "sp-main-bed",
+        "height_m": 2.7,
+        "material_id": "m-int-wall"
+      },
+      {
+        "id": "ceil-elder-bed",
+        "space_id": "sp-elder-bed",
+        "height_m": 2.7,
+        "material_id": "m-int-wall"
+      },
+      {
+        "id": "ceil-boys",
+        "space_id": "sp-boys",
+        "height_m": 2.7,
+        "material_id": "m-int-wall"
+      },
+      {
+        "id": "ceil-girls",
+        "space_id": "sp-girls",
+        "height_m": 2.7,
+        "material_id": "m-int-wall"
+      },
+      {
+        "id": "ceil-ensuite",
+        "space_id": "sp-ensuite",
+        "height_m": 2.7,
+        "material_id": "m-int-wall"
+      },
+      {
+        "id": "ceil-night-bath",
+        "space_id": "sp-night-bath",
+        "height_m": 2.7,
+        "material_id": "m-int-wall"
+      },
+      {
+        "id": "ceil-laundry",
+        "space_id": "sp-laundry",
+        "height_m": 2.7,
+        "material_id": "m-int-wall"
+      },
+      {
+        "id": "ceil-night-lobby",
+        "space_id": "sp-night-lobby",
+        "height_m": 2.7,
+        "material_id": "m-int-wall"
+      },
+      {
+        "id": "ceil-adult-vest",
+        "space_id": "sp-adult-vest",
+        "height_m": 2.7,
+        "material_id": "m-int-wall"
+      },
+      {
+        "id": "ceil-child-vest",
+        "space_id": "sp-child-vest",
+        "height_m": 2.7,
+        "material_id": "m-int-wall"
+      },
+      {
+        "id": "ceil-main-entry",
+        "space_id": "sp-main-entry",
+        "height_m": 2.7,
+        "material_id": "m-int-wall"
+      },
+      {
+        "id": "ceil-lower-entry",
+        "space_id": "sp-lower-entry",
+        "height_m": 2.7,
+        "material_id": "m-int-wall"
+      }
+    ],
+    "stairs": [
+      {
+        "id": "stair-lv-lower-lv-entry",
+        "kind": "u_shaped",
+        "from_level_id": "lv-lower",
+        "to_level_id": "lv-entry",
+        "footprint": {
+          "outer": [
+            [
+              16.720762,
+              18.230822
+            ],
+            [
+              18.74868,
+              19.083787
+            ],
+            [
+              20.183211,
+              15.673198
+            ],
+            [
+              18.155293,
+              14.820233
+            ]
+          ],
+          "holes": []
+        },
+        "bottom_space_id": "sp-stair-lv-lower",
+        "top_space_id": "sp-stair-lv-entry",
+        "width_m": 1.0,
+        "riser_count": 16,
+        "riser_height_m": 0.1875,
+        "tread_depth_m": 0.28,
+        "walking_line": [
+          [
+            17.181652,
+            18.424678
+          ],
+          [
+            17.957075,
+            16.581116
+          ],
+          [
+            19.063212,
+            17.046369
+          ],
+          [
+            18.287789,
+            18.889931
+          ]
+        ],
+        "landing_segments": [
+          1
+        ]
+      },
+      {
+        "id": "stair-lv-entry-lv-upper",
+        "kind": "u_shaped",
+        "from_level_id": "lv-entry",
+        "to_level_id": "lv-upper",
+        "footprint": {
+          "outer": [
+            [
+              16.720762,
+              18.230822
+            ],
+            [
+              18.74868,
+              19.083787
+            ],
+            [
+              20.183211,
+              15.673198
+            ],
+            [
+              18.155293,
+              14.820233
+            ]
+          ],
+          "holes": []
+        },
+        "bottom_space_id": "sp-stair-lv-entry",
+        "top_space_id": "sp-stair-lv-upper",
+        "width_m": 1.0,
+        "riser_count": 16,
+        "riser_height_m": 0.1875,
+        "tread_depth_m": 0.28,
+        "walking_line": [
+          [
+            17.181652,
+            18.424678
+          ],
+          [
+            17.957075,
+            16.581116
+          ],
+          [
+            19.063212,
+            17.046369
+          ],
+          [
+            18.287789,
+            18.889931
+          ]
+        ],
+        "landing_segments": [
+          1
+        ]
+      }
+    ],
+    "zones": [
+      {
+        "id": "z-private",
+        "name": "z-private",
+        "privacy": "semi_private",
+        "space_ids": [
+          "sp-stair-lv-lower",
+          "sp-lift-lv-lower",
+          "sp-main-bed",
+          "sp-elder-bed",
+          "sp-boys",
+          "sp-girls",
+          "sp-ensuite",
+          "sp-night-bath",
+          "sp-laundry",
+          "sp-night-lobby",
+          "sp-adult-vest",
+          "sp-child-vest",
+          "sp-lower-entry"
+        ]
+      },
+      {
+        "id": "z-day",
+        "name": "Day (living, kitchen, dining)",
+        "privacy": "public",
+        "space_ids": [
+          "sp-stair-lv-entry",
+          "sp-lift-lv-entry",
+          "sp-stair-lv-upper",
+          "sp-lift-lv-upper",
+          "sp-garage",
+          "sp-office",
+          "sp-plant",
+          "sp-top-lobby",
+          "sp-living",
+          "sp-dining",
+          "sp-kitchen",
+          "sp-pantry",
+          "sp-day-lobby",
+          "sp-bath-vest",
+          "sp-day-bath",
+          "sp-store",
+          "sp-main-entry"
+        ]
+      },
+      {
+        "id": "z-outdoor",
+        "name": "Outdoor",
+        "privacy": "public",
+        "space_ids": [
+          "sp-balcony"
+        ]
+      }
+    ],
+    "fixtures": [
+      {
+        "id": "fx-kitchen-1",
+        "space_id": "sp-kitchen",
+        "fixture_type": "kitchen_run",
+        "position": [
+          10.624941,
+          15.829581
+        ],
+        "rotation_deg": -157.187842,
+        "width_m": 3.0,
+        "depth_m": 0.6,
+        "material_id": null
+      },
+      {
+        "id": "fx-kitchen-2",
+        "space_id": "sp-kitchen",
+        "fixture_type": "appliance",
+        "position": [
+          8.965735,
+          15.131701
+        ],
+        "rotation_deg": -157.187842,
+        "width_m": 0.6,
+        "depth_m": 0.6,
+        "material_id": null
+      },
+      {
+        "id": "fx-day-bath-1",
+        "space_id": "sp-day-bath",
+        "fixture_type": "shower",
+        "position": [
+          10.684505,
+          12.979764
+        ],
+        "rotation_deg": 112.812148,
+        "width_m": 0.9,
+        "depth_m": 0.9,
+        "material_id": null
+      },
+      {
+        "id": "fx-day-bath-2",
+        "space_id": "sp-day-bath",
+        "fixture_type": "basin",
+        "position": [
+          10.209365,
+          13.593558
+        ],
+        "rotation_deg": 112.812148,
+        "width_m": 0.6,
+        "depth_m": 0.5,
+        "material_id": null
+      },
+      {
+        "id": "fx-day-bath-3",
+        "space_id": "sp-day-bath",
+        "fixture_type": "wc",
+        "position": [
+          10.030146,
+          14.277576
+        ],
+        "rotation_deg": 112.812148,
+        "width_m": 0.4,
+        "depth_m": 0.7,
+        "material_id": null
+      },
+      {
+        "id": "fx-ensuite-1",
+        "space_id": "sp-ensuite",
+        "fixture_type": "shower",
+        "position": [
+          19.447334,
+          19.486134
+        ],
+        "rotation_deg": 112.812162,
+        "width_m": 0.9,
+        "depth_m": 0.9,
+        "material_id": null
+      },
+      {
+        "id": "fx-ensuite-2",
+        "space_id": "sp-ensuite",
+        "fixture_type": "basin",
+        "position": [
+          19.595874,
+          21.067411
+        ],
+        "rotation_deg": 22.812162,
+        "width_m": 0.6,
+        "depth_m": 0.5,
+        "material_id": null
+      },
+      {
+        "id": "fx-ensuite-3",
+        "space_id": "sp-ensuite",
+        "fixture_type": "wc",
+        "position": [
+          20.638331,
+          19.878595
+        ],
+        "rotation_deg": -157.187838,
+        "width_m": 0.4,
+        "depth_m": 0.7,
+        "material_id": null
+      },
+      {
+        "id": "fx-night-bath-1",
+        "space_id": "sp-night-bath",
+        "fixture_type": "shower",
+        "position": [
+          13.310946,
+          18.857844
+        ],
+        "rotation_deg": -157.187833,
+        "width_m": 0.9,
+        "depth_m": 0.9,
+        "material_id": null
+      },
+      {
+        "id": "fx-night-bath-2",
+        "space_id": "sp-night-bath",
+        "fixture_type": "basin",
+        "position": [
+          14.356358,
+          19.080584
+        ],
+        "rotation_deg": -157.187833,
+        "width_m": 0.6,
+        "depth_m": 0.5,
+        "material_id": null
+      },
+      {
+        "id": "fx-night-bath-3",
+        "space_id": "sp-night-bath",
+        "fixture_type": "wc",
+        "position": [
+          12.16514,
+          19.325154
+        ],
+        "rotation_deg": 112.812143,
+        "width_m": 0.4,
+        "depth_m": 0.7,
+        "material_id": null
+      },
+      {
+        "id": "fx-laundry-stack",
+        "space_id": "sp-laundry",
+        "fixture_type": "stacked_laundry",
+        "position": [
+          9.941115904903878,
+          16.165749112319872
+        ],
+        "rotation_deg": 22.812159897158455,
+        "width_m": 0.7,
+        "depth_m": 0.75,
+        "material_id": null
+      }
+    ],
+    "furniture": [
+      {
+        "id": "fur-boys-1",
+        "space_id": "sp-boys",
+        "template_id": "single-bed",
+        "position": [
+          13.61956811557144,
+          13.997313193544558
+        ],
+        "rotation_deg": 22.812159897158455,
+        "width_m": 1.0,
+        "depth_m": 2.0
+      },
+      {
+        "id": "fur-boys-2",
+        "space_id": "sp-boys",
+        "template_id": "single-bed",
+        "position": [
+          10.854225450667688,
+          12.834179518654595
+        ],
+        "rotation_deg": 22.812159897158455,
+        "width_m": 1.0,
+        "depth_m": 2.0
+      },
+      {
+        "id": "fur-girls-1",
+        "space_id": "sp-girls",
+        "template_id": "single-bed",
+        "position": [
+          9.492873137490706,
+          17.36040530615213
+        ],
+        "rotation_deg": 22.812159897158455,
+        "width_m": 2.0,
+        "depth_m": 1.0
+      },
+      {
+        "id": "fur-girls-2",
+        "space_id": "sp-girls",
+        "template_id": "single-bed",
+        "position": [
+          8.562366197578736,
+          19.57267943807513
+        ],
+        "rotation_deg": 22.812159897158455,
+        "width_m": 2.0,
+        "depth_m": 1.0
+      },
+      {
+        "id": "fur-main-bed-1",
+        "space_id": "sp-main-bed",
+        "template_id": "double-bed",
+        "position": [
+          15.709122978026793,
+          23.98899776006232
+        ],
+        "rotation_deg": 22.812159897158455,
+        "width_m": 1.8,
+        "depth_m": 2.0
+      },
+      {
+        "id": "fur-elder-bed-1",
+        "space_id": "sp-elder-bed",
+        "template_id": "double-bed",
+        "position": [
+          11.561108980671168,
+          22.244297247727374
+        ],
+        "rotation_deg": 22.812159897158455,
+        "width_m": 1.6,
+        "depth_m": 2.0
+      },
+      {
+        "id": "fur-office-1",
+        "space_id": "sp-office",
+        "template_id": "desk",
+        "position": [
+          14.316178827542817,
+          21.884310944017592
+        ],
+        "rotation_deg": 22.812159897158455,
+        "width_m": 0.8,
+        "depth_m": 1.6
+      },
+      {
+        "id": "fur-living-1",
+        "space_id": "sp-living",
+        "template_id": "sofa",
+        "position": [
+          16.621404431506633,
+          24.91514167416893
+        ],
+        "rotation_deg": 22.812159897158455,
+        "width_m": 3.0,
+        "depth_m": 1.0
+      },
+      {
+        "id": "fur-living-2",
+        "space_id": "sp-living",
+        "template_id": "sofa",
+        "position": [
+          18.61850393167308,
+          21.19874643328901
+        ],
+        "rotation_deg": 22.812159897158455,
+        "width_m": 2.2,
+        "depth_m": 1.0
+      },
+      {
+        "id": "fur-dining-1",
+        "space_id": "sp-dining",
+        "template_id": "dining-table",
+        "position": [
+          9.33933541392676,
+          21.852222996958695
+        ],
+        "rotation_deg": 22.812159897158455,
+        "width_m": 2.4,
+        "depth_m": 1.0
+      },
+      {
+        "id": "fur-garage-1",
+        "space_id": "sp-garage",
+        "template_id": "large-suv-assumed",
+        "position": [
+          9.855234299905838,
+          19.980866980737957
+        ],
+        "rotation_deg": 22.812159897158455,
+        "width_m": 5.1,
+        "depth_m": 2.05
+      },
+      {
+        "id": "fur-garage-2",
+        "space_id": "sp-garage",
+        "template_id": "sedan-assumed",
+        "position": [
+          11.132499829382118,
+          17.588986388565413
+        ],
+        "rotation_deg": 22.812159897158455,
+        "width_m": 4.8,
+        "depth_m": 1.85
+      }
+    ],
+    "relationships": [],
+    "materials": [
+      {
+        "id": "m-ext-wall",
+        "name": "Exterior wall (placeholder)",
+        "category": "wall",
+        "library": null,
+        "uri": null,
+        "base_color_hex": "#E8E2D6",
+        "roughness": null,
+        "metallic": null,
+        "texture_scale_m": null
+      },
+      {
+        "id": "m-int-wall",
+        "name": "Interior partition (placeholder)",
+        "category": "wall",
+        "library": null,
+        "uri": null,
+        "base_color_hex": "#F4F4F2",
+        "roughness": null,
+        "metallic": null,
+        "texture_scale_m": null
+      },
+      {
+        "id": "m-door",
+        "name": "Internal door (placeholder)",
+        "category": "door",
+        "library": null,
+        "uri": null,
+        "base_color_hex": "#A3704C",
+        "roughness": null,
+        "metallic": null,
+        "texture_scale_m": null
+      },
+      {
+        "id": "m-window",
+        "name": "Glazing (placeholder)",
+        "category": "glazing",
+        "library": null,
+        "uri": null,
+        "base_color_hex": "#B8D5E5",
+        "roughness": null,
+        "metallic": null,
+        "texture_scale_m": null
+      },
+      {
+        "id": "m-floor",
+        "name": "Floor finish (placeholder)",
+        "category": "floor",
+        "library": null,
+        "uri": null,
+        "base_color_hex": "#C8A97E",
+        "roughness": null,
+        "metallic": null,
+        "texture_scale_m": null
+      }
+    ],
+    "assumptions": [
+      {
+        "id": "c02-basis",
+        "statement": "Exploratory solver geometry; strict side-boundary alignment. Floor levels use an assumed western TIN reference and 3m intervals, not measured road thresholds. Core/room dimensions are initial design assumptions.",
+        "basis": null,
+        "status": "assumption",
+        "affects": [],
+        "confirm_with": null,
+        "made_by": {
+          "kind": "agent",
+          "id": "codex",
+          "display_name": null,
+          "provider": null,
+          "model": null
+        }
+      }
+    ],
+    "issues": []
+  },
+  "generation": {
+    "generator": "codex-c02-project-solver",
+    "generator_version": "1",
+    "solver": "ortools-cp-sat",
+    "solver_version": "9.15.6755",
+    "solver_status": "OPTIMAL",
+    "objective": 840.0,
+    "seed": 18,
+    "deterministic_time_limit": 1.409528553174043,
+    "parameters": {},
+    "placements": [],
+    "revision_ops": []
+  }
+}

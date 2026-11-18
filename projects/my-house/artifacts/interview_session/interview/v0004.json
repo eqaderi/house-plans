@@ -1,0 +1,165 @@
+{
+  "brief_id": "brief",
+  "id": "interview",
+  "pending_attempts": 0,
+  "pending_question_id": "q-bathrooms",
+  "project_id": "my-house",
+  "provenance": {
+    "created_at": "2026-10-20T02:36:07.383994Z",
+    "created_by": {
+      "display_name": null,
+      "id": "codex",
+      "kind": "agent",
+      "model": null,
+      "provider": null
+    },
+    "inputs": [],
+    "method": "owner_interview",
+    "notes": null,
+    "tool": "house-ai interview",
+    "tool_version": null
+  },
+  "schema_version": "0.1.0",
+  "site": {
+    "frontage_m": 21.0,
+    "mean_slope_pct": 40.68,
+    "parcel_area_m2": 600.004,
+    "relief_m": 12.554,
+    "site_ref": {
+      "id": "site",
+      "kind": "site",
+      "sha256": "8e416cdc1c64d30b707deaf12d9c38459e7a6a1aee0488a887bdc7d1532e4b80",
+      "version": 1
+    },
+    "verified": false
+  },
+  "status": "active",
+  "turns": [
+    {
+      "actor": {
+        "display_name": null,
+        "id": "codex",
+        "kind": "agent",
+        "model": null,
+        "provider": null
+      },
+      "at": "2026-10-20T07:38:47.491436Z",
+      "contradiction_id": null,
+      "kind": "answer",
+      "model": null,
+      "option": null,
+      "provider": null,
+      "question_id": "q-followup-household-round-1",
+      "question_text": "1. Who will live in the house—adults, children and their ages, older relatives—and might that change?\n2. How many bedrooms would you like, including accommodation for overnight guests?\n3. On this steep site, does anyone need to avoid stairs now or in the future? Would you consider a lift?",
+      "seq": 1,
+      "slots": [],
+      "text": "1. a man, his wife, 2 dougters, 2 sons, possibly grandfather and grandmother\n2. find out based on the first answer, just know people can share rooms\n3. yes, yes",
+      "understood": [
+        {
+          "method": "agent:codex",
+          "slot": "adults",
+          "value": 2
+        },
+        {
+          "method": "agent:codex",
+          "slot": "children",
+          "value": 4
+        },
+        {
+          "method": "agent:codex",
+          "slot": "children_own_rooms",
+          "value": false
+        },
+        {
+          "method": "agent:codex",
+          "slot": "accessibility",
+          "value": "step_free"
+        },
+        {
+          "method": "agent:codex",
+          "slot": "lift",
+          "value": true
+        },
+        {
+          "method": "agent:codex",
+          "slot": "elders",
+          "value": null
+        },
+        {
+          "method": "agent:codex",
+          "slot": "household_size",
+          "value": null
+        },
+        {
+          "method": "agent:codex",
+          "slot": "bedrooms",
+          "value": null
+        }
+      ]
+    },
+    {
+      "actor": {
+        "display_name": null,
+        "id": "codex",
+        "kind": "agent",
+        "model": null,
+        "provider": null
+      },
+      "at": "2026-10-20T07:52:26.137559Z",
+      "contradiction_id": null,
+      "kind": "answer",
+      "model": null,
+      "option": null,
+      "provider": null,
+      "question_id": "q-followup-household-round-2",
+      "question_text": "1. How old are the daughters and sons?\n2. Would the grandparents live there regularly or visit occasionally—and could they share one bedroom?\n3. Who needs to avoid stairs, and would you prefer their bedroom on the entrance level even with a lift?",
+      "seq": 2,
+      "slots": [],
+      "text": "1. they could be 0 to 18, boys already 10 years old, girls not born yet\n2. they could live there permenatnly and they can share a room\n3. old parents or a family member with broken leg needs to avoid stairs.",
+      "understood": [
+        {
+          "method": "agent:codex",
+          "slot": "elders",
+          "value": 2
+        },
+        {
+          "method": "agent:codex",
+          "slot": "household_size",
+          "value": 8
+        },
+        {
+          "method": "agent:codex",
+          "slot": "elder_step_free",
+          "value": true
+        }
+      ]
+    },
+    {
+      "actor": {
+        "display_name": null,
+        "id": "codex",
+        "kind": "agent",
+        "model": null,
+        "provider": null
+      },
+      "at": "2026-10-20T07:58:15.926474Z",
+      "contradiction_id": null,
+      "kind": "answer",
+      "model": null,
+      "option": null,
+      "provider": null,
+      "question_id": "q-followup-household-round-3",
+      "question_text": "1. Does that arrangement suit you, or should we allow the children to have separate rooms as they grow?\n2. Should the grandparents’ room be that entrance-level bedroom, usable by someone recovering from an injury when needed?\n3. Do you prefer one shared family living room, or separate family and guest living rooms?",
+      "seq": 3,
+      "slots": [],
+      "text": "1 kids should share\n\n2. when we have stairs it does not matter on which floor the bedroom is, access is easy\n3. shared",
+      "understood": [
+        {
+          "method": "agent:codex",
+          "slot": "children_own_rooms",
+          "value": false
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+project_id: my-house
+scope: preliminary advisory siting study, not approved program or plan
+assumptions:
+  - id: advisory-area-bands
+    status: assumption
+    statement: Test a combined house/garage footprint of 160-180 m2 and total enclosed gross floor area of 280-320 m2 including garage.
+    basis: Architectural starting targets for the current family brief; no layout or statutory coverage fit established.
+  - id: advisory-garden-target
+    status: assumption
+    statement: Use 100-150 m2 as an initial continuous main play/garden target.
+    basis: Agent recommendation; homeowner has requested a generous level garden but has not chosen its numerical area.
+  - id: advisory-vertical-intervals
+    status: assumption
+    statement: 3.2 m and 6.4 m below a west-boundary reference are hypothetical comparison planes only.
+    basis: Terrain screening; not selected finished-floor levels or measured road thresholds.
+  - id: advisory-ramp-grade
+    status: assumption
+    statement: A 15 percent grade is used only in an illustrative 12 m / 0.15 = 80 m ramp calculation.
+    basis: No legal or weather-suitable local driveway gradient is asserted.

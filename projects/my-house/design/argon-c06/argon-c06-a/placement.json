@@ -1,0 +1,634 @@
+{
+  "option_id": "argon-c06-a",
+  "title": "Argon C06-A \u2014 Northeast Sheltered Cozy Living & Central-East Garden Hub",
+  "subtitle": "South kitchen + south terrace, central-south dining, NE sheltered cozy living corner, east-center family room",
+  "summary": "Places the kitchen on the prime south facade with a direct sliding door to the 45.4 m\u00b2 south terrace, dining beside it at south-center, and an L-shaped living room along the east/south-east view with a sheltered 12.0 m\u00b2 cozy sitting corner in its north-east wing (completely closed off from the stair hall and kitchen). Downstairs, the family room + tea bar occupies the central-east garden front between the boys' NE bedroom and grandparents' SE suite.",
+  "plates": {
+    "lv-upper": [
+      6,
+      0,
+      116,
+      124
+    ],
+    "lv-entry": [
+      20,
+      0,
+      162,
+      124
+    ],
+    "lv-lower": [
+      58,
+      0,
+      200,
+      156
+    ]
+  },
+  "levels": {
+    "lv-upper": 1677.7,
+    "lv-entry": 1674.3,
+    "lv-lower": 1670.7
+  },
+  "storey_heights": {
+    "lv-upper": 3.0,
+    "lv-entry": 3.4,
+    "lv-lower": 3.6
+  },
+  "lawn_u0_m": 22.6,
+  "lawn_z_m": 1668.1,
+  "cozy_corner_dm": [
+    116,
+    36,
+    162,
+    62
+  ],
+  "tea_bar_dm": [
+    126,
+    48,
+    154,
+    56
+  ],
+  "workshop_bay_dm": [
+    58,
+    0,
+    84,
+    24
+  ],
+  "stair_fits": {
+    "stair-lower-main": true,
+    "stair-main-road": true
+  },
+  "rooms": [
+    {
+      "space_id": "sp-stair-r",
+      "name": "Central heart stair",
+      "function": "stair",
+      "level_id": "lv-upper",
+      "u0": 58,
+      "v0": 24,
+      "u1": 84,
+      "v1": 74,
+      "program_item_id": "pi-stair",
+      "zone_id": "z-service",
+      "sub_rects": null
+    },
+    {
+      "space_id": "sp-lift-r",
+      "name": "Lift",
+      "function": "lift",
+      "level_id": "lv-upper",
+      "u0": 84,
+      "v0": 54,
+      "u1": 102,
+      "v1": 74,
+      "program_item_id": "pi-lift",
+      "zone_id": "z-service",
+      "sub_rects": null
+    },
+    {
+      "space_id": "sp-stair-u",
+      "name": "Central heart stair",
+      "function": "stair",
+      "level_id": "lv-entry",
+      "u0": 58,
+      "v0": 24,
+      "u1": 84,
+      "v1": 74,
+      "program_item_id": "pi-stair",
+      "zone_id": "z-day",
+      "sub_rects": null
+    },
+    {
+      "space_id": "sp-lift-u",
+      "name": "Lift",
+      "function": "lift",
+      "level_id": "lv-entry",
+      "u0": 84,
+      "v0": 54,
+      "u1": 102,
+      "v1": 74,
+      "program_item_id": "pi-lift",
+      "zone_id": "z-day",
+      "sub_rects": null
+    },
+    {
+      "space_id": "sp-stair-l",
+      "name": "Central heart stair",
+      "function": "stair",
+      "level_id": "lv-lower",
+      "u0": 58,
+      "v0": 24,
+      "u1": 84,
+      "v1": 74,
+      "program_item_id": "pi-stair",
+      "zone_id": "z-day",
+      "sub_rects": null
+    },
+    {
+      "space_id": "sp-lift-l",
+      "name": "Lift",
+      "function": "lift",
+      "level_id": "lv-lower",
+      "u0": 84,
+      "v0": 54,
+      "u1": 102,
+      "v1": 74,
+      "program_item_id": "pi-lift",
+      "zone_id": "z-day",
+      "sub_rects": null
+    },
+    {
+      "space_id": "sp-garage",
+      "name": "Garage (2 cars + workshop bay)",
+      "function": "garage",
+      "level_id": "lv-upper",
+      "u0": 6,
+      "v0": 0,
+      "u1": 84,
+      "v1": 92,
+      "program_item_id": "pi-garage",
+      "zone_id": "z-service",
+      "sub_rects": [
+        [
+          6,
+          0,
+          58,
+          92
+        ],
+        [
+          58,
+          0,
+          84,
+          24
+        ]
+      ]
+    },
+    {
+      "space_id": "sp-lobby",
+      "name": "Road entrance lobby",
+      "function": "entry",
+      "level_id": "lv-upper",
+      "u0": 6,
+      "v0": 74,
+      "u1": 116,
+      "v1": 124,
+      "program_item_id": "pi-entry",
+      "zone_id": "z-service",
+      "sub_rects": [
+        [
+          6,
+          92,
+          58,
+          124
+        ],
+        [
+          58,
+          74,
+          116,
+          100
+        ]
+      ]
+    },
+    {
+      "space_id": "sp-office",
+      "name": "Quiet office / guest",
+      "function": "study",
+      "level_id": "lv-upper",
+      "u0": 84,
+      "v0": 0,
+      "u1": 116,
+      "v1": 74,
+      "program_item_id": "pi-study-1",
+      "zone_id": "z-service",
+      "sub_rects": [
+        [
+          84,
+          0,
+          116,
+          54
+        ],
+        [
+          102,
+          54,
+          116,
+          74
+        ]
+      ]
+    },
+    {
+      "space_id": "sp-wc-r",
+      "name": "Road WC + shower",
+      "function": "bathroom",
+      "level_id": "lv-upper",
+      "u0": 84,
+      "v0": 100,
+      "u1": 116,
+      "v1": 124,
+      "program_item_id": "",
+      "zone_id": "z-service",
+      "sub_rects": null
+    },
+    {
+      "space_id": "sp-plant",
+      "name": "Plant / utilities",
+      "function": "mechanical",
+      "level_id": "lv-upper",
+      "u0": 58,
+      "v0": 100,
+      "u1": 84,
+      "v1": 124,
+      "program_item_id": "pi-mechanical",
+      "zone_id": "z-service",
+      "sub_rects": null
+    },
+    {
+      "space_id": "sp-entry",
+      "name": "Entrance hall (shoes)",
+      "function": "entry",
+      "level_id": "lv-entry",
+      "u0": 20,
+      "v0": 52,
+      "u1": 58,
+      "v1": 90,
+      "program_item_id": "pi-entry",
+      "zone_id": "z-day",
+      "sub_rects": null
+    },
+    {
+      "space_id": "sp-wc-u",
+      "name": "Guest WC",
+      "function": "wc",
+      "level_id": "lv-entry",
+      "u0": 20,
+      "v0": 24,
+      "u1": 38,
+      "v1": 52,
+      "program_item_id": "",
+      "zone_id": "z-night",
+      "sub_rects": null
+    },
+    {
+      "space_id": "sp-store-u",
+      "name": "Coat & shoe store",
+      "function": "storage",
+      "level_id": "lv-entry",
+      "u0": 38,
+      "v0": 24,
+      "u1": 58,
+      "v1": 52,
+      "program_item_id": "pi-storage",
+      "zone_id": "z-day",
+      "sub_rects": null
+    },
+    {
+      "space_id": "sp-hall-u",
+      "name": "Central stair & lift hall",
+      "function": "hall",
+      "level_id": "lv-entry",
+      "u0": 58,
+      "v0": 36,
+      "u1": 116,
+      "v1": 90,
+      "program_item_id": "",
+      "zone_id": "z-day",
+      "sub_rects": [
+        [
+          58,
+          74,
+          116,
+          90
+        ],
+        [
+          102,
+          36,
+          116,
+          74
+        ]
+      ]
+    },
+    {
+      "space_id": "sp-pantry",
+      "name": "Pantry",
+      "function": "pantry",
+      "level_id": "lv-entry",
+      "u0": 20,
+      "v0": 90,
+      "u1": 38,
+      "v1": 124,
+      "program_item_id": "pi-pantry",
+      "zone_id": "z-day",
+      "sub_rects": null
+    },
+    {
+      "space_id": "sp-kitchen",
+      "name": "Kitchen + everyday dining",
+      "function": "kitchen",
+      "level_id": "lv-entry",
+      "u0": 38,
+      "v0": 90,
+      "u1": 100,
+      "v1": 124,
+      "program_item_id": "pi-kitchen",
+      "zone_id": "z-day",
+      "sub_rects": null
+    },
+    {
+      "space_id": "sp-dining",
+      "name": "Dining room",
+      "function": "dining",
+      "level_id": "lv-entry",
+      "u0": 100,
+      "v0": 90,
+      "u1": 140,
+      "v1": 124,
+      "program_item_id": "pi-dining",
+      "zone_id": "z-day",
+      "sub_rects": null
+    },
+    {
+      "space_id": "sp-living",
+      "name": "Living room (L-shaped + cozy corner)",
+      "function": "living",
+      "level_id": "lv-entry",
+      "u0": 116,
+      "v0": 36,
+      "u1": 162,
+      "v1": 124,
+      "program_item_id": "pi-living",
+      "zone_id": "z-day",
+      "sub_rects": [
+        [
+          116,
+          36,
+          162,
+          90
+        ],
+        [
+          140,
+          90,
+          162,
+          124
+        ]
+      ]
+    },
+    {
+      "space_id": "sp-master",
+      "name": "Grand master bedroom",
+      "function": "bedroom",
+      "level_id": "lv-entry",
+      "u0": 102,
+      "v0": 0,
+      "u1": 162,
+      "v1": 36,
+      "program_item_id": "pi-bed-main",
+      "zone_id": "z-night",
+      "sub_rects": null
+    },
+    {
+      "space_id": "sp-closet",
+      "name": "Dressing vestibule",
+      "function": "storage",
+      "level_id": "lv-entry",
+      "u0": 84,
+      "v0": 24,
+      "u1": 102,
+      "v1": 54,
+      "program_item_id": "",
+      "zone_id": "z-day",
+      "sub_rects": null
+    },
+    {
+      "space_id": "sp-ensuite-u",
+      "name": "Master bathroom",
+      "function": "bathroom",
+      "level_id": "lv-entry",
+      "u0": 20,
+      "v0": 0,
+      "u1": 102,
+      "v1": 24,
+      "program_item_id": "pi-bath-ensuite",
+      "zone_id": "z-night",
+      "sub_rects": null
+    },
+    {
+      "space_id": "sp-hall-l",
+      "name": "Lower central hall",
+      "function": "hall",
+      "level_id": "lv-lower",
+      "u0": 58,
+      "v0": 36,
+      "u1": 126,
+      "v1": 98,
+      "program_item_id": "",
+      "zone_id": "z-day",
+      "sub_rects": [
+        [
+          58,
+          74,
+          126,
+          98
+        ],
+        [
+          102,
+          36,
+          126,
+          74
+        ]
+      ]
+    },
+    {
+      "space_id": "sp-family",
+      "name": "Family room + tea & snack bar",
+      "function": "family",
+      "level_id": "lv-lower",
+      "u0": 126,
+      "v0": 48,
+      "u1": 200,
+      "v1": 86,
+      "program_item_id": "",
+      "zone_id": "z-day",
+      "sub_rects": null
+    },
+    {
+      "space_id": "sp-bed3",
+      "name": "Parents / grandparents suite",
+      "function": "bedroom",
+      "level_id": "lv-lower",
+      "u0": 126,
+      "v0": 86,
+      "u1": 200,
+      "v1": 132,
+      "program_item_id": "pi-bed-elder-1",
+      "zone_id": "z-night",
+      "sub_rects": null
+    },
+    {
+      "space_id": "sp-ensuite-l",
+      "name": "Grandparents shower room",
+      "function": "bathroom",
+      "level_id": "lv-lower",
+      "u0": 126,
+      "v0": 132,
+      "u1": 200,
+      "v1": 156,
+      "program_item_id": "pi-bath-2",
+      "zone_id": "z-night",
+      "sub_rects": null
+    },
+    {
+      "space_id": "sp-boys",
+      "name": "Boys bedroom (2 beds)",
+      "function": "bedroom",
+      "level_id": "lv-lower",
+      "u0": 126,
+      "v0": 0,
+      "u1": 200,
+      "v1": 48,
+      "program_item_id": "pi-bed-child-1",
+      "zone_id": "z-night",
+      "sub_rects": null
+    },
+    {
+      "space_id": "sp-girls",
+      "name": "Girls bedroom (2 beds)",
+      "function": "bedroom",
+      "level_id": "lv-lower",
+      "u0": 88,
+      "v0": 98,
+      "u1": 126,
+      "v1": 156,
+      "program_item_id": "pi-bed-child-2",
+      "zone_id": "z-night",
+      "sub_rects": null
+    },
+    {
+      "space_id": "sp-shower-l",
+      "name": "Accessible shared bathroom",
+      "function": "bathroom",
+      "level_id": "lv-lower",
+      "u0": 102,
+      "v0": 0,
+      "u1": 126,
+      "v1": 36,
+      "program_item_id": "pi-bath-1",
+      "zone_id": "z-night",
+      "sub_rects": null
+    },
+    {
+      "space_id": "sp-wc-l",
+      "name": "Shared WC",
+      "function": "wc",
+      "level_id": "lv-lower",
+      "u0": 84,
+      "v0": 24,
+      "u1": 102,
+      "v1": 54,
+      "program_item_id": "",
+      "zone_id": "z-night",
+      "sub_rects": null
+    },
+    {
+      "space_id": "sp-laundry",
+      "name": "Laundry room",
+      "function": "laundry",
+      "level_id": "lv-lower",
+      "u0": 58,
+      "v0": 98,
+      "u1": 88,
+      "v1": 156,
+      "program_item_id": "pi-laundry",
+      "zone_id": "z-day",
+      "sub_rects": null
+    },
+    {
+      "space_id": "sp-store-l",
+      "name": "Lower store room",
+      "function": "storage",
+      "level_id": "lv-lower",
+      "u0": 58,
+      "v0": 0,
+      "u1": 102,
+      "v1": 24,
+      "program_item_id": "pi-storage",
+      "zone_id": "z-day",
+      "sub_rects": null
+    },
+    {
+      "space_id": "sp-deck-east",
+      "name": "Road-level roof deck (east)",
+      "function": "terrace",
+      "level_id": "lv-upper",
+      "u0": 116,
+      "v0": 0,
+      "u1": 162,
+      "v1": 124,
+      "program_item_id": "pi-balcony",
+      "zone_id": "z-outdoor",
+      "sub_rects": null
+    },
+    {
+      "space_id": "sp-court-west",
+      "name": "West arrival court (sunken; covered porch at north)",
+      "function": "terrace",
+      "level_id": "lv-entry",
+      "u0": -48,
+      "v0": 40,
+      "u1": 20,
+      "v1": 124,
+      "program_item_id": "",
+      "zone_id": "z-outdoor",
+      "sub_rects": [
+        [
+          -20,
+          40,
+          20,
+          96
+        ],
+        [
+          -48,
+          96,
+          20,
+          124
+        ]
+      ]
+    },
+    {
+      "space_id": "sp-terrace-south",
+      "name": "South terrace (off kitchen, dining & living)",
+      "function": "terrace",
+      "level_id": "lv-entry",
+      "u0": 20,
+      "v0": 124,
+      "u1": 162,
+      "v1": 156,
+      "program_item_id": "pi-terrace",
+      "zone_id": "z-outdoor",
+      "sub_rects": null
+    },
+    {
+      "space_id": "sp-terrace-east",
+      "name": "East balcony (roof of lower floor)",
+      "function": "terrace",
+      "level_id": "lv-entry",
+      "u0": 162,
+      "v0": 0,
+      "u1": 200,
+      "v1": 156,
+      "program_item_id": "pi-balcony",
+      "zone_id": "z-outdoor",
+      "sub_rects": null
+    },
+    {
+      "space_id": "sp-terrace-lower",
+      "name": "Lower east garden terrace",
+      "function": "terrace",
+      "level_id": "lv-lower",
+      "u0": 200,
+      "v0": 0,
+      "u1": 226,
+      "v1": 156,
+      "program_item_id": "",
+      "zone_id": "z-outdoor",
+      "sub_rects": null
+    }
+  ]
+}

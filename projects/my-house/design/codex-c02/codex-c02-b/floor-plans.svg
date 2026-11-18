@@ -1,0 +1,423 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1990" height="960" viewBox="0 0 1990 960">
+<rect width="100%" height="100%" fill="#f6f3ec"/><style>text{font-family:DejaVu Sans,Arial,sans-serif;fill:#203d3e}.fa{direction:rtl;unicode-bidi:embed}</style>
+<text x="38" y="42" font-size="24" text-anchor="start">Codex C02-B  |  21 October 2026</text>
+<text x="1510" y="42" font-size="23" text-anchor="middle" class="fa">پلان پیشنهادی خانه — موازی مرزهای بلند زمین</text>
+<text x="38" y="76" font-size="15" text-anchor="start">Room geometry from CP-SAT · dimensions in metres · illustrative 3m tier intervals</text>
+<rect x="24" y="108" width="630" height="786" rx="14" fill="#fff"/>
+<text x="338" y="146" font-size="21" text-anchor="middle" class="fa">تراز خیابان: گاراژ و دفتر کار</text>
+<text x="338" y="171" font-size="12" text-anchor="middle" class="fa">غرب / خیابان  ←                         →  شرق زمین / شمال‌شرق</text>
+<polygon points="477.0,392.8 477.0,572.8 383.4,572.8 383.4,565.6 383.4,486.4 383.4,392.8" fill="#d9dedb" stroke="#bbb" stroke-width=".5"/>
+<polygon points="383.4,486.4 383.4,565.6 311.4,565.6 311.4,486.4" fill="#b7cccd" stroke="#bbb" stroke-width=".5"/>
+<polygon points="282.6,184.0 282.6,356.8 282.6,436.0 124.2,436.0 45.0,436.0 45.0,184.0" fill="#e0e2e1" stroke="#bbb" stroke-width=".5"/>
+<polygon points="477.0,248.8 477.0,356.8 383.4,356.8 333.0,356.8 333.0,248.8" fill="#f0f0e9" stroke="#bbb" stroke-width=".5"/>
+<polygon points="124.2,436.0 124.2,515.2 45.0,515.2 45.0,436.0" fill="#f0f0e9" stroke="#bbb" stroke-width=".5"/>
+<polygon points="383.4,356.8 383.4,392.8 383.4,486.4 311.4,486.4 282.6,486.4 282.6,436.0 282.6,356.8 333.0,356.8" fill="#f0f0e9" stroke="#bbb" stroke-width=".5"/>
+<path d="M45.00000381549198,183.99999062716014L282.6000071857246,183.99999535492367" stroke="#344b4c" stroke-width="10.799999999999999" fill="none"/>
+<path d="M332.9999906816298,248.7999929437297L477.00000690593333,248.79999585663762" stroke="#344b4c" stroke-width="10.799999999999999" fill="none"/>
+<path d="M282.6000148563185,356.7999882767983L332.99999679297684,356.8000086013584" stroke="#344b4c" stroke-width="10.799999999999999" fill="none"/>
+<path d="M332.99999679297684,356.8000086013584L383.3999926872394,356.7999957418066" stroke="#344b4c" stroke-width="5.3999999999999995" fill="none"/>
+<path d="M383.3999926872394,356.7999957418066L477.0000130172804,356.8000115142664" stroke="#344b4c" stroke-width="10.799999999999999" fill="none"/>
+<path d="M383.39998366298437,392.79999630848147L477.0000039930254,392.8000120809412" stroke="#344b4c" stroke-width="10.799999999999999" fill="none"/>
+<path d="M45.00002097153529,435.99998932498045L124.20001278987681,436.00001302364296" stroke="#344b4c" stroke-width="5.3999999999999995" fill="none"/>
+<path d="M124.20001278987681,436.00001302364296L282.599991157656,435.9999800951399" stroke="#344b4c" stroke-width="10.799999999999999" fill="none"/>
+<path d="M282.59999005960384,486.4000091735143L311.39999994128686,486.40001254761665" stroke="#344b4c" stroke-width="10.799999999999999" fill="none"/>
+<path d="M311.39999994128686,486.40001254761665L383.4000150322408,486.39999741201456" stroke="#344b4c" stroke-width="5.3999999999999995" fill="none"/>
+<path d="M44.99999727287282,515.199981143322L124.19998909121435,515.2000048419844" stroke="#344b4c" stroke-width="10.799999999999999" fill="none"/>
+<path d="M311.4000094267364,565.6000183235623L383.3999913335783,565.5999892303562" stroke="#344b4c" stroke-width="10.799999999999999" fill="none"/>
+<path d="M383.4000188675377,572.799993872952L477.0000060134669,572.7999956878076" stroke="#344b4c" stroke-width="10.799999999999999" fill="none"/>
+<path d="M45.00000381549198,183.99999062716014L45.00002097153529,435.99998932498045" stroke="#344b4c" stroke-width="10.799999999999999" fill="none"/>
+<path d="M45.00002097153529,435.99998932498045L44.99999727287282,515.199981143322" stroke="#344b4c" stroke-width="10.799999999999999" fill="none"/>
+<path d="M124.20001278987681,436.00001302364296L124.19998909121435,515.2000048419844" stroke="#344b4c" stroke-width="10.799999999999999" fill="none"/>
+<path d="M282.6000071857246,183.99999535492367L282.6000148563185,356.7999882767983" stroke="#344b4c" stroke-width="10.799999999999999" fill="none"/>
+<path d="M282.6000148563185,356.7999882767983L282.599991157656,435.9999800951399" stroke="#344b4c" stroke-width="5.3999999999999995" fill="none"/>
+<path d="M282.599991157656,435.9999800951399L282.59999005960384,486.4000091735143" stroke="#344b4c" stroke-width="10.799999999999999" fill="none"/>
+<path d="M311.39999994128686,486.40001254761665L311.4000094267364,565.6000183235623" stroke="#344b4c" stroke-width="10.799999999999999" fill="none"/>
+<path d="M332.9999906816298,248.7999929437297L332.99999679297684,356.8000086013584" stroke="#344b4c" stroke-width="10.799999999999999" fill="none"/>
+<path d="M383.3999926872394,356.7999957418066L383.39998366298437,392.79999630848147" stroke="#344b4c" stroke-width="10.799999999999999" fill="none"/>
+<path d="M383.39998366298437,392.79999630848147L383.4000150322408,486.39999741201456" stroke="#344b4c" stroke-width="5.3999999999999995" fill="none"/>
+<path d="M383.4000150322408,486.39999741201456L383.3999913335783,565.5999892303562" stroke="#344b4c" stroke-width="5.3999999999999995" fill="none"/>
+<path d="M383.3999913335783,565.5999892303562L383.4000188675377,572.799993872952" stroke="#344b4c" stroke-width="10.799999999999999" fill="none"/>
+<path d="M477.00000690593333,248.79999585663762L477.0000130172804,356.8000115142664" stroke="#344b4c" stroke-width="10.799999999999999" fill="none"/>
+<path d="M477.0000039930254,392.8000120809412L477.0000060134669,572.7999956878076" stroke="#344b4c" stroke-width="10.799999999999999" fill="none"/>
+<path d="M45.00000553109633,209.19999062716008L45.00001901084471,407.19999062715965" stroke="#fff" stroke-width="12.799999999999999" fill="none"/>
+<path d="M45.00000553109633,209.19999062716008L45.00001901084471,407.19999062715965" stroke="#a16f42" stroke-width="1.5" fill="none"/>
+<path d="M282.6000083930462,378.39998827679733L282.5999986981378,410.79998827679594" stroke="#fff" stroke-width="7.3999999999999995" fill="none"/>
+<path d="M282.6000083930462,378.39998827679733L282.5999986981378,410.79998827679594" stroke="#a16f42" stroke-width="1.5" fill="none"/>
+<path d="M383.39999331506317,421.5999963084798L383.40000417365184,453.999996308478" stroke="#fff" stroke-width="7.3999999999999995" fill="none"/>
+<path d="M383.39999331506317,421.5999963084798L383.40000417365184,453.999996308478" stroke="#a16f42" stroke-width="1.5" fill="none"/>
+<path d="M329.3999999412865,486.40000876371687L361.79999994128576,486.4000019526974" stroke="#fff" stroke-width="7.3999999999999995" fill="none"/>
+<path d="M329.3999999412865,486.40000876371687L361.79999994128576,486.4000019526974" stroke="#a16f42" stroke-width="1.5" fill="none"/>
+<path d="M340.1999967929767,356.8000067642795L372.5999967929756,356.799998497424" stroke="#fff" stroke-width="7.3999999999999995" fill="none"/>
+<path d="M340.1999967929767,356.8000067642795L372.5999967929756,356.799998497424" stroke="#a16f42" stroke-width="1.5" fill="none"/>
+<path d="M477.00000812820264,270.39999585663753L477.0000117950103,335.19999585663754" stroke="#fff" stroke-width="12.799999999999999" fill="none"/>
+<path d="M477.00000812820264,270.39999585663753L477.0000117950103,335.19999585663754" stroke="#5e9caa" stroke-width="3" fill="none"/>
+<path d="M45.00001396965825,459.3999852341519L45.00000427474987,491.7999852341504" stroke="#fff" stroke-width="12.799999999999999" fill="none"/>
+<path d="M45.00001396965825,459.3999852341519L45.00000427474987,491.7999852341504" stroke="#a16f42" stroke-width="1.5" fill="none"/>
+<polygon points="340.2,313.6 369.0,313.6 369.0,256.0 340.2,256.0" fill="#fffdf6" stroke="#9b856c" stroke-width="1.3"/>
+<polygon points="88.2,265.0 271.8,265.0 271.8,191.2 88.2,191.2" fill="#fffdf6" stroke="#9b856c" stroke-width="1.3"/>
+<text x="179.99999999999997" y="232.10000000000002" font-size="11" text-anchor="middle">SUV</text>
+<polygon points="102.6,373.0 275.4,373.0 275.4,306.4 102.6,306.4" fill="#fffdf6" stroke="#9b856c" stroke-width="1.3"/>
+<text x="189.00000000000003" y="343.70000000000005" font-size="11" text-anchor="middle">SEDAN</text>
+<path d="M390.59999999999997,446.8L469.8,446.8" stroke="#87918a" stroke-width="1" fill="none"/>
+<path d="M390.59999999999997,457.59999999999997L469.8,457.59999999999997" stroke="#87918a" stroke-width="1" fill="none"/>
+<path d="M390.59999999999997,468.40000000000003L469.8,468.40000000000003" stroke="#87918a" stroke-width="1" fill="none"/>
+<path d="M390.59999999999997,479.2L469.8,479.2" stroke="#87918a" stroke-width="1" fill="none"/>
+<path d="M390.59999999999997,490.0L469.8,490.0" stroke="#87918a" stroke-width="1" fill="none"/>
+<path d="M390.59999999999997,500.8L469.8,500.8" stroke="#87918a" stroke-width="1" fill="none"/>
+<path d="M390.59999999999997,511.59999999999997L469.8,511.59999999999997" stroke="#87918a" stroke-width="1" fill="none"/>
+<path d="M390.59999999999997,522.4000000000001L469.8,522.4000000000001" stroke="#87918a" stroke-width="1" fill="none"/>
+<path d="M390.59999999999997,533.2L469.8,533.2" stroke="#87918a" stroke-width="1" fill="none"/>
+<text x="430.20000252942384" y="477.79999818892964" font-size="13" text-anchor="middle" class="fa">پله</text>
+<text x="430.20000252942384" y="494.79999818892964" font-size="10" text-anchor="middle">2.6 × 5.0</text>
+<text x="430.20000252942384" y="509.79999818892964" font-size="9" text-anchor="middle">13.0 m²</text>
+<text x="347.4000028760659" y="521.0000013365106" font-size="11" text-anchor="middle" class="fa">آسانسور</text>
+<text x="347.4000028760659" y="538.0000013365106" font-size="10" text-anchor="middle">2.0 × 2.2</text>
+<text x="347.4000028760659" y="553.0000013365106" font-size="9" text-anchor="middle">4.4 m²</text>
+<text x="163.80000864999326" y="304.99999322404796" font-size="13" text-anchor="middle" class="fa">گاراژ دو خودرو</text>
+<text x="163.80000864999326" y="321.99999322404796" font-size="10" text-anchor="middle">6.6 × 7.0</text>
+<text x="163.80000864999326" y="336.99999322404796" font-size="9" text-anchor="middle">46.2 m²</text>
+<text x="405.00000231209066" y="297.7999987592307" font-size="13" text-anchor="middle" class="fa">دفتر کار</text>
+<text x="405.00000231209066" y="314.7999987592307" font-size="10" text-anchor="middle">4.0 × 3.0</text>
+<text x="405.00000231209066" y="329.7999987592307" font-size="9" text-anchor="middle">12.0 m²</text>
+<text x="84.60000503137485" y="470.5999970834823" font-size="11" text-anchor="middle" class="fa">تأسیسات</text>
+<text x="84.60000503137485" y="487.5999970834823" font-size="10" text-anchor="middle">2.2 × 2.2</text>
+<text x="84.60000503137485" y="502.5999970834823" font-size="9" text-anchor="middle">4.8 m²</text>
+<text x="332.99999578153813" y="416.60000946232935" font-size="13" text-anchor="middle" class="fa">لابی آسانسور</text>
+<text x="332.99999578153813" y="433.60000946232935" font-size="10" text-anchor="middle">2.8 × 3.6</text>
+<text x="332.99999578153813" y="448.60000946232935" font-size="9" text-anchor="middle">10.1 m²</text>
+<text x="48" y="750" font-size="14" text-anchor="start">Enclosed centreline space area: 90.5 m²</text>
+<text x="48" y="782" font-size="13" text-anchor="start">Office and plant room are provisional placements.</text>
+<text x="48" y="812" font-size="12" text-anchor="start">White breaks = openings · blue = windows</text>
+<text x="48" y="838" font-size="12" text-anchor="start">Brown line = sliding/pocket door assumption</text>
+<path d="M50,864L230,864" stroke="#344b4c" stroke-width="2" fill="none"/>
+<text x="134" y="858" font-size="11" text-anchor="middle">5 m</text>
+<rect x="674" y="108" width="630" height="786" rx="14" fill="#fff"/>
+<text x="988" y="146" font-size="21" text-anchor="middle" class="fa">طبقهٔ مسکونی بالا</text>
+<text x="988" y="171" font-size="12" text-anchor="middle" class="fa">غرب / خیابان  ←                         →  شرق زمین / شمال‌شرق</text>
+<polygon points="1127.0,392.8 1127.0,572.8 1112.6,572.8 1033.4,572.8 1033.4,565.6 1033.4,486.4 1033.4,392.8 1055.0,392.8" fill="#d9dedb" stroke="#bbb" stroke-width=".5"/>
+<polygon points="1033.4,486.4 1033.4,565.6 961.4,565.6 961.4,486.4" fill="#b7cccd" stroke="#bbb" stroke-width=".5"/>
+<polygon points="839.0,270.4 839.0,284.8 839.0,392.8 839.0,450.4 716.6,450.4 716.6,270.4 803.0,270.4" fill="#eee0ca" stroke="#bbb" stroke-width=".5"/>
+<polygon points="889.4,450.4 889.4,572.8 716.6,572.8 716.6,450.4 839.0,450.4" fill="#eee0ca" stroke="#bbb" stroke-width=".5"/>
+<polygon points="1055.0,184.0 1055.0,209.2 1055.0,313.6 990.2,313.6 918.2,313.6 918.2,284.8 918.2,184.0" fill="#eee0ca" stroke="#bbb" stroke-width=".5"/>
+<polygon points="1184.6,209.2 1184.6,360.4 1055.0,360.4 1055.0,313.6 1055.0,209.2" fill="#eee0ca" stroke="#bbb" stroke-width=".5"/>
+<polygon points="803.0,184.0 803.0,270.4 716.6,270.4 716.6,184.0" fill="#d6e7ea" stroke="#bbb" stroke-width=".5"/>
+<polygon points="918.2,284.8 918.2,313.6 918.2,392.8 839.0,392.8 839.0,284.8" fill="#d6e7ea" stroke="#bbb" stroke-width=".5"/>
+<polygon points="990.2,313.6 990.2,392.8 918.2,392.8 918.2,313.6" fill="#f0f0e9" stroke="#bbb" stroke-width=".5"/>
+<polygon points="1033.4,392.8 1033.4,486.4 961.4,486.4 918.2,486.4 918.2,450.4 918.2,392.8 990.2,392.8" fill="#f0f0e9" stroke="#bbb" stroke-width=".5"/>
+<polygon points="918.2,392.8 918.2,450.4 889.4,450.4 839.0,450.4 839.0,392.8" fill="#f0f0e9" stroke="#bbb" stroke-width=".5"/>
+<polygon points="1055.0,313.6 1055.0,360.4 1055.0,392.8 1033.4,392.8 990.2,392.8 990.2,313.6" fill="#f0f0e9" stroke="#bbb" stroke-width=".5"/>
+<polygon points="961.4,486.4 961.4,565.6 961.4,572.8 896.6,572.8 896.6,486.4 918.2,486.4" fill="#f0f0e9" stroke="#bbb" stroke-width=".5"/>
+<polygon points="1112.6,572.8 1112.6,644.8 896.6,644.8 896.6,572.8 961.4,572.8 1033.4,572.8" fill="#c7dcb1" stroke="#bbb" stroke-width=".5"/>
+<path d="M716.6000090545792,184.00002153522195L803.0000055155166,184.00001769992508" stroke="#344b4c" stroke-width="10.799999999999999" fill="none"/>
+<path d="M918.200011858137,184.0000172387305L1055.000004213337,184.00000054388167" stroke="#344b4c" stroke-width="10.799999999999999" fill="none"/>
+<path d="M1055.0000036643107,209.2000150830689L1184.6000053345188,209.19999273806752" stroke="#344b4c" stroke-width="10.799999999999999" fill="none"/>
+<path d="M716.5999797057642,270.40000403855527L803.0000093508135,270.40001416086244" stroke="#344b4c" stroke-width="5.3999999999999995" fill="none"/>
+<path d="M803.0000093508135,270.40001416086244L838.9999767333763,270.4000092275132" stroke="#344b4c" stroke-width="10.799999999999999" fill="none"/>
+<path d="M838.9999986171832,284.8000045551009L918.2000043931289,284.79999506965135" stroke="#344b4c" stroke-width="10.799999999999999" fill="none"/>
+<path d="M918.2000010190264,313.60000495133454L990.2000161099802,313.59998981573244" stroke="#344b4c" stroke-width="5.3999999999999995" fill="none"/>
+<path d="M990.2000161099802,313.59998981573244L1054.9999933742263,313.59998825648563" stroke="#344b4c" stroke-width="5.3999999999999995" fill="none"/>
+<path d="M1055.0000090588544,360.3999888082523L1184.5999967714583,360.39999964736296" stroke="#344b4c" stroke-width="10.799999999999999" fill="none"/>
+<path d="M839.0000047285304,392.80002021272946L918.2000105044759,392.8000107272801" stroke="#344b4c" stroke-width="5.3999999999999995" fill="none"/>
+<path d="M918.2000105044759,392.8000107272801L990.1999924113178,392.7999816340739" stroke="#344b4c" stroke-width="5.3999999999999995" fill="none"/>
+<path d="M990.1999924113178,392.7999816340739L1033.3999836629844,392.79999630848147" stroke="#344b4c" stroke-width="5.3999999999999995" fill="none"/>
+<path d="M1033.3999836629844,392.79999630848147L1055.0000028596758,392.79999403243124" stroke="#344b4c" stroke-width="5.3999999999999995" fill="none"/>
+<path d="M1055.0000028596758,392.79999403243124L1127.0000039930255,392.8000120809412" stroke="#344b4c" stroke-width="10.799999999999999" fill="none"/>
+<path d="M716.6000149103174,450.40000160302577L839.0000119379297,450.4000067919838" stroke="#344b4c" stroke-width="5.3999999999999995" fill="none"/>
+<path d="M839.0000119379297,450.4000067919838L889.4000078321922,450.399993932432" stroke="#344b4c" stroke-width="5.3999999999999995" fill="none"/>
+<path d="M889.4000078321922,450.399993932432L918.2000177138752,450.39999730653426" stroke="#344b4c" stroke-width="10.799999999999999" fill="none"/>
+<path d="M896.599989492929,486.40000014925937L918.2000086896203,486.3999978732091" stroke="#344b4c" stroke-width="10.799999999999999" fill="none"/>
+<path d="M918.2000086896203,486.3999978732091L961.3999999412869,486.40001254761665" stroke="#344b4c" stroke-width="5.3999999999999995" fill="none"/>
+<path d="M961.3999999412869,486.40001254761665L1033.4000150322408,486.39999741201456" stroke="#344b4c" stroke-width="5.3999999999999995" fill="none"/>
+<path d="M961.4000094267365,565.6000183235623L1033.3999913335783,565.5999892303562" stroke="#344b4c" stroke-width="10.799999999999999" fill="none"/>
+<path d="M716.6000097213595,572.799998630638L889.4000026432341,572.7999909600442" stroke="#344b4c" stroke-width="10.799999999999999" fill="none"/>
+<path d="M896.5999933282259,572.7999966101968L961.4000037765838,572.8000090085541" stroke="#344b4c" stroke-width="10.799999999999999" fill="none"/>
+<path d="M961.4000037765838,572.8000090085541L1033.4000188675377,572.799993872952" stroke="#344b4c" stroke-width="7.2" fill="none"/>
+<path d="M1033.4000188675377,572.799993872952L1112.6000106858792,572.8000175716145" stroke="#344b4c" stroke-width="10.799999999999999" fill="none"/>
+<path d="M1112.6000106858792,572.8000175716145L1127.0000060134669,572.7999956878076" stroke="#344b4c" stroke-width="10.799999999999999" fill="none"/>
+<path d="M896.600008463828,644.8000117011504L1112.6000065949734,644.7999855208523" stroke="#344b4c" stroke-width="7.2" fill="none"/>
+<path d="M716.6000090545792,184.00002153522195L716.5999797057642,270.40000403855527" stroke="#344b4c" stroke-width="10.799999999999999" fill="none"/>
+<path d="M716.5999797057642,270.40000403855527L716.6000149103174,450.40000160302577" stroke="#344b4c" stroke-width="10.799999999999999" fill="none"/>
+<path d="M716.6000149103174,450.40000160302577L716.6000097213595,572.799998630638" stroke="#344b4c" stroke-width="10.799999999999999" fill="none"/>
+<path d="M803.0000055155166,184.00001769992508L803.0000093508135,270.40001416086244" stroke="#344b4c" stroke-width="10.799999999999999" fill="none"/>
+<path d="M838.9999767333763,270.4000092275132L838.9999986171832,284.8000045551009" stroke="#344b4c" stroke-width="10.799999999999999" fill="none"/>
+<path d="M838.9999986171832,284.8000045551009L839.0000047285304,392.80002021272946" stroke="#344b4c" stroke-width="5.3999999999999995" fill="none"/>
+<path d="M839.0000047285304,392.80002021272946L839.0000119379297,450.4000067919838" stroke="#344b4c" stroke-width="5.3999999999999995" fill="none"/>
+<path d="M889.4000078321922,450.399993932432L889.4000026432341,572.7999909600442" stroke="#344b4c" stroke-width="10.799999999999999" fill="none"/>
+<path d="M896.599989492929,486.40000014925937L896.5999933282259,572.7999966101968" stroke="#344b4c" stroke-width="10.799999999999999" fill="none"/>
+<path d="M896.5999933282259,572.7999966101968L896.600008463828,644.8000117011504" stroke="#344b4c" stroke-width="7.2" fill="none"/>
+<path d="M918.200011858137,184.0000172387305L918.2000043931289,284.79999506965135" stroke="#344b4c" stroke-width="10.799999999999999" fill="none"/>
+<path d="M918.2000043931289,284.79999506965135L918.2000010190264,313.60000495133454" stroke="#344b4c" stroke-width="5.3999999999999995" fill="none"/>
+<path d="M918.2000010190264,313.60000495133454L918.2000105044759,392.8000107272801" stroke="#344b4c" stroke-width="5.3999999999999995" fill="none"/>
+<path d="M918.2000105044759,392.8000107272801L918.2000177138752,450.39999730653426" stroke="#344b4c" stroke-width="5.3999999999999995" fill="none"/>
+<path d="M918.2000177138752,450.39999730653426L918.2000086896203,486.3999978732091" stroke="#344b4c" stroke-width="10.799999999999999" fill="none"/>
+<path d="M961.3999999412869,486.40001254761665L961.4000094267365,565.6000183235623" stroke="#344b4c" stroke-width="5.3999999999999995" fill="none"/>
+<path d="M961.4000094267365,565.6000183235623L961.4000037765838,572.8000090085541" stroke="#344b4c" stroke-width="10.799999999999999" fill="none"/>
+<path d="M990.2000161099802,313.59998981573244L990.1999924113178,392.7999816340739" stroke="#344b4c" stroke-width="5.3999999999999995" fill="none"/>
+<path d="M1033.3999836629844,392.79999630848147L1033.4000150322408,486.39999741201456" stroke="#344b4c" stroke-width="5.3999999999999995" fill="none"/>
+<path d="M1033.4000150322408,486.39999741201456L1033.3999913335783,565.5999892303562" stroke="#344b4c" stroke-width="5.3999999999999995" fill="none"/>
+<path d="M1033.3999913335783,565.5999892303562L1033.4000188675377,572.799993872952" stroke="#344b4c" stroke-width="10.799999999999999" fill="none"/>
+<path d="M1055.000004213337,184.00000054388167L1055.0000036643107,209.2000150830689" stroke="#344b4c" stroke-width="10.799999999999999" fill="none"/>
+<path d="M1055.0000036643107,209.2000150830689L1054.9999933742263,313.59998825648563" stroke="#344b4c" stroke-width="5.3999999999999995" fill="none"/>
+<path d="M1054.9999933742263,313.59998825648563L1055.0000090588544,360.3999888082523" stroke="#344b4c" stroke-width="5.3999999999999995" fill="none"/>
+<path d="M1055.0000090588544,360.3999888082523L1055.0000028596758,392.79999403243124" stroke="#344b4c" stroke-width="10.799999999999999" fill="none"/>
+<path d="M1112.6000106858792,572.8000175716145L1112.6000065949734,644.7999855208523" stroke="#344b4c" stroke-width="7.2" fill="none"/>
+<path d="M1127.0000039930255,392.8000120809412L1127.0000060134669,572.7999956878076" stroke="#344b4c" stroke-width="10.799999999999999" fill="none"/>
+<path d="M1184.6000053345188,209.19999273806752L1184.5999967714583,360.39999964736296" stroke="#344b4c" stroke-width="10.799999999999999" fill="none"/>
+<path d="M983.0000084638273,644.8000012290311L1022.6000084638271,644.7999964293097" stroke="#fff" stroke-width="9.2" fill="none"/>
+<path d="M1033.399993315063,421.5999963084798L1033.4000041736517,453.999996308478" stroke="#fff" stroke-width="7.3999999999999995" fill="none"/>
+<path d="M1033.399993315063,421.5999963084798L1033.4000041736517,453.999996308478" stroke="#a16f42" stroke-width="1.5" fill="none"/>
+<path d="M979.3999999412865,486.40000876371687L1011.7999999412857,486.4000019526974" stroke="#fff" stroke-width="7.3999999999999995" fill="none"/>
+<path d="M979.3999999412865,486.40000876371687L1011.7999999412857,486.4000019526974" stroke="#a16f42" stroke-width="1.5" fill="none"/>
+<path d="M918.2000118562386,403.60001072728005L918.2000159115266,436.00001072727974" stroke="#fff" stroke-width="7.3999999999999995" fill="none"/>
+<path d="M918.2000118562386,403.60001072728005L918.2000159115266,436.00001072727974" stroke="#a16f42" stroke-width="1.5" fill="none"/>
+<path d="M993.7999924113176,392.7999828569414L1026.1999924113156,392.7999938627494" stroke="#fff" stroke-width="7.3999999999999995" fill="none"/>
+<path d="M993.7999924113176,392.7999828569414L1026.1999924113156,392.7999938627494" stroke="#a16f42" stroke-width="1.5" fill="none"/>
+<path d="M839.0000060802931,403.6000202127295L839.0000101355811,436.00002021272917" stroke="#fff" stroke-width="7.3999999999999995" fill="none"/>
+<path d="M839.0000060802931,403.6000202127295L839.0000101355811,436.00002021272917" stroke="#a16f42" stroke-width="1.5" fill="none"/>
+<path d="M846.2000119379295,450.4000049549048L878.6000119379285,450.3999966880494" stroke="#fff" stroke-width="7.3999999999999995" fill="none"/>
+<path d="M846.2000119379295,450.4000049549048L878.6000119379285,450.3999966880494" stroke="#a16f42" stroke-width="1.5" fill="none"/>
+<path d="M860.6000047285303,392.80001762578894L893.00000472853,392.80001374537807" stroke="#fff" stroke-width="7.3999999999999995" fill="none"/>
+<path d="M860.6000047285303,392.80001762578894L893.00000472853,392.80001374537807" stroke="#a16f42" stroke-width="1.5" fill="none"/>
+<path d="M1004.6000161099803,313.59998946923304L1037.0000161099802,313.5999886896093" stroke="#fff" stroke-width="7.3999999999999995" fill="none"/>
+<path d="M1004.6000161099803,313.59998946923304L1037.0000161099802,313.5999886896093" stroke="#a16f42" stroke-width="1.5" fill="none"/>
+<path d="M1054.999995787246,320.7999882564852L1055.0000066458347,353.1999882564835" stroke="#fff" stroke-width="7.3999999999999995" fill="none"/>
+<path d="M1054.999995787246,320.7999882564852L1055.0000066458347,353.1999882564835" stroke="#a16f42" stroke-width="1.5" fill="none"/>
+<path d="M990.200009646708,335.19998981573156L990.1999999517996,367.5999898157301" stroke="#fff" stroke-width="7.3999999999999995" fill="none"/>
+<path d="M990.200009646708,335.19998981573156L990.1999999517996,367.5999898157301" stroke="#a16f42" stroke-width="1.5" fill="none"/>
+<path d="M741.799979705764,270.40000699089376L774.1999797057638,270.4000107867578" stroke="#fff" stroke-width="7.3999999999999995" fill="none"/>
+<path d="M741.799979705764,270.40000699089376L774.1999797057638,270.4000107867578" stroke="#a16f42" stroke-width="1.5" fill="none"/>
+<path d="M921.8000086896201,486.39999909607667L954.2000086896182,486.4000101018845" stroke="#fff" stroke-width="7.3999999999999995" fill="none"/>
+<path d="M921.8000086896201,486.39999909607667L954.2000086896182,486.4000101018845" stroke="#a16f42" stroke-width="1.5" fill="none"/>
+<path d="M907.3999933282256,572.7999986765892L946.999993328225,572.8000062533619" stroke="#fff" stroke-width="12.799999999999999" fill="none"/>
+<path d="M907.3999933282256,572.7999986765892L946.999993328225,572.8000062533619" stroke="#a16f42" stroke-width="1.5" fill="none"/>
+<path d="M716.5999909712214,328.0000040385541L716.6000036448607,392.80000403855297" stroke="#fff" stroke-width="12.799999999999999" fill="none"/>
+<path d="M716.5999909712214,328.0000040385541L716.6000036448607,392.80000403855297" stroke="#5e9caa" stroke-width="3" fill="none"/>
+<path d="M716.6000136893861,479.2000016030258L716.6000109422906,544.0000016030258" stroke="#fff" stroke-width="12.799999999999999" fill="none"/>
+<path d="M716.6000136893861,479.2000016030258L716.6000109422906,544.0000016030258" stroke="#5e9caa" stroke-width="3" fill="none"/>
+<path d="M954.2000118581368,184.00001284534895L1019.0000118581363,184.00000493726228" stroke="#fff" stroke-width="12.799999999999999" fill="none"/>
+<path d="M954.2000118581368,184.00001284534895L1019.0000118581363,184.00000493726228" stroke="#5e9caa" stroke-width="3" fill="none"/>
+<path d="M1184.6000028879303,252.39999273806748L1184.5999992180473,317.1999927380674" stroke="#fff" stroke-width="12.799999999999999" fill="none"/>
+<path d="M1184.6000028879303,252.39999273806748L1184.5999992180473,317.1999927380674" stroke="#5e9caa" stroke-width="3" fill="none"/>
+<polygon points="925.4,263.2 961.4,263.2 961.4,191.2 925.4,191.2" fill="#fffdf6" stroke="#9b856c" stroke-width="1.3"/>
+<text x="943.4" y="231.20000000000007" font-size="9" text-anchor="middle">BED</text>
+<polygon points="1011.8,263.2 1047.8,263.2 1047.8,191.2 1011.8,191.2" fill="#fffdf6" stroke="#9b856c" stroke-width="1.3"/>
+<text x="1029.8" y="231.2" font-size="9" text-anchor="middle">BED</text>
+<polygon points="1105.4,353.2 1177.4,353.2 1177.4,317.2 1105.4,317.2" fill="#fffdf6" stroke="#9b856c" stroke-width="1.3"/>
+<text x="1141.4" y="339.20000000000016" font-size="9" text-anchor="middle">BED</text>
+<polygon points="1105.4,252.4 1177.4,252.4 1177.4,216.4 1105.4,216.4" fill="#fffdf6" stroke="#9b856c" stroke-width="1.3"/>
+<text x="1141.4" y="238.4000000000001" font-size="9" text-anchor="middle">BED</text>
+<polygon points="723.8,443.2 795.8,443.2 795.8,378.4 723.8,378.4" fill="#fffdf6" stroke="#9b856c" stroke-width="1.3"/>
+<text x="759.8" y="414.80000000000007" font-size="9" text-anchor="middle">BED</text>
+<polygon points="723.8,565.6 795.8,565.6 795.8,508.0 723.8,508.0" fill="#fffdf6" stroke="#9b856c" stroke-width="1.3"/>
+<text x="759.8" y="540.8" font-size="9" text-anchor="middle">BED</text>
+<polygon points="765.2,189.4 765.2,221.8 797.6,221.8 797.6,189.4" fill="#f8faf6" stroke="#7c9da0" stroke-width="1"/>
+<text x="781.4000025524795" y="208.6000059885546" font-size="7" text-anchor="middle">SHOWER</text>
+<polygon points="796.7,249.7 775.1,249.7 775.1,267.7 796.7,267.7" fill="#f8faf6" stroke="#7c9da0" stroke-width="1"/>
+<text x="785.900012277971" y="261.70001370646344" font-size="7" text-anchor="middle">BASIN</text>
+<polygon points="729.2,214.6 743.6,214.6 743.6,189.4 729.2,189.4" fill="#f8faf6" stroke="#7c9da0" stroke-width="1"/>
+<text x="736.4000094758392" y="205.000011151169" font-size="7" text-anchor="middle">WC</text>
+<polygon points="883.1,291.1 883.1,323.5 915.5,323.5 915.5,291.1" fill="#f8faf6" stroke="#7c9da0" stroke-width="1"/>
+<text x="899.3000256081796" y="310.2999864848872" font-size="7" text-anchor="middle">SHOWER</text>
+<polygon points="897.5,323.5 897.5,345.1 915.5,345.1 915.5,323.5" fill="#f8faf6" stroke="#7c9da0" stroke-width="1"/>
+<text x="906.4999977395511" y="337.29999736667287" font-size="7" text-anchor="middle">BASIN</text>
+<polygon points="866.9,357.7 866.9,343.3 841.7,343.3 841.7,357.7" fill="#f8faf6" stroke="#7c9da0" stroke-width="1"/>
+<text x="854.3000010744513" y="353.5000114257761" font-size="7" text-anchor="middle">WC</text>
+<polygon points="944.3,390.1 944.3,325.3 920.9,325.3 920.9,390.1" fill="#f8faf6" stroke="#7c9da0" stroke-width="1"/>
+<text x="932.6000154672753" y="360.7000071938794" font-size="7" text-anchor="middle">LAUNDRY</text>
+<path d="M1040.6,446.8L1119.8,446.8" stroke="#87918a" stroke-width="1" fill="none"/>
+<path d="M1040.6,457.59999999999997L1119.8,457.59999999999997" stroke="#87918a" stroke-width="1" fill="none"/>
+<path d="M1040.6,468.40000000000003L1119.8,468.40000000000003" stroke="#87918a" stroke-width="1" fill="none"/>
+<path d="M1040.6,479.2L1119.8,479.2" stroke="#87918a" stroke-width="1" fill="none"/>
+<path d="M1040.6,490.0L1119.8,490.0" stroke="#87918a" stroke-width="1" fill="none"/>
+<path d="M1040.6,500.8L1119.8,500.8" stroke="#87918a" stroke-width="1" fill="none"/>
+<path d="M1040.6,511.59999999999997L1119.8,511.59999999999997" stroke="#87918a" stroke-width="1" fill="none"/>
+<path d="M1040.6,522.4000000000001L1119.8,522.4000000000001" stroke="#87918a" stroke-width="1" fill="none"/>
+<path d="M1040.6,533.2L1119.8,533.2" stroke="#87918a" stroke-width="1" fill="none"/>
+<text x="1080.200003056278" y="477.8000022507196" font-size="13" text-anchor="middle" class="fa">پله</text>
+<text x="1080.200003056278" y="494.8000022507196" font-size="10" text-anchor="middle">2.6 × 5.0</text>
+<text x="1080.200003056278" y="509.8000022507196" font-size="9" text-anchor="middle">13.0 m²</text>
+<text x="997.4000028760659" y="521.0000013365106" font-size="11" text-anchor="middle" class="fa">آسانسور</text>
+<text x="997.4000028760659" y="538.0000013365106" font-size="10" text-anchor="middle">2.0 × 2.2</text>
+<text x="997.4000028760659" y="553.0000013365106" font-size="9" text-anchor="middle">4.4 m²</text>
+<text x="777.7999998454833" y="355.4000049162926" font-size="13" text-anchor="middle" class="fa">خواب والدین</text>
+<text x="777.7999998454833" y="372.4000049162926" font-size="10" text-anchor="middle">3.4 × 5.0</text>
+<text x="777.7999998454833" y="387.4000049162926" font-size="9" text-anchor="middle">17.0 m²</text>
+<text x="803.0000082560749" y="506.59999893710875" font-size="13" text-anchor="middle" class="fa">خواب پدربزرگ و مادربزرگ</text>
+<text x="803.0000082560749" y="523.5999989371087" font-size="10" text-anchor="middle">4.8 × 3.4</text>
+<text x="803.0000082560749" y="538.5999989371087" font-size="9" text-anchor="middle">16.3 m²</text>
+<text x="986.6000032177865" y="243.80000104286154" font-size="13" text-anchor="middle" class="fa">خواب پسرها</text>
+<text x="986.6000032177865" y="260.80000104286154" font-size="10" text-anchor="middle">3.8 × 3.6</text>
+<text x="986.6000032177865" y="275.80000104286154" font-size="9" text-anchor="middle">13.7 m²</text>
+<text x="1119.8000025738575" y="279.7999982312683" font-size="13" text-anchor="middle" class="fa">خواب دخترها</text>
+<text x="1119.8000025738575" y="296.7999982312683" font-size="10" text-anchor="middle">3.6 × 4.2</text>
+<text x="1119.8000025738575" y="311.7999982312683" font-size="9" text-anchor="middle">15.1 m²</text>
+<text x="759.8000020698018" y="222.20001712398323" font-size="13" text-anchor="middle" class="fa">حمام مستر</text>
+<text x="759.8000020698018" y="239.20001712398323" font-size="10" text-anchor="middle">2.4 × 2.4</text>
+<text x="759.8000020698018" y="254.20001712398323" font-size="9" text-anchor="middle">5.8 m²</text>
+<text x="878.6000033098808" y="333.8000079065433" font-size="13" text-anchor="middle" class="fa">حمام مشترک</text>
+<text x="878.6000033098808" y="350.8000079065433" font-size="10" text-anchor="middle">2.2 × 3.0</text>
+<text x="878.6000033098808" y="365.8000079065433" font-size="9" text-anchor="middle">6.6 m²</text>
+<text x="954.2000039538052" y="348.19999374022854" font-size="11" text-anchor="middle" class="fa">رخت‌شویی</text>
+<text x="954.2000039538052" y="365.19999374022854" font-size="10" text-anchor="middle">2.0 × 2.2</text>
+<text x="954.2000039538052" y="380.19999374022854" font-size="9" text-anchor="middle">4.4 m²</text>
+<text x="975.8000081196446" y="434.6000013884649" font-size="13" text-anchor="middle" class="fa">فضای تقسیم خانوادگی</text>
+<text x="975.8000081196446" y="451.6000013884649" font-size="10" text-anchor="middle">3.2 × 2.6</text>
+<text x="975.8000081196446" y="466.6000013884649" font-size="9" text-anchor="middle">8.3 m²</text>
+<text x="878.6000110079729" y="416.60000705379247" font-size="11" text-anchor="middle" class="fa">ورودی اتاق‌ها</text>
+<text x="878.6000110079729" y="433.60000705379247" font-size="10" text-anchor="middle">2.2 × 1.6</text>
+<text x="878.6000110079729" y="448.60000705379247" font-size="9" text-anchor="middle">3.5 m²</text>
+<text x="1022.6000048060071" y="348.1999936034134" font-size="11" text-anchor="middle" class="fa">ورودی اتاق‌ها</text>
+<text x="1022.6000048060071" y="365.1999936034134" font-size="10" text-anchor="middle">1.8 × 2.2</text>
+<text x="1022.6000048060071" y="380.1999936034134" font-size="9" text-anchor="middle">4.0 m²</text>
+<text x="928.999997993679" y="524.6000035294528" font-size="11" text-anchor="middle" class="fa">ورودی اصلی</text>
+<text x="928.999997993679" y="541.6000035294528" font-size="10" text-anchor="middle">1.8 × 2.4</text>
+<text x="928.999997993679" y="556.6000035294528" font-size="9" text-anchor="middle">4.3 m²</text>
+<text x="1004.5999965078001" y="603.8000004820483" font-size="13" text-anchor="middle" class="fa">بالکن</text>
+<text x="1004.5999965078001" y="620.8000004820483" font-size="10" text-anchor="middle">6.0 × 2.0</text>
+<text x="1004.5999965078001" y="635.8000004820483" font-size="9" text-anchor="middle">12.0 m²</text>
+<text x="698" y="750" font-size="14" text-anchor="start">Enclosed centreline space area: 116.4 m²</text>
+<text x="698" y="782" font-size="13" text-anchor="start">External main entrance from the southern side.</text>
+<text x="698" y="812" font-size="12" text-anchor="start">White breaks = openings · blue = windows</text>
+<text x="698" y="838" font-size="12" text-anchor="start">Brown line = sliding/pocket door assumption</text>
+<path d="M700,864L880,864" stroke="#344b4c" stroke-width="2" fill="none"/>
+<text x="784" y="858" font-size="11" text-anchor="middle">5 m</text>
+<rect x="1324" y="108" width="630" height="786" rx="14" fill="#fff"/>
+<text x="1638" y="146" font-size="21" text-anchor="middle" class="fa">طبقهٔ مسکونی پایین</text>
+<text x="1638" y="171" font-size="12" text-anchor="middle" class="fa">غرب / خیابان  ←                         →  شرق زمین / شمال‌شرق</text>
+<polygon points="1777.0,392.8 1777.0,572.8 1683.4,572.8 1683.4,565.6 1683.4,486.4 1683.4,392.8" fill="#d9dedb" stroke="#bbb" stroke-width=".5"/>
+<polygon points="1683.4,486.4 1683.4,565.6 1611.4,565.6 1611.4,486.4" fill="#b7cccd" stroke="#bbb" stroke-width=".5"/>
+<polygon points="1856.2,184.0 1856.2,349.6 1683.4,349.6 1589.8,349.6 1589.8,292.0 1589.8,184.0" fill="#d6e4d0" stroke="#bbb" stroke-width=".5"/>
+<polygon points="1589.8,184.0 1589.8,292.0 1582.6,292.0 1409.8,292.0 1409.8,184.0" fill="#d6e4d0" stroke="#bbb" stroke-width=".5"/>
+<polygon points="1582.6,292.0 1582.6,349.6 1582.6,436.0 1525.0,436.0 1453.0,436.0 1388.2,436.0 1388.2,292.0 1409.8,292.0" fill="#eadcb7" stroke="#bbb" stroke-width=".5"/>
+<polygon points="1453.0,436.0 1453.0,515.2 1388.2,515.2 1388.2,436.0" fill="#f0f0e9" stroke="#bbb" stroke-width=".5"/>
+<polygon points="1683.4,349.6 1683.4,392.8 1683.4,486.4 1611.4,486.4 1582.6,486.4 1582.6,436.0 1582.6,349.6 1589.8,349.6" fill="#f0f0e9" stroke="#bbb" stroke-width=".5"/>
+<polygon points="1582.6,436.0 1582.6,486.4 1582.6,500.8 1525.0,500.8 1525.0,436.0" fill="#f0f0e9" stroke="#bbb" stroke-width=".5"/>
+<polygon points="1525.0,436.0 1525.0,500.8 1525.0,536.8 1453.0,536.8 1453.0,515.2 1453.0,436.0" fill="#d6e7ea" stroke="#bbb" stroke-width=".5"/>
+<polygon points="1597.0,500.8 1597.0,572.8 1525.0,572.8 1525.0,536.8 1525.0,500.8 1582.6,500.8" fill="#f0f0e9" stroke="#bbb" stroke-width=".5"/>
+<path d="M1409.80001426385,184.00000302551757L1589.7999978707164,184.0000010050762" stroke="#344b4c" stroke-width="10.799999999999999" fill="none"/>
+<path d="M1589.7999978707164,184.0000010050762L1856.2000111226323,184.00000910694212" stroke="#344b4c" stroke-width="10.799999999999999" fill="none"/>
+<path d="M1388.2000151361099,291.9999877750844L1409.7999871910852,292.0000047255421" stroke="#344b4c" stroke-width="10.799999999999999" fill="none"/>
+<path d="M1409.7999871910852,292.0000047255421L1582.6000132970717,292.0000110125523" stroke="#344b4c" stroke-width="5.3999999999999995" fill="none"/>
+<path d="M1582.6000132970717,292.0000110125523L1589.8000039820636,292.000016662705" stroke="#344b4c" stroke-width="10.799999999999999" fill="none"/>
+<path d="M1582.600020506471,349.59999759180664L1589.800011191463,349.6000032419592" stroke="#344b4c" stroke-width="10.799999999999999" fill="none"/>
+<path d="M1589.800011191463,349.6000032419592L1683.399998337392,349.6000050568148" stroke="#344b4c" stroke-width="5.3999999999999995" fill="none"/>
+<path d="M1683.399998337392,349.6000050568148L1856.1999912592667,349.59999738622093" stroke="#344b4c" stroke-width="10.799999999999999" fill="none"/>
+<path d="M1683.3999836629844,392.79999630848147L1777.0000039930255,392.8000120809412" stroke="#344b4c" stroke-width="10.799999999999999" fill="none"/>
+<path d="M1388.2000122232018,436.00000399938796L1452.999989487448,436.0000024401412" stroke="#344b4c" stroke-width="5.3999999999999995" fill="none"/>
+<path d="M1452.999989487448,436.0000024401412L1525.0000045784018,435.9999873045391" stroke="#344b4c" stroke-width="5.3999999999999995" fill="none"/>
+<path d="M1525.0000045784018,435.9999873045391L1582.599991157656,435.9999800951399" stroke="#344b4c" stroke-width="5.3999999999999995" fill="none"/>
+<path d="M1582.599990059604,486.4000091735143L1611.3999999412868,486.40001254761665" stroke="#344b4c" stroke-width="10.799999999999999" fill="none"/>
+<path d="M1611.3999999412868,486.40001254761665L1683.4000150322408,486.39999741201456" stroke="#344b4c" stroke-width="5.3999999999999995" fill="none"/>
+<path d="M1524.9999921800445,500.7999977528971L1582.6000119434107,500.80000450110197" stroke="#344b4c" stroke-width="5.3999999999999995" fill="none"/>
+<path d="M1582.6000119434107,500.80000450110197L1596.999993313394,500.8000158014071" stroke="#344b4c" stroke-width="10.799999999999999" fill="none"/>
+<path d="M1388.1999885245395,515.1999958177295L1452.9999989728974,515.2000082160869" stroke="#344b4c" stroke-width="10.799999999999999" fill="none"/>
+<path d="M1453.0000152065518,536.7999942286662L1524.9999831557893,536.7999983195721" stroke="#344b4c" stroke-width="10.799999999999999" fill="none"/>
+<path d="M1611.4000094267365,565.6000183235623L1683.3999913335783,565.5999892303562" stroke="#344b4c" stroke-width="10.799999999999999" fill="none"/>
+<path d="M1525.0000073156466,572.8000128438509L1596.9999892224885,572.7999837506447" stroke="#344b4c" stroke-width="10.799999999999999" fill="none"/>
+<path d="M1683.4000188675377,572.799993872952L1777.0000060134669,572.7999956878076" stroke="#344b4c" stroke-width="10.799999999999999" fill="none"/>
+<path d="M1388.2000151361099,291.9999877750844L1388.2000122232018,436.00000399938796" stroke="#344b4c" stroke-width="10.799999999999999" fill="none"/>
+<path d="M1388.2000122232018,436.00000399938796L1388.1999885245395,515.1999958177295" stroke="#344b4c" stroke-width="10.799999999999999" fill="none"/>
+<path d="M1409.80001426385,184.00000302551757L1409.7999871910852,292.0000047255421" stroke="#344b4c" stroke-width="10.799999999999999" fill="none"/>
+<path d="M1452.999989487448,436.0000024401412L1452.9999989728974,515.2000082160869" stroke="#344b4c" stroke-width="5.3999999999999995" fill="none"/>
+<path d="M1452.9999989728974,515.2000082160869L1453.0000152065518,536.7999942286662" stroke="#344b4c" stroke-width="10.799999999999999" fill="none"/>
+<path d="M1525.0000045784018,435.9999873045391L1524.9999921800445,500.7999977528971" stroke="#344b4c" stroke-width="5.3999999999999995" fill="none"/>
+<path d="M1524.9999921800445,500.7999977528971L1524.9999831557893,536.7999983195721" stroke="#344b4c" stroke-width="5.3999999999999995" fill="none"/>
+<path d="M1524.9999831557893,536.7999983195721L1525.0000073156466,572.8000128438509" stroke="#344b4c" stroke-width="10.799999999999999" fill="none"/>
+<path d="M1582.6000132970717,292.0000110125523L1582.600020506471,349.59999759180664" stroke="#344b4c" stroke-width="10.799999999999999" fill="none"/>
+<path d="M1582.600020506471,349.59999759180664L1582.599991157656,435.9999800951399" stroke="#344b4c" stroke-width="5.3999999999999995" fill="none"/>
+<path d="M1582.599991157656,435.9999800951399L1582.599990059604,486.4000091735143" stroke="#344b4c" stroke-width="5.3999999999999995" fill="none"/>
+<path d="M1582.599990059604,486.4000091735143L1582.6000119434107,500.80000450110197" stroke="#344b4c" stroke-width="10.799999999999999" fill="none"/>
+<path d="M1589.7999978707164,184.0000010050762L1589.8000039820636,292.000016662705" stroke="#344b4c" stroke-width="5.3999999999999995" fill="none"/>
+<path d="M1589.8000039820636,292.000016662705L1589.800011191463,349.6000032419592" stroke="#344b4c" stroke-width="10.799999999999999" fill="none"/>
+<path d="M1596.999993313394,500.8000158014071L1596.9999892224885,572.7999837506447" stroke="#344b4c" stroke-width="10.799999999999999" fill="none"/>
+<path d="M1611.3999999412868,486.40001254761665L1611.4000094267365,565.6000183235623" stroke="#344b4c" stroke-width="10.799999999999999" fill="none"/>
+<path d="M1683.399998337392,349.6000050568148L1683.3999836629844,392.79999630848147" stroke="#344b4c" stroke-width="10.799999999999999" fill="none"/>
+<path d="M1683.3999836629844,392.79999630848147L1683.4000150322408,486.39999741201456" stroke="#344b4c" stroke-width="5.3999999999999995" fill="none"/>
+<path d="M1683.4000150322408,486.39999741201456L1683.3999913335783,565.5999892303562" stroke="#344b4c" stroke-width="5.3999999999999995" fill="none"/>
+<path d="M1683.3999913335783,565.5999892303562L1683.4000188675377,572.799993872952" stroke="#344b4c" stroke-width="10.799999999999999" fill="none"/>
+<path d="M1777.0000039930255,392.8000120809412L1777.0000060134669,572.7999956878076" stroke="#344b4c" stroke-width="10.799999999999999" fill="none"/>
+<path d="M1856.2000111226323,184.00000910694212L1856.1999912592667,349.59999738622093" stroke="#344b4c" stroke-width="10.799999999999999" fill="none"/>
+<path d="M1856.2000063726966,223.6000091069418L1856.1999960092007,310.0000091069412" stroke="#fff" stroke-width="12.799999999999999" fill="none"/>
+<path d="M1856.2000063726966,223.6000091069418L1856.1999960092007,310.0000091069412" stroke="#a16f42" stroke-width="1.5" fill="none"/>
+<path d="M1589.799998074428,187.60000100507622L1589.800003778351,288.400001005076" stroke="#fff" stroke-width="7.3999999999999995" fill="none"/>
+<path d="M1478.199987191085,292.00000721414995L1510.5999871910851,292.0000083929641" stroke="#fff" stroke-width="7.3999999999999995" fill="none"/>
+<path d="M1478.199987191085,292.00000721414995L1510.5999871910851,292.0000083929641" stroke="#a16f42" stroke-width="1.5" fill="none"/>
+<path d="M1402.600012223202,436.00000365288855L1435.0000122232018,436.0000028732649" stroke="#fff" stroke-width="7.3999999999999995" fill="none"/>
+<path d="M1402.600012223202,436.00000365288855L1435.0000122232018,436.0000028732649" stroke="#a16f42" stroke-width="1.5" fill="none"/>
+<path d="M1582.6000119463984,374.7999975918051L1582.6000009405905,407.19999759180325" stroke="#fff" stroke-width="7.3999999999999995" fill="none"/>
+<path d="M1582.6000119463984,374.7999975918051L1582.6000009405905,407.19999759180325" stroke="#a16f42" stroke-width="1.5" fill="none"/>
+<path d="M1604.2000111914629,349.60000352116776L1669.0000111914628,349.60000477760656" stroke="#fff" stroke-width="7.3999999999999995" fill="none"/>
+<path d="M1582.5999910007915,443.1999800951399L1582.5999902949013,475.5999800951399" stroke="#fff" stroke-width="7.3999999999999995" fill="none"/>
+<path d="M1582.5999910007915,443.1999800951399L1582.5999902949013,475.5999800951399" stroke="#a16f42" stroke-width="1.5" fill="none"/>
+<path d="M1525.0000018232117,450.39998730453885L1524.999995624034,482.79998730453826" stroke="#fff" stroke-width="7.3999999999999995" fill="none"/>
+<path d="M1525.0000018232117,450.39998730453885L1524.999995624034,482.79998730453826" stroke="#a16f42" stroke-width="1.5" fill="none"/>
+<path d="M1535.7999921800442,500.7999990181851L1568.199992180044,500.8000028140489" stroke="#fff" stroke-width="7.3999999999999995" fill="none"/>
+<path d="M1535.7999921800442,500.7999990181851L1568.199992180044,500.8000028140489" stroke="#a16f42" stroke-width="1.5" fill="none"/>
+<path d="M1683.399993315063,421.5999963084798L1683.4000041736517,453.999996308478" stroke="#fff" stroke-width="7.3999999999999995" fill="none"/>
+<path d="M1683.399993315063,421.5999963084798L1683.4000041736517,453.999996308478" stroke="#a16f42" stroke-width="1.5" fill="none"/>
+<path d="M1629.3999999412865,486.40000876371687L1661.7999999412857,486.4000019526974" stroke="#fff" stroke-width="7.3999999999999995" fill="none"/>
+<path d="M1629.3999999412865,486.40000876371687L1661.7999999412857,486.4000019526974" stroke="#a16f42" stroke-width="1.5" fill="none"/>
+<path d="M1690.5999978707164,184.0000040706469L1755.3999978707163,184.000006041371" stroke="#fff" stroke-width="12.799999999999999" fill="none"/>
+<path d="M1690.5999978707164,184.0000040706469L1755.3999978707163,184.000006041371" stroke="#5e9caa" stroke-width="3" fill="none"/>
+<path d="M1388.2000143350604,331.5999877750843L1388.2000130242518,396.39998777508436" stroke="#fff" stroke-width="12.799999999999999" fill="none"/>
+<path d="M1388.2000143350604,331.5999877750843L1388.2000130242518,396.39998777508436" stroke="#5e9caa" stroke-width="3" fill="none"/>
+<polygon points="1625.8,299.2 1661.8,299.2 1661.8,191.2 1625.8,191.2" fill="#fffdf6" stroke="#9b856c" stroke-width="1.3"/>
+<polygon points="1733.8,227.2 1813.0,227.2 1813.0,191.2 1733.8,191.2" fill="#fffdf6" stroke="#9b856c" stroke-width="1.3"/>
+<polygon points="1417.0,277.6 1453.0,277.6 1453.0,191.2 1417.0,191.2" fill="#fffdf6" stroke="#9b856c" stroke-width="1.3"/>
+<polygon points="1579.9,411.7 1471.9,411.7 1471.9,433.3 1579.9,433.3" fill="#f8faf6" stroke="#7c9da0" stroke-width="1"/>
+<text x="1525.8999690385208" y="425.49999632547156" font-size="7" text-anchor="middle">KITCHEN RUN</text>
+<polygon points="1393.6,319.0 1415.2,319.0 1415.2,297.4 1393.6,297.4" fill="#f8faf6" stroke="#7c9da0" stroke-width="1"/>
+<text x="1404.4000050353561" y="311.1999699159052" font-size="7" text-anchor="middle">APPLIANCE</text>
+<polygon points="1489.9,496.3 1489.9,528.7 1522.3,528.7 1522.3,496.3" fill="#f8faf6" stroke="#7c9da0" stroke-width="1"/>
+<text x="1506.099988686212" y="515.4999891830412" font-size="7" text-anchor="middle">SHOWER</text>
+<polygon points="1476.4,495.4 1476.4,473.8 1458.4,473.8 1458.4,495.4" fill="#f8faf6" stroke="#7c9da0" stroke-width="1"/>
+<text x="1467.4000156791815" y="487.5999857581509" font-size="7" text-anchor="middle">BASIN</text>
+<polygon points="1483.6,466.6 1483.6,452.2 1458.4,452.2 1458.4,466.6" fill="#f8faf6" stroke="#7c9da0" stroke-width="1"/>
+<text x="1470.9999976130994" y="462.40000722815205" font-size="7" text-anchor="middle">WC</text>
+<path d="M1690.6,446.8L1769.8,446.8" stroke="#87918a" stroke-width="1" fill="none"/>
+<path d="M1690.6,457.59999999999997L1769.8,457.59999999999997" stroke="#87918a" stroke-width="1" fill="none"/>
+<path d="M1690.6,468.40000000000003L1769.8,468.40000000000003" stroke="#87918a" stroke-width="1" fill="none"/>
+<path d="M1690.6,479.2L1769.8,479.2" stroke="#87918a" stroke-width="1" fill="none"/>
+<path d="M1690.6,490.0L1769.8,490.0" stroke="#87918a" stroke-width="1" fill="none"/>
+<path d="M1690.6,500.8L1769.8,500.8" stroke="#87918a" stroke-width="1" fill="none"/>
+<path d="M1690.6,511.59999999999997L1769.8,511.59999999999997" stroke="#87918a" stroke-width="1" fill="none"/>
+<path d="M1690.6,522.4000000000001L1769.8,522.4000000000001" stroke="#87918a" stroke-width="1" fill="none"/>
+<path d="M1690.6,533.2L1769.8,533.2" stroke="#87918a" stroke-width="1" fill="none"/>
+<text x="1730.2000025294237" y="477.79999818892964" font-size="13" text-anchor="middle" class="fa">پله</text>
+<text x="1730.2000025294237" y="494.79999818892964" font-size="10" text-anchor="middle">2.6 × 5.0</text>
+<text x="1730.2000025294237" y="509.79999818892964" font-size="9" text-anchor="middle">13.0 m²</text>
+<text x="1647.4000028760659" y="521.0000013365106" font-size="11" text-anchor="middle" class="fa">آسانسور</text>
+<text x="1647.4000028760659" y="538.0000013365106" font-size="10" text-anchor="middle">2.0 × 2.2</text>
+<text x="1647.4000028760659" y="553.0000013365106" font-size="9" text-anchor="middle">4.4 m²</text>
+<text x="1723.0000001915373" y="261.8000019747361" font-size="13" text-anchor="middle" class="fa">نشیمن</text>
+<text x="1723.0000001915373" y="278.8000019747361" font-size="10" text-anchor="middle">7.4 × 4.6</text>
+<text x="1723.0000001915373" y="293.8000019747361" font-size="9" text-anchor="middle">34.0 m²</text>
+<text x="1499.8000021045327" y="233.0000067207492" font-size="13" text-anchor="middle" class="fa">غذاخوری</text>
+<text x="1499.8000021045327" y="250.0000067207492" font-size="10" text-anchor="middle">5.0 × 3.0</text>
+<text x="1499.8000021045327" y="265.0000067207492" font-size="9" text-anchor="middle">15.0 m²</text>
+<text x="1485.4000074640235" y="358.99999907610436" font-size="13" text-anchor="middle" class="fa">آشپزخانه و صبحانه</text>
+<text x="1485.4000074640235" y="375.99999907610436" font-size="10" text-anchor="middle">5.4 × 4.0</text>
+<text x="1485.4000074640235" y="390.99999907610436" font-size="9" text-anchor="middle">21.6 m²</text>
+<text x="1420.599998253676" y="470.6000059982001" font-size="11" text-anchor="middle" class="fa">پنتری</text>
+<text x="1420.599998253676" y="487.6000059982001" font-size="10" text-anchor="middle">1.8 × 2.2</text>
+<text x="1420.599998253676" y="502.6000059982001" font-size="9" text-anchor="middle">4.0 m²</text>
+<text x="1632.9999973790189" y="413.0000117351787" font-size="13" text-anchor="middle" class="fa">فضای مشترک</text>
+<text x="1632.9999973790189" y="430.0000117351787" font-size="10" text-anchor="middle">2.8 × 3.8</text>
+<text x="1632.9999973790189" y="445.0000117351787" font-size="9" text-anchor="middle">10.6 m²</text>
+<text x="1553.799996682586" y="463.39999462522405" font-size="11" text-anchor="middle" class="fa">پیش‌فضای سرویس</text>
+<text x="1553.799996682586" y="480.39999462522405" font-size="10" text-anchor="middle">1.6 × 1.8</text>
+<text x="1553.799996682586" y="495.39999462522405" font-size="9" text-anchor="middle">2.9 m²</text>
+<text x="1488.999996914208" y="481.3999908339682" font-size="13" text-anchor="middle" class="fa">حمام و سرویس</text>
+<text x="1488.999996914208" y="498.3999908339682" font-size="10" text-anchor="middle">2.0 × 2.8</text>
+<text x="1488.999996914208" y="513.3999908339682" font-size="9" text-anchor="middle">5.6 m²</text>
+<text x="1560.999987815933" y="531.7999990123401" font-size="11" text-anchor="middle" class="fa">انباری</text>
+<text x="1560.999987815933" y="548.7999990123401" font-size="10" text-anchor="middle">2.0 × 2.0</text>
+<text x="1560.999987815933" y="563.7999990123401" font-size="9" text-anchor="middle">4.0 m²</text>
+<text x="1348" y="750" font-size="14" text-anchor="start">Enclosed centreline space area: 115.1 m²</text>
+<text x="1348" y="782" font-size="13" text-anchor="start">Living and kitchen on the lower garden floor.</text>
+<text x="1348" y="812" font-size="12" text-anchor="start">White breaks = openings · blue = windows</text>
+<text x="1348" y="838" font-size="12" text-anchor="start">Brown line = sliding/pocket door assumption</text>
+<path d="M1350,864L1530,864" stroke="#344b4c" stroke-width="2" fill="none"/>
+<text x="1434" y="858" font-size="11" text-anchor="middle">5 m</text>
+<text x="40" y="924" font-size="14" text-anchor="start">EXPLORATORY · Fixtures and furniture are assumptions; clear route, vehicle turning, structure, garden grades and services still require development.</text>
+</svg>

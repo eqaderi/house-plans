@@ -9,6 +9,10 @@ Follow [docs/AGENT_CONTRACT.md](../../docs/AGENT_CONTRACT.md) (§3 one model,
 §6 epistemic status, §10 professional boundary). In every command,
 `agent:<tool>` is your own tool name: `claude-code`, `codex` or `gemini`.
 
+For `projects/my-house/`, read and obey
+[projects/my-house/design/OWNER_DESIGN_RULES.md](../../projects/my-house/design/OWNER_DESIGN_RULES.md)
+first; check every design against it before showing anything to the owner.
+
 ## Purpose
 Guide the agent through an evidence-grounded architectural critique of generated floor plans: functional quality, zoning, circulation, daylight, privacy, and hillside relationships. Every claim carries its epistemic status, every cited element is a canonical ID that exists in the plan, and every proposed change is an explicit `plan revise` operation.
 

@@ -1,0 +1,30 @@
+{
+  "read_date": "2026-10-17",
+  "sources": [
+    {
+      "title": "Access Board",
+      "url": "https://www.access-board.gov/ada/guides/chapter-3-clear-floor-or-ground-space-and-turning-space/",
+      "scope": "1525mm turning-space comparison; door manoeuvring and fixture transfers need separate checks. US benchmark, not local certification."
+    },
+    {
+      "title": "Approved Document K",
+      "url": "https://www.gov.uk/government/publications/protection-from-falling-collision-and-impact-approved-document-k",
+      "scope": "Private-stair rise/going/headroom comparison; proposed stairs are gentler than the cited private-stair envelope. Not the governing jurisdiction."
+    },
+    {
+      "title": "Toyota LC300 May2026",
+      "url": "https://www.toyota.com.au/-/media/toyota/main-site/vehicle-hubs/lc300/files/20260505-lc300_spec_table_gto009725.pdf?rev=c5ecaec270a8462f80ce8daddf254183",
+      "scope": "Manufacturer dimensions vary by grade. Our larger 5.10 x 2.10m rectangle is a design allowance; mirrors, overhangs and owner variant unknown."
+    },
+    {
+      "title": "PNNL footing drainage",
+      "url": "https://basc.pnnl.gov/resource-guides/footing-drain-pipe",
+      "scope": "Use separate positive water management and a lawful receiving system; gravity outfall cannot be assumed."
+    },
+    {
+      "title": "MBIE/NZGS retaining",
+      "url": "https://www.building.govt.nz/building-code-compliance/b-stability/b1-structure/module-6-earthquake-retaining-wall-design",
+      "scope": "Retaining/surcharge/seismic design requires specialist geotechnical and structural evidence. No invented capacity or universal safety factors."
+    }
+  ]
+}

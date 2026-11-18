@@ -428,6 +428,9 @@ SLOTS: dict[str, Slot] = {
              is_fact=True),
         Slot("children_own_rooms", T.BEDROOMS_BATHROOMS, "Each child has their own bedroom",
              "Should each child have their own bedroom?", _bool("children_own_rooms")),
+        Slot("elders_own_rooms", T.MULTIGENERATIONAL, "Older relatives each have their own bedroom",
+             "Should older relatives each have their own bedroom, or share?",
+             _bool("elders_own_rooms")),
         Slot("elder_step_free", T.ACCESSIBILITY, "Older relative must avoid stairs",
              "Does your older relative need to avoid stairs?", _bool("elder_step_free"),
              is_fact=True),
@@ -742,6 +745,11 @@ OPPORTUNISTIC: dict[str, Parser] = {
     "cars": lambda t: {"cars": n} if (n := p.count_of(t, r"cars?")) is not None else {},
     "lift": lambda t: {"lift": True} if re.search(r"\b(need|want) (?:a )?(lift|elevator)",
                                                   t, re.I) else {},
+    "elders_own_rooms": lambda t: (
+        {"elders_own_rooms": False}
+        if re.search(r"\b(grandparents?|elders?|they)\b.*\bshar", t, re.I)
+        else {}
+    ),
 }  # fmt: skip
 
 
@@ -762,5 +770,8 @@ def needed_bedrooms(v: Values) -> int | None:
     children = v.get("children") or 0
     own = v.get("children_own_rooms")
     kids = children if own is not False else math.ceil(children / 2)
+    elders = v.get("elders") or 0
+    elders_own = v.get("elders_own_rooms")
+    elders_need = elders if elders_own is not False else math.ceil(elders / 2)
     guest = 1 if v.get("guest_accommodation") == "room" else 0
-    return max(1, math.ceil(v["adults"] / 2)) + kids + (v.get("elders") or 0) + guest
+    return max(1, math.ceil(v["adults"] / 2)) + kids + elders_need + guest

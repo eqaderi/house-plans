@@ -1,0 +1,202 @@
+{
+  "native_reader": "GNU LibreDWG dwgread 0.14",
+  "comparison_reader": "ODA 27.9.0.0 plus ezdxf",
+  "checks": [
+    {
+      "file": "seperated.dwg",
+      "native_point_count": 6,
+      "oda_point_count": 6,
+      "same_entity_handles": true,
+      "max_coordinate_component_difference_source_units": 9.313225746154785e-10,
+      "all_points_agree_within_1e-8": true
+    },
+    {
+      "file": "elevation.dwg",
+      "native_point_count": 21,
+      "oda_point_count": 21,
+      "same_entity_handles": true,
+      "max_coordinate_component_difference_source_units": 9.313225746154785e-10,
+      "all_points_agree_within_1e-8": true
+    }
+  ],
+  "metadata": [
+    {
+      "file": "seperated.dwg",
+      "geodata_objects": [],
+      "class_names": [
+        "ACDBDICTIONARYWDFLT",
+        "VISUALSTYLE",
+        "MATERIAL",
+        "SCALE",
+        "TABLESTYLE",
+        "MLEADERSTYLE",
+        "SUN",
+        "DICTIONARYVAR",
+        "CELLSTYLEMAP",
+        "ACDBSECTIONVIEWSTYLE",
+        "ACDBDETAILVIEWSTYLE",
+        "SORTENTSTABLE"
+      ],
+      "header_location": {
+        "LATITUDE": 37.795,
+        "LONGITUDE": -122.394,
+        "NORTHDIRECTION": 0.0,
+        "TIMEZONE": -8000,
+        "INSUNITS": 6
+      },
+      "summary_info": {
+        "TITLE": "",
+        "SUBJECT": "",
+        "AUTHOR": "",
+        "KEYWORDS": "",
+        "COMMENTS": "",
+        "LASTSAVEDBY": "13-33",
+        "REVISIONNUMBER": "",
+        "HYPERLINKBASE": "",
+        "TDINDWG": [
+          0,
+          843001
+        ],
+        "TDCREATE": [
+          2453737,
+          30600000
+        ],
+        "TDUPDATE": [
+          2461312,
+          52247000
+        ],
+        "unknown1": 0,
+        "unknown2": 0
+      },
+      "object_type_counts": {
+        "BLOCK_CONTROL": 1,
+        "LAYER_CONTROL": 1,
+        "STYLE_CONTROL": 1,
+        "LTYPE_CONTROL": 1,
+        "VIEW_CONTROL": 1,
+        "UCS_CONTROL": 1,
+        "VPORT_CONTROL": 1,
+        "APPID_CONTROL": 1,
+        "DIMSTYLE_CONTROL": 1,
+        "DICTIONARY": 19,
+        "DICTIONARYWDFLT": 1,
+        "PLACEHOLDER": 1,
+        "LAYER": 1,
+        "STYLE": 2,
+        "APPID": 6,
+        "LTYPE": 11,
+        "MLINESTYLE": 1,
+        "BLOCK_HEADER": 3,
+        "BLOCK": 3,
+        "ENDBLK": 3,
+        "LAYOUT": 3,
+        "DIMSTYLE": 2,
+        "VPORT": 1,
+        "VISUALSTYLE": 24,
+        "MATERIAL": 3,
+        "SCALE": 17,
+        "TABLESTYLE": 1,
+        "MLEADERSTYLE": 1,
+        "SUN": 1,
+        "POINT": 6,
+        "MTEXT": 6,
+        "DICTIONARYVAR": 7,
+        "SECTIONVIEWSTYLE": 1,
+        "DETAILVIEWSTYLE": 1,
+        "XRECORD": 2,
+        "LWPOLYLINE": 3,
+        "SORTENTSTABLE": 1
+      },
+      "points_with_extended_data": [],
+      "points_with_extension_dictionary": []
+    },
+    {
+      "file": "elevation.dwg",
+      "geodata_objects": [],
+      "class_names": [
+        "ACDBDICTIONARYWDFLT",
+        "VISUALSTYLE",
+        "MATERIAL",
+        "SCALE",
+        "TABLESTYLE",
+        "MLEADERSTYLE",
+        "SUN",
+        "DICTIONARYVAR",
+        "CELLSTYLEMAP"
+      ],
+      "header_location": {
+        "LATITUDE": 37.795,
+        "LONGITUDE": -122.394,
+        "NORTHDIRECTION": 0.0,
+        "TIMEZONE": -8000,
+        "INSUNITS": 6
+      },
+      "summary_info": {
+        "TITLE": "",
+        "SUBJECT": "",
+        "AUTHOR": "",
+        "KEYWORDS": "",
+        "COMMENTS": "",
+        "LASTSAVEDBY": "u0_a321",
+        "REVISIONNUMBER": "",
+        "HYPERLINKBASE": "",
+        "TDINDWG": [
+          0,
+          0
+        ],
+        "TDCREATE": [
+          2453737,
+          30600000
+        ],
+        "TDUPDATE": [
+          2455188,
+          52200000
+        ],
+        "unknown1": 0,
+        "unknown2": 0
+      },
+      "object_type_counts": {
+        "BLOCK_CONTROL": 1,
+        "LAYER_CONTROL": 1,
+        "STYLE_CONTROL": 1,
+        "LTYPE_CONTROL": 1,
+        "VIEW_CONTROL": 1,
+        "UCS_CONTROL": 1,
+        "VPORT_CONTROL": 1,
+        "APPID_CONTROL": 1,
+        "DIMSTYLE_CONTROL": 1,
+        "DICTIONARY": 39,
+        "DICTIONARYWDFLT": 1,
+        "PLACEHOLDER": 1,
+        "LAYER": 1,
+        "STYLE": 2,
+        "APPID": 3,
+        "LTYPE": 11,
+        "MLINESTYLE": 1,
+        "BLOCK_HEADER": 3,
+        "BLOCK": 3,
+        "ENDBLK": 3,
+        "LAYOUT": 3,
+        "DIMSTYLE": 2,
+        "VPORT": 1,
+        "VISUALSTYLE": 24,
+        "MATERIAL": 3,
+        "SCALE": 17,
+        "TABLESTYLE": 1,
+        "MLEADERSTYLE": 1,
+        "SUN": 1,
+        "POINT": 21,
+        "MTEXT": 21,
+        "DICTIONARYVAR": 4,
+        "XRECORD": 26,
+        "CELLSTYLEMAP": 1
+      },
+      "points_with_extended_data": [],
+      "points_with_extension_dictionary": []
+    }
+  ],
+  "CRS_assigned": false,
+  "coordinate_frame": "SOURCE",
+  "coordinate_units": "m declared by INSUNITS, not human-confirmed",
+  "polyline_elevation_note": "Polyline elevation is the CAD entity elevation, not a ground spot measurement at each vertex."
+}

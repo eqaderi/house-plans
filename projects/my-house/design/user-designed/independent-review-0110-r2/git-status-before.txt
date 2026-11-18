@@ -1,0 +1,60 @@
+ M AGENTS.md
+ M config/project.json
+ M docs/STATUS.md
+ M docs/architectural-design-workflow.md
+ M docs/design-intelligence-brief.md
+ M docs/session-handoff.md
+ M registers/active-revision.json
+ M registers/sources.json
+ M scripts/architecture_snapshot.py
+ M scripts/render_slope_concepts.py
+ M scripts/review_connected_family.py
+ M tests/test_architecture_snapshot.py
+?? docs/agents/
+?? docs/decisions/0096-slope-concepts-r2-review.md
+?? docs/decisions/0097-construction-readiness-audit.md
+?? docs/decisions/0098-owner-layout-corrections.md
+?? docs/decisions/0099-owner-stack-and-arrival-corrections.md
+?? docs/decisions/0100-owner-privacy-wudu-and-dimension-review.md
+?? docs/decisions/0101-owner-options-and-buildability-review.md
+?? docs/decisions/0102-family-use-and-growing-children-review.md
+?? docs/decisions/0103-complete-owner-review-and-two-alternatives.md
+?? docs/decisions/0104-upper-west-comfort-storage-and-secure-arrival.md
+?? docs/decisions/0105-compact-spaces-flat-gardens-and-security-review.md
+?? docs/decisions/0109-fundamental-family-redesign.md
+?? docs/evidence/owner-review-0105-research.md
+?? docs/evidence/owner-review-0105-security-review.md
+?? docs/evidence/owner-review-0105-structural-review.md
+?? docs/history/owner-review-before-0109/
+?? docs/owner-review-0103-checklist.md
+?? docs/owner-review-0104-checklist.md
+?? docs/owner-review-0105-checklist.md
+?? docs/owner-review-0106-checklist.md
+?? docs/owner-review-0109-checklist.md
+?? scripts/audit_construction_coordination.py
+?? scripts/explain_garden_levels_0105.py
+?? scripts/package_redesign_0109_pdf.py
+?? scripts/redesign_house_0109.py
+?? scripts/render_owner_layout_0098.py
+?? scripts/render_owner_layout_0099.py
+?? scripts/render_owner_layout_0100.py
+?? scripts/render_owner_layout_0101.py
+?? scripts/render_owner_layout_0102.py
+?? scripts/render_owner_layout_0103.py
+?? scripts/render_owner_layout_0104.py
+?? scripts/render_owner_layout_0105.py
+?? scripts/review_family_use_0102.py
+?? scripts/review_owner_layout_0103.py
+?? scripts/review_owner_layout_0104.py
+?? scripts/review_owner_layout_0105.py
+?? scripts/review_structure_0105.py
+?? scripts/revise_owner_layout_0098.py
+?? scripts/revise_owner_layout_0099.py
+?? scripts/revise_owner_layout_0100.py
+?? scripts/revise_owner_layout_0101.py
+?? scripts/revise_owner_layout_0102.py
+?? scripts/revise_owner_layout_0103.py
+?? scripts/revise_owner_layout_0104.py
+?? scripts/revise_owner_layout_0105.py
+?? scripts/revise_slope_concepts.py
+?? scripts/simulate_family_use_0102.py

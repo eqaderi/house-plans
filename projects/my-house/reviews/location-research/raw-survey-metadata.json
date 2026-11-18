@@ -1,0 +1,325 @@
+{
+  "scope": "Read-only raw CAD metadata/text inspection; no CRS assignment or site confirmation.",
+  "files": [
+    {
+      "file": "projects/my-house/surveys/seperated.dwg",
+      "sha256": "27624ba14003e3d898143a9d86985d50d3d7098db0a45b94ae2dd999571519ed",
+      "original_unchanged": true,
+      "converter_version": "27.9.0.0",
+      "texts": [
+        {
+          "layout": "Model",
+          "type": "MTEXT",
+          "handle": "6A",
+          "text": "Pt1"
+        },
+        {
+          "layout": "Model",
+          "type": "MTEXT",
+          "handle": "6C",
+          "text": "Pt2"
+        },
+        {
+          "layout": "Model",
+          "type": "MTEXT",
+          "handle": "6E",
+          "text": "Pt3"
+        },
+        {
+          "layout": "Model",
+          "type": "MTEXT",
+          "handle": "70",
+          "text": "Pt4"
+        },
+        {
+          "layout": "Model",
+          "type": "MTEXT",
+          "handle": "72",
+          "text": "Pt5"
+        },
+        {
+          "layout": "Model",
+          "type": "MTEXT",
+          "handle": "74",
+          "text": "Pt6"
+        }
+      ],
+      "coordinate_headers": {
+        "$INSBASE": "(0.0, 0.0, 0.0)",
+        "$UCSBASE": "",
+        "$UCSNAME": "",
+        "$UCSORG": "(0.0, 0.0, 0.0)",
+        "$UCSXDIR": "(1.0, 0.0, 0.0)",
+        "$UCSYDIR": "(0.0, 1.0, 0.0)",
+        "$UCSORTHOREF": "",
+        "$UCSORTHOVIEW": "0",
+        "$UCSORGTOP": "(0.0, 0.0, 0.0)",
+        "$UCSORGBOTTOM": "(0.0, 0.0, 0.0)",
+        "$UCSORGLEFT": "(0.0, 0.0, 0.0)",
+        "$UCSORGRIGHT": "(0.0, 0.0, 0.0)",
+        "$UCSORGFRONT": "(0.0, 0.0, 0.0)",
+        "$UCSORGBACK": "(0.0, 0.0, 0.0)",
+        "$PUCSBASE": "",
+        "$PUCSNAME": "",
+        "$PUCSORG": "(0.0, 0.0, 0.0)",
+        "$PUCSXDIR": "(1.0, 0.0, 0.0)",
+        "$PUCSYDIR": "(0.0, 1.0, 0.0)",
+        "$PUCSORTHOREF": "",
+        "$PUCSORTHOVIEW": "0",
+        "$PUCSORGTOP": "(0.0, 0.0, 0.0)",
+        "$PUCSORGBOTTOM": "(0.0, 0.0, 0.0)",
+        "$PUCSORGLEFT": "(0.0, 0.0, 0.0)",
+        "$PUCSORGRIGHT": "(0.0, 0.0, 0.0)",
+        "$PUCSORGFRONT": "(0.0, 0.0, 0.0)",
+        "$PUCSORGBACK": "(0.0, 0.0, 0.0)",
+        "$PINSBASE": "(0.0, 0.0, 0.0)",
+        "$INSUNITS": "6",
+        "$LATITUDE": "37.795",
+        "$LONGITUDE": "-122.394",
+        "$NORTHDIRECTION": "0.0"
+      },
+      "object_types": {
+        "DICTIONARY": 19,
+        "SUN": 1,
+        "XRECORD": 3,
+        "ACDBDICTIONARYWDFLT": 1,
+        "SORTENTSTABLE": 1,
+        "ACDBDETAILVIEWSTYLE": 1,
+        "LAYOUT": 3,
+        "MATERIAL": 3,
+        "MLEADERSTYLE": 1,
+        "MLINESTYLE": 1,
+        "ACDBPLACEHOLDER": 1,
+        "SCALE": 17,
+        "ACDBSECTIONVIEWSTYLE": 1,
+        "TABLESTYLE": 1,
+        "VISUALSTYLE": 24,
+        "DICTIONARYVAR": 7,
+        "CELLSTYLEMAP": 1
+      },
+      "root_dictionary_keys": [
+        "ACAD_CIP_PREVIOUS_PRODUCT_INFO",
+        "ACAD_COLOR",
+        "ACAD_DETAILVIEWSTYLE",
+        "ACAD_GROUP",
+        "ACAD_LAYOUT",
+        "ACAD_MATERIAL",
+        "ACAD_MLEADERSTYLE",
+        "ACAD_MLINESTYLE",
+        "ACAD_PLOTSETTINGS",
+        "ACAD_PLOTSTYLENAME",
+        "ACAD_SCALELIST",
+        "ACAD_SECTIONVIEWSTYLE",
+        "ACAD_TABLESTYLE",
+        "ACAD_VISUALSTYLE",
+        "AcDbVariableDictionary",
+        "ACDB_RECOMPOSE_DATA"
+      ],
+      "geodata": []
+    },
+    {
+      "file": "projects/my-house/surveys/elevation.dwg",
+      "sha256": "9689880c47d9d0780089c5d4077f9396f5c29a2feeb298fafb86840bbae02f02",
+      "original_unchanged": true,
+      "converter_version": "27.9.0.0",
+      "texts": [
+        {
+          "layout": "Model",
+          "type": "MTEXT",
+          "handle": "6A",
+          "text": "Pt1\n1664.884"
+        },
+        {
+          "layout": "Model",
+          "type": "MTEXT",
+          "handle": "6C",
+          "text": "Pt2\n1665.529"
+        },
+        {
+          "layout": "Model",
+          "type": "MTEXT",
+          "handle": "6E",
+          "text": "Pt3\n1665.697"
+        },
+        {
+          "layout": "Model",
+          "type": "MTEXT",
+          "handle": "70",
+          "text": "Pt4\n1665.648"
+        },
+        {
+          "layout": "Model",
+          "type": "MTEXT",
+          "handle": "72",
+          "text": "Pt5\n1669.394"
+        },
+        {
+          "layout": "Model",
+          "type": "MTEXT",
+          "handle": "74",
+          "text": "Pt6\n1669.654"
+        },
+        {
+          "layout": "Model",
+          "type": "MTEXT",
+          "handle": "76",
+          "text": "Pt7\n1669.490"
+        },
+        {
+          "layout": "Model",
+          "type": "MTEXT",
+          "handle": "78",
+          "text": "Pt8\n1667.925"
+        },
+        {
+          "layout": "Model",
+          "type": "MTEXT",
+          "handle": "7A",
+          "text": "Pt9\n1669.952"
+        },
+        {
+          "layout": "Model",
+          "type": "MTEXT",
+          "handle": "7C",
+          "text": "Pt10\n1673.050"
+        },
+        {
+          "layout": "Model",
+          "type": "MTEXT",
+          "handle": "7E",
+          "text": "Pt11\n1672.913"
+        },
+        {
+          "layout": "Model",
+          "type": "MTEXT",
+          "handle": "80",
+          "text": "Pt12\n1672.744"
+        },
+        {
+          "layout": "Model",
+          "type": "MTEXT",
+          "handle": "82",
+          "text": "Pt13\n1674.738"
+        },
+        {
+          "layout": "Model",
+          "type": "MTEXT",
+          "handle": "84",
+          "text": "Pt14\n1674.855"
+        },
+        {
+          "layout": "Model",
+          "type": "MTEXT",
+          "handle": "86",
+          "text": "Pt15\n1674.239"
+        },
+        {
+          "layout": "Model",
+          "type": "MTEXT",
+          "handle": "88",
+          "text": "Pt16\n1677.438"
+        },
+        {
+          "layout": "Model",
+          "type": "MTEXT",
+          "handle": "8A",
+          "text": "Pt17\n1677.805"
+        },
+        {
+          "layout": "Model",
+          "type": "MTEXT",
+          "handle": "8C",
+          "text": "Pt18\n1674.675"
+        },
+        {
+          "layout": "Model",
+          "type": "MTEXT",
+          "handle": "8E",
+          "text": "Pt19\n1677.613"
+        },
+        {
+          "layout": "Model",
+          "type": "MTEXT",
+          "handle": "90",
+          "text": "Pt20\n1677.632"
+        },
+        {
+          "layout": "Model",
+          "type": "MTEXT",
+          "handle": "92",
+          "text": "نقطه مبنا\n1677.462"
+        }
+      ],
+      "coordinate_headers": {
+        "$INSBASE": "(0.0, 0.0, 0.0)",
+        "$UCSBASE": "",
+        "$UCSNAME": "",
+        "$UCSORG": "(0.0, 0.0, 0.0)",
+        "$UCSXDIR": "(1.0, 0.0, 0.0)",
+        "$UCSYDIR": "(0.0, 1.0, 0.0)",
+        "$UCSORTHOREF": "",
+        "$UCSORTHOVIEW": "0",
+        "$UCSORGTOP": "(0.0, 0.0, 0.0)",
+        "$UCSORGBOTTOM": "(0.0, 0.0, 0.0)",
+        "$UCSORGLEFT": "(0.0, 0.0, 0.0)",
+        "$UCSORGRIGHT": "(0.0, 0.0, 0.0)",
+        "$UCSORGFRONT": "(0.0, 0.0, 0.0)",
+        "$UCSORGBACK": "(0.0, 0.0, 0.0)",
+        "$PUCSBASE": "",
+        "$PUCSNAME": "",
+        "$PUCSORG": "(0.0, 0.0, 0.0)",
+        "$PUCSXDIR": "(1.0, 0.0, 0.0)",
+        "$PUCSYDIR": "(0.0, 1.0, 0.0)",
+        "$PUCSORTHOREF": "",
+        "$PUCSORTHOVIEW": "0",
+        "$PUCSORGTOP": "(0.0, 0.0, 0.0)",
+        "$PUCSORGBOTTOM": "(0.0, 0.0, 0.0)",
+        "$PUCSORGLEFT": "(0.0, 0.0, 0.0)",
+        "$PUCSORGRIGHT": "(0.0, 0.0, 0.0)",
+        "$PUCSORGFRONT": "(0.0, 0.0, 0.0)",
+        "$PUCSORGBACK": "(0.0, 0.0, 0.0)",
+        "$PINSBASE": "(0.0, 0.0, 0.0)",
+        "$INSUNITS": "6",
+        "$LATITUDE": "37.795",
+        "$LONGITUDE": "-122.394",
+        "$NORTHDIRECTION": "0.0"
+      },
+      "object_types": {
+        "DICTIONARY": 15,
+        "SUN": 1,
+        "ACDBDICTIONARYWDFLT": 1,
+        "XRECORD": 1,
+        "ACDBDETAILVIEWSTYLE": 1,
+        "LAYOUT": 3,
+        "MATERIAL": 3,
+        "MLEADERSTYLE": 1,
+        "MLINESTYLE": 1,
+        "ACDBPLACEHOLDER": 1,
+        "SCALE": 17,
+        "ACDBSECTIONVIEWSTYLE": 1,
+        "TABLESTYLE": 1,
+        "VISUALSTYLE": 24,
+        "DICTIONARYVAR": 6,
+        "CELLSTYLEMAP": 1
+      },
+      "root_dictionary_keys": [
+        "ACAD_DETAILVIEWSTYLE",
+        "ACAD_GROUP",
+        "ACAD_LAYOUT",
+        "ACAD_MATERIAL",
+        "ACAD_MLEADERSTYLE",
+        "ACAD_MLINESTYLE",
+        "ACAD_PLOTSETTINGS",
+        "ACAD_PLOTSTYLENAME",
+        "ACAD_SCALELIST",
+        "ACAD_SECTIONVIEWSTYLE",
+        "ACAD_TABLESTYLE",
+        "ACAD_VISUALSTYLE",
+        "AcDbVariableDictionary",
+        "ACDB_RECOMPOSE_DATA",
+        "ACAD_COLOR"
+      ],
+      "geodata": []
+    }
+  ]
+}

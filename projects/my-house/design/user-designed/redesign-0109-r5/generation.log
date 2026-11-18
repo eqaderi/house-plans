@@ -1,0 +1,11 @@
+[('A', {'upper': 152.74, 'lower': 204.01, 'road': 116.1}), ('B', {'upper': 196.07, 'lower': 183.66, 'road': 116.1}), ('C', {'upper': 127.73, 'lower': 229.47, 'road': 94.36})]
+A 241 checks; failures []
+B 280 checks; failures []
+C 220 checks; failures []
+Build A vehicle trials / schedules
+Rendered A 12 total pages
+Build B vehicle trials / schedules
+Rendered B 27 total pages
+Build C vehicle trials / schedules
+Rendered C 39 total pages
+BUILT outputs/redesign-0109-r5 39 PNG / SVG sheets 9 reopened CAD plans

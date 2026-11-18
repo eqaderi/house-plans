@@ -1,0 +1,165 @@
+{
+  "project_id": "my-house",
+  "provenance": {
+    "created_at": "2026-10-20T10:17:52.647001Z",
+    "created_by": {
+      "display_name": null,
+      "id": "codex",
+      "kind": "agent",
+      "model": null,
+      "provider": null
+    },
+    "inputs": [],
+    "method": "owner_statement",
+    "notes": null,
+    "tool": "house-ai statement add",
+    "tool_version": null
+  },
+  "schema_version": "0.1.0",
+  "statements": [
+    {
+      "channel": "chat with agent:claude-code, 2026-10-17",
+      "id": "stmt-001",
+      "pending_confirmation": "UTM zone, hemisphere (N/S) and horizontal datum/EPSG are still unknown: when known, house-ai site confirm my-house --confirmer <you> --epsg <code>. UTM is in metres, so the drawing unit can be confirmed now with --units m",
+      "recorded_at": "2026-10-17T09:42:04.832302Z",
+      "recorded_by": {
+        "display_name": null,
+        "id": "claude-code",
+        "kind": "agent",
+        "model": null,
+        "provider": null
+      },
+      "stated_by": "owner",
+      "subject": "horizontal_crs",
+      "words": "The survey uses UTM coordinates."
+    },
+    {
+      "channel": "chat with agent:claude-code, 2026-10-17",
+      "id": "stmt-002",
+      "pending_confirmation": "house-ai site confirm my-house --confirmer <you> --units m --elevation-units m (which sea-level datum is still unknown)",
+      "recorded_at": "2026-10-17T09:42:05.307494Z",
+      "recorded_by": {
+        "display_name": null,
+        "id": "claude-code",
+        "kind": "agent",
+        "model": null,
+        "provider": null
+      },
+      "stated_by": "owner",
+      "subject": "elevation_units",
+      "words": "The elevation values are in METRES ABOVE SEA LEVEL."
+    },
+    {
+      "channel": "chat with agent:claude-code, 2026-10-17",
+      "id": "stmt-003",
+      "pending_confirmation": null,
+      "recorded_at": "2026-10-17T09:42:05.779164Z",
+      "recorded_by": {
+        "display_name": null,
+        "id": "claude-code",
+        "kind": "agent",
+        "model": null,
+        "provider": null
+      },
+      "stated_by": "owner",
+      "subject": "relief",
+      "words": "The approximately 12–12.5 metre elevation difference is CORRECT."
+    },
+    {
+      "channel": "chat with agent:claude-code, 2026-10-17",
+      "id": "stmt-004",
+      "pending_confirmation": null,
+      "recorded_at": "2026-10-17T09:42:06.260605Z",
+      "recorded_by": {
+        "display_name": null,
+        "id": "claude-code",
+        "kind": "agent",
+        "model": null,
+        "provider": null
+      },
+      "stated_by": "owner",
+      "subject": "slope",
+      "words": "My land is genuinely steep."
+    },
+    {
+      "channel": "chat with agent:claude-code, 2026-10-17",
+      "id": "stmt-005",
+      "pending_confirmation": null,
+      "recorded_at": "2026-10-17T09:42:06.743463Z",
+      "recorded_by": {
+        "display_name": null,
+        "id": "claude-code",
+        "kind": "agent",
+        "model": null,
+        "provider": null
+      },
+      "stated_by": "owner",
+      "subject": "still_unknown",
+      "words": "UTM zone is still unknown. Horizontal datum / EPSG is still unknown. The precise vertical datum is still unknown."
+    },
+    {
+      "channel": "chat, 2026-10-20",
+      "id": "stmt-006",
+      "pending_confirmation": "Survey CRS or independent location anchor still needed; this request does not confirm site facts or approve a gate.",
+      "recorded_at": "2026-10-20T09:31:57.331390Z",
+      "recorded_by": {
+        "display_name": null,
+        "id": "codex",
+        "kind": "agent",
+        "model": null,
+        "provider": null
+      },
+      "stated_by": "owner",
+      "subject": "environmental_research_request",
+      "words": "for the location you can exactly find out where it is by the survey fils since it includes the coordinats, you use taht to gathere all the infor you need for that area online from sun dirction to sun light to wind climate or other things which I don't know bu yo difinetaly know"
+    },
+    {
+      "channel": "chat, 2026-10-20",
+      "id": "stmt-007",
+      "pending_confirmation": "Survey CRS or independent location anchor still needed; this request does not confirm site facts or approve a gate.",
+      "recorded_at": "2026-10-20T09:31:58.439834Z",
+      "recorded_by": {
+        "display_name": null,
+        "id": "codex",
+        "kind": "agent",
+        "model": null,
+        "provider": null
+      },
+      "stated_by": "owner",
+      "subject": "location_evidence_followup",
+      "words": "look closly, one of them at least shold tell you where exatly is it"
+    },
+    {
+      "channel": "chat, 2026-10-20; homeowner relaying the survey creator",
+      "id": "stmt-008",
+      "pending_confirmation": "Need the displayed coordinate labels/values or a surveyor CRS declaration to distinguish drawing X/Y/Z from latitude/longitude. No site facts confirmed by the agent.",
+      "recorded_at": "2026-10-20T10:13:53.198830Z",
+      "recorded_by": {
+        "display_name": null,
+        "id": "codex",
+        "kind": "agent",
+        "model": null,
+        "provider": null
+      },
+      "stated_by": "owner",
+      "subject": "surveyor_coordinate_report",
+      "words": "I just talked to the guy who created these survey files. He has some equipment. He says these are UTM. And he says that the coordinates, the geographical coordinates of all points are in those files. He says, I use GNA cad on my Android phone and it shows it to me. So they must be there. Try and find out."
+    },
+    {
+      "channel": "chat, 2026-10-20; response to coordinate-display clarification",
+      "id": "stmt-009",
+      "pending_confirmation": "Owner offered an independent map point; no map coordinates or link supplied yet. Approximate interior point supports location screening, not precise survey control or automatic CRS confirmation.",
+      "recorded_at": "2026-10-20T10:17:52.646569Z",
+      "recorded_by": {
+        "display_name": null,
+        "id": "codex",
+        "kind": "agent",
+        "model": null,
+        "provider": null
+      },
+      "stated_by": "owner",
+      "subject": "geographic_anchor_offer",
+      "words": "I don't have that file and I don't have that software. I don't have an Android phone, but I can give you the approximate, or I can give you a point on Google Map or somewhere where I am sure is inside the field. If I give you that, would it help you find the exact coordinates of all places or not?"
+    }
+  ]
+}

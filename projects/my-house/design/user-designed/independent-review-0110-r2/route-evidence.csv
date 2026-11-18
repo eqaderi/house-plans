@@ -1,0 +1,17 @@
+floor,id,length_m,disc_m,passed
+upper,Arrival to parents,2.58,0.85,True
+upper,Lift to pantry,3.63,0.85,True
+upper,Stair to kitchen north,7.71,0.85,True
+upper,Dining to east living,3.95126562002607,0.85,True
+upper,Same-floor wudu to prayer,18.55,0.6,True
+upper,Private bedroom to dressing aisle,2.4622144504490264,0.85,True
+upper,Private bedroom to ensuite,2.68,0.85,True
+upper,Main kitchen aisle to fridge front,0.6363961030678917,0.85,True
+lower,Stair to boys with both desks occupied,11.26,0.85,True
+lower,Stair to girls with both desks occupied,11.28,0.85,True
+lower,Bedrooms to laundry,3.18,0.85,True
+lower,Family hall to garden lounge,8.91,0.85,True
+lower,Guest to lift,19.45,0.85,True
+road,Car unload to lift,1.9780040444852482,0.85,True
+road,Car unload to main stair,2.9,0.85,True
+road,Plant replacement to garage,3.006659275674582,0.85,True

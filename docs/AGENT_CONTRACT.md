@@ -92,16 +92,17 @@ game engine may become a dependency of `domain`; each sits behind an adapter.
   file can *declare* them and only a human can *confirm* them (`site confirm`).
 - Raw CAD extraction stays in SOURCE coordinates and units; conversion to GRID
   metres and LOCAL frame is reversible (`domain/coordinates.py`).
-- **`projects/my-house/` facts:** The owner reported UTM coordinates, elevations
-  in metres above sea level, and a real ~12–12.5 m drop on genuinely steep land.
-  CAD extraction measures ~600 m² parcel area, ~21 m frontage on a ~9 m road,
-  and 27 elevation points (`seperated.dwg` + `elevation.dwg`). **Still
-  unverified:** exact UTM zone, hemisphere, horizontal datum/EPSG, vertical
-  datum, and formal legal boundary verification. Keep `my-house` in
+- **`projects/my-house/` facts:** Owner reports UTM coordinates, elevations in
+  metres above sea level and a real ~12–12.5 m drop on steep land. CAD gives
+  ~600 m² parcel, ~21 m frontage on a ~9 m road, 27 elevation points
+  (`seperated.dwg` + `elevation.dwg`). **Unverified:** UTM zone, hemisphere,
+  horizontal datum/EPSG, vertical datum, legal boundary. Keep it in
   `SITE_NEEDS_VERIFICATION` until the owner runs `site confirm` and approves the
-  site gate. Future designs on `my-house` must account for split-level layouts,
-  hillside construction, road-level parking/access, excavation, retaining walls,
-  drainage, and structure without assuming all 600 m² is buildable.
+  site gate. Designs must handle split levels, hillside structure, road-level
+  parking, excavation, retaining walls and drainage; not all 600 m² is buildable.
+- Before any `my-house` layout work, read
+  `projects/my-house/design/OWNER_DESIGN_RULES.md`. Each rule is a hard check:
+  never show a design that breaks one.
 
 ## 8. Workflow and human approval gates
 
@@ -177,6 +178,10 @@ Worked command examples: [AGENT_WORKFLOWS.md](AGENT_WORKFLOWS.md).
   with `workflow approve <p> plan --id <option> --version <n> --approver <name>`.
 - Report metrics with their status and infeasible strategies with reasons;
   never present one concept as "the answer".
+- Whenever you show the owner two or more options, include a comparison view:
+  a table of only what differs, plus the same floor of each option side by side
+  with differing rooms outlined (`OWNER_DESIGN_RULES.md` rule 8.5; reference
+  `projects/my-house/design/claude-c09/compare.py`).
 
 ## 10. Professional boundary, conventions, tests, and Git
 

@@ -9,6 +9,10 @@ Follow [docs/AGENT_CONTRACT.md](../../docs/AGENT_CONTRACT.md) (§3 one model,
 §9b plan concepts, §10 professional boundary). In every command,
 `agent:<tool>` is your own tool name: `claude-code`, `codex` or `gemini`.
 
+For `projects/my-house/`, read and obey
+[projects/my-house/design/OWNER_DESIGN_RULES.md](../../projects/my-house/design/OWNER_DESIGN_RULES.md)
+first; check every design against it before showing anything to the owner.
+
 ## Purpose
 Guide the agent through generating solver-backed, geometrically checked floor-plan concepts from an approved space program and site. The generator tries six massing strategies, reports why rejected strategies are infeasible, applies structured revision operations, and prepares concepts for the human plan gate.
 
@@ -28,6 +32,7 @@ Guide the agent through generating solver-backed, geometrically checked floor-pl
 - Stored plan versions (`artifacts/plan/...`), only after the site and program gates.
 - Per concept: `plan.json`, `plan.svg`, `metrics.json`, `violations.json`, `assumptions.json`, `explanation.md`.
 - `comparison.md` across concepts, including infeasible strategies with their reasons.
+- An owner-facing comparison view (my-house rule 8.5): a table of only what differs, plus the same floor of each concept side by side with differing rooms outlined. Reference: `projects/my-house/design/claude-c09/compare.py`.
 
 ## Exact commands
 

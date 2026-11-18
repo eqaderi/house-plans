@@ -1,0 +1,1082 @@
+schema_version: 0.1.0
+id: brief
+project_id: my-house
+household:
+- id: hh-adult-1
+  role: adult
+  label: Adult 1
+  age_years: null
+  needs: []
+- id: hh-adult-2
+  role: adult
+  label: Adult 2
+  age_years: null
+  needs: []
+- id: hh-child-1
+  role: child
+  label: Child 1
+  age_years: null
+  needs: []
+- id: hh-child-2
+  role: child
+  label: Child 2
+  age_years: null
+  needs: []
+- id: hh-child-3
+  role: child
+  label: Child 3
+  age_years: null
+  needs: []
+- id: hh-child-4
+  role: child
+  label: Child 4
+  age_years: null
+  needs: []
+- id: hh-elder-1
+  role: elder
+  label: Older relative 1
+  age_years: null
+  needs: []
+- id: hh-elder-2
+  role: elder
+  label: Older relative 2
+  age_years: null
+  needs: []
+facts:
+- id: ans-q-followup-household-round-1-1
+  topic: household
+  key: answer
+  statement: '1. a man, his wife, 2 dougters, 2 sons, possibly grandfather and grandmother
+
+    2. find out based on the first answer, just know people can share rooms
+
+    3. yes, yes'
+  value: null
+  status: preference
+  priority: null
+  source:
+    kind: owner_answer
+    ref: q-followup-household-round-1
+    interview_round: 1
+- id: ans-q-followup-household-round-2-19
+  topic: multigenerational
+  key: answer
+  statement: '1. they could be 0 to 18, boys already 10 years old, girls not born
+    yet
+
+    2. they could live there permenatnly and they can share a room
+
+    3. old parents or a family member with broken leg needs to avoid stairs.'
+  value: null
+  status: preference
+  priority: null
+  source:
+    kind: owner_answer
+    ref: q-followup-household-round-2
+    interview_round: 19
+- id: ans-q-followup-household-round-3-3
+  topic: bedrooms_bathrooms
+  key: answer
+  statement: '1 kids should share
+
+
+    2. when we have stairs it does not matter on which floor the bedroom is, access
+    is easy
+
+    3. shared'
+  value: null
+  status: preference
+  priority: null
+  source:
+    kind: owner_answer
+    ref: q-followup-household-round-3
+    interview_round: 3
+- id: ans-followup-cooking-q-followup-access-kitchen-round-4-5
+  topic: accessibility
+  key: answer
+  statement: '1. I meant lift
+
+    2. eclosed with 2 openeing or 2 walkthoughs in 2 ends or 2 sides of it, or open
+    with walls reaching the cieling'
+  value: null
+  status: preference
+  priority: null
+  source:
+    kind: owner_answer
+    ref: followup-cooking-q-followup-access-kitchen-round-4
+    interview_round: 5
+- id: ans-followup-cooking-q-followup-kitchen-round-5-7
+  topic: cooking
+  key: answer
+  statement: '1. prefereably doorles, unless you see a need of one of them
+
+    2. yes. it is importatnt to keep the smell out
+
+    3. yes'
+  value: null
+  status: preference
+  priority: null
+  source:
+    kind: owner_answer
+    ref: followup-cooking-q-followup-kitchen-round-5
+    interview_round: 7
+- id: ans-followup-bedrooms_bathrooms-q-followup-bathrooms-dining-roun
+  topic: bedrooms_bathrooms
+  key: answer
+  statement: 'the master bedroom shojld have its own bathroom, other room can use
+    the shared ones
+
+
+    2. if we have 2 floors each one idealy should have one
+
+    3. in daily life they can eat at kitchen, but when guests come or if they feel
+    like it they can eat in a dining area near kitchen'
+  value: null
+  status: preference
+  priority: null
+  source:
+    kind: owner_answer
+    ref: followup-bedrooms_bathrooms-q-followup-bathrooms-dining-round-6
+    interview_round: 8
+- id: ans-followup-vehicles-q-followup-access-parking-round-7-9
+  topic: vehicles
+  key: answer
+  statement: '1. I prefer full bathroom with a shower, but I will trust your judgemnt
+    to tell us if that is nesseiry or not becaue I have zero experience in this regard
+
+    2. open to more than one for sure
+
+    3. no real perference on how the garage and entrance should be, but for cars it
+    should hold 2 cars comfortably and must be  garage that can  closed, not open.
+    we can have extra open parking or car pot too, or a multipurpose area that can
+    be used for cars, we can, not nessasiry'
+  value: null
+  status: preference
+  priority: null
+  source:
+    kind: owner_answer
+    ref: followup-vehicles-q-followup-access-parking-round-7
+    interview_round: 9
+- id: ans-followup-outdoor_living-q-followup-outdoors-budget-round-8-1
+  topic: outdoor_living
+  key: answer
+  statement: '1. large suv and a medium size sedan
+
+    2. not decided
+
+    3. garden, childern play area and terrace for meal or nitght time family or with
+    guest time spending'
+  value: null
+  status: preference
+  priority: null
+  source:
+    kind: owner_answer
+    ref: followup-outdoor_living-q-followup-outdoors-budget-round-8
+    interview_round: 10
+- id: ans-followup-work_study-q-followup-brief-confirmation-round-9-11
+  topic: bedrooms_bathrooms
+  key: answer
+  statement: '1. yes
+
+    2. yes, father is a software engineer and a tech guy, quiet office woule be nice
+
+    3. yes for both'
+  value: null
+  status: preference
+  priority: null
+  source:
+    kind: owner_answer
+    ref: followup-work_study-q-followup-brief-confirmation-round-9
+    interview_round: 11
+- id: ans-followup-cultural_practices-q-followup-privacy-activities-ro
+  topic: long_term_guests
+  key: answer
+  statement: '1. not very often
+
+    2. somewhat important. I leave the second part ot you judgement but seems like
+    the answer is yes
+
+    3. a prayer area and worshop are nice to have'
+  value: null
+  status: preference
+  priority: null
+  source:
+    kind: owner_answer
+    ref: followup-cultural_practices-q-followup-privacy-activities-round
+    interview_round: 20
+- id: ans-followup-cultural_practices-q-followup-flexible-activities-r
+  topic: cultural_practices
+  key: answer
+  statement: '1. no perference
+
+    2. not sure, yes
+
+    3. yes'
+  value: null
+  status: preference
+  priority: null
+  source:
+    kind: owner_answer
+    ref: followup-cultural_practices-q-followup-flexible-activities-round
+    interview_round: 14
+- id: ans-followup-materials_style-q-followup-light-style-future-round
+  topic: materials_style
+  key: answer
+  statement: '1. possibily a mixture more towards modern. no prference, what works.
+
+    2. very important, light and view
+
+    3. complete'
+  value: null
+  status: preference
+  priority: null
+  source:
+    kind: owner_answer
+    ref: followup-materials_style-q-followup-light-style-future-round-12
+    interview_round: 15
+- id: ans-q-followup-gathering-priorities-round-13-16
+  topic: priorities
+  key: answer
+  statement: '1. provision for future is nice
+
+    2. 15 people
+
+    3. spacious living area, view, daylight, garden ...'
+  value: null
+  status: preference
+  priority: null
+  source:
+    kind: owner_answer
+    ref: q-followup-gathering-priorities-round-13
+    interview_round: 16
+- id: ans-followup-site_response-q-followup-hillside-sizing-climate-ro
+  topic: site_response
+  key: answer
+  statement: '1. we can compare, but when slope is too steep then we not not be able
+    to have flat areas. not sure
+
+    2. no particulare sizes in mind
+
+    3. in north wester iran in zagros mountains. yes'
+  value: null
+  status: preference
+  priority: null
+  source:
+    kind: owner_answer
+    ref: followup-site_response-q-followup-hillside-sizing-climate-round
+    interview_round: 17
+- id: ans-followup-site_response-q-followup-flat-outdoors-round-15-18
+  topic: priorities
+  key: answer
+  statement: I really perfer flat outdoors by retaining walls or excavation if possible
+  value: null
+  status: preference
+  priority: null
+  source:
+    kind: owner_answer
+    ref: followup-site_response-q-followup-flat-outdoors-round-15
+    interview_round: 18
+- id: ans-q-bathrooms-21
+  topic: bedrooms_bathrooms
+  key: answer
+  statement: I trust your judgment; let us go with the recommended 3 full bathrooms
+    plus powder room.
+  value: null
+  status: preference
+  priority: null
+  source:
+    kind: owner_answer
+    ref: q-bathrooms
+    interview_round: 21
+- id: ans-q-priorities-22
+  topic: priorities
+  key: answer
+  statement: After that, I have a question now for you. Looking at this, at this field,
+    I think everything is clear now for you. Considering the geometry, the topology,
+    the axis to outside the field, the sun, sunshine during the year, probably wind,
+    the climate, whatever the fuck, which I don't know right now. Where do you think
+    the building of the house should be placed? We have a lot of places. Which where
+    inside this whole area should that be, and why? What's the reason? And I really,
+    really like to have a garden, a place for my kids to be able to play. Something,
+    for example, when I look down the city, I would like to see big trees in front
+    of me. When the wind comes, I love the sound of the trees. When it rains, it's
+    really beautiful. And if we can make it level, not steps, or at least a few steps
+    for the garden. I'm saying steps because, you know, it's on a slope. That would
+    be absolutely perfect. But I don't know really, where do you think, considering
+    all of this, like an expert, what do you suggest the house should be? How much
+    should be the footprint? Should we build them on top of each other? Two floors
+    or one floor? Where should the garage be? Consider the slope. The slope, I think,
+    is a little bit too steep. So yeah, whatever answer you give me, if you can, please
+    do it in Persian. But what you're recording the project, it would be nice if it
+    would have been in English. So you can also talk to me in English, but I just
+    prefer Persian. So yeah.
+  value: null
+  status: preference
+  priority: null
+  source:
+    kind: owner_answer
+    ref: q-priorities
+    interview_round: 22
+- id: ans-q-living-23
+  topic: lifestyle
+  key: answer
+  statement: 'We''re going to build a plan on this field of mine. First of all, you
+    are Codex, so anything that you create, you then create it in a way that is recognizable.
+    Because I am probably going to create... I''m not even sure if that''s the best
+    thing. Maybe you tell me, but I''m going to use Claude, Gemini, and Codex for
+    this. And I think they are a bit different. Anyhow. So by looking at the field,
+    you can see that it goes from west to east. East is downhill, and we want our
+    house to look at east. But how the house is going to be oriented? It''s going
+    to be along the two borders, which go from west to east. Now if we do that, we''re
+    going to have a triangle left on the western side, where the southern part is,
+    the wide part of it, and that''s okay. We want to have our house in the north-west,
+    or near north-west. We probably are going to leave some of the area on the western
+    side for a, I don''t know, a little arrival place which is open, like a little
+    garden, but it''s not a garden. I don''t know what you call it in English, but
+    in Persian it''s called hayat. So find the equivalent for it. And then you enter
+    there. There is a door. There''s a door for the garage. You open it, the car goes
+    in. And there''s a door beside it. You open it. You''re in a perimeter where you
+    can then, with some stairs, go down to enter the house. And how I imagine this
+    is the garage, and the garage is going to be on the road level. It''s going to
+    be the top floor of this house. Probably we''re going to have a room there, like
+    a home office or something. We''re going to have possibly, not sure if it''s the
+    best place for the facilities, like a boiler, I don''t know, water purifier, things
+    like that, or electricity boxes. I''m not sure, but I think could be there. And
+    then from there you can go down with the stairs or with the lift to the upper
+    floor of this house. And yeah, then you can access the lower floor too beneath
+    it. But then we need this to be, like, stepped: garage, then the lower floor beneath
+    it. But this lower floor should be accessible from outside too. The entrance should
+    be accessible from outside. So we can excavate as we want, as much as it is needed.
+    There''s no problem. We can excavate all the way, all we want. We can even excavate
+    and reach United States of America from there. I have no restriction there. And
+    we can build retaining walls. I also don''t have any problem with that. So anyway,
+    from the road, the house is not going to be built alongside the road. The house
+    needs to be built alongside the field borders, which go from west to east or east
+    to west in north and south. And as we enter our field, we''re not going to enter
+    the building. We''re going to have a little bit of free space, which we''re going
+    to build a mosaic on it or whatever, or could be like concrete, whatever. Then
+    with stairs, we can go to the entrance of the house, or we can go direct without
+    stairs. We''re going to go into the garage. Inside the garage is the lift, and
+    probably inside stairs, which we can go, enter our house, and the same stair can
+    go down to the lower floor. Now, that''s what I imagine. And I want you to start
+    building that. If you have questions, you can ask me. And also, don''t build a
+    house which feels like a prison with long hallways. That is just not what I want.
+    I don''t want to have a lot of hallways. Open areas are better, but well, entrance
+    hallway, that''s a different thing. We probably need that. But overall, don''t
+    try to make a prison for me, or a school for me, or a university, where we have
+    a long hallway and then rooms everywhere, left and right. That''s not what I want.
+
+
+    I understand three levels: road-level garage at the top, the main entrance and
+    upper residential floor below it, then a lower residential floor. Is that correct?Yes,
+    three levels total
+
+
+    Which residential floor should contain the main living room and kitchen?Compare
+    both before deciding'
+  value: null
+  status: preference
+  priority: null
+  source:
+    kind: owner_answer
+    ref: q-living
+    interview_round: 23
+- id: ans-followup-site_response-q-followup-codex-c01-direction-25
+  topic: priorities
+  key: answer
+  statement: 'We''re going to build a plan on this field of mine. First of all, you
+    are Codex, so anything that you create, you then create it in a way that is recognizable.
+    Because I am probably going to create... I''m not even sure if that''s the best
+    thing. Maybe you tell me, but I''m going to use Claude, Gemini, and Codex for
+    this. And I think they are a bit different. Anyhow. So by looking at the field,
+    you can see that it goes from west to east. East is downhill, and we want our
+    house to look at east. But how the house is going to be oriented? It''s going
+    to be along the two borders, which go from west to east. Now if we do that, we''re
+    going to have a triangle left on the western side, where the southern part is,
+    the wide part of it, and that''s okay. We want to have our house in the north-west,
+    or near north-west. We probably are going to leave some of the area on the western
+    side for a, I don''t know, a little arrival place which is open, like a little
+    garden, but it''s not a garden. I don''t know what you call it in English, but
+    in Persian it''s called hayat. So find the equivalent for it. And then you enter
+    there. There is a door. There''s a door for the garage. You open it, the car goes
+    in. And there''s a door beside it. You open it. You''re in a perimeter where you
+    can then, with some stairs, go down to enter the house. And how I imagine this
+    is the garage, and the garage is going to be on the road level. It''s going to
+    be the top floor of this house. Probably we''re going to have a room there, like
+    a home office or something. We''re going to have possibly, not sure if it''s the
+    best place for the facilities, like a boiler, I don''t know, water purifier, things
+    like that, or electricity boxes. I''m not sure, but I think could be there. And
+    then from there you can go down with the stairs or with the lift to the upper
+    floor of this house. And yeah, then you can access the lower floor too beneath
+    it. But then we need this to be, like, stepped: garage, then the lower floor beneath
+    it. But this lower floor should be accessible from outside too. The entrance should
+    be accessible from outside. So we can excavate as we want, as much as it is needed.
+    There''s no problem. We can excavate all the way, all we want. We can even excavate
+    and reach United States of America from there. I have no restriction there. And
+    we can build retaining walls. I also don''t have any problem with that. So anyway,
+    from the road, the house is not going to be built alongside the road. The house
+    needs to be built alongside the field borders, which go from west to east or east
+    to west in north and south. And as we enter our field, we''re not going to enter
+    the building. We''re going to have a little bit of free space, which we''re going
+    to build a mosaic on it or whatever, or could be like concrete, whatever. Then
+    with stairs, we can go to the entrance of the house, or we can go direct without
+    stairs. We''re going to go into the garage. Inside the garage is the lift, and
+    probably inside stairs, which we can go, enter our house, and the same stair can
+    go down to the lower floor. Now, that''s what I imagine. And I want you to start
+    building that. If you have questions, you can ask me. And also, don''t build a
+    house which feels like a prison with long hallways. That is just not what I want.
+    I don''t want to have a lot of hallways. Open areas are better, but well, entrance
+    hallway, that''s a different thing. We probably need that. But overall, don''t
+    try to make a prison for me, or a school for me, or a university, where we have
+    a long hallway and then rooms everywhere, left and right. That''s not what I want.'
+  value: null
+  status: preference
+  priority: null
+  source:
+    kind: owner_answer
+    ref: followup-site_response-q-followup-codex-c01-direction
+    interview_round: 25
+- id: ans-followup-site_response-q-followup-codex-c01-levels-26
+  topic: levels
+  key: answer
+  statement: Yes, three levels total
+  value: null
+  status: preference
+  priority: null
+  source:
+    kind: owner_answer
+    ref: followup-site_response-q-followup-codex-c01-levels
+    interview_round: 26
+- id: ans-followup-site_response-q-followup-codex-c01-day-floor-27
+  topic: site_response
+  key: answer
+  statement: Compare both before deciding
+  value: null
+  status: preference
+  priority: null
+  source:
+    kind: owner_answer
+    ref: followup-site_response-q-followup-codex-c01-day-floor
+    interview_round: 27
+- id: ans-followup-priorities-q-followup-codex-c01-garden-28
+  topic: priorities
+  key: answer
+  statement: continue exactly from you were stopped, I gave you some info in the begining
+    and you. asked 2 questions which I answered. if you remmeber them or can access
+    good, if not tell me I will repeat. one more thing is try occupy as little as
+    you can from the filed for the builiding, we need a big garden hown the hill
+  value: null
+  status: preference
+  priority: null
+  source:
+    kind: owner_answer
+    ref: followup-priorities-q-followup-codex-c01-garden
+    interview_round: 28
+- id: ans-followup-site_response-q-followup-codex-c01-no-road-alignmen
+  topic: site_response
+  key: answer
+  statement: no road default layouts at all, no even one, for the main house
+  value: null
+  status: preference
+  priority: null
+  source:
+    kind: owner_answer
+    ref: followup-site_response-q-followup-codex-c01-no-road-alignment
+    interview_round: 29
+- id: ans-followup-room_relationships-q-followup-codex-c02-balcony-30
+  topic: outdoor_living
+  key: answer
+  statement: Okay, okay. Tell me in Persian, do you have a reason why this stacked?
+    I think it's a little bit too much towards east, but I probably am wrong. You
+    probably have a reason for that. Anyway, I want you to generate the house plan.
+    And remember, we need balcony on the upper floor, and preferably that balcony,
+    yeah. It can be the rooftop of the lower floor, or it can be just a balcony which
+    underneath it is nothing, and it will be like a shade for the lower floor too.
+    But anyway, go ahead and generate the house plan. So on the road level we have
+    the garage, and we have the lift and stairs that goes to the upper level of the
+    house, which actually is below the garage, and from there again goes to the lower
+    level, and it's like stepped towards east. Not east, actually northeast, but when
+    I'm saying east, I mean I'm talking about my field. And then from outside, you
+    should be able to... The upper floor of the house, which is beneath the garage,
+    should have an entrance to outside, for example towards east or south, where the
+    stairs outside can reach it. And, you know, I fucking don't know what the hell
+    you're gonna do, but come on, do that.
+  value: null
+  status: preference
+  priority: null
+  source:
+    kind: owner_answer
+    ref: followup-room_relationships-q-followup-codex-c02-balcony
+    interview_round: 30
+- id: ans-followup-room_relationships-q-followup-codex-c02-privacy-31
+  topic: priorities
+  key: answer
+  statement: Remember, we're not building a hospital with long hallways and rooms
+    left and right. It should be an open, cozy house with, yes, private rooms, and
+    that is all guaranteed, with privacy for people who go to toilet, with privacy
+    for people who are working in the kitchen, but still it should be open. We shouldn't
+    feel like a prison or a hospital or a school or something like that.
+  value: null
+  status: preference
+  priority: null
+  source:
+    kind: owner_answer
+    ref: followup-room_relationships-q-followup-codex-c02-privacy
+    interview_round: 31
+- id: f-accessibility
+  topic: accessibility
+  key: accessibility
+  statement: 'Accessibility: step free'
+  value: step_free
+  status: preference
+  priority: null
+  source:
+    kind: owner_answer
+    ref: confirmed:ans-q-followup-household-round-1-1
+    interview_round: 1
+- id: f-adults
+  topic: household
+  key: adults
+  statement: 'Adults: 2'
+  value: 2
+  status: verified_fact
+  priority: null
+  source:
+    kind: owner_answer
+    ref: confirmed:ans-q-followup-household-round-1-1
+    interview_round: 1
+- id: f-bathrooms
+  topic: bedrooms_bathrooms
+  key: bathrooms
+  statement: 'Bathrooms: 3'
+  value: 3
+  status: preference
+  priority: null
+  source:
+    kind: owner_answer
+    ref: confirmed:ans-q-bathrooms-21
+    interview_round: 21
+- id: f-bedrooms
+  topic: bedrooms_bathrooms
+  key: bedrooms
+  statement: 'Bedrooms: 4'
+  value: 4
+  status: preference
+  priority: should
+  source:
+    kind: owner_answer
+    ref: confirmed:ans-followup-work_study-q-followup-brief-confirmation-round-9-11
+    interview_round: 11
+- id: f-bedrooms_separate
+  topic: privacy
+  key: bedrooms_separate
+  statement: 'Bedrooms kept away from living areas: yes'
+  value: true
+  status: preference
+  priority: should
+  source:
+    kind: owner_answer
+    ref: confirmed:ans-followup-cultural_practices-q-followup-privacy-activities-ro
+    interview_round: 20
+- id: f-budget
+  topic: budget
+  key: budget
+  statement: 'Building budget: unknown / not decided'
+  value: null
+  status: unknown
+  priority: null
+  source:
+    kind: owner_answer
+    ref: ans-followup-outdoor_living-q-followup-outdoors-budget-round-8-1
+    interview_round: 10
+- id: f-cars
+  topic: vehicles
+  key: cars
+  statement: 'Cars to park: 2'
+  value: 2
+  status: preference
+  priority: must
+  source:
+    kind: owner_answer
+    ref: confirmed:ans-followup-vehicles-q-followup-access-parking-round-7-9
+    interview_round: 9
+- id: f-children
+  topic: household
+  key: children
+  statement: 'Children: 4'
+  value: 4
+  status: verified_fact
+  priority: null
+  source:
+    kind: owner_answer
+    ref: confirmed:ans-q-followup-household-round-1-1
+    interview_round: 1
+- id: f-children_own_rooms
+  topic: bedrooms_bathrooms
+  key: children_own_rooms
+  statement: 'Each child has their own bedroom: no'
+  value: false
+  status: preference
+  priority: null
+  source:
+    kind: owner_answer
+    ref: confirmed:ans-q-followup-household-round-3-3
+    interview_round: 3
+- id: f-cooking
+  topic: cooking
+  key: cooking
+  statement: 'How much you cook: frequent'
+  value: frequent
+  status: preference
+  priority: must
+  source:
+    kind: owner_answer
+    ref: confirmed:ans-followup-cooking-q-followup-kitchen-round-5-7
+    interview_round: 7
+- id: f-cross_ventilation
+  topic: natural_ventilation
+  key: cross_ventilation
+  statement: 'Cross-ventilation: yes'
+  value: true
+  status: preference
+  priority: null
+  source:
+    kind: owner_answer
+    ref: confirmed:ans-followup-site_response-q-followup-hillside-sizing-climate-ro
+    interview_round: 17
+- id: f-dining
+  topic: dining
+  key: dining
+  statement: 'Where everyday meals are eaten: kitchen'
+  value: kitchen
+  status: preference
+  priority: null
+  source:
+    kind: owner_answer
+    ref: confirmed:ans-followup-bedrooms_bathrooms-q-followup-bathrooms-dining-roun
+    interview_round: 8
+- id: f-elder_step_free
+  topic: accessibility
+  key: elder_step_free
+  statement: 'Older relative must avoid stairs: yes'
+  value: true
+  status: verified_fact
+  priority: must
+  source:
+    kind: owner_answer
+    ref: confirmed:ans-q-followup-household-round-2-19
+    interview_round: 19
+- id: f-elders
+  topic: multigenerational
+  key: elders
+  statement: 'Older relatives living with you: 2'
+  value: 2
+  status: verified_fact
+  priority: must
+  source:
+    kind: owner_answer
+    ref: confirmed:ans-q-followup-household-round-2-19
+    interview_round: 19
+- id: f-elders_own_rooms
+  topic: multigenerational
+  key: elders_own_rooms
+  statement: 'Older relatives each have their own bedroom: no'
+  value: false
+  status: preference
+  priority: must
+  source:
+    kind: owner_answer
+    ref: confirmed:ans-q-followup-household-round-2-19
+    interview_round: 19
+- id: f-ensuite
+  topic: bedrooms_bathrooms
+  key: ensuite
+  statement: 'Main bedroom has its own bathroom: yes'
+  value: true
+  status: preference
+  priority: null
+  source:
+    kind: owner_answer
+    ref: confirmed:ans-followup-bedrooms_bathrooms-q-followup-bathrooms-dining-roun
+    interview_round: 8
+- id: f-entry_at_road
+  topic: site_response
+  key: entry_at_road
+  statement: 'Entrance and parking at road level: yes'
+  value: true
+  status: preference
+  priority: must
+  source:
+    kind: owner_answer
+    ref: confirmed:ans-q-living-23
+    interview_round: 23
+- id: f-ev_charging
+  topic: ev_charging
+  key: ev_charging
+  statement: 'EV charging: unknown / not decided'
+  value: null
+  status: unknown
+  priority: should
+  source:
+    kind: owner_answer
+    ref: ans-q-followup-gathering-priorities-round-13-16
+    interview_round: 16
+- id: f-floors
+  topic: levels
+  key: floors
+  statement: 'Floors: 3'
+  value: 3
+  status: preference
+  priority: must
+  source:
+    kind: owner_answer
+    ref: confirmed:ans-q-living-23
+    interview_round: 23
+- id: f-future_expansion
+  topic: future_expansion
+  key: future_expansion
+  statement: 'May extend later: no'
+  value: false
+  status: preference
+  priority: null
+  source:
+    kind: owner_answer
+    ref: confirmed:ans-followup-materials_style-q-followup-light-style-future-round
+    interview_round: 15
+- id: f-gathering_space
+  topic: cultural_practices
+  key: gathering_space
+  statement: 'Space for large family gatherings: yes'
+  value: true
+  status: preference
+  priority: should
+  source:
+    kind: owner_answer
+    ref: confirmed:ans-q-followup-gathering-priorities-round-13-16
+    interview_round: 16
+- id: f-guest_accommodation
+  topic: long_term_guests
+  key: guest_accommodation
+  statement: 'Guest accommodation: none'
+  value: none
+  status: preference
+  priority: should
+  source:
+    kind: owner_answer
+    ref: confirmed:ans-followup-cultural_practices-q-followup-privacy-activities-ro
+    interview_round: 20
+- id: f-guest_frequency
+  topic: long_term_guests
+  key: guest_frequency
+  statement: 'How often guests stay: rarely'
+  value: rarely
+  status: preference
+  priority: should
+  source:
+    kind: owner_answer
+    ref: confirmed:ans-followup-cultural_practices-q-followup-privacy-activities-ro
+    interview_round: 20
+- id: f-household_size
+  topic: household
+  key: household_size
+  statement: 'People in the household: 8'
+  value: 8
+  status: verified_fact
+  priority: must
+  source:
+    kind: owner_answer
+    ref: confirmed:ans-q-followup-household-round-2-19
+    interview_round: 19
+- id: f-kitchen_layout
+  topic: kitchen_type
+  key: kitchen_layout
+  statement: 'Kitchen layout: semi open'
+  value: semi_open
+  status: preference
+  priority: must
+  source:
+    kind: owner_answer
+    ref: confirmed:ans-followup-cooking-q-followup-kitchen-round-5-7
+    interview_round: 7
+- id: f-kitchen_smell_separate
+  topic: kitchen_type
+  key: kitchen_smell_separate
+  statement: 'Cooking smells kept out of living areas: yes'
+  value: true
+  status: preference
+  priority: must
+  source:
+    kind: owner_answer
+    ref: confirmed:ans-followup-cooking-q-followup-kitchen-round-5-7
+    interview_round: 7
+- id: f-laundry_room
+  topic: laundry
+  key: laundry_room
+  statement: 'Separate laundry room: yes'
+  value: true
+  status: preference
+  priority: should
+  source:
+    kind: owner_answer
+    ref: confirmed:ans-followup-work_study-q-followup-brief-confirmation-round-9-11
+    interview_round: 11
+- id: f-lift
+  topic: accessibility
+  key: lift
+  statement: 'Lift: yes'
+  value: true
+  status: preference
+  priority: null
+  source:
+    kind: owner_answer
+    ref: confirmed:ans-followup-cooking-q-followup-access-kitchen-round-4-5
+    interview_round: 5
+- id: f-light_wishes
+  topic: daylight
+  key: light_wishes
+  statement: 'Daylight wishes: Daylight and views are very important; preferred rooms
+    and orientations are not yet specified.'
+  value: Daylight and views are very important; preferred rooms and orientations are
+    not yet specified.
+  status: preference
+  priority: null
+  source:
+    kind: owner_answer
+    ref: confirmed:ans-followup-materials_style-q-followup-light-style-future-round
+    interview_round: 15
+- id: f-office_quiet
+  topic: work_study
+  key: office_quiet
+  statement: 'Workplace must be quiet: yes'
+  value: true
+  status: preference
+  priority: should
+  source:
+    kind: owner_answer
+    ref: confirmed:ans-followup-work_study-q-followup-brief-confirmation-round-9-11
+    interview_round: 11
+- id: f-open_plan
+  topic: lifestyle
+  key: open_plan
+  statement: 'Open living, dining and kitchen: yes'
+  value: true
+  status: preference
+  priority: must
+  source:
+    kind: owner_answer
+    ref: confirmed:ans-q-living-23
+    interview_round: 23
+- id: f-outdoor
+  topic: outdoor_living
+  key: outdoor
+  statement: 'Outdoor spaces: garden, play_area, terrace, balcony (understood from
+    your answer; please confirm)'
+  value:
+  - garden
+  - play_area
+  - terrace
+  - balcony
+  status: inference
+  priority: must
+  source:
+    kind: agent_inference
+    ref: ans-followup-room_relationships-q-followup-codex-c02-balcony-30 via agent:codex
+    interview_round: 30
+- id: f-pantry
+  topic: kitchen_type
+  key: pantry
+  statement: 'Pantry: yes'
+  value: true
+  status: preference
+  priority: must
+  source:
+    kind: owner_answer
+    ref: confirmed:ans-followup-cooking-q-followup-kitchen-round-5-7
+    interview_round: 7
+- id: f-parking_type
+  topic: vehicles
+  key: parking_type
+  statement: 'Type of parking: garage'
+  value: garage
+  status: preference
+  priority: must
+  source:
+    kind: owner_answer
+    ref: confirmed:ans-followup-vehicles-q-followup-access-parking-round-7-9
+    interview_round: 9
+- id: f-prayer_room
+  topic: religious_needs
+  key: prayer_room
+  statement: 'Prayer or quiet room: unknown / not decided'
+  value: null
+  status: unknown
+  priority: should
+  source:
+    kind: owner_answer
+    ref: ans-followup-cultural_practices-q-followup-privacy-activities-ro
+    interview_round: 13
+- id: f-priorities
+  topic: priorities
+  key: priorities
+  statement: 'Top priorities: spacious living area, city view with substantial trees
+    in the foreground, daylight, garden and children''s play area, A generous, continuous,
+    nearly level garden/play surface, with as few level changes as feasible. Enjoy
+    leaf movement and sound in wind and the garden in rain. Assess retaining walls/excavation
+    where feasible, as previously requested., Northwest siting; house aligned to long
+    north and south boundaries, not road frontage; outlook downhill east/ENE., Western
+    arrival court; separate vehicle and pedestrian gates; road-level garage above
+    two residential floors; exterior stairs to upper residential entrance., Compact
+    stair/lift core serving three levels; no long double-loaded hallways. Entrance
+    lobby and short bedroom vestibules acceptable., Owner accepts excavation and retaining
+    walls. Road-level office and plant-room locations remain tentative., Minimise
+    combined projected building footprint while preserving comfortable household accommodation;
+    maximise a large continuous downhill garden. Compare living/kitchen on each residential
+    floor before deciding., Required downhill-facing balcony on upper residential
+    floor; may cover lower roof or project as shade. Investigate reducing eastward
+    reach and moving house west., Upper residential entrance from exterior south/east
+    stairs. Three stepped tiers: road garage, upper residence below, lower residence
+    below that., Open cozy communal spaces with screened toilets and kitchen working
+    areas, private bedrooms, no long institutional double-loaded corridors. (understood
+    from your answer; please confirm)'
+  value:
+  - spacious living area
+  - city view with substantial trees in the foreground
+  - daylight
+  - garden and children's play area
+  - A generous, continuous, nearly level garden/play surface, with as few level changes
+    as feasible. Enjoy leaf movement and sound in wind and the garden in rain. Assess
+    retaining walls/excavation where feasible, as previously requested.
+  - Northwest siting; house aligned to long north and south boundaries, not road frontage;
+    outlook downhill east/ENE.
+  - Western arrival court; separate vehicle and pedestrian gates; road-level garage
+    above two residential floors; exterior stairs to upper residential entrance.
+  - Compact stair/lift core serving three levels; no long double-loaded hallways.
+    Entrance lobby and short bedroom vestibules acceptable.
+  - Owner accepts excavation and retaining walls. Road-level office and plant-room
+    locations remain tentative.
+  - Minimise combined projected building footprint while preserving comfortable household
+    accommodation; maximise a large continuous downhill garden. Compare living/kitchen
+    on each residential floor before deciding.
+  - Required downhill-facing balcony on upper residential floor; may cover lower roof
+    or project as shade. Investigate reducing eastward reach and moving house west.
+  - 'Upper residential entrance from exterior south/east stairs. Three stepped tiers:
+    road garage, upper residence below, lower residence below that.'
+  - Open cozy communal spaces with screened toilets and kitchen working areas, private
+    bedrooms, no long institutional double-loaded corridors.
+  status: inference
+  priority: null
+  source:
+    kind: agent_inference
+    ref: ans-followup-room_relationships-q-followup-codex-c02-privacy-31 via agent:codex
+    interview_round: 31
+- id: f-privacy
+  topic: privacy
+  key: privacy
+  statement: 'Privacy from street and neighbours: normal'
+  value: normal
+  status: preference
+  priority: should
+  source:
+    kind: owner_answer
+    ref: confirmed:ans-followup-cultural_practices-q-followup-privacy-activities-ro
+    interview_round: 20
+- id: f-relationships
+  topic: room_relationships
+  key: relationships
+  statement: 'Rooms next to each other or kept apart: dining near kitchen'
+  value:
+  - dining|near|kitchen
+  status: preference
+  priority: null
+  source:
+    kind: owner_answer
+    ref: confirmed:ans-followup-bedrooms_bathrooms-q-followup-bathrooms-dining-roun
+    interview_round: 8
+- id: f-room_sizes
+  topic: room_sizes
+  key: room_sizes
+  statement: 'Room size wishes: none'
+  value: []
+  status: preference
+  priority: null
+  source:
+    kind: owner_answer
+    ref: confirmed:ans-followup-site_response-q-followup-hillside-sizing-climate-ro
+    interview_round: 17
+- id: f-slope_strategy
+  topic: site_response
+  key: slope_strategy
+  statement: 'How the house meets the slope: step down'
+  value: step_down
+  status: preference
+  priority: must
+  source:
+    kind: owner_answer
+    ref: confirmed:ans-q-living-23
+    interview_round: 23
+- id: f-storage_room
+  topic: storage
+  key: storage_room
+  statement: 'Store room: yes'
+  value: true
+  status: preference
+  priority: should
+  source:
+    kind: owner_answer
+    ref: confirmed:ans-followup-work_study-q-followup-brief-confirmation-round-9-11
+    interview_round: 11
+- id: f-style
+  topic: materials_style
+  key: style
+  statement: 'Style and materials: A mixture leaning towards modern; materials flexible
+    according to suitability.'
+  value: A mixture leaning towards modern; materials flexible according to suitability.
+  status: preference
+  priority: null
+  source:
+    kind: owner_answer
+    ref: confirmed:ans-followup-materials_style-q-followup-light-style-future-round
+    interview_round: 15
+- id: f-target_area
+  topic: target_area
+  key: target_area
+  statement: 'Total floor area in mind: unknown / not decided'
+  value: null
+  status: unknown
+  priority: null
+  source:
+    kind: owner_answer
+    ref: ans-followup-outdoor_living-q-followup-outdoors-budget-round-8-1
+    interview_round: 10
+- id: f-workspaces
+  topic: work_study
+  key: workspaces
+  statement: 'Workplaces at home: 1'
+  value: 1
+  status: preference
+  priority: should
+  source:
+    kind: owner_answer
+    ref: confirmed:ans-followup-work_study-q-followup-brief-confirmation-round-9-11
+    interview_round: 11
+budget: null
+target_gross_area_m2: null
+contradictions: []
+interview_rounds_completed: 27
+provenance:
+  created_at: '2026-10-21T11:31:20.573091Z'
+  created_by:
+    kind: system
+    id: house-ai-interview
+    display_name: null
+    provider: null
+    model: null
+  method: owner_interview
+  tool: house-ai interview
+  tool_version: null
+  inputs:
+  - kind: interview_session
+    id: interview
+    version: 32
+    sha256: b2997fe9fe94ff8043b004cf590c1978eb344dae819cfb3dbb840470d1d0d468
+  notes: Derived from the interview session; the owner's words are kept verbatim.

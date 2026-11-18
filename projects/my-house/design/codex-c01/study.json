@@ -1,0 +1,234 @@
+{
+  "author": "agent:codex",
+  "study": "Codex C01",
+  "status": "exploratory massing / topology, not a resolved floor plan",
+  "site_ref": {
+    "kind": "site",
+    "id": "site",
+    "version": 3,
+    "sha256": "abab9fb2d5433bd08c57b9748b5bc93fad2703b902fb178f1696814c54ff659f"
+  },
+  "program_ref": {
+    "kind": "space_program",
+    "id": "program",
+    "version": 6,
+    "sha256": "242665b3e56e91be6aa7a0631769df10bf15ff7e7464b545c3fa0e80d40f8925"
+  },
+  "geometry_source": "CP-SAT selection from surveyed-envelope-contained candidates; orthogonal axes from long north/south boundary",
+  "solver_scope": "Minimum projected union within enumerated assumptions only; not a global architectural optimum",
+  "sensitivity": [
+    {
+      "solver_status": "OPTIMAL",
+      "candidate_count": 6507,
+      "min_residential_floor_assumption_m2": 115,
+      "u_m": 5.5,
+      "v_m": 1.0,
+      "depth_m": 12.5,
+      "width_m": 9.2,
+      "top_depth_m": 9.8,
+      "projected_footprint_m2": 122.36,
+      "floor_areas_m2": [
+        90.16,
+        115.0,
+        115.0
+      ]
+    },
+    {
+      "solver_status": "OPTIMAL",
+      "candidate_count": 4752,
+      "min_residential_floor_assumption_m2": 125,
+      "u_m": 5.5,
+      "v_m": 1.0,
+      "depth_m": 13.9,
+      "width_m": 9.0,
+      "top_depth_m": 10.0,
+      "projected_footprint_m2": 132.3,
+      "floor_areas_m2": [
+        90.0,
+        125.1,
+        125.1
+      ]
+    },
+    {
+      "solver_status": "OPTIMAL",
+      "candidate_count": 2844,
+      "min_residential_floor_assumption_m2": 135,
+      "u_m": 5.5,
+      "v_m": 1.0,
+      "depth_m": 15.0,
+      "width_m": 9.0,
+      "top_depth_m": 10.0,
+      "projected_footprint_m2": 142.2,
+      "floor_areas_m2": [
+        90.0,
+        135.0,
+        135.0
+      ]
+    }
+  ],
+  "selected": {
+    "solver_status": "OPTIMAL",
+    "candidate_count": 4752,
+    "min_residential_floor_assumption_m2": 125,
+    "u_m": 5.5,
+    "v_m": 1.0,
+    "depth_m": 13.9,
+    "width_m": 9.0,
+    "top_depth_m": 10.0,
+    "projected_footprint_m2": 132.3,
+    "floor_areas_m2": [
+      90.0,
+      125.1,
+      125.1
+    ]
+  },
+  "parcel_area_m2": 600.0044211737725,
+  "unbuilt_plan_area_m2": 467.7044211737724,
+  "downhill_reserve_plan_area_m2": 112.59992521214707,
+  "connected_south_east_garden_reserve_plan_area_m2": 318.2125805772927,
+  "arrival_reserve_plan_area_m2": 76.58816438596203,
+  "assumptions": [
+    "Exploratory massing only: no room packing, doors, stairs, lift shaft, structure or garage manoeuvring has been resolved.",
+    "Three tiers are owner-confirmed. 3.2m floor intervals and the TIN western midpoint reference are assumptions, not chosen finished-floor levels.",
+    "Tested residential gross floor-area lower bounds 115/125/135m\u00b2 are Codex area budgets, not demonstrated minimum footprints.",
+    "Northern 1m clearance, western 5.5m approach allowance, 0.8m lower-floor step and approximately 90m\u00b2 top tier are exploratory assumptions.",
+    "Downhill garden reserve is land in plan, not a graded garden. Flatness, retaining, drainage, soil and planting suitability are unresolved.",
+    "Top office and plant room are tentative. Main-house axes strictly follow the north/south long boundaries; no road-aligned variant is permitted."
+  ],
+  "downhill_plane_screen": {
+    "plane_elevation_m": 1671.0522982262974,
+    "area_m2": 112.59992521214707,
+    "known_area_m2": 112.59992521214704,
+    "cut_m3": 0.0,
+    "below_plane_m3": 463.23854453965146,
+    "max_cut_m": 0.0,
+    "max_below_m": 5.807844346223192,
+    "ground_min_m": 1665.2444538800742,
+    "ground_max_m": 1668.9745979969064
+  },
+  "geometry": {
+    "building_union": [
+      [
+        11.097125003677782,
+        13.80423096427359
+      ],
+      [
+        7.607723979007894,
+        22.10025895898484
+      ],
+      [
+        8.345148689648894,
+        22.410427938955497
+      ],
+      [
+        13.7492735894724,
+        24.683462573711996
+      ],
+      [
+        20.42047832639527,
+        27.489444985975
+      ],
+      [
+        21.15790303703627,
+        27.799613965945653
+      ],
+      [
+        24.647304061706155,
+        19.503585971234404
+      ],
+      [
+        20.31493388669028,
+        17.681343213906796
+      ],
+      [
+        11.097125003677782,
+        13.80423096427359
+      ]
+    ],
+    "downhill": [
+      [
+        29.08834728474277,
+        13.319736733311231
+      ],
+      [
+        27.524895358926045,
+        12.66213158112683
+      ],
+      [
+        20.770191812072948,
+        28.721394854246903
+      ],
+      [
+        31.121845019903922,
+        33.07541455300636
+      ],
+      [
+        29.08834728474277,
+        13.319736733311231
+      ]
+    ],
+    "garden": [
+      [
+        29.08834728474277,
+        13.319736733311231
+      ],
+      [
+        0.11672013322146174,
+        1.1339502902433045
+      ],
+      [
+        0.9830165361739671,
+        9.550125207563383
+      ],
+      [
+        24.647304061706155,
+        19.503585971234408
+      ],
+      [
+        20.770191812072948,
+        28.721394854246903
+      ],
+      [
+        31.121845019903922,
+        33.07541455300636
+      ],
+      [
+        29.08834728474277,
+        13.319736733311231
+      ]
+    ],
+    "arrival": [
+      [
+        2.0334977351663257,
+        19.75567781974538
+      ],
+      [
+        7.607723979007894,
+        22.10025895898484
+      ],
+      [
+        11.097125003677782,
+        13.80423096427359
+      ],
+      [
+        0.9830165361739669,
+        9.55012520756338
+      ],
+      [
+        2.0334977351663257,
+        19.75567781974538
+      ]
+    ]
+  },
+  "not_checked": [
+    "room/furniture fit",
+    "vehicle swept paths and door approach",
+    "lift and stair geometry",
+    "retaining design",
+    "actual road thresholds",
+    "structure",
+    "legal site approval",
+    "garden grading",
+    "construction cost"
+  ]
+}

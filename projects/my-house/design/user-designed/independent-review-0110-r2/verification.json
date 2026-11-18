@@ -1,0 +1,72 @@
+{
+  "preserved_files": 267,
+  "changed_protected_files": [],
+  "all_18_deliverables_present": true,
+  "issue_register_rows": 30,
+  "scorecard_categories": 20,
+  "final_diagrams": 12,
+  "sources_verified": 14,
+  "foundation_tests": {
+    "passed": 12,
+    "suite": "foundation",
+    "scope": "No application/geometry software edits; no full current-suite or active-publication claim"
+  },
+  "committed_foundation_policy": "PASS;415 files",
+  "scoped_whitespace_check": "PASS",
+  "supplied_works": {
+    "A": 59,
+    "B": 59,
+    "C": 64
+  },
+  "missing_works": {
+    "A": 15,
+    "B": 15,
+    "C": 15
+  },
+  "complete_site_clearance": "INCOMPLETE",
+  "new_design_works": false,
+  "concept_approval": null,
+  "construction": "HOLD",
+  "visual_review": {
+    "reused_r1_sheets": 11,
+    "reuse_basis": "PNG and SVG byte identity against individually inspected R1 sheets with unchanged geometry/code/assumptions; R1 inspection receipt retained",
+    "new_sheet": "09b-privacy-six-cases.png opened with view_image",
+    "new_sheet_sha256": "6ab675755f25838223a3b582b54619a9ef25170e12aa283844ffef5765c71db4",
+    "r1_inspection_receipt_sha256": "5c0e02b24d4858d94adb4551901fb70239f94b66b6a4f2018ec9740f0296c849"
+  },
+  "browser_observation": {
+    "numbered_sections": 18,
+    "figures": 12,
+    "tables": 24,
+    "viewport_width_px": 500,
+    "body_scroll_width_px": 500
+  },
+  "reference_limit": "MBIE article recheck timed out; no new technical/numerical conclusion relies on it",
+  "review_date": "2026-10-17",
+  "verified_at_utc": "2026-10-16T23:30:32.051031+00:00",
+  "code_commit": "7e354f4ffcb4d4e16da613af7c944c3bd3b6d9d9",
+  "producer_sha256": "d86768f430337e6ce45d488a1d9714c3b1f154b1fe2285d739023928f86ba3e5",
+  "formatter_sha256": "b7f2cbae442adf1357b94e2c2fe35ac5159eab9c299e98871521b733d4e13798",
+  "evidence_sha256": "ab204a8a2656d68d42837983110b4b090c71d932f95d270dc479a2540cced422",
+  "report_sha256": "c1ffb00a3252641f2aa3b728b3db783e3e8814d026dfbf59e4d3913b1546cc58",
+  "html_sha256": "975260b87b719ef70d5c9e695ee1a65eaaaeb9cd2d4affbdc3e13c34bf222051",
+  "review": "0110-R2",
+  "original_design_source_artifacts_preserved": 230,
+  "prior_r1_package_preserved": true,
+  "final_png_sha256": {
+    "01-road-annotated.png": "bc8abb57556031b6de7fb5c8d6a469323435259412ae6214e2f29f81c901b26a",
+    "02-upper-annotated.png": "e0e83635e0015a2848f95df942a7f2d7e9936262fe4c5df828d2ccc860c3e417",
+    "03-lower-annotated.png": "a7c8f269922a9f96a5d22050bee9a29ca3c5e53a1ab152df521ba54c89439441",
+    "04-water-risk-plan.png": "b399b4ee3b37036eed1159041e25548ce67b9ac15e0d07e5c34b69870cddd08f",
+    "05-water-risk-section.png": "4c47eca4f0de6be0dee806e660f8ab03f97b1669637cba715bf1b33bcb27ba39",
+    "06-family-flow.png": "acdf61595bbc6c0f3863ec2051a35d18ccffbd4fb216588b7ca252d8a55ea87b",
+    "07-accessibility.png": "c873f93682f7585e58821c94b3315945e1555d0bf477f26205bd8d8f961bc7d1",
+    "08-fire-emergency.png": "36272752bf6e4d0e5d8dfd17475beff39e3dc88adec52855164fad8ce970e316",
+    "09-daylight-privacy.png": "4bf0a81880db41c8cdbf7a6660026995364eeb2a3f1375a9d50cc0ab71d468de",
+    "10-acoustic-overlays.png": "739a47d8fabb0e1f4bd6c8d2b79276fef6f30e93841b5e38574a1629398bef33",
+    "11-cost-risk-map.png": "6deb62245161a20f579540d5e01cbeccf9c5f2603c4e51419987f62c5a56169e",
+    "09b-privacy-six-cases.png": "6ab675755f25838223a3b582b54619a9ef25170e12aa283844ffef5765c71db4"
+  },
+  "supplement_producer_sha256": "5b2e54ebe32b74b80e9e9fdf36f75ec2638a65458f9df623d1a7127274ec74ff",
+  "all_local_links_resolve": true
+}

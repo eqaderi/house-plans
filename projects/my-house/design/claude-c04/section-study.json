@@ -1,0 +1,361 @@
+{
+ "0.6": [],
+ "1.0": [
+  {
+   "levels": {
+    "road": 1677.7,
+    "upper": 1674.3,
+    "lower": 1670.5
+   },
+   "lower": {
+    "u": [
+     4.92
+    ],
+    "cut_m3": 314.9,
+    "max_cut_m": 5.73,
+    "max_gap_m": 0.93
+   },
+   "upper": {
+    "u": [
+     2.15
+    ],
+    "cut_m3": 40.5,
+    "max_cut_m": 3.63,
+    "max_gap_m": 1.0
+   },
+   "plates": {
+    "road": [
+     0.0,
+     0.0
+    ],
+    "upper": [
+     0.0,
+     10.0
+    ],
+    "lower": [
+     3.0,
+     14.0
+    ]
+   },
+   "width_m": 14.0,
+   "storey_m": 3.4,
+   "low_storey_m": 3.8,
+   "terrace_m": 4.0,
+   "upper_area_m2": 140.0,
+   "lower_area_m2": 154.0,
+   "core_overlap_u": [
+    3.0,
+    9.0
+   ],
+   "building_cut_m3": 355.4,
+   "max_cut_m": 5.73,
+   "max_gap_m": 1.0,
+   "lawn": {
+    "z": 1668.7,
+    "area_m2": 168.4,
+    "cut_m3": 10.3,
+    "fill_m3": 225.5,
+    "max_cut_m": 1.34,
+    "max_fill_m": 3.46,
+    "stair_rise_m": 1.8
+   }
+  },
+  {
+   "levels": {
+    "road": 1677.7,
+    "upper": 1674.3,
+    "lower": 1670.5
+   },
+   "lower": {
+    "u": [
+     4.45
+    ],
+    "cut_m3": 343.9,
+    "max_cut_m": 6.07,
+    "max_gap_m": 0.93
+   },
+   "upper": {
+    "u": [
+     2.15
+    ],
+    "cut_m3": 36.9,
+    "max_cut_m": 3.63,
+    "max_gap_m": 0.83
+   },
+   "plates": {
+    "road": [
+     0.0,
+     0.0
+    ],
+    "upper": [
+     0.0,
+     10.0
+    ],
+    "lower": [
+     2.5,
+     14.0
+    ]
+   },
+   "width_m": 14.0,
+   "storey_m": 3.4,
+   "low_storey_m": 3.8,
+   "terrace_m": 4.0,
+   "upper_area_m2": 140.0,
+   "lower_area_m2": 161.0,
+   "core_overlap_u": [
+    2.5,
+    9.0
+   ],
+   "building_cut_m3": 380.8,
+   "max_cut_m": 6.07,
+   "max_gap_m": 0.93,
+   "lawn": {
+    "z": 1668.7,
+    "area_m2": 168.4,
+    "cut_m3": 10.3,
+    "fill_m3": 225.5,
+    "max_cut_m": 1.34,
+    "max_fill_m": 3.46,
+    "stair_rise_m": 1.8
+   }
+  },
+  {
+   "levels": {
+    "road": 1677.7,
+    "upper": 1674.3,
+    "lower": 1670.7
+   },
+   "lower": {
+    "u": [
+     3.99
+    ],
+    "cut_m3": 351.1,
+    "max_cut_m": 6.17,
+    "max_gap_m": 0.96
+   },
+   "upper": {
+    "u": [
+     2.15
+    ],
+    "cut_m3": 32.2,
+    "max_cut_m": 3.63,
+    "max_gap_m": 0.85
+   },
+   "plates": {
+    "road": [
+     0.0,
+     0.0
+    ],
+    "upper": [
+     0.0,
+     9.0
+    ],
+    "lower": [
+     2.0,
+     13.0
+    ]
+   },
+   "width_m": 15.0,
+   "storey_m": 3.4,
+   "low_storey_m": 3.6,
+   "terrace_m": 4.0,
+   "upper_area_m2": 135.0,
+   "lower_area_m2": 165.0,
+   "core_overlap_u": [
+    2.0,
+    9.0
+   ],
+   "building_cut_m3": 383.3,
+   "max_cut_m": 6.17,
+   "max_gap_m": 0.96,
+   "lawn": {
+    "z": 1668.9,
+    "area_m2": 185.8,
+    "cut_m3": 13.6,
+    "fill_m3": 258.8,
+    "max_cut_m": 1.51,
+    "max_fill_m": 3.66,
+    "stair_rise_m": 1.8
+   }
+  }
+ ],
+ "1.5": [
+  {
+   "levels": {
+    "road": 1677.7,
+    "upper": 1674.3,
+    "lower": 1670.7
+   },
+   "lower": {
+    "u": [
+     6.3
+    ],
+    "cut_m3": 213.5,
+    "max_cut_m": 4.51,
+    "max_gap_m": 1.46
+   },
+   "upper": {
+    "u": [
+     3.07
+    ],
+    "cut_m3": 26.9,
+    "max_cut_m": 3.1,
+    "max_gap_m": 1.5
+   },
+   "plates": {
+    "road": [
+     1.0,
+     1.0
+    ],
+    "upper": [
+     1.0,
+     11.0
+    ],
+    "lower": [
+     4.5,
+     15.0
+    ]
+   },
+   "width_m": 14.0,
+   "storey_m": 3.4,
+   "low_storey_m": 3.6,
+   "terrace_m": 4.0,
+   "upper_area_m2": 140.0,
+   "lower_area_m2": 147.0,
+   "core_overlap_u": [
+    4.5,
+    10.0
+   ],
+   "building_cut_m3": 240.4,
+   "max_cut_m": 4.51,
+   "max_gap_m": 1.5,
+   "lawn": {
+    "z": 1668.9,
+    "area_m2": 150.9,
+    "cut_m3": 2.4,
+    "fill_m3": 248.8,
+    "max_cut_m": 0.81,
+    "max_fill_m": 3.66,
+    "stair_rise_m": 1.8
+   }
+  },
+  {
+   "levels": {
+    "road": 1677.7,
+    "upper": 1674.3,
+    "lower": 1670.7
+   },
+   "lower": {
+    "u": [
+     6.3
+    ],
+    "cut_m3": 213.5,
+    "max_cut_m": 4.51,
+    "max_gap_m": 1.46
+   },
+   "upper": {
+    "u": [
+     2.61
+    ],
+    "cut_m3": 35.7,
+    "max_cut_m": 3.37,
+    "max_gap_m": 1.5
+   },
+   "plates": {
+    "road": [
+     0.5,
+     0.5
+    ],
+    "upper": [
+     0.5,
+     11.0
+    ],
+    "lower": [
+     4.5,
+     15.0
+    ]
+   },
+   "width_m": 14.0,
+   "storey_m": 3.4,
+   "low_storey_m": 3.6,
+   "terrace_m": 4.0,
+   "upper_area_m2": 147.0,
+   "lower_area_m2": 147.0,
+   "core_overlap_u": [
+    4.5,
+    9.5
+   ],
+   "building_cut_m3": 249.1,
+   "max_cut_m": 4.51,
+   "max_gap_m": 1.5,
+   "lawn": {
+    "z": 1668.9,
+    "area_m2": 150.9,
+    "cut_m3": 2.4,
+    "fill_m3": 248.8,
+    "max_cut_m": 0.81,
+    "max_fill_m": 3.66,
+    "stair_rise_m": 1.8
+   }
+  },
+  {
+   "levels": {
+    "road": 1677.7,
+    "upper": 1674.3,
+    "lower": 1670.7
+   },
+   "lower": {
+    "u": [
+     6.3
+    ],
+    "cut_m3": 213.5,
+    "max_cut_m": 4.51,
+    "max_gap_m": 1.46
+   },
+   "upper": {
+    "u": [
+     2.61
+    ],
+    "cut_m3": 35.7,
+    "max_cut_m": 3.37,
+    "max_gap_m": 1.5
+   },
+   "plates": {
+    "road": [
+     0.5,
+     0.5
+    ],
+    "upper": [
+     0.5,
+     10.5
+    ],
+    "lower": [
+     4.5,
+     15.0
+    ]
+   },
+   "width_m": 14.0,
+   "storey_m": 3.4,
+   "low_storey_m": 3.6,
+   "terrace_m": 4.5,
+   "upper_area_m2": 140.0,
+   "lower_area_m2": 147.0,
+   "core_overlap_u": [
+    4.5,
+    9.5
+   ],
+   "building_cut_m3": 249.1,
+   "max_cut_m": 4.51,
+   "max_gap_m": 1.5,
+   "lawn": {
+    "z": 1668.9,
+    "area_m2": 150.9,
+    "cut_m3": 2.4,
+    "fill_m3": 248.8,
+    "max_cut_m": 0.81,
+    "max_fill_m": 3.66,
+    "stair_rise_m": 1.8
+   }
+  }
+ ]
+}

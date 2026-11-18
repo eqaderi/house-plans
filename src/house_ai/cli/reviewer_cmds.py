@@ -24,7 +24,10 @@ def _concepts_dir(store: ProjectStore, given: str | None) -> Path | None:
     if given:
         return Path(given)
     default = store.root / "design" / "concepts"
-    return default if default.exists() else None
+    if default.exists():
+        return default
+    exploratory = store.root / "design" / "concepts-exploratory"
+    return exploratory if exploratory.exists() else None
 
 
 def cmd_reviewer_export(args: argparse.Namespace) -> int:
@@ -57,7 +60,9 @@ def cmd_reviewer_serve(args: argparse.Namespace) -> int:
             "apps/reviewer, or pass --dist"
         )
         return EXIT_FAIL
-    bundle_file = export_reviewer_bundle(store, dist_dir, concepts_dir=_concepts_dir(store, None))
+    bundle_file = export_reviewer_bundle(
+        store, dist_dir, concepts_dir=_concepts_dir(store, None), exploratory=True
+    )
 
     url = f"http://127.0.0.1:{port}/?bundle={bundle_file.name}"
     _out(f"Serving 2D concept reviewer for project {store.manifest().name} at {url}")

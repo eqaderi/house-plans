@@ -1,0 +1,137 @@
+{
+  "schema_version": "0.1.0",
+  "id": "codex-c01-b",
+  "project_id": "my-house",
+  "name": "Codex C01-B — living downstairs",
+  "intent": "Exploratory topology only. Strict side-boundary alignment, northwest siting, western arrival court, garage above two residential floors. Compact shared stair/lift core; short vestibules, no double-loaded corridor. Lift must serve all tiers; lift/stair program assignments indicate core anchor only. Do not run the current road-default generator on this proposal. Office/plant at top tentative. Four bedrooms, two shared children rooms. Main entry stays at upper residential floor in both options.",
+  "zones": [],
+  "level_assignments": [
+    {
+      "program_item_id": "pi-entry",
+      "level_id": "entry"
+    },
+    {
+      "program_item_id": "pi-garage",
+      "level_id": "upper"
+    },
+    {
+      "program_item_id": "pi-study-1",
+      "level_id": "upper"
+    },
+    {
+      "program_item_id": "pi-mechanical",
+      "level_id": "upper"
+    },
+    {
+      "program_item_id": "pi-living",
+      "level_id": "lower"
+    },
+    {
+      "program_item_id": "pi-kitchen",
+      "level_id": "lower"
+    },
+    {
+      "program_item_id": "pi-dining",
+      "level_id": "lower"
+    },
+    {
+      "program_item_id": "pi-pantry",
+      "level_id": "lower"
+    },
+    {
+      "program_item_id": "pi-bath-2",
+      "level_id": "lower"
+    },
+    {
+      "program_item_id": "pi-storage",
+      "level_id": "lower"
+    },
+    {
+      "program_item_id": "pi-terrace",
+      "level_id": "lower"
+    },
+    {
+      "program_item_id": "pi-bed-main",
+      "level_id": "entry"
+    },
+    {
+      "program_item_id": "pi-bed-elder-1",
+      "level_id": "entry"
+    },
+    {
+      "program_item_id": "pi-bed-child-1",
+      "level_id": "entry"
+    },
+    {
+      "program_item_id": "pi-bed-child-2",
+      "level_id": "entry"
+    },
+    {
+      "program_item_id": "pi-bath-ensuite",
+      "level_id": "entry"
+    },
+    {
+      "program_item_id": "pi-bath-1",
+      "level_id": "entry"
+    },
+    {
+      "program_item_id": "pi-laundry",
+      "level_id": "entry"
+    },
+    {
+      "program_item_id": "pi-lift",
+      "level_id": "entry"
+    },
+    {
+      "program_item_id": "pi-stair",
+      "level_id": "entry"
+    }
+  ],
+  "adjacency_graph": [],
+  "stair_cores": [
+    {
+      "id": "c01-b-core",
+      "position": "entry",
+      "connects_levels": [
+        "upper",
+        "entry",
+        "lower"
+      ],
+      "near_program_item_ids": [
+        "pi-entry",
+        "pi-lift"
+      ],
+      "notes": null
+    }
+  ],
+  "outdoor_links": [],
+  "target_strategy": "corridor_free",
+  "provenance": {
+    "created_at": "2026-10-21T06:22:07.704216Z",
+    "created_by": {
+      "kind": "agent",
+      "id": "codex",
+      "display_name": null,
+      "provider": null,
+      "model": null
+    },
+    "method": "agent_topology_proposal",
+    "tool": null,
+    "tool_version": null,
+    "inputs": [
+      {
+        "kind": "site",
+        "id": "site",
+        "version": 3,
+        "sha256": "abab9fb2d5433bd08c57b9748b5bc93fad2703b902fb178f1696814c54ff659f"
+      },
+      {
+        "kind": "space_program",
+        "id": "program",
+        "version": 6,
+        "sha256": "242665b3e56e91be6aa7a0631769df10bf15ff7e7464b545c3fa0e80d40f8925"
+      }
+    ],
+    "notes": null
+  }
+}

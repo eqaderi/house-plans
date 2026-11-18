@@ -1,0 +1,93 @@
+[
+  {
+    "service": "nasa-climatology",
+    "url": "https://power.larc.nasa.gov/api/temporal/climatology/point?parameters=T2M%2CT2M_MAX_AVG%2CT2M_MIN_AVG%2CRH2M%2CPRECTOTCORR%2CWS10M%2CALLSKY_SFC_SW_DWN&community=RE&latitude=34.969&longitude=46.356&format=JSON",
+    "requested_position_rounded_deg": [
+      34.969,
+      46.356
+    ],
+    "retrieved_utc": "2026-10-20T12:53:53.616633+00:00",
+    "http_status": 200,
+    "bytes": 2304,
+    "sha256": "0cdd0326450cea9e3ffe11ebe5af7b49b9e24a4978354e8f2415bd2b95a08958",
+    "top_keys": [
+      "type",
+      "geometry",
+      "properties",
+      "header",
+      "messages",
+      "parameters",
+      "times"
+    ]
+  },
+  {
+    "service": "nasa-hourly-wind-2025",
+    "url": "https://power.larc.nasa.gov/api/temporal/hourly/point?parameters=WS10M%2CWD10M&community=RE&latitude=34.969&longitude=46.356&start=20250101&end=20251231&format=JSON&time-standard=UTC",
+    "requested_position_rounded_deg": [
+      34.969,
+      46.356
+    ],
+    "retrieved_utc": "2026-10-20T12:53:53.617209+00:00",
+    "http_status": 200,
+    "bytes": 321017,
+    "sha256": "51a6de55ea9a77c85d1c4344f3d697e01d45483bbe47293a5a6e4c4baa76f0d4",
+    "top_keys": [
+      "type",
+      "geometry",
+      "properties",
+      "header",
+      "messages",
+      "parameters",
+      "times"
+    ]
+  },
+  {
+    "service": "pvgis-horizon",
+    "url": "https://re.jrc.ec.europa.eu/api/v5_3/printhorizon?lat=34.969&lon=46.356&outputformat=json",
+    "requested_position_rounded_deg": [
+      34.969,
+      46.356
+    ],
+    "retrieved_utc": "2026-10-20T12:53:53.617350+00:00",
+    "http_status": 200,
+    "bytes": 5864,
+    "sha256": "0c7d6881cc69e6b8ab191dd2abd0f674a1c7c74755bae36126c40c3eae82ae47",
+    "top_keys": [
+      "inputs",
+      "outputs",
+      "meta"
+    ]
+  },
+  {
+    "service": "osm-place-context",
+    "url": "https://nominatim.openstreetmap.org/reverse?lat=34.969&lon=46.356&format=jsonv2&zoom=14&addressdetails=1&accept-language=en",
+    "requested_position_rounded_deg": [
+      34.969,
+      46.356
+    ],
+    "retrieved_utc": "2026-10-20T12:53:53.617483+00:00",
+    "http_status": 200,
+    "bytes": 708,
+    "sha256": "449a069735f9305611c683c27c67018506b9c15de2b3cb272e75becbc7a85b66",
+    "result": "Bala`i, \u062f\u0647\u0633\u062a\u0627\u0646 \u0634\u06cc\u0648\u0647 \u0633\u0631, \u0628\u062e\u0634 \u0628\u0627\u06cc\u0646\u06af\u0627\u0646, Paveh County, Kermanshah Province, Iran",
+    "address": {
+      "village": "Bala`i",
+      "city": "\u062f\u0647\u0633\u062a\u0627\u0646 \u0634\u06cc\u0648\u0647 \u0633\u0631",
+      "district": "\u0628\u062e\u0634 \u0628\u0627\u06cc\u0646\u06af\u0627\u0646",
+      "county": "Paveh County",
+      "state": "Kermanshah Province",
+      "ISO3166-2-lvl4": "IR-05",
+      "country": "Iran",
+      "country_code": "ir"
+    }
+  },
+  {
+    "service": "kermanshahmet-paveh-monthly-rainfall",
+    "url": "https://www.kermanshahmet.ir/met/amar",
+    "retrieved_utc": "2026-10-20T13:00:53.923Z",
+    "method": "public browser form; rainfall, Paveh, Solar Hijri 1371-1400",
+    "saved_file": "paveh-rainfall-table.json",
+    "sha256_saved_export": "c004e6087f3801bfdfc94d1874d7878d2082570f4c71f7e6b87d8fc0b6c50dce",
+    "quality": "Incomplete/malformed/inconsistent entries; no verified station normal calculated"
+  }
+]

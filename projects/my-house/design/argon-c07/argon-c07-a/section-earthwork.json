@@ -1,0 +1,89 @@
+{
+  "option_id": "argon-c07-a",
+  "zones": [
+    {
+      "id": "west-arrival-court",
+      "label": "West sunken court & steps (z=1674.3 m)",
+      "area_m2": 34.7,
+      "formation_z_m": 1673.95,
+      "cut_m3": 55.2,
+      "fill_m3": 0.0,
+      "max_cut_m": 3.32,
+      "max_fill_m": 0.1
+    },
+    {
+      "id": "road-garage-west",
+      "label": "Road garage west apron (FFL 1677.7 m)",
+      "area_m2": 9.9,
+      "formation_z_m": 1677.35,
+      "cut_m3": 0.0,
+      "fill_m3": 20.0,
+      "max_cut_m": 0.02,
+      "max_fill_m": 3.5
+    },
+    {
+      "id": "main-west-band",
+      "label": "Main floor west band (FFL 1674.3 m, Road stacked above)",
+      "area_m2": 33.0,
+      "formation_z_m": 1673.95,
+      "cut_m3": 19.4,
+      "fill_m3": 3.2,
+      "max_cut_m": 2.65,
+      "max_fill_m": 1.05
+    },
+    {
+      "id": "lower-footprint",
+      "label": "Lower floor footprint u=4.0..20.0 m (FFL 1670.7 m)",
+      "area_m2": 249.6,
+      "formation_z_m": 1670.35,
+      "cut_m3": 247.9,
+      "fill_m3": 129.5,
+      "max_cut_m": 4.85,
+      "max_fill_m": 3.41
+    },
+    {
+      "id": "south-terrace-west",
+      "label": "South terrace west band (z=1674.3 m)",
+      "area_m2": 9.0,
+      "formation_z_m": 1674.3,
+      "cut_m3": 0.0,
+      "fill_m3": 10.9,
+      "max_cut_m": 0.0,
+      "max_fill_m": 1.98
+    },
+    {
+      "id": "lower-east-terrace",
+      "label": "Lower east garden terrace u=20.0..22.0 m (z=1670.7 m)",
+      "area_m2": 31.2,
+      "formation_z_m": 1670.7,
+      "cut_m3": 0.0,
+      "fill_m3": 92.2,
+      "max_cut_m": 0.0,
+      "max_fill_m": 4.44
+    },
+    {
+      "id": "flat-east-lawn",
+      "label": "Graded flat east garden lawn u=22.0..31.4 m (z=1668.1 m)",
+      "area_m2": 81.3,
+      "formation_z_m": 1668.1,
+      "cut_m3": 0.1,
+      "fill_m3": 114.6,
+      "max_cut_m": 0.28,
+      "max_fill_m": 2.86
+    }
+  ],
+  "total_cut_m3": 322.6,
+  "total_fill_m3": 370.4,
+  "net_export_m3": -47.8,
+  "summary": {
+    "building_cut_m3": 322.5,
+    "building_fill_m3": 163.6,
+    "building_net_export_m3": 158.9,
+    "building_max_cut_m": 4.85,
+    "total_cut_with_terrace_and_lawn_m3": 322.6,
+    "total_fill_with_terrace_and_lawn_m3": 370.4,
+    "net_export_with_lawn_m3": -47.8,
+    "reuse_ratio_pct": 100.0
+  },
+  "method": "house_ai.geospatial.earthworks.integrate on stored survey TIN (INFERRED); 0.35 m formation below finished floors; excludes footings, batters, bulking, drainage."
+}

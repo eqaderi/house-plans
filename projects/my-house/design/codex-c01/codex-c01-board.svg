@@ -1,0 +1,91 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="1100" viewBox="0 0 1500 1100">
+<defs><pattern id="hatch" width="8" height="8" patternUnits="userSpaceOnUse"><path d="M0,8L8,0" stroke="#a9c1c6" stroke-width="1"/></pattern><marker id="arrow" markerWidth="7" markerHeight="7" refX="6" refY="3" orient="auto"><path d="M0 0L6 3L0 6Z" fill="#315e5a"/></marker></defs>
+<rect width="1500" height="1100" fill="#f6f4ee"/>
+<style>text{font-family:Arial,Helvetica,sans-serif;fill:#233b3c}.small{font-size:15px}.body{font-size:18px}.sub{font-size:21px}.title{font-size:38px;font-weight:700}.label{font-size:14px;letter-spacing:1.4px;font-weight:700}</style>
+<text x="46" y="47" class="label" >CODEX C01  /  21 OCTOBER 2026</text>
+<text x="46" y="99" class="title" >A compact house. A generous downhill garden.</text>
+<text x="46" y="134" class="sub" >First siting + floor-use study • Three tiers • Main house aligned only to the long side boundaries</text>
+<rect x="36" y="165" width="640" height="688" rx="12" fill="#ffffff" stroke="none"/>
+<text x="58" y="201" class="label" >ONE SHARED BUILDING POSITION</text>
+<text x="58" y="229" class="small" >Survey-based plan view · north approximately up</text>
+<polygon points="44.80,454.67 14.70,747.12 140.00,760.00 170.10,467.55" fill="#e5e4df" stroke="#d5d5cf" stroke-width="2"/>
+<polygon points="170.10,467.55 140.00,760.00 560.31,583.21 590.42,290.76" fill="#f2efdf" stroke="#536c66" stroke-width="2"/>
+<polygon points="141.63,744.12 547.24,573.52 575.71,296.94 170.10,467.55" fill="none" stroke="#b2b7a2" stroke-width="1" stroke-dasharray="5 4"/>
+<polygon points="547.24,573.52 141.63,744.12 153.76,626.30 485.06,486.95 430.78,357.90 575.71,296.94 547.24,573.52" fill="#d1e3b9" stroke="#96b585" stroke-width="1"/>
+<polygon points="168.47,483.42 246.51,450.60 295.36,566.74 153.76,626.30 168.47,483.42" fill="#eadac1" stroke="#b59a76" stroke-width="1"/>
+<polygon points="295.36,566.74 246.51,450.60 256.83,446.25 332.49,414.43 425.89,375.15 436.21,370.81 485.06,486.95 424.41,512.46 295.36,566.74" fill="#759b9e" stroke="#284f53" stroke-width="2"/>
+<polygon points="246.51,450.60 375.56,396.32 424.41,512.46 295.36,566.74" fill="url(#hatch)" stroke="#284f53" stroke-width="2" stroke-dasharray="5 4"/>
+<text x="360.6232233105113" y="470.9442683482599" class="label" text-anchor="middle" transform="rotate(-22.812159897158452 360.6232233105113 470.9442683482599)">3 STACKED TIERS</text>
+<text x="340" y="609" class="label" >CONNECTED GARDEN</text>
+<text x="340" y="635" class="body" >~318 m² reserved in plan</text>
+<text x="340" y="660" class="small" >South + east, kept together</text>
+<text x="340" y="683" class="small" >Grading and levels unresolved</text>
+<text x="50" y="540" class="label" transform="rotate(-84 50 540)">WESTERN ROAD</text>
+<text x="91" y="800" class="small" >Western wedge: arrival court + exterior stair reserve</text>
+<text x="91" y="824" class="small" >Paving extent, gates and vehicle turns are still to be designed.</text>
+<path d="M603,326L603,265" fill="none" stroke="#315e5a" stroke-width="2" marker-end="url(#arrow)"/>
+<text x="596" y="252" class="label" >N</text>
+<path d="M497,420L580,385" fill="none" stroke="#315e5a" stroke-width="2" marker-end="url(#arrow)"/>
+<text x="505" y="448" class="label" >ENE VIEW</text>
+<path d="M565,448L553,407" fill="none" stroke="#315e5a" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M98,690L180,610" fill="none" stroke="#315e5a" stroke-width="2" marker-end="url(#arrow)"/>
+<text x="67" y="716" class="label" >ARRIVAL</text>
+<path d="M83,773L223,773" fill="none" stroke="#315e5a" stroke-width="2"/>
+<path d="M83,769L83,777" fill="none" stroke="#315e5a" stroke-width="2"/>
+<path d="M223,769L223,777" fill="none" stroke="#315e5a" stroke-width="2"/>
+<text x="133" y="764" class="small" >10 m</text>
+<rect x="694" y="165" width="370" height="688" rx="12" fill="#ffffff" stroke="none"/>
+<text x="714" y="201" class="label" >C01-A</text>
+<text x="714" y="235" class="sub" >Living upstairs</text>
+<rect x="714" y="270" width="282" height="120" rx="12" fill="#e2e9e9" stroke="none"/>
+<text x="728" y="296" class="label" >ROAD / TOP</text>
+<text x="728" y="326" class="body" >Two-car garage</text>
+<text x="728" y="350" class="body" >Office + plant: tentative</text>
+<rect x="714" y="411" width="282" height="120" rx="12" fill="#ece5d6" stroke="none"/>
+<text x="728" y="437" class="label" >UPPER RESIDENTIAL</text>
+<text x="728" y="467" class="body" >Main entrance → day spaces</text>
+<text x="728" y="491" class="body" >Living · kitchen · dining</text>
+<rect x="714" y="552" width="282" height="120" rx="12" fill="#dce9d0" stroke="none"/>
+<text x="728" y="578" class="label" >LOWER RESIDENTIAL</text>
+<text x="728" y="608" class="body" >Four bedrooms + laundry</text>
+<text x="728" y="632" class="body" >Short private vestibules</text>
+<path d="M1019,310L1019,647" fill="none" stroke="#315e5a" stroke-width="2" marker-end="url(#arrow)"/>
+<text x="1034" y="485" class="small" transform="rotate(-90 1034 485)" text-anchor="middle">SHARED STAIR + LIFT</text>
+<text x="714" y="712" class="body" >Direct arrival into daily life.</text>
+<text x="714" y="738" class="body" >East-facing upper terrace.</text>
+<text x="714" y="781" class="small" >Garden visits involve a level change;</text>
+<text x="714" y="804" class="small" >upper terrace needs separate resolution.</text>
+<rect x="1080" y="165" width="370" height="688" rx="12" fill="#ffffff" stroke="none"/>
+<text x="1100" y="201" class="label" >C01-B</text>
+<text x="1100" y="235" class="sub" >Living downstairs</text>
+<rect x="1100" y="270" width="282" height="120" rx="12" fill="#e2e9e9" stroke="none"/>
+<text x="1114" y="296" class="label" >ROAD / TOP</text>
+<text x="1114" y="326" class="body" >Two-car garage</text>
+<text x="1114" y="350" class="body" >Office + plant: tentative</text>
+<rect x="1100" y="411" width="282" height="120" rx="12" fill="#ece5d6" stroke="none"/>
+<text x="1114" y="437" class="label" >UPPER RESIDENTIAL</text>
+<text x="1114" y="467" class="body" >Main entrance + four bedrooms</text>
+<text x="1114" y="491" class="body" >Separate entrance landing</text>
+<rect x="1100" y="552" width="282" height="120" rx="12" fill="#dce9d0" stroke="none"/>
+<text x="1114" y="578" class="label" >LOWER RESIDENTIAL</text>
+<text x="1114" y="608" class="body" >Living · kitchen · dining</text>
+<text x="1114" y="632" class="body" >Garden connection to be graded</text>
+<path d="M1405,310L1405,647" fill="none" stroke="#315e5a" stroke-width="2" marker-end="url(#arrow)"/>
+<text x="1420" y="485" class="small" transform="rotate(-90 1420 485)" text-anchor="middle">SHARED STAIR + LIFT</text>
+<text x="1100" y="712" class="body" >Daily life beside the garden.</text>
+<text x="1100" y="738" class="body" >Stronger starting fit to your priority.</text>
+<text x="1100" y="781" class="small" >Guests use the core from arrival;</text>
+<text x="1100" y="804" class="small" >screen bedrooms from the entrance.</text>
+<rect x="36" y="874" width="1414" height="108" rx="12" fill="#243e40" stroke="none"/>
+<text x="60" y="921" class="title" style="fill:#fff">132.3 m²</text>
+<text x="60" y="951" class="small" style="fill:#d4e0d8">combined building footprint</text>
+<text x="410" y="921" class="title" style="fill:#fff">22%</text>
+<text x="410" y="951" class="small" style="fill:#d4e0d8">of the 600 m² parcel</text>
+<text x="690" y="921" class="title" style="fill:#fff">~318 m²</text>
+<text x="690" y="951" class="small" style="fill:#d4e0d8">connected garden reserve</text>
+<text x="1080" y="921" class="title" style="fill:#fff">0</text>
+<text x="1080" y="951" class="small" style="fill:#d4e0d8">road-aligned house variants</text>
+<text x="46" y="1014" class="body" >EXPLORATORY: massing fit is checked; room/furniture fit, car turns, stairs/lift and garden grading remain unresolved.</text>
+<text x="46" y="1042" class="small" >The floor cards show relationships, not floor plans. No approval gates passed. No finished floor heights are adopted.</text>
+<text x="46" y="1068" class="small" >Source: site v3 · program v6 · CP-SAT footprint study · authored by agent:codex. The shared brief remains the authority.</text>
+</svg>

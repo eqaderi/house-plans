@@ -1,0 +1,202 @@
+{
+  "budget": null,
+  "contradictions": [],
+  "facts": [
+    {
+      "id": "ans-q-followup-household-round-1-1",
+      "key": "answer",
+      "priority": null,
+      "source": {
+        "interview_round": 1,
+        "kind": "owner_answer",
+        "ref": "q-followup-household-round-1"
+      },
+      "statement": "1. a man, his wife, 2 dougters, 2 sons, possibly grandfather and grandmother\n2. find out based on the first answer, just know people can share rooms\n3. yes, yes",
+      "status": "preference",
+      "topic": "household",
+      "value": null
+    },
+    {
+      "id": "ans-q-followup-household-round-2-2",
+      "key": "answer",
+      "priority": null,
+      "source": {
+        "interview_round": 2,
+        "kind": "owner_answer",
+        "ref": "q-followup-household-round-2"
+      },
+      "statement": "1. they could be 0 to 18, boys already 10 years old, girls not born yet\n2. they could live there permenatnly and they can share a room\n3. old parents or a family member with broken leg needs to avoid stairs.",
+      "status": "verified_fact",
+      "topic": "multigenerational",
+      "value": null
+    },
+    {
+      "id": "ans-q-followup-household-round-3-3",
+      "key": "answer",
+      "priority": null,
+      "source": {
+        "interview_round": 3,
+        "kind": "owner_answer",
+        "ref": "q-followup-household-round-3"
+      },
+      "statement": "1 kids should share\n\n2. when we have stairs it does not matter on which floor the bedroom is, access is easy\n3. shared",
+      "status": "preference",
+      "topic": "bedrooms_bathrooms",
+      "value": null
+    },
+    {
+      "id": "f-accessibility",
+      "key": "accessibility",
+      "priority": null,
+      "source": {
+        "interview_round": 1,
+        "kind": "agent_inference",
+        "ref": "ans-q-followup-household-round-1-1 via agent:codex"
+      },
+      "statement": "Accessibility: step free (understood from your answer; please confirm)",
+      "status": "inference",
+      "topic": "accessibility",
+      "value": "step_free"
+    },
+    {
+      "id": "f-adults",
+      "key": "adults",
+      "priority": null,
+      "source": {
+        "interview_round": 1,
+        "kind": "agent_inference",
+        "ref": "ans-q-followup-household-round-1-1 via agent:codex"
+      },
+      "statement": "Adults: 2 (understood from your answer; please confirm)",
+      "status": "inference",
+      "topic": "household",
+      "value": 2
+    },
+    {
+      "id": "f-bedrooms",
+      "key": "bedrooms",
+      "priority": null,
+      "source": {
+        "interview_round": 1,
+        "kind": "owner_answer",
+        "ref": "ans-q-followup-household-round-1-1"
+      },
+      "statement": "Bedrooms: unknown / not decided",
+      "status": "unknown",
+      "topic": "bedrooms_bathrooms",
+      "value": null
+    },
+    {
+      "id": "f-children",
+      "key": "children",
+      "priority": null,
+      "source": {
+        "interview_round": 1,
+        "kind": "agent_inference",
+        "ref": "ans-q-followup-household-round-1-1 via agent:codex"
+      },
+      "statement": "Children: 4 (understood from your answer; please confirm)",
+      "status": "inference",
+      "topic": "household",
+      "value": 4
+    },
+    {
+      "id": "f-children_own_rooms",
+      "key": "children_own_rooms",
+      "priority": null,
+      "source": {
+        "interview_round": 3,
+        "kind": "agent_inference",
+        "ref": "ans-q-followup-household-round-3-3 via agent:codex"
+      },
+      "statement": "Each child has their own bedroom: no (understood from your answer; please confirm)",
+      "status": "inference",
+      "topic": "bedrooms_bathrooms",
+      "value": false
+    },
+    {
+      "id": "f-elder_step_free",
+      "key": "elder_step_free",
+      "priority": "must",
+      "source": {
+        "interview_round": 2,
+        "kind": "agent_inference",
+        "ref": "ans-q-followup-household-round-2-2 via agent:codex"
+      },
+      "statement": "Older relative must avoid stairs: yes (understood from your answer; please confirm)",
+      "status": "inference",
+      "topic": "accessibility",
+      "value": true
+    },
+    {
+      "id": "f-elders",
+      "key": "elders",
+      "priority": "must",
+      "source": {
+        "interview_round": 2,
+        "kind": "agent_inference",
+        "ref": "ans-q-followup-household-round-2-2 via agent:codex"
+      },
+      "statement": "Older relatives living with you: 2 (understood from your answer; please confirm)",
+      "status": "inference",
+      "topic": "multigenerational",
+      "value": 2
+    },
+    {
+      "id": "f-household_size",
+      "key": "household_size",
+      "priority": "must",
+      "source": {
+        "interview_round": 2,
+        "kind": "agent_inference",
+        "ref": "ans-q-followup-household-round-2-2 via agent:codex"
+      },
+      "statement": "People in the household: 8 (understood from your answer; please confirm)",
+      "status": "inference",
+      "topic": "household",
+      "value": 8
+    },
+    {
+      "id": "f-lift",
+      "key": "lift",
+      "priority": null,
+      "source": {
+        "interview_round": 1,
+        "kind": "agent_inference",
+        "ref": "ans-q-followup-household-round-1-1 via agent:codex"
+      },
+      "statement": "Lift: yes (understood from your answer; please confirm)",
+      "status": "inference",
+      "topic": "accessibility",
+      "value": true
+    }
+  ],
+  "household": [],
+  "id": "brief",
+  "interview_rounds_completed": 3,
+  "project_id": "my-house",
+  "provenance": {
+    "created_at": "2026-10-20T07:58:15.938533Z",
+    "created_by": {
+      "display_name": null,
+      "id": "house-ai-interview",
+      "kind": "system",
+      "model": null,
+      "provider": null
+    },
+    "inputs": [
+      {
+        "id": "interview",
+        "kind": "interview_session",
+        "sha256": "9347fb23e57cf4c407d3985b1bf3419e9700819e013204263303b54c50adf7e3",
+        "version": 4
+      }
+    ],
+    "method": "owner_interview",
+    "notes": "Derived from the interview session; the owner's words are kept verbatim.",
+    "tool": "house-ai interview",
+    "tool_version": null
+  },
+  "schema_version": "0.1.0",
+  "target_gross_area_m2": null
+}

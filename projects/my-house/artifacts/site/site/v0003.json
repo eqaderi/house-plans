@@ -1,0 +1,1043 @@
+{
+  "assumptions": [
+    {
+      "affects": [],
+      "basis": "A frame choice that keeps coordinates small; not a survey fact.",
+      "confirm_with": "owner",
+      "id": "asm-local-origin",
+      "made_by": null,
+      "statement": "The local project origin is at grid (623809.1666028872, 3870456.032537977, 0.0) (south-west-most boundary vertex (lowest northing, then easting); z 0); local x is rotated 0.0° from grid east.",
+      "status": "assumption"
+    }
+  ],
+  "boundary": {
+    "holes": [],
+    "outer": [
+      [
+        2.150217868387699,
+        20.889628109987825
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        30.022403531707823,
+        12.627754596993327
+      ],
+      [
+        32.17262140021194,
+        33.51738270698115
+      ]
+    ]
+  },
+  "boundary_source_ref": "src-seperated#D7 (layer 0)",
+  "boundary_status": "inference",
+  "buildable_envelope": {
+    "basis": "Calculated from D7 boundary with owner-confirmed 1 m inward perpendicular offsets at south and east boundaries (chat 2026-10-20; src-site-context-20261020 v2). Only these two setbacks applied; survey/legal verification and other applicable controls remain pending.",
+    "max_height_m": null,
+    "polygon": {
+      "holes": [],
+      "outer": [
+        [
+          0.11672013322146174,
+          1.1339502902433045
+        ],
+        [
+          29.08834728474277,
+          13.319736733311231
+        ],
+        [
+          31.121845019909006,
+          33.07541455305575
+        ],
+        [
+          2.150217868387699,
+          20.889628109987825
+        ]
+      ]
+    },
+    "status": "inference"
+  },
+  "cad_imports": [],
+  "classification": "private",
+  "coordinates": {
+    "elevation_units": {
+      "status": "declared_in_source",
+      "unit": "m"
+    },
+    "horizontal_crs": {
+      "declared_epsg": null,
+      "epsg": null,
+      "name": null,
+      "status": "unknown"
+    },
+    "local": {
+      "grid_to_true_north_deg": null,
+      "id": "lcs-site",
+      "name": "Survey frame; origin: south-west-most boundary vertex (lowest northing, then easting); z 0",
+      "origin": [
+        623809.1666028872,
+        3870456.032537977,
+        0.0
+      ],
+      "rotation_deg": 0.0
+    },
+    "source_units": {
+      "status": "declared_in_source",
+      "unit": "m"
+    },
+    "vertical_datum": {
+      "epsg": null,
+      "name": null,
+      "status": "unknown"
+    }
+  },
+  "features": [
+    {
+      "geometry": {
+        "line": {
+          "closed": false,
+          "points": [
+            [
+              -6.198602887219749,
+              27.519462022930384
+            ],
+            [
+              -8.419602887239307,
+              6.5534620229154825
+            ],
+            [
+              -9.474602887174115,
+              -4.320537975989282
+            ]
+          ]
+        },
+        "type": "polyline"
+      },
+      "id": "road-seperated-bc",
+      "kind": "road",
+      "name": null,
+      "notes": "classified by the layer mapping; Owner reports total road corridor 9 m: 8 m asphalt plus 1 m parcel-side sidewalk. Exact subdivision alignment is not surveyed.",
+      "source_ref": "src-seperated#BC (layer 0)",
+      "status": "inference"
+    },
+    {
+      "geometry": {
+        "line": {
+          "closed": false,
+          "points": [
+            [
+              2.7513196944491938,
+              26.57136615086347
+            ],
+            [
+              0.5345018189400434,
+              5.644844954833388
+            ],
+            [
+              -0.5166645004646853,
+              -5.18964088242501
+            ]
+          ]
+        },
+        "type": "polyline"
+      },
+      "id": "road-seperated-c5",
+      "kind": "road",
+      "name": null,
+      "notes": "classified by the layer mapping; Owner reports total road corridor 9 m: 8 m asphalt plus 1 m parcel-side sidewalk. Exact subdivision alignment is not surveyed.",
+      "source_ref": "src-seperated#C5 (layer 0)",
+      "status": "inference"
+    },
+    {
+      "geometry": {
+        "line": {
+          "closed": false,
+          "points": [
+            [
+              2.150217868387699,
+              20.889628109987825
+            ],
+            [
+              0.0,
+              0.0
+            ]
+          ]
+        },
+        "type": "polyline"
+      },
+      "id": "frontage-e0",
+      "kind": "frontage",
+      "name": "frontage along boundary edge 0",
+      "notes": "Owner identifies western uphill road frontage as primary access; exact gate position and parking level unspecified.",
+      "source_ref": "derived: boundary edge 0 within 0.5 m of a road",
+      "status": "inference"
+    },
+    {
+      "geometry": {
+        "polygon": {
+          "holes": [],
+          "outer": [
+            [
+              0.11672013322146173,
+              1.1339502902433043
+            ],
+            [
+              29.634692306743226,
+              13.54953548529404
+            ],
+            [
+              30.022403531707823,
+              12.627754596993327
+            ],
+            [
+              0.0,
+              0.0
+            ]
+          ]
+        },
+        "type": "polygon"
+      },
+      "id": "owner-south-setback",
+      "kind": "other",
+      "name": "Southern no-build strip",
+      "notes": "Owner confirms a 1 m inward perpendicular no-build strip. Polygon calculated from current survey boundary; formal site verification pending. This parcel-side strip forms half of the 2 m shared pedestrian passage.",
+      "source_ref": "src-site-context-20261020 v2: owner-confirmed perpendicular setback input; derived polygon",
+      "status": "inference"
+    },
+    {
+      "geometry": {
+        "polygon": {
+          "holes": [],
+          "outer": [
+            [
+              30.022403531707823,
+              12.627754596993327
+            ],
+            [
+              29.027659335379596,
+              12.730145924122663
+            ],
+            [
+              31.121845020022434,
+              33.07541455305621
+            ],
+            [
+              32.17262140021194,
+              33.51738270698115
+            ]
+          ]
+        },
+        "type": "polygon"
+      },
+      "id": "owner-east-setback",
+      "kind": "other",
+      "name": "Eastern no-build strip",
+      "notes": "Owner confirms a 1 m inward perpendicular no-build strip. Polygon calculated from current survey boundary; formal site verification pending.",
+      "source_ref": "src-site-context-20261020 v2: owner-confirmed perpendicular setback input; derived polygon",
+      "status": "inference"
+    },
+    {
+      "geometry": {
+        "line": {
+          "closed": false,
+          "points": [
+            [
+              2.150217868387699,
+              20.889628109987825
+            ],
+            [
+              32.17262140021194,
+              33.51738270698115
+            ]
+          ]
+        },
+        "type": "polyline"
+      },
+      "id": "owner-north-neighbor",
+      "kind": "other",
+      "name": "Northern residential neighbor",
+      "notes": "Owner reports future neighboring house. Line denotes shared boundary, not a proposed building footprint.",
+      "source_ref": "src-site-context-20261020 (agent synthesis of owner description, 2026-10-20)",
+      "status": "inference"
+    },
+    {
+      "geometry": {
+        "line": {
+          "closed": false,
+          "points": [
+            [
+              0.0,
+              0.0
+            ],
+            [
+              30.022403531707823,
+              12.627754596993327
+            ]
+          ]
+        },
+        "type": "polyline"
+      },
+      "id": "owner-south-neighbor-access",
+      "kind": "other",
+      "name": "Southern neighbor and agreed shared pedestrian passage",
+      "notes": "Owner confirms full 2 m shared pedestrian passage is continuously connected to western road and shared pedestrian access is agreed. Width comprises this parcel's 1 m strip plus neighbor's matching 1 m strip. Boundary line is a context marker, not a gate position or documentary legal-easement geometry. Independent legal verification is not recorded.",
+      "source_ref": "src-site-context-20261020 v2: owner-confirmed road connection and shared pedestrian use",
+      "status": "inference"
+    },
+    {
+      "geometry": {
+        "line": {
+          "closed": false,
+          "points": [
+            [
+              7.058087461851537,
+              12.761468693292699
+            ],
+            [
+              27.473321863412856,
+              21.348341819248162
+            ]
+          ]
+        },
+        "type": "polyline"
+      },
+      "id": "owner-primary-view-axis",
+      "kind": "other",
+      "name": "Principal downhill city-view axis",
+      "notes": "Owner identifies city view along long boundaries toward east-northeast, calculated bearing 67.97 degrees true using owner-supplied EPSG:32638. Illustrative axis only, not a terrain breakline, sightline clearance verification or steepest-descent vector.",
+      "source_ref": "src-site-context-20261020 (agent synthesis of owner description, 2026-10-20)",
+      "status": "inference"
+    }
+  ],
+  "id": "site",
+  "issues": [
+    {
+      "description": "Listed with handle and reason in the cad_import artifacts.",
+      "id": "iss-ambiguous-entities",
+      "raised_by": null,
+      "severity": "warning",
+      "status": "open",
+      "subject_ids": [],
+      "title": "6 ambiguous CAD entities were left out"
+    },
+    {
+      "description": "Resolved by homeowner clarification in chat, 2026-10-20: both 1 m setbacks are perpendicular to their respective boundaries. Derived envelope recorded as inference; formal survey/site verification remains pending.",
+      "id": "iss-owner-setback-basis",
+      "raised_by": {
+        "display_name": null,
+        "id": "codex",
+        "kind": "agent",
+        "model": null,
+        "provider": null
+      },
+      "severity": "blocking",
+      "status": "resolved",
+      "subject_ids": [],
+      "title": "Resolve setback measurement basis before setting buildable envelope"
+    },
+    {
+      "description": "Resolved as an owner-confirmed design input in chat, 2026-10-20: continuous connection to western road and agreed full-width shared pedestrian use. Exact gate position is undecided; no independent legal verification recorded.",
+      "id": "iss-south-passage-access",
+      "raised_by": {
+        "display_name": null,
+        "id": "codex",
+        "kind": "agent",
+        "model": null,
+        "provider": null
+      },
+      "severity": "warning",
+      "status": "resolved",
+      "subject_ids": [],
+      "title": "Southern secondary access remains conditional"
+    }
+  ],
+  "name": "Owner's house (600 m² parcel survey)",
+  "project_id": "my-house",
+  "provenance": {
+    "created_at": "2026-10-20T15:17:45.052174Z",
+    "created_by": {
+      "display_name": null,
+      "id": "codex",
+      "kind": "agent",
+      "model": null,
+      "provider": null
+    },
+    "inputs": [
+      {
+        "id": "site",
+        "kind": "site",
+        "sha256": "bedd3948543566e1e8d1651b6d4218516dbc636c14f975db7c88c905a530a077",
+        "version": 2
+      },
+      {
+        "id": "src-site-context-20261020",
+        "kind": "source_document",
+        "sha256": "9866b7972a0fe89a40394c5763b0aa25e148da649eb4976e9cf586b5c94e026f",
+        "version": 2
+      }
+    ],
+    "method": "owner_clarification_and_calculated_setback",
+    "notes": "Owner confirmed perpendicular setback widths and connected agreed southern pedestrian access in chat. Updated derived envelope and resolved corresponding issues. Coordinates, original boundary, terrain, confirmation statuses and workflow approvals preserved.",
+    "tool": "ProjectStore",
+    "tool_version": null
+  },
+  "schema_version": "0.1.0",
+  "terrain": {
+    "contours": [],
+    "spot_elevations": [
+      {
+        "id": "spot-seperated-69",
+        "source_ref": "src-seperated#69 (layer 0)",
+        "xy": [
+          -6.198602887219749,
+          27.519462022930384
+        ],
+        "z_m": 1678.998
+      },
+      {
+        "id": "spot-seperated-6b",
+        "source_ref": "src-seperated#6B (layer 0)",
+        "xy": [
+          -8.419602887239307,
+          6.5534620229154825
+        ],
+        "z_m": 1679.674
+      },
+      {
+        "id": "spot-seperated-6d",
+        "source_ref": "src-seperated#6D (layer 0)",
+        "xy": [
+          -9.474602887174115,
+          -4.320537975989282
+        ],
+        "z_m": 1680.071
+      },
+      {
+        "id": "spot-seperated-6f",
+        "source_ref": "src-seperated#6F (layer 0)",
+        "xy": [
+          -1.5996028871741146,
+          -4.859537977259606
+        ],
+        "z_m": 1679.131
+      },
+      {
+        "id": "spot-seperated-71",
+        "source_ref": "src-seperated#71 (layer 0)",
+        "xy": [
+          1.4723971127532423,
+          20.93246202263981
+        ],
+        "z_m": 1678.33
+      },
+      {
+        "id": "spot-seperated-73",
+        "source_ref": "src-seperated#73 (layer 0)",
+        "xy": [
+          33.44839711277746,
+          34.06846202397719
+        ],
+        "z_m": 1665.378
+      },
+      {
+        "id": "spot-elevation-69",
+        "source_ref": "src-elevation#69 (layer 0)",
+        "xy": [
+          32.122397112776525,
+          33.494462022557855
+        ],
+        "z_m": 1664.884
+      },
+      {
+        "id": "spot-elevation-6b",
+        "source_ref": "src-elevation#6B (layer 0)",
+        "xy": [
+          31.181397112784907,
+          25.91246202401817
+        ],
+        "z_m": 1665.529
+      },
+      {
+        "id": "spot-elevation-6d",
+        "source_ref": "src-elevation#6D (layer 0)",
+        "xy": [
+          30.429397112806328,
+          16.330462022684515
+        ],
+        "z_m": 1665.697
+      },
+      {
+        "id": "spot-elevation-6f",
+        "source_ref": "src-elevation#6F (layer 0)",
+        "xy": [
+          30.029397112783045,
+          12.842462022788823
+        ],
+        "z_m": 1665.648
+      },
+      {
+        "id": "spot-elevation-71",
+        "source_ref": "src-elevation#71 (layer 0)",
+        "xy": [
+          19.685397112742066,
+          8.383462022989988
+        ],
+        "z_m": 1669.394
+      },
+      {
+        "id": "spot-elevation-73",
+        "source_ref": "src-elevation#73 (layer 0)",
+        "xy": [
+          19.44539711275138,
+          15.391462022904307
+        ],
+        "z_m": 1669.654
+      },
+      {
+        "id": "spot-elevation-75",
+        "source_ref": "src-elevation#75 (layer 0)",
+        "xy": [
+          19.61439711274579,
+          23.13446202268824
+        ],
+        "z_m": 1669.49
+      },
+      {
+        "id": "spot-elevation-77",
+        "source_ref": "src-elevation#77 (layer 0)",
+        "xy": [
+          24.121397112845443,
+          20.44846202293411
+        ],
+        "z_m": 1667.925
+      },
+      {
+        "id": "spot-elevation-79",
+        "source_ref": "src-elevation#79 (layer 0)",
+        "xy": [
+          18.080397112760693,
+          27.42346202256158
+        ],
+        "z_m": 1669.952
+      },
+      {
+        "id": "spot-elevation-7b",
+        "source_ref": "src-elevation#7B (layer 0)",
+        "xy": [
+          10.28639711276628,
+          24.028462023008615
+        ],
+        "z_m": 1673.05
+      },
+      {
+        "id": "spot-elevation-7d",
+        "source_ref": "src-elevation#7D (layer 0)",
+        "xy": [
+          10.855397112783976,
+          13.42346202256158
+        ],
+        "z_m": 1672.913
+      },
+      {
+        "id": "spot-elevation-7f",
+        "source_ref": "src-elevation#7F (layer 0)",
+        "xy": [
+          10.4433971127728,
+          4.807462022639811
+        ],
+        "z_m": 1672.744
+      },
+      {
+        "id": "spot-elevation-81",
+        "source_ref": "src-elevation#81 (layer 0)",
+        "xy": [
+          5.211397112812847,
+          2.7454620227217674
+        ],
+        "z_m": 1674.738
+      },
+      {
+        "id": "spot-elevation-83",
+        "source_ref": "src-elevation#83 (layer 0)",
+        "xy": [
+          5.7103971127653494,
+          12.851462022867054
+        ],
+        "z_m": 1674.855
+      },
+      {
+        "id": "spot-elevation-85",
+        "source_ref": "src-elevation#85 (layer 0)",
+        "xy": [
+          7.263397112837993,
+          22.68246202263981
+        ],
+        "z_m": 1674.239
+      },
+      {
+        "id": "spot-elevation-87",
+        "source_ref": "src-elevation#87 (layer 0)",
+        "xy": [
+          2.17839711275883,
+          20.78446202399209
+        ],
+        "z_m": 1677.438
+      },
+      {
+        "id": "spot-elevation-89",
+        "source_ref": "src-elevation#89 (layer 0)",
+        "xy": [
+          0.6343971127644181,
+          14.550462022889405
+        ],
+        "z_m": 1677.805
+      },
+      {
+        "id": "spot-elevation-8b",
+        "source_ref": "src-elevation#8B (layer 0)",
+        "xy": [
+          5.641397112747654,
+          7.238462022971362
+        ],
+        "z_m": 1674.675
+      },
+      {
+        "id": "spot-elevation-8d",
+        "source_ref": "src-elevation#8D (layer 0)",
+        "xy": [
+          -0.05160288722254336,
+          0.039462022949010134
+        ],
+        "z_m": 1677.613
+      },
+      {
+        "id": "spot-elevation-8f",
+        "source_ref": "src-elevation#8F (layer 0)",
+        "xy": [
+          0.7033971127821133,
+          9.080462022684515
+        ],
+        "z_m": 1677.632
+      },
+      {
+        "id": "spot-elevation-91",
+        "source_ref": "src-elevation#91 (layer 0)",
+        "xy": [
+          -5.844602887169458,
+          40.0614620228298
+        ],
+        "z_m": 1677.462
+      }
+    ],
+    "status": "surface_built",
+    "surface": {
+      "method": "delaunay_tin",
+      "source_ids": [
+        "spot-elevation-69",
+        "spot-elevation-6b",
+        "spot-elevation-6d",
+        "spot-elevation-6f",
+        "spot-elevation-71",
+        "spot-elevation-73",
+        "spot-elevation-75",
+        "spot-elevation-77",
+        "spot-elevation-79",
+        "spot-elevation-7b",
+        "spot-elevation-7d",
+        "spot-elevation-7f",
+        "spot-elevation-81",
+        "spot-elevation-83",
+        "spot-elevation-85",
+        "spot-elevation-87",
+        "spot-elevation-89",
+        "spot-elevation-8b",
+        "spot-elevation-8d",
+        "spot-elevation-8f",
+        "spot-elevation-91",
+        "spot-seperated-69",
+        "spot-seperated-6b",
+        "spot-seperated-6d",
+        "spot-seperated-6f",
+        "spot-seperated-71",
+        "spot-seperated-73"
+      ],
+      "triangles": [
+        [
+          0,
+          4,
+          20
+        ],
+        [
+          0,
+          22,
+          4
+        ],
+        [
+          1,
+          22,
+          0
+        ],
+        [
+          1,
+          24,
+          25
+        ],
+        [
+          1,
+          25,
+          22
+        ],
+        [
+          2,
+          24,
+          1
+        ],
+        [
+          3,
+          10,
+          17
+        ],
+        [
+          3,
+          17,
+          18
+        ],
+        [
+          3,
+          18,
+          24
+        ],
+        [
+          3,
+          24,
+          2
+        ],
+        [
+          5,
+          6,
+          7
+        ],
+        [
+          5,
+          7,
+          8
+        ],
+        [
+          5,
+          8,
+          9
+        ],
+        [
+          7,
+          12,
+          13
+        ],
+        [
+          7,
+          13,
+          8
+        ],
+        [
+          9,
+          8,
+          13
+        ],
+        [
+          9,
+          10,
+          3
+        ],
+        [
+          9,
+          11,
+          10
+        ],
+        [
+          9,
+          13,
+          11
+        ],
+        [
+          10,
+          16,
+          17
+        ],
+        [
+          11,
+          16,
+          10
+        ],
+        [
+          13,
+          12,
+          11
+        ],
+        [
+          14,
+          7,
+          6
+        ],
+        [
+          14,
+          12,
+          7
+        ],
+        [
+          15,
+          11,
+          12
+        ],
+        [
+          15,
+          12,
+          14
+        ],
+        [
+          15,
+          16,
+          11
+        ],
+        [
+          17,
+          16,
+          23
+        ],
+        [
+          17,
+          23,
+          18
+        ],
+        [
+          18,
+          23,
+          25
+        ],
+        [
+          18,
+          25,
+          24
+        ],
+        [
+          19,
+          23,
+          16
+        ],
+        [
+          20,
+          4,
+          21
+        ],
+        [
+          20,
+          16,
+          15
+        ],
+        [
+          20,
+          19,
+          16
+        ],
+        [
+          20,
+          21,
+          19
+        ],
+        [
+          22,
+          19,
+          21
+        ],
+        [
+          22,
+          21,
+          4
+        ],
+        [
+          25,
+          19,
+          22
+        ],
+        [
+          25,
+          23,
+          19
+        ],
+        [
+          26,
+          0,
+          20
+        ],
+        [
+          26,
+          1,
+          0
+        ],
+        [
+          26,
+          2,
+          1
+        ],
+        [
+          26,
+          6,
+          5
+        ],
+        [
+          26,
+          14,
+          6
+        ],
+        [
+          26,
+          15,
+          14
+        ],
+        [
+          26,
+          20,
+          15
+        ]
+      ],
+      "vertices": [
+        [
+          -6.198602887219749,
+          27.519462022930384,
+          1678.998
+        ],
+        [
+          -8.419602887239307,
+          6.5534620229154825,
+          1679.674
+        ],
+        [
+          -9.474602887174115,
+          -4.320537975989282,
+          1680.071
+        ],
+        [
+          -1.5996028871741146,
+          -4.859537977259606,
+          1679.131
+        ],
+        [
+          1.4723971127532423,
+          20.93246202263981,
+          1678.33
+        ],
+        [
+          33.44839711277746,
+          34.06846202397719,
+          1665.378
+        ],
+        [
+          32.122397112776525,
+          33.494462022557855,
+          1664.884
+        ],
+        [
+          31.181397112784907,
+          25.91246202401817,
+          1665.529
+        ],
+        [
+          30.429397112806328,
+          16.330462022684515,
+          1665.697
+        ],
+        [
+          30.029397112783045,
+          12.842462022788823,
+          1665.648
+        ],
+        [
+          19.685397112742066,
+          8.383462022989988,
+          1669.394
+        ],
+        [
+          19.44539711275138,
+          15.391462022904307,
+          1669.654
+        ],
+        [
+          19.61439711274579,
+          23.13446202268824,
+          1669.49
+        ],
+        [
+          24.121397112845443,
+          20.44846202293411,
+          1667.925
+        ],
+        [
+          18.080397112760693,
+          27.42346202256158,
+          1669.952
+        ],
+        [
+          10.28639711276628,
+          24.028462023008615,
+          1673.05
+        ],
+        [
+          10.855397112783976,
+          13.42346202256158,
+          1672.913
+        ],
+        [
+          10.4433971127728,
+          4.807462022639811,
+          1672.744
+        ],
+        [
+          5.211397112812847,
+          2.7454620227217674,
+          1674.738
+        ],
+        [
+          5.7103971127653494,
+          12.851462022867054,
+          1674.855
+        ],
+        [
+          7.263397112837993,
+          22.68246202263981,
+          1674.239
+        ],
+        [
+          2.17839711275883,
+          20.78446202399209,
+          1677.438
+        ],
+        [
+          0.6343971127644181,
+          14.550462022889405,
+          1677.805
+        ],
+        [
+          5.641397112747654,
+          7.238462022971362,
+          1674.675
+        ],
+        [
+          -0.05160288722254336,
+          0.039462022949010134,
+          1677.613
+        ],
+        [
+          0.7033971127821133,
+          9.080462022684515,
+          1677.632
+        ],
+        [
+          -5.844602887169458,
+          40.0614620228298,
+          1677.462
+        ]
+      ]
+    },
+    "surface_ref": null
+  }
+}

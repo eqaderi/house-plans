@@ -1,0 +1,285 @@
+{
+  "option": "C09-2",
+  "rules": [
+    {
+      "id": "geom.overlap.road",
+      "status": "pass",
+      "evidence": "overlapping rooms: none"
+    },
+    {
+      "id": "geom.envelope.road",
+      "status": "pass",
+      "evidence": "area outside buildable envelope 0.00 m²"
+    },
+    {
+      "id": "geom.terraces.road",
+      "status": "pass",
+      "evidence": "terraces/paths outside parcel setbacks: none"
+    },
+    {
+      "id": "2.3.voids.road",
+      "status": "pass",
+      "evidence": "enclosed leftover holes in plate: 0"
+    },
+    {
+      "id": "geom.overlap.main",
+      "status": "pass",
+      "evidence": "overlapping rooms: none"
+    },
+    {
+      "id": "geom.envelope.main",
+      "status": "pass",
+      "evidence": "area outside buildable envelope 0.00 m²"
+    },
+    {
+      "id": "geom.terraces.main",
+      "status": "pass",
+      "evidence": "terraces/paths outside parcel setbacks: none"
+    },
+    {
+      "id": "2.3.voids.main",
+      "status": "pass",
+      "evidence": "enclosed leftover holes in plate: 0"
+    },
+    {
+      "id": "geom.overlap.lower",
+      "status": "pass",
+      "evidence": "overlapping rooms: none"
+    },
+    {
+      "id": "geom.envelope.lower",
+      "status": "pass",
+      "evidence": "area outside buildable envelope 0.00 m²"
+    },
+    {
+      "id": "geom.terraces.lower",
+      "status": "pass",
+      "evidence": "terraces/paths outside parcel setbacks: none"
+    },
+    {
+      "id": "2.3.voids.lower",
+      "status": "pass",
+      "evidence": "enclosed leftover holes in plate: 0"
+    },
+    {
+      "id": "1.1 kitchen→south terrace",
+      "status": "pass",
+      "evidence": "kitchen south wall is façade=True; door(s) [1.6] m onto ['SOUTH TERRACE']"
+    },
+    {
+      "id": "1.2 kitchen prime frontage",
+      "status": "pass",
+      "evidence": "kitchen spans u 4.6–9.2 on the south façade"
+    },
+    {
+      "id": "1.3 semi-open kitchen",
+      "status": "pass",
+      "evidence": "2 doorless portals: [('hall', 'kitchen', 1.1), ('kitchen', 'dining', 1.1)]; full-height walls otherwise"
+    },
+    {
+      "id": "1.5 kitchen/dining right-sized",
+      "status": "pass",
+      "evidence": "kitchen 15.1 m², pantry 4.3 m², dining 11.1 m² (3.28 m wide), open to the living room (stmt-024)"
+    },
+    {
+      "id": "2.1 every main room off a hall",
+      "status": "pass",
+      "evidence": "reachable without crossing another main room: {'dining': True, 'kitchen': True, 'living': True, 'master': True, 'boys': True, 'girls': True, 'guest': True, 'lounge': True}"
+    },
+    {
+      "id": "2.5 master not through closet",
+      "status": "pass",
+      "evidence": "bedroom door(s) from ['dress', 'mlob']"
+    },
+    {
+      "id": "2.6a front doors on the west façade",
+      "status": "pass",
+      "evidence": "road door u=0.0 into hall-r; main door u=2.0 into entry; both open-sky, no passage"
+    },
+    {
+      "id": "2.6b straight line door → stair/lift",
+      "status": "open",
+      "evidence": "road: door → 7 m hall → one turn north into the core lobby. Main: door → entry → turn north → turn east along the hall to the stair (two turns). A main door on the hall axis would sit under the garage slab, the passage you rejected. Your call."
+    },
+    {
+      "id": "3.3 living ~34 m², ≥5.0 m wide",
+      "status": "pass",
+      "evidence": "living 33.9 m², 5.0 m clear square fits=True"
+    },
+    {
+      "id": "3.1 cozy corner, north closed",
+      "status": "manual",
+      "evidence": "living north edge v=6.2; north neighbour = ['MASTER BEDROOM']"
+    },
+    {
+      "id": "4.2 steps east going down",
+      "status": "pass",
+      "evidence": "west edges road/main/lower u = [0.0, 2.0, 5.0]; east edges u = [12.2, 17.8, 18.0]"
+    },
+    {
+      "id": "4.7 fits the field, ~150 m² east garden",
+      "status": "pass",
+      "evidence": "lower floor ends u=18.0; east garden 151 m² inside the setbacks; gross floor 463 m²"
+    },
+    {
+      "id": "4.3 main-floor terraces",
+      "status": "pass",
+      "evidence": "53 m² of main-floor terraces/balconies: ['SOUTH TERRACE', 'EAST BALCONY']"
+    },
+    {
+      "id": "5.5 garage 55–60 m²",
+      "status": "pass",
+      "evidence": "garage 57.1 m² gross"
+    },
+    {
+      "id": "5.1 garage→lift indoors",
+      "status": "pass",
+      "evidence": "door chain garage → core lobby → lift"
+    },
+    {
+      "id": "5.2 one stair, all levels",
+      "status": "pass",
+      "evidence": "stair boxes {(6.8, 1.1, 9.4, 7.3)}"
+    },
+    {
+      "id": "6.5 master main/north + 3 lower bedrooms",
+      "status": "pass",
+      "evidence": "main bedrooms ['MASTER BEDROOM'] (north half=True); lower ['BOYS', 'GIRLS', 'GRANDPARENTS']"
+    },
+    {
+      "id": "6.1 master ensuite",
+      "status": "pass",
+      "evidence": "ensuite reached from inside the bedroom suite only, never via the hall"
+    },
+    {
+      "id": "6.6 tea/snack bar downstairs",
+      "status": "pass",
+      "evidence": "tea bar counter with sink + under-counter fridge"
+    },
+    {
+      "id": "6.7 owner's 4.3×4.8 children rooms",
+      "status": "pass",
+      "evidence": "boys/girls clear [(4.18, 4.68, 19.6), (4.18, 4.68, 19.6)]"
+    },
+    {
+      "id": "I10 guest seated ensuite",
+      "status": "pass",
+      "evidence": "SEATED ENSUITE 4.7 m²"
+    },
+    {
+      "id": "I12 laundry 12–14 m²",
+      "status": "pass",
+      "evidence": "laundry 12.9 m²"
+    },
+    {
+      "id": "2.2 no long corridors",
+      "status": "open",
+      "evidence": "main family hall 10.6 × 2.2 m, rooms on one side open to it (stair 3.2 m, dining). Lower family hall 18 m². Not a double-loaded corridor, but long. Your call."
+    },
+    {
+      "id": "4.4 digging ≤ ~4.5 m",
+      "status": "pass",
+      "evidence": "deepest building cut 4.38 m below natural ground (formation 0.35 m under FFL)"
+    },
+    {
+      "id": "4.1 south + east for day rooms",
+      "status": "manual",
+      "evidence": "on the S/E façades: Kitchen, Dining 6–8, Living; buried NW holds Pantry, Wc, Shower, Wudu, Lobby"
+    },
+    {
+      "id": "2.4 no unnecessary doors",
+      "status": "manual",
+      "evidence": "main floor: 9 doorless openings, 8 hinged doors (bedroom, baths, stores, lobby only)"
+    },
+    {
+      "id": "3.2 living has its own hall entry",
+      "status": "manual",
+      "evidence": "1.6 m opening straight from the family hall"
+    },
+    {
+      "id": "4.4 earth balance",
+      "status": "manual",
+      "evidence": "building cut ≈ 254 m³; outdoor fill ≈ 180 m³"
+    },
+    {
+      "id": "5.3 stair at the heart",
+      "status": "manual",
+      "evidence": "stair box u 6.8–10.0 opens its full 3.2 m width onto the family hall on every floor"
+    },
+    {
+      "id": "5.4 step-free",
+      "status": "manual",
+      "evidence": "lift reaches all 3 levels and each level is one flat floor. Threshold details are not designed"
+    },
+    {
+      "id": "6.3 stores not in odd places",
+      "status": "manual",
+      "evidence": "household store opens off the laundry beside the core; plant room off the road hall"
+    },
+    {
+      "id": "7.4 standard, comfortable sizes",
+      "status": "manual",
+      "evidence": "Kitchen 15; Dining 6–8 11; Living 34; Master Bedroom 21; Boys 20; Girls 20; Garden Lounge + Tea Bar 28; Grandparents 14 m²"
+    }
+  ],
+  "label_collisions": {
+    "road": [],
+    "main": [],
+    "lower": []
+  },
+  "earthworks": {
+    "rows": [
+      {
+        "zone": "MAIN FLOOR dig (formation 1673.25)",
+        "area_m2": 27.4,
+        "cut_m3": 13.7,
+        "fill_m3": 0.0,
+        "max_cut_m": 1.74,
+        "max_fill_m": 0.79
+      },
+      {
+        "zone": "LOWER FLOOR + GARDEN dig (formation 1669.65)",
+        "area_m2": 160.1,
+        "cut_m3": 240.4,
+        "fill_m3": 0.0,
+        "max_cut_m": 4.38,
+        "max_fill_m": 1.41
+      },
+      {
+        "zone": "FORECOURT (finished 1677.40)",
+        "area_m2": 36.2,
+        "cut_m3": 0.0,
+        "fill_m3": 39.1,
+        "max_cut_m": 0.09,
+        "max_fill_m": 3.0
+      },
+      {
+        "zone": "ARRIVAL COURT (finished 1673.60)",
+        "area_m2": 21.2,
+        "cut_m3": 4.7,
+        "fill_m3": 5.5,
+        "max_cut_m": 1.23,
+        "max_fill_m": 1.8
+      },
+      {
+        "zone": "UPPER LAWN (finished 1668.60)",
+        "area_m2": 71.3,
+        "cut_m3": 0.2,
+        "fill_m3": 96.7,
+        "max_cut_m": 0.31,
+        "max_fill_m": 2.63
+      },
+      {
+        "zone": "LOWER LAWN (finished 1667.30)",
+        "area_m2": 37.8,
+        "cut_m3": 0.0,
+        "fill_m3": 38.7,
+        "max_cut_m": 0.08,
+        "max_fill_m": 2.06
+      }
+    ],
+    "total_cut_m3": 259.0,
+    "total_fill_m3": 180.0,
+    "method": "house_ai.geospatial.earthworks.integrate on the stored survey TIN (inferred surface); building formation 0.35 m below FFL; excludes footings, batters, bulking, drainage layers."
+  }
+}

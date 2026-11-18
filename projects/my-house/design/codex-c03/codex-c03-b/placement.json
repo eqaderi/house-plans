@@ -1,0 +1,815 @@
+{
+  "bounds": {
+    "lv-upper": [
+      -12,
+      152
+    ],
+    "lv-entry": [
+      20,
+      166
+    ],
+    "lv-lower": [
+      62,
+      208
+    ]
+  },
+  "frame": {
+    "origin": [
+      5.380814003247434,
+      20.946624718916286
+    ],
+    "u": [
+      0.9217808883012499,
+      0.3877112249633207
+    ],
+    "v": [
+      0.3877112249633207,
+      -0.9217808883012499
+    ]
+  },
+  "rooms": [
+    {
+      "space_id": "sp-stair-lv-lower",
+      "name": "Shared stair",
+      "function": "stair",
+      "level_id": "lv-lower",
+      "u0": 62,
+      "v0": 10,
+      "u1": 112,
+      "v1": 36,
+      "program_item_id": "pi-stair",
+      "zone_id": "z-private",
+      "sub_rects": null
+    },
+    {
+      "space_id": "sp-lift-lv-lower",
+      "name": "Lift reserve",
+      "function": "lift",
+      "level_id": "lv-lower",
+      "u0": 62,
+      "v0": 36,
+      "u1": 88,
+      "v1": 58,
+      "program_item_id": "pi-lift",
+      "zone_id": "z-private",
+      "sub_rects": null
+    },
+    {
+      "space_id": "sp-stair-lv-entry",
+      "name": "Shared stair",
+      "function": "stair",
+      "level_id": "lv-entry",
+      "u0": 62,
+      "v0": 10,
+      "u1": 112,
+      "v1": 36,
+      "program_item_id": "pi-stair",
+      "zone_id": "z-day",
+      "sub_rects": null
+    },
+    {
+      "space_id": "sp-lift-lv-entry",
+      "name": "Lift reserve",
+      "function": "lift",
+      "level_id": "lv-entry",
+      "u0": 62,
+      "v0": 36,
+      "u1": 88,
+      "v1": 58,
+      "program_item_id": "pi-lift",
+      "zone_id": "z-day",
+      "sub_rects": null
+    },
+    {
+      "space_id": "sp-stair-lv-upper",
+      "name": "Shared stair",
+      "function": "stair",
+      "level_id": "lv-upper",
+      "u0": 62,
+      "v0": 10,
+      "u1": 112,
+      "v1": 36,
+      "program_item_id": "pi-stair",
+      "zone_id": "z-day",
+      "sub_rects": null
+    },
+    {
+      "space_id": "sp-lift-lv-upper",
+      "name": "Lift reserve",
+      "function": "lift",
+      "level_id": "lv-upper",
+      "u0": 62,
+      "v0": 36,
+      "u1": 88,
+      "v1": 58,
+      "program_item_id": "pi-lift",
+      "zone_id": "z-day",
+      "sub_rects": null
+    },
+    {
+      "space_id": "sp-garage",
+      "name": "Two-car garage",
+      "function": "garage",
+      "level_id": "lv-upper",
+      "u0": -12,
+      "v0": 48,
+      "u1": 62,
+      "v1": 114,
+      "program_item_id": "pi-garage",
+      "zone_id": "z-day",
+      "sub_rects": null
+    },
+    {
+      "space_id": "sp-office",
+      "name": "Quiet office",
+      "function": "study",
+      "level_id": "lv-upper",
+      "u0": -8,
+      "v0": 0,
+      "u1": 32,
+      "v1": 30,
+      "program_item_id": "pi-study-1",
+      "zone_id": "z-day",
+      "sub_rects": null
+    },
+    {
+      "space_id": "sp-plant",
+      "name": "Plant / utilities",
+      "function": "mechanical",
+      "level_id": "lv-upper",
+      "u0": 62,
+      "v0": 58,
+      "u1": 84,
+      "v1": 80,
+      "program_item_id": "pi-mechanical",
+      "zone_id": "z-day",
+      "sub_rects": null
+    },
+    {
+      "space_id": "sp-top-lobby",
+      "name": "Lift lobby",
+      "function": "hall",
+      "level_id": "lv-upper",
+      "u0": 32,
+      "v0": 8,
+      "u1": 62,
+      "v1": 48,
+      "program_item_id": "pi-top-lobby",
+      "zone_id": "z-day",
+      "sub_rects": null
+    },
+    {
+      "space_id": "sp-dining",
+      "name": "Dining",
+      "function": "dining",
+      "level_id": "lv-entry",
+      "u0": 88,
+      "v0": 36,
+      "u1": 122,
+      "v1": 86,
+      "program_item_id": "pi-dining",
+      "zone_id": "z-day",
+      "sub_rects": [
+        [
+          88,
+          36,
+          112,
+          84
+        ],
+        [
+          112,
+          36,
+          122,
+          84
+        ],
+        [
+          112,
+          84,
+          122,
+          86
+        ]
+      ]
+    },
+    {
+      "space_id": "sp-kitchen",
+      "name": "Kitchen / breakfast",
+      "function": "kitchen",
+      "level_id": "lv-entry",
+      "u0": 38,
+      "v0": 58,
+      "u1": 88,
+      "v1": 104,
+      "program_item_id": "pi-kitchen",
+      "zone_id": "z-day",
+      "sub_rects": null
+    },
+    {
+      "space_id": "sp-pantry",
+      "name": "Pantry",
+      "function": "pantry",
+      "level_id": "lv-entry",
+      "u0": 20,
+      "v0": 10,
+      "u1": 62,
+      "v1": 104,
+      "program_item_id": "pi-pantry",
+      "zone_id": "z-day",
+      "sub_rects": [
+        [
+          20,
+          10,
+          38,
+          36
+        ],
+        [
+          20,
+          36,
+          38,
+          58
+        ],
+        [
+          20,
+          58,
+          38,
+          104
+        ],
+        [
+          38,
+          10,
+          50,
+          36
+        ],
+        [
+          38,
+          36,
+          50,
+          58
+        ],
+        [
+          50,
+          10,
+          62,
+          36
+        ],
+        [
+          50,
+          36,
+          62,
+          58
+        ]
+      ]
+    },
+    {
+      "space_id": "sp-day-bath",
+      "name": "Shower / WC",
+      "function": "bathroom",
+      "level_id": "lv-entry",
+      "u0": 144,
+      "v0": 72,
+      "u1": 164,
+      "v1": 100,
+      "program_item_id": "pi-bath-2",
+      "zone_id": "z-day",
+      "sub_rects": null
+    },
+    {
+      "space_id": "sp-bath-vest",
+      "name": "Screened service entry",
+      "function": "hall",
+      "level_id": "lv-entry",
+      "u0": 122,
+      "v0": 72,
+      "u1": 144,
+      "v1": 86,
+      "program_item_id": "pi-bath-vest",
+      "zone_id": "z-day",
+      "sub_rects": null
+    },
+    {
+      "space_id": "sp-store",
+      "name": "Store",
+      "function": "storage",
+      "level_id": "lv-entry",
+      "u0": 112,
+      "v0": 86,
+      "u1": 134,
+      "v1": 104,
+      "program_item_id": "pi-storage",
+      "zone_id": "z-day",
+      "sub_rects": null
+    },
+    {
+      "space_id": "sp-main-entry",
+      "name": "Entrance",
+      "function": "entry",
+      "level_id": "lv-entry",
+      "u0": 88,
+      "v0": 84,
+      "u1": 112,
+      "v1": 104,
+      "program_item_id": "pi-entry",
+      "zone_id": "z-day",
+      "sub_rects": null
+    },
+    {
+      "space_id": "sp-main-bed",
+      "name": "Parents",
+      "function": "bedroom",
+      "level_id": "lv-lower",
+      "u0": 164,
+      "v0": -5,
+      "u1": 206,
+      "v1": 45,
+      "program_item_id": "pi-bed-main",
+      "zone_id": "z-private",
+      "sub_rects": null
+    },
+    {
+      "space_id": "sp-elder-bed",
+      "name": "Grandparents",
+      "function": "bedroom",
+      "level_id": "lv-lower",
+      "u0": 124,
+      "v0": -5,
+      "u1": 164,
+      "v1": 45,
+      "program_item_id": "pi-bed-elder-1",
+      "zone_id": "z-private",
+      "sub_rects": null
+    },
+    {
+      "space_id": "sp-boys",
+      "name": "Boys / two beds",
+      "function": "bedroom",
+      "level_id": "lv-lower",
+      "u0": 168,
+      "v0": 74,
+      "u1": 208,
+      "v1": 124,
+      "program_item_id": "pi-bed-child-1",
+      "zone_id": "z-private",
+      "sub_rects": null
+    },
+    {
+      "space_id": "sp-girls",
+      "name": "Girls / two beds",
+      "function": "bedroom",
+      "level_id": "lv-lower",
+      "u0": 128,
+      "v0": 74,
+      "u1": 168,
+      "v1": 124,
+      "program_item_id": "pi-bed-child-2",
+      "zone_id": "z-private",
+      "sub_rects": null
+    },
+    {
+      "space_id": "sp-ensuite",
+      "name": "En-suite",
+      "function": "bathroom",
+      "level_id": "lv-lower",
+      "u0": 152,
+      "v0": 45,
+      "u1": 176,
+      "v1": 73,
+      "program_item_id": "pi-bath-ensuite",
+      "zone_id": "z-private",
+      "sub_rects": null
+    },
+    {
+      "space_id": "sp-night-bath",
+      "name": "Shared bathroom",
+      "function": "bathroom",
+      "level_id": "lv-lower",
+      "u0": 64,
+      "v0": 84,
+      "u1": 88,
+      "v1": 114,
+      "program_item_id": "pi-bath-1",
+      "zone_id": "z-private",
+      "sub_rects": null
+    },
+    {
+      "space_id": "sp-laundry",
+      "name": "Laundry / linen",
+      "function": "laundry",
+      "level_id": "lv-lower",
+      "u0": 62,
+      "v0": 58,
+      "u1": 88,
+      "v1": 84,
+      "program_item_id": "pi-laundry",
+      "zone_id": "z-private",
+      "sub_rects": null
+    },
+    {
+      "space_id": "sp-living",
+      "name": "Open living / arrival",
+      "function": "living",
+      "level_id": "lv-entry",
+      "u0": 20,
+      "v0": 10,
+      "u1": 166,
+      "v1": 104,
+      "program_item_id": "pi-living",
+      "zone_id": "z-day",
+      "sub_rects": [
+        [
+          112,
+          10,
+          122,
+          36
+        ],
+        [
+          122,
+          10,
+          134,
+          36
+        ],
+        [
+          122,
+          36,
+          134,
+          72
+        ],
+        [
+          134,
+          10,
+          144,
+          36
+        ],
+        [
+          134,
+          36,
+          144,
+          72
+        ],
+        [
+          134,
+          86,
+          144,
+          100
+        ],
+        [
+          134,
+          100,
+          144,
+          104
+        ],
+        [
+          144,
+          10,
+          164,
+          36
+        ],
+        [
+          144,
+          36,
+          164,
+          72
+        ],
+        [
+          144,
+          100,
+          164,
+          104
+        ],
+        [
+          164,
+          10,
+          166,
+          36
+        ],
+        [
+          164,
+          36,
+          166,
+          72
+        ],
+        [
+          164,
+          72,
+          166,
+          86
+        ],
+        [
+          164,
+          86,
+          166,
+          100
+        ],
+        [
+          164,
+          100,
+          166,
+          104
+        ]
+      ]
+    },
+    {
+      "space_id": "sp-night-lobby",
+      "name": "Family sitting / reading",
+      "function": "hall",
+      "level_id": "lv-lower",
+      "u0": 62,
+      "v0": -5,
+      "u1": 208,
+      "v1": 124,
+      "program_item_id": null,
+      "zone_id": "z-private",
+      "sub_rects": [
+        [
+          62,
+          -5,
+          64,
+          10
+        ],
+        [
+          62,
+          84,
+          64,
+          114
+        ],
+        [
+          62,
+          114,
+          64,
+          124
+        ],
+        [
+          64,
+          -5,
+          88,
+          10
+        ],
+        [
+          64,
+          114,
+          88,
+          124
+        ],
+        [
+          88,
+          -5,
+          112,
+          10
+        ],
+        [
+          88,
+          36,
+          112,
+          45
+        ],
+        [
+          88,
+          45,
+          112,
+          58
+        ],
+        [
+          88,
+          58,
+          112,
+          73
+        ],
+        [
+          88,
+          73,
+          112,
+          74
+        ],
+        [
+          88,
+          74,
+          112,
+          84
+        ],
+        [
+          88,
+          84,
+          112,
+          114
+        ],
+        [
+          88,
+          114,
+          112,
+          124
+        ],
+        [
+          112,
+          -5,
+          124,
+          10
+        ],
+        [
+          112,
+          10,
+          124,
+          36
+        ],
+        [
+          112,
+          36,
+          124,
+          45
+        ],
+        [
+          112,
+          45,
+          124,
+          58
+        ],
+        [
+          112,
+          58,
+          124,
+          73
+        ],
+        [
+          112,
+          73,
+          124,
+          74
+        ],
+        [
+          112,
+          74,
+          124,
+          84
+        ],
+        [
+          112,
+          84,
+          124,
+          114
+        ],
+        [
+          112,
+          114,
+          124,
+          124
+        ],
+        [
+          124,
+          45,
+          128,
+          58
+        ],
+        [
+          124,
+          58,
+          128,
+          73
+        ],
+        [
+          124,
+          73,
+          128,
+          74
+        ],
+        [
+          124,
+          74,
+          128,
+          84
+        ],
+        [
+          124,
+          84,
+          128,
+          114
+        ],
+        [
+          124,
+          114,
+          128,
+          124
+        ],
+        [
+          128,
+          45,
+          152,
+          58
+        ],
+        [
+          128,
+          58,
+          152,
+          73
+        ],
+        [
+          128,
+          73,
+          152,
+          74
+        ],
+        [
+          152,
+          73,
+          168,
+          74
+        ],
+        [
+          168,
+          73,
+          176,
+          74
+        ],
+        [
+          176,
+          45,
+          206,
+          58
+        ],
+        [
+          176,
+          58,
+          206,
+          73
+        ],
+        [
+          176,
+          73,
+          206,
+          74
+        ],
+        [
+          206,
+          -5,
+          208,
+          10
+        ],
+        [
+          206,
+          10,
+          208,
+          36
+        ],
+        [
+          206,
+          36,
+          208,
+          45
+        ],
+        [
+          206,
+          45,
+          208,
+          58
+        ],
+        [
+          206,
+          58,
+          208,
+          73
+        ],
+        [
+          206,
+          73,
+          208,
+          74
+        ]
+      ]
+    },
+    {
+      "space_id": "sp-terrace-east",
+      "name": "East roof terrace",
+      "function": "terrace",
+      "level_id": "lv-entry",
+      "u0": 166,
+      "v0": -5,
+      "u1": 208,
+      "v1": 124,
+      "program_item_id": "pi-balcony",
+      "zone_id": "z-outdoor",
+      "sub_rects": null
+    },
+    {
+      "space_id": "sp-terrace-south",
+      "name": "South kitchen terrace",
+      "function": "terrace",
+      "level_id": "lv-entry",
+      "u0": 62,
+      "v0": 104,
+      "u1": 166,
+      "v1": 124,
+      "program_item_id": null,
+      "zone_id": "z-outdoor",
+      "sub_rects": null
+    },
+    {
+      "space_id": "sp-terrace-north",
+      "name": "North terrace walk",
+      "function": "terrace",
+      "level_id": "lv-entry",
+      "u0": 62,
+      "v0": -5,
+      "u1": 166,
+      "v1": 10,
+      "program_item_id": null,
+      "zone_id": "z-outdoor",
+      "sub_rects": null
+    }
+  ]
+}

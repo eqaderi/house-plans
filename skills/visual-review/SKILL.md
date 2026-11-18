@@ -9,6 +9,10 @@ Follow [docs/AGENT_CONTRACT.md](../../docs/AGENT_CONTRACT.md) (§3 one model,
 §6 epistemic status, §10 professional boundary). In every command,
 `agent:<tool>` is your own tool name: `claude-code`, `codex` or `gemini`.
 
+For `projects/my-house/`, read and obey
+[projects/my-house/design/OWNER_DESIGN_RULES.md](../../projects/my-house/design/OWNER_DESIGN_RULES.md)
+first; check every design against it before showing anything to the owner.
+
 ## Purpose
 Guide the agent through visual inspection and grounded visual critique of floor-plan concepts rendered in the 2D plan viewer. Agents inspect semantic SVG elements, identify layout defects (such as door-swing clashes, window-wall misalignments, label collisions, and stair landing issues), cite elements strictly by their canonical IDs, propose structured revisions, and verify that fixes actually resolve the defects.
 

@@ -1,0 +1,26 @@
+{
+  "upper": {
+    "gross_m2": 196.07,
+    "wall_reservation_m2": 21.13549999999999,
+    "programme_clear_m2": 131.04500000000002,
+    "core_lift_clear_m2": 21.33,
+    "other_clear_circulation_m2": 22.559500000000003,
+    "sum_m2": 196.07
+  },
+  "lower": {
+    "gross_m2": 183.66,
+    "wall_reservation_m2": 20.509999999999987,
+    "programme_clear_m2": 114.41,
+    "core_lift_clear_m2": 21.33,
+    "other_clear_circulation_m2": 27.410000000000018,
+    "sum_m2": 183.66000000000003
+  },
+  "road": {
+    "gross_m2": 116.10000000000001,
+    "wall_reservation_m2": 13.85466407865,
+    "programme_clear_m2": 67.00999999999999,
+    "core_lift_clear_m2": 21.5,
+    "other_clear_circulation_m2": 13.735335921350039,
+    "sum_m2": 116.10000000000004
+  }
+}

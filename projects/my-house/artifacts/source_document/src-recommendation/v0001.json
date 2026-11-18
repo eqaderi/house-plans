@@ -1,0 +1,17 @@
+{
+  "classification": "private",
+  "id": "src-recommendation",
+  "imported_at": "2026-10-20T15:37:26.062553Z",
+  "imported_by": {
+    "display_name": null,
+    "id": "codex",
+    "kind": "agent",
+    "model": null,
+    "provider": null
+  },
+  "media_type": null,
+  "original_filename": "RECOMMENDATION.md",
+  "sha256": "a97bb528018e5107ffaf5c30402e5b934660af42984a009636d878489120cc8b",
+  "size_bytes": 14594,
+  "stored_path": "source/a97bb528018e-recommendation.md"
+}

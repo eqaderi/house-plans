@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="850" viewBox="0 0 1100 850">
+<defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6" fill="#136c67"/></marker></defs>
+<rect width="1100" height="850" fill="#fbfaf6"/>
+<style>text{font-family:Arial,sans-serif;fill:#253640} .small{font-size:15px} .label{font-size:18px} .sub{font-size:16px;fill:#52616c}</style>
+<text x="45" y="48" font-size="28" font-weight="bold">Site geometry, access and principal outlook</text>
+<text x="45" y="77" class="sub">Survey boundary to scale • Owner-reported site context • 20 October 2026</text>
+<polygon points="238.86,689.73 278.22,307.36 179.54,297.20 140.18,679.58" fill="#e1e4e6" stroke="none" stroke-width="1" stroke-dasharray=""/>
+<polygon points="251.19,691.00 290.55,308.62 278.22,307.36 238.86,689.73" fill="#c6d9d8" stroke="none" stroke-width="1" stroke-dasharray=""/>
+<polygon points="255.00,654.00 627.28,497.42 632.09,508.85 259.81,665.43" fill="#eee3d0" stroke="none" stroke-width="1" stroke-dasharray=""/>
+<polygon points="281.66,394.97 255.00,654.00 627.28,497.42 653.94,238.38" fill="#eef2e9" stroke="#263f42" stroke-width="2.5" stroke-dasharray=""/>
+<polygon points="255.00,654.00 627.28,497.42 622.47,485.99 250.19,642.57" fill="#f4d9b5" stroke="none" stroke-width="1" stroke-dasharray=""/>
+<polygon points="627.28,497.42 653.94,238.38 641.61,237.11 614.94,496.15" fill="#f4d9b5" stroke="none" stroke-width="1" stroke-dasharray=""/>
+<polygon points="256.45,639.94 615.70,488.84 640.91,243.86 281.66,394.97" fill="none" stroke="#a75d22" stroke-width="1.8" stroke-dasharray="7 5"/>
+<line x1="342.5202845269591" y1="495.75778820317055" x2="595.6691911063194" y2="389.2805614413228" stroke="#136c67" stroke-width="3" marker-end="url(#arrow)"/>
+<text x="464.8487059289366" y="377" font-size="20" text-anchor="middle" fill="#136c67">Downhill / city view</text>
+<text x="460.31604666237536" y="400" font-size="16" text-anchor="middle" fill="#136c67">ENE · 67.97° true</text>
+
+
+<text x="269.26270156800746" y="382.56861143615095" font-size="16" text-anchor="middle" fill="#253640">NW</text>
+<text x="242.6" y="672.6" font-size="16" text-anchor="middle" fill="#253640">SW</text>
+<text x="639.677803793177" y="516.0158429972828" font-size="16" text-anchor="middle" fill="#253640">SE</text>
+<text x="666.340505362628" y="225.9844544334337" font-size="16" text-anchor="middle" fill="#253640">NE</text>
+<text x="467.8016034653177" y="228.59653293479232" font-size="17" text-anchor="middle" fill="#253640">Northern neighbor · future house</text>
+<text x="441.13890189658855" y="680" font-size="17" text-anchor="middle" fill="#253640">Southern neighbor · future house</text>
+<text x="441.13890189658855" y="650" font-size="15" text-anchor="middle" fill="#253640">Shared 2 m pedestrian passage</text>
+<text x="467.8016034653177" y="267.07653293479234" font-size="17" text-anchor="middle" fill="#253640">32.57 m</text>
+<text x="243.53135078400373" y="524.4843057180755" font-size="16" text-anchor="end" fill="#253640">21.00 m</text>
+<text x="36" y="325" class="small">WEST / UPHILL</text>
+<text x="36" y="352" class="small">Primary road access</text>
+<text x="36" y="379" class="small">9 m overall</text>
+<text x="36" y="404" class="small">8 m asphalt</text>
+<text x="36" y="429" class="small">1 m parcel-side sidewalk</text>
+<text x="735" y="310" class="small">EAST / DOWNHILL</text>
+<text x="735" y="340" class="small">1 m eastern no-build strip</text>
+<text x="735" y="375" class="small">Orange = no-build strips</text>
+<text x="735" y="404" class="small">Dashed = setback envelope</text>
+<text x="735" y="490" class="small">Neighbor development expected</text>
+<text x="735" y="515" class="small">on north and south sides</text>
+<text x="735" y="555" class="small">Southern gate: location to be set</text>
+<text x="735" y="582" class="small">Road connection + shared use agreed</text>
+<line x1="950" y1="215" x2="949" y2="136" stroke="#253640" stroke-width="2"/>
+<path d="M949,126 L943,144 L955,144 Z" fill="#253640"/><text x="949" y="116" text-anchor="middle" class="label">N true</text>
+<text x="45" y="740" class="small">Boundary: D7, site v1 · 600.00 m² · Bearings calculated using owner-supplied EPSG:32638</text>
+<text x="45" y="767" class="small">1 m offsets perpendicular to boundaries. Setback envelope subject to formal site verification.</text>
+<text x="45" y="794" class="small">Road division, neighboring plots, shared passage and view quality are owner-reported; precise alignments are unverified.</text>
+<text x="735" y="432" class="small">Setback envelope: 547.57 m²</text><text x="735" y="457" class="small">Side lengths: 19.86 × 31.43 m</text></svg>

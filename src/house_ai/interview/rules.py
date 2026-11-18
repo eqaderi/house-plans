@@ -92,13 +92,18 @@ def too_few_bedrooms(v: Values) -> Finding | None:
     if need is None or not isinstance(have, int) or have >= need:
         return None
     sharing = v.get("children_own_rooms")
+    elder_sharing = v.get("elders_own_rooms")
     slots = tuple(
         s for s in ("bedrooms", "adults", "children", "elders", "children_own_rooms",
-                    "guest_accommodation") if s in v
+                    "elders_own_rooms", "guest_accommodation") if s in v
     )  # fmt: skip
     options = [Option(f"Plan {need} bedrooms", {"bedrooms": need})]
     if sharing is not False and (v.get("children") or 0) >= 2:
         options.append(Option("Let the children share bedrooms", {"children_own_rooms": False}))
+    if elder_sharing is not False and (v.get("elders") or 0) >= 2:
+        options.append(
+            Option("Let the older relatives share a bedroom", {"elders_own_rooms": False})
+        )
     if v.get("guest_accommodation") == "room":
         options.append(Option("No separate guest room", {"guest_accommodation": "none"}))
     options.append(Option(f"Keep {have} bedrooms; we will manage", {}))

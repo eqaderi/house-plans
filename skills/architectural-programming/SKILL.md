@@ -9,6 +9,10 @@ Follow [docs/AGENT_CONTRACT.md](../../docs/AGENT_CONTRACT.md) (§4 provenance,
 §6 epistemic status, §9 interview). In every command, `agent:<tool>` is your
 own tool name: `claude-code`, `codex` or `gemini`.
 
+For `projects/my-house/`, read and obey
+[projects/my-house/design/OWNER_DESIGN_RULES.md](../../projects/my-house/design/OWNER_DESIGN_RULES.md)
+first; check every design against it before showing anything to the owner.
+
 ## Purpose
 Guide the agent through an adaptive, high-information architectural interview with the homeowner, recording verbatim statements in English, Persian, or mixed language, interpreting structured slots as provisional inferences, resolving trade-offs and contradictions, building the validated space program, and requesting the human program gate.
 

@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Argon C06-B — 3-Sided Wrap Terraces (North, East &amp; South) &amp; SE Garden Lounge</title>
+  <style>
+    :root {
+      --bg: #f6f3ec;
+      --card: #fffdf9;
+      --ink: #1c1917;
+      --muted: #57534e;
+      --border: #d6cfc2;
+      --accent: #1d4ed8;
+      --pass-bg: #dcfce7;
+      --pass-ink: #166534;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 32px 28px 64px;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      line-height: 1.5;
+    }
+    .container { max-width: 1480px; margin: 0 auto; }
+    header {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px 28px;
+      margin-bottom: 24px;
+    }
+    h1 { margin: 0 0 8px; font-size: 26px; }
+    h2 { margin: 28px 0 12px; font-size: 20px; border-bottom: 2px solid var(--border); padding-bottom: 6px; }
+    h3 { margin: 16px 0 8px; font-size: 16px; }
+    p.subtitle { margin: 0; color: var(--muted); font-size: 14px; }
+    .badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+      background: var(--pass-bg);
+      color: var(--pass-ink);
+      margin-right: 6px;
+    }
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+      gap: 18px;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 18px 20px;
+      margin-bottom: 20px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      background: var(--card);
+    }
+    th, td {
+      border: 1px solid var(--border);
+      padding: 8px 10px;
+      text-align: left;
+      vertical-align: top;
+    }
+    th { background: #efeae0; font-weight: 700; }
+    .sheet-frame {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px;
+      margin-bottom: 24px;
+      overflow-x: auto;
+    }
+    .sheet-frame img {
+      width: 100%;
+      height: auto;
+      display: block;
+      border-radius: 6px;
+    }
+    .nav-links a {
+      display: inline-block;
+      margin-right: 10px;
+      margin-bottom: 6px;
+      padding: 6px 12px;
+      background: #efeae0;
+      color: var(--ink);
+      border-radius: 6px;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 13px;
+    }
+    .nav-links a:hover { background: #e2dacb; }
+    </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="nav-links" style="margin-bottom:12px;">
+        <a href="../index.html">&larr; All Argon C06 Options</a>
+        <a href="floor-plans.svg">Floor Plans SVG</a>
+        <a href="floor-plans.png">Floor Plans PNG</a>
+        <a href="terrain-sections.svg">1:1 Terrain Sections SVG</a>
+        <a href="terrain-sections.png">1:1 Terrain Sections PNG</a>
+        <a href="plan.json">plan.json</a>
+        <a href="rule-audit.json">rule-audit.json</a>
+      </div>
+      <h1>Argon C06-B — 3-Sided Wrap Terraces (North, East &amp; South) &amp; SE Garden Lounge</h1>
+      <p class="subtitle">Steps the main floor in on the north side to create a 3-sided wrap of rooftop terraces (North-East terrace + East balcony + South terrace — terraces in every direction except west, Rule 4.3). Downstairs, the grandparents&#x27; suite sits at east-center right beside the lift, while the family room + tea bar anchors the sunny south-east corner with dual south and east views.</p>
+      <p style="margin:10px 0 0;">
+        <span class="badge">0 check_model findings</span>
+        <span class="badge">18/18 Owner Design Rules PASS</span>
+        <span class="badge">Building Cut: 250.2 m&sup3; (100% On-Site Reuse)</span>
+      </p>
+    </header>
+
+    <div class="card">
+      <h3>Key Metrics &amp; Stepped Hillside Massing</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Level</th>
+            <th>FFL (m)</th>
+            <th>Indoor Area (m&sup2;)</th>
+            <th>Terrace / Court Area (m&sup2;)</th>
+            <th>Earthwork &amp; Garden Summary</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>1. Road Level (`lv-upper`)</strong></td>
+            <td>1677.70</td>
+            <td>133.9</td>
+            <td>50.6</td>
+            <td rowspan="3">
+              Building Cut: <strong>250.2 m&sup3;</strong><br/>
+              Max Cut Depth: <strong>3.87 m</strong><br/>
+              Terrace &amp; East Lawn Fill: <strong>408.1 m&sup3;</strong><br/>
+              Flat East Lawn: <strong>~160 m&sup2; at 1668.0 m</strong> (u = 22.6–31.4 m)
+            </td>
+          </tr>
+          <tr>
+            <td><strong>2. Main Floor (`lv-entry`)</strong></td>
+            <td>1674.20</td>
+            <td>154.0</td>
+            <td>159.8</td>
+          </tr>
+          <tr>
+            <td><strong>3. Lower Floor (`lv-lower`)</strong></td>
+            <td>1670.60</td>
+            <td>218.4</td>
+            <td>43.7</td>
+          </tr>
+          <tr>
+            <td><strong>Total</strong></td>
+            <td>3 Stepped Levels</td>
+            <td><strong>506.3 m&sup2;</strong></td>
+            <td><strong>254.1 m&sup2;</strong></td>
+            <td><strong>100% of excavated rock/soil reused on site</strong></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2>All-Level Floor Plans + Flat East Lawn (True 1:1 Scale)</h2>
+    <div class="sheet-frame">
+      <img src="floor-plans.svg" alt="argon-c06-b Floor Plans" />
+    </div>
+
+    <h2>True 1:1 Site &amp; Excavation Cross-Sections</h2>
+    <div class="sheet-frame">
+      <img src="terrain-sections.svg" alt="argon-c06-b Terrain Sections" />
+    </div>
+
+    <h2>Homeowner Design Rules Audit (18/18 PASS)</h2>
+    <table>
+      <thead>
+        <tr>
+          <th style="width:110px;">Rule</th>
+          <th style="width:280px;">Requirement</th>
+          <th style="width:90px;">Status</th>
+          <th>Verified Evidence</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>Rule 1.1</strong></td><td>Kitchen opens directly onto South Terrace and looks south</td><td><span class='badge'>PASS</span></td><td>Sliding door d-out + window directly from sp-kitchen to sp-terrace-south</td></tr><tr><td><strong>Rule 1.2</strong></td><td>Kitchen gets prime south frontage</td><td><span class='badge'>PASS</span></td><td>Kitchen spans 6.0 m along south edge v=12.4 m</td></tr><tr><td><strong>Rule 1.3</strong></td><td>Semi-open kitchen with 2 doorless walk-throughs; cooking smells kept out of living</td><td><span class='badge'>PASS</span></td><td>3 doorless walk-throughs; zero direct opening between kitchen and living</td></tr><tr><td><strong>Rule 1.4</strong></td><td>Everyday dining in kitchen; guest dining next to kitchen</td><td><span class='badge'>PASS</span></td><td>Kitchen 21.6 m², Dining 13.0 m² adjacent</td></tr><tr><td><strong>Rule 2.1</strong></td><td>Every main room reached directly from entrance/stair hall (never through another room)</td><td><span class='badge'>PASS</span></td><td>Direct openings from central hall to Kitchen, Dining, Living, Master Suite, and all 3 lower bedrooms</td></tr><tr><td><strong>Rule 2.2</strong></td><td>No long institutional corridors</td><td><span class='badge'>PASS</span></td><td>Compact central foyer/stair hall (14.2 m² main, 25.4 m² lower)</td></tr><tr><td><strong>Rule 2.3</strong></td><td>No voids, leftover holes, or puzzle layouts (100% exact plate tiling)</td><td><span class='badge'>PASS</span></td><td>Mathematical 0.00 m² gap and 0.00 m² overlap across all 3 floor plates</td></tr><tr><td><strong>Rule 2.4</strong></td><td>No unnecessary interior doors or barriers</td><td><span class='badge'>PASS</span></td><td>Wide doorless openings between Entry, Central Hall, Living, Dining, Kitchen, Pantry, and Family Room</td></tr><tr><td><strong>Rule 3.1</strong></td><td>Living room has a cozy, sheltered L-shaped sitting corner closed on north/hall side</td><td><span class='badge'>PASS</span></td><td>Cozy corner (10.1 m²) screened by solid north &amp; west walls</td></tr><tr><td><strong>Rule 3.2</strong></td><td>Living room closed-off corner is not cut off (direct wide opening from Central Hall)</td><td><span class='badge'>PASS</span></td><td>2.0 m wide direct doorless opening from sp-hall-u into sp-living</td></tr><tr><td><strong>Rule 4.1</strong></td><td>South and east prime frontage used for day rooms and terraces</td><td><span class='badge'>PASS</span></td><td>South = Kitchen, Dining, Living &amp; South Terrace; East = Living, Master, Lower Bedrooms &amp; Balconies</td></tr><tr><td><strong>Rule 4.2</strong></td><td>House steps east to u ≈ 20 m (not narrow towards east, stmt-018)</td><td><span class='badge'>PASS</span></td><td>Road u=0.6–11.4 m, Main u=2.0–16.0 m, Lower u=5.8–19.8 m</td></tr><tr><td><strong>Rule 4.3</strong></td><td>Generous terraces on main floor in non-west directions</td><td><span class='badge'>PASS</span></td><td>159.8 m² of outdoor terraces/courts on the main floor</td></tr><tr><td><strong>Rule 5.1</strong></td><td>Indoor route from garage straight to lift and stair (for groceries)</td><td><span class='badge'>PASS</span></td><td>Direct interior door sp-garage -&gt; sp-lobby -&gt; sp-lift-r &amp; sp-stair-r</td></tr><tr><td><strong>Rule 5.2</strong></td><td>One continuous stair connects Road, Main, and Lower floors (works without electricity)</td><td><span class='badge'>PASS</span></td><td>Two stacked U-flights (stair-main-road + stair-lower-main) in the same 2.6×5.0 m shaft</td></tr><tr><td><strong>Rule 5.3</strong></td><td>Stair is at the heart of the house, not hidden in a perimeter corner</td><td><span class='badge'>PASS</span></td><td>Central spine u=5.8–8.4 m, v=2.4–7.4 m</td></tr><tr><td><strong>Rule 5.5</strong></td><td>Oversized 2-car garage (~55–60 m²) with integrated workshop bay (stmt-018)</td><td><span class='badge'>PASS</span></td><td>Garage + workshop bay = 54.1 m² (5.2×9.2 m car bay + 2.6×2.4 m workbench alcove)</td></tr><tr><td><strong>Rule 6.1–6.6</strong></td><td>Master en-suite upstairs; 3 bedrooms + Family Tea/Snack Bar + tucked Store downstairs</td><td><span class='badge'>PASS</span></td><td>Master 13.9 m²; Grandparents 15.8 m²; Boys 34.6 m²; Girls 22.0 m²; Family+Tea Bar 50.4 m²</td></tr>
+      </tbody>
+    </table>
+  </div>
+</body>
+</html>

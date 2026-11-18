@@ -118,7 +118,7 @@ def _topic_for_turn(qid: str, turn_slots: list[str]) -> tuple[BriefTopic, bool]:
     for topic in BriefTopic:
         if topic.value in base_id.lower():
             return topic, False
-    return BriefTopic.OTHER, False
+    return BriefTopic.PRIORITIES, False
 
 
 def build_brief(

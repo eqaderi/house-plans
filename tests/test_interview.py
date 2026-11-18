@@ -12,7 +12,7 @@ import pytest
 import yaml
 
 from house_ai.cad.layers import load_layer_mapping
-from house_ai.domain.brief import DesignBrief, FactSourceKind
+from house_ai.domain.brief import BriefTopic, DesignBrief, FactSourceKind
 from house_ai.domain.epistemics import Epistemic
 from house_ai.domain.interview import InterviewSession, SiteContext, TurnKind
 from house_ai.domain.program import (
@@ -1067,3 +1067,105 @@ def test_agent_inspects_synthetic_project_without_modifying_it(tmp_path, capsys)
     assert istatus["session_status"] == "not_started"
     assert len(store.events()) == before_events
 
+
+# ----------------------------------------------------------- ISS-38/39/40 fixes
+
+
+def test_iss_40_slot_normalization_preserves_none_choice():
+    from house_ai.orchestration.interview import parse_slot_value
+
+    assert parse_slot_value("guest_accommodation", "none") == "none"
+    assert parse_slot_value("guest_accommodation", "None") == "none"
+    assert parse_slot_value("accessibility", "none") == "none"
+    assert parse_slot_value("cars", "none") is None
+    assert parse_slot_value("guest_accommodation", "unknown") is None
+    assert parse_slot_value("guest_accommodation", "undecided") is None
+
+
+def test_iss_39_shared_older_relatives_bedroom_calculation_and_building(svc):
+    from house_ai.interview.questions import needed_bedrooms
+    from house_ai.interview.rules import too_few_bedrooms
+
+    values = {
+        "adults": 2,
+        "children": 4,
+        "children_own_rooms": False,
+        "elders": 2,
+        "elders_own_rooms": False,
+        "bedrooms": 4,
+        "guest_accommodation": "none",
+    }
+    assert needed_bedrooms(values) == 4
+    assert too_few_bedrooms(values) is None
+
+    # When elders_own_rooms is True, 2 elders need 2 rooms -> 5 needed
+    values_own = dict(values, elders_own_rooms=True)
+    assert needed_bedrooms(values_own) == 5
+    finding = too_few_bedrooms(values_own)
+    assert finding is not None
+    assert any("older relatives share" in opt.label for opt in finding.options)
+
+    # Program builder preserves all 4 sleeping groups without truncation
+    svc.answer("Two adults, four kids and two grandparents.", HUMAN)
+    svc.answer("Kids share.", HUMAN)
+    svc.answer("Grandparents share.", HUMAN, interpreted={"elders_own_rooms": False})
+    svc.answer("No need to avoid stairs.", HUMAN)
+    svc.answer("Four bedrooms.", HUMAN)
+    svc.answer("Two bathrooms.", HUMAN)
+    svc.answer("Two floors.", HUMAN)
+    svc.confirm(HUMAN)
+
+    build = svc.build_program(AGENT)
+    items = {i.id: i for i in build.result.program.items}
+    assert "pi-bed-main" in items
+    assert "pi-bed-elder-1" in items
+    assert items["pi-bed-elder-1"].name == "Bedroom for older relatives"
+    assert "pi-bed-child-1" in items
+    assert "pi-bed-child-2" in items
+    bed_count = sum(1 for i in items.values() if i.function is SpaceFunction.BEDROOM)
+    assert bed_count == 4
+
+
+def test_iss_38_kitchen_eating_space_and_separate_dining_preserved(svc):
+    svc.answer("Two adults and two kids.", HUMAN)
+    svc.answer("Kids share.", HUMAN)
+    svc.answer("Three bedrooms.", HUMAN)
+    svc.answer("Two bathrooms.", HUMAN)
+    svc.answer("Two floors.", HUMAN)
+    svc.answer(
+        "We eat everyday in the kitchen, but want a dining room near the kitchen for guests.",
+        HUMAN,
+        interpreted={
+            "open_plan": False,
+            "dining": "kitchen",
+            "relationships": ["dining|near|kitchen"],
+        },
+    )
+    svc.confirm(HUMAN)
+
+    build = svc.build_program(AGENT)
+    items = {i.id: i for i in build.result.program.items}
+    # Both pi-kitchen and pi-dining must exist
+    assert "pi-kitchen" in items
+    assert "pi-dining" in items
+    assert "everyday eating in kitchen" in (items["pi-kitchen"].notes or "")
+    assert any(
+        (a.a, a.b) in (("pi-dining", "pi-kitchen"), ("pi-kitchen", "pi-dining"))
+        and a.kind == AdjacencyKind.NEAR
+        for a in build.result.program.adjacencies
+    )
+
+
+
+
+def test_follow_up_with_unmatched_topic_lands_in_priorities_not_a_crash(svc):
+    svc.answer(
+        "Both",
+        AGENT,
+        question_id="q-followup-c04-entrance",
+        question_text="How do you enter the house?",
+        topic="hillside",
+    )
+    ref = "followup-hillside-q-followup-c04-entrance"
+    facts = [f for f in svc.brief().facts if f.source.ref == ref]
+    assert [(f.topic, f.statement) for f in facts] == [(BriefTopic.PRIORITIES, "Both")]

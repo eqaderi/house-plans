@@ -36,6 +36,10 @@ from .evaluations import (
     VIOLATION_TERRACE_STEP_TOO_HIGH,
     VIOLATION_TERRAIN_COVERAGE_INCOMPLETE,
 )
+from .interview import (
+    GENERIC_UNKNOWN_ALIASES,
+    NONE_VALUE,
+)
 from .reviewer import (
     APPROVAL_GATES,
     ATTR_DATA_ID,
@@ -144,6 +148,7 @@ __all__ = [
     "GATE_PLAN",
     "GATE_PROGRAM",
     "GATE_SITE",
+    "GENERIC_UNKNOWN_ALIASES",
     "KIND_DOOR",
     "KIND_ELEVATION_MARKER",
     "KIND_ENVELOPE",
@@ -164,6 +169,7 @@ __all__ = [
     "METRIC_ROOM_TERRACE_DOOR_COUNT",
     "METRIC_ROOM_TERRACE_LEVEL_DELTA",
     "METRIC_TERRACE_GROUND_DELTA",
+    "NONE_VALUE",
     "OP_ADJACENT",
     "OP_AREA",
     "OP_CONNECT",

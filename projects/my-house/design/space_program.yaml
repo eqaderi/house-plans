@@ -1,0 +1,674 @@
+schema_version: 0.1.0
+id: program
+project_id: my-house
+brief_ref:
+  kind: design_brief
+  id: brief
+  version: 32
+  sha256: 74d39b7e23f7ce93da99e61d5a0bcc3722a18582245ff5e385ecb022e4d75f10
+items:
+- id: pi-entry
+  name: Entrance hall
+  function: entry
+  quantity: 1
+  min_area_m2: 4.0
+  target_area_m2: 6.0
+  max_area_m2: null
+  min_width_m: 1.5
+  privacy: semi_private
+  zone_id: z-circulation
+  level_preference: entry
+  priority: must
+  daylight: preferred
+  accessible: true
+  source_fact_ids:
+  - f-entry_at_road
+  notes: null
+- id: pi-living
+  name: Living room
+  function: living
+  quantity: 1
+  min_area_m2: 20.8
+  target_area_m2: 32.5
+  max_area_m2: null
+  min_width_m: 3.6
+  privacy: public
+  zone_id: z-day
+  level_preference: entry
+  priority: must
+  daylight: required
+  accessible: true
+  source_fact_ids:
+  - f-open_plan
+  - f-gathering_space
+  - f-privacy
+  notes: larger for family gatherings
+- id: pi-kitchen
+  name: Kitchen and everyday dining
+  function: kitchen
+  quantity: 1
+  min_area_m2: 16.099999999999998
+  target_area_m2: 23.0
+  max_area_m2: null
+  min_width_m: 3.0
+  privacy: public
+  zone_id: z-day
+  level_preference: entry
+  priority: must
+  daylight: required
+  accessible: true
+  source_fact_ids:
+  - f-open_plan
+  - f-kitchen_layout
+  - f-kitchen_smell_separate
+  - f-cooking
+  - f-dining
+  notes: 'everyday eating in kitchen; layout: semi-open'
+- id: pi-dining
+  name: Dining
+  function: dining
+  quantity: 1
+  min_area_m2: 10.0
+  target_area_m2: 14.0
+  max_area_m2: null
+  min_width_m: 3.0
+  privacy: public
+  zone_id: z-day
+  level_preference: entry
+  priority: must
+  daylight: preferred
+  accessible: true
+  source_fact_ids:
+  - f-dining
+  - f-open_plan
+  - f-relationships
+  notes: null
+- id: pi-pantry
+  name: Pantry
+  function: pantry
+  quantity: 1
+  min_area_m2: 2.0
+  target_area_m2: 4.0
+  max_area_m2: null
+  min_width_m: null
+  privacy: service
+  zone_id: z-service
+  level_preference: entry
+  priority: must
+  daylight: not_needed
+  accessible: false
+  source_fact_ids:
+  - f-pantry
+  notes: null
+- id: pi-bed-main
+  name: Main bedroom
+  function: bedroom
+  quantity: 1
+  min_area_m2: 12.0
+  target_area_m2: 15.0
+  max_area_m2: null
+  min_width_m: 3.0
+  privacy: private
+  zone_id: z-night
+  level_preference: not_entry
+  priority: must
+  daylight: required
+  accessible: false
+  source_fact_ids:
+  - f-bedrooms
+  - f-adults
+  - f-children
+  - f-children_own_rooms
+  - f-bedrooms_separate
+  - f-ensuite
+  notes: null
+- id: pi-bed-elder-1
+  name: Bedroom for older relatives
+  function: bedroom
+  quantity: 1
+  min_area_m2: 9.0
+  target_area_m2: 11.0
+  max_area_m2: null
+  min_width_m: 2.7
+  privacy: private
+  zone_id: z-night
+  level_preference: entry
+  priority: must
+  daylight: required
+  accessible: true
+  source_fact_ids:
+  - f-bedrooms
+  - f-adults
+  - f-children
+  - f-children_own_rooms
+  - f-bedrooms_separate
+  - f-elders
+  - f-elder_step_free
+  - f-elders_own_rooms
+  notes: null
+- id: pi-bed-child-1
+  name: Child's bedroom 1
+  function: bedroom
+  quantity: 1
+  min_area_m2: 9.0
+  target_area_m2: 11.0
+  max_area_m2: null
+  min_width_m: 2.7
+  privacy: private
+  zone_id: z-night
+  level_preference: not_entry
+  priority: must
+  daylight: required
+  accessible: false
+  source_fact_ids:
+  - f-bedrooms
+  - f-adults
+  - f-children
+  - f-children_own_rooms
+  - f-bedrooms_separate
+  notes: null
+- id: pi-bed-child-2
+  name: Child's bedroom 2
+  function: bedroom
+  quantity: 1
+  min_area_m2: 9.0
+  target_area_m2: 11.0
+  max_area_m2: null
+  min_width_m: 2.7
+  privacy: private
+  zone_id: z-night
+  level_preference: not_entry
+  priority: must
+  daylight: required
+  accessible: false
+  source_fact_ids:
+  - f-bedrooms
+  - f-adults
+  - f-children
+  - f-children_own_rooms
+  - f-bedrooms_separate
+  notes: null
+- id: pi-bath-ensuite
+  name: En-suite bathroom
+  function: bathroom
+  quantity: 1
+  min_area_m2: 3.5
+  target_area_m2: 5.0
+  max_area_m2: null
+  min_width_m: 1.6
+  privacy: private
+  zone_id: z-night
+  level_preference: not_entry
+  priority: must
+  daylight: preferred
+  accessible: false
+  source_fact_ids:
+  - f-bathrooms
+  - f-ensuite
+  notes: null
+- id: pi-bath-1
+  name: Accessible bathroom
+  function: bathroom
+  quantity: 1
+  min_area_m2: 5.5
+  target_area_m2: 7.0
+  max_area_m2: null
+  min_width_m: 2.2
+  privacy: private
+  zone_id: z-night
+  level_preference: entry
+  priority: must
+  daylight: preferred
+  accessible: true
+  source_fact_ids:
+  - f-bathrooms
+  - f-accessibility
+  notes: null
+- id: pi-bath-2
+  name: Bathroom 2
+  function: bathroom
+  quantity: 1
+  min_area_m2: 4.0
+  target_area_m2: 6.0
+  max_area_m2: null
+  min_width_m: 1.8
+  privacy: private
+  zone_id: z-night
+  level_preference: any
+  priority: must
+  daylight: preferred
+  accessible: false
+  source_fact_ids:
+  - f-bathrooms
+  notes: null
+- id: pi-study-1
+  name: Study 1
+  function: study
+  quantity: 1
+  min_area_m2: 6.0
+  target_area_m2: 9.0
+  max_area_m2: null
+  min_width_m: 2.4
+  privacy: semi_private
+  zone_id: z-day
+  level_preference: any
+  priority: should
+  daylight: required
+  accessible: false
+  source_fact_ids:
+  - f-workspaces
+  - f-office_quiet
+  notes: null
+- id: pi-garage
+  name: Garage
+  function: garage
+  quantity: 1
+  min_area_m2: 30.0
+  target_area_m2: 36.0
+  max_area_m2: null
+  min_width_m: 3.0
+  privacy: service
+  zone_id: z-service
+  level_preference: entry
+  priority: must
+  daylight: not_needed
+  accessible: false
+  source_fact_ids:
+  - f-cars
+  - f-parking_type
+  - f-ev_charging
+  notes: 2 car(s)
+- id: pi-laundry
+  name: Laundry
+  function: laundry
+  quantity: 1
+  min_area_m2: 4.0
+  target_area_m2: 6.0
+  max_area_m2: null
+  min_width_m: 1.8
+  privacy: service
+  zone_id: z-service
+  level_preference: any
+  priority: should
+  daylight: not_needed
+  accessible: false
+  source_fact_ids:
+  - f-laundry_room
+  notes: null
+- id: pi-storage
+  name: Store room
+  function: storage
+  quantity: 1
+  min_area_m2: 3.0
+  target_area_m2: 5.0
+  max_area_m2: null
+  min_width_m: null
+  privacy: service
+  zone_id: z-service
+  level_preference: any
+  priority: should
+  daylight: not_needed
+  accessible: false
+  source_fact_ids:
+  - f-storage_room
+  notes: null
+- id: pi-mechanical
+  name: Plant / technical room
+  function: mechanical
+  quantity: 1
+  min_area_m2: 3.0
+  target_area_m2: 4.0
+  max_area_m2: null
+  min_width_m: null
+  privacy: service
+  zone_id: z-service
+  level_preference: any
+  priority: must
+  daylight: not_needed
+  accessible: false
+  source_fact_ids: []
+  notes: heating, water and electrics
+- id: pi-stair
+  name: Stair
+  function: stair
+  quantity: 1
+  min_area_m2: 8.0
+  target_area_m2: 10.0
+  max_area_m2: null
+  min_width_m: 2.2
+  privacy: semi_private
+  zone_id: z-circulation
+  level_preference: any
+  priority: must
+  daylight: preferred
+  accessible: false
+  source_fact_ids:
+  - f-floors
+  notes: connects 3 floors
+- id: pi-lift
+  name: Lift
+  function: lift
+  quantity: 1
+  min_area_m2: 3.0
+  target_area_m2: 4.0
+  max_area_m2: null
+  min_width_m: 1.5
+  privacy: semi_private
+  zone_id: z-circulation
+  level_preference: any
+  priority: must
+  daylight: not_needed
+  accessible: true
+  source_fact_ids:
+  - f-lift
+  - f-accessibility
+  notes: null
+- id: pi-terrace
+  name: Terrace
+  function: terrace
+  quantity: 1
+  min_area_m2: 10.0
+  target_area_m2: 16.0
+  max_area_m2: null
+  min_width_m: 2.5
+  privacy: public
+  zone_id: z-outdoor
+  level_preference: outdoor
+  priority: must
+  daylight: preferred
+  accessible: false
+  source_fact_ids:
+  - f-outdoor
+  notes: null
+- id: pi-balcony
+  name: Balcony
+  function: balcony
+  quantity: 1
+  min_area_m2: 4.0
+  target_area_m2: 6.0
+  max_area_m2: null
+  min_width_m: 1.5
+  privacy: public
+  zone_id: z-outdoor
+  level_preference: any
+  priority: must
+  daylight: preferred
+  accessible: false
+  source_fact_ids:
+  - f-outdoor
+  notes: null
+- id: pi-garden
+  name: Garden
+  function: other
+  quantity: 1
+  min_area_m2: null
+  target_area_m2: null
+  max_area_m2: null
+  min_width_m: null
+  privacy: public
+  zone_id: z-outdoor
+  level_preference: outdoor
+  priority: must
+  daylight: preferred
+  accessible: false
+  source_fact_ids:
+  - f-outdoor
+  notes: outdoor; not a room and not part of the floor area
+- id: pi-play-area
+  name: Children's play area
+  function: other
+  quantity: 1
+  min_area_m2: null
+  target_area_m2: null
+  max_area_m2: null
+  min_width_m: null
+  privacy: public
+  zone_id: z-outdoor
+  level_preference: outdoor
+  priority: must
+  daylight: preferred
+  accessible: false
+  source_fact_ids:
+  - f-outdoor
+  notes: outdoor; not a room and not part of the floor area
+adjacencies:
+- id: adj-01-entry-exterior
+  a: pi-entry
+  b: exterior
+  kind: connected
+  strength: hard
+  weight: null
+  rationale: The front door opens into the hall
+  source_fact_ids: []
+- id: adj-02-kitchen-living
+  a: pi-kitchen
+  b: pi-living
+  kind: adjacent
+  strength: soft
+  weight: 2.0
+  rationale: Kitchen close to living, behind a door or glass wall
+  source_fact_ids:
+  - f-open_plan
+  - f-kitchen_layout
+  - f-kitchen_smell_separate
+- id: adj-03-dining-living
+  a: pi-dining
+  b: pi-living
+  kind: near
+  strength: soft
+  weight: 2.0
+  rationale: Dining near living
+  source_fact_ids:
+  - f-open_plan
+  - f-kitchen_layout
+  - f-kitchen_smell_separate
+- id: adj-04-kitchen-dining
+  a: pi-kitchen
+  b: pi-dining
+  kind: connected
+  strength: hard
+  weight: null
+  rationale: Food goes from kitchen to table
+  source_fact_ids:
+  - f-dining
+- id: adj-05-pantry-kitchen
+  a: pi-pantry
+  b: pi-kitchen
+  kind: connected
+  strength: hard
+  weight: null
+  rationale: Pantry opens off the kitchen
+  source_fact_ids:
+  - f-pantry
+- id: adj-06-bed-main-bath-ensuite
+  a: pi-bed-main
+  b: pi-bath-ensuite
+  kind: connected
+  strength: hard
+  weight: null
+  rationale: En-suite opens from the main bedroom
+  source_fact_ids:
+  - f-ensuite
+- id: adj-07-bed-main-living
+  a: pi-bed-main
+  b: pi-living
+  kind: acoustic_separation
+  strength: soft
+  weight: 1.5
+  rationale: Bedrooms kept away from the living areas
+  source_fact_ids:
+  - f-bedrooms_separate
+- id: adj-08-bed-elder-1-living
+  a: pi-bed-elder-1
+  b: pi-living
+  kind: acoustic_separation
+  strength: soft
+  weight: 1.5
+  rationale: Bedrooms kept away from the living areas
+  source_fact_ids:
+  - f-bedrooms_separate
+- id: adj-09-bed-child-1-living
+  a: pi-bed-child-1
+  b: pi-living
+  kind: acoustic_separation
+  strength: soft
+  weight: 1.5
+  rationale: Bedrooms kept away from the living areas
+  source_fact_ids:
+  - f-bedrooms_separate
+- id: adj-10-bed-child-2-living
+  a: pi-bed-child-2
+  b: pi-living
+  kind: acoustic_separation
+  strength: soft
+  weight: 1.5
+  rationale: Bedrooms kept away from the living areas
+  source_fact_ids:
+  - f-bedrooms_separate
+- id: adj-11-study-1-living
+  a: pi-study-1
+  b: pi-living
+  kind: acoustic_separation
+  strength: soft
+  weight: 2.0
+  rationale: Quiet workplace
+  source_fact_ids:
+  - f-office_quiet
+- id: adj-12-study-1-entry
+  a: pi-study-1
+  b: pi-entry
+  kind: near
+  strength: soft
+  weight: 1.0
+  rationale: Visitors reach the study without crossing the house
+  source_fact_ids:
+  - f-workspaces
+- id: adj-13-garage-entry
+  a: pi-garage
+  b: pi-entry
+  kind: near
+  strength: soft
+  weight: 2.0
+  rationale: Short walk from the car to the door
+  source_fact_ids:
+  - f-parking_type
+  - f-entry_at_road
+- id: adj-14-laundry-kitchen
+  a: pi-laundry
+  b: pi-kitchen
+  kind: near
+  strength: soft
+  weight: 1.0
+  rationale: Service rooms together
+  source_fact_ids:
+  - f-laundry_room
+- id: adj-15-terrace-living
+  a: pi-terrace
+  b: pi-living
+  kind: connected
+  strength: soft
+  weight: 2.0
+  rationale: Living opens to the terrace
+  source_fact_ids:
+  - f-outdoor
+- id: adj-16-stair-entry
+  a: pi-stair
+  b: pi-entry
+  kind: near
+  strength: soft
+  weight: 1.0
+  rationale: Stair reached from the hall
+  source_fact_ids:
+  - f-floors
+- id: adj-17-lift-entry
+  a: pi-lift
+  b: pi-entry
+  kind: near
+  strength: hard
+  weight: null
+  rationale: Lift reached step-free from the entrance
+  source_fact_ids:
+  - f-lift
+- id: adj-18-bed-elder-1-bath-1
+  a: pi-bed-elder-1
+  b: pi-bath-1
+  kind: near
+  strength: hard
+  weight: null
+  rationale: Step-free bedroom near an accessible bathroom
+  source_fact_ids:
+  - f-accessibility
+  - f-elder_step_free
+- id: adj-19-dining-kitchen
+  a: pi-dining
+  b: pi-kitchen
+  kind: near
+  strength: soft
+  weight: 3.0
+  rationale: 'You asked: dining next to kitchen'
+  source_fact_ids:
+  - f-relationships
+zones:
+- id: z-day
+  name: Day (living, kitchen, dining)
+  privacy: public
+- id: z-night
+  name: Night (bedrooms, bathrooms)
+  privacy: private
+- id: z-service
+  name: Service
+  privacy: service
+- id: z-circulation
+  name: Circulation
+  privacy: semi_private
+- id: z-outdoor
+  name: Outdoor
+  privacy: public
+target_gross_area_m2: null
+circulation_factor: 0.2
+levels: 3
+budget: null
+site_ref:
+  kind: site
+  id: site
+  version: 3
+  sha256: abab9fb2d5433bd08c57b9748b5bc93fad2703b902fb178f1696814c54ff659f
+site_verified: false
+usability:
+  household_seats: 8
+  vehicles:
+  - id: car-1
+    width_m: 1.8
+    length_m: 4.5
+    door_side_clearance_m: 0.6
+    turning_radius_m: null
+    source: typical car envelope (assumption until the owner gives the car size)
+  - id: car-2
+    width_m: 1.8
+    length_m: 4.5
+    door_side_clearance_m: 0.6
+    turning_radius_m: null
+    source: typical car envelope (assumption until the owner gives the car size)
+  arrival_path: null
+  double_bed_program_item_ids:
+  - pi-bed-main
+  single_bed_program_item_ids:
+  - pi-bed-child-1
+  - pi-bed-child-2
+provenance:
+  created_at: '2026-10-21T11:31:21.889422Z'
+  created_by:
+    kind: system
+    id: house-ai-program
+    display_name: null
+    provider: null
+    model: null
+  method: program_from_brief
+  tool: house-ai program
+  tool_version: null
+  inputs:
+  - kind: design_brief
+    id: brief
+    version: 32
+    sha256: 74d39b7e23f7ce93da99e61d5a0bcc3722a18582245ff5e385ecb022e4d75f10
+  notes: Deterministic; sizes not given by the owner are typical values (assumptions).

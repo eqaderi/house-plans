@@ -1,0 +1,380 @@
+{
+  "revision": "0109-r5",
+  "review_date": "2026-10-17",
+  "final_pngs_opened": 39,
+  "individually_displayed_unchanged_raster_hashes": 38,
+  "corrected_final_individually_displayed": 1,
+  "verification_sha256": "52056923fdafaa49d8e30b50b7b654ebf1ec119a5eec9deb51afb2982d0bab6b",
+  "pages": [
+    {
+      "path": "outputs/redesign-0109-r5/A/drawings/upper-floor.png",
+      "sha256": "f2fbf7f54cbae8834a62a6f35c5c17e1693657e47c4541275a8af9a6b5020b44",
+      "opened_final_with": "view_image",
+      "manual_review_basis": "Individually displayed and inspected R4 raster, byte-identical final reopened",
+      "previous_image": "outputs/redesign-0109-r4/A/drawings/upper-floor.png",
+      "checks": "Readable dimensions/labels; furniture/openings; level consistency; terrain/unknown distinctions; page clipping",
+      "result": "acceptable schematic review drawing"
+    },
+    {
+      "path": "outputs/redesign-0109-r5/A/drawings/lower-floor.png",
+      "sha256": "2522b599d13cad522b732553e6151ea69c9c032e34d1e1ab075b9b502f8d58fd",
+      "opened_final_with": "view_image",
+      "manual_review_basis": "Individually displayed and inspected R4 raster, byte-identical final reopened",
+      "previous_image": "outputs/redesign-0109-r4/A/drawings/lower-floor.png",
+      "checks": "Readable dimensions/labels; furniture/openings; level consistency; terrain/unknown distinctions; page clipping",
+      "result": "acceptable schematic review drawing"
+    },
+    {
+      "path": "outputs/redesign-0109-r5/A/drawings/road-floor.png",
+      "sha256": "f7358ab7ffc6c8f5f40a190da85488e3806fd9c466c0e9433fac186f7360c03b",
+      "opened_final_with": "view_image",
+      "manual_review_basis": "Individually displayed and inspected R4 raster, byte-identical final reopened",
+      "previous_image": "outputs/redesign-0109-r4/A/drawings/road-floor.png",
+      "checks": "Readable dimensions/labels; furniture/openings; level consistency; terrain/unknown distinctions; page clipping",
+      "result": "acceptable schematic review drawing"
+    },
+    {
+      "path": "outputs/redesign-0109-r5/A/drawings/site-plan.png",
+      "sha256": "fb5acc821870a73d448550450937dd23b3f83a54cc92100065c0e11a230a424b",
+      "opened_final_with": "view_image",
+      "manual_review_basis": "Individually displayed and inspected R4 raster, byte-identical final reopened",
+      "previous_image": "outputs/redesign-0109-r4/A/drawings/site-plan.png",
+      "checks": "Readable dimensions/labels; furniture/openings; level consistency; terrain/unknown distinctions; page clipping",
+      "result": "acceptable schematic review drawing"
+    },
+    {
+      "path": "outputs/redesign-0109-r5/A/drawings/s1-section.png",
+      "sha256": "d53e554cb06894ba9f980deee6e889bd5e76dbcc545836fe3c8705472055e0e4",
+      "opened_final_with": "view_image",
+      "manual_review_basis": "Individually displayed and inspected R4 raster, byte-identical final reopened",
+      "previous_image": "outputs/redesign-0109-r4/A/drawings/s1-section.png",
+      "checks": "Readable dimensions/labels; furniture/openings; level consistency; terrain/unknown distinctions; page clipping",
+      "result": "acceptable schematic review drawing"
+    },
+    {
+      "path": "outputs/redesign-0109-r5/A/drawings/s2-section.png",
+      "sha256": "17ebbf69fd415a9e8a8c7bb15ed1068e9886c28b9c9f727690c48ea80241897b",
+      "opened_final_with": "view_image",
+      "manual_review_basis": "Individually displayed and inspected R4 raster, byte-identical final reopened",
+      "previous_image": "outputs/redesign-0109-r4/A/drawings/s2-section.png",
+      "checks": "Readable dimensions/labels; furniture/openings; level consistency; terrain/unknown distinctions; page clipping",
+      "result": "acceptable schematic review drawing"
+    },
+    {
+      "path": "outputs/redesign-0109-r5/A/drawings/s3-section.png",
+      "sha256": "90ed5330833ec19795e2d109f5a7c4f8273eb8def2839d67c882f9b79172db6b",
+      "opened_final_with": "view_image",
+      "manual_review_basis": "Individually displayed and inspected R4 raster, byte-identical final reopened",
+      "previous_image": "outputs/redesign-0109-r4/A/drawings/s3-section.png",
+      "checks": "Readable dimensions/labels; furniture/openings; level consistency; terrain/unknown distinctions; page clipping",
+      "result": "acceptable schematic review drawing"
+    },
+    {
+      "path": "outputs/redesign-0109-r5/A/drawings/water-section.png",
+      "sha256": "7e5462edd367356d5b2dc661b918cbd688adb7c407652aa3a21344bee0b99662",
+      "opened_final_with": "view_image",
+      "manual_review_basis": "Individually displayed and inspected R4 raster, byte-identical final reopened",
+      "previous_image": "outputs/redesign-0109-r4/A/drawings/water-section.png",
+      "checks": "Readable dimensions/labels; furniture/openings; level consistency; terrain/unknown distinctions; page clipping",
+      "result": "acceptable schematic review drawing"
+    },
+    {
+      "path": "outputs/redesign-0109-r5/A/drawings/toilet-sightlines.png",
+      "sha256": "55250e27b0410144fc620875af245139e961f6bac99569e737dc9ed5255c82a5",
+      "opened_final_with": "view_image",
+      "manual_review_basis": "Individually displayed and inspected R4 raster, byte-identical final reopened",
+      "previous_image": "outputs/redesign-0109-r4/A/drawings/toilet-sightlines.png",
+      "checks": "Readable dimensions/labels; furniture/openings; level consistency; terrain/unknown distinctions; page clipping",
+      "result": "acceptable schematic review drawing"
+    },
+    {
+      "path": "outputs/redesign-0109-r5/A/drawings/garage-manoeuvring.png",
+      "sha256": "3d7275ae54ff5e14825f93984c7aca4ad9e563fc9568082fe9e7c4cfc1adfd94",
+      "opened_final_with": "view_image",
+      "manual_review_basis": "Individually displayed and inspected R4 raster, byte-identical final reopened",
+      "previous_image": "outputs/redesign-0109-r4/A/drawings/garage-manoeuvring.png",
+      "checks": "Readable dimensions/labels; furniture/openings; level consistency; terrain/unknown distinctions; page clipping",
+      "result": "acceptable schematic review drawing"
+    },
+    {
+      "path": "outputs/redesign-0109-r5/A/drawings/core-section.png",
+      "sha256": "801014eb520b37c4c5621523f761e52831732122f4e5ec30ecc9db0bd0893274",
+      "opened_final_with": "view_image",
+      "manual_review_basis": "Individually displayed and inspected R4 raster, byte-identical final reopened",
+      "previous_image": "outputs/redesign-0109-r4/A/drawings/core-section.png",
+      "checks": "Readable dimensions/labels; furniture/openings; level consistency; terrain/unknown distinctions; page clipping",
+      "result": "acceptable schematic review drawing"
+    },
+    {
+      "path": "outputs/redesign-0109-r5/A/drawings/3d-massing.png",
+      "sha256": "9499adcdc95a585458d3ce42d8b8ef318397d90ccbda509fcf1f5b4a36a6415a",
+      "opened_final_with": "view_image",
+      "manual_review_basis": "Individually displayed and inspected R4 raster, byte-identical final reopened",
+      "previous_image": "outputs/redesign-0109-r4/A/drawings/3d-massing.png",
+      "checks": "Readable dimensions/labels; furniture/openings; level consistency; terrain/unknown distinctions; page clipping",
+      "result": "acceptable schematic review drawing"
+    },
+    {
+      "path": "outputs/redesign-0109-r5/B/drawings/upper-floor.png",
+      "sha256": "9595d806a3a61a503c9ff5c518bfa78859f0d0e0259af11cbc38bf9d403beeaf",
+      "opened_final_with": "view_image",
+      "manual_review_basis": "Individually displayed and inspected R4 raster, byte-identical final reopened",
+      "previous_image": "outputs/redesign-0109-r4/B/drawings/upper-floor.png",
+      "checks": "Readable dimensions/labels; furniture/openings; level consistency; terrain/unknown distinctions; page clipping",
+      "result": "acceptable schematic review drawing"
+    },
+    {
+      "path": "outputs/redesign-0109-r5/B/drawings/lower-floor.png",
+      "sha256": "e62b80ab6c06265322116b1f7fb3a2ffba69ffd30ac2aaed0852b0ff92fe1a89",
+      "opened_final_with": "view_image",
+      "manual_review_basis": "Individually displayed and inspected R4 raster, byte-identical final reopened",
+      "previous_image": "outputs/redesign-0109-r4/B/drawings/lower-floor.png",
+      "checks": "Readable dimensions/labels; furniture/openings; level consistency; terrain/unknown distinctions; page clipping",
+      "result": "acceptable schematic review drawing"
+    },
+    {
+      "path": "outputs/redesign-0109-r5/B/drawings/road-floor.png",
+      "sha256": "1855b162d724e83945713c9341d82422fbf35ccee4e62bf12e21791c2736dd2e",
+      "opened_final_with": "view_image",
+      "manual_review_basis": "Individually displayed and inspected R4 raster, byte-identical final reopened",
+      "previous_image": "outputs/redesign-0109-r4/B/drawings/road-floor.png",
+      "checks": "Readable dimensions/labels; furniture/openings; level consistency; terrain/unknown distinctions; page clipping",
+      "result": "acceptable schematic review drawing"
+    },
+    {
+      "path": "outputs/redesign-0109-r5/B/drawings/site-plan.png",
+      "sha256": "a23be400a997cb0750ecf366e806466bfb22c77fac5bfc2eb7b8d8ba2eff76c6",
+      "opened_final_with": "view_image",
+      "manual_review_basis": "Individually displayed and inspected R4 raster, byte-identical final reopened",
+      "previous_image": "outputs/redesign-0109-r4/B/drawings/site-plan.png",
+      "checks": "Readable dimensions/labels; furniture/openings; level consistency; terrain/unknown distinctions; page clipping",
+      "result": "acceptable schematic review drawing"
+    },
+    {
+      "path": "outputs/redesign-0109-r5/B/drawings/s1-section.png",
+      "sha256": "675b28ba00e8b17ddb4a1629799263615b71cdf55c409951e76468c517c9b456",
+      "opened_final_with": "view_image",
+      "manual_review_basis": "Individually displayed and inspected R4 raster, byte-identical final reopened",
+      "previous_image": "outputs/redesign-0109-r4/B/drawings/s1-section.png",
+      "checks": "Readable dimensions/labels; furniture/openings; level consistency; terrain/unknown distinctions; page clipping",
+      "result": "acceptable schematic review drawing"
+    },
+    {
+      "path": "outputs/redesign-0109-r5/B/drawings/s2-section.png",
+      "sha256": "7dfb8eb8209cd1b7dd502baefd0f69fe45868b83ad0c4e100903f1c4ac48e7b2",
+      "opened_final_with": "view_image",
+      "manual_review_basis": "Individually displayed and inspected R4 raster, byte-identical final reopened",
+      "previous_image": "outputs/redesign-0109-r4/B/drawings/s2-section.png",
+      "checks": "Readable dimensions/labels; furniture/openings; level consistency; terrain/unknown distinctions; page clipping",
+      "result": "acceptable schematic review drawing"
+    },
+    {
+      "path": "outputs/redesign-0109-r5/B/drawings/s3-section.png",
+      "sha256": "e1c75a17c6002734c18e99074777cffcb385921c3b9700413c9c222257f27317",
+      "opened_final_with": "view_image",
+      "manual_review_basis": "Individually displayed and inspected R4 raster, byte-identical final reopened",
+      "previous_image": "outputs/redesign-0109-r4/B/drawings/s3-section.png",
+      "checks": "Readable dimensions/labels; furniture/openings; level consistency; terrain/unknown distinctions; page clipping",
+      "result": "acceptable schematic review drawing"
+    },
+    {
+      "path": "outputs/redesign-0109-r5/B/drawings/water-section.png",
+      "sha256": "dd0405647d7325435b5d06715e2261c52d93c93f2bc946a845eb75cf756f3e2e",
+      "opened_final_with": "view_image",
+      "manual_review_basis": "Individually displayed and inspected R4 raster, byte-identical final reopened",
+      "previous_image": "outputs/redesign-0109-r4/B/drawings/water-section.png",
+      "checks": "Readable dimensions/labels; furniture/openings; level consistency; terrain/unknown distinctions; page clipping",
+      "result": "acceptable schematic review drawing"
+    },
+    {
+      "path": "outputs/redesign-0109-r5/B/drawings/toilet-sightlines.png",
+      "sha256": "c58ce525b0e1d61f129eaba661427d30584e1fdc71a0a92f2211c58bd5fd831f",
+      "opened_final_with": "view_image",
+      "manual_review_basis": "Individually displayed and inspected R4 raster, byte-identical final reopened",
+      "previous_image": "outputs/redesign-0109-r4/B/drawings/toilet-sightlines.png",
+      "checks": "Readable dimensions/labels; furniture/openings; level consistency; terrain/unknown distinctions; page clipping",
+      "result": "acceptable schematic review drawing"
+    },
+    {
+      "path": "outputs/redesign-0109-r5/B/drawings/garage-manoeuvring.png",
+      "sha256": "6c619ea9fd215650ad139ef67d5f15ecbe2c122f7b52a3c38f062e5f2d49f77f",
+      "opened_final_with": "view_image",
+      "manual_review_basis": "Individually displayed and inspected R4 raster, byte-identical final reopened",
+      "previous_image": "outputs/redesign-0109-r4/B/drawings/garage-manoeuvring.png",
+      "checks": "Readable dimensions/labels; furniture/openings; level consistency; terrain/unknown distinctions; page clipping",
+      "result": "acceptable schematic review drawing"
+    },
+    {
+      "path": "outputs/redesign-0109-r5/B/drawings/core-section.png",
+      "sha256": "99d0e20212fc2a3642fc9fa311814d32d1ae612001414e59165252572ee2ea35",
+      "opened_final_with": "view_image",
+      "manual_review_basis": "Individually displayed and inspected R4 raster, byte-identical final reopened",
+      "previous_image": "outputs/redesign-0109-r4/B/drawings/core-section.png",
+      "checks": "Readable dimensions/labels; furniture/openings; level consistency; terrain/unknown distinctions; page clipping",
+      "result": "acceptable schematic review drawing"
+    },
+    {
+      "path": "outputs/redesign-0109-r5/B/drawings/3d-massing.png",
+      "sha256": "18693482d5c0b9a8d2b0892f63284f2c9f2d4122de0b6eb9eb8fbd79f1e0c712",
+      "opened_final_with": "view_image",
+      "manual_review_basis": "Individually displayed and inspected R4 raster, byte-identical final reopened",
+      "previous_image": "outputs/redesign-0109-r4/B/drawings/3d-massing.png",
+      "checks": "Readable dimensions/labels; furniture/openings; level consistency; terrain/unknown distinctions; page clipping",
+      "result": "acceptable schematic review drawing"
+    },
+    {
+      "path": "outputs/redesign-0109-r5/B/drawings/four-elevations.png",
+      "sha256": "1ddf988c0b2ae61c49a15f900f8c986b99f94f257aef6903afba1365c4fb451a",
+      "opened_final_with": "view_image",
+      "manual_review_basis": "Individually displayed and inspected R4 raster, byte-identical final reopened",
+      "previous_image": "outputs/redesign-0109-r4/B/drawings/four-elevations.png",
+      "checks": "Readable dimensions/labels; furniture/openings; level consistency; terrain/unknown distinctions; page clipping",
+      "result": "acceptable schematic review drawing"
+    },
+    {
+      "path": "outputs/redesign-0109-r5/B/drawings/garden-stair-plan-section.png",
+      "sha256": "189fc791f275a070c8812b0e57aeaf3d95e70110f2532e42e35661ff47133631",
+      "opened_final_with": "view_image",
+      "manual_review_basis": "Individually displayed and inspected R4 raster, byte-identical final reopened",
+      "previous_image": "outputs/redesign-0109-r4/B/drawings/garden-stair-plan-section.png",
+      "checks": "Readable dimensions/labels; furniture/openings; level consistency; terrain/unknown distinctions; page clipping",
+      "result": "acceptable schematic review drawing"
+    },
+    {
+      "path": "outputs/redesign-0109-r5/B/drawings/structure-services-maintenance.png",
+      "sha256": "facf1bb1f3b474395ba131a3585f570babdbe2596cba51d941f2ebdc3845d226",
+      "opened_final_with": "view_image",
+      "manual_review_basis": "Individually displayed and inspected R4 raster, byte-identical final reopened",
+      "previous_image": "outputs/redesign-0109-r4/B/drawings/structure-services-maintenance.png",
+      "checks": "Readable dimensions/labels; furniture/openings; level consistency; terrain/unknown distinctions; page clipping",
+      "result": "acceptable schematic review drawing"
+    },
+    {
+      "path": "outputs/redesign-0109-r5/C/drawings/upper-floor.png",
+      "sha256": "92f0dcf8b3f9952b80f31724dedfc157854d6ec944234b82453db064b6dbb0ac",
+      "opened_final_with": "view_image",
+      "manual_review_basis": "Individually displayed and inspected R4 raster, byte-identical final reopened",
+      "previous_image": "outputs/redesign-0109-r4/C/drawings/upper-floor.png",
+      "checks": "Readable dimensions/labels; furniture/openings; level consistency; terrain/unknown distinctions; page clipping",
+      "result": "acceptable schematic review drawing"
+    },
+    {
+      "path": "outputs/redesign-0109-r5/C/drawings/lower-floor.png",
+      "sha256": "a88c02c2f331e19758fb4ea33366e14696a0aa5def0dad3d129f32e4b6d735ce",
+      "opened_final_with": "view_image",
+      "manual_review_basis": "Individually displayed and inspected R4 raster, byte-identical final reopened",
+      "previous_image": "outputs/redesign-0109-r4/C/drawings/lower-floor.png",
+      "checks": "Readable dimensions/labels; furniture/openings; level consistency; terrain/unknown distinctions; page clipping",
+      "result": "acceptable schematic review drawing"
+    },
+    {
+      "path": "outputs/redesign-0109-r5/C/drawings/road-floor.png",
+      "sha256": "334baeaba023ea60330f4222496e4da9974fd56f13d3948ea8eeff90e4bf8f2d",
+      "opened_final_with": "view_image",
+      "manual_review_basis": "Individually displayed and inspected R4 raster, byte-identical final reopened",
+      "previous_image": "outputs/redesign-0109-r4/C/drawings/road-floor.png",
+      "checks": "Readable dimensions/labels; furniture/openings; level consistency; terrain/unknown distinctions; page clipping",
+      "result": "acceptable schematic review drawing"
+    },
+    {
+      "path": "outputs/redesign-0109-r5/C/drawings/site-plan.png",
+      "sha256": "eecbae8b720c34fb3fdf54e86b7f079bda77237f75750adaeba1f39b7390d8aa",
+      "opened_final_with": "view_image",
+      "manual_review_basis": "Individually displayed and inspected R4 raster, byte-identical final reopened",
+      "previous_image": "outputs/redesign-0109-r4/C/drawings/site-plan.png",
+      "checks": "Readable dimensions/labels; furniture/openings; level consistency; terrain/unknown distinctions; page clipping",
+      "result": "acceptable schematic review drawing"
+    },
+    {
+      "path": "outputs/redesign-0109-r5/C/drawings/s1-section.png",
+      "sha256": "4a109e13b27d67cc8e631153dbeb1c00676146ab23c43abfaf0e0560559c4b16",
+      "opened_final_with": "view_image",
+      "manual_review_basis": "Individually displayed and inspected R4 raster, byte-identical final reopened",
+      "previous_image": "outputs/redesign-0109-r4/C/drawings/s1-section.png",
+      "checks": "Readable dimensions/labels; furniture/openings; level consistency; terrain/unknown distinctions; page clipping",
+      "result": "acceptable schematic review drawing"
+    },
+    {
+      "path": "outputs/redesign-0109-r5/C/drawings/s2-section.png",
+      "sha256": "de85ad94d09e77c12264225ade1425e6c53aec2a1709efa768ef4e24a4c45306",
+      "opened_final_with": "view_image",
+      "manual_review_basis": "Individually displayed and inspected R4 raster, byte-identical final reopened",
+      "previous_image": "outputs/redesign-0109-r4/C/drawings/s2-section.png",
+      "checks": "Readable dimensions/labels; furniture/openings; level consistency; terrain/unknown distinctions; page clipping",
+      "result": "acceptable schematic review drawing"
+    },
+    {
+      "path": "outputs/redesign-0109-r5/C/drawings/s3-section.png",
+      "sha256": "e22af3bc5154fb094a63dae1f5a5aa53f647a97bcab1361e10a2fc73063d84f1",
+      "opened_final_with": "view_image",
+      "manual_review_basis": "Individually displayed and inspected R4 raster, byte-identical final reopened",
+      "previous_image": "outputs/redesign-0109-r4/C/drawings/s3-section.png",
+      "checks": "Readable dimensions/labels; furniture/openings; level consistency; terrain/unknown distinctions; page clipping",
+      "result": "acceptable schematic review drawing"
+    },
+    {
+      "path": "outputs/redesign-0109-r5/C/drawings/water-section.png",
+      "sha256": "e2c43a24282b0cfc5947acb542f2ac476ae31f238aae7df3a53a88cbb30cc169",
+      "opened_final_with": "view_image",
+      "manual_review_basis": "Individually displayed and inspected R4 raster, byte-identical final reopened",
+      "previous_image": "outputs/redesign-0109-r4/C/drawings/water-section.png",
+      "checks": "Readable dimensions/labels; furniture/openings; level consistency; terrain/unknown distinctions; page clipping",
+      "result": "acceptable schematic review drawing"
+    },
+    {
+      "path": "outputs/redesign-0109-r5/C/drawings/toilet-sightlines.png",
+      "sha256": "45525c3f628c54e022235d4f8acf3f6c70223623bb59298ae4f10b03e3c01fff",
+      "opened_final_with": "view_image",
+      "manual_review_basis": "Individually displayed and inspected R4 raster, byte-identical final reopened",
+      "previous_image": "outputs/redesign-0109-r4/C/drawings/toilet-sightlines.png",
+      "checks": "Readable dimensions/labels; furniture/openings; level consistency; terrain/unknown distinctions; page clipping",
+      "result": "acceptable schematic review drawing"
+    },
+    {
+      "path": "outputs/redesign-0109-r5/C/drawings/garage-manoeuvring.png",
+      "sha256": "e77f85a5fa280abe35d25123190ff8e547a0618b0ca92eb2254da61f40012a37",
+      "opened_final_with": "view_image",
+      "manual_review_basis": "Individually displayed and inspected R4 raster, byte-identical final reopened",
+      "previous_image": "outputs/redesign-0109-r4/C/drawings/garage-manoeuvring.png",
+      "checks": "Readable dimensions/labels; furniture/openings; level consistency; terrain/unknown distinctions; page clipping",
+      "result": "acceptable schematic review drawing"
+    },
+    {
+      "path": "outputs/redesign-0109-r5/C/drawings/core-section.png",
+      "sha256": "c3bd0496432bc864d74acf8737b67d3c801e808ed37b757f76df266edec70ee6",
+      "opened_final_with": "view_image",
+      "manual_review_basis": "Final corrected C core-section individually displayed and inspected",
+      "previous_image": null,
+      "checks": "Readable dimensions/labels; furniture/openings; level consistency; terrain/unknown distinctions; page clipping",
+      "result": "acceptable schematic review drawing"
+    },
+    {
+      "path": "outputs/redesign-0109-r5/C/drawings/3d-massing.png",
+      "sha256": "691b9ed37073f5571f4384e56e57bd67a2c9d78a565abe9ecec0bcafe19740bc",
+      "opened_final_with": "view_image",
+      "manual_review_basis": "Individually displayed and inspected R4 raster, byte-identical final reopened",
+      "previous_image": "outputs/redesign-0109-r4/C/drawings/3d-massing.png",
+      "checks": "Readable dimensions/labels; furniture/openings; level consistency; terrain/unknown distinctions; page clipping",
+      "result": "acceptable schematic review drawing"
+    }
+  ],
+  "pdf": {
+    "sha256": "ec88fc4b76820d9d7bec77dc5831772585f0130c7b4d46bfbe487899cc40ba9c",
+    "rendered_pages": 39,
+    "reviewed_contact_sheets": [
+      "scratch/redesign-0109-pdf-qa/contact-1.png",
+      "scratch/redesign-0109-pdf-qa/contact-2.png",
+      "scratch/redesign-0109-pdf-qa/contact-3.png",
+      "scratch/redesign-0109-pdf-qa/contact-4.png",
+      "scratch/redesign-0109-pdf-qa/contact-5.png"
+    ],
+    "review": "All39 Poppler-rendered pages inspected across5 contact sheets; content matches individually inspected originals; pixel-identical embedded images and A3 size checked separately",
+    "result": "acceptable schematic review package"
+  },
+  "limits": [
+    "No construction/engineering or accessibility approval",
+    "PNG155dpi PDF; SVG provides editable vectors",
+    "Orthographic elevations are mass/aperture projections, not product-resolved elevations",
+    "3D is cutaway plan extrusion; opening heads, roof build-ups, retaining/foundations unengineered"
+  ]
+}

@@ -1,0 +1,277 @@
+{
+  "project_id": "my-house",
+  "provenance": {
+    "created_at": "2026-10-24T20:36:22.261749Z",
+    "created_by": {
+      "display_name": null,
+      "id": "claude-code",
+      "kind": "agent",
+      "model": null,
+      "provider": null
+    },
+    "inputs": [],
+    "method": "owner_statement",
+    "notes": null,
+    "tool": "house-ai statement add",
+    "tool_version": null
+  },
+  "schema_version": "0.1.0",
+  "statements": [
+    {
+      "channel": "chat with agent:claude-code, 2026-10-17",
+      "id": "stmt-001",
+      "pending_confirmation": "UTM zone, hemisphere (N/S) and horizontal datum/EPSG are still unknown: when known, house-ai site confirm my-house --confirmer <you> --epsg <code>. UTM is in metres, so the drawing unit can be confirmed now with --units m",
+      "recorded_at": "2026-10-17T09:42:04.832302Z",
+      "recorded_by": {
+        "display_name": null,
+        "id": "claude-code",
+        "kind": "agent",
+        "model": null,
+        "provider": null
+      },
+      "stated_by": "owner",
+      "subject": "horizontal_crs",
+      "words": "The survey uses UTM coordinates."
+    },
+    {
+      "channel": "chat with agent:claude-code, 2026-10-17",
+      "id": "stmt-002",
+      "pending_confirmation": "house-ai site confirm my-house --confirmer <you> --units m --elevation-units m (which sea-level datum is still unknown)",
+      "recorded_at": "2026-10-17T09:42:05.307494Z",
+      "recorded_by": {
+        "display_name": null,
+        "id": "claude-code",
+        "kind": "agent",
+        "model": null,
+        "provider": null
+      },
+      "stated_by": "owner",
+      "subject": "elevation_units",
+      "words": "The elevation values are in METRES ABOVE SEA LEVEL."
+    },
+    {
+      "channel": "chat with agent:claude-code, 2026-10-17",
+      "id": "stmt-003",
+      "pending_confirmation": null,
+      "recorded_at": "2026-10-17T09:42:05.779164Z",
+      "recorded_by": {
+        "display_name": null,
+        "id": "claude-code",
+        "kind": "agent",
+        "model": null,
+        "provider": null
+      },
+      "stated_by": "owner",
+      "subject": "relief",
+      "words": "The approximately 12–12.5 metre elevation difference is CORRECT."
+    },
+    {
+      "channel": "chat with agent:claude-code, 2026-10-17",
+      "id": "stmt-004",
+      "pending_confirmation": null,
+      "recorded_at": "2026-10-17T09:42:06.260605Z",
+      "recorded_by": {
+        "display_name": null,
+        "id": "claude-code",
+        "kind": "agent",
+        "model": null,
+        "provider": null
+      },
+      "stated_by": "owner",
+      "subject": "slope",
+      "words": "My land is genuinely steep."
+    },
+    {
+      "channel": "chat with agent:claude-code, 2026-10-17",
+      "id": "stmt-005",
+      "pending_confirmation": null,
+      "recorded_at": "2026-10-17T09:42:06.743463Z",
+      "recorded_by": {
+        "display_name": null,
+        "id": "claude-code",
+        "kind": "agent",
+        "model": null,
+        "provider": null
+      },
+      "stated_by": "owner",
+      "subject": "still_unknown",
+      "words": "UTM zone is still unknown. Horizontal datum / EPSG is still unknown. The precise vertical datum is still unknown."
+    },
+    {
+      "channel": "chat, 2026-10-20",
+      "id": "stmt-006",
+      "pending_confirmation": "Survey CRS or independent location anchor still needed; this request does not confirm site facts or approve a gate.",
+      "recorded_at": "2026-10-20T09:31:57.331390Z",
+      "recorded_by": {
+        "display_name": null,
+        "id": "codex",
+        "kind": "agent",
+        "model": null,
+        "provider": null
+      },
+      "stated_by": "owner",
+      "subject": "environmental_research_request",
+      "words": "for the location you can exactly find out where it is by the survey fils since it includes the coordinats, you use taht to gathere all the infor you need for that area online from sun dirction to sun light to wind climate or other things which I don't know bu yo difinetaly know"
+    },
+    {
+      "channel": "chat, 2026-10-20",
+      "id": "stmt-007",
+      "pending_confirmation": "Survey CRS or independent location anchor still needed; this request does not confirm site facts or approve a gate.",
+      "recorded_at": "2026-10-20T09:31:58.439834Z",
+      "recorded_by": {
+        "display_name": null,
+        "id": "codex",
+        "kind": "agent",
+        "model": null,
+        "provider": null
+      },
+      "stated_by": "owner",
+      "subject": "location_evidence_followup",
+      "words": "look closly, one of them at least shold tell you where exatly is it"
+    },
+    {
+      "channel": "chat, 2026-10-20; homeowner relaying the survey creator",
+      "id": "stmt-008",
+      "pending_confirmation": "Need the displayed coordinate labels/values or a surveyor CRS declaration to distinguish drawing X/Y/Z from latitude/longitude. No site facts confirmed by the agent.",
+      "recorded_at": "2026-10-20T10:13:53.198830Z",
+      "recorded_by": {
+        "display_name": null,
+        "id": "codex",
+        "kind": "agent",
+        "model": null,
+        "provider": null
+      },
+      "stated_by": "owner",
+      "subject": "surveyor_coordinate_report",
+      "words": "I just talked to the guy who created these survey files. He has some equipment. He says these are UTM. And he says that the coordinates, the geographical coordinates of all points are in those files. He says, I use GNA cad on my Android phone and it shows it to me. So they must be there. Try and find out."
+    },
+    {
+      "channel": "chat, 2026-10-20; response to coordinate-display clarification",
+      "id": "stmt-009",
+      "pending_confirmation": "Owner offered an independent map point; no map coordinates or link supplied yet. Approximate interior point supports location screening, not precise survey control or automatic CRS confirmation.",
+      "recorded_at": "2026-10-20T10:17:52.646569Z",
+      "recorded_by": {
+        "display_name": null,
+        "id": "codex",
+        "kind": "agent",
+        "model": null,
+        "provider": null
+      },
+      "stated_by": "owner",
+      "subject": "geographic_anchor_offer",
+      "words": "I don't have that file and I don't have that software. I don't have an Android phone, but I can give you the approximate, or I can give you a point on Google Map or somewhere where I am sure is inside the field. If I give you that, would it help you find the exact coordinates of all places or not?"
+    },
+    {
+      "channel": "chat, 2026-10-20; reply to geographical-anchor request",
+      "id": "stmt-010",
+      "pending_confirmation": "Owner-reported EPSG used for a read-only geographic preview and research; formal site confirm and gate approval remain human-only and pending.",
+      "recorded_at": "2026-10-20T12:53:13.794522Z",
+      "recorded_by": {
+        "display_name": null,
+        "id": "codex",
+        "kind": "agent",
+        "model": null,
+        "provider": null
+      },
+      "stated_by": "owner",
+      "subject": "horizontal_crs_owner_report",
+      "words": "this is the utm zone: EPSG:32638 — WGS 84 / UTM zone 38N"
+    },
+    {
+      "channel": "chat, 2026-10-20; answer to parcel-centre map check at 34.9692467 N, 46.3564133 E using owner-reported EPSG:32638",
+      "id": "stmt-011",
+      "pending_confirmation": "Formal human site confirmation of units, CRS, vertical datum and legal boundary; map recognition supports environmental research only",
+      "recorded_at": "2026-10-20T12:58:38.765540Z",
+      "recorded_by": {
+        "display_name": null,
+        "id": "codex",
+        "kind": "agent",
+        "model": null,
+        "provider": null
+      },
+      "stated_by": "owner",
+      "subject": "geographic_preview_recognition",
+      "words": "Yes, that is my field"
+    },
+    {
+      "channel": "chat, 2026-10-21",
+      "id": "stmt-012",
+      "pending_confirmation": null,
+      "recorded_at": "2026-10-21T19:45:30.602471Z",
+      "recorded_by": {
+        "display_name": null,
+        "id": "codex",
+        "kind": "agent",
+        "model": null,
+        "provider": null
+      },
+      "stated_by": "owner",
+      "subject": "c03_redesign_feedback",
+      "words": "Go to Codex CS2 Inside Designs. You've generated a bunch of plans. Now I'm going to tell you a bunch of stuff which would probably fix some things for you, things that... I mean, don't get me wrong, these are, these are, I think, really good, really good. Problem is, first of all, as I told you, it's correct that I told you we need to use as little as much as possible from the field to have a big... to have a big what? To have a big garden. But I think it's probably not that possible. What you've created, you need to give me, you need to give me a lateral view of the field and its slope and how much do we need to excavate. Because with this, we need to excavate a lot. And I think the lower floors, as we go down, they should go more towards east. Otherwise we're going to end up with a lot of excavation, which is not really possible for us. So, starting with CS2A, I don't have really anything against the garage, but let me tell you, overall there are spaces which are lost. For example, on the lowest floor between the stairs and the parents' bedroom and the master bathroom and the entrance for the rooms, there's a fucking void. What the fuck? We shouldn't have that. And overall this is just a little bit... I don't think it's really... The problem is first, overall we don't have enough terraces. I thought in the upper floor of the house, which is below the garage, we're going to have more and more terraces, possibly in all directions. Not west, but other directions. And most of it should be on the rooftop of the floor below it. And, you know, we need a more open, open plan. And the kitchen, the kitchen must definitely have a scenery towards south at least, and it should be connected to a terrace. This is not acceptable. It should have a terrace. And you know where the sun shines is, so you gotta make sure that the sunshine is on the south and east, so you have to use it wisely. And then, yeah. So, there's a lot of little places and little hallways, which I don't honestly think is what fitting us. So you need to really review this and make sure that it's actually usable by people. Now going to CS... no, C02B, same thing happens. We have also a void in every place, and the problem is, instead of putting... the most precious place is south and east, and you've completely wasted it. And we have too many little holes in this. It looks like a puzzle to me. It's really hard to focus what the hell is going on. So yeah, try to make it better and just look at it and generate a new version, but completely changed, hundred percent changed, and make it absolutely better."
+    },
+    {
+      "channel": "chat, 2026-10-22 (Claude Code)",
+      "id": "stmt-013",
+      "pending_confirmation": "design direction only; no slot change",
+      "recorded_at": "2026-10-22T07:55:38.367378Z",
+      "recorded_by": {
+        "display_name": null,
+        "id": "claude-code",
+        "kind": "agent",
+        "model": null,
+        "provider": null
+      },
+      "stated_by": "owner",
+      "subject": "c03_rejection_fresh_start",
+      "words": "Just look at those motherfucking plans that I think it was Codex created. Stupid Codex. Can you look at that? It's just stupid. Nothing makes sense. Can you review them and tell me what the fuck doesn't make sense? I can answer your questions. So you're telling me Okay, not gonna fucking answer questions about the fucking maps that they created, because they are just stupid. I want you to fresh start just keep the things that it recorded as my answers. And remember, there is no digging limit. But just, you need to be reasonable about it. Previously, it created 9-meter digging plan. Now it's all above. The soil, both are absolutely stupid. So let me see what can you create. As you are going about it, you can ask me questions with options to answer."
+    },
+    {
+      "channel": "chat, 2026-10-22 (Claude Code)",
+      "id": "stmt-014",
+      "pending_confirmation": "design direction for C04; no slot change",
+      "recorded_at": "2026-10-22T10:03:44.303758Z",
+      "recorded_by": {
+        "display_name": null,
+        "id": "claude-code",
+        "kind": "agent",
+        "model": null,
+        "provider": null
+      },
+      "stated_by": "owner",
+      "subject": "c04_no_unnecessary_doors",
+      "words": "mkae sure we don't hav unnessecary doors or barriers in general"
+    },
+    {
+      "channel": "chat, 2026-10-24 (Claude Code)",
+      "id": "stmt-015",
+      "pending_confirmation": "design direction for C05; no slot change",
+      "recorded_at": "2026-10-24T20:36:21.200742Z",
+      "recorded_by": {
+        "display_name": null,
+        "id": "claude-code",
+        "kind": "agent",
+        "model": null,
+        "provider": null
+      },
+      "stated_by": "owner",
+      "subject": "c04_review_feedback",
+      "words": "I am looking at the latest and you're only plan output, which is in folder Claude. -C04-A. Now I'm going to tell you what do I think about this thing that you've generated. First of all, we're going to start from the road level. Imagine we arrive at the house with our cars. Now we want to use the lift. How do we how can we do that? There is no way unless we go outside of the garage from the main door and then enter the entrance lobby and from there we can use the lift. What the hell is WC and shower doing there? Oh, it's because we have a quiet office. Yeah, it makes sense then. Good. Now you gotta resolve that issue that I told you. When I come home with grocery, I need to be able to use the lift from the garage, so there should be an entrance and then where is the stairs? Imagine the fucking lift doesn't work. There is no electricity. The same stairs that connects the upper floor and lower floor of the house need to come up. And connect it to this road level area too. Then we're gonna go and also the workshop. I don't know. Isn't it too narrow? It's a little bit weird, but whatever. Now we come to the lower level. Okay. It looks, let me tell you, the living room, there is no cozy there is no cozy corner for people to sit down. They have to if they are in the southern part of the living room, they are going to look into the kitchen and dining room. It's just a long way and it doesn't feel good. And if they are in the middle, that's a narrow place before in front of the lift where they're not, being seen, but if they go to the north, then there is the stair hall. So this is too open. I don't think I thought we're gonna have an L-shaped living room, that would have been much better. But no, this is not like that. It's an L-shaped, but I thought the northern side should have been closed off. That's what I think. For the rest, I have nothing really to say. But that's my concern with that. Going to the lower level, the store. We have a store in the northern side. Which is a little bit too strange. But also the labels of the different places sometimes they overlap each other. It makes it really hard for me to read what is what. And the parents grandparents, they are there. Okay, we have three rooms down there. Oh, that's nice. I think it's not bad. But I have a question. So in standard design for houses like this with two levels, is it common to have imagine we are downstairs here and we want to eat something, should we go upstairs? I think it should be like that, right? We cannot store food in two places, but I don't know what's the standard procedure there. We're just asking. Anyway, nothing against this floor. Just the store there is a little bit weird. And overall, I think if we can make the stairs a bit more like they are apart of the household and they are not in a corner where you're trying to hide it, but something that is really connected and is in the core of the our house, which makes connecting the two stairs almost seamlessly, that would be pretty nice. And I would that's good. That's what I think about so I want you to fix this issues give me another version. And also try to give me options. Don't give me just one option. Try and give me like at least three different options. Which they all make sense. And try to find out the issues before I tell you and resolve them. You can ask me questions whenever you want, so that is completely okay. And one more thing, we have I think where is it? In one place, we have an image which shows the elevation of our field. And I don't know where that is. I think it should be I am trying to find it. It's like an image where it shows different elevation levels of physically, or visually in my field, with a rainbow colors. I was going to ask you if you could make another version of it, which also because our field is not just from east to west, there is an elevation difference from north to south. If you could also show that there, that would be fantastic."
+    },
+    {
+      "channel": "chat, 2026-10-24 (Claude Code)",
+      "id": "stmt-016",
+      "pending_confirmation": "design direction for C05; no slot change",
+      "recorded_at": "2026-10-24T20:36:22.261459Z",
+      "recorded_by": {
+        "display_name": null,
+        "id": "claude-code",
+        "kind": "agent",
+        "model": null,
+        "provider": null
+      },
+      "stated_by": "owner",
+      "subject": "c05_three_complete_designs",
+      "words": "I meant three distinct complete designs. Of the house, road level garage, then floor below it, and the floor below it, and then the garden. I hope you understood that."
+    }
+  ]
+}

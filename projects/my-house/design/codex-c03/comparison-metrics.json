@@ -1,0 +1,281 @@
+[
+  {
+    "option": "codex-c03-a",
+    "epistemic_status": "measured plan geometry; inferred terrain/earthworks; point-route check only",
+    "enclosed_area_m2": {
+      "lv-lower": 178.01999999999998,
+      "lv-entry": 129.72,
+      "lv-upper": 96.39999999999998
+    },
+    "building_projection_m2": 253.56,
+    "gross_unbuilt_site_area_m2": 346.44442117377247,
+    "terrace_areas_m2": {
+      "sp-terrace-east": 38.700002229326,
+      "sp-terrace-south": 21.599999632138495,
+      "sp-terrace-north": 16.2000011664095
+    },
+    "roof_terrace_area_m2": 76.5,
+    "uncovered_roof_terrace_area_m2": 0.0,
+    "unassigned_plate_area_m2": {
+      "lv-lower": 0.0,
+      "lv-entry": 0.0
+    },
+    "living_to_lower_east_step_m": 3.0,
+    "cut_m3": 32.71242367943358,
+    "maximum_cut_depth_m": 2.144346508091303,
+    "floor_height_sensitivity": [
+      {
+        "floor_shift_m": -0.5,
+        "cut_m3": 60.070983280908855
+      },
+      {
+        "floor_shift_m": 0,
+        "cut_m3": 32.71242367943358
+      },
+      {
+        "floor_shift_m": 0.5,
+        "cut_m3": 14.845879711618977
+      }
+    ],
+    "kitchen_south_terrace_doors": [
+      "d-entry-058-28"
+    ],
+    "basic_furniture_fit": true,
+    "point_routes": {
+      "sp-living": {
+        "length_m": 7.358858834525373,
+        "spaces": [
+          "sp-main-entry",
+          "sp-dining",
+          "sp-living"
+        ],
+        "estimated": false
+      },
+      "sp-kitchen": {
+        "length_m": 5.700952420474545,
+        "spaces": [
+          "sp-main-entry",
+          "sp-dining",
+          "sp-kitchen"
+        ],
+        "estimated": false
+      },
+      "sp-main-bed": {
+        "length_m": 23.763063611446356,
+        "spaces": [
+          "sp-main-entry",
+          "sp-dining",
+          "sp-living",
+          "sp-stair-lv-entry",
+          "sp-stair-lv-lower",
+          "sp-night-lobby",
+          "sp-main-bed"
+        ],
+        "estimated": false
+      },
+      "sp-elder-bed": {
+        "length_m": 36.74136444181408,
+        "spaces": [
+          "sp-main-entry",
+          "sp-dining",
+          "sp-living",
+          "sp-stair-lv-entry",
+          "sp-stair-lv-lower",
+          "sp-night-lobby",
+          "sp-elder-bed"
+        ],
+        "estimated": false
+      },
+      "sp-boys": null,
+      "sp-girls": {
+        "length_m": 32.10424348555574,
+        "spaces": [
+          "sp-main-entry",
+          "sp-dining",
+          "sp-living",
+          "sp-stair-lv-entry",
+          "sp-stair-lv-lower",
+          "sp-night-lobby",
+          "sp-girls"
+        ],
+        "estimated": false
+      },
+      "sp-terrace-east": {
+        "length_m": 11.35216384667636,
+        "spaces": [
+          "sp-main-entry",
+          "sp-dining",
+          "sp-living",
+          "sp-terrace-east"
+        ],
+        "estimated": false
+      },
+      "sp-terrace-south": {
+        "length_m": 3.424457676300115,
+        "spaces": [
+          "sp-main-entry",
+          "sp-terrace-south"
+        ],
+        "estimated": false
+      },
+      "sp-terrace-north": {
+        "length_m": 12.776349098264296,
+        "spaces": [
+          "sp-main-entry",
+          "sp-dining",
+          "sp-living",
+          "sp-terrace-north"
+        ],
+        "estimated": false
+      }
+    },
+    "unreachable_point_route_targets": [
+      "sp-boys"
+    ],
+    "check_model_findings": 0,
+    "baseline_program_findings": [
+      {
+        "code": "hard_adjacency_violation",
+        "severity": "error",
+        "message": "hard connected adjacency adj-01-entry-exterior (pi-entry <-> exterior) is not satisfied",
+        "subject_ids": [
+          "adj-01-entry-exterior"
+        ]
+      }
+    ]
+  },
+  {
+    "option": "codex-c03-b",
+    "epistemic_status": "measured plan geometry; inferred terrain/earthworks; point-route check only",
+    "enclosed_area_m2": {
+      "lv-lower": 188.34000000000003,
+      "lv-entry": 137.24000000000004,
+      "lv-upper": 96.4
+    },
+    "building_projection_m2": 263.34000000000003,
+    "gross_unbuilt_site_area_m2": 336.66442117377244,
+    "terrace_areas_m2": {
+      "sp-terrace-east": 54.18000400817499,
+      "sp-terrace-south": 20.80000052000801,
+      "sp-terrace-north": 15.599998761162997
+    },
+    "roof_terrace_area_m2": 90.58000000000001,
+    "uncovered_roof_terrace_area_m2": 0.0,
+    "unassigned_plate_area_m2": {
+      "lv-lower": 0.0,
+      "lv-entry": 0.0
+    },
+    "living_to_lower_east_step_m": 4.2,
+    "cut_m3": 16.949815171490382,
+    "maximum_cut_depth_m": 1.7147868987715356,
+    "floor_height_sensitivity": [
+      {
+        "floor_shift_m": -0.5,
+        "cut_m3": 36.581762407948936
+      },
+      {
+        "floor_shift_m": 0,
+        "cut_m3": 16.949815171490382
+      },
+      {
+        "floor_shift_m": 0.5,
+        "cut_m3": 6.036475595061175
+      }
+    ],
+    "kitchen_south_terrace_doors": [
+      "d-entry-060-28"
+    ],
+    "basic_furniture_fit": true,
+    "point_routes": {
+      "sp-living": {
+        "length_m": 6.8973292446697965,
+        "spaces": [
+          "sp-main-entry",
+          "sp-dining",
+          "sp-living"
+        ],
+        "estimated": false
+      },
+      "sp-kitchen": {
+        "length_m": 5.4325825829170995,
+        "spaces": [
+          "sp-main-entry",
+          "sp-dining",
+          "sp-kitchen"
+        ],
+        "estimated": false
+      },
+      "sp-main-bed": null,
+      "sp-elder-bed": {
+        "length_m": 23.853013279895,
+        "spaces": [
+          "sp-main-entry",
+          "sp-dining",
+          "sp-living",
+          "sp-stair-lv-entry",
+          "sp-stair-lv-lower",
+          "sp-night-lobby",
+          "sp-elder-bed"
+        ],
+        "estimated": false
+      },
+      "sp-boys": null,
+      "sp-girls": {
+        "length_m": 31.425616992146814,
+        "spaces": [
+          "sp-main-entry",
+          "sp-dining",
+          "sp-living",
+          "sp-stair-lv-entry",
+          "sp-stair-lv-lower",
+          "sp-night-lobby",
+          "sp-girls"
+        ],
+        "estimated": false
+      },
+      "sp-terrace-east": {
+        "length_m": 11.33592982455495,
+        "spaces": [
+          "sp-main-entry",
+          "sp-dining",
+          "sp-living",
+          "sp-terrace-east"
+        ],
+        "estimated": false
+      },
+      "sp-terrace-south": {
+        "length_m": 2.6458195480267213,
+        "spaces": [
+          "sp-main-entry",
+          "sp-terrace-south"
+        ],
+        "estimated": false
+      },
+      "sp-terrace-north": {
+        "length_m": 12.683660351957776,
+        "spaces": [
+          "sp-main-entry",
+          "sp-dining",
+          "sp-living",
+          "sp-terrace-north"
+        ],
+        "estimated": false
+      }
+    },
+    "unreachable_point_route_targets": [
+      "sp-main-bed",
+      "sp-boys"
+    ],
+    "check_model_findings": 0,
+    "baseline_program_findings": [
+      {
+        "code": "hard_adjacency_violation",
+        "severity": "error",
+        "message": "hard connected adjacency adj-01-entry-exterior (pi-entry <-> exterior) is not satisfied",
+        "subject_ids": [
+          "adj-01-entry-exterior"
+        ]
+      }
+    ]
+  }
+]

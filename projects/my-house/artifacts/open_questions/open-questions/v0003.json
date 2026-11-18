@@ -1,0 +1,78 @@
+{
+  "project_id": "my-house",
+  "provenance": {
+    "created_at": "2026-10-20T19:00:17.478070Z",
+    "created_by": {
+      "display_name": null,
+      "id": "house-ai-program",
+      "kind": "system",
+      "model": null,
+      "provider": null
+    },
+    "inputs": [
+      {
+        "id": "brief",
+        "kind": "design_brief",
+        "sha256": "b92920f40dd42f99e0faea6c16917b2c8a7f2a75203456e154a5d6d51b07c7d6",
+        "version": 23
+      }
+    ],
+    "method": "program_from_brief",
+    "notes": "Deterministic; sizes not given by the owner are typical values (assumptions).",
+    "tool": "house-ai program",
+    "tool_version": null
+  },
+  "questions": [
+    {
+      "answer": null,
+      "asked_in_round": null,
+      "blocking": false,
+      "id": "oq-floors",
+      "question": "How many floors should the house have?",
+      "status": "open",
+      "topic": "floors",
+      "why_it_matters": "helps check the program against budget and site"
+    },
+    {
+      "answer": null,
+      "asked_in_round": null,
+      "blocking": false,
+      "id": "oq-budget",
+      "question": "What is the building budget?",
+      "status": "open",
+      "topic": "budget",
+      "why_it_matters": "helps check the program against budget and site"
+    },
+    {
+      "answer": null,
+      "asked_in_round": null,
+      "blocking": false,
+      "id": "oq-target-area",
+      "question": "Is there a total floor area in mind?",
+      "status": "open",
+      "topic": "target_area",
+      "why_it_matters": "helps check the program against budget and site"
+    },
+    {
+      "answer": null,
+      "asked_in_round": null,
+      "blocking": false,
+      "id": "oq-interview-unfinished",
+      "question": "The interview has 1 question(s) left.",
+      "status": "open",
+      "topic": "interview",
+      "why_it_matters": "unanswered topics use defaults or are left out"
+    },
+    {
+      "answer": null,
+      "asked_in_round": null,
+      "blocking": false,
+      "id": "oq-car-size",
+      "question": "Which car(s) will you park? Their size tests the garage.",
+      "status": "open",
+      "topic": "cars",
+      "why_it_matters": "the garage is checked against a typical car until then"
+    }
+  ],
+  "schema_version": "0.1.0"
+}

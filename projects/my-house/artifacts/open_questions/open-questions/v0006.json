@@ -1,0 +1,58 @@
+{
+  "project_id": "my-house",
+  "provenance": {
+    "created_at": "2026-10-21T06:19:23.860062Z",
+    "created_by": {
+      "display_name": null,
+      "id": "house-ai-program",
+      "kind": "system",
+      "model": null,
+      "provider": null
+    },
+    "inputs": [
+      {
+        "id": "brief",
+        "kind": "design_brief",
+        "sha256": "f6ed891aa4c5245753df79f2f5b798f283d58ea661f9b22de4103abfc302db76",
+        "version": 29
+      }
+    ],
+    "method": "program_from_brief",
+    "notes": "Deterministic; sizes not given by the owner are typical values (assumptions).",
+    "tool": "house-ai program",
+    "tool_version": null
+  },
+  "questions": [
+    {
+      "answer": null,
+      "asked_in_round": null,
+      "blocking": false,
+      "id": "oq-budget",
+      "question": "What is the building budget?",
+      "status": "open",
+      "topic": "budget",
+      "why_it_matters": "helps check the program against budget and site"
+    },
+    {
+      "answer": null,
+      "asked_in_round": null,
+      "blocking": false,
+      "id": "oq-target-area",
+      "question": "Is there a total floor area in mind?",
+      "status": "open",
+      "topic": "target_area",
+      "why_it_matters": "helps check the program against budget and site"
+    },
+    {
+      "answer": null,
+      "asked_in_round": null,
+      "blocking": false,
+      "id": "oq-car-size",
+      "question": "Which car(s) will you park? Their size tests the garage.",
+      "status": "open",
+      "topic": "cars",
+      "why_it_matters": "the garage is checked against a typical car until then"
+    }
+  ],
+  "schema_version": "0.1.0"
+}
