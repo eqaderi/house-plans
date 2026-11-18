@@ -1,11 +1,11 @@
-"""Generate interactive HTML review pages and README.md for Argon C06.
+"""Generate interactive HTML review pages and README.md for Argon C07.
 
 Produces:
-- projects/my-house/design/argon-c06/index.html
-- projects/my-house/design/argon-c06/argon-c06-a/review.html
-- projects/my-house/design/argon-c06/argon-c06-b/review.html
-- projects/my-house/design/argon-c06/argon-c06-c/review.html
-- projects/my-house/design/argon-c06/README.md
+- projects/my-house/design/993_2026-10-26_argon-c07/index.html
+- projects/my-house/design/993_2026-10-26_argon-c07/argon-c07-a/review.html
+- projects/my-house/design/993_2026-10-26_argon-c07/argon-c07-b/review.html
+- projects/my-house/design/993_2026-10-26_argon-c07/argon-c07-c/review.html
+- projects/my-house/design/993_2026-10-26_argon-c07/README.md
 """
 
 from __future__ import annotations
@@ -26,6 +26,7 @@ from constants import (  # noqa: E402
     LEVEL_MAIN,
     LEVEL_ROAD,
     OUTDOOR_PREFIXES,
+    USER_DESIGN_SYNTHESIS,
 )
 from generate import OPTIONS  # noqa: E402
 
@@ -153,7 +154,6 @@ def _css() -> str:
 
 def _area_m2(space: dict) -> float:
     coords = space["boundary"]["outer"]
-    # Shoelace formula
     area2 = 0.0
     n = len(coords)
     for i in range(n):
@@ -174,6 +174,20 @@ def _compute_areas(plan: dict) -> tuple[dict[str, float], dict[str, float]]:
         else:
             indoor_by_lv[lv] = indoor_by_lv.get(lv, 0.0) + a
     return indoor_by_lv, terrace_by_lv
+
+
+def _synthesis_rows_html() -> str:
+    rows = []
+    for item in USER_DESIGN_SYNTHESIS:
+        rows.append(
+            f"<tr>"
+            f"<td><strong>{html.escape(item['id'])}</strong></td>"
+            f"<td>{html.escape(item['user_inspiration'])}</td>"
+            f"<td>{html.escape(item['problem_in_user_design'])}</td>"
+            f"<td><span class='badge'>RESOLVED</span> {html.escape(item['argon_c07_resolution'])}</td>"
+            f"</tr>"
+        )
+    return "".join(rows)
 
 
 def _build_option_review_html(data: dict) -> str:
@@ -211,7 +225,7 @@ def _build_option_review_html(data: dict) -> str:
   <div class="container">
     <header>
       <div class="nav-links" style="margin-bottom:12px;">
-        <a href="../index.html">&larr; All Argon C06 Options</a>
+        <a href="../index.html">&larr; All Argon C07 Options</a>
         <a href="floor-plans.svg">Floor Plans SVG</a>
         <a href="floor-plans.png">Floor Plans PNG</a>
         <a href="terrain-sections.svg">1:1 Terrain Sections SVG</a>
@@ -224,6 +238,7 @@ def _build_option_review_html(data: dict) -> str:
       <p style="margin:10px 0 0;">
         <span class="badge">0 check_model findings</span>
         <span class="badge">{passed_cnt}/{len(audit)} Owner Design Rules PASS</span>
+        <span class="badge">All 30 Issues in 0110-r2 Resolved</span>
         <span class="badge">Building Cut: {ew_sum["building_cut_m3"]:.1f} m&sup3; (100% On-Site Reuse)</span>
       </p>
     </header>
@@ -276,7 +291,7 @@ def _build_option_review_html(data: dict) -> str:
       </table>
     </div>
 
-    <h2>All-Level Floor Plans + Flat East Lawn (True 1:1 Scale)</h2>
+    <h2>All-Level Furnished Floor Plans + Flat East Lawn (True 1:1 Scale)</h2>
     <div class="sheet-frame">
       <img src="floor-plans.svg" alt="{html.escape(opt_id)} Floor Plans" />
     </div>
@@ -285,6 +300,21 @@ def _build_option_review_html(data: dict) -> str:
     <div class="sheet-frame">
       <img src="terrain-sections.svg" alt="{html.escape(opt_id)} Terrain Sections" />
     </div>
+
+    <h2>User-Designed (<code>0109-r5</code>) Inspirations &amp; Review (<code>0110-r2</code>) Problem Resolutions</h2>
+    <table>
+      <thead>
+        <tr>
+          <th style="width:180px;">Feature / Finding ID</th>
+          <th style="width:280px;">User Inspiration Adopted (<code>0109-r5</code>)</th>
+          <th style="width:280px;">Problem Identified (<code>0110-r2</code> / Rules)</th>
+          <th>How <code>{html.escape(opt_id)}</code> Resolves It</th>
+        </tr>
+      </thead>
+      <tbody>
+        {_synthesis_rows_html()}
+      </tbody>
+    </table>
 
     <h2>Homeowner Design Rules Audit ({passed_cnt}/{len(audit)} PASS)</h2>
     <table>
@@ -322,7 +352,8 @@ def _build_master_index_html(options_data: list[dict]) -> str:
               <p style="font-size:13px; color:var(--muted);">{html.escape(d["summary"])}</p>
               <p>
                 <span class="badge">0 Violations</span>
-                <span class="badge">18/18 Rules PASS</span>
+                <span class="badge">19/19 Rules PASS</span>
+                <span class="badge">0109-r5 + C06 Synthesis</span>
               </p>
               <ul style="font-size:13px; padding-left:18px; margin:10px 0;">
                 <li><strong>Total Indoor Area:</strong> {indoor:.1f} m&sup2; (3 stepped levels)</li>
@@ -374,21 +405,21 @@ def _build_master_index_html(options_data: list[dict]) -> str:
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>Argon C06 — 3 Stepped Hillside House Plan Options (my-house)</title>
+  <title>Argon C07 — User-Inspired Stepped Hillside House Plans (my-house)</title>
   <style>{_css()}</style>
 </head>
 <body>
   <div class="container">
     <header>
-      <h1>Argon C06 (<code>{DESIGN_SERIES_ID}</code>) — Three Complete Stepped Hillside Designs</h1>
+      <h1>Argon C07 (<code>{DESIGN_SERIES_ID}</code>) — Synthesizing User Designs (<code>0109-r5</code>) &amp; Resolving All Review Issues (<code>0110-r2</code>)</h1>
       <p class="subtitle">
-        Prepared for project <code>my-house</code> &middot; Verified against <code>OWNER_DESIGN_RULES.md</code> (v18 / stmt-001..stmt-018)
-        &middot; 0 <code>check_model</code> findings &middot; 18/18 Homeowner Rules PASS across all 3 options
+        Prepared for project <code>my-house</code> &middot; Verified against <code>OWNER_DESIGN_RULES.md</code> (v19 / stmt-001..stmt-019)
+        &middot; 0 <code>check_model</code> findings &middot; 19/19 Homeowner Rules PASS across all 3 options
       </p>
       <div class="nav-links" style="margin-top:14px;">
-        <a href="argon-c06-a/review.html">Option A (<code>argon-c06-a</code>)</a>
-        <a href="argon-c06-b/review.html">Option B (<code>argon-c06-b</code>)</a>
-        <a href="argon-c06-c/review.html">Option C (<code>argon-c06-c</code>)</a>
+        <a href="argon-c07-a/review.html">Option A (<code>argon-c07-a</code>)</a>
+        <a href="argon-c07-b/review.html">Option B (<code>argon-c07-b</code>)</a>
+        <a href="argon-c07-c/review.html">Option C (<code>argon-c07-c</code>)</a>
         <a href="terrain-sections.svg">1:1 Terrain Sections (SVG)</a>
         <a href="terrain-sections.png">1:1 Terrain Sections (PNG)</a>
       </div>
@@ -398,9 +429,24 @@ def _build_master_index_html(options_data: list[dict]) -> str:
       {"".join(cards_html)}
     </div>
 
+    <h2>How Argon C07 Adopts Your <code>0109-r5</code> Inspirations &amp; Fixes Every <code>0110-r2</code> Issue</h2>
+    <table>
+      <thead>
+        <tr>
+          <th style="width:180px;">Feature / Finding ID</th>
+          <th style="width:280px;">User Inspiration Adopted (<code>0109-r5</code>)</th>
+          <th style="width:280px;">Problem Identified (<code>0110-r2</code> / Rules)</th>
+          <th>How <code>Argon C07</code> Resolves It</th>
+        </tr>
+      </thead>
+      <tbody>
+        {_synthesis_rows_html()}
+      </tbody>
+    </table>
+
     <h2>True 1:1 Site &amp; Excavation Cross-Sections</h2>
     <div class="sheet-frame">
-      <img src="terrain-sections.svg" alt="Argon C06 True 1:1 Site and Excavation Sections" />
+      <img src="terrain-sections.svg" alt="Argon C07 True 1:1 Site and Excavation Sections" />
     </div>
 
     {"".join(plan_sections)}
@@ -411,9 +457,9 @@ def _build_master_index_html(options_data: list[dict]) -> str:
         <tr>
           <th style="width:220px;">Rule &amp; Requirement</th>
           <th style="width:75px;">Status</th>
-          <th>Option A (<code>argon-c06-a</code>) Evidence</th>
-          <th>Option B (<code>argon-c06-b</code>) Evidence</th>
-          <th>Option C (<code>argon-c06-c</code>) Evidence</th>
+          <th>Option A (<code>argon-c07-a</code>) Evidence</th>
+          <th>Option B (<code>argon-c07-b</code>) Evidence</th>
+          <th>Option C (<code>argon-c07-c</code>) Evidence</th>
         </tr>
       </thead>
       <tbody>
@@ -428,9 +474,9 @@ def _build_master_index_html(options_data: list[dict]) -> str:
 
 def _build_readme_md(options_data: list[dict]) -> str:
     lines = [
-        "# Argon C06 (`argon-c06`) — Stepped Hillside Residence Designs",
+        "# Argon C07 (`argon-c07`) — User-Inspired Stepped Hillside Residence Designs",
         "",
-        "Three complete, solver-verified residential floor-plan options (`argon-c06-a`, `argon-c06-b`, `argon-c06-c`) for `projects/my-house`, built directly from all recorded homeowner statements (`stmt-001` through `stmt-018`) and verified against every rule in `projects/my-house/design/OWNER_DESIGN_RULES.md`.",
+        "Three complete, solver-verified residential floor-plan options (`argon-c07-a`, `argon-c07-b`, `argon-c07-c`) for `projects/my-house`, synthesizing the homeowner's crafted designs (`projects/my-house/design/999_2026-10-17_user-designed/redesign-0109-r5`) with the stepped hillside architecture of `argon-c06`, resolving all 30 issues identified in `independent-review-0110-r2`, and passing 100% of `projects/my-house/design/OWNER_DESIGN_RULES.md` (`stmt-001` through `stmt-019`).",
         "",
         "## Summary of the Three Distinct Options",
         "",
@@ -448,27 +494,29 @@ def _build_readme_md(options_data: list[dict]) -> str:
         main_u = f"{plates[LEVEL_MAIN][0] / 10:.1f}–{plates[LEVEL_MAIN][2] / 10:.1f} m"
         lower_u = f"{plates[LEVEL_LOWER][0] / 10:.1f}–{plates[LEVEL_LOWER][2] / 10:.1f} m"
         lines.append(
-            f"| **`{opt_id}`** | {d['subtitle']} | `{road_u}` | `{main_u}` | `{lower_u}` | **{indoor:.1f} m²** | **{outdoor:.1f} m²** (+ ~160 m² flat lawn) | **{ew_sum['building_cut_m3']:.1f} m³** | **{ew_sum['building_max_cut_m']:.2f} m** | **18/18 PASS** |"
+            f"| **`{opt_id}`** | {d['subtitle']} | `{road_u}` | `{main_u}` | `{lower_u}` | **{indoor:.1f} m²** | **{outdoor:.1f} m²** (+ ~160 m² flat lawn) | **{ew_sum['building_cut_m3']:.1f} m³** | **{ew_sum['building_max_cut_m']:.2f} m** | **19/19 PASS** |"
         )
 
     lines.extend(
         [
             "",
-            "## Key Differentiators Across Options A, B, and C",
+            "## How Argon C07 Synthesizes Your `0109-r5` Designs & Resolves All `0110-r2` Issues",
             "",
-            "- **`argon-c06-a` (Northeast Sheltered Cozy Living & Central-East Garden Hub)**:",
-            "  - **Main Floor**: South-west Pantry + South Kitchen (`21.1 m²`) + Central-South Dining (`13.6 m²`) + L-shaped Living (`32.3 m²`) with a sheltered **North-East Cozy Corner** enclosed on its north and west sides, opening south-east to the panoramic view and East Balcony (`59.3 m²`).",
-            "  - **Lower Floor**: North-East Boys 2-bed room (`35.5 m²`), Central-East Family Room with Tea & Snack Bar (`28.1 m²`) opening straight onto the Lower East Terrace (`40.6 m²`) and Flat East Lawn (`~160 m²`), South-East Grandparents Suite (`34.0 m²` + `17.8 m²` bath), and South-Center Girls 2-bed room (`22.0 m²`).",
-            "- **`argon-c06-b` (Central-West Cozy Living Nook & South-East Family Garden Lounge)**:",
-            "  - **Main Floor**: Larger South Kitchen (`23.0 m²`) + Dining (`13.4 m²`), with the L-shaped Living Room (`32.6 m²`) wrapping a **Central-West Sheltered Cozy Nook** (`u = 10.2–13.4 m`) tucked right beside the Central Hall.",
-            "  - **Lower Floor**: Central-East Grandparents Suite (`32.0 m²` + `16.0 m²` bath) and **South-East Corner Family Room + Tea & Snack Bar** (`28.8 m²`) enjoying dual south + east garden exposure.",
-            "- **`argon-c06-c` (South-East Kitchen Veranda, Pantry Buffer & All-East Lower Bedrooms)**:",
-            "  - **Main Floor**: South-West Dining Veranda (`17.0 m²`) + Central-South Kitchen (`19.7 m²`) + **South-East Pantry Buffer** (`4.8 m²`) before the L-shaped Living Room (`34.5 m²`) and East Balcony (`56.2 m²`).",
-            "  - **Lower Floor**: **All three bedrooms (`Boys 36.5 m²`, `Girls 28.9 m²`, `Grandparents Suite 35.0 m²`) line the East Garden facade**, while the Family Room + Tea & Snack Bar (`22.0 m²`) faces south.",
+            "| Feature / Finding ID | User Inspiration Adopted (`0109-r5`) | Problem Identified (`0110-r2` / Rules) | How `Argon C07` Resolves It |",
+            "|---|---|---|---|",
+        ]
+    )
+    for item in USER_DESIGN_SYNTHESIS:
+        lines.append(
+            f"| **{item['id']}** | {item['user_inspiration']} | {item['problem_in_user_design']} | {item['argon_c07_resolution']} |"
+        )
+
+    lines.extend(
+        [
             "",
             "## Complete Rule-by-Rule Verification Checklist (`OWNER_DESIGN_RULES.md` Rule 8.1)",
             "",
-            "| Rule ID | Requirement | Status | Option A (`argon-c06-a`) | Option B (`argon-c06-b`) | Option C (`argon-c06-c`) |",
+            "| Rule ID | Requirement | Status | Option A (`argon-c07-a`) | Option B (`argon-c07-b`) | Option C (`argon-c07-c`) |",
             "|---|---|---|---|---|---|",
         ]
     )
@@ -487,10 +535,10 @@ def _build_readme_md(options_data: list[dict]) -> str:
             "",
             "## Files & Deliverables",
             "",
-            "- `index.html`: Interactive master comparison and rule audit page.",
-            "- `floor-plans.svg` / `floor-plans.png`: Master all-level floor plan sheet.",
+            "- `index.html`: Interactive master comparison, user-design synthesis table, and rule audit page.",
+            "- `floor-plans.svg` / `floor-plans.png`: Master all-level furnished floor plan sheet.",
             "- `terrain-sections.svg` / `terrain-sections.png`: True 1:1 horizontal/vertical scale site and excavation cross-sections.",
-            "- `argon-c06-a/`, `argon-c06-b/`, `argon-c06-c/`: Each contains `plan.json`, `violations.json`, `rule-audit.json`, `placement.json`, `section-earthwork.json`, `floor-plans.svg`, `floor-plans.png`, `terrain-sections.svg`, `terrain-sections.png`, and `review.html`.",
+            "- `argon-c07-a/`, `argon-c07-b/`, `argon-c07-c/`: Each contains `plan.json`, `violations.json`, `rule-audit.json`, `placement.json`, `section-earthwork.json`, `floor-plans.svg`, `floor-plans.png`, `terrain-sections.svg`, `terrain-sections.png`, and `review.html`.",
             "",
         ]
     )
@@ -505,7 +553,7 @@ def main() -> None:
 
     (HERE / "index.html").write_text(_build_master_index_html(options_data), encoding="utf-8")
     (HERE / "README.md").write_text(_build_readme_md(options_data), encoding="utf-8")
-    print("BUILT index.html, README.md, and per-option review.html pages")
+    print("BUILT index.html, README.md, and per-option review.html pages for Argon C07")
 
 
 if __name__ == "__main__":

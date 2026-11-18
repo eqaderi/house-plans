@@ -12,7 +12,7 @@ habitable rooms where the survey TIN is below sill height (or a terrace/court is
 outside), and door adjacencies. Canonical Builder2D assembles the model and
 check_model audits it. Nothing is stored in the project record.
 
-Run: .venv/bin/python projects/my-house/design/claude-c04/generate.py [--time 60]
+Run: .venv/bin/python projects/my-house/design/995_2026-10-22_claude-c04/generate.py [--time 60]
 """
 
 import argparse

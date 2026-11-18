@@ -1,7 +1,7 @@
 """EXPLORATORY Argon C06 concept generator (agent:gemini, 2026-10-26).
 
 Generates three genuinely distinct, complete 3-level hillside house designs
-(`argon-c06-a`, `argon-c06-b`, `argon-c06-c`) in `projects/my-house/design/argon-c06/`,
+(`argon-c06-a`, `argon-c06-b`, `argon-c06-c`) in `projects/my-house/design/994_2026-10-26_argon-c06/`,
 strictly obeying every rule in `projects/my-house/design/OWNER_DESIGN_RULES.md` and
 owner confirmations in `stmt-018`:
 
@@ -23,7 +23,7 @@ owner confirmations in `stmt-018`:
    and Shared WC, and Laundry + Store tucked by the core.
 
 Run:
-    .venv/bin/python projects/my-house/design/argon-c06/generate.py
+    .venv/bin/python projects/my-house/design/994_2026-10-26_argon-c06/generate.py
 """
 
 from __future__ import annotations

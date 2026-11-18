@@ -1,6 +1,6 @@
 # Argon C07 (`argon-c07`) — User-Inspired Stepped Hillside Residence Designs
 
-Three complete, solver-verified residential floor-plan options (`argon-c07-a`, `argon-c07-b`, `argon-c07-c`) for `projects/my-house`, synthesizing the homeowner's crafted designs (`projects/my-house/design/user-designed/redesign-0109-r5`) with the stepped hillside architecture of `argon-c06`, resolving all 30 issues identified in `independent-review-0110-r2`, and passing 100% of `projects/my-house/design/OWNER_DESIGN_RULES.md` (`stmt-001` through `stmt-019`).
+Three complete, solver-verified residential floor-plan options (`argon-c07-a`, `argon-c07-b`, `argon-c07-c`) for `projects/my-house`, synthesizing the homeowner's crafted designs (`projects/my-house/design/999_2026-10-17_user-designed/redesign-0109-r5`) with the stepped hillside architecture of `argon-c06`, resolving all 30 issues identified in `independent-review-0110-r2`, and passing 100% of `projects/my-house/design/OWNER_DESIGN_RULES.md` (`stmt-001` through `stmt-019`).
 
 ## Summary of the Three Distinct Options
 

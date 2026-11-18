@@ -1,7 +1,7 @@
 """Shared constants and configuration for Argon C07 house plans (heavily based on user-designed 0109-r5).
 
 Directly implements and perfects the homeowner's three crafted designs (`A`, `B`, `C`) from
-`projects/my-house/design/user-designed/redesign-0109-r5`, preserving their sculpted stepped/notched
+`projects/my-house/design/999_2026-10-17_user-designed/redesign-0109-r5`, preserving their sculpted stepped/notched
 footprints, north-projecting vertical core (`CORE + REST 1.40 + LIFT`), 4-part screened wet/wudu
 cluster, road-level west-to-east arrival sequence, and room arrangements while resolving all 30 issues
 in `independent-review-0110-r2` and obeying 100% of `OWNER_DESIGN_RULES.md` (`stmt-001` through `stmt-020`).

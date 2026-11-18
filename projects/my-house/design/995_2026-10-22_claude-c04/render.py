@@ -4,7 +4,7 @@ Reads <option>/plan.json (canonical model) and draws every level at one scale wi
 rooms, areas, walls, doors, windows, the family stair, terraces and the parcel.
 Writes <option>/floor-plans.svg and .png.
 
-Run: .venv/bin/python projects/my-house/design/claude-c04/render.py claude-c04-a
+Run: .venv/bin/python projects/my-house/design/995_2026-10-22_claude-c04/render.py claude-c04-a
 """
 
 import html

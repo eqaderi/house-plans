@@ -1,8 +1,8 @@
 """Reusable architectural furniture and analytical overlay renderer for Argon C07.
 
 Draws the crafted room furnishings and analytical verification overlays directly inspired by
-`projects/my-house/design/user-designed/redesign-0109-r5` (`A`, `B`, `C`) while illustrating
-the fixes for `projects/my-house/design/user-designed/independent-review-0110-r2`:
+`projects/my-house/design/999_2026-10-17_user-designed/redesign-0109-r5` (`A`, `B`, `C`) while illustrating
+the fixes for `projects/my-house/design/999_2026-10-17_user-designed/independent-review-0110-r2`:
 - Two Independent Car Bays (LC300 5.10×2.10m + 2nd car 4.80×1.95m) with 0.65m door zones (I09 fix)
 - North Workshop Bay + 6 family lockers (L1–L6) in Six-Person Unloading + 1.20m Replaceable Plant
 - 4-Part Screened Wet & Wudu Cluster (Shared WC + Shared Shower + Wudu + Screened Lobby with opaque sightline baffle, P3)

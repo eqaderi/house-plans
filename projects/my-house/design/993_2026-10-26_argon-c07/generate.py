@@ -1,15 +1,15 @@
 """EXPLORATORY Argon C07 concept generator (agent:gemini, 2026-10-26).
 
 Generates three genuinely distinct, complete 3-level hillside house designs
-(`argon-c07-a`, `argon-c07-b`, `argon-c07-c`) in `projects/my-house/design/argon-c07/`,
-heavily based on the homeowner's crafted designs (`user-designed/redesign-0109-r5` Options A, B, C),
+(`argon-c07-a`, `argon-c07-b`, `argon-c07-c`) in `projects/my-house/design/993_2026-10-26_argon-c07/`,
+heavily based on the homeowner's crafted designs (`999_2026-10-17_user-designed/redesign-0109-r5` Options A, B, C),
 preserving their signature stepped/notched footprints, north-projecting vertical core (`CORE + REST 1.40 + LIFT`),
 4-part screened wet/wudu cluster, and room arrangements while resolving all 30 issues in
-`user-designed/independent-review-0110-r2` and obeying 100% of `OWNER_DESIGN_RULES.md`
+`999_2026-10-17_user-designed/independent-review-0110-r2` and obeying 100% of `OWNER_DESIGN_RULES.md`
 (`stmt-001` through `stmt-020`).
 
 Run:
-    .venv/bin/python projects/my-house/design/argon-c07/generate.py
+    .venv/bin/python projects/my-house/design/993_2026-10-26_argon-c07/generate.py
 """
 
 from __future__ import annotations

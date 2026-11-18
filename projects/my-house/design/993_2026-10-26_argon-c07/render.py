@@ -5,7 +5,7 @@ options (`argon-c07-a`, `argon-c07-b`, `argon-c07-c`) plus top-level `floor-plan
 and `floor-plans.png`.
 
 Directly renders the sculpted, non-rectangular stepped footprints and room arrangements
-based on the homeowner's `user-designed/redesign-0109-r5` (`A`, `B`, `C`) designs,
+based on the homeowner's `999_2026-10-17_user-designed/redesign-0109-r5` (`A`, `B`, `C`) designs,
 including the North-Projecting Core (`CORE 20R` + `REST 1.40` + `LIFT`), the 4-part
 Screened Wet & Wudu Cluster, furnished rooms (`furniture.py`), and a strict programmatic
 bounding-box collision check (`assert_zero_label_overlaps`) enforcing Owner Rule 7.1.

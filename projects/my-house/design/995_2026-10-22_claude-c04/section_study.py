@@ -7,7 +7,7 @@ they are inferred on the TIN, not contractor quantities. Owner direction: dig th
 north side (~3 m accepted), straight floors, short outdoor stair to the lawn,
 house may touch the north boundary.
 
-Run: .venv/bin/python projects/my-house/design/claude-c04/section_study.py
+Run: .venv/bin/python projects/my-house/design/995_2026-10-22_claude-c04/section_study.py
 """
 
 import itertools

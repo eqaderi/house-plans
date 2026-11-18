@@ -1,6 +1,6 @@
 """Build a self-contained HTML review page for a C04 option (zoomable plans + all data).
 
-Run: .venv/bin/python projects/my-house/design/claude-c04/build_html.py claude-c04-a
+Run: .venv/bin/python projects/my-house/design/995_2026-10-22_claude-c04/build_html.py claude-c04-a
 Writes <option>/review.html (open it in any browser; no network needed).
 """
 

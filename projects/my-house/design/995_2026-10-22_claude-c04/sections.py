@@ -5,7 +5,7 @@ floor and across the house, and draws the C04 floor plates, terraces and lawn.
 Quantities use the canonical geospatial.earthworks.integrate (inferred on the
 TIN; 0.35 m formation below floors; not contractor quantities).
 
-Run: .venv/bin/python projects/my-house/design/claude-c04/sections.py
+Run: .venv/bin/python projects/my-house/design/995_2026-10-22_claude-c04/sections.py
 """
 
 import json

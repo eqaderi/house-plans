@@ -3882,7 +3882,7 @@ All cited S7 file paths and test function names exist. Their existence and passi
   owner statements v25, space program v7. State stays `SITE_NEEDS_CONFIRMATION`;
   no gate was approved and no site fact confirmed.
 - The records above stop at interview v19; later rounds, the program builds and
-  the `design/` studies (argon, claude, codex, `user-designed/`) are in the
+  the `design/` studies (argon, claude, codex, `999_2026-10-17_user-designed/`) are in the
   project record and `projects/my-house/reviews/` but have no record here.
 - `main` had already given ISS-38 to ISS-40 to other issues, so this branch's
   unmerged ISS-38/39/40 became ISS-43/44/45 (never published on `main`). All

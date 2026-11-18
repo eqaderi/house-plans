@@ -55,10 +55,10 @@
 ## بازتولید و منشأ
 
 ```bash
-.venv/bin/python projects/my-house/design/codex-c02/generate.py --option a --time 30
-.venv/bin/python projects/my-house/design/codex-c02/generate.py --option b --time 30
-.venv/bin/python projects/my-house/design/codex-c02/finish.py
-.venv/bin/python projects/my-house/design/codex-c02/site_access.py
+.venv/bin/python projects/my-house/design/997_2026-10-21_codex-c02/generate.py --option a --time 30
+.venv/bin/python projects/my-house/design/997_2026-10-21_codex-c02/generate.py --option b --time 30
+.venv/bin/python projects/my-house/design/997_2026-10-21_codex-c02/finish.py
+.venv/bin/python projects/my-house/design/997_2026-10-21_codex-c02/site_access.py
 ```
 
 `plan.json` شامل مدل، نویسنده، نسخهٔ ورودی سایت/برنامه و سابقهٔ حل‌کننده است. `placement.json` مختصات خامِ حل‌کننده و دستگاه مختصات موازی مرزها را نگه می‌دارد. تمام تصاویر از همان هندسه مشتق شده‌اند. نقشه‌های برداشت اولیه تغییر نکرده‌اند.

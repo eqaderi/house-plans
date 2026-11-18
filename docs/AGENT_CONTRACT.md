@@ -139,7 +139,11 @@ with reasons; never present one plan option as "the answer".
 Whenever you show the owner two or more options, include a comparison view: a
 table of only what differs, plus the same floor of each option side by side
 with differing rooms outlined (`OWNER_DESIGN_RULES.md` rule 8.5; reference
-`projects/my-house/design/claude-c09/compare.py`).
+`projects/my-house/design/991_2026-10-27_claude-c09/compare.py`).
+Put each design study in its own `design/` folder named
+`<rank>_<YYYY-MM-DD>_<tool>-c<NN>`, where the rank counts down from 999 so the
+newest sorts first, and add it to the top of the table in `design/README.md`.
+Never rename an existing study folder.
 
 ## 10. Professional boundary, conventions, tests, and Git
 
