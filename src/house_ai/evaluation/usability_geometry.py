@@ -82,8 +82,8 @@ def objects_in(model, space_id):
 
 
 def stair_obstacles(model: HouseModel, space_id: str):
-    """Flights with a declared walking line occupy their footprint on both connected floors,
-    in every space of those floors they pass through: the bottom and top spaces, and a
+    """Flights with a declared walking line occupy their footprint on both connected levels,
+    in every space of those levels they pass through: the bottom and top spaces, and a
     stairwell, stair hall or room a split-level flight crosses into (ADR 0023).
 
     Without a walking line the flight geometry is unknown and is not subtracted.

@@ -94,7 +94,7 @@ def build_tin(
     return result
 
 
-def _constrain(result: TinResult, breaklines: list[TerrainBreakline]) -> None:
+def _constrain(result: TinResult, breaklines: list[TerrainBreakline]) -> None:  # noqa: C901
     """Split TIN cells at mapped edges, then triangulate each constrained cell.
 
     New edge intersections take the surveyed line's interpolated Z. Endpoint
@@ -199,15 +199,6 @@ def terrain_from_survey(
     terrain = build_terrain(spots, contours, surface=tin.surface)
     terrain.breaklines = breaklines or []
     return terrain, tin
-
-
-class DelaunayTerrainBuilder:
-    """:class:`house_ai.geospatial.base.TerrainBuilder` using :func:`build_tin`."""
-
-    def build_surface(
-        self, spot_elevations: list[SpotElevation], contours: list[Contour]
-    ) -> Terrain:
-        return terrain_from_survey(spot_elevations, contours)[0]
 
 
 def triangle_slope_pct(a: Point3, b: Point3, c: Point3) -> float:

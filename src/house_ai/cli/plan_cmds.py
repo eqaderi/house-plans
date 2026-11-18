@@ -1,6 +1,6 @@
-"""``house-ai plan ...``: concept generation, evaluation, revision and review (Milestone D).
+"""``house-ai plan ...``: plan option generation, evaluation, revision and review (Milestone D).
 
-Agents drive these commands for the homeowner. The plan gate is still
+Agents drive these commands for the owner. The plan gate is still
 approved only by a human with ``house-ai workflow approve <dir> plan``.
 """
 
@@ -14,32 +14,79 @@ from pathlib import Path
 
 from pydantic import ValidationError
 
+from house_ai.constants.proposals import VALID_STAIR_POSITIONS
 from house_ai.constants.strategies import (
     STRATEGY_EXTENDED_ORDER,
     STRATEGY_LABELS,
     STRATEGY_ORDER,
 )
 from house_ai.domain.plan import ChangeRequestKind
+from house_ai.domain.program import LEVEL_PREFERENCES
 from house_ai.domain.proposal import ConceptProposal
+from house_ai.domain.revision_ops import (
+    REVISION_VERBS,
+    RevisionOp,
+    RevisionOperationError,
+    RevisionOpsFile,
+    parse_operations,
+)
+from house_ai.domain.workflow import Gate
 from house_ai.orchestration.plans import (
     GenerationOutcome,
     PlanService,
     PlanWorkflowError,
     RevisionOutcome,
 )
+from house_ai.orchestration.workflow import HumanAction, NextHumanAction
 from house_ai.storage import ProjectStore
 from house_ai.storage.hashing import load_document
 from house_ai.storage.projects import resolve_project_dir
 
-EXIT_OK, EXIT_FAIL, EXIT_USAGE = 0, 1, 2
+from . import human
+from .exit_codes import EXIT_FAIL, EXIT_OK, EXIT_USAGE
+
+_LEVEL_METAVAR = "SPACE=" + "|".join(sorted(LEVEL_PREFERENCES))
 
 
 def _out(text: str = "") -> None:
     print(text)
 
 
+def _refused(exc: PlanWorkflowError, project: str) -> int:
+    _out(f"refused: {exc}")
+    if exc.next_action is not None:
+        _out(human.next_line(exc.next_action, project))
+    return EXIT_FAIL
+
+
+#: Export folder for plan options under ``<project>/design``. Folders written before
+#: ADR 0025 are named ``concepts``; they stay and are still read.
+PLAN_OPTIONS_DIR, OLD_PLAN_OPTIONS_DIR = "plan-options", "concepts"
+
+
 def _default_out(store: ProjectStore, exploratory: bool) -> Path:
-    return store.root / "design" / ("concepts-exploratory" if exploratory else "concepts")
+    return store.root / "design" / (
+        f"{PLAN_OPTIONS_DIR}-exploratory" if exploratory else PLAN_OPTIONS_DIR
+    )
+
+
+def existing_plan_options_dir(store: ProjectStore, given: str | None = None) -> Path | None:
+    """The given folder, else the project's plan-option exports (new name first), if any."""
+    if given:
+        return Path(given)
+    for name in (PLAN_OPTIONS_DIR, OLD_PLAN_OPTIONS_DIR):
+        if (store.root / "design" / name).exists():
+            return store.root / "design" / name
+    return None
+
+
+def add_plan_options_dir_argument(parser: argparse.ArgumentParser) -> None:
+    """``--plan-options-dir`` with its old name ``--concepts-dir`` kept as an alias."""
+    parser.add_argument(
+        "--plan-options-dir", "--concepts-dir", dest="plan_options_dir",
+        help="optional folder of exported plan options (default: <project>/design/plan-options, "
+        "else design/concepts)",
+    )
 
 
 def cmd_plan_strategies(args: argparse.Namespace) -> int:
@@ -96,10 +143,11 @@ def _render_generation_outcome(
         _out(f"note: {n}")
     _out(f"comparison: {res.comparison}")
     if not res.exploratory:
+        approve = NextHumanAction(HumanAction.APPROVE, Gate.PLAN)
         _out(
-            "state CONCEPT_REVIEW; show the owner the concepts, then `house-ai plan review "
-            f"{args.dir} <option>` and the owner approves with `house-ai workflow approve "
-            f"{args.dir} plan --id <option> --approver <name>`"
+            "state PLAN_REVIEW; show the owner the plan options, then `house-ai plan review "
+            f"{args.dir} <option>`; the owner approves one version with "
+            f"`{human.command_for(approve, args.dir)}`"
         )
     return EXIT_OK
 
@@ -118,8 +166,7 @@ def cmd_plan_generate(args: argparse.Namespace) -> int:
             deterministic_time=args.time,
         )
     except PlanWorkflowError as exc:
-        _out(f"refused: {exc}")
-        return EXIT_FAIL
+        return _refused(exc, args.dir)
     return _render_generation_outcome(res, args)
 
 
@@ -147,22 +194,17 @@ def cmd_plan_propose(args: argparse.Namespace) -> int:
     return _render_generation_outcome(res, args, extra_json={"proposal_id": proposal.id})
 
 
-def _ops(args: argparse.Namespace) -> list[str]:
-    ops = [f"area:{a}" for a in getattr(args, "area", [])]
-    ops += [f"level:{a}" for a in getattr(args, "level", [])]
-    ops += [f"separate:{a}" for a in getattr(args, "separate", [])]
-    ops += [f"adjacent:{a}" for a in getattr(args, "adjacent", [])]
-    ops += [f"near:{a}" for a in getattr(args, "near", [])]
-    ops += [f"connect:{a}" for a in getattr(args, "connect", [])]
-    ops += [f"outdoor:{a}" for a in getattr(args, "outdoor", [])]
-    if getattr(args, "stair", None):
-        ops.append(f"stair:{args.stair}")
-    if getattr(args, "proposal", None):
-        ops.append(f"proposal:{args.proposal}")
-    ops += [f"rethink:{a}" for a in getattr(args, "rethink", [])]
-    if getattr(args, "strategy", None):
-        ops.append(f"strategy:{args.strategy}")
-    return ops
+def _revision_operations(args: argparse.Namespace) -> list[RevisionOp]:
+    """The Revision operations the flags ask for, in verb-table order, parsed once.
+
+    Each verb's flag is named after it (``--area``, ``--stair``); a repeatable flag gives a
+    list, a single one a value or None.
+    """
+    texts = []
+    for verb in REVISION_VERBS:
+        given = getattr(args, verb.value, None) or []
+        texts += [f"{verb.value}:{v}" for v in (given if isinstance(given, list) else [given])]
+    return parse_operations(texts)
 
 
 def _render_revision_outcome(res: RevisionOutcome, args: argparse.Namespace) -> int:
@@ -174,6 +216,7 @@ def _render_revision_outcome(res: RevisionOutcome, args: argparse.Namespace) -> 
                 {
                     "plan_ref": ref.model_dump(mode="json"),
                     "revision": rev.model_dump(mode="json"),
+                    "findings": res.findings.to_json(),
                     "export_dir": str(res.export_dir),
                 },
                 indent=2,
@@ -183,61 +226,65 @@ def _render_revision_outcome(res: RevisionOutcome, args: argparse.Namespace) -> 
         return EXIT_OK
     parent_note = f" (parent v{rev.from_version.version})" if rev.from_version else ""
     _out(f"stored {ref.id} v{ref.version}{parent_note}")
-    _out(f"rooms changed: {', '.join(rev.rooms_changed) or 'none'}")
+    _out(f"spaces changed: {', '.join(rev.rooms_changed) or 'none'}")
     for c in rev.area_changes:
         _out(f"  {c.space_id}: {c.before_m2} -> {c.after_m2} m²")
     for v in rev.new_violations:
         _out(f"new violation: {v}")
     for v in rev.resolved_violations:
         _out(f"resolved: {v}")
+    if res.findings.targets:
+        _out(f"findings about {', '.join(res.findings.targets)}:")
+        for label, items in (
+            ("disappeared", res.findings.disappeared),
+            ("remains", res.findings.remaining),
+            ("new", res.findings.new),
+        ):
+            for v in items:
+                _out(f"  {label}: {v.code} {v.subject_ids}")
     _out(f"files: {res.export_dir}")
     return EXIT_OK
 
 
-def cmd_plan_revise(args: argparse.Namespace) -> int:
-    store = ProjectStore(resolve_project_dir(args.dir))
-    out = Path(args.out) if args.out else _default_out(store, False)
-    bases = getattr(args, "bases", None)
+def _revise(args: argparse.Namespace, option: str, **request) -> int:
+    """Store a revision of ``option``: operations refused before the project is opened."""
     try:
-        res = PlanService(store).revise(
-            args.option,
-            args.text,
-            args.actor,
-            ops=_ops(args),
-            kind=ChangeRequestKind(args.kind),
-            version=args.version,
-            seed=args.seed,
-            out_dir=out,
-            base_versions=bases,
-            features=getattr(args, "features", None),
-            feature_confirmation=getattr(args, "feature_confirmation", None),
-        )
-    except PlanWorkflowError as exc:
+        ops = _revision_operations(args)
+    except RevisionOperationError as exc:
         _out(f"refused: {exc}")
         return EXIT_FAIL
+    store = ProjectStore(resolve_project_dir(args.dir))
+    out = Path(args.out) if args.out else _default_out(store, False)
+    try:
+        res = PlanService(store).revise(
+            option, args.text, args.actor, ops=ops, seed=args.seed, out_dir=out, **request
+        )
+    except PlanWorkflowError as exc:
+        return _refused(exc, args.dir)
     return _render_revision_outcome(res, args)
+
+
+def cmd_plan_revise(args: argparse.Namespace) -> int:
+    return _revise(
+        args,
+        args.option,
+        kind=ChangeRequestKind(args.kind),
+        version=args.version,
+        base_versions=getattr(args, "bases", None),
+        features=getattr(args, "features", None),
+        feature_confirmation=getattr(args, "feature_confirmation", None),
+    )
 
 
 def cmd_plan_combine(args: argparse.Namespace) -> int:
-    store = ProjectStore(resolve_project_dir(args.dir))
-    out = Path(args.out) if args.out else _default_out(store, False)
-    target = getattr(args, "target", None) or args.bases[0]
-    try:
-        res = PlanService(store).combine(
-            target,
-            args.bases,
-            args.text,
-            args.actor,
-            ops=_ops(args),
-            features=args.features,
-            feature_confirmation=args.feature_confirmation,
-            seed=args.seed,
-            out_dir=out,
-        )
-    except PlanWorkflowError as exc:
-        _out(f"refused: {exc}")
-        return EXIT_FAIL
-    return _render_revision_outcome(res, args)
+    return _revise(
+        args,
+        getattr(args, "target", None) or args.bases[0],
+        kind=ChangeRequestKind.COMBINE,
+        base_versions=args.bases,
+        features=args.features,
+        feature_confirmation=args.feature_confirmation,
+    )
 
 
 def cmd_plan_list(args: argparse.Namespace) -> int:
@@ -298,19 +345,12 @@ def cmd_plan_export_bundle(args: argparse.Namespace) -> int:
     from house_ai.orchestration.reviewer_bundle import export_reviewer_bundle
 
     store = ProjectStore(resolve_project_dir(args.dir))
-    concepts_dir = (
-        Path(args.concepts_dir)
-        if args.concepts_dir
-        else (
-            store.root / "design" / "concepts"
-            if (store.root / "design" / "concepts").exists()
-            else None
-        )
-    )
+    plan_options_dir = existing_plan_options_dir(store, args.plan_options_dir)
     bundle_file = export_reviewer_bundle(
         store,
         Path(args.out),
-        concepts_dir=concepts_dir,
+        render=human.renderer(store.project_id),
+        plan_options_dir=plan_options_dir,
         exploratory=args.exploratory,
     )
     _out(f"wrote reviewer bundle to {bundle_file}")
@@ -318,8 +358,6 @@ def cmd_plan_export_bundle(args: argparse.Namespace) -> int:
 
 
 def cmd_plan_revise_from_file(args: argparse.Namespace) -> int:
-    from house_ai.domain.revision_ops import RevisionOpsFile
-
     store = ProjectStore(resolve_project_dir(args.dir))
     out = Path(args.out) if args.out else _default_out(store, False)
     ops_path = Path(args.file)
@@ -334,7 +372,7 @@ def cmd_plan_revise_from_file(args: argparse.Namespace) -> int:
         return EXIT_FAIL
 
     option = getattr(args, "option", None) or ops_file.option
-    ops = ops_file.to_cli_ops()
+    ops = ops_file.operations
     try:
         res = PlanService(store).revise(
             option,
@@ -345,25 +383,24 @@ def cmd_plan_revise_from_file(args: argparse.Namespace) -> int:
             out_dir=out,
         )
     except PlanWorkflowError as exc:
-        _out(f"refused: {exc}")
-        return EXIT_FAIL
+        return _refused(exc, args.dir)
     return _render_revision_outcome(res, args)
 
 
 def cmd_plan_ground(args: argparse.Namespace) -> int:
-    from house_ai.evaluation.grounding import (
+    from house_ai.storage.hashing import load_document
+    from house_ai.validation.grounding import (
         collect_canonical_ids,
         extract_entity_ids_from_text,
-        validate_critique_grounding,
+        validate_cited_ids,
     )
-    from house_ai.storage.hashing import load_document
 
     valid = collect_canonical_ids(load_document(Path(args.plan)))
     if args.program:
         valid |= collect_canonical_ids(load_document(Path(args.program)))
     text = sys.stdin.read() if args.critique == "-" else Path(args.critique).read_text("utf-8")
     cited = extract_entity_ids_from_text(text)
-    errors = validate_critique_grounding(cited, valid)
+    errors = validate_cited_ids(cited, valid)
     for err in errors:
         _out(f"UNKNOWN {err}")
     _out(f"{len(cited)} cited ID(s), {len(errors)} unknown")
@@ -373,20 +410,16 @@ def cmd_plan_ground(args: argparse.Namespace) -> int:
 def cmd_plan_review(args: argparse.Namespace) -> int:
     svc = PlanService(ProjectStore(resolve_project_dir(args.dir)))
     try:
-        ref, ev = svc.request_review(args.option, args.actor, args.version)
+        ref, gate = svc.request_review(args.option, args.actor, args.version)
     except PlanWorkflowError as exc:
-        _out(f"refused: {exc}")
-        return EXIT_FAIL
-    for r in ev.payload["open_reasons"]:
+        return _refused(exc, args.dir)
+    for r in gate.open_reasons:
         _out(f"OPEN {r}")
-    for r in ev.payload.get("attention", []):
+    for r in gate.attention:
         _out(f"ATTENTION {r}")
     _out(f"plan review requested for {ref.id} v{ref.version}")
-    if not ev.payload["open_reasons"]:
-        _out(
-            f"next: the owner runs `house-ai workflow approve {args.dir} plan --id {ref.id} "
-            f"--version {ref.version} --approver <name>` in their own terminal"
-        )
+    if gate.next_action is not None:
+        _out(human.next_line(gate.next_action, args.dir))
     return EXIT_OK
 
 
@@ -418,20 +451,20 @@ def cmd_plan_sections(args: argparse.Namespace) -> int:
 
 
 def register(sub, actor_arg: Callable[[argparse.ArgumentParser], None]) -> None:
-    pl = sub.add_parser("plan", help="floor-plan concepts (Milestone D)")
+    pl = sub.add_parser("plan", help="floor-plan options (Milestone D)")
     pl = pl.add_subparsers(dest="sub", required=True)
-    s = pl.add_parser("strategies", help="the concept strategies the generator knows")
+    s = pl.add_parser("strategies", help="the strategies the generator knows for plan options")
     s.set_defaults(func=cmd_plan_strategies)
 
     s = pl.add_parser("sections", help="derive true cuts and hillside views from a plan export")
     s.add_argument("plan", help="exported canonical plan.json")
     s.add_argument("--site", help="site YAML/JSON; omitted terrain remains unknown")
     s.add_argument("--lines", help="JSON list of SectionLine objects; default: standard cuts")
-    s.add_argument("--settings", help="HillsideSettings YAML/JSON, conceptual review triggers")
+    s.add_argument("--settings", help="HillsideSettings YAML/JSON, early-design review triggers")
     s.add_argument("--out", required=True)
     s.set_defaults(func=cmd_plan_sections)
 
-    s = pl.add_parser("generate", help="generate, evaluate and store concepts")
+    s = pl.add_parser("generate", help="generate, evaluate and store plan options")
     s.add_argument("dir")
     s.add_argument(
         "--strategy",
@@ -450,7 +483,7 @@ def register(sub, actor_arg: Callable[[argparse.ArgumentParser], None]) -> None:
     s.add_argument(
         "--time", type=float, default=4.0, help="CP-SAT deterministic time budget per solve"
     )
-    s.add_argument("--out", help="export folder (default: <project>/design/concepts)")
+    s.add_argument("--out", help="export folder (default: <project>/design/plan-options)")
     s.add_argument(
         "--exploratory",
         action="store_true",
@@ -463,7 +496,7 @@ def register(sub, actor_arg: Callable[[argparse.ArgumentParser], None]) -> None:
     s = pl.add_parser("propose", help="submit a topology proposal and generate plans from it")
     s.add_argument("dir", help="project directory or name")
     s.add_argument("proposal", help="path to concept_proposal YAML/JSON file")
-    s.add_argument("--out", help="export folder (default: <project>/design/concepts)")
+    s.add_argument("--out", help="export folder (default: <project>/design/plan-options)")
     s.add_argument(
         "--exploratory",
         action="store_true",
@@ -477,7 +510,9 @@ def register(sub, actor_arg: Callable[[argparse.ArgumentParser], None]) -> None:
     actor_arg(s)
     s.set_defaults(func=cmd_plan_propose)
 
-    s = pl.add_parser("revise", help="a new version of a concept from the owner's request")
+    s = pl.add_parser(
+        "revise", help="the next plan version of a plan option, from the owner's request"
+    )
     s.add_argument("dir")
     s.add_argument("option")
     s.add_argument("text", help="the owner's request, verbatim")
@@ -494,27 +529,27 @@ def register(sub, actor_arg: Callable[[argparse.ArgumentParser], None]) -> None:
         default=[],
         help="additional base versions for combine revisions",
     )
-    s.add_argument("--area", action="append", default=[], metavar="ROOM=M2")
+    s.add_argument("--area", action="append", default=[], metavar="SPACE=M2")
     s.add_argument(
-        "--level", action="append", default=[], metavar="ROOM=entry|not_entry|upper|lower"
+        "--level", action="append", default=[], metavar=_LEVEL_METAVAR
     )
-    s.add_argument("--separate", action="append", default=[], metavar="ROOM,ROOM")
-    s.add_argument("--adjacent", action="append", default=[], metavar="ROOM,ROOM")
-    s.add_argument("--near", action="append", default=[], metavar="ROOM,ROOM")
-    s.add_argument("--connect", action="append", default=[], metavar="ROOM,ROOM")
+    s.add_argument("--separate", action="append", default=[], metavar="SPACE,SPACE")
+    s.add_argument("--adjacent", action="append", default=[], metavar="SPACE,SPACE")
+    s.add_argument("--near", action="append", default=[], metavar="SPACE,SPACE")
+    s.add_argument("--connect", action="append", default=[], metavar="SPACE,SPACE")
     s.add_argument(
         "--stair",
-        choices=["entry", "perimeter", "central", "rear"],
+        choices=sorted(VALID_STAIR_POSITIONS),
         help="stair-core placement position override",
     )
-    s.add_argument("--outdoor", action="append", default=[], metavar="ROOM,KIND")
+    s.add_argument("--outdoor", action="append", default=[], metavar="SPACE[,KIND]")
     s.add_argument("--proposal", metavar="PATH", help="concept_proposal YAML/JSON file")
     s.add_argument(
         "--rethink",
         action="append",
         default=[],
-        metavar="ROOM|ZONE|all",
-        help="let these rooms move freely; the rest stays close to the parent",
+        metavar="SPACE|ZONE|all",
+        help="let these spaces move freely; the rest stays close to the parent",
     )
     s.add_argument("--strategy", choices=STRATEGY_EXTENDED_ORDER)
     s.add_argument("--seed", type=int)
@@ -525,7 +560,7 @@ def register(sub, actor_arg: Callable[[argparse.ArgumentParser], None]) -> None:
 
     s = pl.add_parser(
         "combine",
-        help="combine compatible features from multiple concept alternatives (S7-22)",
+        help="combine compatible features from several plan options (S7-22)",
     )
     s.add_argument("dir")
     s.add_argument("text", help="the owner's request describing what features to combine, verbatim")
@@ -534,36 +569,36 @@ def register(sub, actor_arg: Callable[[argparse.ArgumentParser], None]) -> None:
         dest="bases",
         action="append",
         required=True,
-        help="base concept option to combine (repeatable, at least 2)",
+        help="plan option to combine (repeatable, at least 2)",
     )
     s.add_argument(
         "--feature",
         dest="features",
         action="append",
         required=True,
-        metavar="SOURCE:ROOM=area,level,connections",
+        metavar="SOURCE:SPACE=area,level,connections",
     )
     s.add_argument(
         "--feature-confirmation",
         required=True,
         help="owner's exact words confirming the explicit source-feature mapping",
     )
-    s.add_argument("--target", help="target concept option name (default: first base)")
+    s.add_argument("--target", help="target plan option name (default: the first one)")
     s.add_argument("--strategy", choices=STRATEGY_EXTENDED_ORDER)
-    s.add_argument("--area", action="append", default=[], metavar="ROOM=M2")
+    s.add_argument("--area", action="append", default=[], metavar="SPACE=M2")
     s.add_argument(
-        "--level", action="append", default=[], metavar="ROOM=entry|not_entry|upper|lower"
+        "--level", action="append", default=[], metavar=_LEVEL_METAVAR
     )
-    s.add_argument("--separate", action="append", default=[], metavar="ROOM,ROOM")
-    s.add_argument("--adjacent", action="append", default=[], metavar="ROOM,ROOM")
-    s.add_argument("--near", action="append", default=[], metavar="ROOM,ROOM")
-    s.add_argument("--connect", action="append", default=[], metavar="ROOM,ROOM")
+    s.add_argument("--separate", action="append", default=[], metavar="SPACE,SPACE")
+    s.add_argument("--adjacent", action="append", default=[], metavar="SPACE,SPACE")
+    s.add_argument("--near", action="append", default=[], metavar="SPACE,SPACE")
+    s.add_argument("--connect", action="append", default=[], metavar="SPACE,SPACE")
     s.add_argument(
         "--stair",
-        choices=["entry", "perimeter", "central", "rear"],
+        choices=sorted(VALID_STAIR_POSITIONS),
         help="stair-core placement position override",
     )
-    s.add_argument("--outdoor", action="append", default=[], metavar="ROOM,KIND")
+    s.add_argument("--outdoor", action="append", default=[], metavar="SPACE[,KIND]")
     s.add_argument("--proposal", metavar="PATH", help="concept_proposal YAML/JSON file")
     s.add_argument("--seed", type=int)
     s.add_argument("--out")
@@ -571,12 +606,12 @@ def register(sub, actor_arg: Callable[[argparse.ArgumentParser], None]) -> None:
     actor_arg(s)
     s.set_defaults(func=cmd_plan_combine)
 
-    s = pl.add_parser("list", help="stored concepts, latest versions")
+    s = pl.add_parser("list", help="stored plan options, latest plan versions")
     s.add_argument("dir")
     s.add_argument("--json", action="store_true")
     s.set_defaults(func=cmd_plan_list)
 
-    s = pl.add_parser("compare", help="side-by-side metrics of the stored concepts")
+    s = pl.add_parser("compare", help="side-by-side metrics of the stored plan options")
     s.add_argument("dir")
     s.add_argument("--out")
     s.set_defaults(func=cmd_plan_compare)
@@ -596,21 +631,23 @@ def register(sub, actor_arg: Callable[[argparse.ArgumentParser], None]) -> None:
     s.add_argument("--program", help="space_program.yaml/json, to also accept unplaced items")
     s.set_defaults(func=cmd_plan_ground)
 
-    s = pl.add_parser("review", help="ask the owner to review a concept at the plan gate")
+    s = pl.add_parser("review", help="ask the owner to review a plan version at the plan gate")
     s.add_argument("dir")
     s.add_argument("option")
     s.add_argument("--version", type=int)
     actor_arg(s)
     s.set_defaults(func=cmd_plan_review)
 
-    s = pl.add_parser("export-bundle", help="export read-only concept reviewer bundle")
+    s = pl.add_parser(
+        "export-bundle", help="export a read-only reviewer bundle of the plan options"
+    )
     s.add_argument("dir", help="project directory or name")
     s.add_argument("--out", required=True, help="output directory for bundle.json")
-    s.add_argument("--concepts-dir", help="optional directory with exploratory concepts")
+    add_plan_options_dir_argument(s)
     s.add_argument(
         "--exploratory",
         action="store_true",
-        help="include exploratory concepts",
+        help="include exploratory plan options",
     )
     s.set_defaults(func=cmd_plan_export_bundle)
 
@@ -618,7 +655,7 @@ def register(sub, actor_arg: Callable[[argparse.ArgumentParser], None]) -> None:
     s.add_argument("dir", help="project directory or name")
     s.add_argument("file", help="path to revision ops JSON file")
     s.add_argument("--option", help="override target plan option")
-    s.add_argument("--out", help="export folder for the revised concept")
+    s.add_argument("--out", help="export folder for the new plan version")
     s.add_argument("--json", action="store_true")
     actor_arg(s)
     s.set_defaults(func=cmd_plan_revise_from_file)

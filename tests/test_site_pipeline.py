@@ -16,8 +16,8 @@ from house_ai.cli.main import main
 from house_ai.domain.codepack import find_prohibited_claims
 from house_ai.domain.epistemics import ConfirmationStatus as C
 from house_ai.domain.epistemics import Epistemic
+from house_ai.domain.provenance import ApprovalRequiresHuman, DataClassification
 from house_ai.domain.provenance import ArtifactKind as K
-from house_ai.domain.provenance import DataClassification
 from house_ai.domain.records import IssueStatus
 from house_ai.domain.site import (
     CadImportProvenance,
@@ -30,9 +30,10 @@ from house_ai.domain.workflow import Gate, WorkflowState
 from house_ai.geospatial.crs import CrsValidationError
 from house_ai.geospatial.terrain import elevation_at
 from house_ai.geospatial.validation import report_markdown, validate_site
+from house_ai.orchestration.site import SiteService
 from house_ai.orchestration.site_ingestion import SiteConfirmation, confirm_site, ingest_site
 from house_ai.orchestration.survey_inspection import inspect_file, inspection_markdown
-from house_ai.orchestration.workflow import ApprovalRequiresHuman, GateBlocked, Workflow
+from house_ai.orchestration.workflow import GateBlocked, Workflow
 from house_ai.render2d.site_svg import render_site_svg
 from house_ai.storage.hashing import file_sha256
 
@@ -320,14 +321,6 @@ def test_inspection_of_an_unreadable_file(tmp_path):
 # --------------------------------------------------------------- approval gate
 
 
-def test_ingested_site_stops_at_needs_verification(ingest):
-    store, result = ingest()
-    wf = Workflow(store)
-    wf.transition(WorkflowState.SITE_INGESTION, AGENT, "survey received")
-    assert wf.assess_site(result.site_ref, AGENT) == result.blockers
-    assert wf.state is WorkflowState.SITE_NEEDS_VERIFICATION
-
-
 def test_agents_cannot_confirm_site_facts(ingest):
     store, _ = ingest()
     with pytest.raises(ApprovalRequiresHuman):
@@ -337,16 +330,16 @@ def test_agents_cannot_confirm_site_facts(ingest):
 def test_human_confirmation_clears_blockers_and_the_human_approves(ingest):
     store, result = ingest()
     wf = Workflow(store)
-    wf.transition(WorkflowState.SITE_INGESTION, AGENT, "survey received")
-    wf.assess_site(result.site_ref, AGENT)
-    ref = confirm_site(store, "site", HUMAN, FULL)
+    sites = SiteService(store)
+    sites.assess(result.site_ref, AGENT)
+    confirmed = sites.confirm("site", HUMAN, FULL)
+    ref = confirmed.site_ref
     site = _site(store, ref)
-    assert ref.version == 2 and site_verification_blockers(site) == []
+    assert ref.version == 2 and confirmed.blockers == []
+    assert confirmed.state is WorkflowState.SITE_INGESTION
     assert site.provenance.created_by == HUMAN
     assert site.coordinates.horizontal_crs.epsg == 25832
     assert site.coordinates.local.grid_to_true_north_deg == pytest.approx(-0.00103, abs=5e-5)
-    wf.transition(WorkflowState.SITE_INGESTION, HUMAN, "verified")
-    assert wf.assess_site(ref, AGENT) == []
     with pytest.raises(ApprovalRequiresHuman):
         wf.approve(Gate.SITE, ref, AGENT, "agent tries")
     with pytest.raises(GateBlocked):
@@ -460,7 +453,7 @@ def test_validation_report_markdown(ingest):
 # ----------------------------------------------------------------------- CLI
 
 
-def test_cli_pipeline(tmp_path, capsys):
+def test_cli_pipeline(tmp_path):
     p = str(tmp_path / "proj")
     assert (
         main(
@@ -498,21 +491,6 @@ def test_cli_pipeline(tmp_path, capsys):
     assert (
         main(
             [
-                "workflow",
-                "transition",
-                p,
-                "SITE_INGESTION",
-                "--reason",
-                "go",
-                "--actor",
-                "agent:claude-code",
-            ]
-        )
-        == 0
-    )
-    assert (
-        main(
-            [
                 "site",
                 "ingest",
                 p,
@@ -526,21 +504,12 @@ def test_cli_pipeline(tmp_path, capsys):
         )
         == 0
     )
+    # Re-assessment still works (the state it leaves is pinned in test_site_service).
     assert main(["workflow", "assess-site", p, "--id", "site", "--actor", "agent:claude-code"]) == 0
     out = tmp_path / "out"
     assert main(["site", "report", p, "--id", "site", "--out", str(out)]) == 0
-    names = sorted(f.name for f in out.iterdir())
-    assert names == [
-        "cad-import.json",
-        "index.html",
-        "site-report.json",
-        "site-report.md",
-        "site.json",
-        "site.svg",
-        "terrain.svg",
-    ]
+    assert (out / "site-report.md").is_file()  # the file list is pinned in test_site_service
     assert main(["project", "verify", p]) == 0
-    assert "SITE_NEEDS_VERIFICATION" in capsys.readouterr().out
 
 
 def test_cli_site_confirm_refuses_a_non_interactive_shell(tmp_path):
@@ -816,8 +785,8 @@ def test_multifile_boundary_handle_with_source_prefix_and_report_outputs(
     assert not any(i.id.startswith("iss-conflict-") for i in site1.issues)
 
     out_dir = tmp_path / "multi-report"
-    assert main(["site", "report", str(store1.root), "--id", "site", "--out", str(out_dir)]) == 0
-    written = sorted(f.name for f in out_dir.iterdir())
+    package = SiteService(store1).write_review_package(res1.site_ref, out_dir)
+    written = sorted(f.name for f in package.files)
     assert "cad-import.json" in written
     assert sum(name.startswith("cad-src-") for name in written) == 2
 

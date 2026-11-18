@@ -2,10 +2,15 @@
 
 Status: accepted (approved by the owner 2026-10-17, Stage S2, S2-01)
 
+Revised by [ADR 0034](0034-one-entry-file-and-one-skills-folder.md): skills live in
+`.agents/skills/` itself, `.claude/skills` links to that folder, and
+`tools/sync_skills.py` is removed.
+
 ## Context
 
 Stage S2 introduces project skills (`site-survey-review`,
-`architectural-programming`, `generate-concepts`, `critique-plan`) that teach
+`architectural-programming`, `generate-concepts` (renamed `generate-plan-options`
+by [ADR 0025](0025-glossary-vocabulary-and-code-renames.md)), `critique-plan`) that teach
 coding agents multi-step `house-ai` workflows while respecting the human
 approval gates.
 
@@ -56,7 +61,7 @@ drift apart, against the single-source principle of ADR 0005.
 - Antigravity discovery through the `.agents/skills` symlinks was observed
   on 2026-10-17 (S2-06): it listed all four skills at
   `.agents/skills/<name>/SKILL.md`.
-- **Unverified risk**: Gemini CLI documents `.agents/skills` but not whether
+- **Unchecked risk**: Gemini CLI documents `.agents/skills` but not whether
   it follows symlinked skill folders, and it was not run. If it ignores
   symlinks, the fallback is a generated copy guarded by the drift test,
   decided in a new ADR.

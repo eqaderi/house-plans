@@ -54,7 +54,7 @@ def test_soft_unbuildable_stair_finding_blocks_plan_approval(tmp_path, capsys):
     svc.generate(AGENT, strategies=["compact"])
     ref = store.latest(ArtifactKind.PLAN, "concept-compact")
     wf = Workflow(store)
-    assert wf.check_gate(Gate.PLAN, ref) == []
+    assert wf.gate_status(Gate.PLAN, ref).blockers == []
 
     _with(
         store,
@@ -64,12 +64,13 @@ def test_soft_unbuildable_stair_finding_blocks_plan_approval(tmp_path, capsys):
             _finding("height_limit_exceeded", "Height 12.04 m exceeds envelope 10 m."),
         ],
     )
-    reasons = wf.check_gate(Gate.PLAN, ref)
-    assert len(reasons) == 1
-    assert reasons[0].startswith("unbuildable stair_low_headroom")
-    assert "0.500 m" in reasons[0]
+    status = wf.gate_status(Gate.PLAN, ref)
+    assert [(b.kind.value, b.code) for b in status.blockers] == [
+        ("unbuildable", "stair_low_headroom")
+    ]
+    assert "0.500 m" in status.blockers[0].message
     # Soft envelope height (not a verified fact) is shown, not blocking.
-    assert wf.plan_attention(ref) == [
+    assert status.attention == [
         "height_limit_exceeded (eval-concept-compact): Height 12.04 m exceeds envelope 10 m."
     ]
     assert main(["plan", "review", str(store.root), "concept-compact", "--actor",
@@ -82,6 +83,18 @@ def test_soft_unbuildable_stair_finding_blocks_plan_approval(tmp_path, capsys):
 
     # Fixed (here: the finding gone), the human can approve.
     _with(store, ref, [_finding("height_limit_exceeded", "Height 12.04 m exceeds envelope 10 m.")])
-    assert wf.check_gate(Gate.PLAN, ref) == []
+    assert wf.gate_status(Gate.PLAN, ref).blockers == []
     wf.approve(Gate.PLAN, ref, OWNER, "synthetic owner approves")
     assert store.verify() == []
+
+
+def test_colliding_labels_never_close_the_plan_gate(tmp_path):
+    """A drawing defect is shown in the Evaluation and never blocks (ADR 0024, ADR 0033)."""
+    store = _load(tmp_path)
+    _approve_site_and_program(store)
+    PlanService(store).generate(AGENT, strategies=["compact"])
+    ref = store.latest(ArtifactKind.PLAN, "concept-compact")
+    _with(store, ref, [_finding("label_collision", "The labels of a and b overlap.")])
+    status = Workflow(store).gate_status(Gate.PLAN, ref)
+    assert status.blockers == [] and status.attention == []
+    assert status.approvable

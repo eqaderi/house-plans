@@ -4,7 +4,7 @@ Status: accepted (Milestone B, 2026-10-17)
 
 ## Context
 
-Milestone B turns a land survey into a verified site model. Real surveys
+Milestone B turns a survey into a site the owner can approve. Real surveys
 arrive as DWG or DXF (sometimes PDF or point lists), in drawing units that
 may be undeclared, with coordinates that look like UTM but declare nothing.
 The spec forbids guessing the CRS from coordinate magnitudes and requires
@@ -41,6 +41,14 @@ below.
    instead of `(source_unit, local_frame)`, because elevations may use a
    different unit from x/y. `CadExtraction.provenance` became optional, since
    a read-only inspection has no store document.
+
+   Note (spec #9, part 1): `CadSiteExtractor` and its single-field methods
+   (`classify_layers`, `extract_boundary`, `extract_contours`,
+   `extract_spot_elevations`, `extract_features`) were removed because nothing
+   called them; `cad.site_extract.MappedLayerSiteExtractor.extract` is the one
+   extractor. A site-extractor protocol returns when a second extractor exists.
+   The terrain-builder protocol went the same way: `geospatial.terrain.terrain_from_survey`
+   is the one builder.
 5. **CRS work through pyproj/PROJ.** EPSG codes are validated (a horizontal
    CRS must be projected with metre axes; a vertical datum code must be a
    vertical CRS). Grid-to-true-north is computed numerically by projecting a

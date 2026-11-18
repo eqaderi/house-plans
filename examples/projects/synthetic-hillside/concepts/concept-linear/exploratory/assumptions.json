@@ -94,12 +94,29 @@
         "model": null,
         "provider": null
       },
+      "statement": "Garage: separate road-level volume 6 × 6 m beside the entry bar (DEC-12).",
+      "status": "assumption"
+    },
+    {
+      "affects": [
+        "lv-entry"
+      ],
+      "basis": "massing strategy",
+      "confirm_with": null,
+      "id": "asm-gen-note-3",
+      "made_by": {
+        "display_name": null,
+        "id": "house-ai-plan-generator",
+        "kind": "system",
+        "model": null,
+        "provider": null
+      },
       "statement": "Floor elevations and bar positions/lengths solved jointly with TIN lookup; sectional contact bands and circulation/daylight objectives, no excavation/void penalty. Earthworks evaluated exactly afterward.",
       "status": "assumption"
     },
     {
       "affects": [],
-      "basis": "typical car length plus clearance; not in the program",
+      "basis": "program cars (or a typical car) with the vehicle template's clearances and walls (S10-19)",
       "confirm_with": "owner",
       "id": "asm-gen-garage-depth",
       "made_by": {
@@ -109,7 +126,7 @@
         "model": null,
         "provider": null
       },
-      "statement": "A garage needs at least 5.4 m depth for a car.",
+      "statement": "The garage is a separate road-level volume, 6 m wide and 6 m deep for its cars (DEC-12).",
       "status": "assumption"
     },
     {
@@ -143,27 +160,26 @@
       },
       "statement": "Level elevations, earth contact and retaining walls are inferred by linear interpolation of the surveyed points; ground between survey points is not verified.",
       "status": "inference"
-    }
-  ],
-  "plan_issues": [
+    },
     {
-      "description": null,
-      "id": "iss-no-fixtures-kitchen",
-      "raised_by": {
+      "affects": [
+        "lv-entry"
+      ],
+      "basis": "program.storeys compared with the storeys the model's levels span",
+      "confirm_with": "owner",
+      "id": "asm-gen-requested-storeys",
+      "made_by": {
         "display_name": null,
         "id": "house-ai-plan-generator",
         "kind": "system",
         "model": null,
         "provider": null
       },
-      "severity": "warning",
-      "status": "open",
-      "subject_ids": [
-        "sp-kitchen"
-      ],
-      "title": "No fixture layout found for sp-kitchen; the sampled study reports on it"
+      "statement": "Requested storeys: 2; this plan option has 1 storey(s) on 1 level(s). The linear strategy places all rooms in one bar on a single level. The requested storey count is not enforced by this strategy; owner review needed.",
+      "status": "assumption"
     }
   ],
+  "plan_issues": [],
   "program": [
     {
       "affects": [
@@ -260,5 +276,5 @@
       "status": "assumption"
     }
   ],
-  "site_verified": false
+  "site_approved": false
 }

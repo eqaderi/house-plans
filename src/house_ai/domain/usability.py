@@ -51,11 +51,13 @@ class VehicleEnvelope(StrictModel):
 
 
 class UsabilityRequirements(StrictModel):
+    #: Saved as ``*_program_item_ids`` in space programs before schema 0.2.0 (ADR 0025).
+
     household_seats: int | None = Field(default=None, ge=1)
     vehicles: list[VehicleEnvelope] | None = None
     arrival_path: list[Point2] | None = Field(default=None, min_length=2)
-    double_bed_program_item_ids: list[Id] = Field(default_factory=list)
-    single_bed_program_item_ids: list[Id] = Field(default_factory=list)
+    double_bed_space_requirement_ids: list[Id] = Field(default_factory=list)
+    single_bed_space_requirement_ids: list[Id] = Field(default_factory=list)
 
 
 class DimensionAssumption(StrictModel):

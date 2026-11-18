@@ -86,7 +86,7 @@ class MinDimensionRule(StrictModel):
 
 class AdjacencyRule(StrictModel):
     kind: Literal["adjacency"] = "adjacency"
-    #: AdjacencyRequirement id in the space program.
+    #: SpaceRelationship id in the space program.
     requirement_id: Id
 
 

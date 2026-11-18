@@ -1,18 +1,10 @@
 # AGENTS.md
 
-Before doing anything in this repository, read
-[docs/AGENT_CONTRACT.md](docs/AGENT_CONTRACT.md) in full and follow it. It
-is the one set of project rules for every coding agent (Claude Code, Codex,
-Gemini); this file does not repeat them. `docs/MASTER_SPEC.md` is the
-product specification.
+@./docs/AGENT_CONTRACT.md
 
-Codex does not expand links or imports in this file, so open the contract
-yourself at the start of every session.
+Read [docs/AGENT_CONTRACT.md](docs/AGENT_CONTRACT.md) in full before any
+work: it holds every project rule. Claude Code and Gemini CLI expand the
+import above; Codex does not, so open the file yourself.
 
-Tool specifics (Codex, and any agent without its own entry file):
-
-- Use the project venv: `.venv/bin/python`, `.venv/bin/house-ai`.
-- Shell commands are non-interactive, so `house-ai workflow approve`
-  refuses to run (exit code 2). Ask the human to run it in their terminal.
-- Pass `--actor agent:codex` (or `agent:<your-tool>`) on state-changing
-  commands.
+`CLAUDE.md` and `GEMINI.md` are symlinks to this file
+([ADR 0034](docs/adr/0034-one-entry-file-and-one-skills-folder.md)).

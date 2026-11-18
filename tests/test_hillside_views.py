@@ -311,14 +311,14 @@ def test_invalid_pads_are_gate_errors_and_reports_remain_inspectable():
 
 def test_unknown_access_and_retaining_totals_are_not_reported_as_zero():
     from house_ai.evaluation.base import EvaluationContext
-    from house_ai.evaluation.evaluators import _Out
+    from house_ai.evaluation.evaluators import EvaluatorOutput
     from house_ai.evaluation.hillside import terrain_metrics
 
     m = house_with_elements()
     report = hillside_report(m, None)
     assert report["outdoor_level_changes_count"] is None
     assert report["unchecked_exterior_doors_count"] == 1
-    out = _Out("SiteEvaluator")
+    out = EvaluatorOutput("SiteEvaluator")
     terrain_metrics(EvaluationContext(m, None, None, None), out)
     metrics = {r.metric: r for r in out.metrics}
     for key in (

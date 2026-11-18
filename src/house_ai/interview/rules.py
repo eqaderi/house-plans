@@ -41,36 +41,36 @@ def _step_free(v: Values) -> bool:
 
 
 def lift_on_one_level(v: Values) -> Finding | None:
-    if v.get("floors") == 1 and v.get("lift") is True:
+    if v.get("storeys") == 1 and v.get("lift") is True:
         return Finding(
             "c-lift-one-level",
-            "You asked for a lift, but also for a house on one floor.",
-            ("floors", "lift"),
-            "A lift only helps between floors. On one floor it costs space and money and does "
+            "You asked for a lift, but also for a house of one storey.",
+            ("storeys", "lift"),
+            "A lift only helps between storeys. In one storey it costs space and money and does "
             "nothing.",
             (
-                Option("Keep one floor and drop the lift", {"lift": False}),
-                Option("Build two floors with a lift", {"floors": 2}),
+                Option("Keep one storey and drop the lift", {"lift": False}),
+                Option("Build two storeys with a lift", {"storeys": 2}),
             ),
         )
     return None
 
 
 def stairs_without_step_free_route(v: Values) -> Finding | None:
-    floors = v.get("floors")
+    storeys = v.get("storeys")
     if (
         _step_free(v)
-        and isinstance(floors, int)
-        and floors > 1
+        and isinstance(storeys, int)
+        and storeys > 1
         and v.get("lift") is not True
         and v.get("accessible_ground_suite") is not True
     ):
         slots = tuple(
-            s for s in ("accessibility", "elder_step_free", "floors", "lift") if s in v
+            s for s in ("accessibility", "elder_step_free", "storeys", "lift") if s in v
         )
         return Finding(
             "c-stairs-step-free",
-            f"Someone needs step-free living, but the house has {floors} floors and no lift.",
+            f"Someone needs step-free living, but the house has {storeys} storeys and no lift.",
             slots,
             "Stairs would cut that person off from part of the house. A lift costs roughly a "
             "small room of floor area per level and adds cost and maintenance; keeping their "
@@ -81,7 +81,7 @@ def stairs_without_step_free_route(v: Values) -> Finding | None:
                     "Put a bedroom, a bathroom and the kitchen on the entrance level for them",
                     {"accessible_ground_suite": True},
                 ),
-                Option("Build everything on one floor", {"floors": 1}),
+                Option("Build everything in one storey", {"storeys": 1}),
             ),
         )
     return None

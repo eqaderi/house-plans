@@ -35,6 +35,7 @@ from house_ai.domain.constraints import (
     WithinEnvelopeRule,
 )
 from house_ai.domain.epistemics import Epistemic
+from house_ai.domain.interview import slot_facts
 from house_ai.domain.program import SpaceFunction, SpaceProgram, Strength
 from house_ai.domain.provenance import Actor, ArtifactRef, Provenance
 from house_ai.domain.site import Site
@@ -82,7 +83,7 @@ def _cid(text: str) -> str:
     return text[:64].rstrip("-_")
 
 
-def compile_constraints(
+def compile_constraints(  # noqa: C901
     program: SpaceProgram,
     site: Site | None,
     *,
@@ -161,7 +162,7 @@ def compile_constraints(
             rationale=why,
         )
 
-    for item in program.items:
+    for item in program.space_requirements:
         src = ConstraintSource(kind=K.PROGRAM, ref=item.id)
         if item.min_area_m2 is not None:
             add(
@@ -177,7 +178,7 @@ def compile_constraints(
                 MinDimensionRule(program_item_id=item.id, min_width_m=item.min_width_m),
                 src,
             )
-    for adj in program.adjacencies:
+    for adj in program.space_relationships:
         src = ConstraintSource(kind=K.PROGRAM, ref=adj.id)
         if adj.strength is Strength.HARD:
             add(
@@ -195,9 +196,9 @@ def compile_constraints(
 
     objectives: dict[SoftObjective, tuple[float, ConstraintSource, str]] = {}
     if brief is not None:
-        for fact in brief.facts:
-            obj = BRIEF_OBJECTIVES.get(fact.key)
-            if obj is None or fact.value in (None, False, [], "") or fact.id != f"f-{fact.key}":
+        for key, fact in slot_facts(brief).items():
+            obj = BRIEF_OBJECTIVES.get(key)
+            if obj is None or fact.value in (None, False, [], ""):
                 continue
             owner = fact.status in (Epistemic.PREFERENCE, Epistemic.VERIFIED_FACT)
             weight = 2.0 if owner else 1.0
@@ -206,7 +207,7 @@ def compile_constraints(
                 objectives[obj] = (
                     weight,
                     ConstraintSource(kind=K.BRIEF, ref=fact.id),
-                    f"from the brief: {fact.key} ({fact.status.value})",
+                    f"from the brief: {key} ({fact.status.value})",
                 )
     for obj in DEFAULT_OBJECTIVES:
         objectives.setdefault(obj, (1.0, system, "default objective; not stated in the brief"))
@@ -223,7 +224,7 @@ def compile_constraints(
 
     compiled, not_checked = [], []
     if codepack is not None:
-        functions = {i.function for i in program.items}
+        functions = {i.function for i in program.space_requirements}
         for rule in codepack.rules:
             params = rule.parameters
             fn = params.get("function")
@@ -247,7 +248,7 @@ def compile_constraints(
             strength = H if codepack.verified else Sf
             weight = None if codepack.verified else 1.0
             src = ConstraintSource(kind=K.CODEPACK, ref=codepack.id)
-            for item in program.items:
+            for item in program.space_requirements:
                 if item.function is not function:
                     continue
                 if "min_area_m2" in params:

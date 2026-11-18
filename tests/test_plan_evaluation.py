@@ -156,7 +156,7 @@ def plan_a_report():
         constraints=cs.constraints,
         codepack=pack,
         created_at=WHEN,
-        site_verified=True,
+        site_approved=True,
     )
 
 
@@ -187,7 +187,9 @@ def test_every_claim_says_how_it_was_obtained(plan_a_report):
     r = plan_a_report
     assert [
         e.name for e in r.evaluators if e.status is EvaluatorRunStatus.RAN
-    ] == REQUIRED_EVALUATORS + [e.name for e in USABILITY_EVALUATORS]
+    ] == REQUIRED_EVALUATORS + [e.name for e in USABILITY_EVALUATORS] + [
+        "LabelCollisionEvaluator"
+    ]
     assert {e.name for e in r.evaluators if e.status is EvaluatorRunStatus.NOT_RUN} == set(
         FUTURE_EVALUATORS
     )
@@ -270,7 +272,7 @@ def test_hillside_site_metrics_expose_cut_fill_and_retaining(hillside_reports):
     assert _metric(by["linear"], "level_count").value == 1
     # A one-level concept for a two-storey program is flagged, not hidden.
     codes = {v.code for v in by["linear"].violations}
-    assert "level_count_differs" in codes
+    assert "storey_count_differs" in codes
     assert all(
         v.strength is Strength.SOFT
         for v in by["linear"].violations

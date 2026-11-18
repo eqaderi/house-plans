@@ -1,11 +1,11 @@
-# ADR 0023 — Stairs between split levels
+# ADR 0023: Stairs between split levels
 
-Date: 2026-10-19. Status: accepted for Stage S10 (ISS-29), awaiting stage review.
+Status: accepted (Stage S10, ISS-29, closed 2026-10-19)
 
 ## Context
 
 The S9 readiness assessment (FPR-05, FPR-08) found three faults in stairs that
-join bars standing side by side at different floor levels:
+join bars standing side by side at different levels:
 
 1. `floor_connection_height_mismatch` fired on every split-level stair. ADR 0019
    compared a level's declared floor-to-floor height with the rise of any stair
@@ -50,7 +50,7 @@ higher storey's wall head (2.8 m). Each opens onto its stair space across the
 boundary through a full-height opening as wide as the hall (flight width plus
 0.1 m on each side). Where a level is already built over that region (a bar
 stacked over another, as in the S8 `elevated` mode), the flight continues in that
-existing room through the same opening instead. A flight occupies floor in every
+existing space through the same opening instead. A flight occupies floor in every
 space of its two levels it passes through, and a stair space with no floor beside
 its flight is walked through, not walked to. Existing rules then do the rest:
 
@@ -78,11 +78,11 @@ are those of ADR 0019.
 - False floor-to-floor findings on split-level stairs disappear. A stacked
   storey whose declared height disagrees with its stair is still reported.
 - A split-level flight that passes through a boundary wall is now reported. On
-  the S9 demonstration concepts, generated straight flights now measure 2.75 m
+  the S9 demonstration plan options, generated straight flights now measure 2.75 m
   headroom with no wall clash.
 - Stairwells add floor area (they are spaces) and, on a slope, excavation and
   retaining walls; both are reported, not assumed away. On the S9 split-level
-  concept excavation rises from 0.54 to 3.23 m³ and 8.2 m of retaining wall
+  plan option excavation rises from 0.54 to 3.23 m³ and 8.2 m of retaining wall
   appears.
 - The stair hall is a narrow tower over the lower bar's roof. Its form, light
   and structure are a design matter left to the owner and professionals.

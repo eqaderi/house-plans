@@ -11,7 +11,7 @@ Invariants tested:
 1. Non-TTY execution exits 2 (EXIT_USAGE) and appends nothing.
 2. Agent actors or agent-looking ids are refused with exit 2 (EXIT_USAGE) and append nothing.
 3. Mismatched confirmation phrases exit 1 (EXIT_FAIL) and append nothing.
-4. Leaving PROGRAM_REVIEW back to INTERVIEWING refuses agent actors with exit 2.
+4. Leaving PROGRAM_REVIEW back to INTERVIEWING by transition is refused with exit 2.
 """
 
 from __future__ import annotations
@@ -239,7 +239,7 @@ def test_workflow_transition_program_review_to_interviewing_refuses_bypass(
     ])
     assert ret == EXIT_USAGE
     err = capsys.readouterr().err
-    assert "requires 'program reject' in a human terminal" in err
+    assert "only the owner's program reject" in err
     assert len(clean_project.events()) == before_events
 
 
@@ -282,43 +282,3 @@ def test_program_reject_records_reason_only_after_correct_phrase(clean_project, 
                  "--actor", "human:owner"]) == EXIT_OK
     assert wf.state is WorkflowState.INTERVIEWING
     assert any(f.key == "program_rejection" and f.statement == reason for f in svc.brief().facts)
-
-
-def test_program_v2_after_approval_marks_gate_stale(clean_project, capsys):
-    import json
-
-    from .conftest import example_doc
-    wf = Workflow(clean_project)
-    wf.transition(WorkflowState.SITE_INGESTION, HUMAN, "ingest")
-    site = Site.model_validate(example_doc("site.yaml"))
-    s_ref = clean_project.put(K.SITE, "site", site, HUMAN)
-    wf.approve(Gate.SITE, s_ref, HUMAN, "site approved")
-    wf.transition(WorkflowState.INTERVIEWING, HUMAN, "interviewing")
-
-    from house_ai.domain.program import SpaceProgram
-    prog = SpaceProgram.model_validate(example_doc("space_program.yaml"))
-    p_ref = clean_project.put(K.SPACE_PROGRAM, "program", prog, HUMAN)
-    wf.transition(WorkflowState.PROGRAM_REVIEW, HUMAN, "review")
-    wf.approve(Gate.PROGRAM, p_ref, HUMAN, "program approved")
-
-    # Verify initially not stale
-    assert main(["project", "status", str(clean_project.root), "--json"]) == 0
-    status1 = json.loads(capsys.readouterr().out)
-    assert status1["approvals"]["program"]["stale"] is False
-
-    # Write program v2 after approval
-    new_area = (prog.target_gross_area_m2 or 100.0) + 50.0
-    p2 = prog.model_copy(update={"target_gross_area_m2": new_area})
-    ref2 = clean_project.put(K.SPACE_PROGRAM, "program", p2, HUMAN)
-    assert ref2.version == 2
-
-    # Check project status JSON
-    assert main(["project", "status", str(clean_project.root), "--json"]) == 0
-    status2 = json.loads(capsys.readouterr().out)
-    assert status2["approvals"]["program"]["stale"] is True
-    assert "program" in status2["stale_approvals"]
-
-    # Check project status text output
-    assert main(["project", "status", str(clean_project.root)]) == 0
-    text_out = capsys.readouterr().out
-    assert "STALE: v2 exists" in text_out

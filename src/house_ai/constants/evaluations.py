@@ -61,3 +61,11 @@ PLAN_GATE_BLOCKING_CODES = frozenset(
 #: Soft findings shown to the owner at plan review without blocking it (ADR 0024): a height
 #: above an envelope that is not a verified fact (verified, it is hard and blocks).
 PLAN_REVIEW_ATTENTION_CODES = frozenset({"height_limit_exceeded"})
+
+#: Plan assumption recording that a plan option's storeys differ from the program's.
+REQUESTED_STOREYS_ASSUMPTION_ID: str = "asm-gen-requested-storeys"
+#: Every id that assumption has had; plans saved before ADR 0025 use the second.
+REQUESTED_STOREYS_ASSUMPTION_IDS: tuple[str, ...] = (
+    REQUESTED_STOREYS_ASSUMPTION_ID,
+    "asm-gen-requested-levels",
+)

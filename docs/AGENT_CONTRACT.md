@@ -1,32 +1,30 @@
 # Agent contract
 
 The single set of engineering and operating rules for every coding agent working
-on this repository: Claude Code, OpenAI Codex, and Google Gemini CLI.
-`AGENTS.md`, `CLAUDE.md` and `GEMINI.md` only load this file
-([ADR 0005](adr/0005-shared-coding-agent-instructions.md)). Never copy these
-rules into a tool-specific file.
+on this repository: Claude Code, OpenAI Codex, and Google Gemini CLI. The one
+entry file, `AGENTS.md` (`CLAUDE.md` and `GEMINI.md` are symlinks to it), only
+loads this file ([ADR 0034](adr/0034-one-entry-file-and-one-skills-folder.md)).
+Write every rule here.
 
-## 1. Objectives, agent-first workflow, and sources of truth
+## 1. Objectives and sources of truth
 
-HOUSE DESIGN AI exists first to design the homeowner's own house on their own
+HOUSE DESIGN AI exists first to design the owner's own house on their own
 land (`projects/my-house/`), and stays reusable for other projects. It turns a
-survey and an owner interview into a verified site, an approved program, floor
+survey and an owner interview into an approved site, an approved program, floor
 plans, then Blender and Unreal models, all from one canonical semantic model
 with human approval gates in between. Project facts live in project data, never
 in application code.
 
-**Agent-first architecture (no API key required, [ADR 0011](adr/0011-agent-first-interview-interface.md)):**
-The homeowner works directly with **Claude Code**, **Gemini CLI**, and **OpenAI
-Codex** as the primary AI interfaces:
-`Homeowner → Claude Code / Gemini CLI / Codex → house-ai CLI & ProjectStore → Structured Requirements & Validation → Floor Plans → Blender / IFC → Unreal Engine`.
-No separately billed Anthropic, OpenAI, or Gemini API key is required for the
-core workflow. The SDK adapter in `providers/claude.py` ([ADR 0010](adr/0010-claude-adapter-for-the-interview.md))
-is strictly optional.
+The owner works through the coding agents themselves, which drive the
+`house-ai` CLI; the core workflow needs no paid model API key
+([ADR 0011](adr/0011-agent-first-interview-interface.md)). The SDK adapter in
+`providers/claude.py` ([ADR 0010](adr/0010-claude-adapter-for-the-interview.md))
+is optional.
 
 Authorities: [MASTER_SPEC.md](MASTER_SPEC.md) (wins every conflict),
 [ARCHITECTURE.md](ARCHITECTURE.md), [DOMAIN_MODEL.md](DOMAIN_MODEL.md),
-[adr/](adr/), [milestones/](milestones/) (history). Roadmap, stage status and
-the stage protocol: [PROJECT_TRACKER.md](PROJECT_TRACKER.md).
+[adr/](adr/), [milestones/](milestones/) (history). Roadmap, stages:
+[PROJECT_TRACKER.md](PROJECT_TRACKER.md). Terms: [GLOSSARY.md](../GLOSSARY.md).
 
 ## 2. Repository architecture
 
@@ -57,9 +55,9 @@ game engine may become a dependency of `domain`; each sits behind an adapter.
   inputs and generated exports.
 - Identify yourself on state-changing commands: `--actor agent:<tool>`
   (`agent:claude-code`, `agent:gemini`, `agent:codex`).
-- Homeowner answers are recorded verbatim (`source.kind: owner_answer`). Every
-  slot value you propose (`--set slot=value`) is recorded as an `inference`
-  (`method: agent:<tool>`) until the homeowner confirms it (`interview confirm`).
+- Owner answers are recorded verbatim (`source.kind: owner_answer`). Every
+  interpretation you propose (`--set slot=value`) is recorded as an `inference`
+  (`method: agent:<tool>`) until the owner confirms it (`interview confirm`).
 
 ## 5. Private data and providers
 
@@ -80,7 +78,7 @@ game engine may become a dependency of `domain`; each sits behind an adapter.
 - Label claims with their epistemic status: `verified_fact`, `inference`,
   `assumption`, `preference`, `simulation_result`, `professional_approval`,
   `unknown`. An agent inference is never recorded as a fact or preference until
-  the homeowner confirms it.
+  the owner confirms it.
 - Evaluator output states how each metric was obtained (`measured`, `inferred`,
   `simulated`, `ai_judgment`, `not_checked`). Assumptions go in
   `assumptions.yaml`, unanswered questions in `open_questions.yaml`.
@@ -92,105 +90,68 @@ game engine may become a dependency of `domain`; each sits behind an adapter.
   file can *declare* them and only a human can *confirm* them (`site confirm`).
 - Raw CAD extraction stays in SOURCE coordinates and units; conversion to GRID
   metres and LOCAL frame is reversible (`domain/coordinates.py`).
-- **`projects/my-house/` facts:** Owner reports UTM coordinates, elevations in
-  metres above sea level and a real ~12–12.5 m drop on steep land. CAD gives
-  ~600 m² parcel, ~21 m frontage on a ~9 m road, 27 elevation points
-  (`seperated.dwg` + `elevation.dwg`). **Unverified:** UTM zone, hemisphere,
-  horizontal datum/EPSG, vertical datum, legal boundary. Keep it in
-  `SITE_NEEDS_VERIFICATION` until the owner runs `site confirm` and approves the
-  site gate. Designs must handle split levels, hillside structure, road-level
-  parking, excavation, retaining walls and drainage; not all 600 m² is buildable.
+- **`projects/my-house/` facts:** The owner reported UTM coordinates, elevations
+  in metres above sea level, and a real ~12–12.5 m drop on genuinely steep land.
+  CAD extraction measures ~600 m² parcel area, ~21 m frontage on a ~9 m road,
+  and 27 elevation points (`seperated.dwg` + `elevation.dwg`). **Still
+  unconfirmed:** exact UTM zone, hemisphere, horizontal datum/EPSG, vertical
+  datum, and the formal legal boundary. Keep `my-house` in
+  `SITE_NEEDS_CONFIRMATION` until the owner's `site confirm` clears the
+  blockers; the owner then approves the site gate. Plan options on `my-house`
+  must account for split-level layouts, hillside construction, road-level parking/access, excavation, retaining walls,
+  drainage, and structure without assuming all 600 m² is buildable.
 - Before any `my-house` layout work, read
   `projects/my-house/design/OWNER_DESIGN_RULES.md`. Each rule is a hard check:
   never show a design that breaks one.
 
 ## 8. Workflow and human approval gates
 
-States: `NEW_PROJECT → SITE_INGESTION ⇄ SITE_NEEDS_VERIFICATION → [site gate]
+States: `NEW_PROJECT → SITE_INGESTION ⇄ SITE_NEEDS_CONFIRMATION → [site gate]
 SITE_APPROVED → INTERVIEWING ⇄ PROGRAM_REVIEW → [program gate] PROGRAM_APPROVED
-→ CONCEPT_GENERATION ⇄ CONCEPT_REVIEW → [plan gate] PLAN_APPROVED →
+→ PLAN_GENERATION ⇄ PLAN_REVIEW → [plan gate] PLAN_APPROVED →
 BLENDER_BUILD ⇄ BLENDER_REVIEW → [model gate] MODEL_APPROVED → UNREAL_BUILD ⇄
 UNREAL_REVIEW`.
 
 - **Never approve a gate, confirm site facts, grant provider consent, or reject
-  a reviewed program on the homeowner's behalf.** `workflow approve`, `workflow
+  a reviewed program on the owner's behalf.** `workflow approve`, `workflow
   reopen`, `site confirm`, `interview consent`, and `program reject` require a
-  human in an interactive terminal (exit code 2 otherwise). Never bypass this
-  with a fake TTY or `--actor human:...`. Run `workflow request-approval` (or
-  `program review`) and ask the human to run the approval command in their own
-  terminal.
+  human in an interactive terminal (exit code 2 in an agent's shell). Never
+  bypass this with a fake TTY or `--actor human:...`. Run `workflow
+  request-approval` (or `program review` / `plan review`), then give the human
+  the exact command the CLI printed on its `next:` line to run in their own
+  terminal, where they type the confirmation phrase it shows.
 
-## 9. Agent-operated homeowner interview (Milestone C)
+## 9. Owner interview (Milestone C)
 
-1. **Select and inspect the project & site:**
-   `house-ai project list`, `house-ai project status my-house --json`, and
-   `house-ai interview status my-house --json`.
-2. **Start or resume the interview:**
-   `house-ai interview start my-house --json --actor agent:<tool>`. Works while
-   the site is in `SITE_NEEDS_VERIFICATION` (site values are marked unconfirmed).
-3. **Conduct an adaptive conversation (English, Persian, or mixed):**
-   Use the 30 questions in `interview checklist` as a completeness checklist,
-   not a rigid script. Ask natural architectural follow-ups tailored to the
-   owner's answers and the steep site.
-4. **Record exact homeowner words + proposed interpretations (`inference`):**
-   Always pass the homeowner's **exact verbatim words** (Persian, English, or
-   mixed) as `text`, and pass structured slot interpretations via `--set`:
-   - Checklist question/slot or multi-slot free-form answer:
-     `house-ai interview answer my-house "<verbatim words>" [--question <qid|slot>] --set slot=value --actor agent:<tool>`
-   - Adaptive follow-up question outside the 30-question checklist:
-     `house-ai interview answer my-house "<verbatim words>" --question q-followup-road --question-text "<your question>" --topic site --set entry_at_road=true --actor agent:<tool>`
-   - Mark undecided slots with `--unknown <slot>`.
-5. **Confirm, correct, or revise interpretations:**
-   Show interpreted values (`inference`) to the homeowner and ask them to
-   confirm or correct. Once they confirm in chat:
-   `house-ai interview confirm my-house [slots...] --text "<owner's words>" --actor agent:<tool>`.
-   To reject an interpretation or revise an earlier answer (preserving history):
-   `house-ai interview reject my-house --slot <slot> --text "<owner's words>" --actor agent:<tool>`
-   or `house-ai interview revise my-house <qid|slot> "<new words>" --set slot=new_value --actor agent:<tool>`.
-6. **Resolve contradictions:**
-   Explain the trade-off and options from `interview status --json`, then record
-   the owner's choice:
-   `house-ai interview resolve my-house <contradiction-id> "<owner's words>" --option <1..N> [--defer] --actor agent:<tool>`.
-7. **Build, validate, and request human approval of the space program:**
-   `house-ai program build my-house --out projects/my-house/design --actor agent:<tool>`
-   writes `design_brief.yaml`, `space_program.yaml`, `assumptions.yaml`,
-   `open_questions.yaml`, `interview-summary.md`, and `program-review.md` and
-   runs deterministic validation. Once the site gate is approved and no blocking
-   findings or unconfirmed inferences remain, run `house-ai program review my-house --actor agent:<tool>`
-   and ask the human to run `house-ai workflow approve my-house program --id program --approver <name>`
-   in their terminal.
+Run the owner interview, from `interview start` to `program review`, with the
+`architectural-programming` skill. It works while the site is still in
+`SITE_NEEDS_CONFIRMATION`; the 30 `interview checklist` questions are a
+completeness check, not a script.
 
-Worked command examples: [AGENT_WORKFLOWS.md](AGENT_WORKFLOWS.md).
+## 9b. Plan options (Milestone D, [ADR 0013](adr/0013-solver-backed-plan-generation.md))
 
-## 9b. Plan concepts (Milestone D, [ADR 0013](adr/0013-solver-backed-plan-generation.md))
-
-- Only after the human approved site and program:
-  `house-ai plan generate <p> --actor agent:<tool>` (CP-SAT; all strategies,
-  or `--strategy`). It stores plans, evaluations and constraints and writes
-  `design/concepts/` (plan.json/svg, metrics, violations, assumptions,
-  explanation, comparison.md). Never edit plan geometry by hand.
-- Before approval only `--exploratory` (stores nothing); never call its
-  output validated.
-- Revisions: owner's words verbatim plus explicit ops:
-  `house-ai plan revise <p> <option> "<words>" --area pi-kitchen=16 --separate a,b
-  --level x=entry --rethink z-night --actor agent:<tool>`.
-- `house-ai plan review <p> <option> --actor agent:<tool>`; the human approves
-  with `workflow approve <p> plan --id <option> --version <n> --approver <name>`.
-- Report metrics with their status and infeasible strategies with reasons;
-  never present one concept as "the answer".
-- Whenever you show the owner two or more options, include a comparison view:
-  a table of only what differs, plus the same floor of each option side by side
-  with differing rooms outlined (`OWNER_DESIGN_RULES.md` rule 8.5; reference
-  `projects/my-house/design/claude-c09/compare.py`).
+Generate, revise, compare and review plan options with the
+`generate-plan-options` skill; critique them with `critique-plan` and
+`visual-review`. Stored generation runs only after the human approved site and
+program; before that only `--exploratory`, which stores nothing and is never
+called validated. Report metrics with their status and infeasible strategies
+with reasons; never present one plan option as "the answer".
+Whenever you show the owner two or more options, include a comparison view: a
+table of only what differs, plus the same floor of each option side by side
+with differing rooms outlined (`OWNER_DESIGN_RULES.md` rule 8.5; reference
+`projects/my-house/design/claude-c09/compare.py`).
 
 ## 10. Professional boundary, conventions, tests, and Git
 
 - Never call output permit-ready, construction-ready, structurally certified,
   code-compliant, MEP-engineered or geotechnically verified without a recorded
   professional approval ([PROFESSIONAL_HANDOFF.md](PROFESSIONAL_HANDOFF.md)).
-- Python ≥ 3.11 (3.11 and 3.13), `ruff` line length 100, Pydantic `StrictModel`,
+- Use the project venv (`.venv/bin/python`, `.venv/bin/house-ai`). Python
+  3.13 only (ADR 0026), `ruff` line length 100, Pydantic `StrictModel`,
   canonical units metres/degrees. External tools and vendor SDKs sit behind
   optional adapters.
+- Project skills live in `.agents/skills/<name>/SKILL.md`; `.claude/skills`
+  is a symlink to that folder. `tests/test_skills.py` enforces their template.
 - Every behaviour change or bug fix has a deterministic offline test asserting
   ground-truth numbers. Record architectural decisions in `docs/adr/NNNN-*.md`.
 - Owner commands "Project status", "Next stage", "Review stage <ID>" and
@@ -202,7 +163,8 @@ Worked command examples: [AGENT_WORKFLOWS.md](AGENT_WORKFLOWS.md).
 
 ```bash
 .venv/bin/python -m pytest -q
-.venv/bin/ruff check src tests examples
+.venv/bin/ruff check src tests examples tools
 .venv/bin/house-ai schemas check
+.venv/bin/python tools/leak_scan.py
 .venv/bin/python tools/check_tracker.py
 ```

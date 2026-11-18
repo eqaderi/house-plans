@@ -1,0 +1,15 @@
+{
+  "classification": "synthetic",
+  "created_at": "2026-11-17T09:00:01Z",
+  "created_by": {
+    "display_name": null,
+    "id": "synthetic-owner",
+    "kind": "human",
+    "model": null,
+    "provider": null
+  },
+  "description": null,
+  "id": "pre-adr0025",
+  "name": "Records written before ADR 0025",
+  "schema_version": "0.1.0"
+}

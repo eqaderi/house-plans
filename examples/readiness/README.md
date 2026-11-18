@@ -29,7 +29,8 @@ What it does, in order:
 4. Generates every strategy (CP-SAT) with all critics, and measures diversity.
 5. Generates a concept from the agent topology proposal in `proposal.yaml`.
 6. Renders `concept-two-wing` v1 and checks the agent critique in
-   `visual_critique.json` against canonical IDs; runs the S5 defect detectors.
+   `visual_critique.json` against canonical IDs; records the same version's
+   Findings from its Evaluation (ADR 0033).
 7. Applies two owner-style revisions (verbatim words plus explicit ops) and
    checks the first request independently of the revision report.
 8. Writes an unapproved program v2 and shows that new plans still pin the

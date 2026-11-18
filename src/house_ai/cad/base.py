@@ -1,10 +1,10 @@
 """CAD ingestion boundary (Milestone B).
 
-The rest of the application depends only on these protocols, never on a CAD
+The rest of the application depends only on this protocol, never on a CAD
 library. Adapters: DXF via ezdxf (:mod:`house_ai.cad.dxf_ezdxf`) and DWG via
 an external DWG->DXF converter (:mod:`house_ai.cad.dwg_oda`). Every import
 produces a :class:`~house_ai.domain.site.CadImportProvenance` and stops at
-SITE_NEEDS_VERIFICATION when units or CRS are ambiguous.
+SITE_NEEDS_CONFIRMATION when units or CRS are ambiguous.
 
 Raw CAD entities extracted by :meth:`CadAdapter.extract_cad` remain in SOURCE
 coordinates and units until units and the local project coordinate system are
@@ -17,13 +17,9 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Protocol
 
-from house_ai.domain.coordinates import SurveyTransform
-from house_ai.domain.geometry import Point2, Polygon2D
+from house_ai.domain.geometry import Point2
 from house_ai.domain.site import (
     CadImportProvenance,
-    Contour,
-    SiteFeature,
-    SpotElevation,
 )
 
 
@@ -107,42 +103,6 @@ class CadExtraction:
 class CadAdapter(Protocol):
     name: str
 
-    def can_read(self, path: Path) -> bool: ...
-
     def inspect_cad(self, path: Path) -> CadInspection: ...
 
     def extract_cad(self, path: Path, layer_roles: dict[str, str]) -> CadExtraction: ...
-
-
-class CadSiteExtractor(Protocol):
-    """Transforms raw SOURCE-frame CAD entities into LOCAL metric Site geometry.
-
-    ``transform`` carries the horizontal and elevation unit scales and the
-    local frame, so elevations may use a different unit from x/y.
-    """
-
-    def classify_layers(self, inspection: CadInspection) -> dict[str, str]: ...
-
-    def extract_boundary(
-        self,
-        extraction: CadExtraction,
-        transform: SurveyTransform,
-    ) -> Polygon2D | None: ...
-
-    def extract_contours(
-        self,
-        extraction: CadExtraction,
-        transform: SurveyTransform,
-    ) -> list[Contour]: ...
-
-    def extract_spot_elevations(
-        self,
-        extraction: CadExtraction,
-        transform: SurveyTransform,
-    ) -> list[SpotElevation]: ...
-
-    def extract_features(
-        self,
-        extraction: CadExtraction,
-        transform: SurveyTransform,
-    ) -> list[SiteFeature]: ...

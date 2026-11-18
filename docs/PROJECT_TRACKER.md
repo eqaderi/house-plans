@@ -6,7 +6,7 @@ No other TODO, roadmap or stage-status file is kept. Format and update rules
 are in [§P](#p-rules-for-updating-the-tracker); `python tools/check_tracker.py`
 checks them.
 
-Last updated: 2026-10-20, Stage H2 supporting environmental assessment by `agent:codex`: owner supplied CRS and recognised the map preview; research exports completed, formal site confirmation pending.
+Last updated: 2026-11-18, Stage H2 branch (PR #41) brought up to date with `main` by `agent:claude-code`; interview complete, program v7 built, site and program gates not approved.
 
 ## A. Mission and immediate objective
 
@@ -116,9 +116,9 @@ to reopen A–D):
 
 | | |
 |---|---|
-| **Current stage** | H2 Real interview and program — interview started; all 10 software stages S1–S10 complete |
-| **Awaiting review** | none |
-| **Next eligible stage** | Resume H2 interview with the homeowner; H1 site verification in parallel; X1 only when asked |
+| **Current stage** | S11 Align code vocabulary with the glossary (IN_PROGRESS, review PENDING); human track H2 Real interview and program IN_PROGRESS |
+| **Awaiting review** | S11 (branch `stage/S11-glossary-vocabulary`) |
+| **Next eligible stage** | none until S11 is reviewed; H1 Real site verification and H2 Real interview and program (human parallel tracks), or X1 Optional tool research |
 | **Path to good floor plans** | S1 (done) → S2 (done) → S3 (done) → S4 (done) → S5 (done) → S6 (done) → S7 (done) → S8 (done) → S10 (done) → S9 (done; 10 stages complete) |
 | **Blocked** | H1 site facts (owner or surveyor input); program gate (needs site gate); H3 real design (needs H1 and H2) |
 | **Human parallel tracks** | H1 site verification with the owner any time; H2 interview any time (S1-09 closed) |
@@ -151,6 +151,7 @@ until done, then goes to review once.
 | 8 | S8 Hillside geometry | S3, S7 |
 | 9 | S10 Readiness remediation (DEC-11) | S4, S5, S6, S7, S8 |
 | 10 | S9 Floor-plan readiness gate | S2, S5, S6, S7, S8, S10 |
+| 11 | S11 Align code vocabulary with the glossary (DEC-14) | S9 |
 | — | X1 Optional tool research | T0.1 |
 | — | H1 Real site verification (human) | none |
 | — | H2 Real interview and program (human) | S1-09, H1 |
@@ -182,6 +183,7 @@ stages A–D and T0.1 keep their IDs.
 |---|---|
 | A–D, T0.1 | Done: milestones A–D and this tracker |
 | S1–S10 | Software path to the floor-plan readiness gate (S10 added by DEC-11) |
+| S11 | Code vocabulary aligned with GLOSSARY.md (DEC-14) |
 | X1 | Optional tool research, any time, not on the critical path |
 | H1–H3 | Real house: site, interview and program, design (needs the homeowner) |
 | F, G | Blender, IFC, Unreal (deferred) |
@@ -623,7 +625,7 @@ only where a tool cannot read the canonical location.
 - [x] **S2-11** critique-plan skill — `DONE` · P1 · deps: none
   - Accept: reads evaluation reports, separates measured from inferred from AI judgment, names canonical IDs, proposes explicit revise ops
   - Verify: test that a critique with an unknown ID is rejected by the grounding check (shared with S5-06 when available)
-  - Evidence: `skills/critique-plan/SKILL.md`; `src/house_ai/evaluation/grounding.py`; `house-ai plan ground` (`src/house_ai/cli/plan_cmds.py`); `tests/test_skills.py::test_grounding_extracts_only_backticked_ids`, `::test_grounding_reads_a_plan_json_and_the_references_of_its_spaces`; `tests/test_skills_workflows.py::test_generate_concepts_and_critique_skills_workflow` (unknown IDs exit 1)
+  - Evidence: `skills/critique-plan/SKILL.md`; `src/house_ai/validation/grounding.py` (was `evaluation/grounding.py` until ADR 0027); `house-ai plan ground` (`src/house_ai/cli/plan_cmds.py`); `tests/test_skills.py::test_grounding_extracts_only_backticked_ids`, `::test_grounding_reads_a_plan_json_and_the_references_of_its_spaces`; `tests/test_skills_workflows.py::test_generate_concepts_and_critique_skills_workflow` (unknown IDs exit 1)
 - [x] **S2-12** Synthetic workflow tests for both skills — `DONE` · P1 · deps: S2-10, S2-11
   - Accept: generate → critique → revise → compare runs offline on synthetic-hillside
   - Verify: `pytest -q`
@@ -953,7 +955,7 @@ rejected.
   - Accept: fixtures with overlapping labels, door into wall, window on retaining wall, missing stair arrival; tests assert detection by deterministic or visual checks with correct IDs
   - Verify: `pytest -q`
   - Evidence: `src/house_ai/validation/defect_detectors.py`; `tests/test_seeded_defects.py`
-  - Notes: closed with merge `b79595e`
+  - Notes: closed with merge `b79595e`. Spec #9 part 8 (ADR 0033): the detector module and `DefectFinding` are deleted; the seeded defects are Findings of the Evaluation or the integrity check: window in a retaining wall `window_buried` (`DaylightOpportunityEvaluator`, measured from the wall kind, no terrain needed), stair through a slab `stair_low_headroom` (`StairUsabilityEvaluator`, honours `UsabilityPolicy.min_headroom_m`), door wider than its wall `opening_outside_wall` and missing host wall or stair level/arrival `dangling_reference` (`check_model`), overlapping labels `label_collision` (`evaluation/drawing.py` on `domain/label_layout.py`); `tests/test_seeded_defects.py`, `tests/test_label_collisions.py`
 - [x] **S5-08** Screenshot and semantic regression tests — `DONE` · P2 · deps: none
   - Accept: screenshot diffs and ID-map diffs fail on unintended changes
   - Verify: CI run
@@ -966,12 +968,12 @@ rejected.
   - Accept: critiques map to explicit `plan revise` ops; new version re-captured
   - Verify: loop test
   - Evidence: `src/house_ai/orchestration/visual_review.py`; `tests/test_visual_review_loop.py`
-  - Notes: closed with merge `b79595e`
+  - Notes: closed with merge `b79595e`. Spec #9 part 8 (ADR 0033): the uncalled loop function and `visual_review.py` are deleted; the loop is the visual-review skill's `plan revise --json`, whose `findings` lists the Findings about the targeted ids (`evaluation/findings.py`, `tests/test_revision_findings.py`)
 - [x] **S5-10** Fix verification — `DONE` · P0 · deps: S5-09
   - Accept: each "fixed" claim is checked by the evaluator or a new capture; unverified claims stay open
   - Verify: test where a fake fix is rejected
   - Evidence: `src/house_ai/orchestration/visual_review.py`; `tests/test_visual_review_loop.py`
-  - Notes: closed with merge `b79595e`
+  - Notes: closed with merge `b79595e`. Spec #9 part 8 (ADR 0033): fix verification now compares the parent's and the new Evaluation in `plan revise` (`evaluation/findings.py::compare_findings`); a Finding whose cited geometry did not change is never reported as disappeared (`tests/test_findings_change.py`, `tests/test_revision_findings.py`)
 - [x] **S5-11** visual-review skill — `DONE` · P1 · deps: S5-09
   - Accept: follows the S2 template; forbids ungrounded claims
   - Verify: skill drift and workflow tests
@@ -981,7 +983,7 @@ rejected.
   - Accept: before/after screenshots, critique records and revision report for synthetic-hillside
   - Verify: reviewer replays it
   - Evidence: `examples/reviewer/demonstration/` (`before.svg`, `before.png`, `visual_critique.json`, `revision_ops.json`, `after.svg`, `after.png`, `revision_report.json`, `README.md`, `make_demonstration.py`); `tests/test_visual_demonstration.py`
-  - Notes: closed with merge `b79595e`
+  - Notes: closed with merge `b79595e`. Spec #9 part 8 (ADR 0033): `revision_report.json` is deleted; the hand-edited after-state was not a fix the Evaluation confirms, and fix verification is the `plan revise` report
 
 ### Stage S6 — Usability critics
 
@@ -1544,7 +1546,7 @@ claimed without a recorded professional verification.
 - [x] **S10-03** A revision checks its own request; "not met" differs from "regression" — `DONE` · P1 · deps: none
   - Accept: the 25 m² living-room case reports the request not met with the achieved area on v2 and v3; only a request that was met and later lost is a regression (ISS-31 a, b)
   - Verify: revision tests with ground-truth areas
-  - Evidence: `PlanService.request_findings` and `_unmet_request` in `src/house_ai/orchestration/plans.py` check every area, level and separation request the new version carries, new and inherited; `regression:` only when the base carried and met it, else `request not met:` (`REQUEST_NOT_MET_PREFIX`); the 2.0 m² area tolerance is unchanged, now `REQUESTED_AREA_TOLERANCE_M2`. Tests: `tests/test_plan_provenance_revisions.py::test_preserve_owner_design_intent_across_multi_step_revisions` (30 m² kitchen reported not met on v5 with its area, still not met and no regression on v6), `::test_request_findings_separate_unmet_from_lost` (kitchen shrunk about its centroid by exactly 3.0 m² is a regression; a new request is not met); `tests/test_readiness_demo.py` asserts the demo's first request is reported exactly when unmet and v3 shows no regression
+  - Evidence: `PlanService.request_findings` and `_unmet_request` in `src/house_ai/orchestration/plans.py` check every area, level and separation request the new version carries, new and inherited; `regression:` only when the base carried and met it, else `request not met:` (`REQUEST_NOT_MET_PREFIX`); the 2.0 m² area tolerance is unchanged, now `REQUESTED_AREA_TOLERANCE_M2`. Tests: `tests/test_plan_provenance_revisions.py::test_preserve_owner_design_intent_across_multi_step_revisions` (30 m² kitchen reported not met on v5 with its area, still not met and no regression on v6), `::test_request_findings_separate_unmet_from_lost` (kitchen shrunk about its centroid by exactly 3.0 m² is a regression; a new request is not met); `tests/test_readiness_demo.py` asserts the demo's first request is reported exactly when unmet and v3 shows no regression. Note (spec #9 part 5, ADR 0030): the check now lives in `generation/revision.py::unmet_requests` / `request_unmet`; the test is renamed `::test_unmet_requests_separate_unmet_from_lost`
   - Notes: closed with merge `af4b41c`; adjacency, nearness, connection, stair and outdoor requests are still not re-checked after a revision
 - [x] **S10-04** Proposals never replace an owner-revised version — `DONE` · P1 · deps: none
   - Accept: `plan propose` with a target strategy whose option has revisions stores a new option or is refused; the revised version stays latest of its option (ISS-31 c)
@@ -1676,6 +1678,40 @@ claimed without a recorded professional verification.
   - Verify: §I entry
   - Evidence: recorded in §I on 2026-10-19: owner confirmed `"I confirm acknoledgement of all"` across the five listed limitations in §H / §I
   - Notes: human action completed; verified; closed with merge `d8a38b1`
+
+### Stage S11 — Align code vocabulary with the glossary
+
+| Field | Value |
+|---|---|
+| Kind | implementation |
+| Status | IN_PROGRESS |
+| Review | PENDING |
+| Branch | `stage/S11-glossary-vocabulary` |
+| Depends on | S9 |
+| Tasks | S11-01, S11-02, S11-03 |
+| Objective | Make code, CLI text and docs use the GLOSSARY.md terms, following ADR 0025 (DEC-14) |
+| Scope | In: every row of the ADR 0025 mapping table; validation aliases for saved names; CLI help and agent skills text. Out: rewriting any stored artifact or event (`projects/my-house/` stays byte-identical) |
+| Acceptance | Every ADR 0025 row is renamed or marked kept with a reason; records written before the stage still load and `project verify my-house` stays intact; new records use the glossary names |
+| Tests | Full suite; a test loading pre-rename fixtures of each renamed saved name; `house-ai schemas check` |
+| Demonstration | Old and new space program and plan records loaded side by side |
+| Artifacts | Updated ADR 0025 table, schemas, `DOMAIN_MODEL.md`, skills |
+| Review requirements | Reviewer confirms no stored record changed (`git diff main -- projects/` empty) and spot-checks the aliases |
+| Evidence | Branch `stage/S11-glossary-vocabulary` (PR to `main`); ADR 0025 mapping table settled; `tests/test_glossary_renames.py` on the pre-rename store `tests/fixtures/pre_adr0025/store` written by `386be0d`; `house-ai project verify my-house` intact (13 events, 10 artifact versions); `git diff main -- projects/` empty; handoff in §N S11 records |
+
+#### Renames
+
+- [ ] **S11-01** Rename saved names with validation aliases (ADR 0025 rows marked saved) — `IN_PROGRESS` · P2 · deps: none
+  - Accept: new records use new names; old records load unchanged and keep their hashes
+  - Verify: alias tests; `project verify my-house`
+  - Evidence: space programs schema 0.2.0 (`domain/program.py::RENAMED_FIELDS`, 0.1.0 written back with old names); `domain/workflow.py::RENAMED_STATES` and `WorkflowEvent._old_states`; `domain/interview.py::current_slot`, `current_question_id`; `tests/test_glossary_renames.py` (17 old artifacts keep their hashes, files byte-identical, chain intact, old state names on the CLI); `project verify my-house` intact; issue #2
+- [ ] **S11-02** Record the owner's floor count as storeys (`SpaceProgram.levels`), levels derived from the plan — `IN_PROGRESS` · P2 · deps: S11-01
+  - Accept: interview and program builder ask and store a storey count; the plan derives the level count
+  - Verify: program builder test on a split-level fixture
+  - Evidence: question `q-storeys`, slot `storeys`; `SpaceProgram.storeys`; `HouseModel.storey_count` (levels less than a storey apart share one); evaluator metric `storey_count` and violation `storey_count_differs`; `tests/test_glossary_renames.py::test_the_program_asks_for_storeys_and_the_plan_derives_its_levels` (synthetic hillside: program 2 storeys, split-walkout 3 levels in 2 storeys) and `::test_storeys_are_counted_from_level_elevations` (4 split levels in 2 storeys); issue #3
+- [ ] **S11-03** Rename unsaved identifiers, CLI text, docs and skills to the glossary terms — `IN_PROGRESS` · P2 · deps: none
+  - Accept: no avoided term from GLOSSARY.md remains in CLI help or skills, except in quoted history
+  - Verify: grep of the _Avoid_ lists over `src/house_ai/cli` and `skills/`
+  - Evidence: classes `SpaceRequirement`, `SpaceRelationship`, `SpaceRelationshipKind`, `PlanRelationship`; CLI help and messages; skill `generate-plan-options`; new exports in `design/plan-options/`; `AGENT_CONTRACT.md` (11,974 characters), `AGENT_WORKFLOWS.md`, `DOMAIN_MODEL.md`, README; the _Avoid_ grep over `src/house_ai/cli` and `skills/` finds only literal ids, command names and allowed senses; issue #4
 
 ### Stage X1 — Optional tool research
 
@@ -1834,7 +1870,7 @@ the homeowner in their own terminal. Reference:
 | Demonstration | `interview status` coverage, then PROGRAM_APPROVED |
 | Artifacts | Interview session, brief, program, assumptions, open questions in `projects/my-house/` |
 | Review requirements | Reviewer samples turns for verbatim text and labelled inferences |
-| Evidence | Interview and brief v19; owner statements v11 retain CRS and map recognition; environmental research report under private reviews; `project verify my-house`: intact, 57 events, 54 artifact versions; ISS-38/39/40 must be addressed before program review |
+| Evidence | Interview and brief v19; owner statements v11 retain CRS and map recognition; environmental research report under private reviews; `project verify my-house`: intact, 57 events, 54 artifact versions; ISS-43/44/45 must be addressed before program review |
 
 Uses the agent-operated interview (AGENT_CONTRACT §9) and, once S2
 exists, the `architectural-programming` skill. Homeowner statements are
@@ -1863,7 +1899,7 @@ interview may begin before site verification finishes.
 - [ ] **H2-05** Cooking habits, kitchen organisation and kitchen–garage–dining–service relationships — `IN_PROGRESS` · P1 · deps: H2-01
   - Accept: kitchen type, heavy cooking, pantry, laundry and storage, garage route
   - Verify: confirmed slots
-  - Evidence: interview v8 and v9 record cooking and dining answers verbatim; interpretations await confirmation; compilation risk ISS-38 must be checked before program review
+  - Evidence: interview v8 and v9 record cooking and dining answers verbatim; interpretations await confirmation; compilation risk ISS-43 must be checked before program review
 - [ ] **H2-06** Children's play and study; work, reading, prayer, quiet, cultural and religious spaces — `IN_PROGRESS` · P1 · deps: H2-01
   - Accept: rooms or zones needed and their privacy and orientation needs
   - Verify: confirmed slots
@@ -2410,7 +2446,7 @@ changed), **decision** (owner must choose), **risk**.
 | ISS-14 | ADR 0005 says no `.claude/`, `.agents/` or `.gemini/` skills directories; T1 needs project skills | conflict | ADR 0005 "Decision" | Resolved: ADR 0015, approved by the owner 2026-10-17, revises that clause (canonical `skills/<name>/SKILL.md`, `.claude/skills` and `.agents/skills` symlinks) | S2-01 |
 | ISS-15 | MASTER_SPEC order is E → F → G and its first-slice success includes Blender input and an Unreal manifest; the owner now puts floor-plan quality first | priority | MASTER_SPEC "Implementation strategy", "Definition of success"; owner request 2026-10-17 | Order changed, mission unchanged; MASTER_SPEC text not edited | DEC-01, ADR 0014 |
 | ISS-16 | MASTER_SPEC says owner project material is git-ignored by default; ADR 0009 commits `projects/my-house` | conflict | MASTER_SPEC "Data / privacy"; ADR 0009 | Already decided by ADR 0009 with owner authorisation; repository must stay private (verified PRIVATE) | none (decided) |
-| ISS-17 | AGENT_CONTRACT is 11,988 of the 12,000 characters allowed by ADR 0005 and its test | risk | `tests/test_agent_instructions.py:13` | Move §9 command detail to AGENT_WORKFLOWS when next edited | S1 (propose) |
+| ISS-17 | AGENT_CONTRACT is 11,988 of the 12,000 characters allowed by ADR 0005 and its test | risk | `tests/test_agent_instructions.py:13` | Resolved: ADR 0034 moved §9 and §9b detail into the skills; the contract is under 9,000 characters | S1 (propose) |
 | ISS-18 | The governance request lists `docs/DESIGN_PRINCIPLES.md`; it does not exist | stale doc | `ls docs/` | Principles live in ARCHITECTURE "Principles"; no new file | none |
 | ISS-19 | Gemini CLI is not installed; Antigravity apps are; ADR 0005's Gemini check was documentary only | risk | `command -v gemini` empty; `/Applications/Antigravity*.app` | Verify in S2-06 or defer | S2-06 |
 | ISS-20 | Formal CRS confirmation remains pending; research georeferencing is now supported by owner-provided CRS and map recognition | risk | owner statements v10/v11; private location report | Complete human site confirmation; local-only fallback no longer the immediate research blocker | H1-03 |
@@ -2431,9 +2467,14 @@ changed), **decision** (owner must choose), **risk**.
 | ISS-35 | The hand-written steep fixture `examples/projects/synthetic-hillside/site.yaml` has no TIN surface and no FRONTAGE features, and `validate_site` only reads stored ones. Slope and frontage therefore reach the interview as unknown although 35 spot heights and a road polygon exist. `apps/reviewer/README.md` still says "Nothing is implemented yet" | stale doc | `geospatial/validation.py:416`; `orchestration/site_context.py:15-40`; demo record "Site" | Regenerate the fixture through ingestion, or derive TIN and frontage when absent; update the reviewer README | S10 |
 | ISS-36 | Generated garages cannot hold their cars. The bar generator assumes 5.4 m garage depth (`generation/massing.py::GARAGE_DEPTH_DM`); a typical car (4.5 m) with the vehicle template's 0.9 m front and 0.3 m back clearance needs 5.7 m clear, about 5.93 m between wall centrelines, and the person door's 0.9 m approach on the back wall cannot overlap the car. With the S10-10 program cars, `garage_sampled_fit` is False on every demo concept. Sizing garages from the program's cars (6.0 m deep, 3.3 m wide for one car) makes the 2D garage (3.3 × 6.1 m) pass, but on the synthetic hillside the deeper entry row makes split-level and split-walkout infeasible ("no room behind the entry bar for a lower split level") and bar garages still fail because of the back-wall door approach | decision | demo re-runs 2026-10-19 (S10-10); trial resize not committed | Decided (DEC-12): (c) a separate road-level garage volume or carport, sized for the program's cars, its house side wide enough for the person door's approach; implemented in S10-19 | S10-19 |
 | ISS-37 | Generated kitchens and wet rooms are not sized for their fixture sets. After S10-19 the synthetic hillside compact kitchen is 4.1 × 2.4 m: the 3.0 m run misses the 1.8 m kitchen-living passage's 0.9 m approach by about 2.5 cm, and in a 2.4 m wide kitchen the run's 1.22 m clear zone leaves no wall for the appliance. A trial minimum derived from the fixture templates (sets in line along one wall beside a door approach: kitchen 2.2 × 4.8 m, bathroom 1.8 × 3.5 m, WC 1.8 × 2.6 m, laundry 1.9 × 3.0 m) fixed the kitchen but exceeds the approved program (ensuite target 5 m², min width 1.6 m), made linear infeasible on the hillside and the 2D ensuite unplaceable; reverted. `tests/test_generated_fixtures.py` marks both compact tests strict xfail | decision | S10-19 trial 2026-10-19, not committed | Decided (DEC-13): (c) support L-shaped or opposite-wall fixture arrangements; implementation pending. Approved program areas and existing clearances remain unchanged. | S10-09 |
-| ISS-38 | The dining slot cannot explicitly request both kitchen eating space and a separate dining area. With open_plan false and dining kitchen, the builder omits pi-dining even when the relationship list mentions dining | risk | `src/house_ai/program/builder.py:238-255`; code-path inspection, not yet reproduced with a synthetic fixture | Preserve both requirements in owner-answer facts; before program review verify both appear in the canonical program and report any omission; do not change owner intent to fit the slot | H2-14 |
-| ISS-39 | Shared older-relative bedrooms cannot be expressed: needed_bedrooms adds one room per elder, and _bedrooms adds each elder before child rooms then truncates to the total; this can raise a false shortage and omit a requested child room | defect | `interview/questions.py:757-766`; `program/builder.py:324-359`; H2 interview v12/v13 exposes the contradiction against the confirmed arrangement | Support explicit bedroom sharing groups; preserve owner-confirmed room allocation and accessible routing; add synthetic regression before program review; do not reduce elder count, add unwanted bedrooms or silently accept truncation | H2-14 |
-| ISS-40 | CLI slot normalization treats the valid enumerated string none as unknown before checking the slot type; explicit no-special-guest-accommodation and accessibility-none choices cannot be recorded through structured interpretation | defect | `orchestration/interview.py:113-127`; diagnostic: check(guest_accommodation, none) returns the string, parse_slot_value returns null | Preserve allowed enum choices before applying generic unknown aliases; add synthetic regression. Record office/guest dual use in owner-answer facts without inventing a dedicated guest room; reconcile the slot before program review | H2-14 |
+| ISS-38 | Saved names that still use avoided terms: `program_item_id` (`Space`, constraints, proposals), `program_item_ids`, `near_program_item_ids`, `adjacency_graph` (proposals), `SiteContext.verified` (interview sessions), brief topic `levels`, finding codes and metrics with `program_item` or `adjacency`; `MASTER_SPEC.md` prose still says homeowner | stale doc | ADR 0025 mapping table, rows marked kept | A later rename stage, using the same old-name reading as S11 | S11 (recorded) |
+| ISS-39 | The reviewer and `RevisionOp` constants offered `orientation` and `daylight` Revision operations that `plan revise` refused; they were removed (spec #9 part 5). The Owner cannot yet ask for a Space to face a direction or to get more daylight | risk | `domain/revision_ops.py::REVISION_VERBS`; `apps/reviewer/src/constants/index.ts` | Add both verbs to the verb table once the solver can act on them (orientation needs a confirmed north, ISS-20) | none (awaits solver support) |
+| ISS-40 | The program gate reads the latest version of every stored Open questions file, not the one written with the program version being approved. A program approved after a later `program build` (or a hand-written Open questions file) is checked against Open questions that belong to another program version | defect | `orchestration/workflow.py::Workflow._check_program_gate`; ADR 0029 | Link Open questions and Assumptions to the Space program version they were written with, and read those at the gate (out of scope of spec #9, part 3) | none (recorded) |
+| ISS-41 | 2D revisions ignore the parent Plan version's position hints: a revision laid out by the 2D engine (`corridor_free`, `open_plan`, a topology proposal, a stair position or an outdoor link) re-places every Space from scratch, so Spaces the Owner did not ask to change can move. Only the bar engine keeps the parent's positions | risk | `generation/engines.py::BarEngine.position_hints` (the 2D engine reads none); `generation/solver2d.py::PlacementOptions` has no hints; ADR 0032 | Give the 2D solver a stability term towards the parent's placements, recovered by the 2D engine from its own generation record | none (recorded, spec #9 part 7) |
+| ISS-42 | A revision with a `proposal:<file>` operation, on a base version that already had a Concept proposal, was generated from the file's proposal but recorded the base's as its input; revising that version again without a proposal operation silently returned to the base's proposal | defect | `orchestration/plans.py::PlanService._revision_proposal`; `tests/test_plan_propose.py` (three ISS-42 tests) | Resolved: the file's proposal is stored and recorded. A version stored before the fix is detected (its `proposal_id` generation parameter differs from its recorded proposal) and refused for revision until a `proposal:<file>` names the proposal to follow. Not detectable: a file that kept the base's proposal id with changed content | PR #40 |
+| ISS-43 | The dining slot cannot explicitly request both kitchen eating space and a separate dining area. With open_plan false and dining kitchen, the builder omits pi-dining even when the relationship list mentions dining | risk | `src/house_ai/program/builder.py:238-255`; code-path inspection, not yet reproduced with a synthetic fixture | Resolved in the PR #41 merge: a dining relationship keeps a separate `pi-dining` beside "Kitchen and everyday dining"; `test_iss_43_kitchen_eating_space_and_separate_dining_preserved` | H2-14 |
+| ISS-44 | Shared older-relative bedrooms cannot be expressed: needed_bedrooms adds one room per elder, and _bedrooms adds each elder before child rooms then truncates to the total; this can raise a false shortage and omit a requested child room | defect | `interview/questions.py:757-766`; `program/builder.py:324-359`; H2 interview v12/v13 exposes the contradiction against the confirmed arrangement | Resolved in the PR #41 merge: new `elders_own_rooms` slot; shared older relatives need ceil(elders/2) rooms in the check and the builder; `test_iss_44_shared_older_relatives_bedroom_calculation_and_building` | H2-14 |
+| ISS-45 | CLI slot normalization treats the valid enumerated string none as unknown before checking the slot type; explicit no-special-guest-accommodation and accessibility-none choices cannot be recorded through structured interpretation | defect | `orchestration/interview.py:113-127`; diagnostic: check(guest_accommodation, none) returns the string, parse_slot_value returns null | Resolved in the PR #41 merge: an allowed `none` choice is kept before generic unknown aliases apply; `test_iss_45_slot_normalization_preserves_none_choice` | H2-14 |
 
 ## L. Decisions
 
@@ -2452,6 +2493,7 @@ changed), **decision** (owner must choose), **risk**.
 | DEC-11 | Option A for the six S9 FAILs: "a new fix-up stage for ISS-29 to ISS-35, with its own review. Then I re-run the S9 assessment and demonstration." | Homeowner, 2026-10-19 ("a", in reply to options A, B, C) | Stage S10 (ISS-25, ISS-29 to ISS-35); ISS-28 was not in option A and stays with S9 |
 | DEC-12 | Garages: option (c) of ISS-36, "a separate road-level garage volume or carport" instead of a garage row inside the house bars; garages sized for the program's cars with the vehicle template's clearances unchanged | Homeowner, 2026-10-19 ("the answer is c", in reply to options a, b, c) | Task S10-19; ISS-36 |
 | DEC-13 | ISS-37: support L-shaped or opposite-wall fixture arrangements; retain approved program areas and existing fixture clearances | Homeowner, 2026-10-19 ("(c) Support L-shaped or opposite-wall fixture arrangements.") | S10-08, S10-09; ISS-37 |
+| DEC-14 | GLOSSARY.md is the project vocabulary; code is renamed to match, but records already saved keep their old names (no rewrite); new records use new names and readers accept both; the owner's floor count is a storey count | Homeowner, 2026-11-17 ("You don't need to rewrite the history ... use the table that you said to map them") | ADR 0025; Stage S11 |
 
 Existing ADRs (all in force): 0001 canonical semantic model · 0002 Pydantic
 schemas and JSON Schema export · 0003 file-based store and event log · 0004
@@ -2460,7 +2502,7 @@ ingestion pipeline · 0007 site review corrections · 0008 owner interview and
 space program · 0009 personal-first project folders · 0010 Claude adapter
 for the interview · 0011 agent-first interview interface · 0012 site metric
 scope · 0013 solver-backed plan generation · 0014 project tracker and stage
-lifecycle · 0015 agent skills canonical location and discovery · 0016 event-head anchor integrity · 0017 synthetic benchmark contract · 0018 reviewer architecture · 0019 canonical placements and derived usability studies · 0020 relation semantics between solver and evaluator · 0021 2D placement formulation · 0022 hillside geometry and level decisions · 0023 stairs between split levels · 0024 unbuildable findings at the plan gate.
+lifecycle · 0015 agent skills canonical location and discovery · 0016 event-head anchor integrity · 0017 synthetic benchmark contract · 0018 reviewer architecture · 0019 canonical placements and derived usability studies · 0020 relation semantics between solver and evaluator · 0021 2D placement formulation · 0022 hillside geometry and level decisions · 0023 stairs between split levels · 0024 unbuildable findings at the plan gate · 0025 glossary vocabulary and code renames.
 
 ## M. Recently completed
 
@@ -2514,6 +2556,20 @@ Closure record template:
 - CI on main: <run id, result>
 - Closed by: <agent:tool> on the owner's "Close stage <ID>"
 ```
+
+### S11 records
+
+#### S11 handoff 1 — all three tasks implemented, review PENDING
+- Branch: `stage/S11-glossary-vocabulary` from `main` at `386be0d`; implementer: agent:claude-code (Claude Opus 5.5) on the owner's request to implement issues #2, #3 and #4 in one PR, 2026-11-17. The docs and skills pass was done by a delegated subagent and checked by the implementer.
+- Done:
+  - S11-01: space programs of schema 0.2.0 use `space_requirements`, `space_relationships`, `storeys`, `site_approved` and `*_space_requirement_ids`; schema 0.1.0 records are written back with their old names. Workflow states `SITE_NEEDS_CONFIRMATION`, `PLAN_GENERATION`, `PLAN_REVIEW`; events keep the state names they were saved with. Interview slot `storeys`, question `q-storeys`; old names read through `current_slot` / `current_question_id`.
+  - S11-02: the interview asks for storeys, the builder stores them, and plans derive `storey_count` from their levels; evaluation compares storeys with storeys, not with levels.
+  - S11-03: class, CLI, skill, export folder and docs renames per the ADR 0025 table.
+  - Pre-rename fixture `tests/fixtures/pre_adr0025/store` written by `386be0d` code (README there says how).
+  - Regenerated synthetic examples: synthetic-hillside fixture and its exploratory preview (the preview also picked up generator drift since S10-10; it is illustrative, only its program hash is tested), synthetic-family expected outputs, reviewer bundles (public hillside copy re-synced), reviewer TypeScript types, JSON Schemas. The bungalow golden plan and benchmark fixtures are unchanged.
+- Not done: the saved names kept in ISS-38.
+- Checks: see the review prompt in the PR; `git diff main -- projects/` is empty.
+- Resume: review with "Review stage S11".
 
 ### S10 records
 
@@ -3410,7 +3466,7 @@ All cited S7 file paths and test function names exist. Their existence and passi
     - `skills/architectural-programming/SKILL.md`: Adaptive multi-turn interview in English/Persian/mixed, verbatim recording of owner statements, slot inference, contradiction resolution, program building, and program gate review request.
     - `skills/generate-concepts/SKILL.md`: CP-SAT residential concept generation across 6 massing strategies, infeasibility reporting, structured plan revisions, and plan approval gate preparation.
     - `skills/critique-plan/SKILL.md`: Grounded architectural critique across geometry, circulation, privacy, and hillside metrics, separating measured facts from AI judgment, referencing canonical element IDs, and proposing structured revision operations.
-  - Grounding validator: `src/house_ai/evaluation/grounding.py` verifying critique element IDs against canonical model entities (`pi-*`, `z-*`, `level-*`).
+  - Grounding validator: `src/house_ai/evaluation/grounding.py` (merged into `src/house_ai/validation/grounding.py` by ADR 0027) verifying critique element IDs against canonical model entities (`pi-*`, `z-*`, `level-*`).
   - Unit and workflow tests:
     - `tests/test_skills.py` (11 tests): frontmatter validation, required sections, symlink integrity, drift prevention, and grounding validation.
     - `tests/test_skills_workflows.py` (3 tests): end-to-end synthetic project execution for survey review, interview programming, and concept generation/critique/revision.
@@ -3601,7 +3657,7 @@ All cited S7 file paths and test function names exist. Their existence and passi
 - Ensuite, everyday dining and kitchen/dining proximity are provisional
   interpretations. Bathroom count remains unknown; distinguish a WC from
   a full bathroom before deriving quantities.
-- Preserve both eating places during synthesis; ISS-38 records a compiler
+- Preserve both eating places during synthesis; ISS-43 records a compiler
   risk observed in code. No software behaviour was changed.
 - Next: clarify per-floor facilities, floor preferences, road access and
   parking. Thirteen interpretations await confirmation; two slots unknown.
@@ -3642,11 +3698,11 @@ All cited S7 file paths and test function names exist. Their existence and passi
   bedroom count; v13 has 19 confirmed slots overall. Four new work/service
   interpretations await confirmation; five slots remain unknown.
 - The checker raises `c-too-few-bedrooms` because it assumes separate elder
-  bedrooms. ISS-39 documents the mismatch in both checker and compiler;
+  bedrooms. ISS-44 documents the mismatch in both checker and compiler;
   do not ask the owner to add a room or reduce occupants to bypass it.
   The contradiction remains open pending correction; no gate was approved.
 - Next: guest stays, privacy, hobbies/cultural needs, style/light and priorities.
-  Before synthesis address ISS-38 and ISS-39 and check actual vehicle envelopes.
+  Before synthesis address ISS-43 and ISS-44 and check actual vehicle envelopes.
 - `project verify my-house`: intact, 39 events, 36 artifact versions.
 
 #### H2 interview round 10 (2026-10-20, agent:codex)
@@ -3659,7 +3715,7 @@ All cited S7 file paths and test function names exist. Their existence and passi
 - Next: prayer-area form, workshop activities and compatibility with parking,
   occasional guest arrangements; then remaining light/style/priority topics.
   Seven interpretations await confirmation; seven slots unknown.
-- The known false bedroom-shortage contradiction remains open (ISS-39),
+- The known false bedroom-shortage contradiction remains open (ISS-44),
   not a new owner conflict; do not ask the owner to change the approved brief.
 - `project verify my-house`: intact, 41 events, 38 artifact versions.
 
@@ -3668,13 +3724,13 @@ All cited S7 file paths and test function names exist. Their existence and passi
 - Stored the complete numbered reply verbatim in interview and brief v15.
   Flexible prayer-area form, optional shared workshop and office/guest dual
   use are retained with the exact questions; workshop activities remain open.
-- No dedicated prayer or guest room was inferred. ISS-40 records a reproduced
+- No dedicated prayer or guest room was inferred. ISS-45 records a reproduced
   CLI defect: a legitimate none enum is converted to unknown. Do not replace
   office/guest dual use with an unwanted separate guest room to bypass it.
 - Next: light/views, style/materials and future expansion, then EV charging,
   gathering sizes and priorities. Seven interpretations await confirmation;
   seven slots unknown, including some representation limitations rather than
-  an owner lacking a preference. ISS-39 remains the one open contradiction.
+  an owner lacking a preference. ISS-44 remains the one open contradiction.
 - `project verify my-house`: intact, 43 events, 40 artifact versions.
 
 #### H2 interview round 12 (2026-10-20, agent:codex)
@@ -3685,8 +3741,8 @@ All cited S7 file paths and test function names exist. Their existence and passi
   were not inferred from an answer specifically emphasizing light and views.
 - Next: EV charging, gathering size and top priorities; then slope strategy,
   room-size expectations and remaining ventilation details before synthesis.
-  Ten interpretations await confirmation; seven slots unknown. ISS-39 remains
-  the one open deterministic contradiction; ISS-38/39/40 still need attention.
+  Ten interpretations await confirmation; seven slots unknown. ISS-44 remains
+  the one open deterministic contradiction; ISS-43/44/45 still need attention.
 - `project verify my-house`: intact, 45 events, 42 artifact versions.
 
 #### H2 interview round 13 (2026-10-20, agent:codex)
@@ -3713,11 +3769,11 @@ All cited S7 file paths and test function names exist. Their existence and passi
   or achievable flat garden area was inferred or confirmed.
 - 27 of 28 applicable checklist questions covered; living/kitchen separation
   has prior verbatim answers and needs explicit slot interpretation at the
-  confirmation checkpoint, without losing the separate dining area (ISS-38).
+  confirmation checkpoint, without losing the separate dining area (ISS-43).
 - Next: present the remaining interpreted requirements for confirmation,
   then address compiler defects before building a validated program. Fifteen
   interpretations await confirmation; eight slots remain unknown or have
-  representation limitations. ISS-39 remains the one open contradiction.
+  representation limitations. ISS-44 remains the one open contradiction.
 - Site verification remains unresolved; no site or program gate approved.
 - `project verify my-house`: intact, 49 events, 46 artifact versions.
 
@@ -3730,7 +3786,7 @@ All cited S7 file paths and test function names exist. Their existence and passi
   geotechnical feasibility was asserted. No whole-parcel platform inferred.
 - The correction is not blanket confirmation of the preceding addendum.
   Fifteen interpretations still await confirmation; eight slots remain
-  unknown or have representation limitations. ISS-39 remains open.
+  unknown or have representation limitations. ISS-44 remains open.
 - Next: confirm the remaining addendum with this correction, then address
   compiler defects before synthesis. Site and program gates remain unapproved.
 - `project verify my-house`: intact, 51 events, 48 artifact versions.
@@ -3754,7 +3810,7 @@ All cited S7 file paths and test function names exist. Their existence and passi
   requested closer inspection; it supplied no geographical anchor. Do not
   choose a zone from magnitudes or adopt the unsupported historical assumption.
 - H1 remains blocked; H2 stays on its branch. No facts or gates were confirmed.
-  Remaining interview interpretations and ISS-38/39/40 are still pending.
+  Remaining interview interpretations and ISS-43/44/45 are still pending.
 - `project verify my-house`: intact, 53 events, 50 artifact versions. This was
   data inspection/research, not a software change; full stage checks remain
   due before review/closure.
@@ -3777,7 +3833,7 @@ All cited S7 file paths and test function names exist. Their existence and passi
   no authoritative current documentation for that feature was obtained.
   A screen capture or exact labels/values from the actual phone display can
   distinguish X/Y/Z from latitude/longitude or a full zone designation.
-- Remaining interview confirmation, ISS-38/39/40 and site gate are unchanged.
+- Remaining interview confirmation, ISS-43/44/45 and site gate are unchanged.
 - `project verify my-house`: intact, 54 events, 51 artifact versions.
 
 #### H2 geographical-anchor offer (2026-10-20, agent:codex)
@@ -3814,8 +3870,31 @@ All cited S7 file paths and test function names exist. Their existence and passi
   pytest 867 passed in 443.64 s; Ruff clean; 29 schemas current; tracker checker
   passed. These checks do not establish site or climate accuracy.
 - H1 stays BLOCKED overall pending human site facts/gate; H2 stays IN_PROGRESS.
-  No consent, site confirmation or gate approval was executed. ISS-38/39/40 and
+  No consent, site confirmation or gate approval was executed. ISS-43/44/45 and
   final interview interpretation confirmation remain before program review.
+
+#### H2 PR #41 brought up to date with main (2026-11-18, agent:claude-code)
+
+- `main` merged into `stage/H2-interview-program`. `main` had not touched
+  `projects/my-house/` since the branch point, so the project record merges
+  unchanged; current code reads it: `project verify my-house` intact, 153
+  events, 149 artifact versions; interview v51 complete (50 turns), brief v42,
+  owner statements v25, space program v7. State stays `SITE_NEEDS_CONFIRMATION`;
+  no gate was approved and no site fact confirmed.
+- The records above stop at interview v19; later rounds, the program builds and
+  the `design/` studies (argon, claude, codex, `user-designed/`) are in the
+  project record and `projects/my-house/reviews/` but have no record here.
+- `main` had already given ISS-38 to ISS-40 to other issues, so this branch's
+  unmerged ISS-38/39/40 became ISS-43/44/45 (never published on `main`). All
+  three are fixed with regression tests. The solver now lets an accessible room
+  leave the entry level when the program has a lift
+  (`test_an_accessible_room_may_leave_the_entry_level_only_when_a_lift_serves_it`).
+- The tracker test now counts only `implementation` stages in its
+  one-stage-at-a-time check; human-dependent stages run in parallel (§E).
+- Dropped from the branch: the reviewer `serve` change that always exported an
+  exploratory bundle (untested, unused by the my-house outputs) and the
+  per-skill OWNER_DESIGN_RULES paragraphs; both rules now live in
+  `AGENT_CONTRACT.md` §7 and §9b.
 
 ## O. Session protocol and handoff
 
@@ -3924,13 +4003,14 @@ homeowner approval of any site, program, plan or model.
 
 ### Current handoff note
 
-- Continuation entry point: `projects/my-house/reviews/CONTINUE-H2.md` (private detailed handoff, current records, preserved requirements and next deliverable). Current H2 work is local and uncommitted.
+- Stage S11 (glossary vocabulary, issues #2–#4) is implemented on `stage/S11-glossary-vocabulary`, review PENDING; see §N S11 handoff 1.
+- Continuation entry point: `projects/my-house/reviews/CONTINUE-H2.md` (private detailed handoff, current records, preserved requirements and next deliverable). Committed on `stage/H2-interview-program` (PR #41).
 
 - Stage S9 Floor-plan readiness gate closed with merge `d8a38b1` (CI run 39336825673 green).
 - All 10 software stages (S1–S10) on the path to good floor plans are complete. The software pipeline is verified ready to design the real house.
 - Next steps are human-dependent: H1 site verification with the owner (confirming UTM, CRS, datum, boundary), and H2 interview rounds. Stage X1 (optional tool research) can be explored any time.
 - H2 interview started on `stage/H2-interview-program` by `agent:codex`;
-  round 15 recorded; flat-outdoor correction incorporated, final interpretation confirmation and compiler issues ISS-38/39/40 pending. See H2 in §N.
+  interview now v51 (complete), program v7 (see the PR #41 record in §N); flat-outdoor correction incorporated, final interpretation confirmation and compiler issues ISS-43/44/45 pending. See H2 in §N.
 - Owner CRS and map recognition now support preliminary geographic research;
   all source POINT coordinates were transformed into separate private exports.
   See `projects/my-house/reviews/location-research/epsg-32638-preview/REPORT.md`.

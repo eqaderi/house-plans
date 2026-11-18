@@ -2,8 +2,9 @@
 
 The LLM may only (a) rephrase the question the planner chose and (b) propose
 slot values from a free-text answer. Every request goes through
-:func:`house_ai.providers.base.send`, so private interview content reaches a
-provider only if the owner allowed it. Proposed values are checked against
+:func:`house_ai.providers.base.send` with the owner's consent as it stands at
+that moment (``policy`` is read per request, never held), so private interview
+content reaches a provider only if the owner allowed it. Proposed values are checked against
 :mod:`house_ai.interview.slot_types`; anything invalid is dropped, and what is
 kept is still an inference until the owner confirms it.
 """
@@ -11,6 +12,7 @@ kept is still an inference until the owner confirms it.
 from __future__ import annotations
 
 import json
+from collections.abc import Callable
 from dataclasses import dataclass
 
 from pydantic import BaseModel, ConfigDict, ValidationError
@@ -22,7 +24,7 @@ from house_ai.interview.slot_types import InvalidValue, check
 from house_ai.providers.base import DataFlowPolicy, ModelProvider, ProviderRequest, send
 
 PHRASE_SYSTEM = (
-    "You are an architect interviewing a homeowner about the house they will build on their "
+    "You are an architect interviewing the owner about the house they will build on their "
     "own land. Rephrase the question you are given so it is warm, brief and specific to this "
     "household and site. Keep its meaning and everything it asks, and ask one question only. "
     "Use the context only as given: when it says the site is not confirmed, do not present "
@@ -30,7 +32,7 @@ PHRASE_SYSTEM = (
     "the question."
 )
 SYSTEM = (
-    "You help an architect interview a homeowner. Read the owner's answer and return only "
+    "You help an architect interview the owner. Read the owner's answer and return only "
     "what the answer clearly states, as JSON matching the schema. Use null when the owner "
     "says they do not know. Never guess a value the answer does not state."
 )
@@ -57,7 +59,8 @@ class Phrased:
 @dataclass
 class LlmAssist:
     provider: ModelProvider
-    policy: DataFlowPolicy
+    #: The owner's consent now, e.g. :meth:`InterviewService.policy`; called on every request.
+    policy: Callable[[], DataFlowPolicy]
     classification: DataClassification = DataClassification.PRIVATE
     #: The model behind the last reply, for the session record.
     last_model: str | None = None
@@ -76,7 +79,7 @@ class LlmAssist:
             classification=self.classification,
             response_schema=_Extraction.model_json_schema(),
         )
-        response = send(self.provider, request, self.policy)
+        response = send(self.provider, request, self.policy())
         self.last_model = response.model
         try:
             parsed = _Extraction.model_validate_json(response.text)
@@ -99,7 +102,7 @@ class LlmAssist:
             prompt=json.dumps({"question": question, "context": context}, ensure_ascii=False),
             classification=self.classification,
         )
-        response = send(self.provider, request, self.policy)
+        response = send(self.provider, request, self.policy())
         self.last_model = response.model
         text = response.text.strip()
         if 0 < len(text) <= 600 and "\n\n\n" not in text:

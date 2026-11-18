@@ -1,0 +1,155 @@
+{
+  "brief_id": "brief",
+  "id": "interview",
+  "pending_attempts": 0,
+  "pending_question_id": "q-floors",
+  "project_id": "pre-adr0025",
+  "provenance": {
+    "created_at": "2026-11-17T09:00:07Z",
+    "created_by": {
+      "display_name": null,
+      "id": "claude-code",
+      "kind": "agent",
+      "model": null,
+      "provider": null
+    },
+    "inputs": [],
+    "method": "owner_interview",
+    "notes": null,
+    "tool": "house-ai interview",
+    "tool_version": null
+  },
+  "schema_version": "0.1.0",
+  "site": null,
+  "status": "active",
+  "turns": [
+    {
+      "actor": {
+        "display_name": null,
+        "id": "synthetic-owner",
+        "kind": "human",
+        "model": null,
+        "provider": null
+      },
+      "at": "2026-11-17T09:00:11Z",
+      "contradiction_id": null,
+      "kind": "answer",
+      "model": null,
+      "option": null,
+      "provider": null,
+      "question_id": "q-household",
+      "question_text": "Let's start with the people. Who will live in the house? For example '2 adults and 2 children (6 and 9)' or 'my wife, me and my mother'.",
+      "seq": 1,
+      "slots": [],
+      "text": "Two adults and two kids, 6 and 9.",
+      "understood": [
+        {
+          "method": "parser",
+          "slot": "adults",
+          "value": 2
+        },
+        {
+          "method": "parser",
+          "slot": "children",
+          "value": 2
+        },
+        {
+          "method": "parser",
+          "slot": "elders",
+          "value": 0
+        },
+        {
+          "method": "parser",
+          "slot": "household_size",
+          "value": 4
+        }
+      ]
+    },
+    {
+      "actor": {
+        "display_name": null,
+        "id": "synthetic-owner",
+        "kind": "human",
+        "model": null,
+        "provider": null
+      },
+      "at": "2026-11-17T09:00:15Z",
+      "contradiction_id": null,
+      "kind": "answer",
+      "model": null,
+      "option": null,
+      "provider": null,
+      "question_id": "q-children-rooms",
+      "question_text": "Should each child have their own bedroom, or can some of them share?",
+      "seq": 2,
+      "slots": [],
+      "text": "Each child should have their own room.",
+      "understood": [
+        {
+          "method": "parser",
+          "slot": "children_own_rooms",
+          "value": true
+        }
+      ]
+    },
+    {
+      "actor": {
+        "display_name": null,
+        "id": "synthetic-owner",
+        "kind": "human",
+        "model": null,
+        "provider": null
+      },
+      "at": "2026-11-17T09:00:19Z",
+      "contradiction_id": null,
+      "kind": "answer",
+      "model": null,
+      "option": null,
+      "provider": null,
+      "question_id": "q-bedrooms",
+      "question_text": "How many bedrooms do you want in total, including any guest bedroom?",
+      "seq": 3,
+      "slots": [],
+      "text": "Three bedrooms.",
+      "understood": [
+        {
+          "method": "parser",
+          "slot": "bedrooms",
+          "value": 3
+        }
+      ]
+    },
+    {
+      "actor": {
+        "display_name": null,
+        "id": "synthetic-owner",
+        "kind": "human",
+        "model": null,
+        "provider": null
+      },
+      "at": "2026-11-17T09:00:23Z",
+      "contradiction_id": null,
+      "kind": "answer",
+      "model": null,
+      "option": null,
+      "provider": null,
+      "question_id": "q-bathrooms",
+      "question_text": "How many bathrooms would you like, and should the main bedroom have its own bathroom (en-suite)?",
+      "seq": 4,
+      "slots": [],
+      "text": "Two bathrooms, and yes an en-suite for us.",
+      "understood": [
+        {
+          "method": "parser",
+          "slot": "bathrooms",
+          "value": 2
+        },
+        {
+          "method": "parser",
+          "slot": "ensuite",
+          "value": true
+        }
+      ]
+    }
+  ]
+}

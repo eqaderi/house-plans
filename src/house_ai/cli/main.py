@@ -21,7 +21,8 @@ from pydantic import ValidationError
 
 from house_ai.cad.dwg_oda import DwgConversionError
 from house_ai.cad.layers import load_layer_mapping
-from house_ai.cli import plan_cmds, reviewer_cmds
+from house_ai.cli import human, plan_cmds, reviewer_cmds
+from house_ai.cli.exit_codes import EXIT_FAIL, EXIT_OK, EXIT_USAGE
 from house_ai.domain.integrity import FindingSeverity, check_model
 from house_ai.domain.model import HouseModel
 from house_ai.domain.plan import PlanVersion
@@ -29,42 +30,41 @@ from house_ai.domain.program import SpaceProgram
 from house_ai.domain.provenance import (
     Actor,
     ActorKind,
+    ApprovalRequiresHuman,
     ArtifactKind,
     ArtifactRef,
     DataClassification,
-    is_disallowed_human_id,
 )
 from house_ai.domain.registry import SCHEMAS, export_schemas, stale_schemas
-from house_ai.domain.site import CadImportProvenance, Site, site_verification_blockers
+from house_ai.domain.site import Site
 from house_ai.domain.units import LengthUnit
 from house_ai.domain.workflow import Gate, WorkflowState
 from house_ai.geospatial.crs import describe_epsg, utm_candidates
-from house_ai.geospatial.validation import report_markdown, validate_site
+from house_ai.geospatial.validation import validate_site
 from house_ai.interview.brief_builder import describe
 from house_ai.interview.questions import SLOTS
 from house_ai.orchestration.interview import InterviewService
-from house_ai.orchestration.interview_llm import LlmAssist
-from house_ai.orchestration.site_ingestion import SiteConfirmation, confirm_site, ingest_site
+from house_ai.orchestration.interview_views import prompt_json
+from house_ai.orchestration.project_status import project_status
+from house_ai.orchestration.site import SiteService
+from house_ai.orchestration.site_ingestion import SiteConfirmation
 from house_ai.orchestration.statements import owner_statements, record_owner_statement
 from house_ai.orchestration.survey_inspection import inspect_files, inspection_markdown
 from house_ai.orchestration.workflow import (
     GATES,
-    ApprovalRequiresHuman,
+    HumanAction,
+    NextHumanAction,
+    UseProgramReject,
     Workflow,
     WorkflowError,
 )
-from house_ai.program.report import program_markdown
 from house_ai.providers.base import ModelProvider, ProviderError
-from house_ai.render2d.review_html import render_review_html
-from house_ai.render2d.site_svg import render_site_svg
-from house_ai.render2d.terrain_svg import render_terrain_svg
 from house_ai.storage import ProjectStore, StoreError
 from house_ai.storage.hashing import load_document, pretty_json
 from house_ai.storage.importer import import_folder
 from house_ai.storage.projects import create_project, list_projects, resolve_project_dir
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
-EXIT_OK, EXIT_FAIL, EXIT_USAGE = 0, 1, 2
 
 
 def _out(text: str = "") -> None:
@@ -73,11 +73,6 @@ def _out(text: str = "") -> None:
 
 def _err(text: str) -> None:
     print(text, file=sys.stderr)
-
-
-def _dir(text: str) -> Path:
-    """A project folder given as a path or as a name under projects/."""
-    return resolve_project_dir(text)
 
 
 def _actor(text: str) -> Actor:
@@ -176,72 +171,9 @@ def cmd_project_list(args: argparse.Namespace) -> int:
     return EXIT_OK
 
 
-def _status_dict(store: ProjectStore) -> dict:
-    wf = Workflow(store)
-    status = wf.status()
-    gate = wf.gate_available()
-    latest: dict[str, list[dict]] = {}
-    for kind in ArtifactKind:
-        for ref in store.latest_of_kind(kind):
-            latest.setdefault(kind.value, []).append(ref.model_dump(mode="json"))
-    svc = InterviewService(store)
-    site_ctx = svc.site()
-    site_info = None
-    if site_ctx is not None and site_ctx.site_ref is not None:
-        site_info = {
-            "site_ref": site_ctx.site_ref.model_dump(mode="json"),
-            "verified": site_ctx.verified,
-            "parcel_area_m2": site_ctx.parcel_area_m2,
-            "relief_m": site_ctx.relief_m,
-            "mean_slope_pct": site_ctx.mean_slope_pct,
-            "frontage_m": site_ctx.frontage_m,
-            "verification_blockers": svc.site_blockers(),
-        }
-    approvals_dict: dict[str, dict] = {}
-    stale_approvals: list[str] = []
-    for g, a in status.approvals.items():
-        spec = GATES[g]
-        latest_ref = store.latest(spec.artifact_kind, a.artifact.id)
-        is_stale = False
-        if latest_ref and (
-            latest_ref.version > a.artifact.version or latest_ref.sha256 != a.artifact.sha256
-        ):
-            is_stale = True
-            stale_approvals.append(g.value)
-        data = a.model_dump(mode="json")
-        data["stale"] = is_stale
-        if is_stale and latest_ref:
-            data["latest_version"] = latest_ref.version
-        approvals_dict[g.value] = data
-
-    iv_exists = svc.exists()
-    iv_state = svc.state() if iv_exists else None
-    return {
-        "project": store.manifest().model_dump(mode="json"),
-        "state": status.state.value,
-        "allowed_transitions": [s.value for s in wf.allowed_transitions()],
-        "gate_available": gate.value if gate else None,
-        "approvals": approvals_dict,
-        "stale_approvals": sorted(stale_approvals),
-        "superseded_approvals": [a.id for a in status.superseded],
-        "pending_approval_requests": {
-            g.value: r.model_dump(mode="json") for g, r in status.pending_requests.items()
-        },
-        "latest_artifacts": latest,
-        "site": site_info,
-        "owner_statements_count": len(owner_statements(store)),
-        "interview": {
-            "exists": iv_exists,
-            "status": svc.session().status.value if iv_exists else "not_started",
-            "turn_count": len(svc.session().turns) if iv_exists else 0,
-            "unconfirmed_slots": len(iv_state.unconfirmed()) if iv_state else 0,
-        },
-    }
-
-
 def cmd_project_status(args: argparse.Namespace) -> int:
-    store = ProjectStore(_dir(args.dir))
-    info = _status_dict(store)
+    status = project_status(ProjectStore(resolve_project_dir(args.dir)))
+    info = status.to_json(human.renderer(args.dir))
     if args.json:
         _out(json.dumps(info, indent=2, sort_keys=True))
         return EXIT_OK
@@ -250,6 +182,10 @@ def cmd_project_status(args: argparse.Namespace) -> int:
     _out(f"next      {', '.join(info['allowed_transitions']) or '-'}")
     if info["gate_available"]:
         _out(f"gate      {info['gate_available']} can be approved by a human from this state")
+    for b in (info["gate_status"] or {}).get("blockers", []):
+        _out(f"blocker   {b['kind']} {b['code']}: {b['message']}")
+    if info["next_human_command"]:
+        _out(f"human     {info['next_human_command']}")
     for gate, appr in info["approvals"].items():
         art = appr["artifact"]
         stale_msg = f" (STALE: v{appr['latest_version']} exists)" if appr.get("stale") else ""
@@ -259,7 +195,7 @@ def cmd_project_status(args: argparse.Namespace) -> int:
         )
     if info["site"] is not None:
         s_info = info["site"]
-        v_tag = "verified" if s_info["verified"] else "needs verification"
+        v_tag = "approved" if s_info["verified"] else "needs confirmation"
         _out(
             f"site      {v_tag}; area={s_info['parcel_area_m2']} m², "
             f"relief={s_info['relief_m']} m, slope={s_info['mean_slope_pct']}%, "
@@ -272,7 +208,7 @@ def cmd_project_status(args: argparse.Namespace) -> int:
 
 
 def cmd_project_verify(args: argparse.Namespace) -> int:
-    store = ProjectStore(_dir(args.dir))
+    store = ProjectStore(resolve_project_dir(args.dir))
     problems = store.verify()
     try:
         Workflow(store).status()
@@ -290,7 +226,7 @@ def cmd_project_verify(args: argparse.Namespace) -> int:
 
 
 def cmd_source_add(args: argparse.Namespace) -> int:
-    store = ProjectStore(_dir(args.dir))
+    store = ProjectStore(resolve_project_dir(args.dir))
     doc = store.add_source(
         Path(args.file), args.actor, classification=DataClassification(args.classification)
     )
@@ -299,7 +235,7 @@ def cmd_source_add(args: argparse.Namespace) -> int:
 
 
 def cmd_artifact_put(args: argparse.Namespace) -> int:
-    store = ProjectStore(_dir(args.dir))
+    store = ProjectStore(resolve_project_dir(args.dir))
     kind = ArtifactKind(args.kind)
     data = load_document(Path(args.file))
     artifact_id = args.id or data.get("option_id") or data.get("id")
@@ -316,7 +252,7 @@ def cmd_artifact_put(args: argparse.Namespace) -> int:
 
 
 def cmd_artifact_list(args: argparse.Namespace) -> int:
-    store = ProjectStore(_dir(args.dir))
+    store = ProjectStore(resolve_project_dir(args.dir))
     kind = ArtifactKind(args.kind) if args.kind else None
     for ref in store.refs(kind):
         _out(f"{ref.kind.value}/{ref.id} v{ref.version} {ref.sha256}")
@@ -324,7 +260,7 @@ def cmd_artifact_list(args: argparse.Namespace) -> int:
 
 
 def cmd_artifact_check(args: argparse.Namespace) -> int:
-    store = ProjectStore(_dir(args.dir))
+    store = ProjectStore(resolve_project_dir(args.dir))
     plan = store.get(_ref(store, ArtifactKind.PLAN, args.id, args.version), PlanVersion)
     site = store.get(plan.model.site_ref, Site) if plan.model.site_ref else None
     program = store.get(plan.model.program_ref, SpaceProgram) if plan.model.program_ref else None
@@ -348,15 +284,14 @@ def cmd_example_load(args: argparse.Namespace) -> int:
     refs = import_folder(store, folder, args.actor)
     for ref in refs:
         _out(f"stored {ref.kind.value}/{ref.id} v{ref.version}")
-    wf = Workflow(store)
-    wf.transition(WorkflowState.SITE_INGESTION, args.actor, "example site loaded")
     site_ref = next(r for r in refs if r.kind is ArtifactKind.SITE)
-    blockers = wf.assess_site(site_ref, args.actor)
-    for b in blockers:
-        _out(f"SITE BLOCKER {b}")
-    _out(f"state {wf.state.value}")
-    if not blockers:
-        _out(f"next: a human runs `house-ai workflow approve {args.dir} site --id {site_ref.id}`")
+    outcome = SiteService(store).assess(site_ref, args.actor)
+    for b in outcome.blockers:
+        _out(f"SITE BLOCKER {b.message}")
+    _out(f"state {outcome.state.value}")
+    action = Workflow(store).gate_status(Gate.SITE, site_ref).next_action
+    if action is not None:
+        _out(human.next_line(action, args.dir))
     return EXIT_OK
 
 
@@ -364,12 +299,13 @@ def cmd_example_load(args: argparse.Namespace) -> int:
 
 
 def cmd_transition(args: argparse.Namespace) -> int:
-    wf = Workflow(ProjectStore(_dir(args.dir)))
-    if wf.state is WorkflowState.PROGRAM_REVIEW and args.state == "INTERVIEWING":
-        _err("leaving PROGRAM_REVIEW requires 'program reject' in a human terminal")
-        return EXIT_USAGE
+    wf = Workflow(ProjectStore(resolve_project_dir(args.dir)))
     try:
-        ev = wf.transition(WorkflowState(args.state), args.actor, args.reason)
+        ev = wf.transition(args.state, args.actor, args.reason)
+    except UseProgramReject as exc:
+        _err(str(exc))
+        _err(human.next_line(exc.next_action, args.dir))  # type: ignore[arg-type]
+        return EXIT_USAGE
     except ApprovalRequiresHuman as exc:
         _err(str(exc))
         return EXIT_USAGE
@@ -381,59 +317,44 @@ def cmd_transition(args: argparse.Namespace) -> int:
 
 
 def cmd_assess_site(args: argparse.Namespace) -> int:
-    store = ProjectStore(_dir(args.dir))
-    wf = Workflow(store)
-    blockers = wf.assess_site(_ref(store, ArtifactKind.SITE, args.id, args.version), args.actor)
-    for b in blockers:
-        _out(f"BLOCKER {b}")
-    _out(f"state {wf.state.value}")
+    store = ProjectStore(resolve_project_dir(args.dir))
+    ref = _ref(store, ArtifactKind.SITE, args.id, args.version)
+    outcome = SiteService(store).assess(ref, args.actor)
+    for b in outcome.blockers:
+        _out(f"BLOCKER {b.message}")
+    _out(f"state {outcome.state.value}")
     return EXIT_OK
 
 
 def cmd_request_approval(args: argparse.Namespace) -> int:
-    store = ProjectStore(_dir(args.dir))
+    store = ProjectStore(resolve_project_dir(args.dir))
     gate = Gate(args.gate)
     ref = _ref(store, GATES[gate].artifact_kind, args.id, args.version)
-    ev = Workflow(store).request_approval(gate, ref, args.actor)
-    for r in ev.payload["open_reasons"]:
+    status = Workflow(store).request_approval(gate, ref, args.actor)
+    for r in status.open_reasons:
         _out(f"OPEN {r}")
     _out(f"approval of {gate.value} requested for {ref.kind.value}/{ref.id} v{ref.version}")
     return EXIT_OK
 
 
 def cmd_approve(args: argparse.Namespace) -> int:
-    if not sys.stdin.isatty():
-        _err(
-            "approval needs an interactive terminal and a typed confirmation from a human. "
-            "Agents must not approve gates; ask the human to run this command themselves."
-        )
-        return EXIT_USAGE
-    if is_disallowed_human_id(args.approver):
-        _err(
-            f"disallowed approver {args.approver!r}: approver must be a real human identifier, "
-            "not an agent or tool name (agents must not approve gates)."
-        )
-        return EXIT_USAGE
-    store = ProjectStore(_dir(args.dir))
+    approver = human.require_human(human.APPROVE, args.approver)
+    store = ProjectStore(resolve_project_dir(args.dir))
     wf = Workflow(store)
     gate = Gate(args.gate)
     ref = _ref(store, GATES[gate].artifact_kind, args.id, args.version)
-    reasons = wf.check_gate(gate, ref)
-    if reasons:
+    blockers = wf.gate_status(gate, ref).blockers
+    if blockers:
         _err(f"the {gate.value} gate cannot be approved yet:")
-        for r in reasons:
-            _err(f"  - {r}")
+        for b in blockers:
+            _err(f"  - {b.message}")
         return EXIT_FAIL
     phrase = f"approve {gate.value} {ref.id} v{ref.version}"
     _out(f"You are approving {ref.kind.value}/{ref.id} v{ref.version} (sha256 {ref.sha256[:12]}).")
     _out("Approval is recorded permanently in the project event log.")
-    typed = input(f'Type "{phrase}" to confirm: ').strip()
-    if typed != phrase:
-        _err("confirmation did not match; nothing approved")
-        return EXIT_FAIL
-    approver = Actor(kind=ActorKind.HUMAN, id=args.approver)
+    human.require_phrase(human.APPROVE, phrase)
     statement = args.statement or (
-        f"{args.approver} reviewed {ref.kind.value}/{ref.id} v{ref.version} and approves it."
+        f"{approver.id} reviewed {ref.kind.value}/{ref.id} v{ref.version} and approves it."
     )
     approval = wf.approve(gate, ref, approver, statement, conditions=args.condition)
     _out(f"approved: {approval.id}; state {wf.state.value}")
@@ -441,19 +362,8 @@ def cmd_approve(args: argparse.Namespace) -> int:
 
 
 def cmd_reopen(args: argparse.Namespace) -> int:
-    if not sys.stdin.isatty():
-        _err(
-            "reopening a gate needs an interactive terminal and a typed confirmation from a human. "
-            "Agents must not reopen gates; ask the human to run this command themselves."
-        )
-        return EXIT_USAGE
-    if args.actor.kind is not ActorKind.HUMAN or is_disallowed_human_id(args.actor.id):
-        _err(
-            f"{args.actor.kind.value} {args.actor.id!r} cannot reopen gates; "
-            "only a human can reopen an approved gate."
-        )
-        return EXIT_USAGE
-    store = ProjectStore(_dir(args.dir))
+    actor = human.require_human(human.REOPEN, args.actor)
+    store = ProjectStore(resolve_project_dir(args.dir))
     wf = Workflow(store)
     gate = Gate(args.gate)
     status = wf.status()
@@ -467,11 +377,8 @@ def cmd_reopen(args: argparse.Namespace) -> int:
         f"{approval.artifact.kind.value}/{approval.artifact.id} v{approval.artifact.version})."
     )
     _out("Reopening marks this approval and downstream approvals as superseded.")
-    typed = input(f'Type "{phrase}" to confirm: ').strip()
-    if typed != phrase:
-        _err("confirmation did not match; nothing reopened")
-        return EXIT_FAIL
-    ev = wf.reopen(gate, args.actor, args.reason)
+    human.require_phrase(human.REOPEN, phrase)
+    ev = wf.reopen(gate, actor, args.reason)
     _out(f"reopened {args.gate}: {ev.from_state.value} -> {ev.to_state.value}")  # type: ignore[union-attr]
     return EXIT_OK
 
@@ -497,36 +404,20 @@ def cmd_site_inspect(args: argparse.Namespace) -> int:
 
 
 def cmd_site_ingest(args: argparse.Namespace) -> int:
-    store = ProjectStore(_dir(args.dir))
-    result = ingest_site(
-        store, args.source, load_layer_mapping(Path(args.layers)), args.actor, site_id=args.site_id
+    store = ProjectStore(resolve_project_dir(args.dir))
+    result = SiteService(store).ingest(
+        args.source, load_layer_mapping(Path(args.layers)), args.actor, site_id=args.site_id
     )
     for ref in (*result.cad_refs, result.site_ref):
         _out(f"stored {ref.kind.value}/{ref.id} v{ref.version} sha256 {ref.sha256}")
     for b in result.blockers:
-        _out(f"BLOCKER {b}")
-    if result.blockers:
-        _out(
-            "next: house-ai workflow assess-site "
-            f"{args.dir} --id {args.site_id} --actor <you>   # records SITE_NEEDS_VERIFICATION"
-        )
+        _out(f"BLOCKER {b.message}")
+    _out(f"state {result.state.value}")
     return EXIT_OK
 
 
 def cmd_site_confirm(args: argparse.Namespace) -> int:
-    if not sys.stdin.isatty():
-        _err(
-            "site confirmation needs an interactive terminal and a typed confirmation from a "
-            "human. Agents must not confirm units, CRS, datum or boundary; ask the human to run "
-            "this command themselves."
-        )
-        return EXIT_USAGE
-    if is_disallowed_human_id(args.confirmer):
-        _err(
-            f"disallowed confirmer {args.confirmer!r}: confirmer must be a real human identifier, "
-            "not an agent or tool name (agents must not confirm site facts)."
-        )
-        return EXIT_USAGE
+    confirmer = human.require_human(human.CONFIRM_SITE, args.confirmer)
     conf = SiteConfirmation(
         units=LengthUnit(args.units) if args.units else None,
         elevation_units=LengthUnit(args.elevation_units) if args.elevation_units else None,
@@ -543,64 +434,40 @@ def cmd_site_confirm(args: argparse.Namespace) -> int:
     if not conf.summary():
         _err("nothing to confirm; pass at least one of the confirmation options")
         return EXIT_USAGE
-    store = ProjectStore(_dir(args.dir))
+    store = ProjectStore(resolve_project_dir(args.dir))
     _out(f"You ({args.confirmer}) are confirming for site {args.id}:")
     for item in conf.summary():
         _out(f"  - {item}")
     _out("This is recorded permanently in the project event log under your name.")
-    phrase = f"confirm site {args.id}"
-    typed = input(f'Type "{phrase}" to confirm: ').strip()
-    if typed != phrase:
-        _err("confirmation did not match; nothing confirmed")
-        return EXIT_FAIL
-    ref = confirm_site(store, args.id, Actor(kind=ActorKind.HUMAN, id=args.confirmer), conf)
-    site = store.get(ref, Site)
+    human.require_phrase(human.CONFIRM_SITE, f"confirm site {args.id}")
+    result = SiteService(store).confirm(args.id, confirmer, conf)
+    ref = result.site_ref
     _out(f"stored site/{ref.id} v{ref.version} sha256 {ref.sha256}")
-    lonlat = validate_site(site).coordinates.origin_lon_lat
+    lonlat = validate_site(store.get(ref, Site)).coordinates.origin_lon_lat
     if lonlat:
         _out(
             f"the local origin is at lon {lonlat[0]:.6f}, lat {lonlat[1]:.6f}: check that this "
             "is your property (a wrong UTM zone moves it by 6° of longitude)"
         )
-    for b in site_verification_blockers(site):
-        _out(f"BLOCKER {b}")
+    for b in result.blockers:
+        _out(f"BLOCKER {b.message}")
+    _out(f"state {result.state.value}")
     return EXIT_OK
 
 
 def cmd_site_report(args: argparse.Namespace) -> int:
-    store = ProjectStore(_dir(args.dir))
+    store = ProjectStore(resolve_project_dir(args.dir))
     ref = _ref(store, ArtifactKind.SITE, args.id, args.version)
-    site = store.get(ref, Site)
-    report = validate_site(site, ref)
-    statements = owner_statements(store)
-    out = Path(args.out) if args.out else store.root / "reviews" / f"{ref.id}-v{ref.version}"
-    out.mkdir(parents=True, exist_ok=True)
-    site_svg, terrain_svg = render_site_svg(site, report), render_terrain_svg(site, report)
-    cad_inputs = [r for r in site.provenance.inputs if r.kind is ArtifactKind.CAD_IMPORT]
-    cads = [store.get(r, CadImportProvenance) for r in cad_inputs]
-    files = {
-        "site.json": pretty_json(site),
-        "site-report.json": pretty_json(report),
-        "site-report.md": report_markdown(report, statements),
-        "site.svg": site_svg,
-        "terrain.svg": terrain_svg,
-        "index.html": render_review_html(site, report, site_svg, terrain_svg, cads, statements),
-    }
-    if cad_inputs:
-        files["cad-import.json"] = pretty_json(store.get(cad_inputs[0]))
-    if len(cad_inputs) > 1:
-        for r in cad_inputs:
-            files[f"{r.id}.json"] = pretty_json(store.get(r))
-    for name, text in files.items():
-        (out / name).write_text(text, encoding="utf-8")
-        _out(f"wrote {out / name}")
-    for b in report.blockers:
-        _out(f"BLOCKER {b}")
+    package = SiteService(store).write_review_package(ref, Path(args.out) if args.out else None)
+    for path in package.files:
+        _out(f"wrote {path}")
+    for b in package.blockers:
+        _out(f"BLOCKER {b.message}")
     return EXIT_OK
 
 
 def cmd_statement_add(args: argparse.Namespace) -> int:
-    store = ProjectStore(_dir(args.dir))
+    store = ProjectStore(resolve_project_dir(args.dir))
     ref = record_owner_statement(store, subject=args.subject, words=args.words,
                                  stated_by=args.stated_by, channel=args.channel,
                                  actor=args.actor, pending_confirmation=args.pending)  # fmt: skip
@@ -609,7 +476,7 @@ def cmd_statement_add(args: argparse.Namespace) -> int:
 
 
 def cmd_statement_list(args: argparse.Namespace) -> int:
-    for st in owner_statements(ProjectStore(_dir(args.dir))):
+    for st in owner_statements(ProjectStore(resolve_project_dir(args.dir))):
         _out(f"{st.id} [{st.subject}] {st.stated_by}: \"{st.words}\" ({st.channel}; "
              f"recorded by {st.recorded_by.kind.value}:{st.recorded_by.id})")  # fmt: skip
         if st.pending_confirmation:
@@ -633,16 +500,6 @@ def cmd_crs_utm(args: argparse.Namespace) -> int:
 
 
 # ------------------------------------------------------------------- interview
-
-
-def _owner_terminal(what: str) -> bool:
-    """Direct human-only terminal actions (consent, interactive run, program reject)."""
-    if sys.stdin.isatty():
-        return True
-    _err(
-        f"{what} requires an interactive terminal run by the homeowner."
-    )
-    return False
 
 
 def _parse_set_args(
@@ -671,43 +528,9 @@ def _parse_set_args(
     return out
 
 
-def _turn_dict(result) -> dict:
-    return {
-        "session_ref": result.session_ref.model_dump(mode="json"),
-        "brief_ref": result.brief_ref.model_dump(mode="json"),
-        "understood": [
-            {
-                "slot": u.slot,
-                "label": SLOTS[u.slot].label,
-                "value": u.value,
-                "display": describe(u.value),
-                "method": u.method,
-                "status": "unknown" if u.value is None else "inference",
-            }
-            for u in result.understood
-        ],
-        "asked_again": result.asked_again,
-        "notes": list(result.notes),
-        "contradictions": [
-            {
-                "id": f.id,
-                "statement": f.statement,
-                "tradeoff": f.tradeoff,
-                "options": [o.label for o in f.options],
-            }
-            for f in result.contradictions
-        ],
-        "next_prompt": (
-            {"id": result.prompt.id, "kind": result.prompt.kind, "text": result.prompt.text}
-            if result.prompt is not None
-            else None
-        ),
-    }
-
-
 def _show_turn(result, *, prompt: bool = True, as_json: bool = False) -> None:
     if as_json:
-        _out(json.dumps(_turn_dict(result), indent=2, ensure_ascii=False))
+        _out(json.dumps(result.to_json(), indent=2, ensure_ascii=False))
         return
     text = result.message()
     if text:
@@ -725,29 +548,24 @@ def _show_turn(result, *, prompt: bool = True, as_json: bool = False) -> None:
 
 
 def cmd_interview_start(args: argparse.Namespace) -> int:
-    res = InterviewService(ProjectStore(_dir(args.dir))).start(args.actor)
+    res = InterviewService(ProjectStore(resolve_project_dir(args.dir))).start(args.actor)
     _show_turn(res, as_json=getattr(args, "json", False))
     return EXIT_OK
 
 
 def cmd_interview_next(args: argparse.Namespace) -> int:
-    svc = InterviewService(ProjectStore(_dir(args.dir)))
+    svc = InterviewService(ProjectStore(resolve_project_dir(args.dir)))
     prompt = svc.pending()
     if getattr(args, "json", False):
-        payload = (
-            {"id": prompt.id, "kind": prompt.kind, "text": prompt.text}
-            if prompt is not None
-            else None
-        )
-        _out(json.dumps({"next_prompt": payload}, indent=2, ensure_ascii=False))
+        _out(json.dumps({"next_prompt": prompt_json(prompt)}, indent=2, ensure_ascii=False))
         return EXIT_OK
     _out(f"[{prompt.id}] {prompt.text}" if prompt else "No question pending.")
     return EXIT_OK
 
 
-def cmd_interview_checklist(args: argparse.Namespace) -> int:
-    svc = InterviewService(ProjectStore(_dir(args.dir)))
-    info = svc.checklist()
+def cmd_interview_checklist(args: argparse.Namespace) -> int:  # noqa: C901
+    svc = InterviewService(ProjectStore(resolve_project_dir(args.dir)))
+    info = svc.checklist().to_json()
     if getattr(args, "json", False):
         _out(json.dumps(info, indent=2, ensure_ascii=False))
         return EXIT_OK
@@ -757,7 +575,7 @@ def cmd_interview_checklist(args: argparse.Namespace) -> int:
     )
     site = info["site"]
     if site["site_ref"] is not None:
-        v_str = "verified" if site["verified"] else "SITE_NEEDS_VERIFICATION"
+        v_str = "approved" if site["verified"] else "needs confirmation"
         _out(
             f"site: {v_str} | area={site['parcel_area_m2']} m² | "
             f"relief={site['relief_m']} m | mean_slope={site['mean_slope_pct']}% | "
@@ -775,7 +593,7 @@ def cmd_interview_checklist(args: argparse.Namespace) -> int:
     _out(
         f"checklist: {c['covered_questions']}/{c['applicable_questions']} applicable covered | "
         f"confirmed slots={c['confirmed_slots']} | "
-        f"unconfirmed (inference)={c['unconfirmed_slots']} | "
+        f"unconfirmed interpretations={c['unconfirmed_slots']} | "
         f"open contradictions={c['open_contradictions']}"
     )
     if info["missing_required_slots"]:
@@ -810,7 +628,7 @@ def cmd_interview_checklist(args: argparse.Namespace) -> int:
 
 
 def cmd_interview_answer(args: argparse.Namespace) -> int:
-    svc = InterviewService(ProjectStore(_dir(args.dir)))
+    svc = InterviewService(ProjectStore(resolve_project_dir(args.dir)))
     interpreted = _parse_set_args(args.set, args.unknown, args.interpret_json)
     res = svc.answer(
         args.text,
@@ -826,7 +644,7 @@ def cmd_interview_answer(args: argparse.Namespace) -> int:
 
 
 def cmd_interview_revise(args: argparse.Namespace) -> int:
-    svc = InterviewService(ProjectStore(_dir(args.dir)))
+    svc = InterviewService(ProjectStore(resolve_project_dir(args.dir)))
     interpreted = _parse_set_args(args.set, args.unknown, args.interpret_json)
     res = svc.revise(
         args.question,
@@ -840,7 +658,7 @@ def cmd_interview_revise(args: argparse.Namespace) -> int:
 
 
 def cmd_interview_confirm(args: argparse.Namespace) -> int:
-    svc = InterviewService(ProjectStore(_dir(args.dir)))
+    svc = InterviewService(ProjectStore(resolve_project_dir(args.dir)))
     pending = svc.state().unconfirmed()
     explicit_slots = [*(getattr(args, "slots", None) or []), *(args.slot or [])]
     chosen = explicit_slots or pending
@@ -874,14 +692,14 @@ def cmd_interview_confirm(args: argparse.Namespace) -> int:
 
 
 def cmd_interview_reject(args: argparse.Namespace) -> int:
-    svc = InterviewService(ProjectStore(_dir(args.dir)))
+    svc = InterviewService(ProjectStore(resolve_project_dir(args.dir)))
     res = svc.reject(args.actor, args.slot, args.text)
     _show_turn(res, as_json=args.json)
     return EXIT_OK
 
 
 def cmd_interview_resolve(args: argparse.Namespace) -> int:
-    svc = InterviewService(ProjectStore(_dir(args.dir)))
+    svc = InterviewService(ProjectStore(resolve_project_dir(args.dir)))
     res = svc.resolve(
         args.contradiction,
         args.text,
@@ -894,26 +712,16 @@ def cmd_interview_resolve(args: argparse.Namespace) -> int:
 
 
 def cmd_interview_consent(args: argparse.Namespace) -> int:
-    if not _owner_terminal("interview consent"):
-        return EXIT_USAGE
-    if args.actor.kind is not ActorKind.HUMAN or is_disallowed_human_id(args.actor.id):
-        _err(
-            f"{args.actor.kind.value} {args.actor.id!r} cannot grant provider consent; "
-            "only a human can consent to sharing private data."
-        )
-        return EXIT_USAGE
-    phrase = f"allow {args.provider}"
+    owner = human.require_human(human.CONSENT, args.actor)
     _out(f"Your interview answers are private. Allowing {args.provider} sends them to it.")
-    if input(f'Type "{phrase}" to allow: ').strip() != phrase:
-        _err("not allowed")
-        return EXIT_FAIL
-    InterviewService(ProjectStore(_dir(args.dir))).consent(args.actor, args.provider)
+    human.require_phrase(human.CONSENT, f"allow {args.provider}", verb="allow")
+    InterviewService(ProjectStore(resolve_project_dir(args.dir))).consent(owner, args.provider)
     _out(f"{args.provider} may now receive interview content")
     return EXIT_OK
 
 
 def cmd_interview_summary(args: argparse.Namespace) -> int:
-    text = InterviewService(ProjectStore(_dir(args.dir))).summary()
+    text = InterviewService(ProjectStore(resolve_project_dir(args.dir))).summary()
     if args.out:
         Path(args.out).write_text(text, encoding="utf-8")
         _out(f"wrote {args.out}")
@@ -939,23 +747,25 @@ def _attach_ai(svc: InterviewService, owner: Actor, name: str, model: str | None
         _out(f"Your answers and your site's details are private. With your permission they "
              f"are sent to {provider.name} ({getattr(provider, 'model', '')}) so it can word "
              "the questions and read free answers. Nothing it says is accepted without you.")
-        phrase = f"allow {provider.name}"
-        typed = input(f'Type "{phrase}" to allow, or press Enter to continue without AI: ')
-        if typed.strip() != phrase:
+        try:
+            human.require_phrase(
+                human.CONSENT,
+                f"allow {provider.name}",
+                verb="allow, or press Enter to continue without AI",
+            )
+        except human.NotConfirmed:
             _out("(Continuing without AI.)")
             return
         svc.consent(owner, provider.name)
-    svc.assist = LlmAssist(provider, svc.policy())
+    svc.use_ai(provider)
     _out(f"(AI assistant: {provider.name} {getattr(provider, 'model', '')}. It words the "
          "questions and helps read answers; you confirm everything it understood.)")  # fmt: skip
 
 
 def cmd_interview_run(args: argparse.Namespace) -> int:
     """The interactive interview for the owner: one question at a time."""
-    if not _owner_terminal("interview run"):
-        return EXIT_USAGE
-    owner = Actor(kind=ActorKind.HUMAN, id=args.owner)
-    svc = InterviewService(ProjectStore(_dir(args.dir)))
+    owner = human.require_human(human.INTERVIEW, args.owner)
+    svc = InterviewService(ProjectStore(resolve_project_dir(args.dir)))
     _show_turn(svc.start(owner), prompt=False)
     if args.ai:
         _attach_ai(svc, owner, args.ai, args.model)
@@ -1008,28 +818,8 @@ def cmd_interview_run(args: argparse.Namespace) -> int:
 
 
 def _export(svc: InterviewService, build, out: Path) -> None:
-    import yaml
-
-    out.mkdir(parents=True, exist_ok=True)
-
-    def dump(model) -> str:
-        return yaml.safe_dump(model.model_dump(mode="json"), sort_keys=False, allow_unicode=True)
-
-    brief = svc.brief()
-    files = {
-        "design_brief.yaml": dump(brief),
-        "space_program.yaml": dump(build.result.program),
-        "assumptions.yaml": dump(build.result.assumptions),
-        "open_questions.yaml": dump(build.result.open_questions),
-        "interview-summary.md": svc.summary(),
-        "program-review.md": program_markdown(
-            build.result.program, brief, build.findings, build.result.assumptions,
-            build.result.open_questions,
-        ),
-    }  # fmt: skip
-    for name, text in files.items():
-        (out / name).write_text(text, encoding="utf-8")
-        _out(f"wrote {out / name}")
+    for path in svc.write_design_export(build, out):
+        _out(f"wrote {path}")
 
 
 def _show_findings(findings) -> None:
@@ -1040,32 +830,12 @@ def _show_findings(findings) -> None:
 
 
 def cmd_program_build(args: argparse.Namespace) -> int:
-    svc = InterviewService(ProjectStore(_dir(args.dir)))
+    svc = InterviewService(ProjectStore(resolve_project_dir(args.dir)))
     build = svc.build_program(args.actor)
     if args.out:
         _export(svc, build, Path(args.out))
     if getattr(args, "json", False):
-        _out(
-            json.dumps(
-                {
-                    "program_ref": build.program_ref.model_dump(mode="json"),
-                    "assumptions_ref": build.assumptions_ref.model_dump(mode="json"),
-                    "open_questions_ref": build.open_questions_ref.model_dump(mode="json"),
-                    "findings": [
-                        {
-                            "code": f.code,
-                            "severity": f.severity.value,
-                            "message": f.message,
-                            "refs": list(f.refs),
-                            "options": list(f.options),
-                        }
-                        for f in build.findings
-                    ],
-                },
-                indent=2,
-                ensure_ascii=False,
-            )
-        )
+        _out(json.dumps(build.to_json(), indent=2, ensure_ascii=False))
         return EXIT_OK
     for ref in (build.program_ref, build.assumptions_ref, build.open_questions_ref):
         _out(f"stored {ref.kind.value}/{ref.id} v{ref.version}")
@@ -1074,34 +844,26 @@ def cmd_program_build(args: argparse.Namespace) -> int:
 
 
 def cmd_program_review(args: argparse.Namespace) -> int:
-    svc = InterviewService(ProjectStore(_dir(args.dir)))
-    build, reasons = svc.review_program(args.actor)
+    svc = InterviewService(ProjectStore(resolve_project_dir(args.dir)))
+    build, gate = svc.review_program(args.actor)
     _show_findings(build.findings)
-    for r in reasons:
+    for r in gate.open_reasons:
         _out(f"OPEN {r}")
     ref = build.program_ref
     _out(f"state PROGRAM_REVIEW; the owner reviews space_program/{ref.id} v{ref.version}")
-    if not reasons:
-        _out(f"next: the owner runs `house-ai workflow approve {args.dir} program --id {ref.id} "
-             "--approver <name>` or `house-ai program reject`")  # fmt: skip
+    if gate.next_action is not None:
+        reject = NextHumanAction(HumanAction.REJECT_PROGRAM, Gate.PROGRAM)
+        _out(f"{human.next_line(gate.next_action, args.dir)}, or rejects it with "
+             f"`{human.command_for(reject, args.dir)}`")  # fmt: skip
     if args.out:
         _export(svc, build, Path(args.out))
     return EXIT_OK
 
 
 def cmd_program_reject(args: argparse.Namespace) -> int:
-    if not _owner_terminal("program reject"):
-        return EXIT_USAGE
-    if args.actor.kind is not ActorKind.HUMAN or is_disallowed_human_id(args.actor.id):
-        _err(
-            f"{args.actor.kind.value} {args.actor.id!r} cannot reject the space program; "
-            "only a human can reject a program under review."
-        )
-        return EXIT_USAGE
-    if input('Type "reject program" to confirm: ').strip() != "reject program":
-        _err("confirmation did not match; nothing rejected")
-        return EXIT_FAIL
-    InterviewService(ProjectStore(_dir(args.dir))).reject_program(args.actor, args.reason)
+    owner = human.require_human(human.REJECT_PROGRAM, args.actor)
+    human.require_phrase(human.REJECT_PROGRAM, "reject program")
+    InterviewService(ProjectStore(resolve_project_dir(args.dir))).reject_program(owner, args.reason)
     _out("program rejected; back to INTERVIEWING. Your words are recorded in the brief.")
     return EXIT_OK
 
@@ -1212,7 +974,10 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--json", action="store_true")
     s.add_argument("--out", help="write inspection.md/.json here instead of printing")
     s.set_defaults(func=cmd_site_inspect)
-    s = site.add_parser("ingest", help="extract a stored survey into cad_import + site")
+    s = site.add_parser(
+        "ingest",
+        help="extract a stored survey into cad_import + site, start site ingestion and assess it",
+    )
     s.add_argument("dir")
     s.add_argument(
         "--source",
@@ -1298,7 +1063,7 @@ def build_parser() -> argparse.ArgumentParser:
         help="record the owner's verbatim answer and optional structured slot interpretations",
     )
     s.add_argument("dir")
-    s.add_argument("text", help="the homeowner's exact original words")
+    s.add_argument("text", help="the owner's exact original words")
     s.add_argument("--question", help="question id, slot name, or custom follow-up id")
     s.add_argument("--question-text", help="exact wording of an adaptive follow-up question")
     s.add_argument("--topic", help="topic for an adaptive follow-up (e.g. site_response, views)")
@@ -1327,7 +1092,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     s.add_argument("dir")
     s.add_argument("question", help="question id (e.g. q-bedrooms), slot name, or custom id")
-    s.add_argument("text", help="the homeowner's exact new words")
+    s.add_argument("text", help="the owner's exact new words")
     s.add_argument("--question-text", help="exact wording of the question asked")
     s.add_argument(
         "--set",
@@ -1341,16 +1106,16 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--json", action="store_true")
     actor_arg(s)
     s.set_defaults(func=cmd_interview_revise)
-    s = iv.add_parser("confirm", help="record the owner's confirmation of interpreted slot values")
+    s = iv.add_parser("confirm", help="record the owner's confirmation of interpretations")
     s.add_argument("dir")
     s.add_argument("slots", nargs="*", help="optional slot names to confirm (default: all pending)")
     s.add_argument("--slot", action="append", default=[])
-    s.add_argument("--text", help="the homeowner's confirmation words")
+    s.add_argument("--text", help="the owner's confirmation words")
     s.add_argument("--yes", action="store_true", help="skip interactive prompt")
     s.add_argument("--json", action="store_true")
     actor_arg(s)
     s.set_defaults(func=cmd_interview_confirm)
-    s = iv.add_parser("reject", help="record the owner's rejection of an interpreted slot value")
+    s = iv.add_parser("reject", help="record the owner's rejection of an interpretation")
     s.add_argument("dir")
     s.add_argument("--slot", action="append", required=True)
     s.add_argument("--text", help="what is wrong, in the owner's words")
@@ -1360,8 +1125,8 @@ def build_parser() -> argparse.ArgumentParser:
     s = iv.add_parser("resolve", help="record the owner's resolution of an open contradiction")
     s.add_argument("dir")
     s.add_argument("contradiction", help="contradiction id, e.g. c-too-few-bedrooms")
-    s.add_argument("text", help="the homeowner's exact resolution words")
-    s.add_argument("--option", type=int, help="1-based option index chosen by the homeowner")
+    s.add_argument("text", help="the owner's exact resolution words")
+    s.add_argument("--option", type=int, help="1-based option index chosen by the owner")
     s.add_argument("--defer", action="store_true", help="defer deciding on this contradiction")
     s.add_argument("--json", action="store_true")
     actor_arg(s)
@@ -1408,11 +1173,15 @@ def build_parser() -> argparse.ArgumentParser:
     wf = sub.add_parser("workflow").add_subparsers(dest="sub", required=True)
     s = wf.add_parser("transition")
     s.add_argument("dir")
-    s.add_argument("state", choices=[st.value for st in WorkflowState])
+    s.add_argument(
+        "state", type=WorkflowState, metavar="STATE",
+        help="target workflow state: " + ", ".join(st.value for st in WorkflowState)
+        + " (names used before ADR 0025 are accepted)",
+    )
     s.add_argument("--reason", required=True)
     actor_arg(s)
     s.set_defaults(func=cmd_transition)
-    s = wf.add_parser("assess-site")
+    s = wf.add_parser("assess-site", help="re-assess a stored site version against the site gate")
     s.add_argument("dir")
     s.add_argument("--id", required=True)
     s.add_argument("--version", type=int)
@@ -1444,10 +1213,18 @@ def main(argv: Sequence[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     try:
         return args.func(args)
+    except human.HumanCheckFailed as exc:
+        _err(str(exc))
+        return exc.exit_code
     except ApprovalRequiresHuman as exc:
         _err(f"error: {exc}")
         return EXIT_USAGE
-    except (StoreError, WorkflowError, ValidationError, ValueError, DwgConversionError) as exc:
+    except WorkflowError as exc:
+        _err(f"error: {exc}")
+        if exc.next_action is not None:
+            _err(human.next_line(exc.next_action, args.dir))
+        return EXIT_FAIL
+    except (StoreError, ValidationError, ValueError, DwgConversionError) as exc:
         _err(f"error: {exc}")
         return EXIT_FAIL
 

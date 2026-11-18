@@ -1,17 +1,107 @@
-"""Grounding validator for visual critiques (Stage S5, Task S5-06).
+"""Grounding: an agent's critique may only cite entities that exist (ADR 0027).
 
-Ensures every claim made by an agent visual inspection points to valid, canonical
-element IDs in the targeted plan version, and that measurable claims are properly grounded.
+One module, one set of canonical IDs (:func:`collect_canonical_ids`), two kinds
+of critique:
+
+* a written critique cites IDs in backticks (`sp-kitchen`, `lv-entry`,
+  `z-night`, `pi-bed-main`); :func:`extract_entity_ids_from_text` reads them and
+  :func:`validate_cited_ids` reports each one the plan or program lacks
+  (``house-ai plan ground``);
+* a visual critique (Stage S5) lists ``element_ids`` per claim;
+  :func:`validate_critique_grounding` checks those, the targets of suggested
+  revision operations, the plan version and screenshot hash, and refuses
+  measurable claims that cite no metric.
 """
 
 from __future__ import annotations
 
 import re
+from collections.abc import Iterable
 from dataclasses import dataclass, field
+from typing import Any
+
+from pydantic import BaseModel
 
 from house_ai.domain.evaluation import EvaluationReport
 from house_ai.domain.plan import PlanVersion
 from house_ai.domain.visual_critique import VisualCritiqueFile
+
+#: ID prefixes a critique may cite: the real ones used by plans and programs
+#: (`pi`, `sp`, `z`, `lv`, `adj`, `rel`, `w`, `d`, `win`, `st`, `slab`) plus
+#: invented-looking ones (`level`, `zone`, `room`) so a made-up ID is caught
+#: rather than silently ignored.
+GROUNDED_ID_PREFIXES = (
+    "pi", "sp", "z", "lv", "adj", "rel", "w", "d", "win", "st", "slab",
+    "level", "zone", "room",
+)  # fmt: skip
+
+_BACKTICK_SPAN = re.compile(r"`([^`\n]+)`")
+_ID = re.compile(
+    r"(?<![A-Za-z0-9_.:/-])((?:" + "|".join(GROUNDED_ID_PREFIXES) + r")-[A-Za-z0-9_-]*[A-Za-z0-9])"
+)
+
+#: Fields on a space or space requirement that point at another canonical entity.
+_REFERENCE_FIELDS = ("program_item_id", "zone_id", "level_id")
+
+
+def collect_canonical_ids(context: Any) -> set[str]:
+    """All entity IDs in a plan (`plan.json`), house model, space program, or ID list.
+
+    A plan's model is read from its ``model`` key. Every element of every
+    top-level list that has an ``id`` counts, plus the space requirement,
+    zone and level each element refers to.
+    """
+    if isinstance(context, (set, list, tuple, frozenset)):
+        return {str(i) for i in context}
+    if isinstance(context, BaseModel):
+        context = context.model_dump(mode="json")
+    if not isinstance(context, dict):
+        raise TypeError(f"cannot collect IDs from {type(context).__name__}")
+    if isinstance(context.get("model"), dict):
+        context = context["model"]
+
+    ids: set[str] = set()
+    for value in context.values():
+        if not isinstance(value, list):
+            continue
+        for elem in value:
+            if not isinstance(elem, dict) or "id" not in elem:
+                continue
+            ids.add(str(elem["id"]))
+            for ref_field in _REFERENCE_FIELDS:
+                if elem.get(ref_field):
+                    ids.add(str(elem[ref_field]))
+    return ids
+
+
+def extract_entity_ids_from_text(text: str) -> list[str]:
+    """Entity IDs cited in backticks, in order of first appearance, without duplicates.
+
+    Only backticked spans are read, so prose such as "z-axis" is never
+    mistaken for an ID. Inside a span, `pi-kitchen=18` yields `pi-kitchen`
+    and `pi-a,pi-b` yields both.
+    """
+    found: list[str] = []
+    for span in _BACKTICK_SPAN.findall(text):
+        for entity_id in _ID.findall(span):
+            if entity_id not in found:
+                found.append(entity_id)
+    return found
+
+
+def validate_cited_ids(referenced_ids: Iterable[str], context: Any) -> list[str]:
+    """One error per referenced ID that does not exist in ``context``."""
+    valid_ids = collect_canonical_ids(context)
+    errors: list[str] = []
+    for ref_id in referenced_ids:
+        clean_id = ref_id.split("=")[0].strip()
+        if clean_id and clean_id not in valid_ids:
+            errors.append(
+                f"Unknown entity ID '{clean_id}' in critique. "
+                f"Must reference an existing space, space requirement, zone, or level in the plan."
+            )
+    return errors
+
 
 CANONICAL_PLAN_TARGETS = {
     "plan",
@@ -57,24 +147,8 @@ class GroundingReport:
 
 
 def collect_plan_element_ids(plan: PlanVersion) -> set[str]:
-    """Extract all valid canonical element identifiers from a PlanVersion."""
-    model = plan.model
-    valid = set(CANONICAL_PLAN_TARGETS)
-
-    for sp in model.spaces or []:
-        valid.add(sp.id)
-    for w in model.walls or []:
-        valid.add(w.id)
-    for op in model.openings or []:
-        valid.add(op.id)
-    for st in model.stairs or []:
-        valid.add(st.id)
-    for lvl in model.levels or []:
-        valid.add(lvl.id)
-    for fx in model.fixtures or []:
-        valid.add(fx.id)
-
-    return valid
+    """Every ID a visual claim may cite: the plan's canonical IDs plus the generic targets."""
+    return CANONICAL_PLAN_TARGETS | collect_canonical_ids(plan)
 
 
 def validate_critique_grounding(
@@ -146,15 +220,14 @@ def validate_critique_grounding(
 
         # 4. Validate suggested revision ops targets
         for op in claim.suggested_ops:
-            targets = [t.strip() for t in op.target.split(",")]
-            for t in targets:
-                if t not in valid_ids and not t.startswith("z-") and t != "all":
+            for t in op.names:
+                if t not in valid_ids:
                     findings.append(
                         GroundingFinding(
                             claim_id=claim.id,
                             element_id=t,
                             issue=(
-                                f"Suggested revision op '{op.op_type}' "
+                                f"Suggested revision op '{op.op_type.value}' "
                                 f"targets nonexistent element '{t}'"
                             ),
                         )

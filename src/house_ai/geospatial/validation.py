@@ -285,7 +285,7 @@ def steep_triangles(site: Site) -> list[SteepTriangle]:
     return sorted(out, key=lambda t: -t.slope_pct)
 
 
-def validate_site(site: Site, site_ref: ArtifactRef | None = None) -> SiteValidationReport:
+def validate_site(site: Site, site_ref: ArtifactRef | None = None) -> SiteValidationReport:  # noqa: C901
     findings: list[Finding] = []
     local = site.coordinates.local
     crs = site.coordinates.horizontal_crs

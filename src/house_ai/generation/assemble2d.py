@@ -1,17 +1,13 @@
 """Assemble canonical HouseModel from 2D placement engine solution (Solution2D).
 
-Constructs canonical spaces, walls, openings, slabs, ceilings, and stairs from
-freely placed 2D rooms. Directly supports corridor-free circulation,
-open-plan living arrangements, L-shaped massings, courtyards with open courts,
-multi-level floor organisations, privacy zoning, and composite / non-rectangular spaces.
+Freely placed 2D rooms are one rectangle each. Walls and their materials come from
+:mod:`.enclosure` (ADR 0031); this module adds what only 2D placement has: shared-wall
+door candidates, open-plan openings, courtyards and stacked stair cores.
 """
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
-
-from shapely.geometry import Point, box
-from shapely.geometry import Polygon as ShapelyPolygon
+from shapely.geometry import box
 from shapely.ops import unary_union
 
 from house_ai.constants.placement2d import (
@@ -20,128 +16,38 @@ from house_ai.constants.placement2d import (
     DOOR_WIDTH_DEFAULT_M,
     LEVEL_ENTRY,
     LEVEL_UPPER,
-    PARAPET_HEIGHT_M,
-    PARAPET_THICKNESS_M,
     STAIR_CORE_RISERS,
     STOREY_HEIGHT_M,
     TERRACE_DOOR_DEFAULT_WIDTH_M,
-    TERRACE_SLAB_THICKNESS_M,
-    WALL_HEIGHT_M,
-    WALL_THICKNESS_EXTERIOR_M,
-    WALL_THICKNESS_INTERIOR_M,
     WINDOW_HEIGHT_DEFAULT_M,
     WINDOW_WIDTH_DEFAULT_M,
 )
 from house_ai.constants.strategies import STRATEGY_OPEN_PLAN
-from house_ai.domain.base import EXTERIOR
 from house_ai.domain.geometry import Polygon2D
-from house_ai.domain.integrity import OPENING_END_INSET_M, PROBE_BEYOND_FACE_M
 from house_ai.domain.model import (
-    Ceiling,
     CompositeSpace,
     HouseModel,
     Level,
-    MaterialCategory,
-    MaterialRef,
     Opening,
     OpeningKind,
+    OpeningRole,
     Operation,
-    Slab,
-    SlabKind,
     Space,
     Stair,
     StairKind,
-    Wall,
-    WallKind,
-    Zone,
 )
-from house_ai.domain.program import Privacy, SpaceFunction, SpaceProgram
+from house_ai.domain.program import SpaceFunction, SpaceProgram
 from house_ai.domain.provenance import Actor, ArtifactKind, ArtifactRef
 from house_ai.domain.records import Assumption, Issue, Severity
 from house_ai.domain.site import Site
+from house_ai.generation.enclosure import WALL_HEIGHT_M, EnclosedSpace, Enclosure, Rect, WallSeg
 from house_ai.generation.fixtures import with_fixtures
-from house_ai.generation.frame import DesignFrame, Ground, from_dm
+from house_ai.generation.frame import DesignFrame, Ground
 from house_ai.generation.solver2d import (
     OPEN_PLAN_FUNCTIONS,
     Solution2D,
 )
-from house_ai.generation.stairs import LANDING_STRIP_DM, u_layout
-
-CEILING_M = 2.7
-MATERIALS = [
-    MaterialRef(
-        id="m-ext-wall",
-        name="Exterior wall (placeholder)",
-        category=MaterialCategory.WALL,
-        base_color_hex="#E8E2D6",
-    ),
-    MaterialRef(
-        id="m-int-wall",
-        name="Interior partition (placeholder)",
-        category=MaterialCategory.WALL,
-        base_color_hex="#F4F4F2",
-    ),
-    MaterialRef(
-        id="m-door",
-        name="Internal door (placeholder)",
-        category=MaterialCategory.DOOR,
-        base_color_hex="#A3704C",
-    ),
-    MaterialRef(
-        id="m-window",
-        name="Glazing (placeholder)",
-        category=MaterialCategory.GLAZING,
-        base_color_hex="#B8D5E5",
-    ),
-    MaterialRef(
-        id="m-floor",
-        name="Floor finish (placeholder)",
-        category=MaterialCategory.FLOOR,
-        base_color_hex="#C8A97E",
-    ),
-]
-
-
-@dataclass(frozen=True)
-class Rect:
-    u0: int
-    v0: int
-    u1: int
-    v1: int
-
-    @property
-    def w(self) -> int:
-        return self.u1 - self.u0
-
-    @property
-    def h(self) -> int:
-        return self.v1 - self.v0
-
-
-@dataclass
-class WallSegment2D:
-    level_id: str
-    orient: str  # "h" or "v"
-    c: int  # constant coordinate in dm (v for h, u for v)
-    a: int  # start along span in dm
-    b: int  # end along span in dm
-    neg: str | None  # space on negative side (lower coordinate)
-    pos: str | None  # space on positive side (higher coordinate)
-    id: str = ""
-    kind: WallKind = WallKind.INTERIOR
-    thickness_m: float = WALL_THICKNESS_INTERIOR_M
-    used: list[tuple[int, int]] = field(default_factory=list)  # (start_dm, end_dm)
-
-    @property
-    def length_dm(self) -> int:
-        return self.b - self.a
-
-    @property
-    def length_m(self) -> float:
-        return self.length_dm / 10.0
-
-    def sides(self) -> set[str | None]:
-        return {self.neg, self.pos}
+from house_ai.generation.stairs import LANDING_STRIP_DM, TREAD_M, u_layout
 
 
 def _short(s: str) -> str:
@@ -183,7 +89,8 @@ class Builder2D:
                 "stacked levels retain 3 m rises. Terrain interpolation is inferred."
             )
 
-        self.walls: list[WallSegment2D] = []
+        self.walls: list[WallSeg] = []
+        self._program_items = {it.id for it in program.space_requirements}
         self.openings: list[Opening] = []
         self.issues: list[Issue] = []
 
@@ -193,136 +100,48 @@ class Builder2D:
         Every shared segment then has exactly the same endpoints on both sides,
         including T-junctions; no sub-micrometre wedge can split an open-plan room.
         """
-        rects = room.sub_rects or [(room.u0, room.v0, room.u1, room.v1)]
-        shape = unary_union([box(*r) for r in rects])
         vertices = {
             p
             for r in all_rooms
             if r.level_id == room.level_id
-            for a, b, c, d in (r.sub_rects or [(r.u0, r.v0, r.u1, r.v1)])
-            for p in ((a, b), (c, b), (c, d), (a, d))
+            for p in ((r.u0, r.v0), (r.u1, r.v0), (r.u1, r.v1), (r.u0, r.v1))
         }
-
-        def ring(coords):
-            out = []
-            for a, b in zip(coords, coords[1:], strict=False):
-                points = {a, b} | {
-                    p
-                    for p in vertices
-                    if (a[0] == b[0] == p[0] and min(a[1], b[1]) <= p[1] <= max(a[1], b[1]))
-                    or (a[1] == b[1] == p[1] and min(a[0], b[0]) <= p[0] <= max(a[0], b[0]))
-                }
-                ordered = sorted(points, key=lambda p: (p[0] - a[0]) ** 2 + (p[1] - a[1]) ** 2)
-                out.extend(self.frame.to_local(*p) for p in ordered[:-1])
-            return out
-
-        return Polygon2D(
-            outer=ring(list(shape.exterior.coords)),
-            holes=[ring(list(r.coords)) for r in shape.interiors],
-        )
+        corners = [(room.u0, room.v0), (room.u1, room.v0), (room.u1, room.v1), (room.u0, room.v1)]
+        out = []
+        for a, b in zip(corners, [*corners[1:], corners[0]], strict=True):
+            points = {a, b} | {
+                p
+                for p in vertices
+                if (a[0] == b[0] == p[0] and min(a[1], b[1]) <= p[1] <= max(a[1], b[1]))
+                or (a[1] == b[1] == p[1] and min(a[0], b[0]) <= p[0] <= max(a[0], b[0]))
+            }
+            ordered = sorted(points, key=lambda p: (p[0] - a[0]) ** 2 + (p[1] - a[1]) ** 2)
+            out.extend(self.frame.to_local(*p) for p in ordered[:-1])
+        return Polygon2D(outer=out)
 
     def build_walls(self) -> None:
-        all_rooms = [*self.sol.rooms, *self.sol.circulation_rooms]
-        room_by_id = {r.space_id: r for r in all_rooms}
-        segs: list[WallSegment2D] = []
-
-        for lv in self.sol.levels:
-            rooms_on_lv = [r for r in all_rooms if r.level_id == lv]
-            for orient in ("h", "v"):
-                lines: dict[int, list[tuple[int, int, str, str]]] = {}
-                for r in rooms_on_lv:
-                    rects = r.sub_rects if r.sub_rects else [(r.u0, r.v0, r.u1, r.v1)]
-                    for ru0, rv0, ru1, rv1 in rects:
-                        if orient == "h":
-                            lines.setdefault(rv0, []).append((ru0, ru1, "pos", r.space_id))
-                            lines.setdefault(rv1, []).append((ru0, ru1, "neg", r.space_id))
-                        else:
-                            lines.setdefault(ru0, []).append((rv0, rv1, "pos", r.space_id))
-                            lines.setdefault(ru1, []).append((rv0, rv1, "neg", r.space_id))
-
-                for c in sorted(lines):
-                    edges = lines[c]
-                    pts = sorted({p for e in edges for p in e[:2]})
-                    run: WallSegment2D | None = None
-                    for p, q in zip(pts, pts[1:], strict=False):
-                        neg = next(
-                            (e[3] for e in edges if e[2] == "neg" and e[0] <= p and q <= e[1]), None
-                        )
-                        pos = next(
-                            (e[3] for e in edges if e[2] == "pos" and e[0] <= p and q <= e[1]), None
-                        )
-                        if neg is None and pos is None:
-                            if run:
-                                segs.append(run)
-                                run = None
-                            continue
-                        if neg == pos:
-                            # Internal boundary of same non-rectangular space: skip dividing wall
-                            if run:
-                                segs.append(run)
-                                run = None
-                            continue
-                        if run and run.b == p and run.neg == neg and run.pos == pos:
-                            run.b = q
-                        else:
-                            if run:
-                                segs.append(run)
-                            run = WallSegment2D(lv, orient, c, p, q, neg, pos)
-                    if run:
-                        segs.append(run)
-
-        for n, seg in enumerate(segs, start=1):
-            seg.id = f"w-{seg.level_id.removeprefix('lv-')}-{n:03d}"
-            ra = room_by_id.get(seg.neg or "")
-            rb = room_by_id.get(seg.pos or "")
-            is_terrace_wall = (ra and ra.function is SpaceFunction.TERRACE) or (
-                rb and rb.function is SpaceFunction.TERRACE
-            )
-            if seg.neg is not None and seg.pos is not None:
-                if is_terrace_wall:
-                    seg.kind = WallKind.EXTERIOR
-                    seg.thickness_m = WALL_THICKNESS_EXTERIOR_M
-                else:
-                    seg.kind = WallKind.INTERIOR
-                    seg.thickness_m = WALL_THICKNESS_INTERIOR_M
-            else:
-                if is_terrace_wall:
-                    seg.kind = WallKind.PARAPET
-                    seg.thickness_m = PARAPET_THICKNESS_M
-                else:
-                    seg.kind = WallKind.EXTERIOR
-                    seg.thickness_m = WALL_THICKNESS_EXTERIOR_M
-        self.walls.extend(segs)
-
-    def _seg_points(self, seg: WallSegment2D) -> tuple[tuple[int, int], tuple[int, int]]:
-        if seg.orient == "h":
-            return (seg.a, seg.c), (seg.b, seg.c)
-        return (seg.c, seg.a), (seg.c, seg.b)
-
-    def wall_model(self, seg: WallSegment2D) -> Wall:
-        (u0, v0), (u1, v1) = self._seg_points(seg)
-        if seg.kind is WallKind.PARAPET:
-            material = "m-ext-wall"
-            height_m = PARAPET_HEIGHT_M
-        elif seg.kind is WallKind.EXTERIOR:
-            material = "m-ext-wall"
-            height_m = WALL_HEIGHT_M
-        else:
-            material = "m-int-wall"
-            height_m = WALL_HEIGHT_M
-        return Wall(
-            id=seg.id,
-            level_id=seg.level_id,
-            start=self.frame.to_local(u0, v0),
-            end=self.frame.to_local(u1, v1),
-            thickness_m=seg.thickness_m,
-            height_m=height_m,
-            kind=seg.kind,
-            material_id=material,
+        self.enclosure = Enclosure(
+            self.levels,
+            [
+                EnclosedSpace(
+                    r.space_id,
+                    r.level_id,
+                    Rect(r.u0, r.v0, r.u1, r.v1),
+                    r.function,
+                    r.zone_id,
+                    r.program_item_id if r.program_item_id in self._program_items else None,
+                )
+                for r in self.sol.rooms
+            ],
+            self.frame,
+            self.ground,
         )
+        self.walls = self.enclosure.walls
+        self.openings = self.enclosure.openings
 
-    def _walls_between(self, a: str, b: str | None) -> list[WallSegment2D]:
-        return [w for w in self.walls if w.sides() == {a, b}]
+    def _walls_between(self, a: str, b: str | None) -> list[WallSeg]:
+        level = next(r.level_id for r in self.sol.rooms if r.space_id == a)
+        return self.enclosure.walls_between(level, a, b)
 
     def place_opening(
         self,
@@ -337,90 +156,38 @@ class Builder2D:
         material: str | None = None,
         prefix: str = "d",
         road_facing: bool = False,
+        role: OpeningRole | None = None,
     ) -> Opening | None:
+        """Choose candidate walls for an opening; Enclosure fits it (ADR 0031)."""
+        level = next(r.level_id for r in self.sol.rooms if r.space_id == a)
         walls = self._walls_between(a, b)
         if road_facing:
             walls = [w for w in walls if w.orient == "h" and w.c == self.sol.road_front_dm]
         if b is None:
-            rooms = [
-                r
-                for r in [*self.sol.rooms, *self.sol.circulation_rooms]
-                if r.level_id == next(r.level_id for r in self.sol.rooms if r.space_id == a)
-            ]
-            # Use a genuinely exposed outer face, not a narrow inter-room crevice that
-            # lies within the wall/door side probes used by canonical integrity checks.
+            rooms = [r for r in self.sol.rooms if r.level_id == level]
+            # Prefer a face on the outline of the level's rooms to one in a recess.
             outer_x = {min(r.u0 for r in rooms), max(r.u1 for r in rooms)}
             outer_y = {min(r.v0 for r in rooms), max(r.v1 for r in rooms)}
             outer_walls = [w for w in walls if w.c in (outer_y if w.orient == "h" else outer_x)]
             if outer_walls:
                 walls = outer_walls
-        walls.sort(key=lambda w: (-w.length_dm, w.id))
-        for seg in walls:
-            width_dm = int(round(width_m * 10))
-            if seg.length_dm < width_dm + 2:
-                width_dm = max(7, seg.length_dm - 2)
-                width_m = from_dm(width_dm)
-            if width_dm < 7 or seg.length_dm < width_dm:
-                continue
-
-            off_dm = (seg.length_dm - width_dm) // 2
-            if any(off_dm + width_dm > u0 and off_dm < u1 for u0, u1 in seg.used):
-                continue
-
-            # A narrow crevice can have a room just beyond the nominal exterior side.
-            # Use the same side probes as canonical integrity before choosing a host.
-            if b is None and not self._exterior_span_is_clear(seg, off_dm, width_dm, a):
-                continue
-
-            seg.used.append((off_dm, off_dm + width_dm))
-            connects = (a, b) if b is not None else (a, EXTERIOR)
-            op_id = f"{prefix}-{_short(seg.id)}-{len(self.openings) + 1:02d}"
-            mat = material or ("m-door" if kind is OpeningKind.DOOR else "m-window")
-            op = Opening(
-                id=op_id,
-                host_wall_id=seg.id,
-                kind=kind,
-                offset_m=from_dm(off_dm),
-                width_m=from_dm(width_dm),
-                height_m=height_m,
-                sill_m=sill_m,
-                operation=operation,
-                material_id=mat,
-                connects=connects,
-            )
-            self.openings.append(op)
-            return op
-        return None
-
-    def _exterior_span_is_clear(self, seg, offset_dm, width_dm, space_id):
-        rooms = [
-            r for r in [*self.sol.rooms, *self.sol.circulation_rooms] if r.level_id == seg.level_id
-        ]
-        reach = (seg.thickness_m / 2 + PROBE_BEYOND_FACE_M) * 10
-        inset = min(OPENING_END_INSET_M * 10, width_dm * 0.1)
-        for t in (offset_dm + inset, offset_dm + width_dm / 2, offset_dm + width_dm - inset):
-            sides = []
-            for sign in (1, -1):
-                pt = (
-                    (seg.a + t, seg.c + sign * reach)
-                    if seg.orient == "h"
-                    else (seg.c + sign * reach, seg.a + t)
-                )
-                hits = [
-                    r.space_id
-                    for r in rooms
-                    if any(
-                        box(*rect).contains(Point(pt))
-                        for rect in (r.sub_rects or [(r.u0, r.v0, r.u1, r.v1)])
-                    )
-                ]
-                sides.append(hits[0] if len(hits) == 1 else EXTERIOR if not hits else None)
-            if set(sides) != {space_id, EXTERIOR}:
-                return False
-        return True
+        return self.enclosure.place(
+            level,
+            a,
+            b,
+            kind,
+            width_m,
+            height_m=height_m,
+            sill_m=sill_m,
+            operation=operation,
+            material=material or ("m-door" if kind is OpeningKind.DOOR else "m-glass"),
+            prefix=prefix,
+            walls=walls,
+            role=role,
+        )
 
     def build_openings(self) -> None:
-        all_rooms = [*self.sol.rooms, *self.sol.circulation_rooms]
+        all_rooms = self.sol.rooms
         room_by_id = {r.space_id: r for r in all_rooms}
 
         # 1. Exterior front entrance door on entry room
@@ -437,6 +204,7 @@ class Builder2D:
                 operation=Operation.SWING_RIGHT,
                 prefix="d-ext",
                 road_facing=sid == entry_room.space_id and self.sol.road_front_dm is not None,
+                role=OpeningRole.MAIN_ENTRANCE if sid == entry_room.space_id else None,
             )
 
         # 2. Door / cased openings along shared walls
@@ -456,20 +224,16 @@ class Builder2D:
             ):
                 # The whole interface is open: these are functional zones of a
                 # composite physical room, not separate rooms linked by a small door.
-                seg = max(self._walls_between(ra.space_id, rb.space_id), key=lambda w: w.length_dm)
-                self.openings.append(
-                    Opening(
-                        id=f"op-open-{len(self.openings) + 1}",
-                        host_wall_id=seg.id,
-                        kind=OpeningKind.OPENING,
-                        offset_m=0,
-                        width_m=seg.length_m,
-                        height_m=WALL_HEIGHT_M,
-                        connects=(ra.space_id, rb.space_id),
-                        operation=Operation.NONE,
-                    )
+                seg = max(self._walls_between(ra.space_id, rb.space_id), key=lambda w: w.length)
+                self.enclosure.cut(
+                    seg,
+                    0,
+                    seg.length,
+                    kind=OpeningKind.OPENING,
+                    connects=(ra.space_id, rb.space_id),
+                    ident=self.enclosure.new_id(f"o-{_short(ra.space_id)}-{_short(rb.space_id)}"),
+                    height_m=WALL_HEIGHT_M,
                 )
-                seg.used.append((0, seg.length_dm))
             elif ra.function is SpaceFunction.TERRACE or rb.function is SpaceFunction.TERRACE:
                 prefix = (
                     "d-court"
@@ -505,7 +269,7 @@ class Builder2D:
             ):
                 ext_walls = self._walls_between(r.space_id, None)
                 for w in ext_walls:
-                    if w.length_dm >= 15:
+                    if w.length >= 15:
                         self.place_opening(
                             r.space_id,
                             None,
@@ -517,29 +281,6 @@ class Builder2D:
                             prefix="win",
                         )
                         break
-
-    def _slab_parts(self, slabs: list[Slab], lv: str, kind: SlabKind, geom) -> None:
-        """Append one slab per polygon part of ``geom`` (design dm) on level ``lv``."""
-        parts = [g for g in getattr(geom, "geoms", [geom]) if g.area >= 1]
-        for idx, part in enumerate(parts, start=1):
-            part = part.simplify(0)
-            outer = [self.frame.to_local(round(x), round(y)) for x, y in part.exterior.coords[:-1]]
-            holes = [
-                [self.frame.to_local(round(x), round(y)) for x, y in ring.coords[:-1]]
-                for ring in part.interiors
-            ]
-            suffix = f"-{idx}" if len(parts) > 1 else ""
-            slabs.append(
-                Slab(
-                    id=f"slab-{kind.value}-{lv.removeprefix('lv-')}{suffix}",
-                    level_id=lv,
-                    kind=kind,
-                    boundary=Polygon2D(outer=outer, holes=holes),
-                    thickness_m=0.25,
-                    top_offset_m=STOREY_HEIGHT_M if kind is SlabKind.ROOF else 0.0,
-                    material_id="m-floor",
-                )
-            )
 
     def _u_flight(self, core, walls):
         """Footprint, width, walking line and fit of a U-shaped flight in a stair core.
@@ -585,15 +326,11 @@ class Builder2D:
     ) -> HouseModel:
         self.build_walls()
         self.build_openings()
-        all_rooms = [*self.sol.rooms, *self.sol.circulation_rooms]
+        all_rooms = self.sol.rooms
         spaces: list[Space] = []
         for r in all_rooms:
             poly = self._space_boundary(r, all_rooms)
-            prog_item_id = (
-                r.program_item_id
-                if any(it.id == r.program_item_id for it in self.program.items)
-                else None
-            )
+            prog_item_id = r.program_item_id if r.program_item_id in self._program_items else None
             spaces.append(
                 Space(
                     id=r.space_id,
@@ -607,20 +344,11 @@ class Builder2D:
                 )
             )
 
-        # Zones
-        zones: list[Zone] = []
-        used_zones: dict[str, list[str]] = {}
-        for s in spaces:
-            if s.zone_id:
-                used_zones.setdefault(s.zone_id, []).append(s.id)
-
-        program_zones = {z.id: z for z in [*self.program.zones, *self.sol.zone_definitions]}
-        for zid, sids in used_zones.items():
-            if zid in program_zones:
-                pz = program_zones[zid]
-                zones.append(Zone(id=zid, name=pz.name, privacy=pz.privacy, space_ids=sids))
-            else:
-                zones.append(Zone(id=zid, name=zid, privacy=Privacy.SEMI_PRIVATE, space_ids=sids))
+        zones = self.enclosure.zones([*self.sol.zone_definitions, *self.program.zones])
+        known = {z.id for z in zones}
+        for sp in spaces:
+            if sp.zone_id is not None and sp.zone_id not in known:
+                sp.zone_id = None
 
         composites = []
         if self.sol.strategy == STRATEGY_OPEN_PLAN:
@@ -635,12 +363,7 @@ class Builder2D:
                     # first can separate a shared edge by fractions of a micrometre.
                     child_ids = {sp.id for sp in children}
                     union = unary_union(
-                        [
-                            box(*rect)
-                            for r in all_rooms
-                            if r.space_id in child_ids
-                            for rect in (r.sub_rects or [(r.u0, r.v0, r.u1, r.v1)])
-                        ]
+                        [box(r.u0, r.v0, r.u1, r.v1) for r in all_rooms if r.space_id in child_ids]
                     ).simplify(0)
                     if union.geom_type != "Polygon":
                         # The 2D solver does not guarantee contiguity: report, do not group.
@@ -676,7 +399,7 @@ class Builder2D:
                         )
                     )
 
-        walls = [self.wall_model(w) for w in self.walls]
+        walls = self.enclosure.wall_models()
 
         stairs: list[Stair] = []
         if self.sol.has_stairs:
@@ -708,96 +431,11 @@ class Builder2D:
                         width_m=width,
                         riser_count=STAIR_CORE_RISERS,
                         riser_height_m=(upper.elevation_m - lower.elevation_m) / STAIR_CORE_RISERS,
-                        tread_depth_m=0.28,
+                        tread_depth_m=TREAD_M,
                         walking_line=line,
                         landing_segments=[1],
                     )
                 )
-
-        # Slabs per level
-        slabs: list[Slab] = []
-        for lv in self.sol.levels:
-            rooms_on_lv = [r for r in all_rooms if r.level_id == lv]
-            int_boxes = [
-                box(r.u0, r.v0, r.u1, r.v1)
-                for r in rooms_on_lv
-                if r.function is not SpaceFunction.TERRACE
-            ]
-            terrace_rooms = [r for r in rooms_on_lv if r.function is SpaceFunction.TERRACE]
-
-            if int_boxes:
-                fp_u = unary_union(int_boxes)
-                # The floor is open over each flight arriving on this level; a roof sits at
-                # storey height wherever no higher level covers this one (ADR 0023).
-                flights = [
-                    ShapelyPolygon(
-                        [
-                            tuple(round(c * 10) for c in self.frame.to_design(xy))
-                            for xy in st.footprint.outer
-                        ]
-                    )
-                    for st in stairs
-                    if st.to_level_id == lv
-                ]
-                floor_u = fp_u.difference(unary_union(flights)) if flights else fp_u
-                above = [
-                    box(r.u0, r.v0, r.u1, r.v1)
-                    for r in all_rooms
-                    if r.function is not SpaceFunction.TERRACE
-                    and self.sol.levels.index(r.level_id) > self.sol.levels.index(lv)
-                ]
-                roof_u = fp_u.difference(unary_union(above)) if above else fp_u
-                for kind, geom in ((SlabKind.FLOOR, floor_u), (SlabKind.ROOF, roof_u)):
-                    self._slab_parts(slabs, lv, kind, geom)
-
-            for tr in terrace_rooms:
-                if tr.sub_rects:
-                    t_boxes = [box(u0, v0, u1, v1) for u0, v0, u1, v1 in tr.sub_rects]
-                    t_u = unary_union(t_boxes).simplify(0.001)
-                    t_poly = (
-                        max(list(t_u.geoms), key=lambda g: g.area) if hasattr(t_u, "geoms") else t_u
-                    )
-                    t_outer = [
-                        self.frame.to_local(int(round(pt[0])), int(round(pt[1])))
-                        for pt in t_poly.exterior.coords[:-1]
-                    ]
-                    t_holes = [
-                        [
-                            self.frame.to_local(int(round(pt[0])), int(round(pt[1])))
-                            for pt in ring.coords[:-1]
-                        ]
-                        for ring in t_poly.interiors
-                    ]
-                    t_poly = Polygon2D(outer=t_outer, holes=t_holes)
-                else:
-                    t_poly = Polygon2D(
-                        outer=[
-                            self.frame.to_local(tr.u0, tr.v0),
-                            self.frame.to_local(tr.u1, tr.v0),
-                            self.frame.to_local(tr.u1, tr.v1),
-                            self.frame.to_local(tr.u0, tr.v1),
-                        ]
-                    )
-                slabs.append(
-                    Slab(
-                        id=f"slab-terrace-{tr.space_id.removeprefix('sp-')}",
-                        level_id=lv,
-                        kind=SlabKind.TERRACE,
-                        boundary=t_poly,
-                        thickness_m=TERRACE_SLAB_THICKNESS_M,
-                        material_id="m-floor",
-                    )
-                )
-
-        ceilings = [
-            Ceiling(
-                id=f"ceil-{_short(s.id)}"[:64],
-                space_id=s.id,
-                height_m=CEILING_M,
-                material_id="m-int-wall",
-            )
-            for s in spaces
-        ]
 
         return HouseModel(
             id=model_id,
@@ -810,12 +448,12 @@ class Builder2D:
             composite_spaces=composites,
             walls=walls,
             openings=self.openings,
-            slabs=slabs,
-            ceilings=ceilings,
+            slabs=self.enclosure.slabs(stairs),
+            ceilings=self.enclosure.ceilings(),
             stairs=stairs,
             zones=zones,
-            relationships=[],
-            materials=list(MATERIALS),
+            relationships=self.enclosure.relationships(self.program.space_relationships),
+            materials=self.enclosure.materials(),
             assumptions=[
                 Assumption(
                     id="asm-2d-placement",

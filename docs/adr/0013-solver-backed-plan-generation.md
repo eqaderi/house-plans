@@ -1,14 +1,18 @@
-# ADR 0013: Solver-backed plan concepts on a bar/row topology with OR-Tools CP-SAT
+# ADR 0013: Solver-backed plan options on a bar/row topology with OR-Tools CP-SAT
 
-Status: accepted (Milestone D, 2026-10-17)
+Status: accepted (Milestone D, 2026-10-17); extended by
+[ADR 0021](0021-2d-placement-formulation.md) (free 2D placement beside the bars)
+and [ADR 0022](0022-hillside-geometry-and-level-decisions.md) (levels chosen in
+the same model); its Python 3.11 wheel point is superseded by
+[ADR 0026](0026-python-3-13-only.md).
 
 ## Context
 
 Milestone D must turn an approved space program into at least three
-genuinely different floor-plan concepts, with valid vector geometry, no
+genuinely different plan options, with valid vector geometry, no
 invented coordinates, deterministic checks, honest metrics and versioned
 revisions. The primary project is a steep hillside parcel with road access on
-one side, so the concepts must handle split levels, walk-out levels,
+one side, so the options must handle split levels, walk-out levels,
 road-level parking and earth-retaining walls. No paid model API may be needed.
 
 ## Decision
@@ -19,32 +23,32 @@ road-level parking and earth-retaining walls. No paid model API may be needed.
    the owner's revision requests into structured operations; they never
    write geometry.
 2. **Topology: double-loaded bars.** A massing is a set of orthogonal bars,
-   each a room row on either side of a corridor, in a *design frame* whose
+   each a row of spaces on either side of a corridor, in a *design frame* whose
    u axis runs along the parcel edge facing the road and whose v axis runs
-   into the site. Every room touches its corridor (reachability by
+   into the site. Every space touches its corridor (reachability by
    construction) and walls follow from shared edges. Strategies differ in
    topology, not seed: `linear` (one bar on the contours), `compact`
    (identical bars stacked, walk-out below the entry when the ground falls
    away), `split_level` (parallel bars stepping in half-storey increments
-   from the surveyed ground), `two_wing` (an L whose night wing runs into the
-   site and steps with it), `courtyard` (two pavilions and a gallery).
+   from the surveyed ground), `two_wing` (an L whose second wing, holding the
+   night zone, runs into the site and steps with it), `courtyard` (two pavilions and a gallery).
 3. **Solver: Google OR-Tools CP-SAT** (`ortools`, Apache-2.0). Integers on a
-   10 cm grid. HARD: rows tiled exactly (units plus optional filler), room
+   10 cm grid. HARD: rows tiled exactly (units plus optional filler), space
    minimum areas and widths, entry (and, before DEC-12, the garage) on the road row, step-free
-   rooms on the entry level, aligned stairs and links, hard near/separation
+   spaces on the entry level, aligned stairs and links, hard near/separation
    between clusters. SOFT, integer-weighted: target areas (oversizing
    penalised), filler area, level preferences, zone-to-bar fit, daylight for
-   rooms that need it, soft adjacencies and separations, bar length, and in
+   spaces that need it, soft space relationships, bar length, and in
    revisions closeness to the parent. Objective weights scale with the
    compiled soft objectives (privacy, acoustic zoning, daylight, envelope
    simplicity, ...).
-4. **Clusters for hard connections.** Rooms joined by HARD `connected`
-   requirements form a cluster laid out by exhaustive search as slots of one
-   room or two stacked rooms (corridor side / exterior side), so a triangle
+4. **Clusters for hard connections.** Spaces joined by hard `connected`
+   space relationships form a cluster laid out by exhaustive search as slots
+   of one space or two stacked spaces (corridor side / exterior side), so a triangle
    such as open living-kitchen-dining is satisfiable in a row.
 5. **Determinism.** One worker, a fixed seed and a deterministic-time budget
    (never wall-clock). The same inputs give the same plan on the same
-   platform; tests assert properties (integrity, minima, adjacencies,
+   platform; tests assert properties (integrity, minima, space relationships,
    diversity, determinism within a run), not byte-exact solver output, which
    may differ between platforms. Hand-authored `plan-a` has a byte-exact SVG
    golden file.
@@ -60,11 +64,11 @@ road-level parking and earth-retaining walls. No paid model API may be needed.
    unapproved inputs and writes nothing to the store.
 8. **Reproducibility record.** `PlanVersion.generation` (optional, so
    hand-authored plans and earlier artifacts stay valid) records solver,
-   versions, status, objective, seed, parameters and room placements.
+   versions, status, objective, seed, parameters and space placements.
 
 ## Consequences
 
-- Plans are orthogonal and built from rectangular rooms; polygons and
+- Plans are orthogonal and built from rectangular spaces; polygons and
   non-orthogonal or courtyard-with-hole geometry fit the domain model but
   need further strategies.
 - Corridors are generous (every bar has one), and rows are closed with
@@ -75,7 +79,7 @@ road-level parking and earth-retaining walls. No paid model API may be needed.
 - OR-Tools adds a binary wheel dependency (with protobuf and pandas); it has
   wheels for Python 3.11 and 3.13 on Linux and macOS.
 
-Note (Stage S10, DEC-12): the garage is no longer a room in the road row. It is a
+Note (Stage S10, DEC-12): the garage is no longer a space in the road row. It is a
 separate road-level volume beside the entry bar, sized for the program's cars with
 the vehicle template's clearances (house side widened for the person door's
 approach); the massing reserves a road-front strip at the entry bar's end away from

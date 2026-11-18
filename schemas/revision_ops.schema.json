@@ -49,7 +49,7 @@
     },
     "RevisionOp": {
       "additionalProperties": false,
-      "description": "One structured revision operation matching plan revise arguments.",
+      "description": "One Revision operation, checked against the verb table.\n\nThe target is the Space or requirement name (a,b for a relation, the position for a\nstair, the strategy, the proposal path); the value is the area, the level word or the\noutdoor kind.",
       "properties": {
         "notes": {
           "anyOf": [
@@ -64,9 +64,7 @@
           "title": "Notes"
         },
         "op_type": {
-          "pattern": "^[a-z][a-z0-9_-]*$",
-          "title": "Op Type",
-          "type": "string"
+          "$ref": "#/$defs/RevisionVerb"
         },
         "target": {
           "minLength": 1,
@@ -98,6 +96,23 @@
       ],
       "title": "RevisionOp",
       "type": "object"
+    },
+    "RevisionVerb": {
+      "enum": [
+        "area",
+        "level",
+        "separate",
+        "adjacent",
+        "near",
+        "connect",
+        "outdoor",
+        "stair",
+        "proposal",
+        "rethink",
+        "strategy"
+      ],
+      "title": "RevisionVerb",
+      "type": "string"
     }
   },
   "$id": "https://house-ai.local/schemas/revision_ops.schema.json",

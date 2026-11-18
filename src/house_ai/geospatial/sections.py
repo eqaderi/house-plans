@@ -37,7 +37,7 @@ def _rectangle(a, b, lo, hi):
     return Polygon([(a, lo), (b, lo), (b, hi), (a, hi)])
 
 
-def cut_section(model: HouseModel, site: Site | None, request: SectionLine) -> dict:
+def cut_section(model: HouseModel, site: Site | None, request: SectionLine) -> dict:  # noqa: C901
     line = LineString([request.start, request.end])
     cuts, unknowns = [], []
 

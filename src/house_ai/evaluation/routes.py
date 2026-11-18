@@ -82,7 +82,7 @@ class RouteNetwork:
             _CACHE = (key, cls(model))
         return _CACHE[1]
 
-    def __init__(self, model: HouseModel):
+    def __init__(self, model: HouseModel):  # noqa: C901
         self.model = model
         self.nodes = {}  # key -> (space, point, element)
         self.edges = {}

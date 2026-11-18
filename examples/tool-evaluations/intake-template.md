@@ -13,7 +13,7 @@ ADAPT decision before dependency changes.
 | Licence | Licence file at the pin; obligations and relevant bundled dependencies |
 | Maintenance / maturity | Release history and limitations observed, separate from judgment |
 | Existing installation | `command -v`, package listing; don't mistake configuration for access |
-| macOS arm64 / Python 3.11 + 3.13 | Actual runs or wheel tags; distinguish verified from unknown |
+| macOS arm64 / Python 3.13 | Actual runs or wheel tags; distinguish verified from unknown |
 | Offline operation | What works after provisioning; network blocked mechanism and remaining gaps |
 | Installation | Disposable directory, pinned commands, browser/native/system prerequisites |
 | Integration complexity | Proposed adapter boundary; effect on canonical HouseModel/domain |

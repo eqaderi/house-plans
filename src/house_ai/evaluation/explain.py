@@ -14,6 +14,7 @@ from house_ai.constants.evaluations import (
     DIVERSITY_IOU_THRESHOLD,
     DIVERSITY_TOPOLOGY_THRESHOLD,
     FLAG_NEAR_DUPLICATE,
+    REQUESTED_STOREYS_ASSUMPTION_IDS,
 )
 from house_ai.constants.strategies import (
     STRATEGY_COMPACT,
@@ -29,6 +30,8 @@ from house_ai.domain.model import HouseModel, Space
 from house_ai.domain.plan import AreaChange, MetricChange, PlanVersion, RevisionReport
 from house_ai.domain.program import SpaceProgram
 from house_ai.domain.provenance import ArtifactRef, Provenance
+
+from .findings import FindingsChange
 
 STRATEGY_TEXT = {
     STRATEGY_LINEAR: (
@@ -47,9 +50,9 @@ STRATEGY_TEXT = {
         "stepping alone does not establish a close terrain fit or usable outdoor access."
     ),
     STRATEGY_SPLIT_WALKOUT: (
-        "A lower floor under the road-level entry combines an embedded massing "
+        "A lower storey under the road-level entry combines an embedded massing "
         "with a stepped downhill wing. Compare its cut, void, retaining walls, floor area, "
-        "daylight and circulation against the other options; additional floors can overfill "
+        "daylight and circulation against the other options; additional storeys can overfill "
         "the program. Walk-out doors and terraces remain unresolved."
     ),
     STRATEGY_TWO_WING: (
@@ -66,7 +69,8 @@ STRATEGY_TEXT = {
 KEY_METRICS = [
     ("gross_floor_area_m2", "Gross floor area (centreline)", "m²"),
     ("footprint_area_m2", "Footprint", "m²"),
-    ("level_count", "Floor levels", ""),
+    ("level_count", "Levels", ""),
+    ("storey_count", "Storeys", ""),
     ("net_program_area_m2", "Programmed room area", "m²"),
     ("unprogrammed_area_m2", "Flexible area not in the program", "m²"),
     ("circulation_ratio", "Circulation share", ""),
@@ -127,16 +131,17 @@ SOLVER_UNOPTIMISED_OBJECTIVES: dict[str, str] = {
 
 def soft_objectives_report(
     constraints: ConstraintSet | None,
-    plan: PlanVersion | None = None,
+    optimised: set[str] | None = None,
 ) -> list[tuple[str, str, str, float | None]]:
     """Return [(objective_name, status, rationale_or_detail, weight)]
     for compiled soft objectives.
+
+    ``optimised`` is what the engine that laid the plan out says it optimised
+    (``generation.engines.optimised_objectives``); None means the bar solver's objectives.
     """
     if constraints is None:
         return []
-    supported = set(SOLVER_OPTIMISED_OBJECTIVES)
-    if plan and plan.generation and plan.generation.parameters.get("engine") == "2d_nooverlap":
-        supported = set(str(plan.generation.parameters.get("optimised_objectives", "")).split(","))
+    supported = set(SOLVER_OPTIMISED_OBJECTIVES) if optimised is None else optimised
     out = []
     for c in constraints.soft():
         if isinstance(c.rule, ObjectiveRule):
@@ -154,7 +159,7 @@ def soft_objectives_report(
     return sorted(out, key=lambda x: x[0])
 
 
-def explanation_markdown(
+def explanation_markdown(  # noqa: C901
     plan: PlanVersion,
     version: int | None,
     report: EvaluationReport,
@@ -162,7 +167,12 @@ def explanation_markdown(
     *,
     banner: str | None = None,
     constraints: ConstraintSet | None = None,
+    optimised: set[str] | None = None,
 ) -> str:
+    """The explanation document of ``plan``.
+
+    ``optimised``: the soft objectives the engine optimised (see :func:`soft_objectives_report`).
+    """
     model = plan.model
     ver = f" v{version}" if version else ""
     lines = [f"# {plan.option_id}{ver}: {plan.label}", ""]
@@ -205,7 +215,7 @@ def explanation_markdown(
         "| Room | Level | Area m² | Program target m² | Program min m² |",
         "|---|---|---:|---:|---:|",
     ]
-    items = {i.id: i for i in program.items} if program else {}
+    items = {i.id: i for i in program.space_requirements} if program else {}
     for s in model.spaces:
         it = items.get(s.program_item_id or "")
         tgt = f"{it.target_area_m2:.1f}" if it and it.target_area_m2 else "—"
@@ -239,7 +249,7 @@ def explanation_markdown(
         lines += ["", "## Open issues", ""]
         for i in model.issues:
             lines.append(f"- [{i.severity.value}] {i.title}")
-    objs = soft_objectives_report(constraints, plan)
+    objs = soft_objectives_report(constraints, optimised)
     if objs:
         lines += ["", "## Compiled soft objectives", ""]
         lines += [
@@ -302,7 +312,7 @@ def _model_adjacency_edges(model: HouseModel) -> set[tuple[str, str]]:
 
 
 def topology_distance(a: HouseModel, b: HouseModel) -> float:
-    """Circulation/adjacency graph Jaccard distance between two concept models."""
+    """Circulation/adjacency graph Jaccard distance between two plan option models."""
     ea = _model_adjacency_edges(a)
     eb = _model_adjacency_edges(b)
     union = ea | eb
@@ -312,7 +322,7 @@ def topology_distance(a: HouseModel, b: HouseModel) -> float:
 
 
 def room_aspect_ratio_variance(model: HouseModel) -> float:
-    """Variance in room aspect ratios across a concept model."""
+    """Variance in space aspect ratios across a plan option model."""
     ratios = []
     for s in model.spaces:
         minx, miny, maxx, maxy = s.boundary.to_shapely().bounds
@@ -443,11 +453,11 @@ def comparison_markdown(
     *,
     banner: str | None = None,
 ) -> str:
-    lines = ["# Plan concepts compared", ""]
+    lines = ["# Plan options compared", ""]
     if banner:
         lines += [f"> **{banner}**", ""]
     lines += [
-        "Each column is one concept; values are individual metrics, not a combined score. "
+        "Each column is one plan option; values are individual metrics, not a combined score. "
         "Status in brackets when not measured exactly.",
         "",
     ]
@@ -474,7 +484,7 @@ def comparison_markdown(
         (p.option_id, a.statement)
         for p, _, _ in rows
         for a in p.model.assumptions
-        if a.id == "asm-gen-requested-levels"
+        if a.id in REQUESTED_STOREYS_ASSUMPTION_IDS
     ]
     if departures:
         lines += ["", "## Requested storeys", ""]
@@ -482,7 +492,7 @@ def comparison_markdown(
     if len(rows) > 1:
         lines += [
             "",
-            "## How different the concepts are (measured)",
+            "## How different the plan options are (measured)",
             "",
             "| Pair | Footprint IoU | Topology dist | Diff level | Levels/stairs | Assessment |",
             "|---|---:|---:|---:|---|---|",
@@ -591,7 +601,7 @@ def revision_report(
     )
 
 
-def revision_markdown(r: RevisionReport) -> str:
+def revision_markdown(r: RevisionReport, findings: FindingsChange | None = None) -> str:
     lines = [
         f"# Revision {r.id}",
         "",
@@ -610,6 +620,16 @@ def revision_markdown(r: RevisionReport) -> str:
         ("Assumptions", r.assumptions),
     ):
         lines += [f"## {title}", ""] + ([f"- {i}" for i in items] or ["- none"]) + [""]
+    if findings is not None and findings.targets:
+        lines += [f"## Findings about {', '.join(findings.targets)}", ""]
+        for title, items in (
+            ("Disappeared", findings.disappeared),
+            ("Remaining", findings.remaining),
+            ("New", findings.new),
+        ):
+            lines += [f"{title}:", ""]
+            lines += [f"- `{v.code}` {v.subject_ids}: {v.message}" for v in items] or ["- none"]
+            lines += [""]
     lines += ["## Area changes", "", "| Space | Before m² | After m² |", "|---|---:|---:|"]
     for c in r.area_changes:
         lines.append(

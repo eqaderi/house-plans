@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import type { RevisionOpsFile, RevisionOp, RevisionComment } from "../types/schemas";
+import type { RevisionOpsFile, RevisionOp, RevisionComment, RevisionVerb } from "../types/schemas";
 import { REVISION_OPS } from "../constants";
 
 interface FeedbackPanelProps {
@@ -22,7 +22,7 @@ export const FeedbackPanel: React.FC<FeedbackPanelProps> = ({
 
   // Form states for new comment / op
   const [commentText, setCommentText] = useState<string>("");
-  const [opType, setOpType] = useState<string>("area");
+  const [opType, setOpType] = useState<RevisionVerb>("area");
   const [opTarget, setOpTarget] = useState<string>(selectedId || "pi-kitchen");
   const [opValue, setOpValue] = useState<string>("18.0");
 
@@ -59,7 +59,7 @@ export const FeedbackPanel: React.FC<FeedbackPanelProps> = ({
       project: projectName,
       option: optionId,
       plan_version: planVersion,
-      verbatim_request: verbatimRequest.trim() || "Homeowner feedback export",
+      verbatim_request: verbatimRequest.trim() || "Owner feedback export",
       author: author.trim() || "homeowner:owner",
       created_at: new Date().toISOString(),
       operations,
@@ -116,7 +116,7 @@ export const FeedbackPanel: React.FC<FeedbackPanelProps> = ({
           />
         </div>
         <label style={{ display: "block", color: "#94a3b8", marginBottom: 4 }}>
-          Overall Request (Homeowner Verbatim Words):
+          Overall Request (Owner's Verbatim Words):
         </label>
         <textarea
           data-testid="verbatim-request-input"
@@ -198,7 +198,7 @@ export const FeedbackPanel: React.FC<FeedbackPanelProps> = ({
           <select
             data-testid="op-type-select"
             value={opType}
-            onChange={(e) => setOpType(e.target.value)}
+            onChange={(e) => setOpType(e.target.value as RevisionVerb)}
             style={{
               background: "#0f172a",
               border: "1px solid #334155",

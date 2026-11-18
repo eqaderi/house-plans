@@ -7,12 +7,9 @@ CAD parsing.
 
 from __future__ import annotations
 
-from typing import Protocol
-
-from house_ai.domain.coordinates import HorizontalCRS, LocalCoordinateSystem
+from house_ai.domain.coordinates import HorizontalCRS
 from house_ai.domain.epistemics import ConfirmationStatus
-from house_ai.domain.geometry import Point3
-from house_ai.domain.provenance import Actor, ActorKind
+from house_ai.domain.provenance import Actor, refuse_non_human
 from house_ai.domain.site import Contour, SpotElevation, Terrain, TerrainStatus, TinSurface
 
 from .crs import describe_epsg, require_projected_metric
@@ -33,31 +30,12 @@ def set_coordinate_reference_system(
     metre-based CRS; its official name is filled in when none is given.
     """
     if status in (ConfirmationStatus.USER_CONFIRMED, ConfirmationStatus.LOCAL_ONLY_CONFIRMED):
-        if actor.kind is not ActorKind.HUMAN:
-            raise ValueError("only a human can confirm the coordinate reference system")
+        refuse_non_human(actor, "confirm the coordinate reference system")
     if status is ConfirmationStatus.USER_CONFIRMED and epsg is not None:
         name = name or require_projected_metric(epsg).name
     elif declared_epsg is not None and name is None:
         name = describe_epsg(declared_epsg).name
     return HorizontalCRS(status=status, epsg=epsg, declared_epsg=declared_epsg, name=name)
-
-
-def create_local_coordinate_system(
-    *,
-    frame_id: str,
-    origin: Point3,
-    rotation_deg: float = 0.0,
-    name: str | None = None,
-    grid_to_true_north_deg: float | None = None,
-) -> LocalCoordinateSystem:
-    """Create the local metric project coordinate frame from a GRID origin."""
-    return LocalCoordinateSystem(
-        id=frame_id,
-        name=name,
-        origin=origin,
-        rotation_deg=rotation_deg,
-        grid_to_true_north_deg=grid_to_true_north_deg,
-    )
 
 
 def build_terrain(
@@ -81,11 +59,3 @@ def build_terrain(
         surface_ref=surface_ref,
         surface=surface,
     )
-
-
-class TerrainBuilder(Protocol):
-    """Protocol for Milestone B surface triangulation (TIN) builders."""
-
-    def build_surface(
-        self, spot_elevations: list[SpotElevation], contours: list[Contour]
-    ) -> Terrain: ...

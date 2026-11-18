@@ -15,6 +15,7 @@ import sys
 import tempfile
 from pathlib import Path
 
+from house_ai.cli.human import renderer
 from house_ai.cli.main import main
 from house_ai.domain.provenance import Actor, ActorKind, ArtifactKind
 from house_ai.domain.workflow import Gate, WorkflowState
@@ -74,7 +75,7 @@ def generate_bungalow_bundle(temp_root: Path) -> dict:
             ]
         )
 
-    bundle = build_reviewer_bundle(store)
+    bundle = build_reviewer_bundle(store, render=renderer(store.project_id))
     return bundle
 
 
@@ -105,10 +106,11 @@ def generate_hillside_bundle(temp_root: Path) -> dict:
     prog_ref = store.latest(ArtifactKind.SPACE_PROGRAM, "program")
     wf.approve(Gate.PROGRAM, prog_ref, OWNER, "program approved")
 
-    concepts_dir = REPO / "examples" / "projects" / "synthetic-hillside" / "concepts"
+    plan_options_dir = REPO / "examples" / "projects" / "synthetic-hillside" / "concepts"
     bundle = build_reviewer_bundle(
         store,
-        concepts_dir=concepts_dir if concepts_dir.exists() else None,
+        render=renderer(store.project_id),
+        plan_options_dir=plan_options_dir if plan_options_dir.exists() else None,
     )
     return bundle
 

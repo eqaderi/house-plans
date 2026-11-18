@@ -6,21 +6,27 @@ import math
 from datetime import UTC, datetime
 from itertools import combinations
 from pathlib import Path
+from types import SimpleNamespace as NS
 
 import pytest
 
 from house_ai.domain.integrity import check_model, errors
 from house_ai.domain.model import OpeningKind, WallKind
 from house_ai.domain.plan import PlanVersion
-from house_ai.domain.program import AdjacencyKind, SpaceProgram, Strength
+from house_ai.domain.program import (
+    SpaceFunction,
+    SpaceProgram,
+    SpaceRelationshipKind,
+    Strength,
+)
 from house_ai.domain.site import Site
 from house_ai.domain.terrain import elevation_at, site_surface
 from house_ai.evaluation.explain import concept_signature, footprint_iou, zoning_difference
-from house_ai.generation.base import PlanGenerator
 from house_ai.generation.frame import design_frame
 from house_ai.generation.generator import CpSatPlanGenerator, GenerationRequest
 from house_ai.generation.massing import FLOOR_TO_FLOOR_M, HALF_STOREY_M
 from house_ai.generation.rooms import expand_program, slot_adjacency
+from house_ai.generation.solver import build_units
 from house_ai.storage.hashing import canonical_json, load_document
 
 from .conftest import REPO
@@ -73,12 +79,6 @@ def test_fixture_is_synthetic_and_not_the_real_project():
     assert "my-house" not in text and "seperated" not in text
 
 
-def test_generator_meets_the_plan_generator_protocol(hillside):
-    gen: PlanGenerator = CpSatPlanGenerator()
-    plans = gen.generate(hillside[0], hillside[1], None, strategies=["linear"], seed=0)  # type: ignore[arg-type]
-    assert [p.strategy for p in plans] == ["linear"]
-
-
 def test_steep_site_gets_at_least_three_valid_structurally_different_concepts(
     hillside, hillside_plans
 ):
@@ -101,7 +101,7 @@ def test_steep_site_gets_at_least_three_valid_structurally_different_concepts(
 
 def test_every_room_meets_its_program_minimum_and_width(hillside, hillside_plans):
     _, program = hillside
-    items = {i.id: i for i in program.items}
+    items = {i.id: i for i in program.space_requirements}
     for plan in hillside_plans.values():
         for s in plan.model.spaces:
             item = items.get(s.program_item_id or "")
@@ -120,8 +120,8 @@ def test_hard_connections_are_doors_or_openings(hillside, hillside_plans):
     _, program = hillside
     hard = [
         a
-        for a in program.adjacencies
-        if a.strength is Strength.HARD and a.kind is AdjacencyKind.CONNECTED
+        for a in program.space_relationships
+        if a.strength is Strength.HARD and a.kind is SpaceRelationshipKind.CONNECTED
     ]
     assert hard, "the fixture should exercise hard connections (open-plan living)"
     for plan in hillside_plans.values():
@@ -252,3 +252,28 @@ def test_unknown_terrain_still_generates_but_refuses_split_level(hillside):
     assert cands["linear"].valid
     assert any("local datum" in a.statement for a in cands["linear"].plan.model.assumptions)
     assert cands["split_level"].plan is None and "terrain" in (cands["split_level"].reason or "")
+
+
+def _rows_for_accessible_bedroom(with_lift: bool) -> list[str]:
+    """Rows build_units offers an accessible bedroom: one entry bar, one bar a storey down."""
+    row = lambda rid: NS(id=rid, side="back", depth_dm=40)  # noqa: E731
+    bars = [
+        NS(elevation_m=0.0, entry=True, room_rows=[row("entry-back")], rows=[]),
+        NS(elevation_m=-FLOOR_TO_FLOOR_M, entry=False, room_rows=[row("lower-back")], rows=[]),
+    ]
+    bed = NS(space_id="bed", name="Bedroom", function=SpaceFunction.BEDROOM,
+             item=NS(accessible=True))  # fmt: skip
+    lift = NS(space_id="lift", name="Lift", function=SpaceFunction.LIFT, item=NS(accessible=True))
+    rooms = NS(
+        rooms=[bed, lift] if with_lift else [bed],
+        clusters=[NS(id="c-bed", is_entry=False, members=[bed], slots=[])],
+        hall_connected=set(),
+    )
+    units, problems = build_units(NS(entry_elevation_m=0.0, bars=bars, links=[]), rooms)
+    assert problems == []
+    return next(u for u in units if u.id == "c-bed").rows
+
+
+def test_an_accessible_room_may_leave_the_entry_level_only_when_a_lift_serves_it():
+    assert _rows_for_accessible_bedroom(with_lift=False) == ["entry-back"]
+    assert _rows_for_accessible_bedroom(with_lift=True) == ["entry-back", "lower-back"]

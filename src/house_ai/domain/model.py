@@ -16,13 +16,18 @@ from typing import Literal
 
 from pydantic import Field, model_serializer, model_validator
 
-from .base import SCHEMA_VERSION, Id, PositiveFloat, StrictModel
+from .base import EXTERIOR, SCHEMA_VERSION, Id, PositiveFloat, StrictModel
 from .geometry import Point2, Polygon2D, segment_length
 from .hillside import EarthworkPad
 from .program import Privacy, SpaceFunction
 from .provenance import ArtifactRef
 from .records import Assumption, Issue
 from .usability import ClearanceZone, Furniture
+
+#: Typical floor-to-floor height of one storey, used to count a plan's storeys.
+STOREY_HEIGHT_M = 3.0
+#: Level offsets this close to a whole storey count as one.
+SPLIT_LEVEL_TOLERANCE_M = 0.3
 
 
 class Level(StrictModel):
@@ -115,6 +120,15 @@ class Operation(StrEnum):
     TILT_TURN = "tilt_turn"
 
 
+class OpeningRole(StrEnum):
+    """What an exterior opening is for, where the evaluators need to know (ADR 0031)."""
+
+    #: The front door people arrive by.
+    MAIN_ENTRANCE = "main_entrance"
+    #: The door vehicles enter by, such as a garage door.
+    VEHICLE_ENTRANCE = "vehicle_entrance"
+
+
 class Opening(StrictModel):
     """A door, window or cased opening hosted by exactly one wall."""
 
@@ -133,12 +147,24 @@ class Opening(StrictModel):
     opens_into: Id | None = None
     operation: Operation = Operation.NONE
     material_id: Id | None = None
+    #: The entrance this opening is, if any. Plan versions saved before roles existed
+    #: have none; readers fall back to the ``d-front`` / ``d-garage`` id prefixes.
+    role: OpeningRole | None = None
+
+    @model_serializer(mode="wrap")
+    def _legacy_hash_compatible(self, handler):
+        data = handler(self)
+        if self.role is None:
+            data.pop("role", None)
+        return data
 
     @model_validator(mode="after")
     def _connects_two_things(self) -> Opening:
         a, b = self.connects
         if a == b:
             raise ValueError(f"{self.id}: an opening must connect two different sides")
+        if self.role is not None and EXTERIOR not in self.connects:
+            raise ValueError(f"{self.id}: an entrance ({self.role.value}) must open to exterior")
         if self.opens_into is not None and self.opens_into not in self.connects:
             raise ValueError(
                 f"{self.id}: opens_into ({self.opens_into!r}) must be one of {list(self.connects)}"
@@ -289,14 +315,14 @@ class RelationshipKind(StrEnum):
     SEPARATED = "separated"
 
 
-class SpaceRelationship(StrictModel):
-    """A declared design intent between two spaces (geometry decides if it holds)."""
+class PlanRelationship(StrictModel):
+    """A declared design intent between two spaces of a plan (geometry decides if it holds)."""
 
     id: Id
     a: Id
     b: Id
     kind: RelationshipKind
-    #: Program adjacency requirement this realises, if any.
+    #: Space relationship (program) this realises, if any.
     requirement_id: Id | None = None
 
 
@@ -348,7 +374,7 @@ class HouseModel(StrictModel):
     fixtures: list[Fixture] = Field(default_factory=list)
     furniture: list[Furniture] = Field(default_factory=list)
     clearance_zones: list[ClearanceZone] = Field(default_factory=list)
-    relationships: list[SpaceRelationship] = Field(default_factory=list)
+    relationships: list[PlanRelationship] = Field(default_factory=list)
     materials: list[MaterialRef] = Field(default_factory=list)
     earthwork_pads: list[EarthworkPad] = Field(default_factory=list)
     assumptions: list[Assumption] = Field(default_factory=list)
@@ -370,6 +396,19 @@ class HouseModel(StrictModel):
 
     def level(self, level_id: str) -> Level:
         return next(lv for lv in self.levels if lv.id == level_id)
+
+    @property
+    def storey_count(self) -> int:
+        """Storeys the levels span, derived from their elevations (GLOSSARY.md).
+
+        Levels less than a storey apart are split levels of one storey, so on a
+        slope two storeys can hold four levels. A level at least
+        ``STOREY_HEIGHT_M - SPLIT_LEVEL_TOLERANCE_M`` above the lowest starts a
+        new storey.
+        """
+        elevations = [lv.elevation_m for lv in self.levels]
+        span = max(elevations) - min(elevations)
+        return 1 + int((span + SPLIT_LEVEL_TOLERANCE_M) / STOREY_HEIGHT_M)
 
     def all_ids(self) -> list[str]:
         """Every entity id in the model, in a stable order (duplicates kept)."""

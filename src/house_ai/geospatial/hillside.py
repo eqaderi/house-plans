@@ -71,7 +71,7 @@ def _feature_shape(feature):
     return None
 
 
-def hillside_report(
+def hillside_report(  # noqa: C901
     model: HouseModel, site: Site | None, settings: HillsideSettings | None = None
 ) -> dict:
     settings = settings or HillsideSettings()

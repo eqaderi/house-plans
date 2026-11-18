@@ -145,16 +145,16 @@ facts:
     kind: owner_answer
     ref: q-entry_at_road
     interview_round: null
-- id: f-floors
+- id: f-storeys
   topic: levels
-  key: floors
-  statement: Synthetic household answer for floors.
+  key: storeys
+  statement: Synthetic household answer for storeys.
   value: 2
   status: preference
   priority: null
   source:
     kind: owner_answer
-    ref: q-floors
+    ref: q-storeys
     interview_round: null
 - id: f-laundry_room
   topic: laundry

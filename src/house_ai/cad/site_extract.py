@@ -1,7 +1,6 @@
 """Interpret raw CAD entities as site geometry, using a human layer mapping.
 
-Implements :class:`house_ai.cad.base.CadSiteExtractor`. Every entity on a
-mapped layer is either used (and keeps its handle as provenance) or listed
+Every entity on a mapped layer is either used (and keeps its handle as provenance) or listed
 as an :class:`~house_ai.domain.site.AmbiguousEntity` with the reason. Rules:
 
 * boundary: exactly one closed polyline on the boundary layers, or the one
@@ -43,8 +42,8 @@ from house_ai.domain.site import (
     TerrainBreakline,
 )
 
-from .base import CadExtraction, CadInspection, RawPoint, RawPolyline
-from .layers import FEATURE_KINDS, UNCLASSIFIED, LayerMapping, LayerRole
+from .base import CadExtraction, RawPoint, RawPolyline
+from .layers import FEATURE_KINDS, LayerMapping, LayerRole
 
 #: Coincidence tolerance in drawing units for "first vertex == last vertex".
 CLOSE_TOL = 1e-6
@@ -93,35 +92,6 @@ class MappedLayerSiteExtractor:
     def __init__(self, mapping: LayerMapping, source_id: str) -> None:
         self.mapping = mapping
         self.source_id = source_id
-
-    # ------------------------------------------------------ CadSiteExtractor
-
-    def classify_layers(self, inspection: CadInspection) -> dict[str, str]:
-        out = {}
-        for layer in inspection.layers:
-            role = self.mapping.role_of(layer)
-            out[layer] = role.value if role else UNCLASSIFIED
-        return out
-
-    def extract_boundary(
-        self, extraction: CadExtraction, transform: SurveyTransform
-    ) -> Polygon2D | None:
-        return self.extract(extraction, transform).boundary
-
-    def extract_contours(
-        self, extraction: CadExtraction, transform: SurveyTransform
-    ) -> list[Contour]:
-        return self.extract(extraction, transform).contours
-
-    def extract_spot_elevations(
-        self, extraction: CadExtraction, transform: SurveyTransform
-    ) -> list[SpotElevation]:
-        return self.extract(extraction, transform).spot_elevations
-
-    def extract_features(
-        self, extraction: CadExtraction, transform: SurveyTransform
-    ) -> list[SiteFeature]:
-        return self.extract(extraction, transform).features
 
     # ---------------------------------------------------------------- driver
 
@@ -238,7 +208,7 @@ class MappedLayerSiteExtractor:
 
     # -------------------------------------------------------------- boundary
 
-    def _boundary(
+    def _boundary(  # noqa: C901
         self,
         pts: list[RawPoint],
         lines: list[RawPolyline],

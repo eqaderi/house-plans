@@ -1,9 +1,9 @@
-"""End-to-end synthetic workflow tests for the four canonical agent skills.
+"""End-to-end synthetic workflow tests for the canonical agent skills.
 
 Verifies that the command sequences and boundaries documented in:
   - site-survey-review
   - architectural-programming
-  - generate-concepts
+  - generate-plan-options
   - critique-plan
 execute offline on synthetic data with zero network access and enforce human gates.
 """
@@ -15,13 +15,15 @@ import re
 from pathlib import Path
 
 from house_ai.cli.main import main
+from house_ai.constants.skills import CANONICAL_SKILLS_DIR
 from house_ai.domain.provenance import Actor, ActorKind, ArtifactKind, DataClassification
 from house_ai.domain.units import LengthUnit
 from house_ai.domain.workflow import Gate, WorkflowState
-from house_ai.evaluation.grounding import collect_canonical_ids, validate_critique_grounding
-from house_ai.orchestration.site_ingestion import SiteConfirmation, confirm_site
+from house_ai.orchestration.site import SiteService
+from house_ai.orchestration.site_ingestion import SiteConfirmation
 from house_ai.orchestration.workflow import Workflow
 from house_ai.storage import ProjectStore
+from house_ai.validation.grounding import collect_canonical_ids, validate_cited_ids
 
 from .conftest import AGENT, HUMAN, SURVEY_DXF, SURVEY_LAYERS
 
@@ -85,22 +87,13 @@ def test_site_survey_review_skill_workflow(tmp_path: Path, capsys):
     assert store.latest(ArtifactKind.SITE, "site") is not None
     assert store.latest(ArtifactKind.CAD_IMPORT, f"cad-{source_id}") is not None
 
-    # 3. Transition to SITE_INGESTION and assess site blockers
-    rc = main(
-        [
-            "workflow",
-            "transition",
-            str(proj_dir),
-            "SITE_INGESTION",
-            "--reason",
-            "ingesting survey",
-            "--actor",
-            AGENT_ACTOR,
-        ]
-    )
-    assert rc == 0
+    # Ingesting started site ingestion and stopped the unconfirmed survey for the owner.
+    assert Workflow(store).state is WorkflowState.SITE_NEEDS_CONFIRMATION
+
+    # 3. Re-assess the site against the gate's blockers (moves nothing)
     rc = main(["workflow", "assess-site", str(proj_dir), "--id", "site", "--actor", AGENT_ACTOR])
     assert rc == 0
+    assert Workflow(store).state is WorkflowState.SITE_NEEDS_CONFIRMATION
 
 
 
@@ -204,10 +197,9 @@ def test_architectural_programming_skill_workflow(tmp_path: Path):
         vertical_epsg=7837,
         boundary_verified=True,
     )
-    confirm_site(store, "site", OWNER, conf)
-    wf = Workflow(store)
-    wf.transition(WorkflowState.SITE_INGESTION, AGENT, "ingesting site")
-    wf.approve(Gate.SITE, store.latest(ArtifactKind.SITE, "site"), OWNER, "synthetic site verified")
+    # The owner's confirmation clears every blocker; the site gate is then approvable.
+    site_ref = SiteService(store).confirm("site", OWNER, conf).site_ref
+    Workflow(store).approve(Gate.SITE, site_ref, OWNER, "synthetic site approved")
 
 
     # 1. Start the interview (works in SITE_APPROVED; no transition needed yet)
@@ -255,14 +247,14 @@ def test_architectural_programming_skill_workflow(tmp_path: Path):
             "--topic",
             "site",
             "--set",
-            "floors=2",
+            "storeys=2",
             "--actor",
             AGENT_ACTOR,
         ]
     )
     assert rc == 0
 
-    # 4. Confirm inferences with owner words
+    # 4. Confirm interpretations with owner words
     rc = main(
         [
             "interview",
@@ -294,21 +286,8 @@ def test_architectural_programming_skill_workflow(tmp_path: Path):
     assert (design_dir / "design_brief.yaml").is_file()
     assert (design_dir / "program-review.md").is_file()
 
-    # 6. Move to INTERVIEWING (from SITE_APPROVED) and request program review
+    # 6. Request program review straight from SITE_APPROVED (it makes its own moves)
     assert Workflow(store).state is WorkflowState.SITE_APPROVED
-    rc = main(
-        [
-            "workflow",
-            "transition",
-            str(proj_dir),
-            "INTERVIEWING",
-            "--reason",
-            "interview",
-            "--actor",
-            AGENT_ACTOR,
-        ]
-    )
-    assert rc == 0
     rc = main(["program", "review", str(proj_dir), "--actor", AGENT_ACTOR])
     assert rc == 0
     assert Workflow(store).state is WorkflowState.PROGRAM_REVIEW
@@ -331,8 +310,8 @@ def test_architectural_programming_skill_workflow(tmp_path: Path):
     assert rc == 2
 
 
-def test_generate_concepts_and_critique_skills_workflow(tmp_path: Path):
-    """Test the complete generate-concepts and critique-plan skill command sequence."""
+def test_generate_plan_options_and_critique_skills_workflow(tmp_path: Path):
+    """Test the complete generate-plan-options and critique-plan skill command sequence."""
     proj_dir = tmp_path / "synthetic-hillside"
     # Load synthetic-hillside fixture
     rc = main(
@@ -370,7 +349,7 @@ def test_generate_concepts_and_critique_skills_workflow(tmp_path: Path):
     # Confirm store untouched by exploratory generation
     assert store.refs(ArtifactKind.PLAN) == []
 
-    # critique-plan before the gates: ground a critique of the exploratory concept
+    # critique-plan before the gates: ground a critique of the exploratory plan option
     plan_json = exploratory_dir / "concept-split-walkout" / "exploratory" / "plan.json"
     critique = tmp_path / "critique.md"
     critique.write_text(
@@ -382,12 +361,12 @@ def test_generate_concepts_and_critique_skills_workflow(tmp_path: Path):
     critique.write_text("`level-entry` and `pi-office` do not exist.\n", encoding="utf-8")
     assert main(["plan", "ground", str(plan_json), str(critique)]) == 1
 
-    # Every entity ID the concept and critique skills cite exists in synthetic-hillside
+    # Every entity ID the plan-option and critique skills cite exists in synthetic-hillside
     program_ref = store.latest(ArtifactKind.SPACE_PROGRAM, "program")
     valid = collect_canonical_ids(json.loads(plan_json.read_text(encoding="utf-8")))
     valid |= collect_canonical_ids(store.get(program_ref))
-    for skill in ("generate-concepts", "critique-plan"):
-        text = (REPO / "skills" / skill / "SKILL.md").read_text(encoding="utf-8")
+    for skill in ("generate-plan-options", "critique-plan"):
+        text = (REPO / CANONICAL_SKILLS_DIR / skill / "SKILL.md").read_text(encoding="utf-8")
         cited = set(re.findall(r"\b(?:pi|sp|z|lv|level|adj|rel)-[a-z0-9-]*[a-z0-9]\b", text))
         assert cited, skill
         assert cited <= valid, f"{skill} cites unknown IDs {sorted(cited - valid)}"
@@ -405,7 +384,7 @@ def test_generate_concepts_and_critique_skills_workflow(tmp_path: Path):
     )
 
 
-    # 2. Gated generation (stores concepts)
+    # 2. Gated generation (stores plan options)
     rc = main(
         [
             "plan",
@@ -422,42 +401,42 @@ def test_generate_concepts_and_critique_skills_workflow(tmp_path: Path):
     assert rc == 0
     plans = store.latest_of_kind(ArtifactKind.PLAN)
     assert len(plans) >= 1
-    concept_id = plans[0].id
+    option_id = plans[0].id
 
-    # 3. List and compare concepts
+    # 3. List and compare plan options
     rc = main(["plan", "list", str(proj_dir)])
     assert rc == 0
     rc = main(["plan", "compare", str(proj_dir)])
     assert rc == 0
 
-    # critique-plan after the gates: ground a critique of the exported stored concept
+    # critique-plan after the gates: ground a critique of the exported stored plan option
     export_dir = tmp_path / "critique-export"
-    assert main(["plan", "export", str(proj_dir), concept_id, "--out", str(export_dir)]) == 0
+    assert main(["plan", "export", str(proj_dir), option_id, "--out", str(export_dir)]) == 0
     exported = next(export_dir.rglob("plan.json"))
     critique.write_text("`sp-kitchen` on `lv-entry`.\n", encoding="utf-8")
     assert main(["plan", "ground", str(exported), str(critique)]) == 0
 
     # 4. Critique grounding check: valid IDs pass, invalid IDs fail
     program = store.get(store.latest(ArtifactKind.SPACE_PROGRAM, "program"))
-    valid_ids = [item.id for item in program.items[:3]]
+    valid_ids = [item.id for item in program.space_requirements[:3]]
 
     # Grounded critique with valid IDs: passes
-    grounding_errors = validate_critique_grounding(valid_ids, program)
+    grounding_errors = validate_cited_ids(valid_ids, program)
     assert grounding_errors == []
 
     # Ungrounded critique with hallucinated IDs: rejected!
     hallucinated_ids = ["pi-nonexistent-ballroom", "z-imaginary-galaxy"]
-    grounding_errors = validate_critique_grounding(hallucinated_ids, program)
+    grounding_errors = validate_cited_ids(hallucinated_ids, program)
     assert len(grounding_errors) == 2
     assert "Unknown entity ID 'pi-nonexistent-ballroom'" in grounding_errors[0]
 
-    # 5. Revise concept with structured operations
+    # 5. Revise the plan option with structured operations
     rc = main(
         [
             "plan",
             "revise",
             str(proj_dir),
-            concept_id,
+            option_id,
             "Increase kitchen area and rethink night zone",
             "--area",
             f"{valid_ids[0]}=18",
@@ -468,11 +447,11 @@ def test_generate_concepts_and_critique_skills_workflow(tmp_path: Path):
     assert rc == 0
 
     # Verify revised plan version exists
-    revised_version = store.latest(ArtifactKind.PLAN, concept_id)
+    revised_version = store.latest(ArtifactKind.PLAN, option_id)
     assert revised_version.version == 2
 
     # 6. Request plan review
-    rc = main(["plan", "review", str(proj_dir), concept_id, "--actor", AGENT_ACTOR])
+    rc = main(["plan", "review", str(proj_dir), option_id, "--actor", AGENT_ACTOR])
     assert rc == 0
 
     # 7. Human boundary: agent cannot approve plan gate
@@ -483,7 +462,7 @@ def test_generate_concepts_and_critique_skills_workflow(tmp_path: Path):
             str(proj_dir),
             "plan",
             "--id",
-            concept_id,
+            option_id,
             "--version",
             "2",
             "--approver",
@@ -496,7 +475,7 @@ def test_generate_concepts_and_critique_skills_workflow(tmp_path: Path):
 def test_visual_review_skill_workflow(tmp_path: Path):
     """End-to-end synthetic workflow test for the visual-review skill (S5-11)."""
     proj_dir = tmp_path / "synthetic-hillside"
-    export_dir = tmp_path / "exported-concept"
+    export_dir = tmp_path / "exported-plan-option"
     bundle_dir = tmp_path / "exported-bundle"
 
     # Load synthetic-hillside fixture
@@ -528,7 +507,7 @@ def test_visual_review_skill_workflow(tmp_path: Path):
         "program approved",
     )
 
-    # Generate concept
+    # Generate plan options
     rc = main(
         [
             "plan",
@@ -545,10 +524,10 @@ def test_visual_review_skill_workflow(tmp_path: Path):
     assert rc == 0
     plans = store.latest_of_kind(ArtifactKind.PLAN)
     assert len(plans) >= 1
-    concept_id = plans[0].id
+    option_id = plans[0].id
 
-    # 1. Export concept files for visual inspection
-    rc = main(["plan", "export", str(proj_dir), concept_id, "--out", str(export_dir)])
+    # 1. Export plan option files for visual inspection
+    rc = main(["plan", "export", str(proj_dir), option_id, "--out", str(export_dir)])
     assert rc == 0
     plan_json_path = next(export_dir.rglob("plan.json"))
     assert plan_json_path.is_file()
@@ -562,7 +541,7 @@ def test_visual_review_skill_workflow(tmp_path: Path):
     plan_data = json.loads(plan_json_path.read_text("utf-8"))
     program = store.get(store.latest(ArtifactKind.SPACE_PROGRAM, "program"))
     valid_spaces = [s["id"] for s in plan_data["model"]["spaces"] if s["id"].startswith("sp-")]
-    valid_program_items = [item.id for item in program.items]
+    valid_program_items = [item.id for item in program.space_requirements]
     assert len(valid_spaces) > 0
     assert len(valid_program_items) > 0
 
@@ -583,13 +562,13 @@ def test_visual_review_skill_workflow(tmp_path: Path):
     rc = main(["plan", "ground", str(plan_json_path), str(invalid_critique)])
     assert rc == 1
 
-    # 5. Revise concept from feedback
+    # 5. Revise the plan option from feedback
     rc = main(
         [
             "plan",
             "revise",
             str(proj_dir),
-            concept_id,
+            option_id,
             "Enlarge kitchen for accessibility",
             "--area",
             f"{valid_program_items[0]}=22",
@@ -607,7 +586,7 @@ def test_visual_review_skill_workflow(tmp_path: Path):
             str(proj_dir),
             "plan",
             "--id",
-            concept_id,
+            option_id,
             "--version",
             "2",
             "--approver",

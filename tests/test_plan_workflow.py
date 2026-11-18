@@ -11,10 +11,10 @@ from house_ai.cli.main import main
 from house_ai.domain.codepack import find_prohibited_claims
 from house_ai.domain.evaluation import EvaluationReport
 from house_ai.domain.plan import PlanVersion, RevisionReport
-from house_ai.domain.provenance import Actor, ActorKind, ArtifactKind
+from house_ai.domain.provenance import Actor, ActorKind, ApprovalRequiresHuman, ArtifactKind
 from house_ai.domain.workflow import Gate, WorkflowState
 from house_ai.orchestration.plans import PlanService, PlanWorkflowError
-from house_ai.orchestration.workflow import ApprovalRequiresHuman, Workflow
+from house_ai.orchestration.workflow import HumanAction, NextHumanAction, Workflow
 from house_ai.storage import ProjectStore
 
 from .conftest import AGENT, HUMAN
@@ -84,7 +84,7 @@ def generated(tmp_path_factory):
 
 def test_generate_stores_versions_evaluations_and_moves_to_concept_review(generated):
     store, out = generated
-    assert Workflow(store).state is WorkflowState.CONCEPT_REVIEW
+    assert Workflow(store).state is WorkflowState.PLAN_REVIEW
     plans = store.latest_of_kind(ArtifactKind.PLAN)
     assert len(plans) >= 3
     reports = {
@@ -166,7 +166,7 @@ def test_revision_creates_a_child_version_with_a_report(generated):
     assert kitchen.after_m2 > kitchen.before_m2
     # The parent is untouched and still loadable.
     assert store.get(base, PlanVersion).generation.revision_ops == []
-    assert Workflow(store).state is WorkflowState.CONCEPT_REVIEW
+    assert Workflow(store).state is WorkflowState.PLAN_REVIEW
     assert (res.export_dir / "revision.md").is_file()
     assert store.verify() == []
 
@@ -202,14 +202,15 @@ def test_plan_gate_stays_human_only_and_freezes_the_plan(tmp_path):
     )
     with pytest.raises(ApprovalRequiresHuman):
         wf.approve(Gate.PLAN, ref, AGENT, "looks good")
-    assert wf.check_gate(Gate.PLAN, ref) == []
+    assert wf.gate_status(Gate.PLAN, ref).blockers == []
     wf.approve(Gate.PLAN, ref, HUMAN, "this is the one")
     assert wf.state is WorkflowState.PLAN_APPROVED
     before = len(store.events())
-    with pytest.raises(PlanWorkflowError, match="frozen"):
+    with pytest.raises(PlanWorkflowError, match="frozen") as frozen:
         PlanService(store).revise(
             "concept-compact", "bigger living room", AGENT, ops=["area:pi-living=40"]
         )
+    assert frozen.value.next_action == NextHumanAction(HumanAction.REOPEN, Gate.PLAN)
     with pytest.raises(PlanWorkflowError):
         PlanService(store).generate(AGENT)
     assert len(store.events()) == before
@@ -221,7 +222,7 @@ def test_cli_list_compare_and_strategies(generated, capsys):
     rows = json.loads(capsys.readouterr().out)
     assert {r["option_id"] for r in rows} >= {"concept-compact", "concept-split-level"}
     assert main(["plan", "compare", str(store.root)]) == 0
-    assert "How different the concepts are" in capsys.readouterr().out
+    assert "How different the plan options are" in capsys.readouterr().out
     assert main(["plan", "strategies"]) == 0
     assert "split_level" in capsys.readouterr().out
 

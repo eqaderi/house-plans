@@ -31,7 +31,7 @@ def export_hillside_views(model, site, folder: Path, requests=None, settings=Non
         "",
     ]
     for risk in report["risks"]:
-        subjects = ", ".join(risk["subject_ids"]) or "whole concept"
+        subjects = ", ".join(risk["subject_ids"]) or "whole plan option"
         risks.append(
             f"- **{risk['discipline']} — needs professional** ({subjects}): {risk['trigger']}"
         )

@@ -18,6 +18,7 @@ from typing import Any
 
 from house_ai.domain.brief import BriefTopic as T
 from house_ai.domain.brief import FactValue
+from house_ai.domain.interview import current_question_id
 
 from . import parsing as p
 
@@ -35,8 +36,6 @@ class Slot:
     parse: Parser
     #: The owner's statement about the household is a fact, not a wish.
     is_fact: bool = False
-    #: Must be known (or explicitly unknown) before the program can be approved.
-    critical: bool = False
 
 
 @dataclass(frozen=True)
@@ -150,12 +149,12 @@ def _bathrooms(text: str) -> dict[str, FactValue]:
     return out
 
 
-def _floors(text: str) -> dict[str, FactValue]:
+def _storeys(text: str) -> dict[str, FactValue]:
     if re.search(r"\b(single[- ]stor(e)?y|one level|bungalow|one floor|ground floor only)\b",
                  text, re.I):  # fmt: skip
-        return {"floors": 1}
+        return {"storeys": 1}
     n = p.count_of(text, r"floors?|stor(?:e)?ys?|levels?") or p.first_int(text)
-    return {"floors": n} if n else {}
+    return {"storeys": n} if n else {}
 
 
 def _kitchen(text: str) -> dict[str, FactValue]:
@@ -417,7 +416,7 @@ SLOTS: dict[str, Slot] = {
     s.key: s
     for s in [
         Slot("adults", T.HOUSEHOLD, "Adults", "How many adults will live in the house?",
-             _int("adults", r"adults?"), is_fact=True, critical=True),
+             _int("adults", r"adults?"), is_fact=True),
         Slot("children", T.HOUSEHOLD, "Children", "How many children will live in the house?",
              _int("children", r"children|kids?"), is_fact=True),
         Slot("elders", T.MULTIGENERATIONAL, "Older relatives living with you",
@@ -436,14 +435,15 @@ SLOTS: dict[str, Slot] = {
              is_fact=True),
         Slot("bedrooms", T.BEDROOMS_BATHROOMS, "Bedrooms",
              "How many bedrooms in total, including any guest bedroom?",
-             _int("bedrooms", r"bedrooms?|rooms?"), critical=True),
+             _int("bedrooms", r"bedrooms?|rooms?")),
         Slot("bathrooms", T.BEDROOMS_BATHROOMS, "Bathrooms",
              "How many bathrooms (with shower or bath) do you want?",
-             _int("bathrooms", r"bathrooms?|baths?"), critical=True),
+             _int("bathrooms", r"bathrooms?|baths?")),
         Slot("ensuite", T.BEDROOMS_BATHROOMS, "Main bedroom has its own bathroom",
              "Should the main bedroom have its own bathroom (en-suite)?", _bool("ensuite")),
-        Slot("floors", T.LEVELS, "Floors", "How many floors should the house have?", _floors,
-             critical=True),
+        Slot("storeys", T.LEVELS, "Storeys",
+             "How many storeys should the house have, counting from the lowest to the highest?",
+             _storeys),
         Slot("slope_strategy", T.SITE_RESPONSE, "How the house meets the slope",
              "Should the house step down the slope, or sit on one flat platform?", _slope),
         Slot("entry_at_road", T.SITE_RESPONSE, "Entrance and parking at road level",
@@ -532,8 +532,8 @@ def _known(v: Values, key: str) -> bool:
     return key in v and v[key] is not None
 
 
-def _relief(site: Any) -> float:
-    return getattr(site, "relief_m", None) or 0.0
+def _sloped(site: Any) -> bool:
+    return site is not None and site.sloped
 
 
 QUESTIONS: list[Question] = [
@@ -573,24 +573,25 @@ QUESTIONS: list[Question] = [
         ("bathrooms", "ensuite"), _bathrooms, required=("bathrooms", "ensuite"),
     ),
     Question(
-        "q-floors", T.LEVELS,
-        "How many floors would you like the house to have? 'Not sure yet' is a fine answer.",
-        ("floors",), _floors,
+        "q-storeys", T.LEVELS,
+        "How many storeys would you like the house to have? On a slope a storey can be split "
+        "into levels a few steps apart. 'Not sure yet' is a fine answer.",
+        ("storeys",), _storeys,
     ),
     Question(
         "q-slope", T.SITE_RESPONSE,
         "The survey shows the ground falls about {relief} m across the parcel{site_note}. "
-        "Would you like the house to step down the slope (split levels, or a lower floor "
+        "Would you like the house to step down the slope (split levels, or a lower storey "
         "opening to the garden), or to sit on one flat platform cut into the ground? "
         "'No preference' is fine too.",
-        ("slope_strategy",), _slope, when=lambda v, s: _relief(s) >= 2.0,
+        ("slope_strategy",), _slope, when=lambda v, s: _sloped(s),
     ),
     Question(
         "q-entry", T.SITE_RESPONSE,
         "Should the main entrance and the parking be at road level, with the rest of the "
         "house below or above it?",
         ("entry_at_road",), _bool("entry_at_road"),
-        when=lambda v, s: _relief(s) >= 2.0 and (v.get("floors") or 2) > 1,
+        when=lambda v, s: _sloped(s) and (v.get("storeys") or 2) > 1,
     ),
     Question(
         "q-living", T.LIFESTYLE,
@@ -663,9 +664,9 @@ QUESTIONS: list[Question] = [
         ("accessibility", "lift"), _accessibility, required=("accessibility",),
     ),
     Question(
-        "q-lift", T.ACCESSIBILITY, "Would you like a lift between the floors?",
+        "q-lift", T.ACCESSIBILITY, "Would you like a lift between the storeys?",
         ("lift",), _bool("lift"),
-        when=lambda v, s: (v.get("floors") or 1) > 1 and (
+        when=lambda v, s: (v.get("storeys") or 1) > 1 and (
             v.get("accessibility") in ("step_free", "wheelchair", "future_ready")
             or v.get("elder_step_free") is True
         ),
@@ -728,7 +729,7 @@ QUESTIONS: list[Question] = [
     ),
     Question(
         "q-expansion", T.FUTURE_EXPANSION,
-        "Might you want to extend the house later, for example another bedroom or a floor?",
+        "Might you want to extend the house later, for example another bedroom or a storey?",
         ("future_expansion",), _expansion,
     ),
 ]  # fmt: skip
@@ -741,7 +742,7 @@ assert all(s in SLOTS for q in QUESTIONS for s in q.slots)
 OPPORTUNISTIC: dict[str, Parser] = {
     "bedrooms": lambda t: {"bedrooms": n} if (n := p.count_of(t, r"bedrooms?")) else {},
     "bathrooms": lambda t: {"bathrooms": n} if (n := p.count_of(t, r"bathrooms?")) else {},
-    "floors": lambda t: {"floors": n} if (n := p.count_of(t, r"floors?|stor(?:e)?ys?")) else {},
+    "storeys": lambda t: {"storeys": n} if (n := p.count_of(t, r"floors?|stor(?:e)?ys?")) else {},
     "cars": lambda t: {"cars": n} if (n := p.count_of(t, r"cars?")) is not None else {},
     "lift": lambda t: {"lift": True} if re.search(r"\b(need|want) (?:a )?(lift|elevator)",
                                                   t, re.I) else {},
@@ -759,7 +760,7 @@ def followup_id(question_id: str, slot: str) -> str:
 
 def question_for(question_id: str) -> tuple[Question, str | None]:
     """The question (and slot, for a follow-up) behind a pending question id."""
-    base, _, slot = question_id.partition("#")
+    base, _, slot = current_question_id(question_id).partition("#")
     return QUESTION_BY_ID[base], slot or None
 
 

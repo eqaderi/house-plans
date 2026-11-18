@@ -70,7 +70,7 @@ def configure_section(m, mode):
     m.params["sectional_strategy"] = mode
 
 
-def joint_level_variables(md, m, start, length, ctx, mode=None):
+def joint_level_variables(md, m, start, length, ctx, mode=None):  # noqa: C901
     """Return elevation and buried-face variables, constrained by survey lookup."""
     if ctx is None or ctx.ground.surface is None:
         return {}, {}, []

@@ -4,37 +4,11 @@
   "plan": null,
   "soft": [
     {
-      "code": "elongated_room",
-      "constraint_id": null,
-      "evaluator": "ProgramEvaluator",
-      "id": "v-001-elongated-room",
-      "message": "sp-bath-ensuite has a 3.4:1 aspect ratio; check furniture and clear usable dimensions (3:1 is a conceptual review trigger, not a code limit)",
-      "status": "measured",
-      "strength": "soft",
-      "subject_ids": [
-        "sp-bath-ensuite",
-        "pi-bath-ensuite"
-      ]
-    },
-    {
-      "code": "elongated_room",
-      "constraint_id": null,
-      "evaluator": "ProgramEvaluator",
-      "id": "v-002-elongated-room",
-      "message": "sp-laundry has a 3.0:1 aspect ratio; check furniture and clear usable dimensions (3:1 is a conceptual review trigger, not a code limit)",
-      "status": "measured",
-      "strength": "soft",
-      "subject_ids": [
-        "sp-laundry",
-        "pi-laundry"
-      ]
-    },
-    {
       "code": "program_item_missing",
       "constraint_id": null,
       "evaluator": "ProgramEvaluator",
-      "id": "v-003-program-item-missing",
-      "message": "Stair (pi-stair): 0 of 1 placed; not needed in a one-level concept",
+      "id": "v-001-program-item-missing",
+      "message": "Stair (pi-stair): 0 of 1 placed; not needed in a one-level plan option",
       "status": "measured",
       "strength": "soft",
       "subject_ids": [
@@ -42,11 +16,11 @@
       ]
     },
     {
-      "code": "level_count_differs",
+      "code": "storey_count_differs",
       "constraint_id": null,
       "evaluator": "ProgramEvaluator",
-      "id": "v-004-level-count-differs",
-      "message": "the program asks for 2 storey(s); this concept has 1 floor level(s)",
+      "id": "v-002-storey-count-differs",
+      "message": "the program asks for 2 storey(s); this plan option has 1 storey(s) on 1 level(s)",
       "status": "measured",
       "strength": "soft",
       "subject_ids": []
@@ -55,7 +29,7 @@
       "code": "soft_adjacency_unmet",
       "constraint_id": "c-adj-12-laundry-kitchen",
       "evaluator": "AdjacencyEvaluator",
-      "id": "v-005-soft-adjacency-unmet",
+      "id": "v-003-soft-adjacency-unmet",
       "message": "adj-12-laundry-kitchen: pi-laundry near pi-kitchen is not met",
       "status": "measured",
       "strength": "soft",
@@ -69,7 +43,7 @@
       "code": "soft_adjacency_unmet",
       "constraint_id": "c-adj-14-stair-entry",
       "evaluator": "AdjacencyEvaluator",
-      "id": "v-006-soft-adjacency-unmet",
+      "id": "v-004-soft-adjacency-unmet",
       "message": "adj-14-stair-entry: pi-stair near pi-entry is not met",
       "status": "measured",
       "strength": "soft",
@@ -82,8 +56,8 @@
       "code": "elevated_floor_support_unresolved",
       "constraint_id": null,
       "evaluator": "SiteEvaluator",
-      "id": "v-007-elevated-floor-support-unresolved",
-      "message": "Underfloor void is 419.8 m³, maximum 4.93 m. This is not specified engineered fill; supports, lateral stability, foundations and drainage unresolved.",
+      "id": "v-005-elevated-floor-support-unresolved",
+      "message": "Underfloor void is 379.2 m³, maximum 5.52 m. This is not specified engineered fill; supports, lateral stability, foundations and drainage unresolved.",
       "status": "inferred",
       "strength": "soft",
       "subject_ids": []
@@ -92,29 +66,29 @@
       "code": "large_underfloor_void",
       "constraint_id": null,
       "evaluator": "SiteEvaluator",
-      "id": "v-008-large-underfloor-void",
-      "message": "Void clear height 4.93 m exceeds configured 4 m concept-review trigger.",
+      "id": "v-006-large-underfloor-void",
+      "message": "Void clear height 5.52 m exceeds configured 4 m concept-review trigger.",
       "status": "inferred",
       "strength": "soft",
       "subject_ids": []
     },
     {
-      "code": "garage_ramp_grade_review",
+      "code": "exterior_access_level_unresolved",
       "constraint_id": null,
       "evaluator": "SiteEvaluator",
-      "id": "v-009-garage-ramp-grade-review",
-      "message": "Straight candidate grade -27.5% exceeds configured concept trigger; no designed ramp or regulatory compliance established.",
+      "id": "v-007-exterior-access-level-unresolved",
+      "message": "Threshold differs from outside ground by +0.40 m; steps, ramp or excavated approach need design.",
       "status": "inferred",
       "strength": "soft",
       "subject_ids": [
-        "sp-garage"
+        "d-garage-garage-ext"
       ]
     },
     {
       "code": "needs_professional_structure",
       "constraint_id": null,
       "evaluator": "SiteEvaluator",
-      "id": "v-010-needs-professional-structure",
+      "id": "v-008-needs-professional-structure",
       "message": "Concept load paths, lateral stability and support systems unresolved — needs professional.",
       "status": "inferred",
       "strength": "soft",
@@ -124,7 +98,7 @@
       "code": "needs_professional_foundations",
       "constraint_id": null,
       "evaluator": "SiteEvaluator",
-      "id": "v-011-needs-professional-foundations",
+      "id": "v-009-needs-professional-foundations",
       "message": "Bearing capacity, settlement and footing depths unverified — needs professional.",
       "status": "inferred",
       "strength": "soft",
@@ -134,7 +108,7 @@
       "code": "needs_professional_slope_stability",
       "constraint_id": null,
       "evaluator": "SiteEvaluator",
-      "id": "v-012-needs-professional-slope-stability",
+      "id": "v-010-needs-professional-slope-stability",
       "message": "Survey TIN does not establish geotechnical or slope stability — needs professional.",
       "status": "inferred",
       "strength": "soft",
@@ -144,7 +118,7 @@
       "code": "needs_professional_retaining",
       "constraint_id": null,
       "evaluator": "SiteEvaluator",
-      "id": "v-013-needs-professional-retaining",
+      "id": "v-011-needs-professional-retaining",
       "message": "Retaining requirements have not been professionally assessed — needs professional.",
       "status": "inferred",
       "strength": "soft",
@@ -154,7 +128,7 @@
       "code": "needs_professional_drainage",
       "constraint_id": null,
       "evaluator": "SiteEvaluator",
-      "id": "v-014-needs-professional-drainage",
+      "id": "v-012-needs-professional-drainage",
       "message": "Surface/subsoil drainage and safe discharge unverified — needs professional.",
       "status": "inferred",
       "strength": "soft",
@@ -164,7 +138,7 @@
       "code": "needs_professional_waterproofing",
       "constraint_id": null,
       "evaluator": "SiteEvaluator",
-      "id": "v-015-needs-professional-waterproofing",
+      "id": "v-013-needs-professional-waterproofing",
       "message": "Building-ground moisture details unverified — needs professional.",
       "status": "inferred",
       "strength": "soft",
@@ -174,7 +148,7 @@
       "code": "needs_professional_structure",
       "constraint_id": null,
       "evaluator": "SiteEvaluator",
-      "id": "v-016-needs-professional-structure",
+      "id": "v-014-needs-professional-structure",
       "message": "Underfloor clear space exceeds configured 4 m concept trigger; large void needs review — needs professional.",
       "status": "inferred",
       "strength": "soft",
@@ -184,7 +158,7 @@
       "code": "needs_professional_drainage",
       "constraint_id": null,
       "evaluator": "SiteEvaluator",
-      "id": "v-017-needs-professional-drainage",
+      "id": "v-015-needs-professional-drainage",
       "message": "Terrain-contact door: threshold drainage and approach unresolved — needs professional.",
       "status": "inferred",
       "strength": "soft",
@@ -196,7 +170,7 @@
       "code": "needs_professional_drainage",
       "constraint_id": null,
       "evaluator": "SiteEvaluator",
-      "id": "v-018-needs-professional-drainage",
+      "id": "v-016-needs-professional-drainage",
       "message": "Terrain-contact door: threshold drainage and approach unresolved — needs professional.",
       "status": "inferred",
       "strength": "soft",
@@ -208,7 +182,7 @@
       "code": "needs_professional_vehicle_access",
       "constraint_id": null,
       "evaluator": "SiteEvaluator",
-      "id": "v-019-needs-professional-vehicle-access",
+      "id": "v-017-needs-professional-vehicle-access",
       "message": "Garage ramp approach needs design and professional review — needs professional.",
       "status": "inferred",
       "strength": "soft",
@@ -218,10 +192,22 @@
       ]
     },
     {
+      "code": "needs_professional_foundations",
+      "constraint_id": null,
+      "evaluator": "SiteEvaluator",
+      "id": "v-018-needs-professional-foundations",
+      "message": "Terrace supports, edge protection and garden approach unresolved — needs professional.",
+      "status": "inferred",
+      "strength": "soft",
+      "subject_ids": [
+        "sp-terrace"
+      ]
+    },
+    {
       "code": "terrain_triangle_review",
       "constraint_id": null,
       "evaluator": "SiteEvaluator",
-      "id": "v-020-terrain-triangle-review",
+      "id": "v-019-terrain-triangle-review",
       "message": "Triangle 2 at (12.153666666666664, 0.5386666666666667): sliver; survey review needed, no smoothing.",
       "status": "measured",
       "strength": "soft",
@@ -231,7 +217,7 @@
       "code": "terrain_triangle_review",
       "constraint_id": null,
       "evaluator": "SiteEvaluator",
-      "id": "v-021-terrain-triangle-review",
+      "id": "v-020-terrain-triangle-review",
       "message": "Triangle 6 at (16.392333333333333, 1.4393333333333334): sliver; survey review needed, no smoothing.",
       "status": "measured",
       "strength": "soft",
@@ -241,7 +227,7 @@
       "code": "terrain_triangle_review",
       "constraint_id": null,
       "evaluator": "SiteEvaluator",
-      "id": "v-022-terrain-triangle-review",
+      "id": "v-021-terrain-triangle-review",
       "message": "Triangle 18 at (-3.4733333333333336, 11.530000000000001): sliver, steep_review; survey review needed, no smoothing.",
       "status": "measured",
       "strength": "soft",
@@ -251,7 +237,7 @@
       "code": "terrain_triangle_review",
       "constraint_id": null,
       "evaluator": "SiteEvaluator",
-      "id": "v-023-terrain-triangle-review",
+      "id": "v-022-terrain-triangle-review",
       "message": "Triangle 28 at (23.761, 8.458333333333334): sliver, steep_review; survey review needed, no smoothing.",
       "status": "measured",
       "strength": "soft",
@@ -261,7 +247,7 @@
       "code": "terrain_triangle_review",
       "constraint_id": null,
       "evaluator": "SiteEvaluator",
-      "id": "v-024-terrain-triangle-review",
+      "id": "v-023-terrain-triangle-review",
       "message": "Triangle 29 at (23.206333333333333, 11.067): sliver, steep_review; survey review needed, no smoothing.",
       "status": "measured",
       "strength": "soft",
@@ -271,7 +257,7 @@
       "code": "terrain_triangle_review",
       "constraint_id": null,
       "evaluator": "SiteEvaluator",
-      "id": "v-025-terrain-triangle-review",
+      "id": "v-024-terrain-triangle-review",
       "message": "Triangle 46 at (20.711333333333336, 22.804333333333332): sliver, steep_review; survey review needed, no smoothing.",
       "status": "measured",
       "strength": "soft",
@@ -281,7 +267,7 @@
       "code": "terrain_triangle_review",
       "constraint_id": null,
       "evaluator": "SiteEvaluator",
-      "id": "v-026-terrain-triangle-review",
+      "id": "v-025-terrain-triangle-review",
       "message": "Triangle 50 at (1.2619999999999998, 30.93866666666667): sliver; survey review needed, no smoothing.",
       "status": "measured",
       "strength": "soft",
@@ -291,7 +277,7 @@
       "code": "terrain_triangle_review",
       "constraint_id": null,
       "evaluator": "SiteEvaluator",
-      "id": "v-027-terrain-triangle-review",
+      "id": "v-026-terrain-triangle-review",
       "message": "Triangle 53 at (5.500333333333333, 31.839333333333336): sliver; survey review needed, no smoothing.",
       "status": "measured",
       "strength": "soft",
@@ -299,32 +285,16 @@
     },
     {
       "assumption_basis": "docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption)",
-      "code": "garage_no_sampled_fit",
+      "code": "bed_double_no_sampled_fit",
       "constraint_id": null,
       "evaluator": "FurnitureUsabilityEvaluator",
-      "id": "v-028-garage-no-sampled-fit",
+      "id": "v-027-bed-double-no-sampled-fit",
       "message": "No arrangement in the declared discrete template search; continuous infeasibility has not been proved.",
       "method": "0_1m_four_rotation_room_frame_packing",
       "status": "inferred",
       "strength": "soft",
       "subject_ids": [
-        "sp-garage"
-      ]
-    },
-    {
-      "assumption_basis": "docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption)",
-      "code": "kitchen_through_traffic",
-      "constraint_id": null,
-      "evaluator": "RouteUsabilityEvaluator",
-      "id": "v-029-kitchen-through-traffic",
-      "message": "Portal desire line crosses a work/seating zone; alternate routes may exist.",
-      "method": "direct_desire_line_zone_intersection",
-      "status": "inferred",
-      "strength": "soft",
-      "subject_ids": [
-        "sp-kitchen",
-        "o-kitchen-living",
-        "o-kitchen-dining"
+        "sp-bed-main"
       ]
     },
     {
@@ -332,7 +302,7 @@
       "code": "living_through_traffic",
       "constraint_id": null,
       "evaluator": "RouteUsabilityEvaluator",
-      "id": "v-030-living-through-traffic",
+      "id": "v-028-living-through-traffic",
       "message": "Portal desire line crosses a work/seating zone; alternate routes may exist.",
       "method": "direct_desire_line_zone_intersection",
       "status": "inferred",
@@ -348,7 +318,7 @@
       "code": "living_through_traffic",
       "constraint_id": null,
       "evaluator": "RouteUsabilityEvaluator",
-      "id": "v-031-living-through-traffic",
+      "id": "v-029-living-through-traffic",
       "message": "Portal desire line crosses a work/seating zone; alternate routes may exist.",
       "method": "direct_desire_line_zone_intersection",
       "status": "inferred",
@@ -360,38 +330,69 @@
       ]
     },
     {
+      "assumption_basis": "docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption)",
+      "code": "living_through_traffic",
+      "constraint_id": null,
+      "evaluator": "RouteUsabilityEvaluator",
+      "id": "v-030-living-through-traffic",
+      "message": "Portal desire line crosses a work/seating zone; alternate routes may exist.",
+      "method": "direct_desire_line_zone_intersection",
+      "status": "inferred",
+      "strength": "soft",
+      "subject_ids": [
+        "sp-living",
+        "d-living-corridor-b0",
+        "d-living-terrace"
+      ]
+    },
+    {
+      "assumption_basis": "docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption)",
+      "code": "living_through_traffic",
+      "constraint_id": null,
+      "evaluator": "RouteUsabilityEvaluator",
+      "id": "v-031-living-through-traffic",
+      "message": "Portal desire line crosses a work/seating zone; alternate routes may exist.",
+      "method": "direct_desire_line_zone_intersection",
+      "status": "inferred",
+      "strength": "soft",
+      "subject_ids": [
+        "sp-living",
+        "o-dining-living",
+        "d-living-terrace"
+      ]
+    },
+    {
       "assumption_basis": "assumption max_daily_route_m=15; precedent: docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption); not code checked",
       "code": "daily_route_long",
       "constraint_id": null,
       "evaluator": "RouteUsabilityEvaluator",
       "id": "v-032-daily-route-long",
-      "message": "entry_to_kitchen: 19.714 m point route.",
+      "message": "garage_to_kitchen: 21.979 m point route.",
       "method": "visibility_graph",
       "status": "measured",
       "strength": "soft",
       "subject_ids": [
-        "sp-entry",
+        "sp-garage",
         "sp-kitchen",
-        "sp-entry",
-        "d-entry-corridor-b0",
+        "sp-garage",
+        "d-garage-corridor-b0",
         "d-living-corridor-b0",
         "o-kitchen-living",
         "sp-kitchen"
       ]
     },
     {
-      "assumption_basis": "docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption)",
-      "code": "bedroom_noise_adjacency",
+      "assumption_basis": "assumption min_glazing_ratio=0.1; precedent: docs/adr/0019-usability-geometry-and-assumptions.md (synthetic planning assumption); not code checked",
+      "code": "low_daylight_opportunity",
       "constraint_id": null,
-      "evaluator": "PrivacyUsabilityEvaluator",
-      "id": "v-033-bedroom-noise-adjacency",
-      "message": "Noisy activity beside/above/below sleeping space; acoustic assembly performance is unknown.",
-      "method": "plan_contact_or_stack",
+      "evaluator": "DaylightOpportunityEvaluator",
+      "id": "v-033-low-daylight-opportunity",
+      "message": "Unburied glazing ratio is below assumption; no daylight simulation.",
+      "method": "glazing_area_ratio",
       "status": "inferred",
       "strength": "soft",
       "subject_ids": [
-        "sp-bed-child-2",
-        "sp-garage"
+        "sp-dining"
       ]
     },
     {
@@ -405,7 +406,7 @@
       "status": "inferred",
       "strength": "soft",
       "subject_ids": [
-        "sp-dining"
+        "sp-bed-child-2"
       ]
     },
     {
@@ -414,14 +415,14 @@
       "constraint_id": null,
       "evaluator": "DaylightOpportunityEvaluator",
       "id": "v-035-outdoor-door-grade-mismatch",
-      "message": "Door threshold is 0.303 m relative to grade; check landing/ramp.",
+      "message": "Door threshold is 0.491 m relative to grade; check landing/ramp.",
       "method": "outside_face_tin_interpolation",
       "status": "inferred",
       "strength": "soft",
       "subject_ids": [
-        "d-front-entry-ext",
-        "w-entry-002",
-        "sp-entry"
+        "d-garage-garage-ext",
+        "w-entry-001",
+        "sp-garage"
       ]
     }
   ]

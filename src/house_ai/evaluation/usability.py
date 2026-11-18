@@ -16,12 +16,12 @@ from shapely.ops import unary_union
 
 from house_ai.domain.base import EXTERIOR
 from house_ai.domain.epistemics import ClaimStatus
-from house_ai.domain.model import Operation, WallKind
+from house_ai.domain.model import OpeningKind, Operation, WallKind
 from house_ai.domain.program import Privacy, SpaceFunction, Strength
 from house_ai.domain.terrain import elevation_at, site_surface
 
 from .base import EvaluationContext
-from .evaluators import _Out, _privacy
+from .evaluators import EvaluatorOutput, space_privacy
 from .routes import RouteNetwork, shortest_in_polygon
 from .templates import PROJECT, TEMPLATES, UsabilityPolicy, dimension, template
 from .usability_geometry import (
@@ -65,7 +65,7 @@ def template_front_strip(item, depth):
     return affinity.translate(strip, *item.position)
 
 
-class _CriticOut(_Out):
+class _CriticOut(EvaluatorOutput):
     def result(self):
         result = super().result()
         result.run.version = "1.0.0"
@@ -78,11 +78,10 @@ class _CriticOut(_Out):
         self.metrics[-1].assumption_basis = basis
 
     def flag(self, code, ids, message, *, method="polygon_intersection", basis=PROJECT, status=INF):
-        self.violation(code, Strength.SOFT, message, ids, status)
+        self.violation(code, Strength.SOFT, message, ids, status, method=method)
         self.violations[-1].id = (
             "u-" + sha256((self.name + code + repr(ids) + message).encode()).hexdigest()[:20]
         )
-        self.violations[-1].method = method
         self.violations[-1].assumption_basis = basis
 
 
@@ -147,7 +146,7 @@ class NetAreaEvaluator(Critic):
 class DoorClearanceEvaluator(Critic):
     name = "DoorClearanceEvaluator"
 
-    def evaluate(self, ctx):
+    def evaluate(self, ctx):  # noqa: C901
         out, model, p = _CriticOut(self.name), ctx.model, self.policy
         swings = []
         for o in model.openings:
@@ -215,7 +214,7 @@ class DoorClearanceEvaluator(Critic):
 class StairUsabilityEvaluator(Critic):
     name = "StairUsabilityEvaluator"
 
-    def evaluate(self, ctx):
+    def evaluate(self, ctx):  # noqa: C901
         out, model, p = _CriticOut(self.name), ctx.model, self.policy
         for st in model.stairs:
             ids = [st.id]
@@ -514,7 +513,7 @@ class FurnitureUsabilityEvaluator(Critic):
                     )
                 self._kitchen_aisles(out, s, counters)
             item = (
-                next((i for i in ctx.program.items if i.id == s.program_item_id), None)
+                next((i for i in ctx.program.space_requirements if i.id == s.program_item_id), None)
                 if ctx.program
                 else None
             )
@@ -677,9 +676,9 @@ class FurnitureUsabilityEvaluator(Critic):
         if s.function in {S.BEDROOM, S.GUEST_SUITE}:
             # Undesignated rooms must hold a single bed; the double study is information only.
             variants = [("bed-double", False), ("bed-single", True)]
-            if req and s.program_item_id in req.double_bed_program_item_ids:
+            if req and s.program_item_id in req.double_bed_space_requirement_ids:
                 variants = [("bed-double", True)]
-            elif req and s.program_item_id in req.single_bed_program_item_ids:
+            elif req and s.program_item_id in req.single_bed_space_requirement_ids:
                 variants = [("bed-single", True)]
             return [
                 (v.replace("-", "_"), [TEMPLATES[v], TEMPLATES["wardrobe"]], required)
@@ -750,10 +749,10 @@ def _route_method(route, missing):
 class RouteUsabilityEvaluator(Critic):
     name = "RouteUsabilityEvaluator"
 
-    def evaluate(self, ctx):
+    def evaluate(self, ctx):  # noqa: C901
         out, model, p = _CriticOut(self.name), ctx.model, self.policy
         net = RouteNetwork.for_model(model)
-        privacy = _privacy(model)
+        privacy = space_privacy(model)
         crossing_routes = 0
         guest_routes_complete = True
         guest_routes_estimated = False
@@ -980,6 +979,19 @@ class DaylightOpportunityEvaluator(Critic):
             and site.coordinates.local.id == model.coordinate_system_id
         )
         surface = site_surface(site) if site and frame_matches else None
+        # A window in a retaining wall has earth behind it: the wall's kind says so, with or
+        # without terrain, whatever the room (ADR 0033).
+        walls = {w.id: w for w in model.walls}
+        for window in model.openings:
+            host = walls.get(window.host_wall_id)
+            if window.kind is OpeningKind.WINDOW and host and host.kind is WallKind.RETAINING:
+                out.flag(
+                    "window_buried",
+                    [window.id, host.id, *(e for e in window.connects if e != EXTERIOR)],
+                    "This window is in a retaining wall: earth is behind it.",
+                    method="host_wall_is_retaining",
+                    status=M,
+                )
         for s in model.spaces:
             if s.function not in HABITABLE:
                 continue
@@ -1017,6 +1029,8 @@ class DaylightOpportunityEvaluator(Critic):
                         contact.length * sum(z <= floor_z + p.potential_sill_m for z in zs) / count
                     )
                 for window in windows:
+                    if wall.kind == WallKind.RETAINING:
+                        continue  # no glazing, reported above
                     wseg = opening_segment(model, window)
                     samples = [wseg.interpolate(t, normalized=True) for t in (0, 0.5, 1)]
                     ground = [
@@ -1026,9 +1040,7 @@ class DaylightOpportunityEvaluator(Critic):
                         unknown_ground = True
                         continue
                     available = (
-                        0
-                        if wall.kind == WallKind.RETAINING
-                        else sum(
+                        sum(
                             min(
                                 window.height_m,
                                 max(0, floor_z + window.sill_m + window.height_m - z),

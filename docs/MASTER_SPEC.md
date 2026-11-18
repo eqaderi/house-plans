@@ -126,13 +126,12 @@ Implement:
 
 inspect_cad()
 extract_cad()
-classify_layers()
-extract_boundary()
-extract_contours()
-extract_spot_elevations()
+LayerMapping.role_of()                (classify each layer by role)
+MappedLayerSiteExtractor.extract()    (boundary, contours, spot elevations
+                                       and features in one pass)
 build_terrain()
 set_coordinate_reference_system()
-create_local_coordinate_system()
+LocalCoordinateSystem(...)            (constructed directly)
 
 Every import must create provenance including:
 
@@ -148,7 +147,7 @@ Every import must create provenance including:
 - warnings;
 - unrecognized layers/entities.
 
-If CRS or units are ambiguous, mark SITE_NEEDS_VERIFICATION and stop.
+If CRS or units are ambiguous, mark SITE_NEEDS_CONFIRMATION and stop.
 Never silently continue.
 
 Preserve the original input as immutable.
@@ -427,13 +426,13 @@ Implement explicit workflow states.
 
 NEW_PROJECT
 SITE_INGESTION
-SITE_NEEDS_VERIFICATION
+SITE_NEEDS_CONFIRMATION
 SITE_APPROVED
 INTERVIEWING
 PROGRAM_REVIEW
 PROGRAM_APPROVED
-CONCEPT_GENERATION
-CONCEPT_REVIEW
+PLAN_GENERATION
+PLAN_REVIEW
 PLAN_APPROVED
 BLENDER_BUILD
 BLENDER_REVIEW

@@ -20,11 +20,6 @@ DEFAULT_DET_TIME_BUDGET = 5.0
 #: Default solver random seed.
 DEFAULT_SOLVER_SEED = 0
 
-#: Wall thicknesses for canonical model assembly from 2D placement.
-WALL_THICKNESS_INTERIOR_M = 0.15
-WALL_THICKNESS_EXTERIOR_M = 0.30
-WALL_HEIGHT_M = 2.8
-
 #: Default opening dimensions.
 DOOR_WIDTH_DEFAULT_M = 0.8
 DOOR_HEIGHT_DEFAULT_M = 2.1

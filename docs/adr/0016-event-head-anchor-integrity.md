@@ -6,7 +6,7 @@ Status: accepted (S1 follow-up, 2026-10-17)
 
 The S1 head anchor detects tail truncation only until the next write replaces
 it. A missing anchor also looks like a legacy store. Verification must remain
-read-only, including for the existing homeowner project.
+read-only, including for the owner's existing project.
 
 ## Decision
 

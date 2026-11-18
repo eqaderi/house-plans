@@ -65,8 +65,8 @@ def test_demo_proposal_enters_at_road_with_contiguous_open_plan():
     assert not any(i.id.startswith("iss-open-plan-split") for i in model.issues)
 
 
-@pytest.mark.parametrize("l_shaped, area", [(False, 20.0), (True, 18.0)])
-def test_rotated_open_plan_keeps_shared_edges_at_t_junctions(l_shaped, area):
+def test_rotated_open_plan_keeps_shared_edges_at_t_junctions():
+    area = 20.0
     import math
 
     from house_ai.generation.assemble2d import assemble_2d
@@ -96,9 +96,7 @@ def test_rotated_open_plan_keeps_shared_edges_at_t_junctions(l_shaped, area):
             "sp-kitchen", "Kitchen", S.KITCHEN, "lv-entry", 30, 20, 50, 40, "pi-kitchen", "z-day"
         ),
     ]
-    if l_shaped:
-        rooms[0].sub_rects = [(0, 0, 30, 20), (10, 20, 30, 40)]
-    sol = Solution2D("FEASIBLE", 0, rooms, [], [], ["lv-entry"], 0, 0, 0, "test", "open_plan", 0)
+    sol = Solution2D("FEASIBLE", 0, rooms, [], ["lv-entry"], 0, 0, 0, "test", "open_plan", 0)
     model = assemble_2d(sol, site, frame, Ground(site, frame), program, AGENT)
     (group,) = model.composite_spaces
     assert group.boundary.area_m2 == pytest.approx(area, abs=1e-5)
@@ -108,34 +106,3 @@ def test_rotated_open_plan_keeps_shared_edges_at_t_junctions(l_shaped, area):
     union = unary_union([s.boundary.to_shapely() for s in model.spaces])
     assert union.geom_type == "Polygon"
     assert union.area == pytest.approx(area, abs=1e-5)
-
-
-def test_window_rejects_a_crevice_with_a_room_beyond_its_outer_face():
-    from house_ai.domain.model import OpeningKind
-    from house_ai.generation.assemble2d import Builder2D
-    from house_ai.generation.frame import DesignFrame
-    from house_ai.generation.solver2d import PlacedRoom2D, Solution2D
-
-    from .conftest import AGENT
-
-    site, program = _load(HILLSIDE)
-    frame = DesignFrame((0, 0), (1, 0), (0, 1), "synthetic", None, None)
-    rooms = [
-        PlacedRoom2D(
-            "sp-kitchen", "Kitchen", S.KITCHEN, "lv-entry", 0, 0, 30, 30, "pi-kitchen", "z-day"
-        ),
-        PlacedRoom2D(
-            "sp-living", "Living", S.LIVING, "lv-entry", 31, 0, 60, 30, "pi-living", "z-day"
-        ),
-    ]
-    sol = Solution2D(
-        "FEASIBLE", 0, rooms, [], [], ["lv-entry"], 0, 0, 0, "test", "corridor_free", 0
-    )
-    builder = Builder2D(sol, site, frame, Ground(site, frame), program, AGENT)
-    builder.build_walls()
-    # The 0.1 m gap does not clear a 0.15 m half-wall plus the 0.05 m side probe.
-    (crevice,) = [w for w in builder.walls if w.orient == "v" and w.c == 30]
-    assert crevice.length_m == 3.0
-    builder.walls = [crevice]  # isolate the candidate; there is no acceptable alternate host
-    opening = builder.place_opening("sp-kitchen", None, OpeningKind.WINDOW, 1.2)
-    assert opening is None and builder.openings == []

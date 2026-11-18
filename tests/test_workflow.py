@@ -7,20 +7,24 @@ from pydantic import ValidationError
 
 from house_ai.domain.build import BuildRecord
 from house_ai.domain.evaluation import EvaluationReport
-from house_ai.domain.provenance import ArtifactKind, ArtifactRef
+from house_ai.domain.provenance import ApprovalRequiresHuman, ArtifactKind, ArtifactRef
 from house_ai.domain.workflow import Approval, EventType, Gate, WorkflowState
+from house_ai.orchestration.site import SiteService
 from house_ai.orchestration.workflow import (
     GATES,
     TRANSITIONS,
-    ApprovalRequiresHuman,
     GateBlocked,
+    HumanAction,
+    NextHumanAction,
     TransitionNotAllowed,
+    UseProgramReject,
     Workflow,
     WorkflowError,
     replay,
 )
 from house_ai.storage import ProjectStore
 from house_ai.storage.importer import import_folder
+from house_ai.storage.project_store import HEAD_ANCHOR_REQUIRED
 
 from .conftest import AGENT, EXAMPLE, HUMAN, SYSTEM, example_doc
 
@@ -59,8 +63,7 @@ class Project:
         return self.ref(K.PLAN, "plan-a")
 
     def to_site_review(self) -> None:
-        self.wf.transition(S.SITE_INGESTION, AGENT, "survey loaded")
-        assert self.wf.assess_site(self.site, AGENT) == []
+        assert SiteService(self.store).assess(self.site, AGENT).blockers == []
 
     def to_site_approved(self) -> None:
         self.to_site_review()
@@ -77,8 +80,8 @@ class Project:
 
     def to_concept_review(self) -> None:
         self.to_program_approved()
-        self.wf.transition(S.CONCEPT_GENERATION, AGENT, "generate concepts")
-        self.wf.transition(S.CONCEPT_REVIEW, AGENT, "concepts ready")
+        self.wf.transition(S.PLAN_GENERATION, AGENT, "generate concepts")
+        self.wf.transition(S.PLAN_REVIEW, AGENT, "concepts ready")
 
     def to_plan_approved(self) -> None:
         self.to_concept_review()
@@ -144,7 +147,7 @@ def test_gated_states_cannot_be_reached_by_transition(project, gate):
 
 def test_cannot_jump_ahead(project):
     with pytest.raises(TransitionNotAllowed, match="allowed: SITE_INGESTION"):
-        project.wf.transition(S.CONCEPT_GENERATION, AGENT, "let's just design")
+        project.wf.transition(S.PLAN_GENERATION, AGENT, "let's just design")
     assert project.wf.state is S.NEW_PROJECT
 
 
@@ -177,22 +180,65 @@ def test_approval_record_rejects_non_human_even_if_built_directly(project):
         )
 
 
+def _codes(status_or_error) -> list[tuple[str, str]]:
+    """(kind, code) of each Blocker in a gate status or a GateBlocked refusal."""
+    return [(b.kind.value, b.code) for b in status_or_error.blockers]
+
+
+def _refusal(approve) -> list[tuple[str, str]]:
+    with pytest.raises(GateBlocked) as exc:
+        approve()
+    return _codes(exc.value)
+
+
 def test_approval_from_the_wrong_state_is_blocked(project):
-    with pytest.raises(GateBlocked, match="approved from SITE_INGESTION"):
-        project.wf.approve(Gate.SITE, project.site, HUMAN, "too early")
+    refusal = _refusal(lambda: project.wf.approve(Gate.SITE, project.site, HUMAN, "too early"))
+    assert refusal == [("workflow_state", "wrong_state")]
 
 
 def test_gate_rejects_the_wrong_artifact_kind(project):
     project.to_site_review()
-    with pytest.raises(GateBlocked, match="approves a site"):
-        project.wf.approve(Gate.SITE, project.program, HUMAN, "wrong thing")
+    refusal = _refusal(lambda: project.wf.approve(Gate.SITE, project.program, HUMAN, "wrong"))
+    assert refusal == [("artifact", "wrong_kind")]
 
 
 def test_gate_rejects_a_hash_that_does_not_match(project):
     project.to_site_review()
     forged = project.site.model_copy(update={"sha256": "0" * 64})
-    with pytest.raises(GateBlocked, match="no such artifact version"):
-        project.wf.approve(Gate.SITE, forged, HUMAN, "approve")
+    refusal = _refusal(lambda: project.wf.approve(Gate.SITE, forged, HUMAN, "approve"))
+    assert refusal == [("artifact", "not_in_store")]
+
+
+def test_gate_status_of_an_approvable_gate(project):
+    project.to_site_review()
+    status = project.wf.gate_status(Gate.SITE, project.site)
+    assert (status.gate, status.artifact, status.in_review_state) == (Gate.SITE, project.site, True)
+    assert (status.blockers, status.attention) == ([], [])
+
+
+def test_gate_status_outside_the_review_state(project):
+    status = project.wf.gate_status(Gate.PROGRAM, project.program)
+    assert status.in_review_state is False
+    assert _codes(status) == [("workflow_state", "wrong_state")]
+    assert status.open_reasons == [
+        "the program gate is approved from PROGRAM_REVIEW; the project is in NEW_PROJECT"
+    ]
+
+
+def test_the_approval_request_keeps_its_saved_shape(project):
+    doc = example_doc("open_questions.yaml")
+    doc["questions"][0]["blocking"] = True
+    project.store.put(K.OPEN_QUESTIONS, "open-questions", doc, AGENT)
+    project.to_program_review()
+
+    status = project.wf.request_approval(Gate.PROGRAM, project.program, AGENT)
+
+    event = project.store.events()[-1]
+    assert event.type is EventType.APPROVAL_REQUESTED
+    assert set(event.payload) - {HEAD_ANCHOR_REQUIRED} == {"gate", "artifact", "open_reasons"}
+    assert event.payload["open_reasons"] == [b.message for b in status.blockers]
+    assert _codes(status) == [("open_question", "q-study")]
+    assert project.store.verify() == []
 
 
 # ------------------------------------------------------------------- site gate
@@ -204,12 +250,11 @@ def test_ambiguous_site_stops_at_needs_verification(project):
     doc["coordinates"]["source_units"] = {"unit": "mm", "status": "declared_in_source"}
     unsure = project.store.put(K.SITE, "site", doc, AGENT)
 
-    project.wf.transition(S.SITE_INGESTION, AGENT, "survey loaded")
-    blockers = project.wf.assess_site(unsure, AGENT)
+    blockers = SiteService(project.store).assess(unsure, AGENT).blockers
     assert len(blockers) == 2
-    assert project.wf.state is S.SITE_NEEDS_VERIFICATION
+    assert project.wf.state is S.SITE_NEEDS_CONFIRMATION
     last = project.store.events()[-1]
-    assert last.payload["blockers"] == blockers
+    assert last.payload["blockers"] == [b.message for b in blockers]
 
     # Nothing can be approved, and no way forward except back to ingestion.
     with pytest.raises(GateBlocked):
@@ -222,17 +267,39 @@ def test_ambiguous_site_stops_at_needs_verification(project):
     confirmed = project.store.put(K.SITE, "site", doc, HUMAN)
     assert confirmed.version == unsure.version + 1
     project.wf.transition(S.SITE_INGESTION, HUMAN, "units and CRS confirmed")
-    assert project.wf.assess_site(confirmed, AGENT) == []
+    assert SiteService(project.store).assess(confirmed, AGENT).blockers == []
 
     # The ambiguous version still cannot be approved; the confirmed one can.
-    with pytest.raises(GateBlocked, match="drawing units"):
-        project.wf.approve(Gate.SITE, unsure, HUMAN, "old version")
+    assert _refusal(lambda: project.wf.approve(Gate.SITE, unsure, HUMAN, "old version")) == [
+        ("site_fact", "source_units"),
+        ("site_fact", "horizontal_crs"),
+    ]
     approval = project.wf.approve(Gate.SITE, confirmed, HUMAN, "site truth confirmed")
     assert approval.artifact == confirmed
     assert project.wf.state is S.SITE_APPROVED
 
 
 # ---------------------------------------------------------------- program gate
+
+
+@pytest.mark.parametrize("actor", [HUMAN, AGENT, SYSTEM])
+def test_only_program_reject_leaves_program_review(project, actor):
+    project.to_program_review()
+    events = len(project.store.events())
+
+    with pytest.raises(UseProgramReject, match="program reject") as refused:
+        project.wf.transition(S.INTERVIEWING, actor, "undo the review")
+
+    assert refused.value.next_action == NextHumanAction(HumanAction.REJECT_PROGRAM, Gate.PROGRAM)
+    assert project.wf.state is S.PROGRAM_REVIEW
+    assert len(project.store.events()) == events
+
+
+def test_program_review_advertises_no_transition(project):
+    # Only the Owner's program reject leaves PROGRAM_REVIEW (backwards); approval is the
+    # gate. Nothing a transition would refuse is offered as an allowed move.
+    project.to_program_review()
+    assert project.wf.allowed_transitions() == []
 
 
 def test_program_review_needs_a_program(store):
@@ -250,8 +317,8 @@ def test_blocking_open_question_blocks_the_program(project):
     doc["questions"][0]["blocking"] = True
     project.store.put(K.OPEN_QUESTIONS, "open-questions", doc, AGENT)
     project.to_program_review()
-    with pytest.raises(GateBlocked, match="q-study"):
-        project.wf.approve(Gate.PROGRAM, project.program, HUMAN, "approve")
+    refusal = _refusal(lambda: project.wf.approve(Gate.PROGRAM, project.program, HUMAN, "ok"))
+    assert refusal == [("open_question", "q-study")]
 
 
 def test_unresolved_contradiction_in_the_cited_brief_blocks_the_program(project):
@@ -268,7 +335,10 @@ def test_unresolved_contradiction_in_the_cited_brief_blocks_the_program(project)
     program["brief_ref"] = brief_ref.model_dump(mode="json")
     program_ref = project.store.put(K.SPACE_PROGRAM, "program", program, AGENT)
     project.to_program_review()
-    with pytest.raises(GateBlocked, match="ct-1"):
+    status = project.wf.gate_status(Gate.PROGRAM, program_ref)
+    assert _codes(status) == [("contradiction", "ct-1")]
+    assert status.blockers[0].subject_ids == ["ct-1"]
+    with pytest.raises(GateBlocked):
         project.wf.approve(Gate.PROGRAM, program_ref, HUMAN, "approve")
 
 
@@ -282,9 +352,8 @@ def test_plan_gate_reruns_integrity_checks(project):
     living["boundary"]["outer"] = [[10, 12], [17, 12], [17, 17], [10, 17]]
     broken = project.store.put(K.PLAN, "plan-b", doc, AGENT)
     project.to_concept_review()
-    with pytest.raises(GateBlocked) as exc:
-        project.wf.approve(Gate.PLAN, broken, HUMAN, "approve")
-    assert any("space_overlap" in r for r in exc.value.reasons)
+    refusal = _refusal(lambda: project.wf.approve(Gate.PLAN, broken, HUMAN, "approve"))
+    assert ("integrity", "space_overlap") in refusal
     project.wf.approve(Gate.PLAN, project.plan, HUMAN, "approve the valid one")
 
 
@@ -296,9 +365,11 @@ def test_plan_must_be_drawn_on_the_approved_site_and_program(project):
     doc["model"]["site_ref"]["sha256"] = "f" * 64
     doc["model"]["program_ref"] = None
     stale = project.store.put(K.PLAN, "plan-c", doc, AGENT)
-    reasons = project.wf.check_gate(Gate.PLAN, stale)
-    assert "plan is not drawn on the approved site version" in reasons
-    assert "plan is not derived from the approved program version" in reasons
+    status = project.wf.gate_status(Gate.PLAN, stale)
+    assert _codes(status)[:2] == [
+        ("pinned_input", "site_version"),
+        ("pinned_input", "program_version"),
+    ]
 
 
 def test_hard_violation_in_an_evaluation_blocks_the_plan(project):
@@ -321,8 +392,8 @@ def test_hard_violation_in_an_evaluation_blocks_the_plan(project):
         provenance=PROV,
     )
     project.store.put(K.EVALUATION_REPORT, "eval-1", report, AGENT)
-    with pytest.raises(GateBlocked, match="bath below minimum"):
-        project.wf.approve(Gate.PLAN, project.plan, HUMAN, "approve")
+    refusal = _refusal(lambda: project.wf.approve(Gate.PLAN, project.plan, HUMAN, "approve"))
+    assert refusal == [("hard_violation", "min_area")]
 
 
 # ------------------------------------------------------------------ model gate
@@ -341,8 +412,26 @@ def test_model_gate_rejects_a_build_of_another_plan(project):
     other_plan = project.store.put(K.PLAN, "plan-b", doc, AGENT)
     project.to_blender_review()
     wrong = project.put_build("blender", plan=other_plan)
-    with pytest.raises(GateBlocked, match="not generated from the approved plan"):
-        project.wf.approve(Gate.MODEL, wrong, HUMAN, "approve")
+    refusal = _refusal(lambda: project.wf.approve(Gate.MODEL, wrong, HUMAN, "approve"))
+    assert refusal == [("pinned_input", "plan_version")]
+
+
+def test_gate_status_reports_a_stale_approval_and_the_newer_version(project):
+    project.to_program_approved()
+    status = project.wf.gate_status(Gate.PROGRAM, project.program)
+    assert status.approval is not None and status.approval.artifact == project.program
+    assert (status.stale, status.stale_against) == (False, None)
+
+    doc = example_doc("space_program.yaml")
+    doc["target_gross_area_m2"] = (doc.get("target_gross_area_m2") or 100.0) + 50.0
+    v2 = project.store.put(K.SPACE_PROGRAM, "program", doc, AGENT)
+
+    status = project.wf.gate_status(Gate.PROGRAM, project.program)
+    assert (status.stale, status.stale_against) == (True, v2)
+    assert status.stale_against.version == 2
+    # A gate with no approval is never stale.
+    assert project.wf.gate_status(Gate.PLAN, project.plan).approval is None
+    assert project.wf.gate_status(Gate.PLAN, project.plan).stale is False
 
 
 # ---------------------------------------------------------------------- reopen
@@ -354,7 +443,7 @@ def test_reopening_the_plan_supersedes_plan_and_model_only(project):
     project.wf.reopen(Gate.PLAN, HUMAN, "make the kitchen larger")
 
     status = project.wf.status()
-    assert status.state is S.CONCEPT_REVIEW
+    assert status.state is S.PLAN_REVIEW
     assert set(status.approvals) == {Gate.SITE, Gate.PROGRAM}
     assert {a.gate for a in status.superseded} == {Gate.PLAN, Gate.MODEL}
     # Revising and re-approving works; the history keeps both approvals.
@@ -384,8 +473,9 @@ def test_cannot_reopen_an_unapproved_gate(project):
 
 def test_agents_may_request_approval(project):
     project.to_site_review()
-    event = project.wf.request_approval(Gate.SITE, project.site, AGENT)
-    assert event.actor == AGENT and event.payload["open_reasons"] == []
+    status = project.wf.request_approval(Gate.SITE, project.site, AGENT)
+    event = project.store.events()[-1]
+    assert event.actor == AGENT and status.blockers == []
     assert project.wf.status().pending_requests[Gate.SITE] == project.site
     project.wf.approve(Gate.SITE, project.site, HUMAN, "ok")
     assert project.wf.status().pending_requests == {}
@@ -397,7 +487,7 @@ def test_replay_rejects_an_out_of_sequence_log(project):
     bogus = events[-1].model_copy(
         update={
             "type": EventType.TRANSITION,
-            "from_state": S.CONCEPT_REVIEW,
+            "from_state": S.PLAN_REVIEW,
             "to_state": S.PLAN_APPROVED,
         }
     )
@@ -407,8 +497,8 @@ def test_replay_rejects_an_out_of_sequence_log(project):
 
 def test_revision_concept_loop_is_allowed(project):
     project.to_concept_review()
-    project.wf.transition(S.CONCEPT_GENERATION, HUMAN, "I hate this option; start again")
-    project.wf.transition(S.CONCEPT_REVIEW, AGENT, "new options ready")
+    project.wf.transition(S.PLAN_GENERATION, HUMAN, "I hate this option; start again")
+    project.wf.transition(S.PLAN_REVIEW, AGENT, "new options ready")
     assert project.wf.status().approvals.keys() == {Gate.SITE, Gate.PROGRAM}
 
 
@@ -419,8 +509,8 @@ def test_contradiction_in_an_uncited_brief_still_blocks_the_program(project):
     ]
     project.store.put(K.DESIGN_BRIEF, "brief", brief, AGENT)
     project.to_program_review()
-    with pytest.raises(GateBlocked, match="ct-2"):
-        project.wf.approve(Gate.PROGRAM, project.program, HUMAN, "approve")
+    refusal = _refusal(lambda: project.wf.approve(Gate.PROGRAM, project.program, HUMAN, "ok"))
+    assert refusal == [("contradiction", "ct-2")]
 
 
 def test_agents_cannot_reopen_a_gate(project):
@@ -434,8 +524,9 @@ def test_program_gate_rejects_unknown_source_fact_ids(project):
     program["items"][0]["source_fact_ids"] = ["f-nonexistent"]
     prog_ref = project.store.put(K.SPACE_PROGRAM, "program", program, AGENT)
     project.to_program_review()
-    with pytest.raises(GateBlocked, match="f-nonexistent"):
-        project.wf.approve(Gate.PROGRAM, prog_ref, HUMAN, "approve")
+    status = project.wf.gate_status(Gate.PROGRAM, prog_ref)
+    assert _codes(status) == [("program_check", "unknown_fact")]
+    assert status.blockers[0].subject_ids == ["f-nonexistent"]
 
 
 def test_plan_gate_blocks_program_min_area_without_evaluation_report(project):
@@ -449,6 +540,6 @@ def test_plan_gate_blocks_program_min_area_without_evaluation_report(project):
     ]
     small = project.store.put(K.PLAN, "plan-small-bath", doc, AGENT)
     project.to_concept_review()
-    with pytest.raises(GateBlocked, match="min_area_violation"):
-        project.wf.approve(Gate.PLAN, small, HUMAN, "approve")
+    refusal = _refusal(lambda: project.wf.approve(Gate.PLAN, small, HUMAN, "approve"))
+    assert ("integrity", "min_area_violation") in refusal
 

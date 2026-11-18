@@ -128,4 +128,4 @@ def test_hillside_program_came_from_the_program_builder():
     assert any(a["id"] == "asm-hillside-engineering" for a in asm["assumptions"])
     program = load_document(HILLSIDE / "space_program.yaml")
     assert program["provenance"]["method"] == "program_from_brief"
-    assert program["levels"] == 2
+    assert program["storeys"] == 2

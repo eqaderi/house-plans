@@ -29,7 +29,7 @@ from dataclasses import dataclass, field
 
 from ortools.sat.python import cp_model
 
-from house_ai.domain.program import AdjacencyKind, SpaceFunction, Strength
+from house_ai.domain.program import SpaceFunction, SpaceRelationshipKind, Strength
 
 from .massing import Bar, Massing, MassingContext, Row, room_group
 from .rooms import Cluster, ProgramRooms, Relation, RoomSpec, Slot
@@ -63,7 +63,9 @@ HABITABLE_GROUPS = {"day", "night", "guest"}
 
 
 @dataclass
-class SolverOptions:
+class BarOptions:
+    """What the bar solver reads (ADR 0032); the bar engine fills it in."""
+
     seed: int = 0
     #: CP-SAT deterministic time budget (solver work units, not wall-clock seconds).
     deterministic_time: float = 4.0
@@ -79,14 +81,7 @@ class SolverOptions:
     bar_hints: dict[str, int] = field(default_factory=dict)
     #: Objective scales from the constraint set (objective name -> weight).
     objective_weights: dict[str, float] = field(default_factory=dict)
-    #: Stair position override ("entry", "perimeter", "central", "rear") (S7-16, S7-21).
-    stair_position: str | None = None
-    #: Outdoor links (space_id, kind) (S7-19, S7-21).
-    outdoor_links: list[tuple[str, str]] = field(default_factory=list)
-    #: Force 2D placement solver (S7-10).
-    force_2d: bool = False
-    min_areas: dict[str, float] = field(default_factory=dict)
-    min_widths: dict[str, float] = field(default_factory=dict)
+    #: The massing context and sectional strategy the joint level variables read.
     terrain_context: MassingContext | None = None
     sectional_strategy: str | None = None
 
@@ -194,7 +189,7 @@ def _stair_range(rooms: ProgramRooms, rng: tuple[int, int], depth: int) -> tuple
     return lo, max(lo, rng[1])
 
 
-def build_units(m: Massing, rooms: ProgramRooms) -> tuple[list[Unit], list[str]]:
+def build_units(m: Massing, rooms: ProgramRooms) -> tuple[list[Unit], list[str]]:  # noqa: C901
     """Units to place and reasons a cluster has nowhere to go (empty when feasible)."""
     entry_z = m.entry_elevation_m
     has_lift = any(r.function is SpaceFunction.LIFT for r in rooms.rooms)
@@ -274,7 +269,7 @@ def _level_penalty(pref: str | None, bar: Bar, m: Massing) -> int:
     return 0
 
 
-def solve(m: Massing, rooms: ProgramRooms, opts: SolverOptions) -> Solution:
+def solve(m: Massing, rooms: ProgramRooms, opts: BarOptions) -> Solution:  # noqa: C901
     units, problems = build_units(m, rooms)
     if problems:
         raise SolveFailed("; ".join(problems))
@@ -658,7 +653,7 @@ def _relation(md, rel: Relation, ua: Unit, ub: Unit, x, st, width, bar_of, obj, 
     else:
         md.Add(same_bar == 0)
     hard = rel.strength is Strength.HARD
-    K = AdjacencyKind
+    K = SpaceRelationshipKind
     if rel.kind in (K.ADJACENT, K.CONNECTED):
         if hard:
             md.Add(touch == 1)

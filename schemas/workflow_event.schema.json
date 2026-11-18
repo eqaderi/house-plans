@@ -82,13 +82,13 @@
       "enum": [
         "NEW_PROJECT",
         "SITE_INGESTION",
-        "SITE_NEEDS_VERIFICATION",
+        "SITE_NEEDS_CONFIRMATION",
         "SITE_APPROVED",
         "INTERVIEWING",
         "PROGRAM_REVIEW",
         "PROGRAM_APPROVED",
-        "CONCEPT_GENERATION",
-        "CONCEPT_REVIEW",
+        "PLAN_GENERATION",
+        "PLAN_REVIEW",
         "PLAN_APPROVED",
         "BLENDER_BUILD",
         "BLENDER_REVIEW",
@@ -103,7 +103,7 @@
   "$id": "https://house-ai.local/schemas/workflow_event.schema.json",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "additionalProperties": false,
-  "description": "One line of events.jsonl. ``hash`` chains each event to the previous one.",
+  "description": "One line of events.jsonl. ``hash`` chains each event to the previous one.\n\nAn event saved with an old state name (ADR 0025) reads as the current state\nand is written back with the name it was saved with, so its hash holds.",
   "properties": {
     "actor": {
       "$ref": "#/$defs/Actor"
