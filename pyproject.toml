@@ -51,4 +51,9 @@ line-length = 100
 target-version = "py313"
 
 [tool.ruff.lint]
-select = ["E", "F", "I", "UP", "B"]
+select = ["E", "F", "I", "UP", "B", "C90"]
+
+# Functions over the limit when it was introduced carry `# noqa: C901`; remove the
+# suppression when one is split up. New code stays within the limit.
+[tool.ruff.lint.mccabe]
+max-complexity = 15

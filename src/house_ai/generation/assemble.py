@@ -399,7 +399,7 @@ class _Builder:
                 [room] + ([other] if other else []),
             )
 
-    def build_openings(self) -> None:
+    def build_openings(self) -> None:  # noqa: C901
         corridor_of = {s.bar_id: s.id for s in self.spaces if s.kind == "corridor"}
         entry_bar = next(b for b in self.m.bars if b.entry)
         entry_level = self.level_of(entry_bar)

@@ -421,7 +421,7 @@ class _Builder:
         if item_id in self.typical:
             self.typical.remove(item_id)
 
-    def _relations(self) -> None:
+    def _relations(self) -> None:  # noqa: C901
         f = self.f
         K, H, Sf = SpaceRelationshipKind, Strength.HARD, Strength.SOFT
         self.link("pi-entry", EXTERIOR, K.CONNECTED, H, "The front door opens into the hall")

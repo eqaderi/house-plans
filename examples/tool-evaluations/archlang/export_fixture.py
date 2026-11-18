@@ -106,7 +106,7 @@ def fixture() -> HouseModel:
     )
 
 
-def export(model: HouseModel) -> str:
+def export(model: HouseModel) -> str:  # noqa: C901
     """Restricted diagnostic adapter; refuse geometry/semantics not covered by this trial.
 
     HouseModel y-up metres -> screen y-down mm by (x, y) -> (1000*x, -1000*y).

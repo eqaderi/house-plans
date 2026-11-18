@@ -159,7 +159,7 @@ def soft_objectives_report(
     return sorted(out, key=lambda x: x[0])
 
 
-def explanation_markdown(
+def explanation_markdown(  # noqa: C901
     plan: PlanVersion,
     version: int | None,
     report: EvaluationReport,

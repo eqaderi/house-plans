@@ -38,7 +38,7 @@ def is_valid_proposal(findings: list[ProposalFinding]) -> bool:
     return not any(f.severity is Severity.BLOCKING for f in findings)
 
 
-def validate_proposal(
+def validate_proposal(  # noqa: C901
     proposal: ConceptProposal,
     program: SpaceProgram,
     site: Site | None = None,

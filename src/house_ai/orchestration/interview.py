@@ -115,7 +115,7 @@ class InterviewLocked(WorkflowError):
     pass
 
 
-def parse_slot_value(slot: str, raw: Any) -> FactValue:
+def parse_slot_value(slot: str, raw: Any) -> FactValue:  # noqa: C901
     """Coerce and validate an explicit slot value (from CLI ``--set`` or JSON)."""
     if slot not in SLOTS:
         raise ValueError(f"unknown slot {slot!r}; valid slots are: {', '.join(SLOTS)}")
@@ -561,7 +561,7 @@ class InterviewService:
                       for k, v in parsed.items()]  # fmt: skip
         return understood, notes, model
 
-    def answer(
+    def answer(  # noqa: C901
         self,
         text: str,
         actor: Actor,

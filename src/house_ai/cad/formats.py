@@ -67,7 +67,7 @@ class DetectedFormat:
         return self.format.value
 
 
-def detect_format(path: Path) -> DetectedFormat:
+def detect_format(path: Path) -> DetectedFormat:  # noqa: C901
     with Path(path).open("rb") as fh:
         head = fh.read(_SNIFF_BYTES)
     if head[:4] == b"AC10" and head[4:6].isdigit():

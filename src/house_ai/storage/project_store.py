@@ -468,7 +468,7 @@ class ProjectStore:
 
     # ----------------------------------------------------------------- verify
 
-    def verify(self) -> list[str]:
+    def verify(self) -> list[str]:  # noqa: C901
         """Check the event chain, every artifact and every source file. Empty = intact."""
         problems: list[str] = []
         try:

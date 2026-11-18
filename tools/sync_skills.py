@@ -70,7 +70,7 @@ def validate_skill_content(skill_path: Path) -> list[str]:
     return errors
 
 
-def sync_skills(
+def sync_skills(  # noqa: C901
     repo_root: Path = REPO_ROOT, check_only: bool = False, prune: bool = False
 ) -> tuple[int, list[str]]:
     """Synchronize canonical skills to provider directories via relative symlinks.

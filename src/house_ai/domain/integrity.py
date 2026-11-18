@@ -157,7 +157,7 @@ def _check_ids(model: HouseModel) -> list[IntegrityFinding]:
     return findings
 
 
-def _check_references(
+def _check_references(  # noqa: C901
     model: HouseModel, program: SpaceProgram | None = None
 ) -> list[IntegrityFinding]:
     levels = {lv.id for lv in model.levels}

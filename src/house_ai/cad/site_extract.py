@@ -208,7 +208,7 @@ class MappedLayerSiteExtractor:
 
     # -------------------------------------------------------------- boundary
 
-    def _boundary(
+    def _boundary(  # noqa: C901
         self,
         pts: list[RawPoint],
         lines: list[RawPolyline],

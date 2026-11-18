@@ -308,7 +308,7 @@ def _site_context(v: _View, site: Site | None) -> str:
     return "".join(out)
 
 
-def _level_panel(
+def _level_panel(  # noqa: C901
     v: _View, model: HouseModel, site: Site | None, level_id: str, circ, labels: LabelLayout
 ) -> str:
     lv = model.level(level_id)

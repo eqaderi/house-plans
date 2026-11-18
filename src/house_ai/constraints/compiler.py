@@ -83,7 +83,7 @@ def _cid(text: str) -> str:
     return text[:64].rstrip("-_")
 
 
-def compile_constraints(
+def compile_constraints(  # noqa: C901
     program: SpaceProgram,
     site: Site | None,
     *,

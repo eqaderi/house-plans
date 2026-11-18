@@ -124,7 +124,7 @@ def parse(text: str) -> tuple[list[Stage], list[str], list[str]]:
     return stages, tools, errors
 
 
-def check(text: str) -> tuple[list[str], dict[str, Counter]]:
+def check(text: str) -> tuple[list[str], dict[str, Counter]]:  # noqa: C901
     stages, tools, errors = parse(text)
     stage_ids = Counter(s.id for s in stages)
     tasks = [t for s in stages for t in s.tasks]

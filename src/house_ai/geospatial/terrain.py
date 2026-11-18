@@ -94,7 +94,7 @@ def build_tin(
     return result
 
 
-def _constrain(result: TinResult, breaklines: list[TerrainBreakline]) -> None:
+def _constrain(result: TinResult, breaklines: list[TerrainBreakline]) -> None:  # noqa: C901
     """Split TIN cells at mapped edges, then triangulate each constrained cell.
 
     New edge intersections take the surveyed line's interpolated Z. Endpoint
