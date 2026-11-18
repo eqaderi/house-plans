@@ -16,73 +16,70 @@ gates are passed. It never changes the workflow.
 from __future__ import annotations
 
 import json
+from collections.abc import Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
 
 import yaml
 
-from house_ai.constants.evaluations import (
-    REGRESSION_VIOLATION_PREFIX,
-    REQUEST_NOT_MET_PREFIX,
-    REQUESTED_AREA_TOLERANCE_M2,
-)
-from house_ai.constants.proposals import (
-    OUTDOOR_LINK_TERRACE,
-    VALID_OUTDOOR_LINKS,
-    VALID_STAIR_POSITIONS,
-)
 from house_ai.constants.strategies import STRATEGY_EXTENDED_ORDER
 from house_ai.constraints.compiler import compile_constraints
 from house_ai.domain.brief import DesignBrief
 from house_ai.domain.codepack import CodePack
 from house_ai.domain.constraints import ConstraintSet
 from house_ai.domain.evaluation import EvaluationReport
-from house_ai.domain.model import HouseModel
 from house_ai.domain.plan import (
     ChangeRequest,
     ChangeRequestKind,
     PlanVersion,
     RevisionReport,
 )
-from house_ai.domain.program import SpaceProgram, SpaceRelationshipKind, Strength
+from house_ai.domain.program import SpaceProgram
 from house_ai.domain.proposal import ConceptProposal
 from house_ai.domain.provenance import Actor, ArtifactKind, ArtifactRef, Provenance
 from house_ai.domain.records import AssumptionsFile, Severity
+from house_ai.domain.revision_ops import RevisionOp, RevisionOperationError, RevisionVerb
 from house_ai.domain.site import Site
-from house_ai.domain.workflow import Gate, WorkflowEvent, WorkflowState
+from house_ai.domain.workflow import Gate, WorkflowState
 from house_ai.evaluation.explain import (
     comparison_markdown,
     explanation_markdown,
     revision_markdown,
     revision_report,
 )
+from house_ai.evaluation.findings import FindingsChange, compare_findings
 from house_ai.evaluation.report import evaluate_plan, report_id
-from house_ai.generation.frame import to_dm
+from house_ai.generation.engines import optimised_objectives
 from house_ai.generation.generator import (
     Candidate,
     CpSatPlanGenerator,
     GenerationRequest,
 )
 from house_ai.generation.massing import STRATEGY_LABELS
-from house_ai.generation.rooms import Relation, expand_program, space_id_for
-from house_ai.generation.solver import SolverOptions
+from house_ai.generation.revision import (
+    compile_revision,
+    resolve_spaces,
+    targeted_ids,
+    unmet_requests,
+)
+from house_ai.generation.rooms import space_id_for
 from house_ai.render2d.plan_svg import render_plan_svg
 from house_ai.storage import ProjectStore
 from house_ai.storage.hashing import content_hash, pretty_json
 from house_ai.validation.topology import validate_proposal
 
-from .workflow import Workflow
+from .workflow import GateStatus, HumanAction, NextHumanAction, Workflow, WorkflowError
 
 S = WorkflowState
+V = RevisionVerb
 EXPLORATORY_BANNER = (
     "EXPLORATORY: not stored in the project; the site and/or program are not approved by the "
     "owner. Not a validated plan."
 )
 GENERATION_STATES = {S.PROGRAM_APPROVED, S.PLAN_GENERATION, S.PLAN_REVIEW}
-LEVEL_PREFS = {"entry", "not_entry", "upper", "lower", "any", "ground"}
 
 
-class PlanWorkflowError(Exception):
+class PlanWorkflowError(WorkflowError):
     """The project is not in a state where this plan command may run; nothing was written."""
 
 
@@ -128,6 +125,8 @@ class RevisionOutcome:
     revision: RevisionReport
     revision_ref: ArtifactRef
     export_dir: Path | None
+    #: The Findings about the ids the request targeted: disappeared, remaining, new.
+    findings: FindingsChange = field(default_factory=lambda: FindingsChange(targets=()))
 
 
 class PlanService:
@@ -406,20 +405,6 @@ class PlanService:
 
     # ----------------------------------------------------------------- revise
 
-    def _resolve_spaces(self, name: str, program: SpaceProgram) -> list[str]:
-        by_item = {
-            it.id: [space_id_for(it, i) for i in range(1, it.quantity + 1)]
-            for it in program.space_requirements
-        }
-        spaces = {sid for group in by_item.values() for sid in group}
-        if name in spaces:
-            return [name]
-        if name in by_item:
-            return by_item[name]
-        raise PlanWorkflowError(
-            f"unknown room {name!r}; use a space requirement id (pi-...) or a space id (sp-...)"
-        )
-
     # ----------------------------------------------------------------- revise
 
     def revise(
@@ -428,7 +413,7 @@ class PlanService:
         text: str,
         actor: Actor,
         *,
-        ops: list[str] | None = None,
+        ops: Sequence[RevisionOp | str] | None = None,
         kind: ChangeRequestKind = ChangeRequestKind.MODIFY,
         version: int | None = None,
         seed: int | None = None,
@@ -438,7 +423,10 @@ class PlanService:
         features: list[str] | None = None,
         feature_confirmation: str | None = None,
     ) -> RevisionOutcome:
-        ops = list(ops or [])
+        try:
+            ops = [op if isinstance(op, RevisionOp) else RevisionOp.parse(op) for op in ops or []]
+        except RevisionOperationError as exc:
+            raise PlanWorkflowError(str(exc)) from exc
         if not text.strip():
             raise PlanWorkflowError("a revision needs the owner's request, verbatim")
         if kind not in (
@@ -459,7 +447,8 @@ class PlanService:
             raise PlanWorkflowError(
                 f"plans can be revised during plan generation or review; the project is in "
                 f"{status.state.value}. An approved plan is frozen: a human must reopen the plan "
-                "gate (`house-ai workflow reopen <dir> plan`)."
+                "gate.",
+                next_action=NextHumanAction(HumanAction.REOPEN, Gate.PLAN),
             )
 
         base_refs: list[ArtifactRef] = []
@@ -511,14 +500,14 @@ class PlanService:
                     raise PlanWorkflowError(f"{source_id} has no space {sid!r}")
                 transferred.add(source_id)
                 if "area" in aspects:
-                    ops.append(f"area:{sid}={room.area_m2:g}")
+                    ops.append(RevisionOp(op_type=V.AREA, target=sid, value=f"{room.area_m2:g}"))
                 if "level" in aspects:
                     entry = next(
                         (lv.elevation_m for lv in source.model.levels if lv.id == "lv-entry"), 0
                     )
                     delta = source.model.level(room.level_id).elevation_m - entry
                     pref = "lower" if delta < -0.01 else "upper" if delta > 0.01 else "entry"
-                    ops.append(f"level:{sid}={pref}")
+                    ops.append(RevisionOp(op_type=V.LEVEL, target=sid, value=pref))
                 if "connections" in aspects:
                     neighbors = {
                         b if a == sid else a
@@ -533,7 +522,7 @@ class PlanService:
                         for i in range(1, it.quantity + 1)
                     }
                     for neighbor in sorted(neighbors & known):
-                        ops.append(f"connect:{sid},{neighbor}")
+                        ops.append(RevisionOp(op_type=V.CONNECT, target=f"{sid},{neighbor}"))
             if set(sources) - {base_ref.id} - transferred:
                 raise PlanWorkflowError("each additional base needs an explicit feature mapping")
         else:
@@ -549,7 +538,16 @@ class PlanService:
             base_refs = [base_ref]
 
         inp = self.inputs(exploratory=False)
-        strategy, solver_opts, effective_ops = self._apply_ops(base, inp.program, ops, kind)
+        try:
+            request = compile_revision(
+                base,
+                inp.program,
+                ops,
+                inherit=kind in (ChangeRequestKind.MODIFY, ChangeRequestKind.COMBINE),
+            )
+        except RevisionOperationError as exc:
+            raise PlanWorkflowError(str(exc)) from exc
+        strategy, asked = request.strategy, request.requests
 
         loaded_proposal = proposal
         proposal_ref: ArtifactRef | None = None
@@ -565,8 +563,8 @@ class PlanService:
             if proposal_ref:
                 loaded_proposal = self.store.get(proposal_ref, ConceptProposal)
         for op in ops:
-            if op.startswith("proposal:"):
-                p_path = Path(op.partition(":")[2])
+            if op.op_type is V.PROPOSAL:
+                p_path = Path(op.target)
                 if not p_path.exists():
                     raise PlanWorkflowError(f"proposal file not found: {p_path}")
                 try:
@@ -592,15 +590,19 @@ class PlanService:
                 reason=f"proposal: {loaded_proposal.name}",
             )
             if loaded_proposal.target_strategy and not any(
-                op.startswith("strategy:") for op in ops
+                op.op_type is V.STRATEGY for op in ops
             ):
                 strategy = loaded_proposal.target_strategy
-            if loaded_proposal.stair_cores and not solver_opts.stair_position:
-                solver_opts.stair_position = loaded_proposal.stair_cores[0].position
+            if loaded_proposal.stair_cores and not asked.stair_position:
+                asked.stair_position = loaded_proposal.stair_cores[0].position
             if loaded_proposal.outdoor_links:
                 for ol in loaded_proposal.outdoor_links:
-                    for sid in self._resolve_spaces(ol.program_item_id, inp.program):
-                        solver_opts.outdoor_links.append((sid, ol.kind))
+                    try:
+                        sids = resolve_spaces(ol.program_item_id, inp.program)
+                    except RevisionOperationError as exc:
+                        raise PlanWorkflowError(str(exc)) from exc
+                    for sid in sids:
+                        asked.outdoor_links.append((sid, ol.kind))
 
         constraints, _, _ = self._constraints(inp, actor)
         existing_refs = self.store.refs(ArtifactKind.PLAN, option_id)
@@ -623,10 +625,10 @@ class PlanService:
             strategies=[strategy],
             seed=base.generation.seed if seed is None and base.generation else (seed or 0),
             deterministic_time=base.generation.deterministic_time_limit if base.generation else 4.0,
-            solver=solver_opts,
+            requests=asked,
             parent=base_ref,
             change_request=cr,
-            revision_ops=effective_ops,
+            revision_ops=[str(op) for op in request.operations],
             option_id=option_id,
             proposal=loaded_proposal,
             proposal_ref=proposal_ref,
@@ -673,6 +675,16 @@ class PlanService:
             ArtifactKind.EVALUATION_REPORT, report.id, report, actor, reason="evaluated revision"
         )
         before_eval = self._report_for(base_ref)
+        # A parent stored without an Evaluation is evaluated now (not stored), so that its
+        # Findings are not all reported as new.
+        parent_eval = before_eval or self._evaluate(base, base_ref, inp, constraints, c_ref)
+        findings = compare_findings(
+            parent_eval.violations,
+            report.violations,
+            targets=targeted_ids(ops, inp.program),
+            before_model=base.model,
+            after_model=plan.model,
+        )
         rev = revision_report(
             report_id=f"rev-{option_id}-v{plan_ref.version}"[:64],
             text=text,
@@ -692,7 +704,13 @@ class PlanService:
         )
 
         # Check every request this version carries, new and inherited (S7-23, S10-03).
-        unmet = self.request_findings(effective_ops, plan.model, base, inp.program)
+        unmet = unmet_requests(
+            request.operations,
+            plan.model,
+            inp.program,
+            parent_ops=request.parent_operations,
+            parent_model=base.model,
+        )
         if unmet:
             rev = rev.model_copy(
                 update={"new_violations": sorted(set(rev.new_violations) | set(unmet))}
@@ -712,255 +730,10 @@ class PlanService:
         export = None
         if out_dir is not None:
             export = self.export(plan, plan_ref, report, inp, out_dir, constraints=constraints)
-            (export / "revision.md").write_text(revision_markdown(rev), encoding="utf-8")
+            (export / "revision.md").write_text(revision_markdown(rev, findings), encoding="utf-8")
             (export / "revision.json").write_text(pretty_json(rev), encoding="utf-8")
             opt.export_dir = export
-        return RevisionOutcome(opt, rev, rev_ref, export)
-
-    def request_findings(
-        self, ops: list[str], model: HouseModel, base: PlanVersion, program: SpaceProgram
-    ) -> list[str]:
-        """Owner requests in ``ops`` that ``model`` does not meet.
-
-        A request is a regression only when ``base`` carried it and met it; otherwise it is
-        reported as not met, including a request made in this very revision.
-        """
-        base_ops = set(base.generation.revision_ops if base.generation else [])
-        out = []
-        for op in ops:
-            detail = self._unmet_request(op, model, program)
-            if detail is None:
-                continue
-            if op in base_ops and self._unmet_request(op, base.model, program) is None:
-                out.append(f"{REGRESSION_VIOLATION_PREFIX}'{op}' is no longer satisfied ({detail})")
-            else:
-                out.append(f"{REQUEST_NOT_MET_PREFIX}'{op}' ({detail})")
-        return out
-
-    def _unmet_request(self, op: str, model: HouseModel, program: SpaceProgram) -> str | None:
-        """Why the owner's area, level or separation request ``op`` is not met in ``model``.
-
-        None when it is met or is a kind of request this check does not cover.
-        """
-        verb, _, arg = op.partition(":")
-        spaces = {s.id: s for s in model.spaces}
-        if verb == "area":
-            name, _, value = arg.partition("=")
-            target = float(value)
-            for sid in self._resolve_spaces(name, program):
-                sp = spaces.get(sid)
-                if sp and sp.area_m2 < target - REQUESTED_AREA_TOLERANCE_M2:
-                    return f"{sp.id} area {sp.area_m2:.1f} m² < requested {target:g} m²"
-        elif verb == "level":
-            name, _, pref = arg.partition("=")
-            entry = next((lv for lv in model.levels if lv.id == "lv-entry"), None)
-            entry_elev = entry.elevation_m if entry else 0.0
-            for sid in self._resolve_spaces(name, program):
-                sp = spaces.get(sid)
-                if sp is None:
-                    continue
-                elev = model.level(sp.level_id).elevation_m
-                if (
-                    (pref == "lower" and elev >= entry_elev)
-                    or (pref == "upper" and elev <= entry_elev)
-                    or (pref == "entry" and elev != entry_elev)
-                ):
-                    return f"{sp.id} is on {sp.level_id}, not the {pref} level"
-        elif verb == "separate":
-            ra, _, rb = arg.partition(",")
-            sids_a = set(self._resolve_spaces(ra, program))
-            sids_b = set(self._resolve_spaces(rb, program))
-            for opn in model.openings:
-                if opn.connects and len(opn.connects) == 2:
-                    c0, c1 = opn.connects
-                    if (c0 in sids_a and c1 in sids_b) or (c0 in sids_b and c1 in sids_a):
-                        return f"door {opn.id} connects the rooms to keep apart"
-        return None
-
-    def combine(
-        self,
-        option_id: str,
-        bases: list[str],
-        text: str,
-        actor: Actor,
-        *,
-        ops: list[str] | None = None,
-        seed: int | None = None,
-        out_dir: Path | None = None,
-        features: list[str] | None = None,
-        feature_confirmation: str | None = None,
-    ) -> RevisionOutcome:
-        """Combine compatible features from several plan options (S7-22)."""
-        return self.revise(
-            option_id,
-            text,
-            actor,
-            ops=ops,
-            kind=ChangeRequestKind.COMBINE,
-            base_versions=bases,
-            features=features,
-            feature_confirmation=feature_confirmation,
-            seed=seed,
-            out_dir=out_dir,
-        )
-
-    def _apply_ops(
-        self, base: PlanVersion, program: SpaceProgram, ops: list[str], kind: ChangeRequestKind
-    ) -> tuple[str, SolverOptions, list[str]]:
-        rooms = expand_program(program)
-        spaces = {r.space_id for r in rooms.rooms}
-
-        def resolve(name: str) -> list[str]:
-            return self._resolve_spaces(name, program)
-
-        # Area, level, relationship, stair, outdoor requests describe continuing design intent.
-        # Rethink and strategy are instructions for one solve; the resulting strategy
-        # is already recorded on the parent. Keep original operation strings where
-        # possible, resolving aliases so later requests override the same rooms.
-        inherited = (
-            [
-                op
-                for op in base.generation.revision_ops
-                if op.partition(":")[0] not in {"rethink", "strategy", "proposal"}
-            ]
-            if kind in (ChangeRequestKind.MODIFY, ChangeRequestKind.COMBINE)
-            and base.generation is not None
-            else []
-        )
-        effective: dict[tuple[str, ...], tuple[int, str]] = {}
-        groups: list[tuple[str, list[tuple[str, ...]]]] = []
-        transient = []
-        for op in [*inherited, *ops]:
-            verb, _, arg = op.partition(":")
-            keys: list[tuple[str, ...]] = []
-            if verb in {"area", "level"}:
-                name, _, _ = arg.partition("=")
-                keys = [(verb, sid) for sid in resolve(name)]
-            elif verb in {"separate", "adjacent", "near", "connect"}:
-                a, _, b = arg.partition(",")
-                keys = sorted(
-                    {("relation", *sorted((sa, sb))) for sa in resolve(a) for sb in resolve(b)}
-                )
-            elif verb == "stair":
-                keys = [("stair", "core")]
-            elif verb == "outdoor":
-                room, _, _ = arg.partition(",")
-                keys = [("outdoor", sid) for sid in resolve(room)]
-            elif verb == "proposal":
-                keys = [("proposal", "proposal")]
-            else:
-                transient.append(op)
-                continue
-            index = len(groups)
-            groups.append((op, keys))
-            for key in keys:
-                effective[key] = (index, op)
-        ops = []
-        for index, (op, keys) in enumerate(groups):
-            retained = [key for key in keys if effective[key][0] == index]
-            if retained == keys:
-                ops.append(op)
-            else:
-                # A quantity item may be overridden for only one of its rooms.
-                # Retain the other rooms explicitly instead of resurrecting the
-                # superseded request through the item's broader alias.
-                verb, _, arg = op.partition(":")
-                for key in retained:
-                    if key[0] == "relation":
-                        ops.append(f"{verb}:{key[1]},{key[2]}")
-                    elif key[0] in ("stair", "proposal"):
-                        ops.append(op)
-                    elif key[0] == "outdoor":
-                        _, _, knd = arg.partition(",")
-                        ops.append(f"outdoor:{key[1]},{knd}")
-                    else:
-                        ops.append(f"{verb}:{key[1]}={arg.partition('=')[2]}")
-        ops += transient
-        strategy = base.strategy or ""
-        opts = SolverOptions()
-        rethink: set[str] = set()
-        for op in ops:
-            verb, _, arg = op.partition(":")
-            if verb == "area":
-                name, _, value = arg.partition("=")
-                for sid in resolve(name):
-                    item = rooms.room(sid).item
-                    target = float(value)
-                    if item.min_area_m2 is not None and target < item.min_area_m2:
-                        raise PlanWorkflowError(
-                            f"{target:g} m² is below the approved program minimum for {item.id} "
-                            f"({item.min_area_m2:g} m²); revise the program instead"
-                        )
-                    opts.targets[sid] = target
-            elif verb == "level":
-                name, _, pref = arg.partition("=")
-                if pref not in LEVEL_PREFS:
-                    raise PlanWorkflowError(f"level must be one of {sorted(LEVEL_PREFS)}")
-                for sid in resolve(name):
-                    opts.level_prefs[sid] = pref
-            elif verb in ("separate", "adjacent", "near", "connect"):
-                a, _, b = arg.partition(",")
-                kind_ = {
-                    "separate": SpaceRelationshipKind.SEPARATED,
-                    "adjacent": SpaceRelationshipKind.ADJACENT,
-                    "near": SpaceRelationshipKind.NEAR,
-                    "connect": SpaceRelationshipKind.CONNECTED,
-                }[verb]
-                for sa in resolve(a):
-                    for sb in resolve(b):
-                        opts.relations.append(
-                            Relation(sa, sb, kind_, Strength.SOFT, 5.0, f"revision-{verb}")
-                        )
-            elif verb == "stair":
-                if arg not in VALID_STAIR_POSITIONS:
-                    raise PlanWorkflowError(
-                        f"unknown stair position {arg!r}; known: {sorted(VALID_STAIR_POSITIONS)}"
-                    )
-                opts.stair_position = arg
-                opts.force_2d = True
-            elif verb == "outdoor":
-                room, _, kind_ = arg.partition(",")
-                kind_ = kind_ or OUTDOOR_LINK_TERRACE
-                if kind_ not in VALID_OUTDOOR_LINKS:
-                    raise PlanWorkflowError(
-                        f"unknown outdoor link kind {kind_!r}; known: {sorted(VALID_OUTDOOR_LINKS)}"
-                    )
-                for sid in resolve(room):
-                    opts.outdoor_links.append((sid, kind_))
-                opts.force_2d = True
-            elif verb == "proposal":
-                p_path = Path(arg)
-                if not p_path.exists():
-                    raise PlanWorkflowError(f"proposal file not found: {arg}")
-            elif verb == "rethink":
-                if arg == "all":
-                    rethink |= spaces
-                else:
-                    zone = [r.space_id for r in rooms.rooms if r.item.zone_id == arg]
-                    rethink |= set(zone) if zone else set(resolve(arg))
-            elif verb == "strategy":
-                if arg not in STRATEGY_LABELS:
-                    raise PlanWorkflowError(f"unknown strategy {arg!r}")
-                strategy = arg
-            else:
-                raise PlanWorkflowError(f"unknown revision operation {op!r}")
-        if strategy not in STRATEGY_LABELS:
-            raise PlanWorkflowError(
-                f"{base.option_id} was not generated by a strategy ({base.strategy}); add "
-                "--strategy to choose one"
-            )
-        if (
-            kind in (ChangeRequestKind.MODIFY, ChangeRequestKind.COMBINE)
-            and base.generation is not None
-            and strategy == base.strategy
-        ):
-            for p in base.generation.placements:
-                if p.space_id in spaces and p.space_id not in rethink:
-                    opts.hints[p.space_id] = (p.row_id, to_dm(p.start_m))
-            for key, value in base.generation.parameters.items():
-                if key.endswith("_start_m") and isinstance(value, int | float) and not rethink:
-                    opts.bar_hints[key.removesuffix("_start_m")] = to_dm(float(value))
-        return strategy, opts, ops
+        return RevisionOutcome(opt, rev, rev_ref, export, findings)
 
     def _report_for(self, ref: ArtifactRef) -> EvaluationReport | None:
         found = None
@@ -974,7 +747,7 @@ class PlanService:
 
     def request_review(
         self, option_id: str, actor: Actor, version: int | None = None
-    ) -> tuple[ArtifactRef, WorkflowEvent]:
+    ) -> tuple[ArtifactRef, GateStatus]:
         refs = self.store.refs(ArtifactKind.PLAN, option_id)
         ref = (
             next((r for r in refs if r.version == version), None)
@@ -1049,7 +822,13 @@ class PlanService:
                 constraints = getattr(inp, "constraints", None)
             (folder / "explanation.md").write_text(
                 explanation_markdown(
-                    plan, version, report, program, banner=banner, constraints=constraints
+                    plan,
+                    version,
+                    report,
+                    program,
+                    banner=banner,
+                    constraints=constraints,
+                    optimised=optimised_objectives(plan.generation) if plan.generation else None,
                 ),
                 encoding="utf-8",
             )

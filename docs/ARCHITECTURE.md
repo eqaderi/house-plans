@@ -62,19 +62,19 @@ the orchestration layer.
 
 | Package | Milestone | Contents |
 |---|---|---|
-| `house_ai.domain` | A | Pydantic models for every canonical schema, units, geometry, coordinate frames, integrity checks, compliance language, schema registry |
+| `house_ai.domain` | A | Pydantic models for every canonical schema, units, geometry, coordinate frames, integrity checks, compliance language, schema registry; the room-label layout of the plan drawing (`label_layout.py`: text lines, sizes and the drawing scale, no styling), shared by the drawing and the label-collision Finding (ADR 0033) |
 | `house_ai.storage` | A | `ProjectStore` (write-once artifacts, immutable sources, hash-chained event log), canonical hashing, folder importer |
-| `house_ai.orchestration` | A-D | Workflow state machine, transition guards, approval gates, reopen; site ingestion, human site confirmation, read-only survey inspection; agent-first interview service (store, workflow, site context, checklist, structured slot interpretations), optional LLM assist through `providers.base.send`; plan service (`plans.py`: gated or exploratory generation, evaluation, revisions, exports, plan review request) |
+| `house_ai.orchestration` | A-D | Workflow state machine, transition guards, approval gates and their gate status (typed Blockers, ADR 0029), reopen; site service (`site.py`: ingest, assess, human site confirmation, site review package; moves the project between the site states, ADR 0028), site ingestion records, read-only survey inspection; the read models agents get as `--json` (`project_status.py`; the one site summary in `site_context.py`, read by project status, the interview checklist and the AI context); agent-first interview service (store, workflow, site context, checklist, structured slot interpretations), optional LLM assist through `providers.base.send`; plan service (`plans.py`: gated or exploratory generation, evaluation, revisions, exports, plan review request) |
 | `house_ai.cli` | A-D | `house-ai` command, a thin layer over the library with `--json` and `--set` for coding agents; `plan` commands in `cli/plan_cmds.py` |
 | `house_ai.providers` | A, C | `ModelProvider` protocol, `DataFlowPolicy`, `send()`; `ScriptedProvider` for tests; optional `ClaudeProvider` (`providers/claude.py`, ADR 0010) |
-| `house_ai.cad` | B | `CadAdapter` / `CadSiteExtractor` protocols; format detection from bytes; ezdxf DXF adapter; DWG via ODA File Converter; layer roles from a human mapping; raw SOURCE-frame extraction and site interpretation with explicit ambiguity |
+| `house_ai.cad` | B | `CadAdapter` protocol; format detection from bytes; ezdxf DXF adapter; DWG via ODA File Converter; layer roles from a human mapping; raw SOURCE-frame extraction and site interpretation with explicit ambiguity |
 | `house_ai.geospatial` | B | CRS lookup and validation (pyproj/PROJ), UTM candidates, grid-to-true-north, Delaunay TIN, parcel measurements and frontage, site validation report |
-| `house_ai.render2d` | B (site), D (plans) | Site plan SVG, terrain slope SVG and the static site review page from the canonical site; dimensioned plan SVG per level with a terrain section (`plan_svg.py`) |
+| `house_ai.render2d` | B (site), D (plans) | Site plan SVG, terrain slope SVG and the static site review page from the canonical site; dimensioned plan SVG per level with a terrain section (`plan_svg.py`, drawing the domain's room-label layout) |
 | `house_ai.interview` | C | Question bank (completeness checklist) with conditions and follow-ups, deterministic answer parsers, slot types, contradiction rules with options, session fold and planner, brief builder, summary (pure, domain only) |
-| `house_ai.program` | C | Brief → space program, adjacencies, zones, assumptions (including steep-hillside engineering assumptions) and open questions; program validation (missing information, unconfirmed interpretations, conflicts, sizes, totals, site fit); review sheet |
+| `house_ai.program` | C | Brief → space program, adjacencies, zones, assumptions (including steep-hillside engineering assumptions) and open questions; the one table of needed slots (`needed_slots.py`: which block the program gate, which apply only on a sloped Site; read by the builder, the checks and the interview checklist); program validation (missing information, unconfirmed interpretations, conflicts, sizes, totals, site fit); review sheet |
 | `house_ai.constraints` | D | Program + brief + site + CodePack → HARD/SOFT `ConstraintSet`; CodePack rules it cannot express are reported as not checked |
-| `house_ai.generation` | D | Design frame and envelope fitting, program → rooms and hard-connected clusters, six massing strategies (compact, split_level, linear, two_wing, courtyard, split_walkout), OR-Tools CP-SAT layout, canonical model assembly (walls derived from space edges, openings, stairs, slabs), `CpSatPlanGenerator` ([ADR 0013](adr/0013-solver-backed-plan-generation.md)) |
-| `house_ai.evaluation` | D, S6 | Six baseline evaluators plus eight usability critics; finish-face net floor, door sweeps, cited furniture studies, stairs/slab headroom, portal visibility routes, privacy, sampled daylight opportunity and conservative vehicle arrival (ADR 0019); reports, explanation, comparison and revision diff |
+| `house_ai.generation` | D | Design frame and envelope fitting, program → rooms and hard-connected clusters, six massing strategies (compact, split_level, linear, two_wing, courtyard, split_walkout), OR-Tools CP-SAT layout, canonical model assembly (walls derived from space edges, openings, stairs, slabs), `CpSatPlanGenerator` ([ADR 0013](adr/0013-solver-backed-plan-generation.md)) routing each strategy to the bar engine or the 2D engine (`engines.py`, [ADR 0032](adr/0032-engine-seam-inside-the-generator.md)); Revision operations → solver input and the unmet-request check (`revision.py`, [ADR 0030](adr/0030-revision-operation-module.md)) |
+| `house_ai.evaluation` | D, S6 | Six baseline evaluators plus eight usability critics; finish-face net floor, door sweeps, cited furniture studies, stairs/slab headroom, portal visibility routes, privacy, sampled daylight opportunity and conservative vehicle arrival (ADR 0019); colliding room labels measured on the drawing's own layout (`drawing.py`); reports, explanation, comparison and revision diff; the Findings a revision made disappear, left or added for the ids it targeted (`findings.py`, ADR 0033) |
 | `house_ai.blender` | F | Deterministic canonical-plan → Blender scripts (planned, stage F) |
 | `house_ai.unreal` | G | FBX + `scene_manifest.json` → Unreal importer (planned, stage G) |
 | `house_ai.bim` | later | IFC mapping via IfcOpenShell (planned) |
@@ -117,11 +117,11 @@ stateDiagram-v2
     [*] --> NEW_PROJECT
     NEW_PROJECT --> SITE_INGESTION
     SITE_INGESTION --> SITE_NEEDS_CONFIRMATION: units/CRS/datum ambiguous
-    SITE_NEEDS_CONFIRMATION --> SITE_INGESTION
+    SITE_NEEDS_CONFIRMATION --> SITE_INGESTION: human site confirm clears every blocker
     SITE_INGESTION --> SITE_APPROVED: human approves site
     SITE_APPROVED --> INTERVIEWING
     INTERVIEWING --> PROGRAM_REVIEW
-    PROGRAM_REVIEW --> INTERVIEWING
+    PROGRAM_REVIEW --> INTERVIEWING: owner's program reject only
     PROGRAM_REVIEW --> PROGRAM_APPROVED: human approves program
     PROGRAM_APPROVED --> PLAN_GENERATION
     PLAN_GENERATION --> PLAN_REVIEW
@@ -140,7 +140,14 @@ stateDiagram-v2
 can never target a gated state (`SITE_APPROVED`, `PROGRAM_APPROVED`,
 `PLAN_APPROVED`, `MODEL_APPROVED`). Guards: program review needs a program,
 concept review needs a plan, Blender/Unreal review need a build record made
-from the approved plan.
+from the approved plan. Each stage's module makes its own ordinary moves
+([ADR 0028](adr/0028-site-service-and-stage-modules-move-their-own-state.md)):
+`SiteService` enters and leaves `SITE_NEEDS_CONFIRMATION`, `program review`
+leaves `SITE_APPROVED` and `plan generate` leaves `PROGRAM_APPROVED`;
+`workflow transition` remains for recovery. Leaving `PROGRAM_REVIEW` for
+`INTERVIEWING` undoes a program review, so only the Owner's `program reject`
+makes that move; the generic transition refuses it for every actor, humans
+included ([ADR 0029](adr/0029-gate-status.md)).
 
 **Gates** are crossed only by `Workflow.approve`, which:
 
@@ -151,13 +158,21 @@ from the approved plan.
    - *site*: `site_verification_blockers` (units, elevation units, CRS and
      vertical datum confirmed by a human, local frame present, boundary
      verified, no open blocking issues);
-   - *program*: site approved, no blocking open questions, no unresolved
-     contradictions in the cited brief;
+   - *program*: site approved, no blocking open questions, and the blocking
+     program checks on the cited brief (contradictions, missing answers,
+     unconfirmed interpretations, unknown facts), one Blocker per cause;
    - *plan*: site and program approved, the plan pins exactly those
      versions, `check_model` reports no errors, no stored evaluation reports
      hard violations for this version;
    - *model*: plan approved, a Blender build record made from that plan.
 5. appends an `approval_granted` event holding the `Approval` record.
+
+`Workflow.gate_status(gate, ref)` is what every caller reads before that
+([ADR 0029](adr/0029-gate-status.md)): whether the project is in the gate's
+review state, the typed `Blocker`s and attention items, whether the current
+approval is stale, and the next human action (approve this version, or
+confirm the site facts that block the site gate). The CLI renders that action
+as a command line in one place, `cli/human.py::command_for`.
 
 **Reopen** returns to a gate's review state and supersedes that approval and
 every later one. The superseded approvals stay in the log.
@@ -179,8 +194,9 @@ detect format ─▶ CAD adapter (ezdxf | ODA→ezdxf) ─▶ raw entities, SOUR
    ─▶ layer mapping (human) ─▶ SurveyTransform SOURCE→GRID→LOCAL
    ─▶ boundary · contours · spots · features · ambiguous entities
    ─▶ TIN, frontage, issues ─▶ cad_import + site artifacts
-   ─▶ workflow assess-site ─▶ SITE_NEEDS_CONFIRMATION
-   ─▶ site confirm (human, TTY) ─▶ new site version ─▶ site gate (human)
+   ─▶ SiteService assesses ─▶ SITE_NEEDS_CONFIRMATION while a blocker is open
+   ─▶ site confirm (human, TTY) ─▶ new site version; no blocker left
+      ─▶ SITE_INGESTION (under the confirmer's name) ─▶ site gate (human)
 site report ─▶ validation report (JSON/Markdown) + site SVG, derived on demand
 ```
 
@@ -210,9 +226,15 @@ double-loaded bars (rows either side of a corridor) whose cross positions,
 row depths and level elevations come from the strategy, the envelope and the
 surveyed terrain; CP-SAT then decides each bar's position and length and each
 room cluster's row, order and widths on a 10 cm grid. The result is assembled
-into a canonical `HouseModel`: walls are derived from space edges so every
+into a canonical `HouseModel`. Both the bar assembler and the 2D placement
+assembler feed one Enclosure (`generation.enclosure`,
+[ADR 0031](adr/0031-enclosure.md)): walls are derived from space edges so every
 wall segment has one space (or the outside) per side, exterior faces against
 the ground become retaining walls without windows, and stairs join levels.
+The generator routes each strategy to one of two engines behind one interface,
+the bar engine or the 2D placement engine
+([ADR 0032](adr/0032-engine-seam-inside-the-generator.md)), and builds the
+generation record and the Plan version for both.
 `check_model` runs on every candidate; one with errors is kept and reported
 as invalid, never dropped. Six evaluators then measure it. Plans, evaluation
 reports, constraint sets and revision reports are stored as new immutable
@@ -225,7 +247,7 @@ PLAN_REVIEW and the plan gate stays human-only. Details and limits:
 | Boundary | Interface | Milestone |
 |---|---|---|
 | CAD ingestion | `cad.base.CadAdapter`, `cad.dwg_oda.adapter_for` (ezdxf, ODA) | B |
-| Terrain | `geospatial.base.TerrainBuilder` (`DelaunayTerrainBuilder`) | B |
+| Terrain | `geospatial.terrain.terrain_from_survey` (one Delaunay TIN builder; a protocol returns with a second, [ADR 0006](adr/0006-site-ingestion-pipeline.md) §4) | B |
 | Plan generation | `generation.generator.CpSatPlanGenerator.candidates` (one generator; a protocol returns with a second, [ADR 0027](adr/0027-deep-modules-at-the-human-and-private-data-seams.md)) | D |
 | Evaluation | `evaluation.base.Evaluator` + `EvaluationReport` schema; future evaluators reported as not run | D, later |
 | AI providers | `providers.base.ModelProvider`, `DataFlowPolicy` | C |

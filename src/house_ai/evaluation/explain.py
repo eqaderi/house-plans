@@ -31,6 +31,8 @@ from house_ai.domain.plan import AreaChange, MetricChange, PlanVersion, Revision
 from house_ai.domain.program import SpaceProgram
 from house_ai.domain.provenance import ArtifactRef, Provenance
 
+from .findings import FindingsChange
+
 STRATEGY_TEXT = {
     STRATEGY_LINEAR: (
         "One long bar along the contours on a single level. A road-level floor over "
@@ -129,16 +131,17 @@ SOLVER_UNOPTIMISED_OBJECTIVES: dict[str, str] = {
 
 def soft_objectives_report(
     constraints: ConstraintSet | None,
-    plan: PlanVersion | None = None,
+    optimised: set[str] | None = None,
 ) -> list[tuple[str, str, str, float | None]]:
     """Return [(objective_name, status, rationale_or_detail, weight)]
     for compiled soft objectives.
+
+    ``optimised`` is what the engine that laid the plan out says it optimised
+    (``generation.engines.optimised_objectives``); None means the bar solver's objectives.
     """
     if constraints is None:
         return []
-    supported = set(SOLVER_OPTIMISED_OBJECTIVES)
-    if plan and plan.generation and plan.generation.parameters.get("engine") == "2d_nooverlap":
-        supported = set(str(plan.generation.parameters.get("optimised_objectives", "")).split(","))
+    supported = set(SOLVER_OPTIMISED_OBJECTIVES) if optimised is None else optimised
     out = []
     for c in constraints.soft():
         if isinstance(c.rule, ObjectiveRule):
@@ -164,7 +167,12 @@ def explanation_markdown(
     *,
     banner: str | None = None,
     constraints: ConstraintSet | None = None,
+    optimised: set[str] | None = None,
 ) -> str:
+    """The explanation document of ``plan``.
+
+    ``optimised``: the soft objectives the engine optimised (see :func:`soft_objectives_report`).
+    """
     model = plan.model
     ver = f" v{version}" if version else ""
     lines = [f"# {plan.option_id}{ver}: {plan.label}", ""]
@@ -241,7 +249,7 @@ def explanation_markdown(
         lines += ["", "## Open issues", ""]
         for i in model.issues:
             lines.append(f"- [{i.severity.value}] {i.title}")
-    objs = soft_objectives_report(constraints, plan)
+    objs = soft_objectives_report(constraints, optimised)
     if objs:
         lines += ["", "## Compiled soft objectives", ""]
         lines += [
@@ -593,7 +601,7 @@ def revision_report(
     )
 
 
-def revision_markdown(r: RevisionReport) -> str:
+def revision_markdown(r: RevisionReport, findings: FindingsChange | None = None) -> str:
     lines = [
         f"# Revision {r.id}",
         "",
@@ -612,6 +620,16 @@ def revision_markdown(r: RevisionReport) -> str:
         ("Assumptions", r.assumptions),
     ):
         lines += [f"## {title}", ""] + ([f"- {i}" for i in items] or ["- none"]) + [""]
+    if findings is not None and findings.targets:
+        lines += [f"## Findings about {', '.join(findings.targets)}", ""]
+        for title, items in (
+            ("Disappeared", findings.disappeared),
+            ("Remaining", findings.remaining),
+            ("New", findings.new),
+        ):
+            lines += [f"{title}:", ""]
+            lines += [f"- `{v.code}` {v.subject_ids}: {v.message}" for v in items] or ["- none"]
+            lines += [""]
     lines += ["## Area changes", "", "| Space | Before m² | After m² |", "|---|---:|---:|"]
     for c in r.area_changes:
         lines.append(

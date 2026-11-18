@@ -12,15 +12,27 @@ from house_ai.constants.evaluations import (
     REQUESTED_AREA_TOLERANCE_M2,
 )
 from house_ai.domain.plan import ChangeRequestKind, PlanVersion
-from house_ai.domain.program import SpaceProgram, SpaceRelationshipKind
+from house_ai.domain.program import SpaceProgram
 from house_ai.domain.provenance import ArtifactKind
 from house_ai.domain.records import AssumptionsFile
+from house_ai.domain.revision_ops import parse_operations
 from house_ai.domain.site import Site
 from house_ai.domain.workflow import Gate, WorkflowState
+from house_ai.generation.revision import unmet_requests
 from house_ai.orchestration.plans import PlanService
 
 from .conftest import AGENT, HUMAN
 from .test_plan_workflow import _approve_site_and_program, _load
+
+
+def _unmet(ops: list[str], model, base: PlanVersion, program: SpaceProgram) -> list[str]:
+    return unmet_requests(
+        parse_operations(ops),
+        model,
+        program,
+        parent_ops=parse_operations(base.generation.revision_ops),
+        parent_model=base.model,
+    )
 
 
 def _concept() -> PlanVersion:
@@ -29,83 +41,6 @@ def _concept() -> PlanVersion:
         / "examples/projects/synthetic-hillside/concepts/concept-compact/exploratory/plan.json"
     )
     return PlanVersion.model_validate_json(path.read_text("utf-8"))
-
-
-def test_modify_inherits_intent_and_overrides_item_space_aliases(tmp_path):
-    store = _load(tmp_path)
-    svc = PlanService(store)
-    program = svc.inputs(exploratory=True).program
-    parent = _concept()
-    prior = [
-        "area:pi-kitchen=16",
-        "level:pi-study-1=lower",
-        "separate:pi-bed-main,pi-bed-child-1",
-        "rethink:all",
-        "strategy:compact",
-    ]
-    parent = parent.model_copy(
-        update={"generation": parent.generation.model_copy(update={"revision_ops": prior})}
-    )
-    _, opts, effective = svc._apply_ops(parent, program, [], ChangeRequestKind.MODIFY)
-    assert opts.targets == {"sp-kitchen": 16.0}
-    assert opts.level_prefs == {"sp-study-1": "lower"}
-    assert len(opts.relations) == 1
-    assert opts.relations[0].kind is SpaceRelationshipKind.SEPARATED
-    assert effective == prior[:3]
-    assert opts.hints  # one-run rethink was not inherited
-
-    _, opts, effective = svc._apply_ops(
-        parent,
-        program,
-        [
-            "area:sp-kitchen=18",
-            "level:sp-study-1=entry",
-            "adjacent:sp-bed-child-1,sp-bed-main",
-        ],
-        ChangeRequestKind.MODIFY,
-    )
-    assert opts.targets == {"sp-kitchen": 18.0}
-    assert opts.level_prefs == {"sp-study-1": "entry"}
-    assert [r.kind for r in opts.relations] == [SpaceRelationshipKind.ADJACENT]
-    assert effective == [
-        "area:sp-kitchen=18",
-        "level:sp-study-1=entry",
-        "adjacent:sp-bed-child-1,sp-bed-main",
-    ]
-    # The next modification retains the overrides, rather than their ancestors.
-    child = parent.model_copy(
-        update={"generation": parent.generation.model_copy(update={"revision_ops": effective})}
-    )
-    _, next_opts, next_effective = svc._apply_ops(child, program, [], ChangeRequestKind.MODIFY)
-    assert next_effective == effective
-    assert next_opts.targets == {"sp-kitchen": 18.0}
-    _, fresh, effective = svc._apply_ops(child, program, [], ChangeRequestKind.RESTART_FROM_PROGRAM)
-    assert fresh.targets == fresh.level_prefs == fresh.hints == {}
-    assert fresh.relations == effective == []
-
-
-def test_partial_quantity_override_keeps_other_room_requests(tmp_path):
-    store = _load(tmp_path)
-    svc = PlanService(store)
-    program = svc.inputs(exploratory=True).program
-    items = [
-        item.model_copy(update={"quantity": 2}) if item.id == "pi-study-1" else item
-        for item in program.space_requirements
-    ]
-    program = program.model_copy(update={"space_requirements": items})
-    parent = _concept()
-    parent = parent.model_copy(
-        update={
-            "generation": parent.generation.model_copy(
-                update={"revision_ops": ["area:pi-study-1=12"]}
-            )
-        }
-    )
-    _, opts, effective = svc._apply_ops(
-        parent, program, ["area:sp-study-1-1=14"], ChangeRequestKind.MODIFY
-    )
-    assert opts.targets == {"sp-study-1-1": 14.0, "sp-study-1-2": 12.0}
-    assert effective == ["area:sp-study-1-2=12", "area:sp-study-1-1=14"]
 
 
 def test_revision_stores_effective_operations_and_new_owner_words(tmp_path):
@@ -254,11 +189,12 @@ def test_combine_compatible_features_from_alternatives(tmp_path):
     svc.generate(AGENT, strategies=["compact", "linear"])
 
     # Combine compact and linear alternatives
-    combined_res = svc.combine(
+    combined_res = svc.revise(
         "concept-compact",
-        ["concept-compact", "concept-linear"],
         "Combine the compact footprint with linear daylighting and courtyard outdoor link.",
         AGENT,
+        kind=ChangeRequestKind.COMBINE,
+        base_versions=["concept-compact", "concept-linear"],
         features=["concept-linear:sp-living=area,connections"],
         feature_confirmation="Yes, adopt linear living room size and connections onto compact.",
         ops=["outdoor:sp-living,courtyard"],
@@ -273,6 +209,30 @@ def test_combine_compatible_features_from_alternatives(tmp_path):
     assert "concept-linear" in base_ids
     assert combined_res.option.plan_ref.version == 2
     assert store.verify() == []
+
+
+def test_cli_plan_combine_revises_with_the_combine_kind(tmp_path):
+    """`plan combine` goes through `revise` (the pass-through `combine` method is gone)."""
+    store = _load(tmp_path)
+    _approve_site_and_program(store)
+    PlanService(store).generate(AGENT, strategies=["compact", "linear"])
+    code = main(
+        [
+            "plan", "combine", str(store.root), "Take the linear living room onto compact.",
+            "--base", "concept-compact", "--base", "concept-linear",
+            "--feature", "concept-linear:sp-living=area",
+            "--feature-confirmation", "Yes, use the linear living room size.",
+            "--actor", "agent:claude-code",
+        ]
+    )  # fmt: skip
+    assert code == 0
+    plan = store.get(store.latest(ArtifactKind.PLAN, "concept-compact"), PlanVersion)
+    assert plan.change_request.kind is ChangeRequestKind.COMBINE
+    assert [b.id for b in plan.change_request.base_versions] == [
+        "concept-compact",
+        "concept-linear",
+    ]
+    assert any(op.startswith("area:sp-living=") for op in plan.generation.revision_ops)
 
 
 def test_preserve_owner_design_intent_across_multi_step_revisions(tmp_path):
@@ -351,7 +311,7 @@ def test_preserve_owner_design_intent_across_multi_step_revisions(tmp_path):
     assert store.verify() == []
 
 
-def test_request_findings_separate_unmet_from_lost(tmp_path):
+def test_unmet_requests_separate_unmet_from_lost(tmp_path):
     """S10-03: a lost request is a regression; one the base never met is only not met."""
     store = _load(tmp_path)
     _approve_site_and_program(store)
@@ -366,7 +326,7 @@ def test_request_findings_separate_unmet_from_lost(tmp_path):
     base = base.model_copy(
         update={"generation": base.generation.model_copy(update={"revision_ops": [met_op]})}
     )
-    assert svc.request_findings([met_op], base.model, base, program) == []
+    assert _unmet([met_op], base.model, base, program) == []
 
     # The kitchen shrinks about its centroid by exactly 3 m² (area scales with k²): lost.
     sp = base.model.space("sp-kitchen")
@@ -383,11 +343,11 @@ def test_request_findings_separate_unmet_from_lost(tmp_path):
             ]
         }
     )
-    lost = svc.request_findings([met_op], shrunk, base, program)
+    lost = _unmet([met_op], shrunk, base, program)
     assert len(lost) == 1 and lost[0].startswith(REGRESSION_VIOLATION_PREFIX)
     assert f"sp-kitchen area {area - 3.0:.1f} m²" in lost[0]
 
     # A new request, or one the base did not meet, is not met rather than lost.
     new_op = f"area:pi-kitchen={area + 10:.0f}"
-    (finding,) = svc.request_findings([new_op], base.model, base, program)
+    (finding,) = _unmet([new_op], base.model, base, program)
     assert finding.startswith(REQUEST_NOT_MET_PREFIX) and new_op in finding

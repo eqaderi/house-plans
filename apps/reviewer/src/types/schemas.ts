@@ -76,6 +76,9 @@ export interface BenchmarkCase {
   seeded_defect?: boolean;
 }
 
+/** What sort of thing keeps a gate closed (ADR 0029). */
+export type BlockerKind = "workflow_state" | "artifact" | "upstream_gate" | "site_fact" | "site_issue" | "open_question" | "contradiction" | "program_check" | "pinned_input" | "integrity" | "hard_violation" | "unbuildable";
+
 export interface BriefFact {
   id: string;
   key: string;
@@ -541,11 +544,15 @@ export interface Opening {
   offset_m: number;
   opens_into?: string | null;
   operation?: Operation;
+  role?: OpeningRole | null;
   sill_m?: number;
   width_m: number;
 }
 
 export type OpeningKind = "door" | "window" | "opening";
+
+/** What an exterior opening is for, where the evaluators need to know (ADR 0031). */
+export type OpeningRole = "main_entrance" | "vehicle_entrance";
 
 export interface OpeningsOnWallsRule {
   kind?: string;
@@ -670,13 +677,19 @@ export interface RevisionComment {
   text: string;
 }
 
-/** One structured revision operation matching plan revise arguments. */
+/** One Revision operation, checked against the verb table.
+
+The target is the Space or requirement name (a,b for a relation, the position for a
+stair, the strategy, the proposal path); the value is the area, the level word or the
+outdoor kind. */
 export interface RevisionOp {
   notes?: string | null;
-  op_type: string;
+  op_type: RevisionVerb;
   target: string;
   value?: string | number | null;
 }
+
+export type RevisionVerb = "area" | "level" | "separate" | "adjacent" | "near" | "connect" | "outdoor" | "stair" | "proposal" | "rethink" | "strategy";
 
 /** Where the solver put one space in the strategy's massing (bar, row, order). */
 export interface RoomPlacement {
@@ -1072,6 +1085,18 @@ export interface BenchmarkFixture {
   program: SpaceProgram;
   schema_version?: string;
   site: Site;
+}
+
+/** One reason a gate cannot be approved for a pinned artifact version now (ADR 0029).
+
+``message`` is the sentence a person reads; it is also the ``open_reasons``
+string saved in the approval-requested event. Agents act on ``kind`` and
+``code``. */
+export interface Blocker {
+  code: string;
+  kind: BlockerKind;
+  message: string;
+  subject_ids?: string[];
 }
 
 export interface BuildRecord {

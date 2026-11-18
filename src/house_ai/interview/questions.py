@@ -36,8 +36,6 @@ class Slot:
     parse: Parser
     #: The owner's statement about the household is a fact, not a wish.
     is_fact: bool = False
-    #: Must be known (or explicitly unknown) before the program can be approved.
-    critical: bool = False
 
 
 @dataclass(frozen=True)
@@ -418,7 +416,7 @@ SLOTS: dict[str, Slot] = {
     s.key: s
     for s in [
         Slot("adults", T.HOUSEHOLD, "Adults", "How many adults will live in the house?",
-             _int("adults", r"adults?"), is_fact=True, critical=True),
+             _int("adults", r"adults?"), is_fact=True),
         Slot("children", T.HOUSEHOLD, "Children", "How many children will live in the house?",
              _int("children", r"children|kids?"), is_fact=True),
         Slot("elders", T.MULTIGENERATIONAL, "Older relatives living with you",
@@ -434,15 +432,15 @@ SLOTS: dict[str, Slot] = {
              is_fact=True),
         Slot("bedrooms", T.BEDROOMS_BATHROOMS, "Bedrooms",
              "How many bedrooms in total, including any guest bedroom?",
-             _int("bedrooms", r"bedrooms?|rooms?"), critical=True),
+             _int("bedrooms", r"bedrooms?|rooms?")),
         Slot("bathrooms", T.BEDROOMS_BATHROOMS, "Bathrooms",
              "How many bathrooms (with shower or bath) do you want?",
-             _int("bathrooms", r"bathrooms?|baths?"), critical=True),
+             _int("bathrooms", r"bathrooms?|baths?")),
         Slot("ensuite", T.BEDROOMS_BATHROOMS, "Main bedroom has its own bathroom",
              "Should the main bedroom have its own bathroom (en-suite)?", _bool("ensuite")),
         Slot("storeys", T.LEVELS, "Storeys",
              "How many storeys should the house have, counting from the lowest to the highest?",
-             _storeys, critical=True),
+             _storeys),
         Slot("slope_strategy", T.SITE_RESPONSE, "How the house meets the slope",
              "Should the house step down the slope, or sit on one flat platform?", _slope),
         Slot("entry_at_road", T.SITE_RESPONSE, "Entrance and parking at road level",
@@ -531,8 +529,8 @@ def _known(v: Values, key: str) -> bool:
     return key in v and v[key] is not None
 
 
-def _relief(site: Any) -> float:
-    return getattr(site, "relief_m", None) or 0.0
+def _sloped(site: Any) -> bool:
+    return site is not None and site.sloped
 
 
 QUESTIONS: list[Question] = [
@@ -583,14 +581,14 @@ QUESTIONS: list[Question] = [
         "Would you like the house to step down the slope (split levels, or a lower storey "
         "opening to the garden), or to sit on one flat platform cut into the ground? "
         "'No preference' is fine too.",
-        ("slope_strategy",), _slope, when=lambda v, s: _relief(s) >= 2.0,
+        ("slope_strategy",), _slope, when=lambda v, s: _sloped(s),
     ),
     Question(
         "q-entry", T.SITE_RESPONSE,
         "Should the main entrance and the parking be at road level, with the rest of the "
         "house below or above it?",
         ("entry_at_road",), _bool("entry_at_road"),
-        when=lambda v, s: _relief(s) >= 2.0 and (v.get("storeys") or 2) > 1,
+        when=lambda v, s: _sloped(s) and (v.get("storeys") or 2) > 1,
     ),
     Question(
         "q-living", T.LIFESTYLE,

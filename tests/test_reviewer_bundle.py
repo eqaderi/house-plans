@@ -3,26 +3,32 @@
 from __future__ import annotations
 
 import json
-import re
-import shlex
 from pathlib import Path
 
-from house_ai.cli.main import build_parser, main
+from house_ai.cli.human import command_for, renderer
+from house_ai.cli.main import main
 from house_ai.constants.reviewer import (
     APPROVAL_GATES,
     GATE_PLAN,
     GATE_PROGRAM,
     GATE_SITE,
-    OP_AREA,
-    OP_SEPARATE,
     REVIEWER_BUNDLE_FILENAME,
     REVIEWER_BUNDLE_SCHEMA_VERSION,
 )
 from house_ai.domain.provenance import Actor, ActorKind, ArtifactKind
-from house_ai.domain.revision_ops import RevisionComment, RevisionOp, RevisionOpsFile
+from house_ai.domain.revision_ops import (
+    RevisionComment,
+    RevisionOp,
+    RevisionOpsFile,
+    RevisionVerb,
+)
 from house_ai.domain.workflow import Gate, WorkflowState
 from house_ai.orchestration.plans import PlanService
-from house_ai.orchestration.reviewer_bundle import build_reviewer_bundle, export_reviewer_bundle
+from house_ai.orchestration.reviewer_bundle import (
+    build_reviewer_bundle,
+    export_reviewer_bundle,
+    gate_actions,
+)
 from house_ai.orchestration.workflow import Workflow
 from house_ai.storage import ProjectStore
 
@@ -72,8 +78,8 @@ def test_revision_ops_model_and_cli_conversion() -> None:
         verbatim_request="Make the kitchen 18m2 and keep it separated from living",
         author="homeowner:alice",
         operations=[
-            RevisionOp(op_type=OP_AREA, target="pi-kitchen", value=18.0),
-            RevisionOp(op_type=OP_SEPARATE, target="pi-kitchen,pi-living"),
+            RevisionOp(op_type=RevisionVerb.AREA, target="pi-kitchen", value=18.0),
+            RevisionOp(op_type=RevisionVerb.SEPARATE, target="pi-kitchen,pi-living"),
         ],
         comments=[
             RevisionComment(
@@ -110,7 +116,7 @@ def test_reviewer_bundle_is_strictly_read_only(tmp_path: Path) -> None:
     initial_plan_count = len(store.latest_of_kind(ArtifactKind.PLAN))
 
     # Build bundle in memory
-    bundle = build_reviewer_bundle(store)
+    bundle = build_reviewer_bundle(store, render=renderer(store.project_id))
     assert bundle["schema_version"] == REVIEWER_BUNDLE_SCHEMA_VERSION
     assert bundle["project"]["name"] == "synthetic-hillside"
     assert bundle["site"] is not None
@@ -125,7 +131,7 @@ def test_reviewer_bundle_is_strictly_read_only(tmp_path: Path) -> None:
 
     # Export bundle to disk
     out_dir = tmp_path / "bundle_export"
-    bundle_file = export_reviewer_bundle(store, out_dir)
+    bundle_file = export_reviewer_bundle(store, out_dir, render=renderer(store.project_id))
     assert bundle_file.exists()
     assert bundle_file.name == REVIEWER_BUNDLE_FILENAME
 
@@ -136,34 +142,36 @@ def test_reviewer_bundle_is_strictly_read_only(tmp_path: Path) -> None:
     assert len(store.latest_of_kind(ArtifactKind.PLAN)) == initial_plan_count
 
 
-def test_reviewer_bundle_commands_use_flags_the_cli_has(new_store) -> None:
-    """Every human command the bundle prints parses once its placeholders are filled in."""
-    gates = build_reviewer_bundle(new_store("synthetic-hillside"))["gates"]
-    commands = [
-        gate[key]
-        for gate in gates.values()
+def test_reviewer_bundle_shows_the_commands_the_cli_renders(new_store) -> None:
+    """The bundle receives each human command from the CLI's one renderer (ADR 0029).
+
+    That every rendered command parses is tested in test_next_human_action.py.
+    """
+    store = new_store("synthetic-hillside")
+    gates = build_reviewer_bundle(store, render=renderer("synthetic-hillside"))["gates"]
+
+    shown = {
+        (name, key): gate[key]
+        for name, gate in gates.items()
         for key in ("confirm_command", "approve_command")
         if key in gate
-    ]
-    assert len(commands) == 5  # site confirm, and one approve per gate
+    }
+    assert shown == {
+        (gate.value, key): command_for(action, "synthetic-hillside")
+        for gate, keyed in gate_actions(store).items()
+        for key, action in keyed.items()
+    }
+    assert len(shown) == 5  # site confirm, and one approve per gate
     assert gates[GATE_SITE]["confirm_command"] == (
-        "house-ai site confirm synthetic-hillside "
+        "house-ai site confirm synthetic-hillside --id site "
         "--epsg <epsg-code> --vertical-datum <datum> --confirmer <your-name>"
     )
-    parser = build_parser()
-    for command in commands:
-        program, *argv = shlex.split(re.sub(r"<[^>]+>", "1", command))
-        assert program == "house-ai"
-        try:
-            parser.parse_args(argv)
-        except SystemExit:
-            raise AssertionError(f"the CLI does not accept: {command}") from None
 
 
 def test_reviewer_bundle_approval_commands_and_no_mutation(tmp_path: Path) -> None:
     """Reviewer bundle includes CLI commands for human gates and no mutation endpoints (S4-23)."""
     store = _setup_project(tmp_path)
-    bundle = build_reviewer_bundle(store)
+    bundle = build_reviewer_bundle(store, render=renderer(store.project_id))
 
     gates = bundle["gates"]
     for gate_name in APPROVAL_GATES:
@@ -228,7 +236,7 @@ def test_cli_plan_revise_from_file_round_trip(tmp_path: Path) -> None:
         verbatim_request="Increase kitchen to 18 m2",
         author="homeowner:owner",
         operations=[
-            RevisionOp(op_type=OP_AREA, target="pi-kitchen", value=18.0),
+            RevisionOp(op_type=RevisionVerb.AREA, target="pi-kitchen", value=18.0),
         ],
     )
     ops_path = tmp_path / "my_ops.json"

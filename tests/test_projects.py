@@ -89,16 +89,17 @@ def test_a_recorded_statement_confirms_nothing(new_store, make_survey):
     assert store.verify() == []
 
 
-def test_site_report_shows_statements_and_defaults_to_the_reviews_folder(
-    new_store, make_survey, capsys
-):
+def test_site_report_shows_statements_and_defaults_to_the_reviews_folder(new_store, make_survey):
+    from house_ai.orchestration.site import SiteService
+
     from .conftest import SURVEY_LAYERS
 
     store = _ingested(new_store, make_survey, SURVEY_LAYERS)
     record_owner_statement(store, subject="relief", words="My land is genuinely steep.",
                            stated_by="owner", channel="chat", actor=AGENT)  # fmt: skip
-    assert main(["site", "report", str(store.root)]) == 0
+    package = SiteService(store).write_review_package(store.latest(K.SITE, "site"))
     out = store.root / "reviews" / "site-v1"
+    assert package.out == out
     assert "My land is genuinely steep." in (out / "index.html").read_text()
     md = (out / "site-report.md").read_text()
     assert "recorded, not confirmed" in md and "My land is genuinely steep." in md

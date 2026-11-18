@@ -11,37 +11,6 @@ REVISION_OPS_FILENAME: str = "revision_ops.json"
 ATTR_DATA_ID: str = "data-id"
 ATTR_DATA_KIND: str = "data-kind"
 
-# Supported structured revision operation types
-OP_AREA: str = "area"
-OP_SEPARATE: str = "separate"
-OP_CONNECT: str = "connect"
-OP_ADJACENT: str = "adjacent"
-OP_NEAR: str = "near"
-OP_LEVEL: str = "level"
-OP_RETHINK: str = "rethink"
-OP_STRATEGY: str = "strategy"
-OP_ORIENTATION: str = "orientation"
-OP_DAYLIGHT: str = "daylight"
-OP_STAIR: str = "stair"
-OP_OUTDOOR: str = "outdoor"
-OP_PROPOSAL: str = "proposal"
-
-SUPPORTED_REVISION_OPS: tuple[str, ...] = (
-    OP_AREA,
-    OP_SEPARATE,
-    OP_CONNECT,
-    OP_ADJACENT,
-    OP_NEAR,
-    OP_LEVEL,
-    OP_RETHINK,
-    OP_STRATEGY,
-    OP_ORIENTATION,
-    OP_DAYLIGHT,
-    OP_STAIR,
-    OP_OUTDOOR,
-    OP_PROPOSAL,
-)
-
 # Epistemic status values
 STATUS_MEASURED: str = "measured"
 STATUS_INFERRED: str = "inferred"
@@ -100,31 +69,9 @@ ELEMENT_KINDS: tuple[str, ...] = (
     KIND_ELEVATION_MARKER,
 )
 
-# Defect types for visual and geometric defect detectors
-DEFECT_WINDOW_ON_RETAINING_WALL: str = "window_on_retaining_wall"
-DEFECT_OVERLAPPING_LABELS: str = "overlapping_labels"
-DEFECT_MISSING_STAIR_LEVEL: str = "missing_stair_level"
-DEFECT_MISSING_STAIR_ARRIVAL: str = "missing_stair_arrival"
-DEFECT_MISSING_HOST_WALL: str = "missing_host_wall"
-DEFECT_DOOR_EXCEEDS_WALL: str = "door_exceeds_wall"
-DEFECT_STAIR_THROUGH_SLAB: str = "stair_through_slab"
-
-DEFECT_TYPES: tuple[str, ...] = (
-    DEFECT_WINDOW_ON_RETAINING_WALL,
-    DEFECT_OVERLAPPING_LABELS,
-    DEFECT_MISSING_STAIR_LEVEL,
-    DEFECT_MISSING_STAIR_ARRIVAL,
-    DEFECT_MISSING_HOST_WALL,
-    DEFECT_DOOR_EXCEEDS_WALL,
-    DEFECT_STAIR_THROUGH_SLAB,
-)
-
-# 2D Plan rendering and defect detection geometry constants
+# 2D Plan rendering geometry constants
 PANEL_W: float = 560.0
 MARGIN: float = 36.0
-DEFAULT_MIN_LABEL_DISTANCE_M: float = 1.5
-DEFAULT_LABEL_PADDING_PX: float = 4.0
-MIN_SLAB_INTERSECTION_AREA_M2: float = 0.05
 DOOR_APPROACH_CLEAR_DM: int = 9
 
 # Visual critique severities

@@ -76,7 +76,6 @@ def test_readiness_demonstration_end_to_end(tmp_path):
         "stair_wall_clash",
         "stair_low_headroom",
         "floor_connection_height_mismatch",
-        "stair_through_slab",
     }
     assert not stair_defect_codes.intersection(two_wing["codes"])
 
@@ -98,7 +97,7 @@ def test_readiness_demonstration_end_to_end(tmp_path):
     assert rec["plan_gate"]["open_reasons"] == []
     assert any("height_limit_exceeded" in a for a in rec["plan_gate"]["attention"])
 
-    # Visual review & S10-16 automated defect detectors.
+    # Visual review; S10-16 defects are Findings of the Evaluation (ADR 0033).
     vr = rec["visual_review"]
     assert "vc-living-too-small" not in vr["ungrounded_ids"]
     assert {c["status"] for c in vr["claims"]} == {"ai_judgment"}
@@ -114,8 +113,9 @@ def test_readiness_demonstration_end_to_end(tmp_path):
     assert vr["critique_made_on_this_rendering"] is (
         vr["png_sha256"] == critique["screenshot_hash"]
     )
-    assert len(vr["detector_findings"]) > 0
-    assert any(f["type"] == "overlapping_labels" for f in vr["detector_findings"])
+    # Colliding labels are a Finding of the Evaluation, from the drawing's own layout (#34).
+    assert any(d["code"] == "label_collision" for d in two_wing["defects"])
+    assert any(d["code"] == "label_collision" for d in vr["evaluation_findings"])
 
     # Revisions keep the owner's words and ops and add versions 2 and 3.
     assert [(r["words"], r["ops"]) for r in rec["revisions"]] == REVISIONS

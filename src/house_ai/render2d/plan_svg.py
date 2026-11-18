@@ -36,6 +36,7 @@ from house_ai.domain.base import EXTERIOR
 from house_ai.domain.epistemics import ConfirmationStatus
 from house_ai.domain.evaluation import EvaluationReport
 from house_ai.domain.geometry import Point2, Polygon2D
+from house_ai.domain.label_layout import LabelLayout, drawing_scale, label_layout
 from house_ai.domain.model import HouseModel, Opening, OpeningKind, Operation, Wall, WallKind
 from house_ai.domain.plan import PlanVersion
 from house_ai.domain.program import Privacy
@@ -49,6 +50,8 @@ from house_ai.domain.site import (
 
 HEADER_H = 92.0
 SECTION_H = 230.0
+#: Colour and weight of a room label's name, area and dimensions lines.
+LABEL_LINE_STYLE = (("#222", "bold"), ("#222", "normal"), ("#555", "normal"))
 
 FILL = {
     Privacy.PUBLIC: "#f6e7c8",
@@ -90,8 +93,8 @@ class _View:
 
     def __init__(self, bounds: tuple[float, float, float, float], ox: float, oy: float) -> None:
         minx, miny, maxx, maxy = bounds
-        w, h = maxx - minx, maxy - miny
-        self.scale = (PANEL_W - 2 * MARGIN) / max(w, h, 1.0)
+        h = maxy - miny
+        self.scale = drawing_scale(bounds)
         self.minx, self.maxy = minx, maxy
         self.ox, self.oy = ox + MARGIN, oy + MARGIN
         self.height = h * self.scale + 2 * MARGIN
@@ -179,13 +182,6 @@ def _opening_svg(v: _View, model: HouseModel, o: Opening) -> str:
         f'<g {ATTR_DATA_ID}="{escape(o.id)}" {ATTR_DATA_KIND}="{KIND_DOOR}">'
         f'{"".join(out)}</g>'
     )
-
-
-def _rect_dims(poly: Polygon2D) -> tuple[float, float]:
-    r = poly.to_shapely().minimum_rotated_rectangle
-    pts = list(r.exterior.coords)
-    a, b = math.dist(pts[0], pts[1]), math.dist(pts[1], pts[2])
-    return (max(a, b), min(a, b))
 
 
 def _dimension(v: _View, p0: Point2, p1: Point2, normal: Point2, offset: float) -> str:
@@ -312,7 +308,9 @@ def _site_context(v: _View, site: Site | None) -> str:
     return "".join(out)
 
 
-def _level_panel(v: _View, model: HouseModel, site: Site | None, level_id: str, circ) -> str:
+def _level_panel(
+    v: _View, model: HouseModel, site: Site | None, level_id: str, circ, labels: LabelLayout
+) -> str:
     lv = model.level(level_id)
     zone_privacy = {z.id: z.privacy for z in model.zones}
     out = [_site_context(v, site)]
@@ -389,22 +387,12 @@ def _level_panel(v: _View, model: HouseModel, site: Site | None, level_id: str, 
                 f'<path d="{v.path([a, b], False)}" stroke="#d0342c" stroke-width="0.9" '
                 f'stroke-dasharray="4,3" fill="none" opacity="0.8"/>'
             )
-    for s in spaces:
-        c = s.boundary.to_shapely().representative_point()
-        x, y = v.p((c.x, c.y))
-        L, W = _rect_dims(s.boundary)
-        small = L * v.scale < 70
-        out.append(
-            _t(
-                x,
-                y - 4,
-                s.name if not small else s.name.split(" ")[0],
-                9 if not small else 7,
-                weight="bold",
-            )
-        )
-        out.append(_t(x, y + 7, f"{s.area_m2:.1f} m²", 8))
-        out.append(_t(x, y + 17, f"{L:.2f} × {W:.2f}", 7, colour="#555"))
+    for label in labels.labels:
+        if label.level_id != level_id:
+            continue
+        x, y = v.p(label.anchor)
+        for line, (colour, weight) in zip(label.lines, LABEL_LINE_STYLE, strict=True):
+            out.append(_t(x, y + line.dy, line.text, line.size, colour=colour, weight=weight))
     out.append(_overall_dims(v, model, level_id))
     title = f"{lv.name} — FFL {lv.elevation_m:+.2f} m (local)"
     out.append(_t(v.ox - MARGIN + 10, v.oy - MARGIN + 18, title, 12, anchor="start", weight="bold"))
@@ -437,10 +425,8 @@ def render_plan_svg(
     banner: str | None = None,
 ) -> str:
     model = plan.model
-    shapes = [s.boundary.to_shapely() for s in model.spaces]
-    if site is not None and site.boundary is not None:
-        shapes.append(site.boundary.to_shapely())
-    bounds = unary_union(shapes).buffer(2.5).bounds
+    labels = label_layout(model, site)
+    bounds = labels.bounds
     levels = sorted(model.levels, key=lambda lv: -lv.elevation_m)
     cols = min(2, len(levels))
     rows = math.ceil(len(levels) / cols)
@@ -498,7 +484,7 @@ def render_plan_svg(
         )
         parts.append(
             f'<g id="level-{lv.id}" clip-path="url(#{clip})">'
-            f"{_level_panel(v, model, site, lv.id, circ)}</g>"
+            f"{_level_panel(v, model, site, lv.id, circ, labels)}</g>"
         )
         parts.append(
             f'<rect x="{_f(ox + 4)}" y="{_f(oy + 2)}" width="{_f(PANEL_W - 8)}" '

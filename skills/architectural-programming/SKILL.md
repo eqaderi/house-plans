@@ -96,13 +96,12 @@ Guide the agent through an adaptive, high-information architectural interview wi
    .venv/bin/house-ai program build <project> --out projects/<project>/design --actor agent:<tool>
    ```
 
-8. **Request the program gate review** (needs the site gate approved, the project in `INTERVIEWING`, no blocking findings and no unconfirmed inferences):
+8. **Request the program gate review** (needs the site gate approved, no blocking findings and no unconfirmed inferences):
    ```bash
-   # Only if the project is in SITE_APPROVED:
-   .venv/bin/house-ai workflow transition <project> INTERVIEWING --reason "interview" --actor agent:<tool>
-
    .venv/bin/house-ai program review <project> --actor agent:<tool>
    ```
+   From `SITE_APPROVED` (or `INTERVIEWING`) it moves the project to
+   `PROGRAM_REVIEW` itself; no `workflow transition` is needed.
 
 ## Required validations
 - The owner's words are stored verbatim: never translated away, tidied or truncated.
@@ -118,6 +117,9 @@ Guide the agent through an adaptive, high-information architectural interview wi
   ```bash
   .venv/bin/house-ai workflow approve <project> program --id program --version <v> --approver <name>
   ```
+  Give the owner the exact command the CLI printed on its `next:` line, or
+  `next_human_command` from `project status --json`: it is rendered in one place,
+  pins the version and names the human (ADR 0029).
 
 ## Failure handling
 - **Unconfirmed inferences block review**: show them to the owner and confirm, reject or revise each.

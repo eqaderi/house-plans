@@ -47,13 +47,12 @@ Guide the agent through inspecting raw CAD survey files, ingesting survey entiti
      --layers <layers.yaml> --actor agent:<tool>
    ```
    `--source` takes the id printed by `source add`, never a file path.
+   `site ingest` starts site ingestion on a new project and assesses the site:
+   it prints the site's blockers and the state, `SITE_NEEDS_CONFIRMATION` while
+   any blocker is open. No `workflow transition` is needed.
 
-3. **Assess the site against the gate's blockers:**
+3. **Re-assess the site against the gate's blockers (optional, moves nothing):**
    ```bash
-   # From NEW_PROJECT only:
-   .venv/bin/house-ai workflow transition <project> SITE_INGESTION --reason "ingesting survey" \
-     --actor agent:<tool>
-
    .venv/bin/house-ai workflow assess-site <project> --id site --actor agent:<tool>
    ```
 
@@ -66,7 +65,7 @@ Guide the agent through inspecting raw CAD survey files, ingesting survey entiti
    plain language (and in the owner's language) with these sections:
    - what the owner already told us (verbatim, marked "not yet confirmed in the tool");
    - what the survey answers (area, relief, frontage, point counts), each with how it was obtained;
-   - every open blocker from `assess-site` and `site report` (units, horizontal CRS, vertical datum, boundary), phrased as a question only the owner or surveyor can answer;
+   - every open blocker from `site ingest` (or `assess-site`) and `site report` (units, horizontal CRS, vertical datum, boundary), phrased as a question only the owner or surveyor can answer;
    - suspicious terrain findings (steep or sliver triangles, close point pairs), stated as measurements, never smoothed;
    - the exact commands the owner runs in their own terminal (see Human-approval boundaries).
    Never infer a CRS, UTM zone, hemisphere, datum or unit from coordinate magnitudes; list them as unknown.
@@ -100,6 +99,14 @@ Guide the agent through inspecting raw CAD survey files, ingesting survey entiti
     --boundary-verified --confirmer <name>
   .venv/bin/house-ai workflow approve <project> site --id site --version <v> --approver <name>
   ```
+  Give the owner the exact command the CLI printed on its `next:` line, or
+  `next_human_command` from `project status --json`: it is rendered in one place,
+  pins the version and names the human (ADR 0029).
+  `site confirm` writes the confirmed site version and re-assesses it. If it
+  prints no `BLOCKER` line, the project is back in `SITE_INGESTION` (recorded
+  under the confirmer's name) and the owner approves the site gate next, with
+  no step in between. If a blocker remains, the project stays in
+  `SITE_NEEDS_CONFIRMATION`; never run `workflow transition` to get around it.
 
 ## Failure handling
 - **ODA File Converter missing**: if DWG conversion is unavailable, ask the owner to convert DWG to DXF or install ODA File Converter.

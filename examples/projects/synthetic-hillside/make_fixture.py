@@ -19,6 +19,7 @@ from pathlib import Path
 import yaml
 
 from house_ai.domain.brief import DesignBrief
+from house_ai.domain.interview import slot_fact_id
 from house_ai.domain.provenance import ArtifactKind, ArtifactRef
 from house_ai.domain.site import Site
 from house_ai.orchestration.site_context import site_context_for
@@ -148,7 +149,7 @@ ANSWERS: list[tuple[str, str, object]] = [
 def brief_doc() -> dict:
     facts = [
         {
-            "id": f"f-{key}",
+            "id": slot_fact_id(key),
             "topic": topic,
             "key": key,
             "statement": f"Synthetic household answer for {key.replace('_', ' ')}.",

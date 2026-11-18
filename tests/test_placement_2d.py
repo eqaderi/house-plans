@@ -81,11 +81,8 @@ from house_ai.evaluation.evaluators import AdjacencyEvaluator, SiteEvaluator
 from house_ai.generation.assemble2d import assemble_2d
 from house_ai.generation.frame import Ground, design_frame
 from house_ai.generation.generator import CpSatPlanGenerator, GenerationRequest
-from house_ai.generation.solver import SolverOptions
 from house_ai.generation.solver2d import (
-    PlacedRoom2D,
-    SharedWall,
-    Solution2D,
+    PlacementOptions,
     solve_2d_placement,
 )
 
@@ -106,7 +103,7 @@ def test_2d_placement_basic_and_check_model_clean():
 
     frame = design_frame(site)
     ground = Ground(site, frame)
-    opts = SolverOptions(seed=42, deterministic_time=4.0)
+    opts = PlacementOptions(seed=42, deterministic_time=4.0)
 
     sol = solve_2d_placement(program, site, frame, opts, strategy=STRATEGY_CORRIDOR_FREE)
     assert sol.status in ("OPTIMAL", "FEASIBLE")
@@ -146,7 +143,7 @@ def test_corridor_free_circulation_pattern():
 
     frame = design_frame(site)
     ground = Ground(site, frame)
-    opts = SolverOptions(seed=42, deterministic_time=4.0)
+    opts = PlacementOptions(seed=42, deterministic_time=4.0)
 
     sol = solve_2d_placement(program, site, frame, opts, strategy=STRATEGY_CORRIDOR_FREE)
 
@@ -183,7 +180,7 @@ def test_open_plan_living_arrangement():
 
     frame = design_frame(site)
     ground = Ground(site, frame)
-    opts = SolverOptions(seed=42, deterministic_time=4.0)
+    opts = PlacementOptions(seed=42, deterministic_time=4.0)
 
     sol = solve_2d_placement(program, site, frame, opts, strategy=STRATEGY_OPEN_PLAN)
     assert sol.status in ("OPTIMAL", "FEASIBLE")
@@ -213,7 +210,7 @@ def test_solver_reproducibility_budget():
     program = fix.program
     frame = design_frame(site)
 
-    opts = SolverOptions(seed=123, deterministic_time=3.0)
+    opts = PlacementOptions(seed=123, deterministic_time=3.0)
 
     sol1 = solve_2d_placement(program, site, frame, opts, strategy=STRATEGY_CORRIDOR_FREE)
     sol2 = solve_2d_placement(program, site, frame, opts, strategy=STRATEGY_CORRIDOR_FREE)
@@ -233,7 +230,7 @@ def test_two_wing_l_shaped_arrangement_free_positioning():
     program = fix.program
     frame = design_frame(site)
     ground = Ground(site, frame)
-    opts = SolverOptions(seed=42, deterministic_time=4.0)
+    opts = PlacementOptions(seed=42, deterministic_time=4.0)
 
     sol = solve_2d_placement(program, site, frame, opts, strategy=STRATEGY_TWO_WING)
     assert sol.status in ("OPTIMAL", "FEASIBLE")
@@ -296,7 +293,7 @@ def test_courtyard_geometry_with_open_court():
     program = fix.program
     frame = design_frame(site)
     ground = Ground(site, frame)
-    opts = SolverOptions(seed=42, deterministic_time=4.0)
+    opts = PlacementOptions(seed=42, deterministic_time=4.0)
 
     sol = solve_2d_placement(program, site, frame, opts, strategy=STRATEGY_COURTYARD)
     assert sol.status in ("OPTIMAL", "FEASIBLE")
@@ -337,7 +334,7 @@ def test_multi_level_alternative_stair_cores():
     program = fix.program
     frame = design_frame(site)
     ground = Ground(site, frame)
-    opts = SolverOptions(seed=42, deterministic_time=4.0)
+    opts = PlacementOptions(seed=42, deterministic_time=4.0)
 
     prop = ConceptProposal(
         id="prop-multi",
@@ -392,7 +389,7 @@ def test_privacy_driven_zoning():
     site = _load_benchmark_fixture().site
     frame = design_frame(site)
     ground = Ground(site, frame)
-    opts = SolverOptions(seed=42, deterministic_time=4.0)
+    opts = PlacementOptions(seed=42, deterministic_time=4.0)
 
     # Construct zoned program
     zones = [
@@ -521,160 +518,6 @@ def test_privacy_driven_zoning():
     assert not errors(findings)
 
 
-def test_non_rectangular_l_shaped_space():
-    """S7-18: Test non-rectangular L-shaped space passing check_model cleanly."""
-    fix = _load_benchmark_fixture()
-    site = fix.site
-    frame = design_frame(site)
-    ground = Ground(site, frame)
-
-    # Construct an L-shaped living room from 2 sub-rectangles:
-    # Sub-rect 1: (0, 0) to (40, 30) (4.0m x 3.0m)
-    # Sub-rect 2: (20, 30) to (40, 50) (2.0m x 2.0m alcove)
-    # Adjacent room: (0, 30) to (20, 50) (bedroom)
-    l_room = PlacedRoom2D(
-        space_id="sp-living",
-        name="Living Room (L-shaped)",
-        function=SpaceFunction.LIVING,
-        level_id=LEVEL_ENTRY,
-        u0=0,
-        v0=0,
-        u1=40,
-        v1=50,
-        program_item_id="pi-living",
-        zone_id="z-day",
-        sub_rects=[(0, 0, 40, 30), (20, 30, 40, 50)],
-    )
-    bed_room = PlacedRoom2D(
-        space_id="sp-bed",
-        name="Bedroom",
-        function=SpaceFunction.BEDROOM,
-        level_id=LEVEL_ENTRY,
-        u0=0,
-        v0=30,
-        u1=20,
-        v1=50,
-        program_item_id="pi-bed",
-        zone_id="z-night",
-    )
-    entry_room = PlacedRoom2D(
-        space_id="sp-entry",
-        name="Entry",
-        function=SpaceFunction.ENTRY,
-        level_id=LEVEL_ENTRY,
-        u0=40,
-        v0=0,
-        u1=60,
-        v1=20,
-        program_item_id="pi-entry",
-        zone_id="z-day",
-    )
-
-    sw1 = SharedWall(
-        room_a="sp-living",
-        room_b="sp-bed",
-        level_id=LEVEL_ENTRY,
-        orientation="v",
-        coord_dm=20,
-        span_start_dm=30,
-        span_end_dm=50,
-        door_candidate=True,
-    )
-    sw2 = SharedWall(
-        room_a="sp-living",
-        room_b="sp-entry",
-        level_id=LEVEL_ENTRY,
-        orientation="v",
-        coord_dm=40,
-        span_start_dm=0,
-        span_end_dm=20,
-        door_candidate=True,
-    )
-
-    sol = Solution2D(
-        status="FEASIBLE",
-        objective=100.0,
-        rooms=[l_room, bed_room, entry_room],
-        shared_walls=[sw1, sw2],
-        circulation_rooms=[],
-        levels=[LEVEL_ENTRY],
-        deterministic_time=1.0,
-        wall_time_s=0.1,
-        seed=42,
-        platform_info="test",
-        strategy=STRATEGY_CORRIDOR_FREE,
-        circulation_share=0.0,
-    )
-
-    custom_items = [
-        SpaceRequirement(
-            id="pi-living",
-            name="Living Room",
-            function=SpaceFunction.LIVING,
-            target_area_m2=16.0,
-            min_area_m2=16.0,
-            privacy=Privacy.PUBLIC,
-            priority=Priority.MUST,
-            daylight=DaylightNeed.REQUIRED,
-        ),
-        SpaceRequirement(
-            id="pi-bed",
-            name="Bedroom",
-            function=SpaceFunction.BEDROOM,
-            target_area_m2=4.0,
-            min_area_m2=4.0,
-            privacy=Privacy.PRIVATE,
-            priority=Priority.MUST,
-            daylight=DaylightNeed.REQUIRED,
-        ),
-        SpaceRequirement(
-            id="pi-entry",
-            name="Entry",
-            function=SpaceFunction.ENTRY,
-            target_area_m2=4.0,
-            min_area_m2=4.0,
-            privacy=Privacy.PUBLIC,
-            priority=Priority.MUST,
-            daylight=DaylightNeed.REQUIRED,
-        ),
-    ]
-    prog = SpaceProgram(
-        id="prog-l-shape",
-        project_id="proj-demo",
-        zones=[],
-        space_requirements=custom_items,
-        space_relationships=[],
-        provenance=Provenance(created_at=datetime.now(UTC), created_by=ACTOR, method="test"),
-    )
-
-    site_ref = ArtifactRef(kind=ArtifactKind.SITE, id=site.id, version=1, sha256="0" * 64)
-    program_ref = ArtifactRef(
-        kind=ArtifactKind.SPACE_PROGRAM, id=prog.id, version=1, sha256="0" * 64
-    )
-    model = assemble_2d(
-        sol, site, frame, ground, prog, ACTOR, site_ref=site_ref, program_ref=program_ref
-    )
-
-    # Verify the six corners and 16 m² L shape. Collinear shared-edge nodes are
-    # intentional (S10-13); their storage count is not the room's shape.
-    living_space = model.space("sp-living")
-    shape = living_space.boundary.to_shapely()
-    assert len(shape.simplify(1e-6).exterior.coords) - 1 == 6
-    assert shape.area == pytest.approx(16.0)
-
-    # Verify no interior wall divides the two sub-rectangles of the living space
-    dividing_walls = [
-        w
-        for w in model.walls
-        if w.level_id == LEVEL_ENTRY
-        and (w.start[0] == 2.0 and w.end[0] == 4.0 and w.start[1] == 3.0 and w.end[1] == 3.0)
-    ]
-    assert len(dividing_walls) == 0
-
-    findings = check_model(model, site, prog)
-    assert not errors(findings)
-
-
 def test_generator_candidates_supports_2d_strategies():
     """Test CpSatPlanGenerator candidate generation with 2D strategies."""
     fix = _load_benchmark_fixture()
@@ -707,7 +550,7 @@ def test_terrace_geometry_and_placement_s7_19():
     program = fix.program
     frame = design_frame(site)
     ground = Ground(site, frame)
-    opts = SolverOptions(seed=42, deterministic_time=4.0)
+    opts = PlacementOptions(seed=42, deterministic_time=4.0)
 
     sol = solve_2d_placement(program, site, frame, opts, strategy=STRATEGY_CORRIDOR_FREE)
     assert sol.status in ("OPTIMAL", "FEASIBLE")
@@ -752,7 +595,7 @@ def test_indoor_outdoor_relationships_evaluated_s7_20():
     program = fix.program
     frame = design_frame(site)
     ground = Ground(site, frame)
-    opts = SolverOptions(seed=42, deterministic_time=4.0)
+    opts = PlacementOptions(seed=42, deterministic_time=4.0)
 
     sol = solve_2d_placement(program, site, frame, opts, strategy=STRATEGY_CORRIDOR_FREE)
     assert sol.status in ("OPTIMAL", "FEASIBLE")
@@ -801,7 +644,7 @@ def test_adversarial_generation_s7_25():
     fix = _load_benchmark_fixture("large-terrace")
     site = fix.site
     frame = design_frame(site)
-    opts = SolverOptions(seed=42, deterministic_time=4.0)
+    opts = PlacementOptions(seed=42, deterministic_time=4.0)
 
     # 1. Contradictory hard requirements: room A and room B simultaneously
     # MUST be adjacent AND separated
@@ -837,7 +680,6 @@ def test_adversarial_generation_s7_25():
         program_ref=None,
         created_at=fix.program.provenance.created_at,
         strategies=[STRATEGY_CORRIDOR_FREE],
-        solver=opts,
     )
     cands = CpSatPlanGenerator().candidates(req_contra)
     assert len(cands) == 1
@@ -861,7 +703,6 @@ def test_adversarial_generation_s7_25():
         program_ref=None,
         created_at=fix.program.provenance.created_at,
         strategies=[STRATEGY_CORRIDOR_FREE],
-        solver=opts,
     )
     cands_over = CpSatPlanGenerator().candidates(req_oversized)
     assert cands_over[0].status == "infeasible"

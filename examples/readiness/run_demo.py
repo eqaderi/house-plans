@@ -34,6 +34,7 @@ from pathlib import Path
 
 import yaml
 
+from house_ai.cli.human import renderer
 from house_ai.domain.plan import PlanVersion
 from house_ai.domain.program import Strength
 from house_ai.domain.proposal import ConceptProposal
@@ -51,11 +52,11 @@ from house_ai.evaluation.explain import detect_near_duplicates, footprint_iou, t
 from house_ai.orchestration.interview import InterviewService
 from house_ai.orchestration.plans import PlanService, PlanWorkflowError, StoredOption
 from house_ai.orchestration.reviewer_bundle import export_reviewer_bundle
+from house_ai.orchestration.site import SiteService
 from house_ai.orchestration.workflow import GateBlocked, Workflow
 from house_ai.render2d.rasterize import find_rasterizer, rasterize_svg_to_png
 from house_ai.storage import ProjectStore
 from house_ai.storage.hashing import load_document
-from house_ai.validation.defect_detectors import scan_all_model_defects
 from house_ai.validation.grounding import collect_canonical_ids
 
 HERE = Path(__file__).resolve().parent
@@ -85,6 +86,7 @@ DEFECT_CODES = {
     "large_underfloor_void",
     "buried_habitable_face",
     "window_buried",
+    "label_collision",
 }
 
 
@@ -189,7 +191,7 @@ def run(out: Path, strategies: list[str] | None = None, with_proposal: bool = Tr
             lambda: wf.approve(Gate.SITE, site_ref, AGENT, "agent tries"), ApprovalRequiresHuman
         ),
     }
-    blockers = wf.assess_site(site_ref, AGENT)
+    blockers = [b.message for b in SiteService(store).assess(site_ref, AGENT).blockers]
     wf.approve(Gate.SITE, site_ref, OWNER, "synthetic owner approves the synthetic site")
 
     # 2. Agent-operated interview.
@@ -233,13 +235,13 @@ def run(out: Path, strategies: list[str] | None = None, with_proposal: bool = Tr
         "budget_history": [t.text for t in session.turns if t.question_id == "q-budget"],
         "budget_value": state.values.get("budget"),
         "outdoor_value": state.values.get("outdoor"),
-        "open_contradictions": svc.checklist()["counts"]["open_contradictions"],
+        "open_contradictions": svc.checklist().counts()["open_contradictions"],
     }
 
     # 3. Program and program gate.
-    build, reasons = svc.review_program(AGENT)
-    if reasons:
-        raise DemoError(f"program review has open reasons: {reasons}")
+    build, program_gate = svc.review_program(AGENT)
+    if program_gate.blockers:
+        raise DemoError(f"program review has open reasons: {program_gate.open_reasons}")
     refusals["agent_approves_program"] = _refused(
         lambda: wf.approve(Gate.PROGRAM, build.program_ref, AGENT, "agent tries"),
         ApprovalRequiresHuman,
@@ -317,9 +319,11 @@ def run(out: Path, strategies: list[str] | None = None, with_proposal: bool = Tr
             "ungrounded_ids": critique.ungrounded_ids(valid),
             "png_sha256": png_hash,
             "critique_made_on_this_rendering": png_hash == critique.screenshot_hash,
-            "detector_findings": [
-                {"type": f.defect_type, "elements": f.element_ids}
-                for f in scan_all_model_defects(visual.candidate.plan.model)
+            # The same version's Findings, from its Evaluation (ADR 0033).
+            "evaluation_findings": [
+                {"code": v.code, "subjects": list(v.subject_ids)}
+                for v in visual.report.violations
+                if v.code in DEFECT_CODES
             ],
         }
 
@@ -366,7 +370,7 @@ def run(out: Path, strategies: list[str] | None = None, with_proposal: bool = Tr
 
     # 8. Plan gate: review request, refusal for an agent, synthetic approval, frozen plan.
     if visual is not None:
-        ref, event = plans.request_review(VISUAL_OPTION, AGENT)
+        ref, plan_gate = plans.request_review(VISUAL_OPTION, AGENT)
         refusals["agent_approves_plan"] = _refused(
             lambda: wf.approve(Gate.PLAN, ref, AGENT, "agent tries"), ApprovalRequiresHuman
         )
@@ -385,12 +389,14 @@ def run(out: Path, strategies: list[str] | None = None, with_proposal: bool = Tr
                 PlanWorkflowError,
             )
         rec["plan_gate"] = {"requested": ref.model_dump(mode="json"),
-                            "open_reasons": event.payload["open_reasons"],
-                            "attention": event.payload.get("attention", [])}  # fmt: skip
+                            "open_reasons": plan_gate.open_reasons,
+                            "blockers": [b.model_dump(mode="json") for b in plan_gate.blockers],
+                            "attention": plan_gate.attention}  # fmt: skip
     rec["refusals"] = refusals
 
     # 9. Reviewer bundle and provenance.
-    bundle = export_reviewer_bundle(store, out / "bundle", plan_options_dir=concepts)
+    bundle = export_reviewer_bundle(store, out / "bundle", render=renderer(store.project_id),
+                                    plan_options_dir=concepts)  # fmt: skip
     status = wf.status()
     rec["bundle"] = {"path": str(bundle.relative_to(out)), "bytes": bundle.stat().st_size}
     rec["provenance"] = {
@@ -484,8 +490,8 @@ def record_markdown(rec: dict) -> str:
                      f"{vr['critique_made_on_this_rendering']}.")  # fmt: skip
         lines += [""] + [f"- {c['id']} [{c['status']}] {c['elements']}: {c['text']}"
                          for c in vr["claims"]]  # fmt: skip
-        lines += ["", "Automated S5 defect detectors on the same version: "
-                  + (", ".join(f"{d['type']} {d['elements']}" for d in vr["detector_findings"])
+        lines += ["", "Findings of the same version's Evaluation: "
+                  + (", ".join(f"{d['code']} {d['subjects']}" for d in vr["evaluation_findings"])
                      or "no findings")]  # fmt: skip
     else:
         lines.append(f"not checked: {vr['reason']}")
