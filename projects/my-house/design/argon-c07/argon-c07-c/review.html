@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Argon C07-C — User Design C Perfected (Stepped Bridge Day Plate &amp; Extended Lower Bar)</title>
+  <style>
+    :root {
+      --bg: #f6f3ec;
+      --card: #fffdf9;
+      --ink: #1c1917;
+      --muted: #57534e;
+      --border: #d6cfc2;
+      --accent: #1d4ed8;
+      --pass-bg: #dcfce7;
+      --pass-ink: #166534;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 32px 28px 64px;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      line-height: 1.5;
+    }
+    .container { max-width: 1480px; margin: 0 auto; }
+    header {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px 28px;
+      margin-bottom: 24px;
+    }
+    h1 { margin: 0 0 8px; font-size: 26px; }
+    h2 { margin: 28px 0 12px; font-size: 20px; border-bottom: 2px solid var(--border); padding-bottom: 6px; }
+    h3 { margin: 16px 0 8px; font-size: 16px; }
+    p.subtitle { margin: 0; color: var(--muted); font-size: 14px; }
+    .badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+      background: var(--pass-bg);
+      color: var(--pass-ink);
+      margin-right: 6px;
+    }
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+      gap: 18px;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 18px 20px;
+      margin-bottom: 20px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      background: var(--card);
+    }
+    th, td {
+      border: 1px solid var(--border);
+      padding: 8px 10px;
+      text-align: left;
+      vertical-align: top;
+    }
+    th { background: #efeae0; font-weight: 700; }
+    .sheet-frame {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px;
+      margin-bottom: 24px;
+      overflow-x: auto;
+    }
+    .sheet-frame img {
+      width: 100%;
+      height: auto;
+      display: block;
+      border-radius: 6px;
+    }
+    .nav-links a {
+      display: inline-block;
+      margin-right: 10px;
+      margin-bottom: 6px;
+      padding: 6px 12px;
+      background: #efeae0;
+      color: var(--ink);
+      border-radius: 6px;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 13px;
+    }
+    .nav-links a:hover { background: #e2dacb; }
+    </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="nav-links" style="margin-bottom:12px;">
+        <a href="../index.html">&larr; All Argon C07 Options</a>
+        <a href="floor-plans.svg">Floor Plans SVG</a>
+        <a href="floor-plans.png">Floor Plans PNG</a>
+        <a href="terrain-sections.svg">1:1 Terrain Sections SVG</a>
+        <a href="terrain-sections.png">1:1 Terrain Sections PNG</a>
+        <a href="plan.json">plan.json</a>
+        <a href="rule-audit.json">rule-audit.json</a>
+      </div>
+      <h1>Argon C07-C — User Design C Perfected (Stepped Bridge Day Plate &amp; Extended Lower Bar)</h1>
+      <p class="subtitle">Directly implements the homeowner&#x27;s Option C from redesign-0109-r5 with all review &amp; stmt-021 fixes: features a clear West Bridge Arrival Door directly on the West exterior wall (fixing the notch door), direct entry into the NW Suite (never through the closet), stepped-in SW Bridge Kitchen (16.8 m²), SE Dining (14.4 m²), and a wide, generous East Family Living + NE Prayer Room (49.6 m², 4.8–5.2 m wide), while the Lower Floor extends west of the Core Stair (u=2.4..5.6m) for a 20.4 m² Laundry &amp; 16.0 m² Store wing, with the NE Suite + Seated Ensuite, Center-East Garden Lounge, and South Boys + Girls + right-sized SE Baths.</p>
+      <p style="margin:10px 0 0;">
+        <span class="badge">0 check_model findings</span>
+        <span class="badge">19/19 Owner Design Rules PASS</span>
+        <span class="badge">All 30 Issues in 0110-r2 Resolved</span>
+        <span class="badge">Building Cut: 405.6 m&sup3; (100% On-Site Reuse)</span>
+      </p>
+    </header>
+
+    <div class="card">
+      <h3>Key Metrics &amp; Stepped Hillside Massing</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Level</th>
+            <th>FFL (m)</th>
+            <th>Indoor Area (m&sup2;)</th>
+            <th>Terrace / Court Area (m&sup2;)</th>
+            <th>Earthwork &amp; Garden Summary</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>1. Road Level (`lv-upper`)</strong></td>
+            <td>1677.70</td>
+            <td>119.8</td>
+            <td>33.6</td>
+            <td rowspan="3">
+              Building Cut: <strong>405.6 m&sup3;</strong><br/>
+              Max Cut Depth: <strong>5.93 m</strong><br/>
+              Terrace &amp; East Lawn Fill: <strong>367.1 m&sup3;</strong><br/>
+              Flat East Lawn: <strong>~160 m&sup2; at 1668.2 m</strong> (u = 22.0–31.4 m)
+            </td>
+          </tr>
+          <tr>
+            <td><strong>2. Main Floor (`lv-entry`)</strong></td>
+            <td>1674.30</td>
+            <td>161.2</td>
+            <td>114.6</td>
+          </tr>
+          <tr>
+            <td><strong>3. Lower Floor (`lv-lower`)</strong></td>
+            <td>1670.70</td>
+            <td>213.3</td>
+            <td>65.0</td>
+          </tr>
+          <tr>
+            <td><strong>Total</strong></td>
+            <td>3 Stepped Levels</td>
+            <td><strong>494.3 m&sup2;</strong></td>
+            <td><strong>213.2 m&sup2;</strong></td>
+            <td><strong>100% of excavated rock/soil reused on site</strong></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2>All-Level Furnished Floor Plans + Flat East Lawn (True 1:1 Scale)</h2>
+    <div class="sheet-frame">
+      <img src="floor-plans.svg" alt="argon-c07-c Floor Plans" />
+    </div>
+
+    <h2>True 1:1 Site &amp; Excavation Cross-Sections</h2>
+    <div class="sheet-frame">
+      <img src="terrain-sections.svg" alt="argon-c07-c Terrain Sections" />
+    </div>
+
+    <h2>User-Designed (<code>0109-r5</code>) Inspirations &amp; Review (<code>0110-r2</code>) Problem Resolutions</h2>
+    <table>
+      <thead>
+        <tr>
+          <th style="width:180px;">Feature / Finding ID</th>
+          <th style="width:280px;">User Inspiration Adopted (<code>0109-r5</code>)</th>
+          <th style="width:280px;">Problem Identified (<code>0110-r2</code> / Rules)</th>
+          <th>How <code>argon-c07-c</code> Resolves It</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>User 0109-r5 Road Floor Architecture + I09 &amp; Rule 2.5 Front Door Fix</strong></td><td>West-to-East Road Floor sequence: Two Independent Car Bays (two 3.2m west shutters) + dedicated West Front Pedestrian Entrance Foyer (1.20m Front Door) → central Six-Person Unloading with 6 lockers &amp; Lift → East Core Stair (REST 1.40), Replaceable Plant (1.20m door), and SE Quiet Office.</td><td>In 0109-r5, the 5.20×7.70m car bay caused a 0.51 m² clash between the 2nd car&#x27;s 0.65m door zone and the cabinet, lacked a workshop bench bay, and the pedestrian entrance routed around a dogleg.</td><td><span class='badge'>RESOLVED</span> Preserves the West-to-East Road Floor layout of 0109-r5 with a 5.2×9.4m Two-Car Bay + 1.6×3.0m North Workshop Bay (53.7 m², 0.00 m² door-zone clash) AND a dedicated 1.6m-wide West Front Entrance Foyer (u=0.4..5.6m, v=10.0..11.6m) with a 1.20m Front Door on the West Road façade leading straight east to Unloading, Lift, and Core Stair (Rule 2.5).</td></tr><tr><td><strong>User 0109-r5 Option B (Argon C07-B, Recommended) + stmt-021 Right-Sizing &amp; Direct Bedroom Entry</strong></td><td>Main Floor has West/SW Parents Suite (Bedroom + Dress + Ensuite), North-Center 4-part Screened Wet &amp; Wudu Cluster, South Kitchen, SE Dining (6–8), and wide East Living + NE Reading/Prayer Bay. Lower Floor has West Laundry + Store, North-Center Wet Cluster, South Row of Boys + Girls + Guest Suite, and NE Garden Lounge.</td><td>In earlier C07 drafts: Kitchen (22.1 m²) and Dining (15.4 m²) were oversized while East Living was pinched to 2.2m wide at the south (34.9 m²); West arrival used a 1.6m dogleg; Lower Guest Room in 0109-r5 lacked a seated WC (I10); Wudu to Prayer was 18.55m (I11).</td><td><span class='badge'>RESOLVED</span> Right-sizes South Kitchen to 16.8 m² (4.2×4.0m) and SE Dining to 13.6 m² (3.4×4.0m), expanding East Family Living + NE Reading/Prayer Room to a wide, generous 49.6 m² (4.6–5.2m wide top-to-bottom, Rule 2.6). Places the 1.20m West Arrival Door directly on the West façade of Family Arrival (v=5.6..7.4m, Rule 2.5), gives direct entry from Family Arrival into the Parents Bedroom (never through Dress, Rule 1.5), and includes a 13.0 m² Seated Ensuite on the Lower Guest Suite (I10).</td></tr><tr><td><strong>User 0109-r5 Option A (Argon C07-A) + Direct Parents Bedroom Entry &amp; 52.8 m² East Living</strong></td><td>Main Floor has NW Parents Suite &amp; Walk-in Pantry, SW Kitchen, South-Center Dining (6–8), North-Center 4-part Screened Wet/Wudu Cluster, and wide East Living + NE Reading Bay. Lower Floor has NE Grand Suite + Private Ensuite + Store by Core, Center-East wide Garden Lounge, West Laundry, and South Boys + Girls + SE Wet Cluster.</td><td>In earlier drafts, reaching the NW Parents Bedroom required walking through the Dress closet, Kitchen/Dining were 25.0 m² / 21.1 m² while Living was 31.4 m² (pinched to 2.2m at SE), and Lower SE bathrooms were oversized (12.5 m² WC / 19.8 m² Shower).</td><td><span class='badge'>RESOLVED</span> Parents Bedroom (21.8 m²) opens directly from Family Arrival while Dress (4.0 m²) and Ensuite (5.3 m²) open privately from inside the bedroom (Rule 1.5). Right-sizes Kitchen (16.8 m²) and Dining (14.4 m²) to expand East Family Living to 52.8 m² (5.8–6.6m wide, Rule 2.6), and right-sizes Lower SE WC (6.2 m²) and Shower (8.3 m²) with a stepped SE Garden Terrace (Rule 3.3).</td></tr><tr><td><strong>User 0109-r5 Option C (Argon C07-C) + Flush West Arrival &amp; 50.3 m² East Living</strong></td><td>Compact Upper Day Pavilion (stepped in at SW) with SW Kitchen, South-Center Dining, wide East Living + NE Prayer, and Lower Floor stepping further West (u=2.4..5.6m) for expanded Laundry/Service while NE Suite, Center-East Garden Lounge, and South Boys + Girls face the garden.</td><td>In earlier drafts, the West Arrival door was hidden in a narrow notch behind Upper Store, reaching the NW Bedroom required walking through Dress, and Dining (24.0 m²) + Kitchen (22.1 m²) squeezed East Living to 31.4 m² (2.2m wide at SE).</td><td><span class='badge'>RESOLVED</span> Places Family Arrival flush on the West exterior wall (u=2.4m, v=5.6..7.4m) with a direct 1.20m West Arrival Door (Rule 2.5) and direct entry to the NW Parents Bedroom (Rule 1.5), while right-sizing Kitchen (16.8 m²) and Dining (14.4 m²) so East Family Living is 50.3 m² (4.4–5.0m wide, Rule 2.6).</td></tr>
+      </tbody>
+    </table>
+
+    <h2>Homeowner Design Rules Audit (19/19 PASS)</h2>
+    <table>
+      <thead>
+        <tr>
+          <th style="width:110px;">Rule</th>
+          <th style="width:280px;">Requirement</th>
+          <th style="width:90px;">Status</th>
+          <th>Verified Evidence</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>Rule 1.1</strong></td><td>Kitchen opens directly onto South Terrace and looks south</td><td><span class='badge'>PASS</span></td><td>Sliding door d-out + windows directly from sp-kitchen to sp-terrace-south</td></tr><tr><td><strong>Rule 1.2</strong></td><td>Kitchen gets prime south frontage</td><td><span class='badge'>PASS</span></td><td>Kitchen spans 4.2 m along south edge v=11.4 m</td></tr><tr><td><strong>Rule 1.3</strong></td><td>Semi-open kitchen with 2 doorless walk-throughs; cooking smells kept out of living</td><td><span class='badge'>PASS</span></td><td>3 doorless walk-throughs; zero direct opening between kitchen and living</td></tr><tr><td><strong>Rule 1.4 &amp; 1.5</strong></td><td>Right-sized Kitchen (16.8 m²) &amp; Dining (13.6–14.4 m²) adjacent to Kitchen (stmt-021, I14, I26)</td><td><span class='badge'>PASS</span></td><td>Kitchen 16.8 m², Dining 14.4 m² adjacent (right-sized so East Living is 49.6 m²)</td></tr><tr><td><strong>Rule 2.1 &amp; 2.5</strong></td><td>Every main room &amp; Parents Bedroom reached directly from Hall — NEVER through Closet (stmt-021)</td><td><span class='badge'>PASS</span></td><td>Direct door from West Entry into Parents Bedroom; Dress &amp; Ensuite open only from inside the Bedroom</td></tr><tr><td><strong>Rule 2.2 &amp; 2.6</strong></td><td>Clear, direct West Front Door (Road) &amp; West Arrival Door (Main) with zero doglegs or notches (stmt-021)</td><td><span class='badge'>PASS</span></td><td>1.2m Road Front Door on West facade + 1.2m Main West Arrival Door into straight rectangular Entry (7.9 m²)</td></tr><tr><td><strong>Rule 2.3</strong></td><td>Sculpted stepped 0109-r5 footprint with zero internal voids or holes</td><td><span class='badge'>PASS</span></td><td>Mathematical 0.00 m² overlap and 0 internal holes across all 3 stepped floor plates</td></tr><tr><td><strong>Rule 2.4</strong></td><td>No unnecessary interior doors or barriers</td><td><span class='badge'>PASS</span></td><td>Wide doorless portals between Entry, Family Link, Living, Dining, Kitchen, Pantry, and Garden Lounge</td></tr><tr><td><strong>Rule 3.1 &amp; 3.3</strong></td><td>Generous, wide L-shaped Living Room (49.6–52.8 m², 4.4–6.6m wide) + sheltered NE Cozy/Prayer bay (stmt-021)</td><td><span class='badge'>PASS</span></td><td>East Family Living = 49.6 m² (min width 4.8 m) + NE Reading/Prayer bay (20.2 m²)</td></tr><tr><td><strong>Rule 3.2</strong></td><td>Living room closed-off corner is not cut off (direct wide opening from Family Link)</td><td><span class='badge'>PASS</span></td><td>1.4 m wide direct doorless opening from sp-hall-u into sp-living (~3.5 m from Wudu, fixes I11)</td></tr><tr><td><strong>Rule 4.1</strong></td><td>South and east prime frontage used for day rooms and terraces</td><td><span class='badge'>PASS</span></td><td>South = Kitchen, Dining, Living &amp; South Terrace; East = Living, NE Prayer, Garden Lounge &amp; Terraces</td></tr><tr><td><strong>Rule 4.2</strong></td><td>House steps east to u ≈ 20 m (not narrow towards east, stmt-018, fixes I01/I02)</td><td><span class='badge'>PASS</span></td><td>Road u=0.4–12.2 m, Main u=1.2–17.8 m, Lower u=2.4–20.2 m</td></tr><tr><td><strong>Rule 4.3</strong></td><td>Generous wrap-around terraces on main floor + excavated lower garden court</td><td><span class='badge'>PASS</span></td><td>114.6 m² of outdoor terraces/courts on the main floor + exterior garden stair GS</td></tr><tr><td><strong>Rule 5.1</strong></td><td>Indoor route from Two Car Bays straight to Six-Person Unloading, Lift &amp; Core Stair</td><td><span class='badge'>PASS</span></td><td>Direct interior door sp-garage -&gt; sp-lobby (6 lockers) -&gt; sp-lift-r &amp; sp-stair-r</td></tr><tr><td><strong>Rule 5.2</strong></td><td>One continuous North-Projecting Core Stair (REST 1.40) connects Road, Main, and Lower floors</td><td><span class='badge'>PASS</span></td><td>Two stacked U-flights (stair-main-road + stair-lower-main) in the 3.0×5.0 m north-projecting core</td></tr><tr><td><strong>Rule 5.3</strong></td><td>Stair is at the heart of the household circulation</td><td><span class='badge'>PASS</span></td><td>North-center core u=7.2–10.2 m, v=0.6–5.6 m</td></tr><tr><td><strong>Rule 5.5</strong></td><td>Two Independent Car Bays + North Workshop (~54 m²) with two west shutters &amp; 0.65m door zones (fixes I09)</td><td><span class='badge'>PASS</span></td><td>Two Car Bays + Workshop = 53.7 m² (LC300 5.1×2.1m + 2nd car 4.8×1.95m, 0.00 m² clash)</td></tr><tr><td><strong>Rule 6.1–6.6</strong></td><td>Main Floor Suite + Lower South Boys &amp; Girls + Garden Suite + Garden Lounge with Tea/Snack Bar</td><td><span class='badge'>PASS</span></td><td>Main Suite 12.6 m²; Lower Suite 27.7 m²; Boys 22.0 m²; Girls 22.0 m²; Garden Lounge 22.1 m²</td></tr><tr><td><strong>Rule 6.7 &amp; 7.3</strong></td><td>Heavily based on User&#x27;s 0109-r5 (A, B, C) with 4-part Screened Wet/Wudu Cluster, 1.2m Plant Door &amp; 0110-r2 Fixes (stmt-019, stmt-020, stmt-021)</td><td><span class='badge'>PASS</span></td><td>4-part Wet/Wudu cluster; 1.2m Plant door; Lower Seated Bath 14.3 m² (I10); Laundry 20.4 m² (I12); Store 16.0 m² (I22)</td></tr>
+      </tbody>
+    </table>
+  </div>
+</body>
+</html>

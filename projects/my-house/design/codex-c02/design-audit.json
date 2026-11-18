@@ -1,0 +1,28 @@
+[
+  {
+    "option": "codex-c02-a",
+    "status": "measured / graph_analysis",
+    "geometry_findings": 0,
+    "bedrooms": 4,
+    "child_beds_each": 2,
+    "vehicles_fitted": 2,
+    "bathroom_has_no_direct_day_space_door": true,
+    "kitchen_two_closeable_passages": true,
+    "balcony_access_without_bedroom_crossing": true,
+    "long_corridors_allowed": false,
+    "scope": "Body fit and topology, not complete clearance, privacy sightline, accessibility, road turning or structural approval"
+  },
+  {
+    "option": "codex-c02-b",
+    "status": "measured / graph_analysis",
+    "geometry_findings": 0,
+    "bedrooms": 4,
+    "child_beds_each": 2,
+    "vehicles_fitted": 2,
+    "bathroom_has_no_direct_day_space_door": true,
+    "kitchen_two_closeable_passages": true,
+    "balcony_access_without_bedroom_crossing": true,
+    "long_corridors_allowed": false,
+    "scope": "Body fit and topology, not complete clearance, privacy sightline, accessibility, road turning or structural approval"
+  }
+]

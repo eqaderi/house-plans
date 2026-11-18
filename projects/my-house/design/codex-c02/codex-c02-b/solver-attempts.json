@@ -1,0 +1,14 @@
+[
+  {
+    "status": "INFEASIBLE",
+    "width_dm": 130,
+    "height_dm": 104,
+    "wall_time_s": 1.020502791972831
+  },
+  {
+    "status": "OPTIMAL",
+    "width_dm": 136,
+    "height_dm": 108,
+    "wall_time_s": 5.199727915925905
+  }
+]

@@ -1,0 +1,86 @@
+{
+  "revision": "0109-r5",
+  "resolved": [
+    {
+      "topic": "Review archive omissions",
+      "correction": "Actual0108 sections, terrain and B drawings existed; corrected review premise before using recommendations."
+    },
+    {
+      "topic": "Parcel envelope",
+      "correction": "New road-corner chamfer avoids parcel crossing; no clipping/buffer/tolerance exception."
+    },
+    {
+      "topic": "Core geometry",
+      "correction": "Real two-flight core,22/24 rises and1.40m rest landings; C24-riser note corrected to match its actual single elevation change."
+    },
+    {
+      "topic": "Occupied child furniture",
+      "correction": "Desk/occupied-chair knee overlap explicitly vertical; wardrobes separated from chairs and travel."
+    },
+    {
+      "topic": "Lower common route",
+      "correction": "Moved cupboard and TV backing away from core and guest entry."
+    },
+    {
+      "topic": "Guest room",
+      "correction": "Rotated bed, moved desk/chair/wardrobe and declared same-level exterior escape path."
+    },
+    {
+      "topic": "Fridge",
+      "correction": "Moved privacy return behind fridge so working front is accessible."
+    },
+    {
+      "topic": "External thresholds",
+      "correction": "Door cuts now cross full300mm reserved external wall; actual level exterior platform / threshold checks."
+    },
+    {
+      "topic": "Independent arrival",
+      "correction": "Moved coats/shoes away from door, pantry and lift travel; reserved turn circle."
+    },
+    {
+      "topic": "Parents dressing",
+      "correction": "Removed wardrobe across entrance; paired half-pocket slides and independently reachable bedroom-only doors."
+    },
+    {
+      "topic": "Garden stair stack",
+      "correction": "Cut descending flight out of upper platforms; separate top/mid/bottom landings and9.80m total reservation."
+    },
+    {
+      "topic": "Guards",
+      "correction": "Reserved guards follow opening, exclude real building thresholds and retain actual top entry."
+    },
+    {
+      "topic": "Toilet sightlines",
+      "correction": "West multiuse approach and opaque returns protect all actual seated living samples with doors open."
+    },
+    {
+      "topic": "Terrace / reading",
+      "correction": "Dedicated3m glazed living slider moves access out of prayer bay; same-floor wudu retained."
+    },
+    {
+      "topic": "Aperture schedule",
+      "correction": "Split windows around doors with explicit jamb reservations; do not double-count openings."
+    },
+    {
+      "topic": "Drawing consistency",
+      "correction": "Common height function across sections/elevations/massing; added exterior doors to projected elevations; conditional qibla mats rotated."
+    },
+    {
+      "topic": "Visual QA",
+      "correction": "Compressed note spacing inside margins; separated scale label and bar; final39 sheets opened and PDF rendered."
+    },
+    {
+      "topic": "No false feasibility",
+      "correction": "Road gap, support/water/fire/assisted access/daylight unknowns remain explicit; no complete site or vehicle-access PASS."
+    }
+  ],
+  "remaining_professional_limits": [
+    "Actual wheelchair + companion transfer / assisted escape unresolved",
+    "Road vertical tie and full vehicle turn unresolved",
+    "Annual daylight / overheating / north neighbour unresolved",
+    "Retaining, global stability, groundwater, shoring, foundations and surcharge unengineered",
+    "Roof terraces remain above occupied rooms; drainage outfall and waterproofing unresolved",
+    "Essential lift, fire barrier products, HVAC capacities, actual doors/gates unselected"
+  ],
+  "owner_approval": null
+}

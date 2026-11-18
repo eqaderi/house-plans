@@ -1,0 +1,47 @@
+{
+  "main-soil-garden": {
+    "target_z_m": 1670.0,
+    "area_m2": 68.989276814148,
+    "supported_m2": 68.98927681414801,
+    "unsupported_m2": 0,
+    "vertical_prism_cut_m3": 0.0,
+    "vertical_prism_fill_m3": 219.28984660019975,
+    "scope": "Geometric vertical prisms to stated plane only; not excavation quantity, structural fill specification or cost."
+  },
+  "upper-arrival-garden-earthworks": {
+    "target_z_m": 1673.6,
+    "area_m2": 21.560000000000002,
+    "supported_m2": 21.560000000000002,
+    "unsupported_m2": 0,
+    "vertical_prism_cut_m3": 29.69073154378589,
+    "vertical_prism_fill_m3": 0.0,
+    "scope": "Geometric vertical prisms to stated plane only; not excavation quantity, structural fill specification or cost."
+  },
+  "south-daylight-grade": {
+    "target_z_m": 1673.6,
+    "area_m2": 11.36000000000001,
+    "supported_m2": 11.36000000000001,
+    "unsupported_m2": 0,
+    "vertical_prism_cut_m3": 0.0,
+    "vertical_prism_fill_m3": 55.39674391965271,
+    "scope": "Geometric vertical prisms to stated plane only; not excavation quantity, structural fill specification or cost."
+  },
+  "lower-enclosure": {
+    "target_z_m": 1673.3,
+    "area_m2": 229.46999999999997,
+    "supported_m2": 229.46999999999997,
+    "unsupported_m2": 0,
+    "vertical_prism_cut_m3": 3.2237948048059537,
+    "vertical_prism_fill_m3": 681.2419159577142,
+    "scope": "Geometric vertical prisms to stated plane only; not excavation quantity, structural fill specification or cost."
+  },
+  "old_0108_same_garden_plane": {
+    "target_z_m": 1670.0,
+    "area_m2": 90.82416707102684,
+    "supported_m2": 90.82416707102684,
+    "unsupported_m2": 0,
+    "vertical_prism_cut_m3": 0.0,
+    "vertical_prism_fill_m3": 275.12159943025387,
+    "scope": "Geometric vertical prisms to stated plane only; not excavation quantity, structural fill specification or cost."
+  }
+}

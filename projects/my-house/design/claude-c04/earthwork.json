@@ -1,0 +1,46 @@
+{
+ "building": [
+  {
+   "region": "lower floor",
+   "cut_m3": 190.0,
+   "max_cut_m": 4.03,
+   "max_gap_below_formation_m": 1.73
+  },
+  {
+   "region": "upper floor (part on ground)",
+   "cut_m3": 27.7,
+   "max_cut_m": 3.1,
+   "max_gap_below_formation_m": 1.45
+  },
+  {
+   "region": "west entrance court",
+   "cut_m3": 57.3,
+   "max_cut_m": 3.49,
+   "max_gap_below_formation_m": 0.03
+  }
+ ],
+ "building_cut_m3": 275.0,
+ "terraces": [
+  {
+   "region": "upper south terrace platform (part on ground)",
+   "fill_m3": 18.6,
+   "cut_m3": 0,
+   "max_fill_m": 2.38
+  },
+  {
+   "region": "lower garden terrace",
+   "fill_m3": 68.4,
+   "cut_m3": 0.0,
+   "max_fill_m": 3.08
+  }
+ ],
+ "lawn": {
+  "level": 1668.3,
+  "area_m2": 150.9,
+  "cut_m3": 12.2,
+  "fill_m3": 168.1,
+  "max_cut_m": 1.41,
+  "max_fill_m": 3.06
+ },
+ "method": "geospatial.earthworks.integrate on stored survey TIN; INFERRED; formation 0.35 m below finished floors; excludes footings, working space, batters, bulking, drainage"
+}

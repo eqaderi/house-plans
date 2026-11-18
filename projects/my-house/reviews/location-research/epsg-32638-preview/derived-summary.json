@@ -1,0 +1,465 @@
+{
+  "status": "regional_model_and_terrain_simulation; not on-site measurements",
+  "wind_direction": "FROM; degrees clockwise from true north; 16 sectors centred on 22.5-degree steps",
+  "wind_denominator": "All valid hours including calm; calm omitted from directional sectors",
+  "wind": {
+    "annual_2025": {
+      "valid_hours": 8760,
+      "calm_threshold_m_s": 0.5,
+      "calm_percent": 2.409,
+      "mean_speed_m_s": 2.801,
+      "p95_hourly_speed_m_s": 6.18,
+      "largest_hourly_mean_m_s": 11.12,
+      "sectors": [
+        {
+          "from": "E",
+          "hours": 1935,
+          "percent_all_valid_hours": 22.089
+        },
+        {
+          "from": "W",
+          "hours": 1480,
+          "percent_all_valid_hours": 16.895
+        },
+        {
+          "from": "WSW",
+          "hours": 954,
+          "percent_all_valid_hours": 10.89
+        },
+        {
+          "from": "ESE",
+          "hours": 696,
+          "percent_all_valid_hours": 7.945
+        },
+        {
+          "from": "ENE",
+          "hours": 568,
+          "percent_all_valid_hours": 6.484
+        },
+        {
+          "from": "WNW",
+          "hours": 525,
+          "percent_all_valid_hours": 5.993
+        },
+        {
+          "from": "SW",
+          "hours": 475,
+          "percent_all_valid_hours": 5.422
+        },
+        {
+          "from": "SE",
+          "hours": 406,
+          "percent_all_valid_hours": 4.635
+        },
+        {
+          "from": "SSW",
+          "hours": 356,
+          "percent_all_valid_hours": 4.064
+        },
+        {
+          "from": "S",
+          "hours": 323,
+          "percent_all_valid_hours": 3.687
+        },
+        {
+          "from": "SSE",
+          "hours": 289,
+          "percent_all_valid_hours": 3.299
+        },
+        {
+          "from": "NW",
+          "hours": 154,
+          "percent_all_valid_hours": 1.758
+        },
+        {
+          "from": "NE",
+          "hours": 141,
+          "percent_all_valid_hours": 1.61
+        },
+        {
+          "from": "NNE",
+          "hours": 92,
+          "percent_all_valid_hours": 1.05
+        },
+        {
+          "from": "NNW",
+          "hours": 79,
+          "percent_all_valid_hours": 0.902
+        },
+        {
+          "from": "N",
+          "hours": 76,
+          "percent_all_valid_hours": 0.868
+        }
+      ]
+    },
+    "DJF": {
+      "valid_hours": 2160,
+      "calm_threshold_m_s": 0.5,
+      "calm_percent": 2.222,
+      "mean_speed_m_s": 2.638,
+      "p95_hourly_speed_m_s": 6.07,
+      "largest_hourly_mean_m_s": 11.12,
+      "sectors": [
+        {
+          "from": "E",
+          "hours": 570,
+          "percent_all_valid_hours": 26.389
+        },
+        {
+          "from": "WSW",
+          "hours": 225,
+          "percent_all_valid_hours": 10.417
+        },
+        {
+          "from": "ESE",
+          "hours": 224,
+          "percent_all_valid_hours": 10.37
+        },
+        {
+          "from": "W",
+          "hours": 178,
+          "percent_all_valid_hours": 8.241
+        },
+        {
+          "from": "ENE",
+          "hours": 164,
+          "percent_all_valid_hours": 7.593
+        },
+        {
+          "from": "SE",
+          "hours": 158,
+          "percent_all_valid_hours": 7.315
+        },
+        {
+          "from": "SW",
+          "hours": 133,
+          "percent_all_valid_hours": 6.157
+        },
+        {
+          "from": "SSW",
+          "hours": 122,
+          "percent_all_valid_hours": 5.648
+        },
+        {
+          "from": "S",
+          "hours": 108,
+          "percent_all_valid_hours": 5.0
+        },
+        {
+          "from": "SSE",
+          "hours": 104,
+          "percent_all_valid_hours": 4.815
+        },
+        {
+          "from": "WNW",
+          "hours": 78,
+          "percent_all_valid_hours": 3.611
+        },
+        {
+          "from": "NE",
+          "hours": 14,
+          "percent_all_valid_hours": 0.648
+        },
+        {
+          "from": "NW",
+          "hours": 12,
+          "percent_all_valid_hours": 0.556
+        },
+        {
+          "from": "NNE",
+          "hours": 10,
+          "percent_all_valid_hours": 0.463
+        },
+        {
+          "from": "N",
+          "hours": 7,
+          "percent_all_valid_hours": 0.324
+        },
+        {
+          "from": "NNW",
+          "hours": 5,
+          "percent_all_valid_hours": 0.231
+        }
+      ]
+    },
+    "MAM": {
+      "valid_hours": 2208,
+      "calm_threshold_m_s": 0.5,
+      "calm_percent": 2.627,
+      "mean_speed_m_s": 2.775,
+      "p95_hourly_speed_m_s": 6.12,
+      "largest_hourly_mean_m_s": 10.89,
+      "sectors": [
+        {
+          "from": "E",
+          "hours": 325,
+          "percent_all_valid_hours": 14.719
+        },
+        {
+          "from": "WSW",
+          "hours": 296,
+          "percent_all_valid_hours": 13.406
+        },
+        {
+          "from": "W",
+          "hours": 241,
+          "percent_all_valid_hours": 10.915
+        },
+        {
+          "from": "ESE",
+          "hours": 216,
+          "percent_all_valid_hours": 9.783
+        },
+        {
+          "from": "SW",
+          "hours": 179,
+          "percent_all_valid_hours": 8.107
+        },
+        {
+          "from": "S",
+          "hours": 143,
+          "percent_all_valid_hours": 6.476
+        },
+        {
+          "from": "SSW",
+          "hours": 141,
+          "percent_all_valid_hours": 6.386
+        },
+        {
+          "from": "WNW",
+          "hours": 117,
+          "percent_all_valid_hours": 5.299
+        },
+        {
+          "from": "SE",
+          "hours": 114,
+          "percent_all_valid_hours": 5.163
+        },
+        {
+          "from": "SSE",
+          "hours": 111,
+          "percent_all_valid_hours": 5.027
+        },
+        {
+          "from": "ENE",
+          "hours": 104,
+          "percent_all_valid_hours": 4.71
+        },
+        {
+          "from": "NW",
+          "hours": 54,
+          "percent_all_valid_hours": 2.446
+        },
+        {
+          "from": "NE",
+          "hours": 37,
+          "percent_all_valid_hours": 1.676
+        },
+        {
+          "from": "NNE",
+          "hours": 25,
+          "percent_all_valid_hours": 1.132
+        },
+        {
+          "from": "NNW",
+          "hours": 25,
+          "percent_all_valid_hours": 1.132
+        },
+        {
+          "from": "N",
+          "hours": 22,
+          "percent_all_valid_hours": 0.996
+        }
+      ]
+    },
+    "JJA": {
+      "valid_hours": 2208,
+      "calm_threshold_m_s": 0.5,
+      "calm_percent": 1.63,
+      "mean_speed_m_s": 3.193,
+      "p95_hourly_speed_m_s": 6.6,
+      "largest_hourly_mean_m_s": 10.44,
+      "sectors": [
+        {
+          "from": "W",
+          "hours": 611,
+          "percent_all_valid_hours": 27.672
+        },
+        {
+          "from": "E",
+          "hours": 531,
+          "percent_all_valid_hours": 24.049
+        },
+        {
+          "from": "WSW",
+          "hours": 210,
+          "percent_all_valid_hours": 9.511
+        },
+        {
+          "from": "WNW",
+          "hours": 151,
+          "percent_all_valid_hours": 6.839
+        },
+        {
+          "from": "ENE",
+          "hours": 147,
+          "percent_all_valid_hours": 6.658
+        },
+        {
+          "from": "ESE",
+          "hours": 105,
+          "percent_all_valid_hours": 4.755
+        },
+        {
+          "from": "SW",
+          "hours": 87,
+          "percent_all_valid_hours": 3.94
+        },
+        {
+          "from": "NE",
+          "hours": 50,
+          "percent_all_valid_hours": 2.264
+        },
+        {
+          "from": "SE",
+          "hours": 47,
+          "percent_all_valid_hours": 2.129
+        },
+        {
+          "from": "NW",
+          "hours": 47,
+          "percent_all_valid_hours": 2.129
+        },
+        {
+          "from": "NNE",
+          "hours": 39,
+          "percent_all_valid_hours": 1.766
+        },
+        {
+          "from": "SSW",
+          "hours": 37,
+          "percent_all_valid_hours": 1.676
+        },
+        {
+          "from": "S",
+          "hours": 32,
+          "percent_all_valid_hours": 1.449
+        },
+        {
+          "from": "NNW",
+          "hours": 30,
+          "percent_all_valid_hours": 1.359
+        },
+        {
+          "from": "N",
+          "hours": 25,
+          "percent_all_valid_hours": 1.132
+        },
+        {
+          "from": "SSE",
+          "hours": 23,
+          "percent_all_valid_hours": 1.042
+        }
+      ]
+    },
+    "SON": {
+      "valid_hours": 2184,
+      "calm_threshold_m_s": 0.5,
+      "calm_percent": 3.159,
+      "mean_speed_m_s": 2.592,
+      "p95_hourly_speed_m_s": 5.56,
+      "largest_hourly_mean_m_s": 9.95,
+      "sectors": [
+        {
+          "from": "E",
+          "hours": 509,
+          "percent_all_valid_hours": 23.306
+        },
+        {
+          "from": "W",
+          "hours": 450,
+          "percent_all_valid_hours": 20.604
+        },
+        {
+          "from": "WSW",
+          "hours": 223,
+          "percent_all_valid_hours": 10.211
+        },
+        {
+          "from": "WNW",
+          "hours": 179,
+          "percent_all_valid_hours": 8.196
+        },
+        {
+          "from": "ENE",
+          "hours": 153,
+          "percent_all_valid_hours": 7.005
+        },
+        {
+          "from": "ESE",
+          "hours": 151,
+          "percent_all_valid_hours": 6.914
+        },
+        {
+          "from": "SE",
+          "hours": 87,
+          "percent_all_valid_hours": 3.984
+        },
+        {
+          "from": "SW",
+          "hours": 76,
+          "percent_all_valid_hours": 3.48
+        },
+        {
+          "from": "SSW",
+          "hours": 56,
+          "percent_all_valid_hours": 2.564
+        },
+        {
+          "from": "SSE",
+          "hours": 51,
+          "percent_all_valid_hours": 2.335
+        },
+        {
+          "from": "NW",
+          "hours": 41,
+          "percent_all_valid_hours": 1.877
+        },
+        {
+          "from": "NE",
+          "hours": 40,
+          "percent_all_valid_hours": 1.832
+        },
+        {
+          "from": "S",
+          "hours": 40,
+          "percent_all_valid_hours": 1.832
+        },
+        {
+          "from": "N",
+          "hours": 22,
+          "percent_all_valid_hours": 1.007
+        },
+        {
+          "from": "NNW",
+          "hours": 19,
+          "percent_all_valid_hours": 0.87
+        },
+        {
+          "from": "NNE",
+          "hours": 18,
+          "percent_all_valid_hours": 0.824
+        }
+      ]
+    }
+  },
+  "sun_and_horizon": {
+    "horizon_min_deg": 7.6,
+    "horizon_max_deg": 17.2,
+    "winter_noon_height_deg": 31.6,
+    "summer_noon_height_deg": 78.5
+  },
+  "rainfall_status": "Unvalidated regional estimate; do not use for drainage sizing",
+  "model_precip_approx_annual_mm": 324.9
+}

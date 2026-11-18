@@ -1,0 +1,269 @@
+{
+  "argon-c06-a": {
+    "option_id": "argon-c06-a",
+    "zones": [
+      {
+        "id": "west-arrival-court",
+        "label": "West sunken court & steps (z=1674.3 m)",
+        "area_m2": 41.4,
+        "formation_z_m": 1673.95,
+        "cut_m3": 58.8,
+        "fill_m3": 0.1,
+        "max_cut_m": 3.32,
+        "max_fill_m": 0.37
+      },
+      {
+        "id": "road-garage-west",
+        "label": "Road garage west apron (FFL 1677.7 m)",
+        "area_m2": 17.4,
+        "formation_z_m": 1677.35,
+        "cut_m3": 0.0,
+        "fill_m3": 39.1,
+        "max_cut_m": 0.0,
+        "max_fill_m": 3.77
+      },
+      {
+        "id": "main-west-band",
+        "label": "Main floor west band (FFL 1674.3 m, Road stacked above)",
+        "area_m2": 47.1,
+        "formation_z_m": 1673.95,
+        "cut_m3": 14.7,
+        "fill_m3": 13.5,
+        "max_cut_m": 2.57,
+        "max_fill_m": 1.65
+      },
+      {
+        "id": "lower-footprint",
+        "label": "Lower floor footprint u=5.8..20.0 m (FFL 1670.7 m)",
+        "area_m2": 221.5,
+        "formation_z_m": 1670.35,
+        "cut_m3": 164.5,
+        "fill_m3": 129.5,
+        "max_cut_m": 3.77,
+        "max_fill_m": 3.41
+      },
+      {
+        "id": "south-terrace-west",
+        "label": "South terrace west band (z=1674.3 m)",
+        "area_m2": 12.2,
+        "formation_z_m": 1674.3,
+        "cut_m3": 0.0,
+        "fill_m3": 20.1,
+        "max_cut_m": 0.0,
+        "max_fill_m": 2.58
+      },
+      {
+        "id": "lower-east-terrace",
+        "label": "Lower east garden terrace u=20.0..22.6 m (z=1670.7 m)",
+        "area_m2": 40.6,
+        "formation_z_m": 1670.7,
+        "cut_m3": 0.0,
+        "fill_m3": 123.6,
+        "max_cut_m": 0.0,
+        "max_fill_m": 4.61
+      },
+      {
+        "id": "flat-east-lawn",
+        "label": "Graded flat east garden lawn u=22.6..31.4 m (z=1668.1 m)",
+        "area_m2": 71.2,
+        "formation_z_m": 1668.1,
+        "cut_m3": 0.0,
+        "fill_m3": 106.0,
+        "max_cut_m": 0.08,
+        "max_fill_m": 2.86
+      }
+    ],
+    "total_cut_m3": 238.0,
+    "total_fill_m3": 431.9,
+    "net_export_m3": -193.9,
+    "summary": {
+      "building_cut_m3": 238.0,
+      "building_fill_m3": 202.3,
+      "building_net_export_m3": 35.7,
+      "building_max_cut_m": 3.77,
+      "total_cut_with_terrace_and_lawn_m3": 238.0,
+      "total_fill_with_terrace_and_lawn_m3": 431.9,
+      "net_export_with_lawn_m3": -193.9,
+      "reuse_ratio_pct": 100.0
+    },
+    "method": "house_ai.geospatial.earthworks.integrate on stored survey TIN (INFERRED); 0.35 m formation below finished floors; excludes footings, batters, bulking, drainage."
+  },
+  "argon-c06-b": {
+    "option_id": "argon-c06-b",
+    "zones": [
+      {
+        "id": "west-arrival-court",
+        "label": "West sunken court & steps (z=1674.2 m)",
+        "area_m2": 41.4,
+        "formation_z_m": 1673.85,
+        "cut_m3": 62.9,
+        "fill_m3": 0.1,
+        "max_cut_m": 3.42,
+        "max_fill_m": 0.27
+      },
+      {
+        "id": "road-garage-west",
+        "label": "Road garage west apron (FFL 1677.7 m)",
+        "area_m2": 17.4,
+        "formation_z_m": 1677.35,
+        "cut_m3": 0.0,
+        "fill_m3": 39.1,
+        "max_cut_m": 0.0,
+        "max_fill_m": 3.77
+      },
+      {
+        "id": "main-west-band",
+        "label": "Main floor west band (FFL 1674.2 m, Road stacked above)",
+        "area_m2": 41.8,
+        "formation_z_m": 1673.85,
+        "cut_m3": 10.9,
+        "fill_m3": 11.2,
+        "max_cut_m": 2.05,
+        "max_fill_m": 1.55
+      },
+      {
+        "id": "lower-footprint",
+        "label": "Lower floor footprint u=5.8..19.8 m (FFL 1670.6 m)",
+        "area_m2": 218.4,
+        "formation_z_m": 1670.25,
+        "cut_m3": 176.4,
+        "fill_m3": 112.5,
+        "max_cut_m": 3.87,
+        "max_fill_m": 3.24
+      },
+      {
+        "id": "south-terrace-west",
+        "label": "South terrace west band (z=1674.2 m)",
+        "area_m2": 12.2,
+        "formation_z_m": 1674.2,
+        "cut_m3": 0.0,
+        "fill_m3": 18.9,
+        "max_cut_m": 0.0,
+        "max_fill_m": 2.48
+      },
+      {
+        "id": "lower-east-terrace",
+        "label": "Lower east garden terrace u=19.8..22.6 m (z=1670.6 m)",
+        "area_m2": 43.7,
+        "formation_z_m": 1670.6,
+        "cut_m3": 0.0,
+        "fill_m3": 127.4,
+        "max_cut_m": 0.0,
+        "max_fill_m": 4.51
+      },
+      {
+        "id": "flat-east-lawn",
+        "label": "Graded flat east garden lawn u=22.6..31.4 m (z=1668.0 m)",
+        "area_m2": 71.2,
+        "formation_z_m": 1668.0,
+        "cut_m3": 0.0,
+        "fill_m3": 98.9,
+        "max_cut_m": 0.18,
+        "max_fill_m": 2.76
+      }
+    ],
+    "total_cut_m3": 250.2,
+    "total_fill_m3": 408.1,
+    "net_export_m3": -157.9,
+    "summary": {
+      "building_cut_m3": 250.2,
+      "building_fill_m3": 181.8,
+      "building_net_export_m3": 68.4,
+      "building_max_cut_m": 3.87,
+      "total_cut_with_terrace_and_lawn_m3": 250.2,
+      "total_fill_with_terrace_and_lawn_m3": 408.1,
+      "net_export_with_lawn_m3": -157.9,
+      "reuse_ratio_pct": 100.0
+    },
+    "method": "house_ai.geospatial.earthworks.integrate on stored survey TIN (INFERRED); 0.35 m formation below finished floors; excludes footings, batters, bulking, drainage."
+  },
+  "argon-c06-c": {
+    "option_id": "argon-c06-c",
+    "zones": [
+      {
+        "id": "west-arrival-court",
+        "label": "West sunken court & steps (z=1674.3 m)",
+        "area_m2": 43.1,
+        "formation_z_m": 1673.95,
+        "cut_m3": 59.4,
+        "fill_m3": 0.2,
+        "max_cut_m": 3.32,
+        "max_fill_m": 0.44
+      },
+      {
+        "id": "road-garage-west",
+        "label": "Road garage west apron (FFL 1677.7 m)",
+        "area_m2": 17.4,
+        "formation_z_m": 1677.35,
+        "cut_m3": 0.0,
+        "fill_m3": 40.8,
+        "max_cut_m": 0.0,
+        "max_fill_m": 3.84
+      },
+      {
+        "id": "main-west-band",
+        "label": "Main floor west band (FFL 1674.3 m, Road stacked above)",
+        "area_m2": 44.6,
+        "formation_z_m": 1673.95,
+        "cut_m3": 12.7,
+        "fill_m3": 13.4,
+        "max_cut_m": 2.46,
+        "max_fill_m": 1.65
+      },
+      {
+        "id": "lower-footprint",
+        "label": "Lower floor footprint u=5.8..20.2 m (FFL 1670.7 m)",
+        "area_m2": 224.6,
+        "formation_z_m": 1670.35,
+        "cut_m3": 164.5,
+        "fill_m3": 136.7,
+        "max_cut_m": 3.77,
+        "max_fill_m": 3.48
+      },
+      {
+        "id": "south-terrace-west",
+        "label": "South terrace west band (z=1674.3 m)",
+        "area_m2": 11.5,
+        "formation_z_m": 1674.3,
+        "cut_m3": 0.0,
+        "fill_m3": 19.4,
+        "max_cut_m": 0.0,
+        "max_fill_m": 2.58
+      },
+      {
+        "id": "lower-east-terrace",
+        "label": "Lower east garden terrace u=20.2..22.6 m (z=1670.7 m)",
+        "area_m2": 37.4,
+        "formation_z_m": 1670.7,
+        "cut_m3": 0.0,
+        "fill_m3": 115.3,
+        "max_cut_m": 0.0,
+        "max_fill_m": 4.61
+      },
+      {
+        "id": "flat-east-lawn",
+        "label": "Graded flat east garden lawn u=22.6..31.4 m (z=1668.2 m)",
+        "area_m2": 71.2,
+        "formation_z_m": 1668.2,
+        "cut_m3": 0.0,
+        "fill_m3": 113.1,
+        "max_cut_m": 0.0,
+        "max_fill_m": 2.96
+      }
+    ],
+    "total_cut_m3": 236.6,
+    "total_fill_m3": 438.9,
+    "net_export_m3": -202.3,
+    "summary": {
+      "building_cut_m3": 236.6,
+      "building_fill_m3": 210.5,
+      "building_net_export_m3": 26.1,
+      "building_max_cut_m": 3.77,
+      "total_cut_with_terrace_and_lawn_m3": 236.6,
+      "total_fill_with_terrace_and_lawn_m3": 438.9,
+      "net_export_with_lawn_m3": -202.3,
+      "reuse_ratio_pct": 100.0
+    },
+    "method": "house_ai.geospatial.earthworks.integrate on stored survey TIN (INFERRED); 0.35 m formation below finished floors; excludes footings, batters, bulking, drainage."
+  }
+}

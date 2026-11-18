@@ -1,0 +1,20 @@
+[
+  {
+    "file": "projects/my-house/surveys/seperated.dwg",
+    "reader_version": "dwgread 0.14",
+    "return_code": 0,
+    "original_unchanged": true,
+    "sha256": "27624ba14003e3d898143a9d86985d50d3d7098db0a45b94ae2dd999571519ed",
+    "output_exists": true,
+    "log_tail": "\nSUCCESS\n"
+  },
+  {
+    "file": "projects/my-house/surveys/elevation.dwg",
+    "reader_version": "dwgread 0.14",
+    "return_code": 0,
+    "original_unchanged": true,
+    "sha256": "9689880c47d9d0780089c5d4077f9396f5c29a2feeb298fafb86840bbae02f02",
+    "output_exists": true,
+    "log_tail": "\nSUCCESS\n"
+  }
+]

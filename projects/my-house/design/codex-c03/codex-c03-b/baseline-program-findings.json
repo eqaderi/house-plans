@@ -1,0 +1,10 @@
+[
+  {
+    "code": "hard_adjacency_violation",
+    "severity": "error",
+    "message": "hard connected adjacency adj-01-entry-exterior (pi-entry <-> exterior) is not satisfied",
+    "subject_ids": [
+      "adj-01-entry-exterior"
+    ]
+  }
+]

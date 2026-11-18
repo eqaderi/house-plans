@@ -1,0 +1,20 @@
+[
+ {
+  "level": "lv-upper",
+  "status": "OPTIMAL",
+  "wall_s": 0.9,
+  "objective": 653.0
+ },
+ {
+  "level": "lv-entry",
+  "status": "FEASIBLE",
+  "wall_s": 240.0,
+  "objective": 1110.0
+ },
+ {
+  "level": "lv-lower",
+  "status": "FEASIBLE",
+  "wall_s": 240.0,
+  "objective": 1231.0
+ }
+]

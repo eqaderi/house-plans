@@ -1,0 +1,44 @@
+{
+  "source_epsg": 32638,
+  "CRS": {
+    "epsg": 32638,
+    "name": "WGS 84 / UTM zone 38N",
+    "kind": "Projected CRS",
+    "unit": "metre",
+    "datum": "World Geodetic System 1984 ensemble",
+    "utm_zone": "38N",
+    "area_of_use": [
+      42.0,
+      0.0,
+      48.0,
+      84.0
+    ]
+  },
+  "CRS_source": "owner statement, 2026-10-20",
+  "formal_site_confirmation": false,
+  "source_units": "m declared in CAD, pending formal confirmation",
+  "parcel_centroid_source_xy": [
+    623825.2529135874,
+    3870472.791229331
+  ],
+  "parcel_centroid_wgs84_lon_lat": [
+    46.35641331757913,
+    34.96924666411973
+  ],
+  "inside_crs_area_of_use": true,
+  "grid_to_true_north_clockwise_deg": -0.777510056986062,
+  "roundtrip_max_component_error_m": 9.313225746154785e-10,
+  "point_count": 27,
+  "map_url": "https://www.google.com/maps/search/?api=1&query=34.9692467,46.3564133",
+  "external_climate_query_position_rounded_deg": [
+    34.969,
+    46.356
+  ],
+  "note": "Coordinate display precision is not survey accuracy. No height datum conversion was performed.",
+  "owner_map_recognition": {
+    "words": "Yes, that is my field",
+    "recorded_in": "owner_statements/owner-statements v11",
+    "date": "2026-10-20",
+    "scope": "recognition of the displayed centre point, not legal boundary verification"
+  }
+}

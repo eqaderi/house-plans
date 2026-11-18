@@ -214,6 +214,8 @@ class _Builder:
 
     def ids_for(self, room: str) -> list[str]:
         prefixes = ROOM_ITEMS.get(room, ())
+        if room == "dining" and any(i.id == "pi-dining" for i in self.requirements):
+            prefixes = ("pi-dining",)
         return [
             i.id
             for i in self.requirements
@@ -221,6 +223,43 @@ class _Builder:
         ]
 
     # ------------------------------------------------------------- rooms
+
+    def _kitchen_and_dining(self, entry_level: str) -> None:
+        """One kitchen with dining, or a kitchen and a separate dining room."""
+        f = self.f
+        S, P, D = SpaceFunction, Privacy, DaylightNeed
+        open_plan = f.get("open_plan")
+        layout = f.get("kitchen_layout") or ("open" if open_plan is True else None)
+        dining = f.get("dining")
+        kitchen_facts = f.ids("open_plan", "kitchen_layout", "kitchen_smell_separate",
+                              "cooking", "dining")  # fmt: skip
+        cook_scale = 1.15 if f.get("cooking") == "frequent" else 1.0
+        rels = f.get("relationships") or []
+        has_dining_rel = any("dining" in r.split("|") for r in rels)
+        if open_plan is False and dining == "kitchen" and not has_dining_rel:
+            self.add("pi-kitchen", "Kitchen and dining", S.KITCHEN, "kitchen_dining", P.PUBLIC,
+                     "z-day", level=self.level(entry_level), daylight=D.REQUIRED,
+                     facts=kitchen_facts, scale=cook_scale, accessible=self.step_free)  # fmt: skip
+        else:
+            k_name = "Kitchen and everyday dining" if dining == "kitchen" else "Kitchen"
+            k_size = "kitchen_dining" if dining == "kitchen" else "kitchen"
+            k_note = None
+            if dining == "kitchen":
+                extra = f"; layout: {layout.replace('_', '-')}" if layout else ""
+                k_note = f"everyday eating in kitchen{extra}"
+            elif layout:
+                k_note = f"layout: {layout.replace('_', '-')}"
+            self.add("pi-kitchen", k_name, S.KITCHEN, k_size, P.PUBLIC, "z-day",
+                     level=self.level(entry_level), daylight=D.REQUIRED, facts=kitchen_facts,
+                     scale=cook_scale, accessible=self.step_free,
+                     notes=k_note)  # fmt: skip
+            dining_facts = f.ids(
+                "dining", "open_plan",
+                *(["relationships"] if has_dining_rel else []),
+            )
+            self.add("pi-dining", "Dining", S.DINING, "dining", P.PUBLIC, "z-day",
+                     level=self.level(entry_level), facts=dining_facts,
+                     accessible=self.step_free)  # fmt: skip
 
     def build(self) -> None:
         f = self.f
@@ -235,24 +274,7 @@ class _Builder:
                  facts=f.ids("open_plan", "gathering_space", "privacy"),
                  scale=1.3 if gathering else 1.0, accessible=self.step_free,
                  notes="larger for family gatherings" if gathering else None)  # fmt: skip
-        open_plan = f.get("open_plan")
-        layout = f.get("kitchen_layout") or ("open" if open_plan is True else None)
-        dining = f.get("dining")
-        kitchen_facts = f.ids("open_plan", "kitchen_layout", "kitchen_smell_separate",
-                              "cooking", "dining")  # fmt: skip
-        cook_scale = 1.15 if f.get("cooking") == "frequent" else 1.0
-        if open_plan is False and dining == "kitchen":
-            self.add("pi-kitchen", "Kitchen and dining", S.KITCHEN, "kitchen_dining", P.PUBLIC,
-                     "z-day", level=self.level(entry_level), daylight=D.REQUIRED,
-                     facts=kitchen_facts, scale=cook_scale, accessible=self.step_free)  # fmt: skip
-        else:
-            self.add("pi-kitchen", "Kitchen", S.KITCHEN, "kitchen", P.PUBLIC, "z-day",
-                     level=self.level(entry_level), daylight=D.REQUIRED, facts=kitchen_facts,
-                     scale=cook_scale, accessible=self.step_free,
-                     notes=f"layout: {layout.replace('_', '-')}" if layout else None)  # fmt: skip
-            self.add("pi-dining", "Dining", S.DINING, "dining", P.PUBLIC, "z-day",
-                     level=self.level(entry_level), facts=f.ids("dining", "open_plan"),
-                     accessible=self.step_free)  # fmt: skip
+        self._kitchen_and_dining(entry_level)
         if f.get("pantry") is True:
             self.add("pi-pantry", "Pantry", S.PANTRY, "pantry", P.SERVICE, "z-service",
                      level=self.level(entry_level), priority=f.priority("pantry", Priority.SHOULD),
@@ -333,13 +355,24 @@ class _Builder:
             ("pi-bed-main", "Main bedroom", "main_bedroom", False, f.ids("ensuite"))
         ]
         elders = int(f.get("elders", 0) or 0)
-        for i in range(1, elders + 1):
-            wanted.append((f"pi-bed-elder-{i}", f"Bedroom for older relative {i}", "bedroom",
-                           self.step_free, f.ids("elders", "elder_step_free")))  # fmt: skip
+        elder_rooms = math.ceil(elders / 2) if f.get("elders_own_rooms") is False else elders
+        elder_facts = f.ids(
+            "elders", "elder_step_free",
+            *(["elders_own_rooms"] if f.get("elders_own_rooms") is not None else []),
+        )
+        for i in range(1, elder_rooms + 1):
+            if f.get("elders_own_rooms") is False and elders > 1:
+                name = "Bedroom for older relatives"
+            elif elder_rooms > 1:
+                name = f"Bedroom for older relative {i}"
+            else:
+                name = "Bedroom for older relative"
+            wanted.append((f"pi-bed-elder-{i}", name, "bedroom", self.step_free, elder_facts))
         children = int(f.get("children", 0) or 0)
         kids = children if f.get("children_own_rooms") is not False else math.ceil(children / 2)
         for i in range(1, kids + 1):
-            wanted.append((f"pi-bed-child-{i}", f"Child's bedroom {i}", "bedroom", False, []))
+            name = f"Child's bedroom {i}" if kids > 1 else "Child's bedroom"
+            wanted.append((f"pi-bed-child-{i}", name, "bedroom", False, []))
         if f.get("guest_accommodation") == "room":
             wanted.append(("pi-bed-guest", "Guest bedroom", "bedroom", False,
                            f.ids("guest_accommodation", "guest_frequency")))  # fmt: skip
@@ -352,6 +385,8 @@ class _Builder:
             note = None
             if shared and item_id.startswith("pi-bed-child"):
                 note = "children share: you kept fewer bedrooms than one per child"
+            elif shared and item_id.startswith("pi-bed-elder"):
+                note = "older relatives share: you kept fewer bedrooms than one per relative"
             self.add(item_id, name, S.BEDROOM, size, P.PRIVATE, "z-night", level=level,
                      daylight=D.REQUIRED, facts=[*facts, *extra], accessible=accessible,
                      notes=note)  # fmt: skip

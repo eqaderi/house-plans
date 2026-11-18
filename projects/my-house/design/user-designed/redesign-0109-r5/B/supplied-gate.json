@@ -1,0 +1,775 @@
+{
+  "decision": "0091-new-survey-boundary",
+  "all_supplied_works_contained": true,
+  "checks": [
+    {
+      "id": "upper-enclosure",
+      "contained": true,
+      "inside_parcel": true,
+      "clear_of_reserved_strips": true,
+      "necessary_access_crossing_purpose": null,
+      "setback_signed_distances_m": {
+        "south": 5.521996351775314
+      },
+      "status": "PASS",
+      "outside_area_m2": 0.0,
+      "edge_clearance_m": 0.8
+    },
+    {
+      "id": "lower-enclosure",
+      "contained": true,
+      "inside_parcel": true,
+      "clear_of_reserved_strips": true,
+      "necessary_access_crossing_purpose": null,
+      "setback_signed_distances_m": {
+        "south": 2.0219963517733746
+      },
+      "status": "PASS",
+      "outside_area_m2": 0.0,
+      "edge_clearance_m": 1.0999999999999999
+    },
+    {
+      "id": "road-enclosure",
+      "contained": true,
+      "inside_parcel": true,
+      "clear_of_reserved_strips": true,
+      "necessary_access_crossing_purpose": null,
+      "setback_signed_distances_m": {
+        "south": 4.921996351787783
+      },
+      "status": "PASS",
+      "outside_area_m2": 0.0,
+      "edge_clearance_m": 0.08944248426660686
+    },
+    {
+      "id": "upper-roof",
+      "contained": true,
+      "inside_parcel": true,
+      "clear_of_reserved_strips": true,
+      "necessary_access_crossing_purpose": null,
+      "setback_signed_distances_m": {
+        "south": 5.521996351775314
+      },
+      "status": "PASS",
+      "outside_area_m2": 0.0,
+      "edge_clearance_m": 0.8
+    },
+    {
+      "id": "road-roof",
+      "contained": true,
+      "inside_parcel": true,
+      "clear_of_reserved_strips": true,
+      "necessary_access_crossing_purpose": null,
+      "setback_signed_distances_m": {
+        "south": 4.921996351787783
+      },
+      "status": "PASS",
+      "outside_area_m2": 0.0,
+      "edge_clearance_m": 0.08944248426660686
+    },
+    {
+      "id": "east-terrace",
+      "contained": true,
+      "inside_parcel": true,
+      "clear_of_reserved_strips": true,
+      "necessary_access_crossing_purpose": null,
+      "setback_signed_distances_m": {
+        "south": 5.5219963517715716
+      },
+      "status": "PASS",
+      "outside_area_m2": 0.0,
+      "edge_clearance_m": 1.6463210928234526
+    },
+    {
+      "id": "south-terrace",
+      "contained": true,
+      "inside_parcel": true,
+      "clear_of_reserved_strips": true,
+      "necessary_access_crossing_purpose": null,
+      "setback_signed_distances_m": {
+        "south": 2.0219963517729553
+      },
+      "status": "PASS",
+      "outside_area_m2": 0.0,
+      "edge_clearance_m": 0.8433635071037104
+    },
+    {
+      "id": "terrace-support-reservation",
+      "contained": true,
+      "inside_parcel": true,
+      "clear_of_reserved_strips": true,
+      "necessary_access_crossing_purpose": null,
+      "setback_signed_distances_m": {
+        "south": 2.0219963517729553
+      },
+      "status": "PASS",
+      "outside_area_m2": 0.0,
+      "edge_clearance_m": 0.8433635071037104
+    },
+    {
+      "id": "main-soil-garden",
+      "contained": true,
+      "inside_parcel": true,
+      "clear_of_reserved_strips": true,
+      "necessary_access_crossing_purpose": null,
+      "setback_signed_distances_m": {
+        "south": 2.12199635177231
+      },
+      "status": "PASS",
+      "outside_area_m2": 0.0,
+      "edge_clearance_m": 0.4824808571298982
+    },
+    {
+      "id": "east-garden-retaining-reservation",
+      "contained": true,
+      "inside_parcel": true,
+      "clear_of_reserved_strips": true,
+      "necessary_access_crossing_purpose": null,
+      "setback_signed_distances_m": {
+        "south": 2.121996351771891
+      },
+      "status": "PASS",
+      "outside_area_m2": 0.0,
+      "edge_clearance_m": 0.21930948051358873
+    },
+    {
+      "id": "garden-north-retaining",
+      "contained": true,
+      "inside_parcel": true,
+      "clear_of_reserved_strips": true,
+      "necessary_access_crossing_purpose": null,
+      "setback_signed_distances_m": {
+        "south": 17.521996351760627
+      },
+      "status": "PASS",
+      "outside_area_m2": 0.0,
+      "edge_clearance_m": 0.4824808571298982
+    },
+    {
+      "id": "garden-south-retaining",
+      "contained": true,
+      "inside_parcel": true,
+      "clear_of_reserved_strips": true,
+      "necessary_access_crossing_purpose": null,
+      "setback_signed_distances_m": {
+        "south": 1.8719963517723102
+      },
+      "status": "PASS",
+      "outside_area_m2": 0.0,
+      "edge_clearance_m": 0.3624668922888928
+    },
+    {
+      "id": "lower-garden-level-link",
+      "contained": true,
+      "inside_parcel": true,
+      "clear_of_reserved_strips": true,
+      "necessary_access_crossing_purpose": null,
+      "setback_signed_distances_m": {
+        "south": 8.121996351771017
+      },
+      "status": "PASS",
+      "outside_area_m2": 0.0,
+      "edge_clearance_m": 2.543571158348189
+    },
+    {
+      "id": "lower-covered-garden-porch",
+      "contained": true,
+      "inside_parcel": true,
+      "clear_of_reserved_strips": true,
+      "necessary_access_crossing_purpose": null,
+      "setback_signed_distances_m": {
+        "south": 11.121996351773372
+      },
+      "status": "PASS",
+      "outside_area_m2": 0.0,
+      "edge_clearance_m": 2.800000000000001
+    },
+    {
+      "id": "upper-arrival-garden-earthworks",
+      "contained": true,
+      "inside_parcel": true,
+      "clear_of_reserved_strips": true,
+      "necessary_access_crossing_purpose": null,
+      "setback_signed_distances_m": {
+        "south": 3.4219963518021945
+      },
+      "status": "PASS",
+      "outside_area_m2": 0.0,
+      "edge_clearance_m": 1.339612491299808
+    },
+    {
+      "id": "upper-west-threshold-path",
+      "contained": true,
+      "inside_parcel": true,
+      "clear_of_reserved_strips": true,
+      "necessary_access_crossing_purpose": null,
+      "setback_signed_distances_m": {
+        "south": 5.521996351799979
+      },
+      "status": "PASS",
+      "outside_area_m2": 0.0,
+      "edge_clearance_m": 1.9747977109779276
+    },
+    {
+      "id": "upper-arrival-link",
+      "contained": true,
+      "inside_parcel": true,
+      "clear_of_reserved_strips": true,
+      "necessary_access_crossing_purpose": null,
+      "setback_signed_distances_m": {
+        "south": 2.0219963518060773
+      },
+      "status": "PASS",
+      "outside_area_m2": 0.0,
+      "edge_clearance_m": 2.0219963518060737
+    },
+    {
+      "id": "upper-west-retaining",
+      "contained": true,
+      "inside_parcel": true,
+      "clear_of_reserved_strips": true,
+      "necessary_access_crossing_purpose": null,
+      "setback_signed_distances_m": {
+        "south": 8.321996351802055
+      },
+      "status": "PASS",
+      "outside_area_m2": 0.0,
+      "edge_clearance_m": 1.7116263343608233
+    },
+    {
+      "id": "arrival-west-retaining",
+      "contained": true,
+      "inside_parcel": true,
+      "clear_of_reserved_strips": true,
+      "necessary_access_crossing_purpose": null,
+      "setback_signed_distances_m": {
+        "south": 3.4219963518082928
+      },
+      "status": "PASS",
+      "outside_area_m2": 0.0,
+      "edge_clearance_m": 1.0764411146827042
+    },
+    {
+      "id": "south-daylight-grade",
+      "contained": true,
+      "inside_parcel": true,
+      "clear_of_reserved_strips": true,
+      "necessary_access_crossing_purpose": null,
+      "setback_signed_distances_m": {
+        "south": 1.2219963517733703
+      },
+      "status": "PASS",
+      "outside_area_m2": 0.0,
+      "edge_clearance_m": 0.7224901962287932
+    },
+    {
+      "id": "south-daylight-retaining",
+      "contained": true,
+      "inside_parcel": true,
+      "clear_of_reserved_strips": true,
+      "necessary_access_crossing_purpose": null,
+      "setback_signed_distances_m": {
+        "south": 1.0219963517733675
+      },
+      "status": "PASS",
+      "outside_area_m2": 0.0,
+      "edge_clearance_m": 0.6264790243559883
+    },
+    {
+      "id": "south-daylight-drain",
+      "contained": true,
+      "inside_parcel": true,
+      "clear_of_reserved_strips": true,
+      "necessary_access_crossing_purpose": null,
+      "setback_signed_distances_m": {
+        "south": 1.2719963517735131
+      },
+      "status": "PASS",
+      "outside_area_m2": 0.0,
+      "edge_clearance_m": 0.8342167814024322
+    },
+    {
+      "id": "north-wet-court",
+      "contained": true,
+      "inside_parcel": true,
+      "clear_of_reserved_strips": true,
+      "necessary_access_crossing_purpose": null,
+      "setback_signed_distances_m": {
+        "south": 15.621996351781409
+      },
+      "status": "PASS",
+      "outside_area_m2": 0.0,
+      "edge_clearance_m": 0.20000000000000048
+    },
+    {
+      "id": "north-wet-retaining",
+      "contained": true,
+      "inside_parcel": true,
+      "clear_of_reserved_strips": true,
+      "necessary_access_crossing_purpose": null,
+      "setback_signed_distances_m": {
+        "south": 18.22199635178141
+      },
+      "status": "PASS",
+      "outside_area_m2": 0.0,
+      "edge_clearance_m": 0.05000000000000034
+    },
+    {
+      "id": "core-north-court",
+      "contained": true,
+      "inside_parcel": true,
+      "clear_of_reserved_strips": true,
+      "necessary_access_crossing_purpose": null,
+      "setback_signed_distances_m": {
+        "south": 17.321996351787785
+      },
+      "status": "PASS",
+      "outside_area_m2": 0.0,
+      "edge_clearance_m": 0.3499999999999997
+    },
+    {
+      "id": "core-north-retaining",
+      "contained": true,
+      "inside_parcel": true,
+      "clear_of_reserved_strips": true,
+      "necessary_access_crossing_purpose": null,
+      "setback_signed_distances_m": {
+        "south": 18.071996351787785
+      },
+      "status": "PASS",
+      "outside_area_m2": 0.0,
+      "edge_clearance_m": 0.2
+    },
+    {
+      "id": "plant-maintenance-pad",
+      "contained": true,
+      "inside_parcel": true,
+      "clear_of_reserved_strips": true,
+      "necessary_access_crossing_purpose": null,
+      "setback_signed_distances_m": {
+        "south": 8.571996351785842
+      },
+      "status": "PASS",
+      "outside_area_m2": 0.0,
+      "edge_clearance_m": 7.5
+    },
+    {
+      "id": "lower-uphill-waterproofing-zone",
+      "contained": true,
+      "inside_parcel": true,
+      "clear_of_reserved_strips": true,
+      "necessary_access_crossing_purpose": null,
+      "setback_signed_distances_m": {
+        "south": 2.0219963517930495
+      },
+      "status": "PASS",
+      "outside_area_m2": 0.0,
+      "edge_clearance_m": 2.021996351793047
+    },
+    {
+      "id": "separate-roof-water-collector",
+      "contained": true,
+      "inside_parcel": true,
+      "clear_of_reserved_strips": true,
+      "necessary_access_crossing_purpose": null,
+      "setback_signed_distances_m": {
+        "south": 2.1219963517730918
+      },
+      "status": "PASS",
+      "outside_area_m2": 0.0,
+      "edge_clearance_m": 0.9790928852455474
+    },
+    {
+      "id": "garden-water-collector",
+      "contained": true,
+      "inside_parcel": true,
+      "clear_of_reserved_strips": true,
+      "necessary_access_crossing_purpose": null,
+      "setback_signed_distances_m": {
+        "south": 2.121996351771891
+      },
+      "status": "PASS",
+      "outside_area_m2": 0.0,
+      "edge_clearance_m": 0.21930948051358873
+    },
+    {
+      "id": "upper-bulk-water-collector",
+      "contained": true,
+      "inside_parcel": true,
+      "clear_of_reserved_strips": true,
+      "necessary_access_crossing_purpose": null,
+      "setback_signed_distances_m": {
+        "south": 5.62199635180178
+      },
+      "status": "PASS",
+      "outside_area_m2": 0.0,
+      "edge_clearance_m": 2.066665193016697
+    },
+    {
+      "id": "lower-paved-garden-path",
+      "contained": true,
+      "inside_parcel": true,
+      "clear_of_reserved_strips": true,
+      "necessary_access_crossing_purpose": null,
+      "setback_signed_distances_m": {
+        "south": 2.0219963517717083
+      },
+      "status": "PASS",
+      "outside_area_m2": 0.0,
+      "edge_clearance_m": 0.05384937725478111
+    },
+    {
+      "id": "lower-path-support-reservation",
+      "contained": true,
+      "inside_parcel": true,
+      "clear_of_reserved_strips": true,
+      "necessary_access_crossing_purpose": null,
+      "setback_signed_distances_m": {
+        "south": 2.0219963517717083
+      },
+      "status": "PASS",
+      "outside_area_m2": 0.0,
+      "edge_clearance_m": 0.05384937725478111
+    },
+    {
+      "id": "lower-path-outer-guard",
+      "contained": true,
+      "inside_parcel": true,
+      "clear_of_reserved_strips": true,
+      "necessary_access_crossing_purpose": null,
+      "setback_signed_distances_m": {
+        "south": 2.0219963517717083
+      },
+      "status": "PASS",
+      "outside_area_m2": 0.0,
+      "edge_clearance_m": 0.05384937725478111
+    },
+    {
+      "id": "retained-site-external_stair",
+      "contained": true,
+      "inside_parcel": true,
+      "clear_of_reserved_strips": true,
+      "necessary_access_crossing_purpose": "Necessary existing owner-authorized pedestrian / vehicle access; no parcel exception",
+      "setback_signed_distances_m": {
+        "south": 1.5231795913481179
+      },
+      "status": "PASS",
+      "outside_area_m2": 0.0,
+      "edge_clearance_m": 0.18951412985131183
+    },
+    {
+      "id": "retained-site-external_stair_guard",
+      "contained": true,
+      "inside_parcel": true,
+      "clear_of_reserved_strips": true,
+      "necessary_access_crossing_purpose": "Necessary existing owner-authorized pedestrian / vehicle access; no parcel exception",
+      "setback_signed_distances_m": {
+        "south": 1.45531490227728
+      },
+      "status": "PASS",
+      "outside_area_m2": 0.0,
+      "edge_clearance_m": 0.13951412985131295
+    },
+    {
+      "id": "retained-site-vehicle_access",
+      "contained": true,
+      "inside_parcel": true,
+      "clear_of_reserved_strips": true,
+      "necessary_access_crossing_purpose": null,
+      "setback_signed_distances_m": {
+        "south": 8.921996351804134
+      },
+      "status": "PASS",
+      "outside_area_m2": 0.0,
+      "edge_clearance_m": 0.017544758441140087
+    },
+    {
+      "id": "retained-site-pedestrian_crossing",
+      "contained": true,
+      "inside_parcel": true,
+      "clear_of_reserved_strips": true,
+      "necessary_access_crossing_purpose": "Necessary existing owner-authorized pedestrian / vehicle access; no parcel exception",
+      "setback_signed_distances_m": {
+        "south": 7.42199635180455
+      },
+      "status": "PASS",
+      "outside_area_m2": 0.0,
+      "edge_clearance_m": 0.017544758441140087
+    },
+    {
+      "id": "retained-site-west_pedestrian_gate_reservation",
+      "contained": true,
+      "inside_parcel": true,
+      "clear_of_reserved_strips": true,
+      "necessary_access_crossing_purpose": null,
+      "setback_signed_distances_m": {
+        "south": 7.694841868110911
+      },
+      "status": "PASS",
+      "outside_area_m2": 0.0,
+      "edge_clearance_m": 0.08999999999999933
+    },
+    {
+      "id": "retained-site-west_vehicle_gate_reservation",
+      "contained": true,
+      "inside_parcel": true,
+      "clear_of_reserved_strips": true,
+      "necessary_access_crossing_purpose": null,
+      "setback_signed_distances_m": {
+        "south": 9.463128101938535
+      },
+      "status": "PASS",
+      "outside_area_m2": 0.0,
+      "edge_clearance_m": 0.09000000000000001
+    },
+    {
+      "id": "retained-site-garage_arrival_walk",
+      "contained": true,
+      "inside_parcel": true,
+      "clear_of_reserved_strips": true,
+      "necessary_access_crossing_purpose": "Necessary existing owner-authorized pedestrian / vehicle access; no parcel exception",
+      "setback_signed_distances_m": {
+        "south": 7.42199635180455
+      },
+      "status": "PASS",
+      "outside_area_m2": 0.0,
+      "edge_clearance_m": 0.017544758441140087
+    },
+    {
+      "id": "external-stair-to-new-arrival",
+      "contained": true,
+      "inside_parcel": true,
+      "clear_of_reserved_strips": true,
+      "necessary_access_crossing_purpose": null,
+      "setback_signed_distances_m": {
+        "south": 1.9219963518060723
+      },
+      "status": "PASS",
+      "outside_area_m2": 0.0,
+      "edge_clearance_m": 1.9219963518060712
+    },
+    {
+      "id": "garden-stair",
+      "contained": true,
+      "inside_parcel": true,
+      "clear_of_reserved_strips": true,
+      "necessary_access_crossing_purpose": null,
+      "setback_signed_distances_m": {
+        "south": 1.5219963517963748
+      },
+      "status": "PASS",
+      "outside_area_m2": 0.0,
+      "edge_clearance_m": 1.5219963517963733
+    },
+    {
+      "id": "garden-stair-support-reservation",
+      "contained": true,
+      "inside_parcel": true,
+      "clear_of_reserved_strips": true,
+      "necessary_access_crossing_purpose": null,
+      "setback_signed_distances_m": {
+        "south": 1.5219963517963748
+      },
+      "status": "PASS",
+      "outside_area_m2": 0.0,
+      "edge_clearance_m": 1.5219963517963733
+    },
+    {
+      "id": "south-lower-escape-link",
+      "contained": true,
+      "inside_parcel": true,
+      "clear_of_reserved_strips": true,
+      "necessary_access_crossing_purpose": null,
+      "setback_signed_distances_m": {
+        "south": 1.3219963517726754
+      },
+      "status": "PASS",
+      "outside_area_m2": 0.0,
+      "edge_clearance_m": 0.3318768211380119
+    },
+    {
+      "id": "garden-stair-end-link",
+      "contained": true,
+      "inside_parcel": true,
+      "clear_of_reserved_strips": true,
+      "necessary_access_crossing_purpose": null,
+      "setback_signed_distances_m": {
+        "south": 1.5219963517930495
+      },
+      "status": "PASS",
+      "outside_area_m2": 0.0,
+      "edge_clearance_m": 1.5219963517930466
+    },
+    {
+      "id": "garden-stair-bottom-landing",
+      "contained": true,
+      "inside_parcel": true,
+      "clear_of_reserved_strips": true,
+      "necessary_access_crossing_purpose": null,
+      "setback_signed_distances_m": {
+        "south": 1.521996351794435
+      },
+      "status": "PASS",
+      "outside_area_m2": 0.0,
+      "edge_clearance_m": 1.5219963517944335
+    },
+    {
+      "id": "terrace-guard-reservation",
+      "contained": true,
+      "inside_parcel": true,
+      "clear_of_reserved_strips": true,
+      "necessary_access_crossing_purpose": null,
+      "setback_signed_distances_m": {
+        "south": 2.0219963517729553
+      },
+      "status": "PASS",
+      "outside_area_m2": 0.0,
+      "edge_clearance_m": 0.8433635071037104
+    },
+    {
+      "id": "garden-stair-guard-reservation",
+      "contained": true,
+      "inside_parcel": true,
+      "clear_of_reserved_strips": true,
+      "necessary_access_crossing_purpose": null,
+      "setback_signed_distances_m": {
+        "south": 1.521996351794435
+      },
+      "status": "PASS",
+      "outside_area_m2": 0.0,
+      "edge_clearance_m": 1.5219963517944335
+    },
+    {
+      "id": "garden-guard-reservation",
+      "contained": true,
+      "inside_parcel": true,
+      "clear_of_reserved_strips": true,
+      "necessary_access_crossing_purpose": null,
+      "setback_signed_distances_m": {
+        "south": 2.121996351771891
+      },
+      "status": "PASS",
+      "outside_area_m2": 0.0,
+      "edge_clearance_m": 0.21930948051358873
+    },
+    {
+      "id": "garden-tool-locker",
+      "contained": true,
+      "inside_parcel": true,
+      "clear_of_reserved_strips": true,
+      "necessary_access_crossing_purpose": null,
+      "setback_signed_distances_m": {
+        "south": 10.021996351770044
+      },
+      "status": "PASS",
+      "outside_area_m2": 0.0,
+      "edge_clearance_m": 2.841610745701787
+    },
+    {
+      "id": "garden-seat",
+      "contained": true,
+      "inside_parcel": true,
+      "clear_of_reserved_strips": true,
+      "necessary_access_crossing_purpose": null,
+      "setback_signed_distances_m": {
+        "south": 6.321996351769213
+      },
+      "status": "PASS",
+      "outside_area_m2": 0.0,
+      "edge_clearance_m": 0.5390613128222533
+    },
+    {
+      "id": "garden-drinking-hose",
+      "contained": true,
+      "inside_parcel": true,
+      "clear_of_reserved_strips": true,
+      "necessary_access_crossing_purpose": null,
+      "setback_signed_distances_m": {
+        "south": 8.22199635177088
+      },
+      "status": "PASS",
+      "outside_area_m2": 0.0,
+      "edge_clearance_m": 2.5038529520791557
+    },
+    {
+      "id": "electric-outdoor-cooking-counter",
+      "contained": true,
+      "inside_parcel": true,
+      "clear_of_reserved_strips": true,
+      "necessary_access_crossing_purpose": null,
+      "setback_signed_distances_m": {
+        "south": 2.4219963517857046
+      },
+      "status": "PASS",
+      "outside_area_m2": 0.0,
+      "edge_clearance_m": 2.4219963517857024
+    },
+    {
+      "id": "outdoor-cushion-locker",
+      "contained": true,
+      "inside_parcel": true,
+      "clear_of_reserved_strips": true,
+      "necessary_access_crossing_purpose": null,
+      "setback_signed_distances_m": {
+        "south": 3.421996351773373
+      },
+      "status": "PASS",
+      "outside_area_m2": 0.0,
+      "edge_clearance_m": 1.7786130868296641
+    },
+    {
+      "id": "exterior-light-P1",
+      "contained": true,
+      "inside_parcel": true,
+      "clear_of_reserved_strips": true,
+      "necessary_access_crossing_purpose": null,
+      "setback_signed_distances_m": {
+        "south": 11.371996351800046
+      },
+      "status": "PASS",
+      "outside_area_m2": 0.0,
+      "edge_clearance_m": 4.959278378351871
+    },
+    {
+      "id": "exterior-light-garden",
+      "contained": true,
+      "inside_parcel": true,
+      "clear_of_reserved_strips": true,
+      "necessary_access_crossing_purpose": null,
+      "setback_signed_distances_m": {
+        "south": 9.921996351773092
+      },
+      "status": "PASS",
+      "outside_area_m2": 0.0,
+      "edge_clearance_m": 4.723528588284991
+    },
+    {
+      "id": "external-shading-reservations",
+      "contained": true,
+      "inside_parcel": true,
+      "clear_of_reserved_strips": true,
+      "necessary_access_crossing_purpose": null,
+      "setback_signed_distances_m": {
+        "south": 1.8719963517747544
+      },
+      "status": "PASS",
+      "outside_area_m2": 0.0,
+      "edge_clearance_m": 0.6500000000000004
+    },
+    {
+      "id": "lower-roof-plate",
+      "contained": true,
+      "inside_parcel": true,
+      "clear_of_reserved_strips": true,
+      "necessary_access_crossing_purpose": null,
+      "setback_signed_distances_m": {
+        "south": 2.0219963517733746
+      },
+      "status": "PASS",
+      "outside_area_m2": 0.0,
+      "edge_clearance_m": 1.0999999999999999
+    }
+  ],
+  "no_outward_tolerance": true,
+  "meaning": "Current parcel plus owner open-strip rules. Declared necessary access crossings may cross strips but never extend outside the parcel. No missing-component, road-tie-in, engineering or legal approval."
+}

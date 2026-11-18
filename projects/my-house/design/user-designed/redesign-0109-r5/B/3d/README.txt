@@ -1,0 +1,1 @@
+Schematic review geometry. Metres, explicit0093 building-local XY; Z is survey Z minus1664m. Use geometry.json for source/transform. Wall mesh is a cutaway plan extrusion: plan openings are full-height cuts, not product-resolved glazing/door heads. OBJ is not an IFC, structural or construction model.

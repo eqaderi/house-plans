@@ -1,0 +1,128 @@
+{
+  "assumptions": [
+    {
+      "affects": [
+        "pi-entry",
+        "pi-living",
+        "pi-kitchen",
+        "pi-dining",
+        "pi-pantry",
+        "pi-bed-main",
+        "pi-bed-elder-1",
+        "pi-bed-child-1",
+        "pi-bed-child-2",
+        "pi-bath-ensuite",
+        "pi-bath-1",
+        "pi-bath-2",
+        "pi-study-1",
+        "pi-garage",
+        "pi-laundry",
+        "pi-storage",
+        "pi-mechanical",
+        "pi-stair",
+        "pi-lift",
+        "pi-terrace",
+        "pi-balcony"
+      ],
+      "basis": "house-ai typical-size table (program.builder.TYPICAL)",
+      "confirm_with": "owner",
+      "id": "asm-typical-sizes",
+      "made_by": null,
+      "statement": "Rooms without a size from you use typical sizes for a first layout: Entrance hall 6 m², Living room 32.5 m², Kitchen and everyday dining 23 m², Dining 14 m², Pantry 4 m², Main bedroom 15 m², Bedroom for older relatives 11 m², Child's bedroom 1 11 m², Child's bedroom 2 11 m², En-suite bathroom 5 m², Accessible bathroom 7 m², Bathroom 2 6 m², Study 1 9 m², Garage 36 m², Laundry 6 m², Store room 5 m², Plant / technical room 4 m², Stair 10 m², Lift 4 m², Terrace 16 m², Balcony 6 m². These are not building-code minimums; no local rules are loaded.",
+      "status": "assumption"
+    },
+    {
+      "affects": [
+        "program"
+      ],
+      "basis": "Typical share for a compact house; checked again in Milestone D.",
+      "confirm_with": "architect",
+      "id": "asm-circulation",
+      "made_by": null,
+      "statement": "Halls, walls and structure add 20% to the room areas.",
+      "status": "assumption"
+    },
+    {
+      "affects": [
+        "pi-entry",
+        "pi-mechanical"
+      ],
+      "basis": "Every house needs a way in and room for heating, water and electrics.",
+      "confirm_with": "owner",
+      "id": "asm-entry-and-plant",
+      "made_by": null,
+      "statement": "The house has an entrance hall and a small plant / technical room.",
+      "status": "assumption"
+    },
+    {
+      "affects": [
+        "program"
+      ],
+      "basis": "Site gate not approved for this site version.",
+      "confirm_with": "owner",
+      "id": "asm-site-unverified",
+      "made_by": null,
+      "statement": "Site values used here (parcel area, slope, frontage) come from the survey but you have not confirmed the site yet.",
+      "status": "unknown"
+    },
+    {
+      "affects": [
+        "program"
+      ],
+      "basis": "Surveyed site relief and slope indicate steep hillside construction.",
+      "confirm_with": "engineer",
+      "id": "asm-hillside-engineering",
+      "made_by": null,
+      "statement": "Steep hillside terrain requires split-level or stepped massing, road-level access coordination, excavation, retaining walls, slope drainage, and structural engineering review; the full parcel area cannot be assumed buildable.",
+      "status": "assumption"
+    },
+    {
+      "affects": [
+        "pi-garage"
+      ],
+      "basis": "typical car envelope (assumption until the owner gives the car size)",
+      "confirm_with": "owner",
+      "id": "asm-car-size",
+      "made_by": null,
+      "statement": "Each car is taken as 1.8 m wide and 4.5 m long, with 0.6 m to open its doors, to test the garage.",
+      "status": "assumption"
+    },
+    {
+      "affects": [
+        "pi-bed-main",
+        "pi-bed-child-1",
+        "pi-bed-child-2"
+      ],
+      "basis": "Who sleeps where, from the household answers.",
+      "confirm_with": "owner",
+      "id": "asm-beds",
+      "made_by": null,
+      "statement": "The main bedroom is tested for a double bed and children's bedrooms for single beds.",
+      "status": "assumption"
+    }
+  ],
+  "project_id": "my-house",
+  "provenance": {
+    "created_at": "2026-10-21T11:31:21.889422Z",
+    "created_by": {
+      "display_name": null,
+      "id": "house-ai-program",
+      "kind": "system",
+      "model": null,
+      "provider": null
+    },
+    "inputs": [
+      {
+        "id": "brief",
+        "kind": "design_brief",
+        "sha256": "74d39b7e23f7ce93da99e61d5a0bcc3722a18582245ff5e385ecb022e4d75f10",
+        "version": 32
+      }
+    ],
+    "method": "program_from_brief",
+    "notes": "Deterministic; sizes not given by the owner are typical values (assumptions).",
+    "tool": "house-ai program",
+    "tool_version": null
+  },
+  "schema_version": "0.1.0"
+}

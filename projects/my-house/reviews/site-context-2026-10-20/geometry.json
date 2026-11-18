@@ -1,0 +1,42 @@
+{
+  "basis": "Calculated from site v1 D7 boundary and owner-supplied EPSG:32638; formal site confirmation pending",
+  "area_m2": 600.0044211737725,
+  "short_edge_m": 20.99999998702684,
+  "long_edge_m": 32.56999999973271,
+  "short_edge_true_bearing_deg": 6.654296028749523,
+  "view_axis_true_bearing_deg": 67.96526389556583,
+  "acute_angle_deg": 61.310949659971996,
+  "setback_envelope": {
+    "status": "inference; canonical site v3 envelope based on owner-confirmed perpendicular setback inputs",
+    "basis": "1 m measured perpendicular to south and east boundaries; no other offsets applied",
+    "polygon_local_m": [
+      [
+        0.11672013322146174,
+        1.1339502902433045
+      ],
+      [
+        29.08834728474277,
+        13.319736733311231
+      ],
+      [
+        31.121845019909006,
+        33.07541455305575
+      ],
+      [
+        2.150217868387699,
+        20.889628109987825
+      ]
+    ],
+    "area_m2": 547.5743627860196,
+    "short_edge_m": 19.860058387539343,
+    "long_edge_m": 31.430058400245212
+  },
+  "southern_passage": {
+    "width_m": 2,
+    "continuous_western_road_connection": true,
+    "shared_pedestrian_access_agreed": true,
+    "basis": "owner confirmation in chat, 2026-10-20",
+    "gate_location": null,
+    "documentary_easement_verified": false
+  }
+}

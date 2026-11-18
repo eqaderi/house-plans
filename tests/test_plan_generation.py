@@ -6,13 +6,19 @@ import math
 from datetime import UTC, datetime
 from itertools import combinations
 from pathlib import Path
+from types import SimpleNamespace as NS
 
 import pytest
 
 from house_ai.domain.integrity import check_model, errors
 from house_ai.domain.model import OpeningKind, WallKind
 from house_ai.domain.plan import PlanVersion
-from house_ai.domain.program import SpaceProgram, SpaceRelationshipKind, Strength
+from house_ai.domain.program import (
+    SpaceFunction,
+    SpaceProgram,
+    SpaceRelationshipKind,
+    Strength,
+)
 from house_ai.domain.site import Site
 from house_ai.domain.terrain import elevation_at, site_surface
 from house_ai.evaluation.explain import concept_signature, footprint_iou, zoning_difference
@@ -20,6 +26,7 @@ from house_ai.generation.frame import design_frame
 from house_ai.generation.generator import CpSatPlanGenerator, GenerationRequest
 from house_ai.generation.massing import FLOOR_TO_FLOOR_M, HALF_STOREY_M
 from house_ai.generation.rooms import expand_program, slot_adjacency
+from house_ai.generation.solver import build_units
 from house_ai.storage.hashing import canonical_json, load_document
 
 from .conftest import REPO
@@ -245,3 +252,28 @@ def test_unknown_terrain_still_generates_but_refuses_split_level(hillside):
     assert cands["linear"].valid
     assert any("local datum" in a.statement for a in cands["linear"].plan.model.assumptions)
     assert cands["split_level"].plan is None and "terrain" in (cands["split_level"].reason or "")
+
+
+def _rows_for_accessible_bedroom(with_lift: bool) -> list[str]:
+    """Rows build_units offers an accessible bedroom: one entry bar, one bar a storey down."""
+    row = lambda rid: NS(id=rid, side="back", depth_dm=40)  # noqa: E731
+    bars = [
+        NS(elevation_m=0.0, entry=True, room_rows=[row("entry-back")], rows=[]),
+        NS(elevation_m=-FLOOR_TO_FLOOR_M, entry=False, room_rows=[row("lower-back")], rows=[]),
+    ]
+    bed = NS(space_id="bed", name="Bedroom", function=SpaceFunction.BEDROOM,
+             item=NS(accessible=True))  # fmt: skip
+    lift = NS(space_id="lift", name="Lift", function=SpaceFunction.LIFT, item=NS(accessible=True))
+    rooms = NS(
+        rooms=[bed, lift] if with_lift else [bed],
+        clusters=[NS(id="c-bed", is_entry=False, members=[bed], slots=[])],
+        hall_connected=set(),
+    )
+    units, problems = build_units(NS(entry_elevation_m=0.0, bars=bars, links=[]), rooms)
+    assert problems == []
+    return next(u for u in units if u.id == "c-bed").rows
+
+
+def test_an_accessible_room_may_leave_the_entry_level_only_when_a_lift_serves_it():
+    assert _rows_for_accessible_bedroom(with_lift=False) == ["entry-back"]
+    assert _rows_for_accessible_bedroom(with_lift=True) == ["entry-back", "lower-back"]

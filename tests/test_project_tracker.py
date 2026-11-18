@@ -10,7 +10,8 @@ import pytest
 from .conftest import REPO
 
 TRACKER = REPO / "docs" / "PROJECT_TRACKER.md"
-CHECK = runpy.run_path(str(REPO / "tools" / "check_tracker.py"))["check"]
+_TOOL = runpy.run_path(str(REPO / "tools" / "check_tracker.py"))
+CHECK, PARSE = _TOOL["check"], _TOOL["parse"]
 
 STAGE = """\
 ### Stage X.1 — Example stage
@@ -56,8 +57,14 @@ def test_the_committed_tracker_is_consistent():
     errors, counts = CHECK(TRACKER.read_text(encoding="utf-8"))
     assert errors == []
     assert sum(counts["tasks"].values()) >= 100
-    # At most one implementation stage is under way at a time.
-    assert counts["stages"]["IN_PROGRESS"] <= 1
+    # At most one implementation stage is under way at a time; human-dependent
+    # stages run in parallel with it (§E).
+    stages, _, _ = PARSE(TRACKER.read_text(encoding="utf-8"))
+    under_way = [
+        s.id for s in stages
+        if s.rows.get("Kind") == "implementation" and s.status == "IN_PROGRESS"
+    ]  # fmt: skip
+    assert len(under_way) <= 1, under_way
 
 
 def test_a_valid_example_passes():

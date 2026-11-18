@@ -1,0 +1,211 @@
+{
+  "project_id": "my-house",
+  "site_ref": {
+    "kind": "site",
+    "id": "site",
+    "version": 3,
+    "sha256": "abab9fb2d5433bd08c57b9748b5bc93fad2703b902fb178f1696814c54ff659f"
+  },
+  "method": "exact clipping of stored TIN to equal-area analytical sampling windows; affine integration",
+  "status": "inferred terrain screening; no architectural layout, grading, soil suitability, retaining structures or cost validated",
+  "west_reference": {
+    "xy_local_m": [
+      1.0751089341938496,
+      10.444814054993913
+    ],
+    "z_m": 1677.4522982262974,
+    "status": "TIN-interpolated parcel-west-boundary midpoint, NOT measured road/garage finished-floor level"
+  },
+  "sampling_windows": [
+    {
+      "id": "upper_southern_strip",
+      "status": "inferred; comparative terrain sampling window, not proposed garden geometry",
+      "polygon_local_m": [
+        [
+          5.576050065178423,
+          3.944166076257825
+        ],
+        [
+          14.58277112469077,
+          7.732492455355823
+        ],
+        [
+          15.958910560458898,
+          21.10185444574803
+        ],
+        [
+          6.952189500946551,
+          17.313528066650033
+        ]
+      ],
+      "area_m2": 115.200848865272,
+      "average_existing_ground_m": 1672.8591573566412,
+      "below_west_reference_m": 4.593140869656281,
+      "balanced_geometric_plane": {
+        "area_m2": 115.200848865272,
+        "known_area_m2": 115.20084886527198,
+        "cut_m3": 48.47154209190949,
+        "below_plane_m3": 48.471542091917186,
+        "max_cut_m": 1.7644833226745504,
+        "max_below_m": 1.9434948591090233,
+        "ground_min_m": 1670.9156624975321,
+        "ground_max_m": 1674.6236406793157
+      },
+      "hypothetical_planes": [
+        {
+          "assumed_fall_below_west_reference_m": 3.2,
+          "hypothetical_plane_m": 1674.2522982262974,
+          "area_m2": 115.200848865272,
+          "known_area_m2": 115.20084886527198,
+          "cut_m3": 1.477048309308993,
+          "below_plane_m3": 161.9680590826183,
+          "max_cut_m": 0.3713424530183147,
+          "max_below_m": 3.336635728765259,
+          "ground_min_m": 1670.9156624975321,
+          "ground_max_m": 1674.6236406793157
+        },
+        {
+          "assumed_fall_below_west_reference_m": 6.4,
+          "hypothetical_plane_m": 1671.0522982262974,
+          "area_m2": 115.200848865272,
+          "known_area_m2": 115.20084886527198,
+          "cut_m3": 208.17177292919206,
+          "below_plane_m3": 0.020067333627839794,
+          "max_cut_m": 3.57134245301836,
+          "max_below_m": 0.13663572876521357,
+          "ground_min_m": 1670.9156624975321,
+          "ground_max_m": 1674.6236406793157
+        }
+      ]
+    },
+    {
+      "id": "middle_southern_strip",
+      "status": "inferred; comparative terrain sampling window, not proposed garden geometry",
+      "polygon_local_m": [
+        [
+          9.178738488983361,
+          5.459496627897024
+        ],
+        [
+          18.185459548495707,
+          9.247823006995022
+        ],
+        [
+          19.561598984263835,
+          22.617184997387227
+        ],
+        [
+          10.554877924751489,
+          18.82885861828923
+        ]
+      ],
+      "area_m2": 115.20084886527195,
+      "average_existing_ground_m": 1671.51200859674,
+      "below_west_reference_m": 5.9402896295573555,
+      "balanced_geometric_plane": {
+        "area_m2": 115.20084886527195,
+        "known_area_m2": 115.20084886527196,
+        "cut_m3": 48.77591545935586,
+        "below_plane_m3": 48.77591545937088,
+        "max_cut_m": 1.7409888217871412,
+        "max_below_m": 1.9951600650083492,
+        "ground_min_m": 1669.5168485317317,
+        "ground_max_m": 1673.2529974185272
+      },
+      "hypothetical_planes": [
+        {
+          "assumed_fall_below_west_reference_m": 3.2,
+          "hypothetical_plane_m": 1674.2522982262974,
+          "area_m2": 115.20084886527195,
+          "known_area_m2": 115.20084886527196,
+          "cut_m3": 0.0,
+          "below_plane_m3": 315.68369146170625,
+          "max_cut_m": 0.0,
+          "max_below_m": 4.735449694565659,
+          "ground_min_m": 1669.5168485317317,
+          "ground_max_m": 1673.2529974185272
+        },
+        {
+          "assumed_fall_below_west_reference_m": 6.4,
+          "hypothetical_plane_m": 1671.0522982262974,
+          "area_m2": 115.20084886527195,
+          "known_area_m2": 115.20084886527196,
+          "cut_m3": 78.97585477262386,
+          "below_plane_m3": 26.0168298654603,
+          "max_cut_m": 2.2006991922298766,
+          "max_below_m": 1.5354496945656138,
+          "ground_min_m": 1669.5168485317317,
+          "ground_max_m": 1673.2529974185272
+        }
+      ]
+    },
+    {
+      "id": "lower_southern_strip",
+      "status": "inferred; comparative terrain sampling window, not proposed garden geometry",
+      "polygon_local_m": [
+        [
+          12.781426912788302,
+          6.974827179536223
+        ],
+        [
+          21.788147972300646,
+          10.76315355863422
+        ],
+        [
+          23.164287408068773,
+          24.13251554902643
+        ],
+        [
+          14.15756634855643,
+          20.34418916992843
+        ]
+      ],
+      "area_m2": 115.20084886527194,
+      "average_existing_ground_m": 1670.1646524197622,
+      "below_west_reference_m": 7.287645806535238,
+      "balanced_geometric_plane": {
+        "area_m2": 115.20084886527194,
+        "known_area_m2": 115.20084886527194,
+        "cut_m3": 48.93414454004662,
+        "below_plane_m3": 48.934144540048145,
+        "max_cut_m": 1.779402310379055,
+        "max_below_m": 1.892253259090694,
+        "ground_min_m": 1668.2723991606715,
+        "ground_max_m": 1671.9440547301413
+      },
+      "hypothetical_planes": [
+        {
+          "assumed_fall_below_west_reference_m": 3.2,
+          "hypothetical_plane_m": 1674.2522982262974,
+          "area_m2": 115.20084886527194,
+          "known_area_m2": 115.20084886527194,
+          "cut_m3": 0.0,
+          "below_plane_m3": 470.90026677342496,
+          "max_cut_m": 0.0,
+          "max_below_m": 5.979899065625887,
+          "ground_min_m": 1668.2723991606715,
+          "ground_max_m": 1671.9440547301413
+        },
+        {
+          "assumed_fall_below_west_reference_m": 6.4,
+          "hypothetical_plane_m": 1671.0522982262974,
+          "area_m2": 115.20084886527194,
+          "known_area_m2": 115.20084886527194,
+          "cut_m3": 11.22303708470264,
+          "below_plane_m3": 113.4805874892549,
+          "max_cut_m": 0.8917565038439079,
+          "max_below_m": 2.779899065625841,
+          "ground_min_m": 1668.2723991606715,
+          "ground_max_m": 1671.9440547301413
+        }
+      ]
+    }
+  ],
+  "ramp_illustration": {
+    "hypothetical_drop_m": 12,
+    "hypothetical_grade": 0.15,
+    "required_horizontal_run_m": 80,
+    "status": "arithmetic illustration only; no local legal ramp limit assumed, no turning or transition allowance included"
+  },
+  "unchanged_canonical_site": true
+}

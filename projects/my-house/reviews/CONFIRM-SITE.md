@@ -1,5 +1,54 @@
 # Your site: what the survey tells us, what you told us, and what is still open
 
+## Site context — architectural interpretation (2026-10-20)
+
+See the [architectural site brief](site-context-2026-10-20/SITE-BRIEF.md) and
+[survey-based diagram](site-context-2026-10-20/site-context.svg). At the owner's
+request, these synthesize the description in architectural terminology rather
+than reproduce a transcript. Site v3 records context with provenance:
+western uphill access; a 9 m road corridor comprising 8 m asphalt and a 1 m
+parcel-side sidewalk; 1 m southern and eastern no-build strips; future northern
+and southern neighboring houses; an agreed shared southern pedestrian passage;
+and the east-northeast city-view axis along the parcel's long boundaries.
+
+The owner's description answers the earlier road/access question below. The
+8+1 subdivision is owner-reported, whereas the 9 m total also matches the CAD
+line separation. The homeowner has now confirmed that the 1 m setbacks are
+measured perpendicular to each boundary and that the full 2 m southern passage
+connects continuously to the western road with agreed shared pedestrian access.
+Those two questions are resolved. Site v3 includes a calculated setback envelope
+of 547.57 m², with side lengths 19.86 m and 31.43 m, as an inference based on
+these owner-confirmed inputs and the current survey boundary. Formal survey,
+legal and site-gate verification remain pending; no agent confirmation or
+approval command was performed.
+
+## Update — owner supplied the CRS and recognised the field (2026-10-20)
+
+The owner stated **“this is the utm zone: EPSG:32638 — WGS 84 / UTM zone 38N”**
+and answered **“Yes, that is my field”** to the map point calculated from the
+candidate parcel centre. Owner statements v10/v11 preserve these exact words.
+See [location and environmental assessment](location-research/epsg-32638-preview/REPORT.md).
+
+This supplies the zone, hemisphere and horizontal datum for research; another
+map pin is not needed. The calculated true north is about 0.778° counterclockwise
+from survey grid north. The older “zone unknown” entries below are history.
+Formal unit/CRS confirmation, vertical reference, legal boundary and the site gate
+remain pending. The site record has not been confirmed by the agent.
+
+When ready, the owner can confirm the supplied horizontal CRS and units in their
+own interactive terminal, independently of the remaining vertical/boundary work:
+
+```bash
+.venv/bin/house-ai site confirm my-house --confirmer <your-name> \
+    --units m --elevation-units m --epsg 32638
+```
+
+This command does not assert that the legal boundary or precise vertical datum
+has been verified. The choices below for those items remain open.
+
+## Earlier confirmation sheet (2026-10-17)
+
+
 Project: `projects/my-house` (state `SITE_NEEDS_VERIFICATION`, nothing approved).
 Current audited review: [survey-audit/site-v1/index.html](survey-audit/site-v1/index.html).
 The original `site-v1/` export is retained as history. See the

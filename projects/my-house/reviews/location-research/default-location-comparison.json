@@ -1,0 +1,26 @@
+{
+  "library": "ezdxf",
+  "defaults": {
+    "$LATITUDE": 37.795,
+    "$LONGITUDE": -122.394
+  },
+  "interpretation": "Matching software defaults, not evidence of the surveyed parcel location. Values were observed in converted DXF; their presence does not establish an original survey location.",
+  "files": [
+    {
+      "file": "projects/my-house/surveys/seperated.dwg",
+      "converted_header_values": {
+        "$LATITUDE": 37.795,
+        "$LONGITUDE": -122.394
+      },
+      "matches_library_defaults": true
+    },
+    {
+      "file": "projects/my-house/surveys/elevation.dwg",
+      "converted_header_values": {
+        "$LATITUDE": 37.795,
+        "$LONGITUDE": -122.394
+      },
+      "matches_library_defaults": true
+    }
+  ]
+}

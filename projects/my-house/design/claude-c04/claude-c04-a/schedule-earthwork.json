@@ -1,0 +1,221 @@
+{
+ "schedule": {
+  "lv-upper": [
+   [
+    "Garage (SUV + sedan)",
+    47.1,
+    "garage"
+   ],
+   [
+    "Entrance lobby (road)",
+    9.9,
+    "entry"
+   ],
+   [
+    "Quiet office / guest",
+    12.6,
+    "study"
+   ],
+   [
+    "WC + shower",
+    3.5,
+    "bathroom"
+   ],
+   [
+    "Plant / utilities",
+    6.2,
+    "mechanical"
+   ],
+   [
+    "Garage store / workshop",
+    8.7,
+    "storage"
+   ],
+   [
+    "Lift",
+    5.3,
+    "lift"
+   ],
+   [
+    "Road-level roof deck (east)",
+    39.7,
+    "terrace"
+   ],
+   [
+    "Road-level roof deck (south)",
+    18.2,
+    "terrace"
+   ]
+  ],
+  "lv-entry": [
+   [
+    "Entrance hall (shoes)",
+    15.8,
+    "entry"
+   ],
+   [
+    "Guest WC",
+    4.0,
+    "wc"
+   ],
+   [
+    "Pantry",
+    6.0,
+    "pantry"
+   ],
+   [
+    "Store",
+    4.4,
+    "storage"
+   ],
+   [
+    "Kitchen + breakfast",
+    21.8,
+    "kitchen"
+   ],
+   [
+    "Dining",
+    14.4,
+    "dining"
+   ],
+   [
+    "Living",
+    33.6,
+    "living"
+   ],
+   [
+    "Stair hall",
+    5.8,
+    "hall"
+   ],
+   [
+    "Grand master bedroom",
+    17.0,
+    "bedroom"
+   ],
+   [
+    "Dressing (suite vestibule)",
+    4.0,
+    "storage"
+   ],
+   [
+    "Master shower room",
+    6.0,
+    "bathroom"
+   ],
+   [
+    "Lift",
+    5.3,
+    "lift"
+   ],
+   [
+    "Family stair",
+    13.0,
+    "stair"
+   ],
+   [
+    "West entrance court (excavated)",
+    10.1,
+    "terrace"
+   ],
+   [
+    "South terrace",
+    39.0,
+    "terrace"
+   ],
+   [
+    "East balcony (lower roof)",
+    28.1,
+    "terrace"
+   ]
+  ],
+  "lv-lower": [
+   [
+    "Landing",
+    10.1,
+    "hall"
+   ],
+   [
+    "Family room",
+    31.4,
+    "family"
+   ],
+   [
+    "Parents / grandparents",
+    21.0,
+    "bedroom"
+   ],
+   [
+    "Shower room (bed 3)",
+    5.2,
+    "bathroom"
+   ],
+   [
+    "Boys (two beds)",
+    21.1,
+    "bedroom"
+   ],
+   [
+    "Girls (two beds)",
+    21.3,
+    "bedroom"
+   ],
+   [
+    "Shared shower + basins",
+    6.8,
+    "bathroom"
+   ],
+   [
+    "Shared WC",
+    3.2,
+    "wc"
+   ],
+   [
+    "Laundry / linen",
+    6.8,
+    "laundry"
+   ],
+   [
+    "Store",
+    7.8,
+    "storage"
+   ],
+   [
+    "Lift",
+    5.3,
+    "lift"
+   ],
+   [
+    "Family stair",
+    13.0,
+    "stair"
+   ],
+   [
+    "Lower garden terrace",
+    46.8,
+    "terrace"
+   ]
+  ]
+ },
+ "totals_indoor_outdoor_m2": {
+  "lv-upper": [
+   93.3,
+   57.9
+  ],
+  "lv-entry": [
+   151.1,
+   77.2
+  ],
+  "lv-lower": [
+   153.0,
+   46.8
+  ]
+ },
+ "hillside": {
+  "excavation_volume_m3": 210.89919041156315,
+  "underfloor_void_volume_m3": 108.5127389757222,
+  "max_cut_m": 3.930658407009787,
+  "max_underfloor_void_height_m": 5.531954472197867,
+  "method": "exact_clipped_tin_affine_integration"
+ }
+}

@@ -1,0 +1,128 @@
+[
+  {
+    "floor": "upper",
+    "item": "Parents dressing rails A",
+    "footprint_m2": 0.4125000000000001,
+    "long_dimension_m": 0.7500000000000004,
+    "capacity_status": "Spatial allocation; internal height, product, real inventory and access need review"
+  },
+  {
+    "floor": "upper",
+    "item": "Parents dressing rails B",
+    "footprint_m2": 1.2599999999999993,
+    "long_dimension_m": 2.1,
+    "capacity_status": "Spatial allocation; internal height, product, real inventory and access need review"
+  },
+  {
+    "floor": "upper",
+    "item": "Parents additional wardrobe",
+    "footprint_m2": 0.63,
+    "long_dimension_m": 1.0499999999999998,
+    "capacity_status": "Spatial allocation; internal height, product, real inventory and access need review"
+  },
+  {
+    "floor": "upper",
+    "item": "Pantry food / bulk shelves",
+    "footprint_m2": 0.9900000000000001,
+    "long_dimension_m": 1.8,
+    "capacity_status": "Spatial allocation; internal height, product, real inventory and access need review"
+  },
+  {
+    "floor": "upper",
+    "item": "Pantry freezer",
+    "footprint_m2": 0.4900000000000001,
+    "long_dimension_m": 0.7000000000000002,
+    "capacity_status": "Spatial allocation; internal height, product, real inventory and access need review"
+  },
+  {
+    "floor": "upper",
+    "item": "Fridge",
+    "footprint_m2": 0.5999999999999999,
+    "long_dimension_m": 0.7999999999999998,
+    "capacity_status": "Spatial allocation; internal height, product, real inventory and access need review"
+  },
+  {
+    "floor": "upper",
+    "item": "Arrival shoes / coats",
+    "footprint_m2": 1.2000000000000002,
+    "long_dimension_m": 2.0,
+    "capacity_status": "Spatial allocation; internal height, product, real inventory and access need review"
+  },
+  {
+    "floor": "lower",
+    "item": "BOYS wardrobe 1",
+    "footprint_m2": 0.8999999999999995,
+    "long_dimension_m": 1.5,
+    "capacity_status": "Spatial allocation; internal height, product, real inventory and access need review"
+  },
+  {
+    "floor": "lower",
+    "item": "BOYS wardrobe 2",
+    "footprint_m2": 0.9000000000000021,
+    "long_dimension_m": 1.5,
+    "capacity_status": "Spatial allocation; internal height, product, real inventory and access need review"
+  },
+  {
+    "floor": "lower",
+    "item": "GIRLS wardrobe 1",
+    "footprint_m2": 0.9000000000000021,
+    "long_dimension_m": 1.5,
+    "capacity_status": "Spatial allocation; internal height, product, real inventory and access need review"
+  },
+  {
+    "floor": "lower",
+    "item": "GIRLS wardrobe 2",
+    "footprint_m2": 0.9000000000000021,
+    "long_dimension_m": 1.5,
+    "capacity_status": "Spatial allocation; internal height, product, real inventory and access need review"
+  },
+  {
+    "floor": "lower",
+    "item": "Guest wardrobe",
+    "footprint_m2": 0.9000000000000021,
+    "long_dimension_m": 1.5,
+    "capacity_status": "Spatial allocation; internal height, product, real inventory and access need review"
+  },
+  {
+    "floor": "lower",
+    "item": "Laundry folding / linen",
+    "footprint_m2": 0.5999999999999996,
+    "long_dimension_m": 1.0,
+    "capacity_status": "Spatial allocation; internal height, product, real inventory and access need review"
+  },
+  {
+    "floor": "lower",
+    "item": "Linen shelves",
+    "footprint_m2": 0.6299999999999998,
+    "long_dimension_m": 1.4000000000000004,
+    "capacity_status": "Spatial allocation; internal height, product, real inventory and access need review"
+  },
+  {
+    "floor": "lower",
+    "item": "Linen and cleaning store",
+    "footprint_m2": 0.3600000000000004,
+    "long_dimension_m": 0.6000000000000005,
+    "capacity_status": "Spatial allocation; internal height, product, real inventory and access need review"
+  },
+  {
+    "floor": "road",
+    "item": "Six helmets / sports / bins",
+    "footprint_m2": 3.115000000000001,
+    "long_dimension_m": 4.45,
+    "capacity_status": "Spatial allocation; internal height, product, real inventory and access need review"
+  },
+  {
+    "floor": "road",
+    "item": "Six staggered bikes / supplier verify",
+    "footprint_m2": 2.64,
+    "long_dimension_m": 2.2,
+    "capacity_status": "Spatial allocation; internal height, product, real inventory and access need review"
+  },
+  {
+    "floor": "road",
+    "item": "Six coat and bag lockers",
+    "footprint_m2": 1.4399999999999988,
+    "long_dimension_m": 2.3999999999999995,
+    "capacity_status": "Spatial allocation; internal height, product, real inventory and access need review"
+  }
+]

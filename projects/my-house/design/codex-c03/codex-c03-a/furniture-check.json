@@ -1,0 +1,71 @@
+[
+  {
+    "space": "sp-night-lobby",
+    "status": "body_fit_and_0.48m_separation_checked",
+    "items": [
+      "sofa",
+      "reading-table"
+    ]
+  },
+  {
+    "space": "sp-boys",
+    "status": "body_fit_and_0.48m_separation_checked",
+    "items": [
+      "single-bed",
+      "single-bed"
+    ]
+  },
+  {
+    "space": "sp-girls",
+    "status": "body_fit_and_0.48m_separation_checked",
+    "items": [
+      "single-bed",
+      "single-bed"
+    ]
+  },
+  {
+    "space": "sp-main-bed",
+    "status": "body_fit_and_0.48m_separation_checked",
+    "items": [
+      "double-bed",
+      "wardrobe"
+    ]
+  },
+  {
+    "space": "sp-elder-bed",
+    "status": "body_fit_and_0.48m_separation_checked",
+    "items": [
+      "double-bed"
+    ]
+  },
+  {
+    "space": "sp-office",
+    "status": "body_fit_and_0.48m_separation_checked",
+    "items": [
+      "desk"
+    ]
+  },
+  {
+    "space": "sp-living",
+    "status": "body_fit_and_0.48m_separation_checked",
+    "items": [
+      "sofa",
+      "sofa"
+    ]
+  },
+  {
+    "space": "sp-dining",
+    "status": "body_fit_and_0.48m_separation_checked",
+    "items": [
+      "dining-table"
+    ]
+  },
+  {
+    "space": "sp-garage",
+    "status": "body_fit_and_0.48m_separation_checked",
+    "items": [
+      "large-suv-assumed",
+      "sedan-assumed"
+    ]
+  }
+]

@@ -1,0 +1,93 @@
+[
+  {
+    "floor": "upper",
+    "item": "Pantry shelves",
+    "footprint_m2": 1.08,
+    "long_dimension_m": 1.8,
+    "capacity_status": "Spatial allocation; internal height, product, real inventory and access need review"
+  },
+  {
+    "floor": "upper",
+    "item": "Fridge",
+    "footprint_m2": 0.5999999999999999,
+    "long_dimension_m": 0.7999999999999998,
+    "capacity_status": "Spatial allocation; internal height, product, real inventory and access need review"
+  },
+  {
+    "floor": "lower",
+    "item": "Parents dressing rails A",
+    "footprint_m2": 0.9600000000000024,
+    "long_dimension_m": 1.6000000000000003,
+    "capacity_status": "Spatial allocation; internal height, product, real inventory and access need review"
+  },
+  {
+    "floor": "lower",
+    "item": "Parents additional wardrobe",
+    "footprint_m2": 1.3800000000000006,
+    "long_dimension_m": 2.3000000000000007,
+    "capacity_status": "Spatial allocation; internal height, product, real inventory and access need review"
+  },
+  {
+    "floor": "lower",
+    "item": "BOYS wardrobe 1",
+    "footprint_m2": 0.8999999999999995,
+    "long_dimension_m": 1.5,
+    "capacity_status": "Spatial allocation; internal height, product, real inventory and access need review"
+  },
+  {
+    "floor": "lower",
+    "item": "BOYS wardrobe 2",
+    "footprint_m2": 0.9000000000000021,
+    "long_dimension_m": 1.5,
+    "capacity_status": "Spatial allocation; internal height, product, real inventory and access need review"
+  },
+  {
+    "floor": "lower",
+    "item": "GIRLS wardrobe 1",
+    "footprint_m2": 0.9000000000000021,
+    "long_dimension_m": 1.5,
+    "capacity_status": "Spatial allocation; internal height, product, real inventory and access need review"
+  },
+  {
+    "floor": "lower",
+    "item": "GIRLS wardrobe 2",
+    "footprint_m2": 0.9000000000000021,
+    "long_dimension_m": 1.5,
+    "capacity_status": "Spatial allocation; internal height, product, real inventory and access need review"
+  },
+  {
+    "floor": "lower",
+    "item": "Linen / folding",
+    "footprint_m2": 0.5999999999999996,
+    "long_dimension_m": 1.0,
+    "capacity_status": "Spatial allocation; internal height, product, real inventory and access need review"
+  },
+  {
+    "floor": "lower",
+    "item": "Seasonal shelves",
+    "footprint_m2": 2.0900000000000025,
+    "long_dimension_m": 3.8,
+    "capacity_status": "Spatial allocation; internal height, product, real inventory and access need review"
+  },
+  {
+    "floor": "road",
+    "item": "Six helmets / sports / bins",
+    "footprint_m2": 3.115000000000001,
+    "long_dimension_m": 4.45,
+    "capacity_status": "Spatial allocation; internal height, product, real inventory and access need review"
+  },
+  {
+    "floor": "road",
+    "item": "Six staggered bikes / supplier verify",
+    "footprint_m2": 2.64,
+    "long_dimension_m": 2.2,
+    "capacity_status": "Spatial allocation; internal height, product, real inventory and access need review"
+  },
+  {
+    "floor": "road",
+    "item": "Six coat and bag lockers",
+    "footprint_m2": 1.4399999999999988,
+    "long_dimension_m": 2.3999999999999995,
+    "capacity_status": "Spatial allocation; internal height, product, real inventory and access need review"
+  }
+]

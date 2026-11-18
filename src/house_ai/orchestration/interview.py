@@ -20,6 +20,7 @@ from typing import Any
 
 import yaml
 
+from house_ai.constants.interview import GENERIC_UNKNOWN_ALIASES, NONE_VALUE
 from house_ai.domain.brief import DesignBrief, FactValue
 from house_ai.domain.interview import (
     InterviewSession,
@@ -125,9 +126,14 @@ def parse_slot_value(slot: str, raw: Any) -> FactValue:  # noqa: C901
     val: Any = raw
     if isinstance(raw, str):
         stripped = raw.strip()
-        if stripped.lower() in ("unknown", "undecided", "null", "none"):
+        low = stripped.lower()
+        cand = low.replace("-", "_").replace(" ", "_")
+        cand = _CHOICE_ALIASES.get((slot, cand), cand)
+        if kind == "choice" and cand in choices:
+            val = cand
+        elif low in GENERIC_UNKNOWN_ALIASES or (low == NONE_VALUE and NONE_VALUE not in choices):
             return None
-        if kind == "int":
+        elif kind == "int":
             try:
                 val = int(stripped)
             except ValueError as exc:
@@ -139,7 +145,6 @@ def parse_slot_value(slot: str, raw: Any) -> FactValue:  # noqa: C901
             except ValueError as exc:
                 raise InvalidValue(f"{raw!r} is not a number for {slot}") from exc
         elif kind == "bool":
-            low = stripped.lower()
             if low in ("true", "yes", "y", "1"):
                 val = True
             elif low in ("false", "no", "n", "0"):
@@ -147,8 +152,6 @@ def parse_slot_value(slot: str, raw: Any) -> FactValue:  # noqa: C901
             else:
                 raise InvalidValue(f"{raw!r} is not true/false for {slot}")
         elif kind == "choice":
-            cand = stripped.lower().replace("-", "_").replace(" ", "_")
-            cand = _CHOICE_ALIASES.get((slot, cand), cand)
             val = cand if cand in choices else stripped
         elif kind == "list":
             if stripped.startswith("["):

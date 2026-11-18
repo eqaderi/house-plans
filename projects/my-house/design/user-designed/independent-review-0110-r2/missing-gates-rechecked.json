@@ -1,0 +1,296 @@
+{
+  "A": {
+    "decision": "0091-new-survey-boundary",
+    "all_supplied_works_contained": false,
+    "checks": [
+      {
+        "id": "foundation-footings",
+        "contained": false,
+        "status": "UNRESOLVED footprint",
+        "outside_area_m2": null
+      },
+      {
+        "id": "retaining-footings-and-anchors",
+        "contained": false,
+        "status": "UNRESOLVED footprint",
+        "outside_area_m2": null
+      },
+      {
+        "id": "temporary-shoring-and-construction-access",
+        "contained": false,
+        "status": "UNRESOLVED footprint",
+        "outside_area_m2": null
+      },
+      {
+        "id": "soil-stabilisation",
+        "contained": false,
+        "status": "UNRESOLVED footprint",
+        "outside_area_m2": null
+      },
+      {
+        "id": "legal-road-vertical-tie-in",
+        "contained": false,
+        "status": "UNRESOLVED footprint",
+        "outside_area_m2": null
+      },
+      {
+        "id": "storm-and-overflow-discharge",
+        "contained": false,
+        "status": "UNRESOLVED footprint",
+        "outside_area_m2": null
+      },
+      {
+        "id": "foul-drainage-and-sewer-connection",
+        "contained": false,
+        "status": "UNRESOLVED footprint",
+        "outside_area_m2": null
+      },
+      {
+        "id": "incoming-utilities-and-meter",
+        "contained": false,
+        "status": "UNRESOLVED footprint",
+        "outside_area_m2": null
+      },
+      {
+        "id": "actual-lift-pit-headroom-equipment",
+        "contained": false,
+        "status": "UNRESOLVED footprint",
+        "outside_area_m2": null
+      },
+      {
+        "id": "structural-columns-beams-and-seismic-system",
+        "contained": false,
+        "status": "UNRESOLVED footprint",
+        "outside_area_m2": null
+      },
+      {
+        "id": "fire-separation-and-assisted-escape",
+        "contained": false,
+        "status": "UNRESOLVED footprint",
+        "outside_area_m2": null
+      },
+      {
+        "id": "ventilation-terminals-and-plant-products",
+        "contained": false,
+        "status": "UNRESOLVED footprint",
+        "outside_area_m2": null
+      },
+      {
+        "id": "actual-gate-posts-motors-and-safety-zones",
+        "contained": false,
+        "status": "UNRESOLVED footprint",
+        "outside_area_m2": null
+      },
+      {
+        "id": "garden-soil-retaining-and-settlement",
+        "contained": false,
+        "status": "UNRESOLVED footprint",
+        "outside_area_m2": null
+      },
+      {
+        "id": "roof-plant-pv-and-access-anchors",
+        "contained": false,
+        "status": "UNRESOLVED footprint",
+        "outside_area_m2": null
+      }
+    ],
+    "no_outward_tolerance": true,
+    "meaning": "Current parcel plus owner open-strip rules. Declared necessary access crossings may cross strips but never extend outside the parcel. No missing-component, road-tie-in, engineering or legal approval."
+  },
+  "B": {
+    "decision": "0091-new-survey-boundary",
+    "all_supplied_works_contained": false,
+    "checks": [
+      {
+        "id": "foundation-footings",
+        "contained": false,
+        "status": "UNRESOLVED footprint",
+        "outside_area_m2": null
+      },
+      {
+        "id": "retaining-footings-and-anchors",
+        "contained": false,
+        "status": "UNRESOLVED footprint",
+        "outside_area_m2": null
+      },
+      {
+        "id": "temporary-shoring-and-construction-access",
+        "contained": false,
+        "status": "UNRESOLVED footprint",
+        "outside_area_m2": null
+      },
+      {
+        "id": "soil-stabilisation",
+        "contained": false,
+        "status": "UNRESOLVED footprint",
+        "outside_area_m2": null
+      },
+      {
+        "id": "legal-road-vertical-tie-in",
+        "contained": false,
+        "status": "UNRESOLVED footprint",
+        "outside_area_m2": null
+      },
+      {
+        "id": "storm-and-overflow-discharge",
+        "contained": false,
+        "status": "UNRESOLVED footprint",
+        "outside_area_m2": null
+      },
+      {
+        "id": "foul-drainage-and-sewer-connection",
+        "contained": false,
+        "status": "UNRESOLVED footprint",
+        "outside_area_m2": null
+      },
+      {
+        "id": "incoming-utilities-and-meter",
+        "contained": false,
+        "status": "UNRESOLVED footprint",
+        "outside_area_m2": null
+      },
+      {
+        "id": "actual-lift-pit-headroom-equipment",
+        "contained": false,
+        "status": "UNRESOLVED footprint",
+        "outside_area_m2": null
+      },
+      {
+        "id": "structural-columns-beams-and-seismic-system",
+        "contained": false,
+        "status": "UNRESOLVED footprint",
+        "outside_area_m2": null
+      },
+      {
+        "id": "fire-separation-and-assisted-escape",
+        "contained": false,
+        "status": "UNRESOLVED footprint",
+        "outside_area_m2": null
+      },
+      {
+        "id": "ventilation-terminals-and-plant-products",
+        "contained": false,
+        "status": "UNRESOLVED footprint",
+        "outside_area_m2": null
+      },
+      {
+        "id": "actual-gate-posts-motors-and-safety-zones",
+        "contained": false,
+        "status": "UNRESOLVED footprint",
+        "outside_area_m2": null
+      },
+      {
+        "id": "garden-soil-retaining-and-settlement",
+        "contained": false,
+        "status": "UNRESOLVED footprint",
+        "outside_area_m2": null
+      },
+      {
+        "id": "roof-plant-pv-and-access-anchors",
+        "contained": false,
+        "status": "UNRESOLVED footprint",
+        "outside_area_m2": null
+      }
+    ],
+    "no_outward_tolerance": true,
+    "meaning": "Current parcel plus owner open-strip rules. Declared necessary access crossings may cross strips but never extend outside the parcel. No missing-component, road-tie-in, engineering or legal approval."
+  },
+  "C": {
+    "decision": "0091-new-survey-boundary",
+    "all_supplied_works_contained": false,
+    "checks": [
+      {
+        "id": "foundation-footings",
+        "contained": false,
+        "status": "UNRESOLVED footprint",
+        "outside_area_m2": null
+      },
+      {
+        "id": "retaining-footings-and-anchors",
+        "contained": false,
+        "status": "UNRESOLVED footprint",
+        "outside_area_m2": null
+      },
+      {
+        "id": "temporary-shoring-and-construction-access",
+        "contained": false,
+        "status": "UNRESOLVED footprint",
+        "outside_area_m2": null
+      },
+      {
+        "id": "soil-stabilisation",
+        "contained": false,
+        "status": "UNRESOLVED footprint",
+        "outside_area_m2": null
+      },
+      {
+        "id": "legal-road-vertical-tie-in",
+        "contained": false,
+        "status": "UNRESOLVED footprint",
+        "outside_area_m2": null
+      },
+      {
+        "id": "storm-and-overflow-discharge",
+        "contained": false,
+        "status": "UNRESOLVED footprint",
+        "outside_area_m2": null
+      },
+      {
+        "id": "foul-drainage-and-sewer-connection",
+        "contained": false,
+        "status": "UNRESOLVED footprint",
+        "outside_area_m2": null
+      },
+      {
+        "id": "incoming-utilities-and-meter",
+        "contained": false,
+        "status": "UNRESOLVED footprint",
+        "outside_area_m2": null
+      },
+      {
+        "id": "actual-lift-pit-headroom-equipment",
+        "contained": false,
+        "status": "UNRESOLVED footprint",
+        "outside_area_m2": null
+      },
+      {
+        "id": "structural-columns-beams-and-seismic-system",
+        "contained": false,
+        "status": "UNRESOLVED footprint",
+        "outside_area_m2": null
+      },
+      {
+        "id": "fire-separation-and-assisted-escape",
+        "contained": false,
+        "status": "UNRESOLVED footprint",
+        "outside_area_m2": null
+      },
+      {
+        "id": "ventilation-terminals-and-plant-products",
+        "contained": false,
+        "status": "UNRESOLVED footprint",
+        "outside_area_m2": null
+      },
+      {
+        "id": "actual-gate-posts-motors-and-safety-zones",
+        "contained": false,
+        "status": "UNRESOLVED footprint",
+        "outside_area_m2": null
+      },
+      {
+        "id": "garden-soil-retaining-and-settlement",
+        "contained": false,
+        "status": "UNRESOLVED footprint",
+        "outside_area_m2": null
+      },
+      {
+        "id": "roof-plant-pv-and-access-anchors",
+        "contained": false,
+        "status": "UNRESOLVED footprint",
+        "outside_area_m2": null
+      }
+    ],
+    "no_outward_tolerance": true,
+    "meaning": "Current parcel plus owner open-strip rules. Declared necessary access crossings may cross strips but never extend outside the parcel. No missing-component, road-tie-in, engineering or legal approval."
+  }
+}

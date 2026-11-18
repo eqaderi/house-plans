@@ -1,0 +1,49 @@
+{
+  "option": "codex-c03-b",
+  "method": "inferred: exact linear integration on stored survey TIN, lowest formation at each XY",
+  "cut_m3": 16.949815171490382,
+  "max_cut_depth_m": 1.7147868987715356,
+  "unknown_area_m2": 7.105427357601002e-15,
+  "building_projection_m2": 263.340006952441,
+  "levels": [
+    {
+      "level": "lv-lower",
+      "floor_m": 1671.4522982262974,
+      "formation_allowance_m": 0.35,
+      "cut_m3": 16.949810714577144,
+      "cut_area_m2": 29.512885157482565,
+      "max_cut_depth_m": 1.7147868987715356,
+      "known_area_m2": 188.340004107427,
+      "unknown_area_m2": 0
+    },
+    {
+      "level": "lv-entry",
+      "floor_m": 1674.4522982262974,
+      "formation_allowance_m": 0.35,
+      "cut_m3": 4.456913238068203e-06,
+      "cut_area_m2": 0.0012136214553759624,
+      "max_cut_depth_m": 0.011017224238230483,
+      "known_area_m2": 39.4799989941465,
+      "unknown_area_m2": 0
+    },
+    {
+      "level": "lv-upper",
+      "floor_m": 1677.4522982262974,
+      "formation_allowance_m": 0.35,
+      "cut_m3": 0.0,
+      "cut_area_m2": 0.0,
+      "max_cut_depth_m": 0.0,
+      "known_area_m2": 35.520003850867546,
+      "unknown_area_m2": 7.105427357601002e-15
+    }
+  ],
+  "exclusions": [
+    "garden grading",
+    "exterior stairs and access",
+    "working clearance and batter",
+    "individual foundations and retaining walls",
+    "drainage",
+    "bulking and disposal"
+  ],
+  "road_and_floor_elevations": "assumed C02 western reference retained for comparison; not surveyed thresholds"
+}

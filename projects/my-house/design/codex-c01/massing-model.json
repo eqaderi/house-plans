@@ -1,0 +1,230 @@
+{
+  "schema_version": "0.1.0",
+  "id": "codex-c01-massing",
+  "name": "Codex C01 — boundary-aligned exploratory massing",
+  "units": "m",
+  "coordinate_system_id": "lcs-site",
+  "site_ref": {
+    "kind": "site",
+    "id": "site",
+    "version": 3,
+    "sha256": "abab9fb2d5433bd08c57b9748b5bc93fad2703b902fb178f1696814c54ff659f"
+  },
+  "program_ref": {
+    "kind": "space_program",
+    "id": "program",
+    "version": 6,
+    "sha256": "242665b3e56e91be6aa7a0631769df10bf15ff7e7464b545c3fa0e80d40f8925"
+  },
+  "levels": [
+    {
+      "id": "road",
+      "name": "Road / garage tier",
+      "elevation_m": 1677.4522982262974,
+      "floor_to_floor_m": 3.2
+    },
+    {
+      "id": "res-upper",
+      "name": "Upper residential tier",
+      "elevation_m": 1674.2522982262974,
+      "floor_to_floor_m": 3.2
+    },
+    {
+      "id": "res-lower",
+      "name": "Lower residential tier",
+      "elevation_m": 1671.0522982262974,
+      "floor_to_floor_m": 3.2
+    }
+  ],
+  "spaces": [],
+  "walls": [],
+  "openings": [],
+  "slabs": [
+    {
+      "id": "c01-mass-road",
+      "level_id": "road",
+      "kind": "floor",
+      "boundary": {
+        "outer": [
+          [
+            7.607723979007894,
+            22.10025895898484
+          ],
+          [
+            16.825532862020395,
+            25.977371208618045
+          ],
+          [
+            20.31493388669028,
+            17.681343213906796
+          ],
+          [
+            11.097125003677782,
+            13.80423096427359
+          ]
+        ],
+        "holes": []
+      },
+      "thickness_m": 0.25,
+      "top_offset_m": 0.0,
+      "material_id": null
+    },
+    {
+      "id": "c01-mass-res-upper",
+      "level_id": "res-upper",
+      "kind": "floor",
+      "boundary": {
+        "outer": [
+          [
+            7.607723979007894,
+            22.10025895898484
+          ],
+          [
+            20.42047832639527,
+            27.489444985975
+          ],
+          [
+            23.909879351065154,
+            19.19341699126375
+          ],
+          [
+            11.097125003677782,
+            13.80423096427359
+          ]
+        ],
+        "holes": []
+      },
+      "thickness_m": 0.25,
+      "top_offset_m": 0.0,
+      "material_id": null
+    },
+    {
+      "id": "c01-mass-res-lower",
+      "level_id": "res-lower",
+      "kind": "floor",
+      "boundary": {
+        "outer": [
+          [
+            8.345148689648894,
+            22.410427938955497
+          ],
+          [
+            21.15790303703627,
+            27.799613965945653
+          ],
+          [
+            24.647304061706155,
+            19.503585971234404
+          ],
+          [
+            11.834549714318781,
+            14.114399944244248
+          ]
+        ],
+        "holes": []
+      },
+      "thickness_m": 0.25,
+      "top_offset_m": 0.0,
+      "material_id": null
+    }
+  ],
+  "ceilings": [],
+  "stairs": [],
+  "zones": [],
+  "fixtures": [],
+  "relationships": [],
+  "materials": [],
+  "assumptions": [
+    {
+      "id": "c01-assumption-1",
+      "statement": "Exploratory massing only: no room packing, doors, stairs, lift shaft, structure or garage manoeuvring has been resolved.",
+      "basis": null,
+      "status": "assumption",
+      "affects": [],
+      "confirm_with": null,
+      "made_by": {
+        "kind": "agent",
+        "id": "codex",
+        "display_name": null,
+        "provider": null,
+        "model": null
+      }
+    },
+    {
+      "id": "c01-assumption-2",
+      "statement": "Three tiers are owner-confirmed. 3.2m floor intervals and the TIN western midpoint reference are assumptions, not chosen finished-floor levels.",
+      "basis": null,
+      "status": "assumption",
+      "affects": [],
+      "confirm_with": null,
+      "made_by": {
+        "kind": "agent",
+        "id": "codex",
+        "display_name": null,
+        "provider": null,
+        "model": null
+      }
+    },
+    {
+      "id": "c01-assumption-3",
+      "statement": "Tested residential gross floor-area lower bounds 115/125/135m² are Codex area budgets, not demonstrated minimum footprints.",
+      "basis": null,
+      "status": "assumption",
+      "affects": [],
+      "confirm_with": null,
+      "made_by": {
+        "kind": "agent",
+        "id": "codex",
+        "display_name": null,
+        "provider": null,
+        "model": null
+      }
+    },
+    {
+      "id": "c01-assumption-4",
+      "statement": "Northern 1m clearance, western 5.5m approach allowance, 0.8m lower-floor step and approximately 90m² top tier are exploratory assumptions.",
+      "basis": null,
+      "status": "assumption",
+      "affects": [],
+      "confirm_with": null,
+      "made_by": {
+        "kind": "agent",
+        "id": "codex",
+        "display_name": null,
+        "provider": null,
+        "model": null
+      }
+    },
+    {
+      "id": "c01-assumption-5",
+      "statement": "Downhill garden reserve is land in plan, not a graded garden. Flatness, retaining, drainage, soil and planting suitability are unresolved.",
+      "basis": null,
+      "status": "assumption",
+      "affects": [],
+      "confirm_with": null,
+      "made_by": {
+        "kind": "agent",
+        "id": "codex",
+        "display_name": null,
+        "provider": null,
+        "model": null
+      }
+    },
+    {
+      "id": "c01-assumption-6",
+      "statement": "Top office and plant room are tentative. Main-house axes strictly follow the north/south long boundaries; no road-aligned variant is permitted.",
+      "basis": null,
+      "status": "assumption",
+      "affects": [],
+      "confirm_with": null,
+      "made_by": {
+        "kind": "agent",
+        "id": "codex",
+        "display_name": null,
+        "provider": null,
+        "model": null
+      }
+    }
+  ],
+  "issues": []
+}

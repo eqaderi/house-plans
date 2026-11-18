@@ -100,6 +100,9 @@ game engine may become a dependency of `domain`; each sits behind an adapter.
   blockers; the owner then approves the site gate. Plan options on `my-house`
   must account for split-level layouts, hillside construction, road-level parking/access, excavation, retaining walls,
   drainage, and structure without assuming all 600 m² is buildable.
+- Before any `my-house` layout work, read
+  `projects/my-house/design/OWNER_DESIGN_RULES.md`. Each rule is a hard check:
+  never show a design that breaks one.
 
 ## 8. Workflow and human approval gates
 
@@ -133,6 +136,10 @@ Generate, revise, compare and review plan options with the
 program; before that only `--exploratory`, which stores nothing and is never
 called validated. Report metrics with their status and infeasible strategies
 with reasons; never present one plan option as "the answer".
+Whenever you show the owner two or more options, include a comparison view: a
+table of only what differs, plus the same floor of each option side by side
+with differing rooms outlined (`OWNER_DESIGN_RULES.md` rule 8.5; reference
+`projects/my-house/design/claude-c09/compare.py`).
 
 ## 10. Professional boundary, conventions, tests, and Git
 

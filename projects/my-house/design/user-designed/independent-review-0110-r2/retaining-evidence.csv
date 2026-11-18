@@ -1,0 +1,12 @@
+id,ground_min_m,ground_max_m,unsupported_evaluation_points,plan_area_m2,scope
+lower-enclosure,1666.4014730739555,1674.0272966867476,0,183.66,TIN-intersection vertices only; wall/footing levels and engineering heights unknown
+main-soil-garden,1665.5046901589544,1668.3929115821165,0,68.989276814148,TIN-intersection vertices only; wall/footing levels and engineering heights unknown
+east-garden-retaining-reservation,1665.405022283362,1666.1824567514666,0,3.8499999999999943,TIN-intersection vertices only; wall/footing levels and engineering heights unknown
+garden-north-retaining,1665.5046901589544,1668.4163031430764,0,2.1733844074608957,TIN-intersection vertices only; wall/footing levels and engineering heights unknown
+garden-south-retaining,1666.1144380173698,1666.2442638220734,0,0.06652717741403968,TIN-intersection vertices only; wall/footing levels and engineering heights unknown
+upper-arrival-garden-earthworks,1673.6429311091058,1676.690374017429,0,21.560000000000002,TIN-intersection vertices only; wall/footing levels and engineering heights unknown
+upper-west-retaining,1674.5038115400812,1676.4309155797614,0,2.0700000000000003,TIN-intersection vertices only; wall/footing levels and engineering heights unknown
+arrival-west-retaining,1675.3975783998392,1676.8473557225307,0,1.4699999999999993,TIN-intersection vertices only; wall/footing levels and engineering heights unknown
+south-daylight-retaining,1666.246494693863,1671.034405507857,0,2.8399999999999896,TIN-intersection vertices only; wall/footing levels and engineering heights unknown
+north-wet-retaining,1670.6114791285079,1673.2257036126996,1,0.6750000000000016,TIN-intersection vertices only; wall/footing levels and engineering heights unknown
+core-north-retaining,1672.2767592336895,1674.0123160926246,0,0.5549999999999998,TIN-intersection vertices only; wall/footing levels and engineering heights unknown

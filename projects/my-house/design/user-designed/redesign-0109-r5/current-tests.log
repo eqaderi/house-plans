@@ -1,0 +1,173 @@
+current: 13 modules; 31 archived modules remain separately runnable
+test_dependency_and_input_set_and_approval_not_inferred (test_active_revision.GenerationTests.test_dependency_and_input_set_and_approval_not_inferred) ... ok
+test_mixed_or_missing_or_modified_outputs_rejected (test_active_revision.GenerationTests.test_mixed_or_missing_or_modified_outputs_rejected) ... ok
+test_valid_then_stale_source_code_and_geometry_rejected (test_active_revision.GenerationTests.test_valid_then_stale_source_code_and_geometry_rejected) ... ok
+test_current_boundary_unknowns_and_external_stair_consistency (test_architecture_snapshot.SnapshotTests.test_current_boundary_unknowns_and_external_stair_consistency) ... ok
+test_explicit_hinge_keeps_storage_route_clear (test_architecture_snapshot.SnapshotTests.test_explicit_hinge_keeps_storage_route_clear)
+A traversable doorway can still isolate storage behind its open leaf. ... ok
+test_holes_openings_and_units_not_repaired (test_architecture_snapshot.SnapshotTests.test_holes_openings_and_units_not_repaired) ... ok
+test_level_fixture_propagates_to_sections_stairs_dimensions_and_ids (test_architecture_snapshot.SnapshotTests.test_level_fixture_propagates_to_sections_stairs_dimensions_and_ids) ... ok
+test_lossless_payload_physical_walls_and_existing_ids (test_architecture_snapshot.SnapshotTests.test_lossless_payload_physical_walls_and_existing_ids) ... ok
+test_unchanged_named_entities_keep_identity_after_reordering (test_architecture_snapshot.SnapshotTests.test_unchanged_named_entities_keep_identity_after_reordering) ... ok
+test_current_twenty_observations_are_reproduced (test_current_design_site.CurrentSiteTests.test_current_twenty_observations_are_reproduced) ... ok
+test_new_placement_round_trip_preserves_dimensions (test_current_design_site.CurrentSiteTests.test_new_placement_round_trip_preserves_dimensions) ... ok
+test_no_extrapolation_into_unmeasured_road (test_current_design_site.CurrentSiteTests.test_no_extrapolation_into_unmeasured_road) ... ok
+test_deleted_feature_is_rejected (test_plan_export.ExportTests.test_deleted_feature_is_rejected) ... ok
+test_missing_label_is_rejected (test_plan_export.ExportTests.test_missing_label_is_rejected) ... ok
+test_moved_geometry_is_rejected (test_plan_export.ExportTests.test_moved_geometry_is_rejected) ... ok
+test_overlap_is_rejected (test_plan_export.ExportTests.test_overlap_is_rejected) ... ok
+test_overridden_dimension_is_rejected (test_plan_export.ExportTests.test_overridden_dimension_is_rejected) ... ok
+test_pdf_has_actual_a3_page_and_true_scale (test_plan_export.ExportTests.test_pdf_has_actual_a3_page_and_true_scale) ... ok
+test_roundtrip_and_original_wall_recipe (test_plan_export.ExportTests.test_roundtrip_and_original_wall_recipe) ... ok
+test_stale_source_fails_before_export (test_plan_export.ExportTests.test_stale_source_fails_before_export) ... ok
+test_wrong_dimension_display_units_are_rejected (test_plan_export.ExportTests.test_wrong_dimension_display_units_are_rejected) ... ok
+test_wrong_units_are_rejected (test_plan_export.ExportTests.test_wrong_units_are_rejected) ... ok
+test_actual_old_garages_fail (test_site_boundary_gate.BoundaryGateTests.test_actual_old_garages_fail) ... ok
+test_apron_and_hayat_are_not_exempt (test_site_boundary_gate.BoundaryGateTests.test_apron_and_hayat_are_not_exempt) ... ok
+test_config_and_instructions_enforce_rule (test_site_boundary_gate.BoundaryGateTests.test_config_and_instructions_enforce_rule) ... ok
+test_historical_works_do_not_inherit_current_clearance (test_site_boundary_gate.BoundaryGateTests.test_historical_works_do_not_inherit_current_clearance) ... ok
+test_roof_projections_separately_checked (test_site_boundary_gate.BoundaryGateTests.test_roof_projections_separately_checked) ... ok
+test_unknown_or_empty_is_not_pass (test_site_boundary_gate.BoundaryGateTests.test_unknown_or_empty_is_not_pass) ... ok
+test_east_is_exact_cad_west_not_perpendicular (test_survey_update.SurveyTests.test_east_is_exact_cad_west_not_perpendicular) ... ok
+test_ground_and_benchmark_separate (test_survey_update.SurveyTests.test_ground_and_benchmark_separate) ... ok
+test_interpolation_reproduces_observations_and_refuses_extrapolation (test_survey_update.SurveyTests.test_interpolation_reproduces_observations_and_refuses_extrapolation) ... ok
+test_only_south_reserved_and_no_extra_east_or_west_strip (test_survey_update.SurveyTests.test_only_south_reserved_and_no_extra_east_or_west_strip) ... ok
+test_profile_readouts_derive_from_same_data (test_survey_update.SurveyTests.test_profile_readouts_derive_from_same_data) ... ok
+test_removed_east_is_never_access_exception (test_survey_update.SurveyTests.test_removed_east_is_never_access_exception) ... ok
+test_road_and_pavement_are_external (test_survey_update.SurveyTests.test_road_and_pavement_are_external) ... ok
+test_south_access_requires_declaration (test_survey_update.SurveyTests.test_south_access_requires_declaration) ... ok
+test_unknown_and_unresolved_coordinate_gate_fail_closed (test_survey_update.SurveyTests.test_unknown_and_unresolved_coordinate_gate_fail_closed) ... ok
+test_compliant_house_evaluation_passes (test_building_science_mep.BuildingScienceMepTests.test_compliant_house_evaluation_passes)
+Verifies that a fully coordinated building science specification achieves STATUS_PASS. ... ok
+test_excessive_grocery_haul_distance_flags_ergonomic_defect (test_building_science_mep.BuildingScienceMepTests.test_excessive_grocery_haul_distance_flags_ergonomic_defect)
+Verifies that grocery haul distances exceeding 8 meters are flagged. ... ok
+test_excessive_wall_u_value_flags_thermal_defect (test_building_science_mep.BuildingScienceMepTests.test_excessive_wall_u_value_flags_thermal_defect)
+Verifies that exterior walls with poor thermal insulation are flagged. ... ok
+test_flat_roof_inadequate_slope_flags_waterproofing_defect (test_building_science_mep.BuildingScienceMepTests.test_flat_roof_inadequate_slope_flags_waterproofing_defect)
+Verifies that flat roofs sloping less than 2% are flagged for standing ponding risk. ... ok
+test_flat_roof_without_overflow_scupper_flags_waterproofing_defect (test_building_science_mep.BuildingScienceMepTests.test_flat_roof_without_overflow_scupper_flags_waterproofing_defect)
+Verifies that flat roofs without secondary overflow drainage are flagged. ... ok
+test_kitchen_work_triangle_too_large_flags_ergonomic_defect (test_building_science_mep.BuildingScienceMepTests.test_kitchen_work_triangle_too_large_flags_ergonomic_defect)
+Verifies that excessively sprawled kitchens are flagged for poor cooking efficiency. ... ok
+test_light_switch_behind_door_swing_flags_electrical_defect (test_building_science_mep.BuildingScienceMepTests.test_light_switch_behind_door_swing_flags_electrical_defect)
+Verifies that switches placed behind door swings are flagged as ergonomic defects. ... ok
+test_missing_hrv_erv_flags_hvac_defect (test_building_science_mep.BuildingScienceMepTests.test_missing_hrv_erv_flags_hvac_defect)
+Verifies that lacking continuous balanced mechanical ventilation is flagged. ... ok
+test_missing_vertical_mep_chase_flags_hvac_defect (test_building_science_mep.BuildingScienceMepTests.test_missing_vertical_mep_chase_flags_hvac_defect)
+Verifies that a multi-level house lacking a dedicated continuous MEP chase is flagged. ... ok
+test_retaining_wall_without_hydrostatic_relief_flags_defect (test_building_science_mep.BuildingScienceMepTests.test_retaining_wall_without_hydrostatic_relief_flags_defect)
+Verifies that a hillside retaining wall without drainage is flagged. ... ok
+test_stair_core_missing_3way_switching_flags_electrical_defect (test_building_science_mep.BuildingScienceMepTests.test_stair_core_missing_3way_switching_flags_electrical_defect)
+Verifies that staircases without 3-way lighting controls at top/bottom are flagged. ... ok
+test_toilet_adjacent_to_bed_headboard_flags_acoustic_defect (test_building_science_mep.BuildingScienceMepTests.test_toilet_adjacent_to_bed_headboard_flags_acoustic_defect)
+Verifies that toilet fixtures directly mounting against bed headboards are flagged. ... ok
+test_uninsulated_cantilever_balcony_flags_thermal_defect (test_building_science_mep.BuildingScienceMepTests.test_uninsulated_cantilever_balcony_flags_thermal_defect)
+Verifies that a cantilever concrete balcony lacking thermal break is flagged. ... ok
+test_uninsulated_waste_stack_adjacent_to_bedroom_flags_defect (test_building_science_mep.BuildingScienceMepTests.test_uninsulated_waste_stack_adjacent_to_bedroom_flags_defect)
+Verifies that plumbing stacks in bedroom walls without acoustic wrap are flagged. ... ok
+test_wet_room_missing_emergency_floor_drains_flags_plumbing_defect (test_building_science_mep.BuildingScienceMepTests.test_wet_room_missing_emergency_floor_drains_flags_plumbing_defect)
+Verifies that wet rooms lacking emergency floor drains are flagged. ... ok
+test_brief_validation_catches_all_defect_modes (test_client_brief_and_presentation.ClientBriefIntakeTests.test_brief_validation_catches_all_defect_modes)
+Verifies that invalid brief parameters trigger strict forensic defects. ... ok
+test_brief_validation_success_on_defaults (test_client_brief_and_presentation.ClientBriefIntakeTests.test_brief_validation_success_on_defaults)
+Verifies that the default brief satisfies all validation checks with zero defects. ... ok
+test_default_brief_generation_and_completeness (test_client_brief_and_presentation.ClientBriefIntakeTests.test_default_brief_generation_and_completeness)
+Verifies that the default client brief contains all six household scenarios and metadata. ... ok
+test_interactive_interview_and_batch_processing (test_client_brief_and_presentation.ClientBriefIntakeTests.test_interactive_interview_and_batch_processing)
+Verifies scripted interactive interview response handling and output compilation. ... ok
+test_synthesize_targets_and_cp_solver_constraints (test_client_brief_and_presentation.ClientBriefIntakeTests.test_synthesize_targets_and_cp_solver_constraints)
+Verifies constraint synthesis compatibility with targets register and CP spatial allocator. ... ok
+test_all_18_spaces_represented_with_calculated_net_areas (test_client_brief_and_presentation.PresentationPlanExporterTests.test_all_18_spaces_represented_with_calculated_net_areas)
+Verifies that all 18 spaces from the 3-level OpenBIM model are represented with exact areas. ... ok
+test_ifc_export_missing_input_is_explicit (test_client_brief_and_presentation.PresentationPlanExporterTests.test_ifc_export_missing_input_is_explicit) ... ok
+test_legacy_example_renderer_remains_available (test_client_brief_and_presentation.PresentationPlanExporterTests.test_legacy_example_renderer_remains_available) ... ok
+test_fixture_bathroom_door_exposed_to_living_seats_flags_privacy_defect (test_evaluation_engine.EvaluationBenchmarkTests.test_fixture_bathroom_door_exposed_to_living_seats_flags_privacy_defect)
+Synthetic fixture: Unscreened bathroom door facing living sofa must flag privacy DEFECT. ... ok
+test_fixture_discontinuous_structural_walls_flags_structural_defect (test_evaluation_engine.EvaluationBenchmarkTests.test_fixture_discontinuous_structural_walls_flags_structural_defect)
+Synthetic fixture: Upper walls cantilevering with less than 70% overlap must flag DEFECT. ... ok
+test_fixture_furniture_blocking_door_flags_clearance_defect (test_evaluation_engine.EvaluationBenchmarkTests.test_fixture_furniture_blocking_door_flags_clearance_defect)
+Synthetic fixture: Wardrobe placed directly in front of door portal must flag DEFECT. ... ok
+test_fixture_living_sofa_sightline_to_kitchen_prep_flags_privacy_defect (test_evaluation_engine.EvaluationBenchmarkTests.test_fixture_living_sofa_sightline_to_kitchen_prep_flags_privacy_defect)
+Synthetic fixture: Sofa directly facing open kitchen prep area must flag privacy DEFECT. ... ok
+test_fixture_room_without_door_flags_circulation_disconnection (test_evaluation_engine.EvaluationBenchmarkTests.test_fixture_room_without_door_flags_circulation_disconnection)
+Synthetic fixture: Room without any doorway must be flagged as a circulation DEFECT. ... ok
+test_fixture_upper_bathroom_over_living_room_flags_mep_defect (test_evaluation_engine.EvaluationBenchmarkTests.test_fixture_upper_bathroom_over_living_room_flags_mep_defect)
+Synthetic fixture: Upper bathroom directly over lower living room must flag MEP DEFECT. ... ok
+test_fixture_window_below_ground_without_court_flags_daylight_defect (test_evaluation_engine.EvaluationBenchmarkTests.test_fixture_window_below_ground_without_court_flags_daylight_defect)
+Synthetic fixture: Window sill below exterior terrain without court must flag DEFECT. ... ok
+test_partial_synthetic_fixture_keeps_missing_evidence_unresolved (test_evaluation_engine.EvaluationBenchmarkTests.test_partial_synthetic_fixture_keeps_missing_evidence_unresolved)
+Synthetic fixture: Properly coordinated, screened, and aligned layout achieves overall STATUS_PASS. ... ok
+test_deterministic_guids_preserved_across_runs (test_stage3_bim.Stage3BimPrototypeTests.test_deterministic_guids_preserved_across_runs)
+Verifies that regenerating the BIM model produces 100% identical GlobalIds. ... ok
+test_geometric_coordination_and_clashes (test_stage3_bim.Stage3BimPrototypeTests.test_geometric_coordination_and_clashes)
+Verifies that vertical stacking and spatial containment pass geometric audits. ... ok
+test_ids_information_specification_audit_passes (test_stage3_bim.Stage3BimPrototypeTests.test_ids_information_specification_audit_passes)
+Runs the automated buildingSMART IDS audit on the model and asserts zero defects. ... ok
+test_opening_voids_and_fillings_integrity (test_stage3_bim.Stage3BimPrototypeTests.test_opening_voids_and_fillings_integrity)
+Verifies that openings are correctly cut in walls and filled by doors and windows. ... ok
+test_prototype_ifc_opens_independently (test_stage3_bim.Stage3BimPrototypeTests.test_prototype_ifc_opens_independently)
+Verifies that the generated prototype conforms to IFC4 schema and contains core entities. ... ok
+test_stair_geometry_compliance (test_stage3_bim.Stage3BimPrototypeTests.test_stair_geometry_compliance)
+Verifies that the core stair flight adheres to architectural thresholds. ... ok
+test_deterministic_guids_full_house (test_stage3_bim.Stage3FullHouseBimTests.test_deterministic_guids_full_house)
+Verifies that regenerating the full building model produces 100% deterministic GlobalIds. ... ok
+test_environmental_inputs_remain_unresolved_without_simulation (test_stage3_bim.Stage3FullHouseBimTests.test_environmental_inputs_remain_unresolved_without_simulation) ... ok
+test_full_house_schema_and_storeys (test_stage3_bim.Stage3FullHouseBimTests.test_full_house_schema_and_storeys)
+Verifies IFC4 schema, 3 explicit storeys with elevations, and comprehensive element counts. ... ok
+test_geometric_coordination_and_clashes (test_stage3_bim.Stage3FullHouseBimTests.test_geometric_coordination_and_clashes)
+Runs geometric clash and coordination audit on full house model and asserts zero defects. ... ok
+test_ids_specification_audit_passes (test_stage3_bim.Stage3FullHouseBimTests.test_ids_specification_audit_passes)
+Runs buildingSMART IDS 1.0 audit against the full house model and asserts zero defects. ... ok
+test_opening_voids_and_fillings_integrity (test_stage3_bim.Stage3FullHouseBimTests.test_opening_voids_and_fillings_integrity)
+Verifies that all 22 openings void their host walls and are completely filled by doors or windows. ... ok
+test_physical_elements_have_3d_geometry_and_materials (test_stage3_bim.Stage3FullHouseBimTests.test_physical_elements_have_3d_geometry_and_materials)
+Verifies that all walls, slabs, openings, stairs, and site terrain have 3D geometry and materials. ... ok
+test_stair_geometry_and_ergonomics (test_stage3_bim.Stage3FullHouseBimTests.test_stair_geometry_and_ergonomics)
+Verifies both multi-level flights adhere to architectural riser and tread ergonomics. ... ok
+test_thermal_spaces_and_second_level_boundaries (test_stage3_bim.Stage3FullHouseBimTests.test_thermal_spaces_and_second_level_boundaries)
+Verifies 3D spatial volumes, simulation property sets, and 2nd-level space boundaries. ... ok
+test_core_slab_obstruction_detected (test_pipeline_repairs.AdditionalGeometryTests.test_core_slab_obstruction_detected) ... ok
+test_rotated_world_placement_propagates_and_missing_units_fail (test_pipeline_repairs.AdditionalGeometryTests.test_rotated_world_placement_propagates_and_missing_units_fail) ... ok
+test_new_files_reopen_hash_and_refuse_overwrite (test_pipeline_repairs.AtomicFileTests.test_new_files_reopen_hash_and_refuse_overwrite) ... ok
+test_no_wet_fixtures_or_generic_walls_cannot_verify_mep (test_pipeline_repairs.EngineeringEvidenceTests.test_no_wet_fixtures_or_generic_walls_cannot_verify_mep) ... ok
+test_unassigned_ifc_windows_are_unknown_not_zero_glazing (test_pipeline_repairs.FenestrationAssociationTests.test_unassigned_ifc_windows_are_unknown_not_zero_glazing) ... ok
+test_coincident_spaces_and_floating_opening_detected (test_pipeline_repairs.IfcBenchmarks.test_coincident_spaces_and_floating_opening_detected) ... ok
+test_ifc_changes_drive_labels_positions_areas_dimensions (test_pipeline_repairs.IfcBenchmarks.test_ifc_changes_drive_labels_positions_areas_dimensions) ... ok
+test_snapshot_positions_holes_storey_heights_and_ids (test_pipeline_repairs.IfcBenchmarks.test_snapshot_positions_holes_storey_heights_and_ids) ... ok
+test_empty_layout_and_engineering_never_pass (test_pipeline_repairs.MissingEvidenceTests.test_empty_layout_and_engineering_never_pass) ... ok
+test_supplied_windows_and_shading_affect_screen_not_simulation (test_pipeline_repairs.MissingEvidenceTests.test_supplied_windows_and_shading_affect_screen_not_simulation) ... ok
+test_wall_evidence_required_for_sealed_room (test_pipeline_repairs.MissingEvidenceTests.test_wall_evidence_required_for_sealed_room) ... ok
+test_failed_build_and_stale_mixed_packages_cannot_promote (test_pipeline_repairs.PublicationAndConstraints.test_failed_build_and_stale_mixed_packages_cannot_promote) ... ok
+test_intake_dimensions_reach_bounded_solver (test_pipeline_repairs.PublicationAndConstraints.test_intake_dimensions_reach_bounded_solver) ... ok
+test_export_input_change_during_extraction_cannot_promote (test_pipeline_repairs.ReviewRegressionTests.test_export_input_change_during_extraction_cannot_promote) ... ok
+test_partial_privacy_scenarios_stay_unresolved (test_pipeline_repairs.ReviewRegressionTests.test_partial_privacy_scenarios_stay_unresolved) ... ok
+test_precomputed_assessment_cannot_adopt_changed_inputs (test_pipeline_repairs.ReviewRegressionTests.test_precomputed_assessment_cannot_adopt_changed_inputs) ... ok
+test_solid_rotation_does_not_certify_vertical_prism (test_pipeline_repairs.ReviewRegressionTests.test_solid_rotation_does_not_certify_vertical_prism) ... ok
+test_current_survey_reproduces_all_ground_and_no_extrapolation (test_pipeline_repairs.SiteBenchmarks.test_current_survey_reproduces_all_ground_and_no_extrapolation) ... ok
+test_strict_generated_works_valid_outside_missing_and_frame (test_pipeline_repairs.SiteBenchmarks.test_strict_generated_works_valid_outside_missing_and_frame) ... ok
+test_all_brief_points_and_scenarios_revision_linked (test_pipeline_repairs.TraceabilityBenchmarks.test_all_brief_points_and_scenarios_revision_linked) ... ok
+test_generated_model_also_goes_through_strict_gate (test_pipeline_repairs.TraceabilityBenchmarks.test_generated_model_also_goes_through_strict_gate) ... ok
+test_intake_missing_fields_does_not_default_to_acceptance (test_pipeline_repairs.TraceabilityBenchmarks.test_intake_missing_fields_does_not_default_to_acceptance) ... ok
+test_whole_window_terrain_screen_preserves_outside_support (test_pipeline_repairs.TraceabilityBenchmarks.test_whole_window_terrain_screen_preserves_outside_support) ... ok
+test_hook_environment_cannot_redirect_temporary_repository (test_project.GitIndexTests.test_hook_environment_cannot_redirect_temporary_repository) ... ok
+test_staged_bytes_cannot_be_hidden_by_worktree_edit (test_project.GitIndexTests.test_staged_bytes_cannot_be_hidden_by_worktree_edit) ... ok
+test_copy_integrity_and_duplicate_refusal (test_project.IntakeTests.test_copy_integrity_and_duplicate_refusal) ... ok
+test_missing_payload_detected (test_project.IntakeTests.test_missing_payload_detected) ... ok
+test_tampering_detected (test_project.IntakeTests.test_tampering_detected) ... ok
+test_unsafe_id_and_symlink_refused (test_project.IntakeTests.test_unsafe_id_and_symlink_refused) ... ok
+test_binary_and_symlink_rejected (test_project.PolicyTests.test_binary_and_symlink_rejected) ... ok
+test_payloads_and_secret_paths_rejected (test_project.PolicyTests.test_payloads_and_secret_paths_rejected) ... ok
+test_secret_pattern (test_project.PolicyTests.test_secret_pattern) ... ok
+test_text_allowed (test_project.PolicyTests.test_text_allowed) ... ok
+test_current_guards_are_mandatory (test_test_suites.SuiteTests.test_current_guards_are_mandatory) ... ok
+test_unknown_missing_duplicate_test_rejected (test_test_suites.SuiteTests.test_unknown_missing_duplicate_test_rejected) ... ok
+
+----------------------------------------------------------------------
+Ran 118 tests in 25.094s
+
+OK
+PASS: 415 staged files; foundation policy
+Registered test-source: 269ed084463312b2645c5196c41fffc6779cfbd8e9c2020c829ec44e4ee45503; original copy is read-only
+PASS: 1 registered source files verified
+Registered test-source: 269ed084463312b2645c5196c41fffc6779cfbd8e9c2020c829ec44e4ee45503; original copy is read-only
+Registered test-source: 269ed084463312b2645c5196c41fffc6779cfbd8e9c2020c829ec44e4ee45503; original copy is read-only

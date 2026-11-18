@@ -1,0 +1,66 @@
+{
+  "option": "codex-c02-a",
+  "building_projection_m2": 138.28000046958002,
+  "balcony_projection_m2": 11.200002503234991,
+  "building_and_balcony_union_m2": 149.12000243606155,
+  "outside_stair_and_connector_m2": 10.80000000000001,
+  "gross_open_plan_area_m2": 450.8844187377109,
+  "main_connected_garden_reserve_m2": 259.1713030082699,
+  "maximum_house_extent_from_frame_origin_m": 15.600000314260726,
+  "stair_reservation": {
+    "solver_status": "OPTIMAL",
+    "top_level": "lv-upper",
+    "bottom_level": "lv-entry",
+    "run_m": 4.8,
+    "width_m": 1.3,
+    "landings_m": 1.2,
+    "assumed_rise_m": 3,
+    "assumed_risers": 18,
+    "tread_assumption_m": 0.28,
+    "footprint_local_m": [
+      [
+        15.840568299105158,
+        12.327834776570208
+      ],
+      [
+        16.344592891557475,
+        11.129519621778583
+      ],
+      [
+        9.707770495788475,
+        8.337998802042671
+      ],
+      [
+        9.203745903336157,
+        9.536313956834297
+      ],
+      [
+        15.840568299105158,
+        12.327834776570208
+      ]
+    ],
+    "connector_local_m": [
+      [
+        15.375314829149172,
+        13.433971842531708
+      ],
+      [
+        15.840568299105158,
+        12.327834776570208
+      ],
+      [
+        14.734431233143656,
+        11.862581306614222
+      ],
+      [
+        14.269177763187674,
+        12.968718372575722
+      ],
+      [
+        15.375314829149172,
+        13.433971842531708
+      ]
+    ]
+  },
+  "status": "Measured plan areas / CP-SAT containment; garden grading, road approach, external stair construction and structural design not checked"
+}

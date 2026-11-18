@@ -1,0 +1,17 @@
+{
+  "classification": "private",
+  "id": "src-site-context-20261020",
+  "imported_at": "2026-10-20T15:17:45.047876Z",
+  "imported_by": {
+    "display_name": null,
+    "id": "codex",
+    "kind": "agent",
+    "model": null,
+    "provider": null
+  },
+  "media_type": "text/markdown",
+  "original_filename": "SITE-BRIEF.md",
+  "sha256": "45d2a522889479d6889e5d60c5d526d9fc2376598261298c9f47921f4f315e9e",
+  "size_bytes": 5817,
+  "stored_path": "source/45d2a5228894-site-brief.md"
+}

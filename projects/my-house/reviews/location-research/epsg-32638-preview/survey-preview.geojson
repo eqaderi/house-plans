@@ -1,0 +1,662 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "id": "seperated-69",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.35617086268269,
+          34.96934639808924
+        ]
+      },
+      "properties": {
+        "file": "seperated.dwg",
+        "entity_handle": "69",
+        "x_source": 623802.968,
+        "y_source": 3870483.552,
+        "z_source_m": 1678.998,
+        "longitude_wgs84_deg": 46.35617086268269,
+        "latitude_wgs84_deg": 34.96934639808924,
+        "horizontal_crs_status": "owner_reported_pending_formal_confirmation",
+        "vertical_datum": "unknown",
+        "z_note": "Source survey height, not an ellipsoidal height."
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "seperated-6B",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.35614342390205,
+          34.96915766223465
+        ]
+      },
+      "properties": {
+        "file": "seperated.dwg",
+        "entity_handle": "6B",
+        "x_source": 623800.747,
+        "y_source": 3870462.586,
+        "z_source_m": 1679.674,
+        "longitude_wgs84_deg": 46.35614342390205,
+        "latitude_wgs84_deg": 34.96915766223465,
+        "horizontal_crs_status": "owner_reported_pending_formal_confirmation",
+        "vertical_datum": "unknown",
+        "z_note": "Source survey height, not an ellipsoidal height."
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "seperated-6D",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.35613025427412,
+          34.9690597626662
+        ]
+      },
+      "properties": {
+        "file": "seperated.dwg",
+        "entity_handle": "6D",
+        "x_source": 623799.692,
+        "y_source": 3870451.7120000003,
+        "z_source_m": 1680.0710000000001,
+        "longitude_wgs84_deg": 46.35613025427412,
+        "latitude_wgs84_deg": 34.9690597626662,
+        "horizontal_crs_status": "owner_reported_pending_formal_confirmation",
+        "vertical_datum": "unknown",
+        "z_note": "Source survey height, not an ellipsoidal height."
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "seperated-6F",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.356216417285616,
+          34.96905394034342
+        ]
+      },
+      "properties": {
+        "file": "seperated.dwg",
+        "entity_handle": "6F",
+        "x_source": 623807.567,
+        "y_source": 3870451.173,
+        "z_source_m": 1679.131,
+        "longitude_wgs84_deg": 46.356216417285616,
+        "latitude_wgs84_deg": 34.96905394034342,
+        "horizontal_crs_status": "owner_reported_pending_formal_confirmation",
+        "vertical_datum": "unknown",
+        "z_note": "Source survey height, not an ellipsoidal height."
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "seperated-71",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.356253893109994,
+          34.9692860782475
+        ]
+      },
+      "properties": {
+        "file": "seperated.dwg",
+        "entity_handle": "71",
+        "x_source": 623810.639,
+        "y_source": 3870476.965,
+        "z_source_m": 1678.33,
+        "longitude_wgs84_deg": 46.356253893109994,
+        "latitude_wgs84_deg": 34.9692860782475,
+        "horizontal_crs_status": "owner_reported_pending_formal_confirmation",
+        "vertical_datum": "unknown",
+        "z_note": "Source survey height, not an ellipsoidal height."
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "seperated-73",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.35660603196016,
+          34.96940058662499
+        ]
+      },
+      "properties": {
+        "file": "seperated.dwg",
+        "entity_handle": "73",
+        "x_source": 623842.615,
+        "y_source": 3870490.1010000003,
+        "z_source_m": 1665.378,
+        "longitude_wgs84_deg": 46.35660603196016,
+        "latitude_wgs84_deg": 34.96940058662499,
+        "horizontal_crs_status": "owner_reported_pending_formal_confirmation",
+        "vertical_datum": "unknown",
+        "z_note": "Source survey height, not an ellipsoidal height."
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "parcel-candidate-D7",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              46.35626130992264,
+              34.96928560918575
+            ],
+            [
+              46.356591978325795,
+              34.96939577477336
+            ],
+            [
+              46.356565325085874,
+              34.96920771886641
+            ],
+            [
+              46.35623465748042,
+              34.96909755318472
+            ],
+            [
+              46.35626130992264,
+              34.96928560918575
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "source_file": "seperated.dwg",
+        "handle": "D7",
+        "legal_boundary_status": "unconfirmed"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "elevation-69",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.35659142488508,
+          34.96939557428983
+        ]
+      },
+      "properties": {
+        "file": "elevation.dwg",
+        "entity_handle": "69",
+        "x_source": 623841.289,
+        "y_source": 3870489.5270000002,
+        "z_source_m": 1664.884,
+        "longitude_wgs84_deg": 46.35659142488508,
+        "latitude_wgs84_deg": 34.96939557428983,
+        "horizontal_crs_status": "owner_reported_pending_formal_confirmation",
+        "vertical_datum": "unknown",
+        "z_note": "Source survey height, not an ellipsoidal height."
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "elevation-6B",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.35657999247916,
+          34.969327338060886
+        ]
+      },
+      "properties": {
+        "file": "elevation.dwg",
+        "entity_handle": "6B",
+        "x_source": 623840.348,
+        "y_source": 3870481.9450000003,
+        "z_source_m": 1665.529,
+        "longitude_wgs84_deg": 46.35657999247916,
+        "latitude_wgs84_deg": 34.969327338060886,
+        "horizontal_crs_status": "owner_reported_pending_formal_confirmation",
+        "vertical_datum": "unknown",
+        "z_note": "Source survey height, not an ellipsoidal height."
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "elevation-6D",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.35657033265407,
+          34.96924104879983
+        ]
+      },
+      "properties": {
+        "file": "elevation.dwg",
+        "entity_handle": "6D",
+        "x_source": 623839.596,
+        "y_source": 3870472.363,
+        "z_source_m": 1665.6970000000001,
+        "longitude_wgs84_deg": 46.35657033265407,
+        "latitude_wgs84_deg": 34.96924104879983,
+        "horizontal_crs_status": "owner_reported_pending_formal_confirmation",
+        "vertical_datum": "unknown",
+        "z_note": "Source survey height, not an ellipsoidal height."
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "elevation-6F",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.356565433590106,
+          34.969209653587924
+        ]
+      },
+      "properties": {
+        "file": "elevation.dwg",
+        "entity_handle": "6F",
+        "x_source": 623839.196,
+        "y_source": 3870468.875,
+        "z_source_m": 1665.6480000000001,
+        "longitude_wgs84_deg": 46.356565433590106,
+        "latitude_wgs84_deg": 34.969209653587924,
+        "horizontal_crs_status": "owner_reported_pending_formal_confirmation",
+        "vertical_datum": "unknown",
+        "z_note": "Source survey height, not an ellipsoidal height."
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "elevation-71",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.356451488299086,
+          34.969170721499
+        ]
+      },
+      "properties": {
+        "file": "elevation.dwg",
+        "entity_handle": "71",
+        "x_source": 623828.852,
+        "y_source": 3870464.416,
+        "z_source_m": 1669.394,
+        "longitude_wgs84_deg": 46.356451488299086,
+        "latitude_wgs84_deg": 34.969170721499,
+        "horizontal_crs_status": "owner_reported_pending_formal_confirmation",
+        "vertical_datum": "unknown",
+        "z_note": "Source survey height, not an ellipsoidal height."
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "elevation-73",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.35644990150625,
+          34.969233927651366
+        ]
+      },
+      "properties": {
+        "file": "elevation.dwg",
+        "entity_handle": "73",
+        "x_source": 623828.612,
+        "y_source": 3870471.424,
+        "z_source_m": 1669.654,
+        "longitude_wgs84_deg": 46.35644990150625,
+        "latitude_wgs84_deg": 34.969233927651366,
+        "horizontal_crs_status": "owner_reported_pending_formal_confirmation",
+        "vertical_datum": "unknown",
+        "z_note": "Source survey height, not an ellipsoidal height."
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "elevation-75",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.35645290313171,
+          34.96930370975437
+        ]
+      },
+      "properties": {
+        "file": "elevation.dwg",
+        "entity_handle": "75",
+        "x_source": 623828.781,
+        "y_source": 3870479.167,
+        "z_source_m": 1669.49,
+        "longitude_wgs84_deg": 46.35645290313171,
+        "latitude_wgs84_deg": 34.96930370975437,
+        "horizontal_crs_status": "owner_reported_pending_formal_confirmation",
+        "vertical_datum": "unknown",
+        "z_note": "Source survey height, not an ellipsoidal height."
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "elevation-77",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.35650186248123,
+          34.96927894417286
+        ]
+      },
+      "properties": {
+        "file": "elevation.dwg",
+        "entity_handle": "77",
+        "x_source": 623833.2880000001,
+        "y_source": 3870476.481,
+        "z_source_m": 1667.925,
+        "longitude_wgs84_deg": 46.35650186248123,
+        "latitude_wgs84_deg": 34.96927894417286,
+        "horizontal_crs_status": "owner_reported_pending_formal_confirmation",
+        "vertical_datum": "unknown",
+        "z_note": "Source survey height, not an ellipsoidal height."
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "elevation-79",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.356436740928196,
+          34.96934256256275
+        ]
+      },
+      "properties": {
+        "file": "elevation.dwg",
+        "entity_handle": "79",
+        "x_source": 623827.247,
+        "y_source": 3870483.4560000002,
+        "z_source_m": 1669.952,
+        "longitude_wgs84_deg": 46.356436740928196,
+        "latitude_wgs84_deg": 34.96934256256275,
+        "horizontal_crs_status": "owner_reported_pending_formal_confirmation",
+        "vertical_datum": "unknown",
+        "z_note": "Source survey height, not an ellipsoidal height."
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "elevation-7B",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.3563508800554,
+          34.9693129103137
+        ]
+      },
+      "properties": {
+        "file": "elevation.dwg",
+        "entity_handle": "7B",
+        "x_source": 623819.453,
+        "y_source": 3870480.061,
+        "z_source_m": 1673.05,
+        "longitude_wgs84_deg": 46.3563508800554,
+        "latitude_wgs84_deg": 34.9693129103137,
+        "horizontal_crs_status": "owner_reported_pending_formal_confirmation",
+        "vertical_datum": "unknown",
+        "z_note": "Source survey height, not an ellipsoidal height."
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "elevation-7D",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.3563555354054,
+          34.96921723712654
+        ]
+      },
+      "properties": {
+        "file": "elevation.dwg",
+        "entity_handle": "7D",
+        "x_source": 623820.022,
+        "y_source": 3870469.4560000002,
+        "z_source_m": 1672.913,
+        "longitude_wgs84_deg": 46.3563555354054,
+        "latitude_wgs84_deg": 34.96921723712654,
+        "horizontal_crs_status": "owner_reported_pending_formal_confirmation",
+        "vertical_datum": "unknown",
+        "z_note": "Source survey height, not an ellipsoidal height."
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "elevation-7F",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.35634974290878,
+          34.969139614691436
+        ]
+      },
+      "properties": {
+        "file": "elevation.dwg",
+        "entity_handle": "7F",
+        "x_source": 623819.61,
+        "y_source": 3870460.84,
+        "z_source_m": 1672.7440000000001,
+        "longitude_wgs84_deg": 46.35634974290878,
+        "latitude_wgs84_deg": 34.969139614691436,
+        "horizontal_crs_status": "owner_reported_pending_formal_confirmation",
+        "vertical_datum": "unknown",
+        "z_note": "Source survey height, not an ellipsoidal height."
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "elevation-81",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.35629213814798,
+          34.969121665901476
+        ]
+      },
+      "properties": {
+        "file": "elevation.dwg",
+        "entity_handle": "81",
+        "x_source": 623814.378,
+        "y_source": 3870458.778,
+        "z_source_m": 1674.738,
+        "longitude_wgs84_deg": 46.35629213814798,
+        "latitude_wgs84_deg": 34.969121665901476,
+        "horizontal_crs_status": "owner_reported_pending_formal_confirmation",
+        "vertical_datum": "unknown",
+        "z_note": "Source survey height, not an ellipsoidal height."
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "elevation-83",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.35629910479944,
+          34.969212709978656
+        ]
+      },
+      "properties": {
+        "file": "elevation.dwg",
+        "entity_handle": "83",
+        "x_source": 623814.877,
+        "y_source": 3870468.884,
+        "z_source_m": 1674.855,
+        "longitude_wgs84_deg": 46.35629910479944,
+        "latitude_wgs84_deg": 34.969212709978656,
+        "horizontal_crs_status": "owner_reported_pending_formal_confirmation",
+        "vertical_datum": "unknown",
+        "z_note": "Source survey height, not an ellipsoidal height."
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "elevation-85",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.3563175735219,
+          34.96930114600339
+        ]
+      },
+      "properties": {
+        "file": "elevation.dwg",
+        "entity_handle": "85",
+        "x_source": 623816.43,
+        "y_source": 3870478.715,
+        "z_source_m": 1674.239,
+        "longitude_wgs84_deg": 46.3563175735219,
+        "latitude_wgs84_deg": 34.96930114600339,
+        "horizontal_crs_status": "owner_reported_pending_formal_confirmation",
+        "vertical_datum": "unknown",
+        "z_note": "Source survey height, not an ellipsoidal height."
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "elevation-87",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.35626160290031,
+          34.96928465767128
+        ]
+      },
+      "properties": {
+        "file": "elevation.dwg",
+        "entity_handle": "87",
+        "x_source": 623811.345,
+        "y_source": 3870476.8170000003,
+        "z_source_m": 1677.438,
+        "longitude_wgs84_deg": 46.35626160290031,
+        "latitude_wgs84_deg": 34.96928465767128,
+        "horizontal_crs_status": "owner_reported_pending_formal_confirmation",
+        "vertical_datum": "unknown",
+        "z_note": "Source survey height, not an ellipsoidal height."
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "elevation-89",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.356243767332934,
+          34.96922864732359
+        ]
+      },
+      "properties": {
+        "file": "elevation.dwg",
+        "entity_handle": "89",
+        "x_source": 623809.801,
+        "y_source": 3870470.583,
+        "z_source_m": 1677.805,
+        "longitude_wgs84_deg": 46.356243767332934,
+        "latitude_wgs84_deg": 34.96922864732359,
+        "horizontal_crs_status": "owner_reported_pending_formal_confirmation",
+        "vertical_datum": "unknown",
+        "z_note": "Source survey height, not an ellipsoidal height."
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "elevation-8B",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.35629751499942,
+          34.96916211748572
+        ]
+      },
+      "properties": {
+        "file": "elevation.dwg",
+        "entity_handle": "8B",
+        "x_source": 623814.808,
+        "y_source": 3870463.271,
+        "z_source_m": 1674.675,
+        "longitude_wgs84_deg": 46.35629751499942,
+        "latitude_wgs84_deg": 34.96916211748572,
+        "horizontal_crs_status": "owner_reported_pending_formal_confirmation",
+        "vertical_datum": "unknown",
+        "z_note": "Source survey height, not an ellipsoidal height."
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "elevation-8D",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.35623409821499,
+          34.969097915245335
+        ]
+      },
+      "properties": {
+        "file": "elevation.dwg",
+        "entity_handle": "8D",
+        "x_source": 623809.115,
+        "y_source": 3870456.072,
+        "z_source_m": 1677.613,
+        "longitude_wgs84_deg": 46.35623409821499,
+        "latitude_wgs84_deg": 34.969097915245335,
+        "horizontal_crs_status": "owner_reported_pending_formal_confirmation",
+        "vertical_datum": "unknown",
+        "z_note": "Source survey height, not an ellipsoidal height."
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "elevation-8F",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.35624371012649,
+          34.9691793270867
+        ]
+      },
+      "properties": {
+        "file": "elevation.dwg",
+        "entity_handle": "8F",
+        "x_source": 623809.87,
+        "y_source": 3870465.113,
+        "z_source_m": 1677.632,
+        "longitude_wgs84_deg": 46.35624371012649,
+        "latitude_wgs84_deg": 34.9691793270867,
+        "horizontal_crs_status": "owner_reported_pending_formal_confirmation",
+        "vertical_datum": "unknown",
+        "z_note": "Source survey height, not an ellipsoidal height."
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "elevation-91",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.35617660323565,
+          34.96945942033601
+        ]
+      },
+      "properties": {
+        "file": "elevation.dwg",
+        "entity_handle": "91",
+        "x_source": 623803.322,
+        "y_source": 3870496.094,
+        "z_source_m": 1677.462,
+        "longitude_wgs84_deg": 46.35617660323565,
+        "latitude_wgs84_deg": 34.96945942033601,
+        "horizontal_crs_status": "owner_reported_pending_formal_confirmation",
+        "vertical_datum": "unknown",
+        "z_note": "Source survey height, not an ellipsoidal height."
+      }
+    }
+  ]
+}

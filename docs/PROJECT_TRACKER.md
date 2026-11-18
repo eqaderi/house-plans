@@ -6,7 +6,7 @@ No other TODO, roadmap or stage-status file is kept. Format and update rules
 are in [§P](#p-rules-for-updating-the-tracker); `python tools/check_tracker.py`
 checks them.
 
-Last updated: 2026-10-20, Stage S9 Floor-plan readiness gate closed by `agent:gemini` (merge `d8a38b1`, CI 39336825673).
+Last updated: 2026-11-18, Stage H2 branch (PR #41) brought up to date with `main` by `agent:claude-code`; interview complete, program v7 built, site and program gates not approved.
 
 ## A. Mission and immediate objective
 
@@ -116,7 +116,7 @@ to reopen A–D):
 
 | | |
 |---|---|
-| **Current stage** | S11 Align code vocabulary with the glossary (IN_PROGRESS, review PENDING) |
+| **Current stage** | S11 Align code vocabulary with the glossary (IN_PROGRESS, review PENDING); human track H2 Real interview and program IN_PROGRESS |
 | **Awaiting review** | S11 (branch `stage/S11-glossary-vocabulary`) |
 | **Next eligible stage** | none until S11 is reviewed; H1 Real site verification and H2 Real interview and program (human parallel tracks), or X1 Optional tool research |
 | **Path to good floor plans** | S1 (done) → S2 (done) → S3 (done) → S4 (done) → S5 (done) → S6 (done) → S7 (done) → S8 (done) → S10 (done) → S9 (done; 10 stages complete) |
@@ -1783,7 +1783,7 @@ claimed without a recorded professional verification.
 | Demonstration | `project status my-house` blockers shrinking, then SITE_APPROVED |
 | Artifacts | Owner statements and source documents in `projects/my-house/` |
 | Review requirements | Reviewer confirms every new fact cites an owner statement or document and the approval is human |
-| Evidence | — |
+| Evidence | `projects/my-house/reviews/location-research/epsg-32638-preview/REPORT.md`: owner CRS and map recognition recorded; all survey POINTs transformed for research, sun/climate/wind screening completed; formal site facts and approval pending |
 
 Agents never fabricate confirmation. Facts come from survey evidence, the
 homeowner, or a surveyor; `site confirm` and `workflow approve` are run by
@@ -1801,21 +1801,21 @@ the homeowner in their own terminal. Reference:
   - Verify: `project status` blocker removed after `site confirm`
   - Evidence: pending — owner statement `stmt-002` covers elevation units only
   - Notes: blocked on homeowner/surveyor information
-- [ ] **H1-03** Confirm or qualify UTM zone, hemisphere, horizontal datum and EPSG — `BLOCKED` · P0 · deps: none
+- [ ] **H1-03** Confirm or qualify UTM zone, hemisphere, horizontal datum and EPSG — `IN_PROGRESS` · P0 · deps: none
   - Accept: EPSG recorded from documentary evidence, or recorded as unknown with the local-only consequence
   - Verify: owner statement or surveyor document
-  - Evidence: pending — owner said "UTM" (`stmt-001`); zone, hemisphere and datum unknown (owner statements v5)
-  - Notes: blocked on homeowner/surveyor information; never inferred from coordinate magnitudes
+  - Evidence: owner statements v10/v11 supply CRS and recognise the derived map point; private environmental report and transformed coordinate exports
+  - Notes: research location supported; formal human site confirmation pending; never inferred from coordinate magnitudes
 - [ ] **H1-04** Confirm vertical units and vertical datum — `BLOCKED` · P1 · deps: none
   - Accept: datum named or recorded as "metres above sea level, datum unknown"
   - Verify: owner statement
   - Evidence: pending
   - Notes: blocked on homeowner/surveyor information
-- [ ] **H1-05** Establish true north from adequate evidence — `BLOCKED` · P1 · deps: H1-03
+- [ ] **H1-05** Establish true north from adequate evidence — `IN_PROGRESS` · P1 · deps: H1-03
   - Accept: grid-to-true-north from a confirmed CRS, or a documented north from the surveyor
   - Verify: `geospatial/crs.py` convergence output
-  - Evidence: pending
-  - Notes: blocked until the CRS is confirmed
+  - Evidence: private location preview records convergence from owner-supplied CRS and roundtrip arithmetic check
+  - Notes: candidate north available for environmental research; formal site confirmation pending
 - [ ] **H1-06** Obtain surveyor or local professional information — `NOT_STARTED` · P1 · deps: none
   - Accept: questions from CONFIRM-SITE.md sent by the owner; answers stored as source documents
   - Verify: new source documents in the store
@@ -1858,7 +1858,7 @@ the homeowner in their own terminal. Reference:
 | Field | Value |
 |---|---|
 | Kind | human-dependent |
-| Status | NOT_STARTED |
+| Status | IN_PROGRESS |
 | Review | NOT_REQUESTED |
 | Branch | `stage/H2-interview-program` |
 | Depends on | S1-09, H1 |
@@ -1870,7 +1870,7 @@ the homeowner in their own terminal. Reference:
 | Demonstration | `interview status` coverage, then PROGRAM_APPROVED |
 | Artifacts | Interview session, brief, program, assumptions, open questions in `projects/my-house/` |
 | Review requirements | Reviewer samples turns for verbatim text and labelled inferences |
-| Evidence | — |
+| Evidence | Interview and brief v19; owner statements v11 retain CRS and map recognition; environmental research report under private reviews; `project verify my-house`: intact, 57 events, 54 artifact versions; ISS-43/44/45 must be addressed before program review |
 
 Uses the agent-operated interview (AGENT_CONTRACT §9) and, once S2
 exists, the `architectural-programming` skill. Homeowner statements are
@@ -1879,62 +1879,62 @@ interview may begin before site verification finishes.
 
 #### Interview rounds
 
-- [ ] **H2-01** Start the interview — `NOT_STARTED` · P1 · deps: S1-09
+- [ ] **H2-01** Start the interview — `IN_PROGRESS` · P1 · deps: S1-09
   - Accept: `interview start my-house` run by an agent with the homeowner present
   - Verify: `interview status` shows a session
-  - Evidence: pending
+  - Evidence: `projects/my-house/artifacts/interview_session/interview/v0001.json`; started by `agent:codex` on 2026-10-20; first answers pending
   - Notes: human session
-- [ ] **H2-02** Household composition, future needs and accessibility or ageing in place — `NOT_STARTED` · P1 · deps: H2-01
+- [ ] **H2-02** Household composition, future needs and accessibility or ageing in place — `IN_PROGRESS` · P1 · deps: H2-01
   - Accept: adults, children, future children, elders, long-term guests, mobility needs
   - Verify: confirmed slots
-  - Evidence: pending
-- [ ] **H2-03** Daily routines, sleeping arrangements, bedrooms and bathrooms — `NOT_STARTED` · P1 · deps: H2-01
+  - Evidence: interview v3, turns `q-followup-household-round-1` and `q-followup-household-round-2`; planned household and accessibility interpretations await owner confirmation
+- [ ] **H2-03** Daily routines, sleeping arrangements, bedrooms and bathrooms — `IN_PROGRESS` · P1 · deps: H2-01
   - Accept: waking and sleeping patterns, bedroom and bathroom counts and sharing
   - Verify: confirmed slots
-  - Evidence: pending
-- [ ] **H2-04** Family living, guest living and guest/family privacy — `NOT_STARTED` · P1 · deps: H2-01
+  - Evidence: interview v9; bathroom counts and per-floor fixture type remain unresolved; main-bedroom ensuite is an inference awaiting confirmation
+- [ ] **H2-04** Family living, guest living and guest/family privacy — `IN_PROGRESS` · P1 · deps: H2-01
   - Accept: entertaining habits, separate guest areas, privacy level
   - Verify: confirmed slots
-  - Evidence: pending
-- [ ] **H2-05** Cooking habits, kitchen organisation and kitchen–garage–dining–service relationships — `NOT_STARTED` · P1 · deps: H2-01
+  - Evidence: interview v4 custom turn records the living-room answer verbatim; privacy and entertaining details remain to clarify
+- [ ] **H2-05** Cooking habits, kitchen organisation and kitchen–garage–dining–service relationships — `IN_PROGRESS` · P1 · deps: H2-01
   - Accept: kitchen type, heavy cooking, pantry, laundry and storage, garage route
   - Verify: confirmed slots
-  - Evidence: pending
-- [ ] **H2-06** Children's play and study; work, reading, prayer, quiet, cultural and religious spaces — `NOT_STARTED` · P1 · deps: H2-01
+  - Evidence: interview v8 and v9 record cooking and dining answers verbatim; interpretations await confirmation; compilation risk ISS-43 must be checked before program review
+- [ ] **H2-06** Children's play and study; work, reading, prayer, quiet, cultural and religious spaces — `IN_PROGRESS` · P1 · deps: H2-01
   - Accept: rooms or zones needed and their privacy and orientation needs
   - Verify: confirmed slots
-  - Evidence: pending
-- [ ] **H2-07** Vehicles, parking, access, garden, outdoor living and terraces — `NOT_STARTED` · P1 · deps: H2-01
+  - Evidence: interview v12 records work-space answer verbatim; office and quietness inferences await confirmation; other activities remain to clarify
+- [ ] **H2-07** Vehicles, parking, access, garden, outdoor living and terraces — `IN_PROGRESS` · P1 · deps: H2-01
   - Accept: vehicle sizes and count, EV charging, outdoor rooms and terrace uses
   - Verify: confirmed slots
-  - Evidence: pending
-- [ ] **H2-08** Daylight, views, ventilation, acoustics, security, climate and maintenance — `NOT_STARTED` · P2 · deps: H2-01
+  - Evidence: interview v10 and v11 record parking and outdoor answers; vehicle classes retained verbatim, exact dimensions remain unknown; outdoor interpretation awaits confirmation
+- [ ] **H2-08** Daylight, views, ventilation, acoustics, security, climate and maintenance — `IN_PROGRESS` · P2 · deps: H2-01
   - Accept: priorities recorded; orientation-dependent wishes marked pending north (H1-05)
   - Verify: confirmed slots
-  - Evidence: pending
-- [ ] **H2-09** Architectural character, budget, construction priorities and future adaptability — `NOT_STARTED` · P1 · deps: H2-01
+  - Evidence: interview v16 retains light/view priorities verbatim; private environmental report now covers regional climate/wind and modelled sun/mountain horizon from owner-supported location; local conditions and formal H1 confirmation pending
+- [ ] **H2-09** Architectural character, budget, construction priorities and future adaptability — `IN_PROGRESS` · P1 · deps: H2-01
   - Accept: style words verbatim; budget range or unknown; expansion plans
   - Verify: confirmed slots
-  - Evidence: pending
-- [ ] **H2-10** Hillside layout preferences — `NOT_STARTED` · P1 · deps: H2-01
+  - Evidence: interview v11 records undecided budget/area; v16 captures style and future-expansion interpretations, pending confirmation
+- [ ] **H2-10** Hillside layout preferences — `IN_PROGRESS` · P1 · deps: H2-01
   - Accept: road-level entry and parking, walk-out vs split vs elevated preferences; owner's statement that deep excavation is acceptable and large empty voids are the concern recorded verbatim
   - Verify: confirmed slots
-  - Evidence: pending
+  - Evidence: interview v10 retains conditional floor and access preferences verbatim; exact floor count, slope strategy and earthwork preferences remain unresolved
 
 #### Program synthesis and approval
 
-- [ ] **H2-11** Separate hard constraints from negotiable preferences — `NOT_STARTED` · P1 · deps: none
+- [ ] **H2-11** Separate hard constraints from negotiable preferences — `IN_PROGRESS` · P1 · deps: none
   - Accept: each requirement labelled hard or soft by the owner
   - Verify: brief
-  - Evidence: pending
+  - Evidence: interview v17 captures owner priorities verbatim and provisionally as a list; optional versus required items still need final review
 - [ ] **H2-12** Resolve contradictions and record trade-offs — `NOT_STARTED` · P1 · deps: none
   - Accept: every open contradiction resolved or deferred with the owner's words
   - Verify: `interview status` shows none open
   - Evidence: pending
-- [ ] **H2-13** Confirm or reject every inference — `NOT_STARTED` · P1 · deps: H2-11
+- [ ] **H2-13** Confirm or reject every inference — `IN_PROGRESS` · P1 · deps: H2-11
   - Accept: zero unconfirmed inferences
   - Verify: `interview status --json`
-  - Evidence: pending
+  - Evidence: interview v13 records explicit working-brief confirmation; 19 confirmed slots, four new interpretations pending, five unknown slots
 - [ ] **H2-14** Build and validate the program — `NOT_STARTED` · P1 · deps: H2-12, H2-13
   - Accept: `program build` writes the design files; no blocking findings
   - Verify: `program-review.md`
@@ -2163,6 +2163,7 @@ evaluating task. Decision values: UNEVALUATED, ADOPT, ADAPT, REJECT, DEFER.
 | TOOL-OTHER | Further candidates found during implementation | Same evidence process before any install | integrated (template gate) | S3-06 | ADOPT |
 | TOOL-BLENDER-MCP | Blender MCP | Optional interactive Blender interface (F) | configured (Codex) | X1-01 | UNEVALUATED |
 | TOOL-FREECAD-MCP | FreeCAD MCP | Independent CAD and solid checks | configured (Codex) | X1-02 | UNEVALUATED |
+| TOOL-LIBREDWG | GNU LibreDWG native DWG reader | Independent source-file diagnostic and cross-reader coordinate check | tested standalone locally (native reader 0.14; no pipeline integration); see private location-research report | H1-03 | UNEVALUATED |
 | TOOL-LADYBUG | Ladybug Tools | Solar and daylight opportunity (S6, G) | mentioned in research | X1-03 | UNEVALUATED |
 | TOOL-IFCOPENSHELL | IfcOpenShell and Bonsai | IFC/BIM round trip (F) | mentioned in research | X1-04 | UNEVALUATED |
 | TOOL-GRAPH2PLAN | Graph2Plan | Research: graph-to-plan generation (S7 ideas) | mentioned in research | X1-05 | UNEVALUATED |
@@ -2374,10 +2375,10 @@ aesthetic quality; the household's own sense of comfort.
 | Item | State (2026-10-17) | Next action | Task |
 |---|---|---|---|
 | Survey evidence audit | done | none | H1-01 |
-| Units, CRS, datum, north | unknown (5 site blockers) | owner or surveyor information | H1-02 … H1-06 |
+| Units, CRS, datum, north | owner CRS/map evidence and research north available; formal site blockers remain | human site confirmation, vertical reference | H1-02 … H1-06 |
 | Parcel boundary | inference only | owner or surveyor confirmation | H1-07 |
 | **Site gate** | not approved | homeowner runs `site confirm` and `workflow approve … site` | H1-12 |
-| Interview | not started (0 turns) | start after S1-09 | H2-01 |
+| Interview | in progress; private interview/brief v19 | final interpretation confirmation and compiler issues | H2-01 |
 | **Program gate** | no program | interview, build, review, homeowner approval | H2-15 |
 | Floor-plan readiness gate | met: S9-01 re-assessment 2026-10-19, all 13 criteria PASS | S9 review PENDING | S9-01 |
 | **Plan gate** | no plans | H3 | H3-12 |
@@ -2448,7 +2449,7 @@ changed), **decision** (owner must choose), **risk**.
 | ISS-17 | AGENT_CONTRACT is 11,988 of the 12,000 characters allowed by ADR 0005 and its test | risk | `tests/test_agent_instructions.py:13` | Resolved: ADR 0034 moved §9 and §9b detail into the skills; the contract is under 9,000 characters | S1 (propose) |
 | ISS-18 | The governance request lists `docs/DESIGN_PRINCIPLES.md`; it does not exist | stale doc | `ls docs/` | Principles live in ARCHITECTURE "Principles"; no new file | none |
 | ISS-19 | Gemini CLI is not installed; Antigravity apps are; ADR 0005's Gemini check was documentary only | risk | `command -v gemini` empty; `/Applications/Antigravity*.app` | Verify in S2-06 or defer | S2-06 |
-| ISS-20 | `my-house` CRS may never be confirmable; orientation and georeferencing would stay unavailable | risk | owner statements v5 | Local-only planning decision | H1-11 |
+| ISS-20 | Formal CRS confirmation remains pending; research georeferencing is now supported by owner-provided CRS and map recognition | risk | owner statements v10/v11; private location report | Complete human site confirmation; local-only fallback no longer the immediate research blocker | H1-03 |
 | ISS-21 | CP-SAT output differs slightly across platforms | risk | milestones/D.md "Known limitations" | Tests assert properties, not bytes | S7-13 |
 | ISS-22 | MASTER_SPEC "How to work" step 1 says "write docs/PRODUCT_SPEC.md"; the owner had that summary removed | conflict | `MASTER_SPEC.md:896`; T0.1-08 | Treat as a completed bootstrap instruction; MASTER_SPEC text not edited | none (owner decided) |
 | ISS-23 | §O lists `ruff check … tools` but CI lints only `src tests examples` | risk | `.github/workflows/ci.yml` | Resolved in S1: `tools` added to `ruff check` in CI workflow | S1 |
@@ -2471,6 +2472,9 @@ changed), **decision** (owner must choose), **risk**.
 | ISS-40 | The program gate reads the latest version of every stored Open questions file, not the one written with the program version being approved. A program approved after a later `program build` (or a hand-written Open questions file) is checked against Open questions that belong to another program version | defect | `orchestration/workflow.py::Workflow._check_program_gate`; ADR 0029 | Link Open questions and Assumptions to the Space program version they were written with, and read those at the gate (out of scope of spec #9, part 3) | none (recorded) |
 | ISS-41 | 2D revisions ignore the parent Plan version's position hints: a revision laid out by the 2D engine (`corridor_free`, `open_plan`, a topology proposal, a stair position or an outdoor link) re-places every Space from scratch, so Spaces the Owner did not ask to change can move. Only the bar engine keeps the parent's positions | risk | `generation/engines.py::BarEngine.position_hints` (the 2D engine reads none); `generation/solver2d.py::PlacementOptions` has no hints; ADR 0032 | Give the 2D solver a stability term towards the parent's placements, recovered by the 2D engine from its own generation record | none (recorded, spec #9 part 7) |
 | ISS-42 | A revision with a `proposal:<file>` operation, on a base version that already had a Concept proposal, was generated from the file's proposal but recorded the base's as its input; revising that version again without a proposal operation silently returned to the base's proposal | defect | `orchestration/plans.py::PlanService._revision_proposal`; `tests/test_plan_propose.py` (three ISS-42 tests) | Resolved: the file's proposal is stored and recorded. A version stored before the fix is detected (its `proposal_id` generation parameter differs from its recorded proposal) and refused for revision until a `proposal:<file>` names the proposal to follow. Not detectable: a file that kept the base's proposal id with changed content | PR #40 |
+| ISS-43 | The dining slot cannot explicitly request both kitchen eating space and a separate dining area. With open_plan false and dining kitchen, the builder omits pi-dining even when the relationship list mentions dining | risk | `src/house_ai/program/builder.py:238-255`; code-path inspection, not yet reproduced with a synthetic fixture | Resolved in the PR #41 merge: a dining relationship keeps a separate `pi-dining` beside "Kitchen and everyday dining"; `test_iss_43_kitchen_eating_space_and_separate_dining_preserved` | H2-14 |
+| ISS-44 | Shared older-relative bedrooms cannot be expressed: needed_bedrooms adds one room per elder, and _bedrooms adds each elder before child rooms then truncates to the total; this can raise a false shortage and omit a requested child room | defect | `interview/questions.py:757-766`; `program/builder.py:324-359`; H2 interview v12/v13 exposes the contradiction against the confirmed arrangement | Resolved in the PR #41 merge: new `elders_own_rooms` slot; shared older relatives need ceil(elders/2) rooms in the check and the builder; `test_iss_44_shared_older_relatives_bedroom_calculation_and_building` | H2-14 |
+| ISS-45 | CLI slot normalization treats the valid enumerated string none as unknown before checking the slot type; explicit no-special-guest-accommodation and accessibility-none choices cannot be recorded through structured interpretation | defect | `orchestration/interview.py:113-127`; diagnostic: check(guest_accommodation, none) returns the string, parse_slot_value returns null | Resolved in the PR #41 merge: an allowed `none` choice is kept before generic unknown aliases apply; `test_iss_45_slot_normalization_preserves_none_choice` | H2-14 |
 
 ## L. Decisions
 
@@ -3574,6 +3578,324 @@ All cited S7 file paths and test function names exist. Their existence and passi
   in a follow-up commit; the reviewer checks CI for the branch head.
   Review requested: **PENDING**. No review yet.
 
+### H2 records
+
+#### H2 interview start (2026-10-20, agent:codex)
+
+- Branch: `stage/H2-interview-program`; Review: `NOT_REQUESTED`.
+- Started the interview using the CLI with `--actor agent:codex`, creating
+  interview v1 and brief v1. No household answers or preferences inferred yet.
+- Validation: `project verify my-house` reports intact, 15 events and
+  12 artifact versions. No software behaviour changed; stage checks remain
+  due before review or closure.
+- Resume with `interview status my-house --json`; ask about household,
+  future needs and stair access, then record exact answers and proposed slots.
+- H1 is still unresolved; interview rounds may proceed, but program approval
+  remains blocked on the human site gate. No gates were approved.
+
+#### H2 interview round 1 (2026-10-20, agent:codex)
+
+- Stored the owner's full numbered reply verbatim in interview v2 and
+  derived brief v2. See project artifacts for household details.
+- Five slot interpretations remain unconfirmed; three slots remain unknown.
+  No open contradictions. No bedroom count was invented or confirmed.
+- Next: confirm the interpretation, clarify ages and possible relatives'
+  stays, and discuss a shared-bedroom arrangement. Lift acceptance remains
+  provisional until the owner confirms the interpretation.
+- `project verify my-house`: intact, 17 events, 14 artifact versions.
+
+#### H2 interview round 2 (2026-10-20, agent:codex)
+
+- Stored the owner's full numbered reply verbatim in interview v3 and
+  derived brief v3. Ages, future household scenario and accessibility
+  reasons are retained in the private project artifacts.
+- Planned occupancy is an inference for the potential full household,
+  not a claim about current residents. Eight interpretations await
+  confirmation; bedroom count remains unknown. No open contradictions.
+- Next: confirm the household scenario and proposed shared bedrooms,
+  discuss a bathroom arrangement and clarify entrance-level access.
+- `project verify my-house`: intact, 19 events, 16 artifact versions.
+
+#### H2 interview round 3 (2026-10-20, agent:codex)
+
+- Stored the full owner reply verbatim in interview v4; confirmed only
+  `children_own_rooms` using the owner's explicit words, producing v5.
+- The living-room answer remains in the custom turn; it does not establish
+  an open kitchen or dining arrangement. No such slot was inferred.
+- Access wording needs clarification against the earlier stair-avoidance
+  answer; do not treat it as resolving bedroom level or removing accessibility.
+- Next: clarify stairs versus lift, then discuss cooking and bathrooms.
+  Seven interpretations await confirmation; bedroom count remains unknown.
+- `project verify my-house`: intact, 23 events, 20 artifact versions.
+
+#### H2 interview round 4 (2026-10-20, agent:codex)
+
+- Stored the owner's full reply verbatim in interview v6 and confirmed
+  only the lift interpretation from their explicit correction, producing v7.
+- The prior access wording is clarified by the owner. Kitchen wall and
+  opening preferences remain in the custom turn pending clarification;
+  shared living was not interpreted as an open kitchen.
+- Next: clarify kitchen openings and doors, cooking habits, then bathrooms.
+  Six interpretations await confirmation; bedroom count remains unknown.
+- `project verify my-house`: intact, 27 events, 24 artifact versions.
+
+#### H2 interview round 5 (2026-10-20, agent:codex)
+
+- Stored the full owner reply verbatim in interview and brief v8.
+  Kitchen slots are agent inferences pending owner confirmation.
+- Opening preferences and the smell-control trade-off remain in the
+  private owner-answer artifact; no ventilation performance was verified.
+- Next: show the kitchen interpretation, discuss an optional closable
+  opening arrangement, then ask about bathrooms and dining.
+  Ten interpretations await confirmation; bedroom count remains unknown.
+- `project verify my-house`: intact, 29 events, 26 artifact versions.
+
+#### H2 interview round 6 (2026-10-20, agent:codex)
+
+- Stored the full owner reply verbatim in interview and brief v9, including
+  the conditional floor statement. Floor count was not inferred from it.
+- Ensuite, everyday dining and kitchen/dining proximity are provisional
+  interpretations. Bathroom count remains unknown; distinguish a WC from
+  a full bathroom before deriving quantities.
+- Preserve both eating places during synthesis; ISS-43 records a compiler
+  risk observed in code. No software behaviour was changed.
+- Next: clarify per-floor facilities, floor preferences, road access and
+  parking. Thirteen interpretations await confirmation; two slots unknown.
+- `project verify my-house`: intact, 31 events, 28 artifact versions.
+
+#### H2 interview round 7 (2026-10-20, agent:codex)
+
+- Stored the full owner reply verbatim in interview and brief v10.
+  Parking interpretations carry must priority from the owner's words;
+  optional extras remain in the owner-answer fact, not required rooms.
+- Exact floor count, road-level access and bathroom count remain unknown;
+  do not convert flexible preferences into fixed geometry or quantities.
+- Next: vehicle sizes, budget/area and outdoor priorities; then review
+  interpretations with the homeowner. Fifteen interpretations await
+  confirmation; four slots unknown. No open deterministic contradictions.
+- `project verify my-house`: intact, 33 events, 30 artifact versions.
+
+#### H2 interview round 8 (2026-10-20, agent:codex)
+
+- Stored the full reply verbatim in interview and brief v11, including
+  vehicle classes and outdoor uses. No vehicle dimensions were invented.
+- Budget and target area explicitly remain unknown. Outdoor items are
+  inferred, not assigned geometry, areas or confirmed priorities.
+- Next: present the working household/kitchen/access/parking/outdoor brief
+  for confirmation, including the proposed bedroom count; ask about work,
+  laundry and storage. Sixteen interpretations await confirmation; six
+  slots unknown. No open deterministic contradictions.
+- Before synthesis, check vehicle envelopes against the owner-supplied
+  classes: the builder currently supplies generic assumed envelopes, not
+  confirmed vehicle dimensions. Do not claim garage fit is verified.
+- `project verify my-house`: intact, 35 events, 32 artifact versions.
+
+#### H2 interview round 9 (2026-10-20, agent:codex)
+
+- Recorded the full numbered answer in interview v12; captured the complete
+  working brief in its question text so the owner's confirmation has context.
+- Confirmed only the 17 slots approved by that summary, including the proposed
+  bedroom count; v13 has 19 confirmed slots overall. Four new work/service
+  interpretations await confirmation; five slots remain unknown.
+- The checker raises `c-too-few-bedrooms` because it assumes separate elder
+  bedrooms. ISS-44 documents the mismatch in both checker and compiler;
+  do not ask the owner to add a room or reduce occupants to bypass it.
+  The contradiction remains open pending correction; no gate was approved.
+- Next: guest stays, privacy, hobbies/cultural needs, style/light and priorities.
+  Before synthesis address ISS-43 and ISS-44 and check actual vehicle envelopes.
+- `project verify my-house`: intact, 39 events, 36 artifact versions.
+
+#### H2 interview round 10 (2026-10-20, agent:codex)
+
+- Stored the full numbered answer in interview and brief v14. Guest
+  frequency, privacy and bedroom separation are provisional interpretations.
+- Prayer-area and workshop wishes remain verbatim owner facts; no dedicated
+  room was inferred from an area wish. Guest accommodation and whether prayer
+  needs a separate room remain unknown until clarified.
+- Next: prayer-area form, workshop activities and compatibility with parking,
+  occasional guest arrangements; then remaining light/style/priority topics.
+  Seven interpretations await confirmation; seven slots unknown.
+- The known false bedroom-shortage contradiction remains open (ISS-44),
+  not a new owner conflict; do not ask the owner to change the approved brief.
+- `project verify my-house`: intact, 41 events, 38 artifact versions.
+
+#### H2 interview round 11 (2026-10-20, agent:codex)
+
+- Stored the complete numbered reply verbatim in interview and brief v15.
+  Flexible prayer-area form, optional shared workshop and office/guest dual
+  use are retained with the exact questions; workshop activities remain open.
+- No dedicated prayer or guest room was inferred. ISS-45 records a reproduced
+  CLI defect: a legitimate none enum is converted to unknown. Do not replace
+  office/guest dual use with an unwanted separate guest room to bypass it.
+- Next: light/views, style/materials and future expansion, then EV charging,
+  gathering sizes and priorities. Seven interpretations await confirmation;
+  seven slots unknown, including some representation limitations rather than
+  an owner lacking a preference. ISS-44 remains the one open contradiction.
+- `project verify my-house`: intact, 43 events, 40 artifact versions.
+
+#### H2 interview round 12 (2026-10-20, agent:codex)
+
+- Stored the exact reply in interview and brief v16; style, light/views
+  and future-expansion interpretations await confirmation.
+- No orientation or material specification was invented. Fresh-air wishes
+  were not inferred from an answer specifically emphasizing light and views.
+- Next: EV charging, gathering size and top priorities; then slope strategy,
+  room-size expectations and remaining ventilation details before synthesis.
+  Ten interpretations await confirmation; seven slots unknown. ISS-44 remains
+  the one open deterministic contradiction; ISS-43/44/45 still need attention.
+- `project verify my-house`: intact, 45 events, 42 artifact versions.
+
+#### H2 interview round 13 (2026-10-20, agent:codex)
+
+- Stored the exact numbered reply in interview and brief v17; preserved
+  all listed priorities without forcing the answer into three items.
+- Gathering capacity and future EV provision remain explicit in the
+  owner-answer fact. The EV boolean was not set to installed/required:
+  future provision is known, current charger installation is not requested.
+- Before synthesis check gathering seating against the owner-answer capacity,
+  not just the compiler's household_seats default. No seating fit is verified.
+- Next: slope strategy, room-size expectations, ventilation and climate
+  context, then confirmation of the remaining interpretations. Twelve
+  interpretations await confirmation; eight slots unknown. Four checklist
+  questions remain uncovered; several have partial answers in custom turns.
+- `project verify my-house`: intact, 47 events, 44 artifact versions.
+
+#### H2 interview round 14 (2026-10-20, agent:codex)
+
+- Stored the full owner reply in interview and brief v18. Comparing site
+  approaches, proposed sizing and cross-ventilation are provisional slots.
+- The reported region remains verbatim in the private owner-answer fact.
+  No municipality, legal jurisdiction, CRS, north, climate classification
+  or achievable flat garden area was inferred or confirmed.
+- 27 of 28 applicable checklist questions covered; living/kitchen separation
+  has prior verbatim answers and needs explicit slot interpretation at the
+  confirmation checkpoint, without losing the separate dining area (ISS-43).
+- Next: present the remaining interpreted requirements for confirmation,
+  then address compiler defects before building a validated program. Fifteen
+  interpretations await confirmation; eight slots remain unknown or have
+  representation limitations. ISS-44 remains the one open contradiction.
+- Site verification remains unresolved; no site or program gate approved.
+- `project verify my-house`: intact, 49 events, 46 artifact versions.
+
+#### H2 interview round 15 (2026-10-20, agent:codex)
+
+- Recorded the owner's correction verbatim in interview and brief v19;
+  expanded the provisional priorities list while preserving prior entries.
+- Outdoor grading preference does not determine the building's slope strategy.
+  No achievable flat area, retaining-wall geometry, earthwork quantity or
+  geotechnical feasibility was asserted. No whole-parcel platform inferred.
+- The correction is not blanket confirmation of the preceding addendum.
+  Fifteen interpretations still await confirmation; eight slots remain
+  unknown or have representation limitations. ISS-44 remains open.
+- Next: confirm the remaining addendum with this correction, then address
+  compiler defects before synthesis. Site and program gates remain unapproved.
+- `project verify my-house`: intact, 51 events, 48 artifact versions.
+
+#### H2 supporting location/environment investigation (2026-10-20, agent:codex)
+
+- The owner requested finding the exact location from survey files and
+  researching environmental conditions, then asked for a closer inspection.
+  Both requests were retained verbatim in owner statements v6/v7.
+- Read-only inspection of both originals through ODA/ezdxf covered metadata,
+  all entity-database text, blocks/xrefs, custom records, string tags and
+  native printable strings. Original SHA-256 values remained unchanged.
+- Evidence and source register: `projects/my-house/reviews/location-research/REPORT.md`
+  with raw/deep metadata JSON and a comparison against library defaults.
+  The apparent converted-header geographical coordinates match software
+  defaults; no usable survey CRS or place declaration was found.
+- Primary sources for solar geometry, terrain horizon and regional climate/wind
+  were checked online. No parcel-specific climate data were downloaded and no
+  survey coordinates were sent externally. Exact location remains unresolved.
+- Asked for a nearest village, map pin or CRS declaration. The owner's reply
+  requested closer inspection; it supplied no geographical anchor. Do not
+  choose a zone from magnitudes or adopt the unsupported historical assumption.
+- H1 remains blocked; H2 stays on its branch. No facts or gates were confirmed.
+  Remaining interview interpretations and ISS-43/44/45 are still pending.
+- `project verify my-house`: intact, 53 events, 50 artifact versions. This was
+  data inspection/research, not a software change; full stage checks remain
+  due before review/closure.
+
+#### H2 supporting GnaCAD/native-DWG follow-up (2026-10-20, agent:codex)
+
+- Retained the owner's report of the survey creator's UTM/GnaCAD explanation
+  verbatim in owner statements v8. No survey facts were formally confirmed.
+- Installed GNU LibreDWG 0.14 as a standalone diagnostic; no repository
+  dependency or pipeline behavior changed. Read both originals directly,
+  independently of the ODA/DXF path. Both reads returned SUCCESS; originals
+  were unchanged. Every POINT matched by handle and coordinates within 1e-8
+  source units. Native point CSV and separate polyline vertex CSV exported.
+- Native metadata also contains the apparent default geographical header
+  values; they were not introduced by conversion. No GEODATA/position marker,
+  CRS declaration, place name or attached POINT coordinate extension found.
+- Evidence: `projects/my-house/reviews/location-research/native-dwg/REPORT.md`,
+  native JSON/logs, `comparison.json`, `point-coordinates.csv`.
+- GnaCAD-specific geographic display was not independently reproduced;
+  no authoritative current documentation for that feature was obtained.
+  A screen capture or exact labels/values from the actual phone display can
+  distinguish X/Y/Z from latitude/longitude or a full zone designation.
+- Remaining interview confirmation, ISS-43/44/45 and site gate are unchanged.
+- `project verify my-house`: intact, 54 events, 51 artifact versions.
+
+#### H2 geographical-anchor offer (2026-10-20, agent:codex)
+
+- The owner cannot access the Android app but offered a Google Maps point
+  known to be inside the parcel. Recorded the reply verbatim in owner
+  statements v9. No link or coordinates have yet been supplied.
+- Asked for the map URL or latitude/longitude; a surveyed corner/feature
+  correspondence would help, but an interior point still supports location
+  screening. Do not treat an approximate pin as survey control or original
+  CRS/datum confirmation. No site facts or gates were confirmed.
+- Continue from the independent native-DWG coordinate export; no need for
+  the owner to obtain Android/GnaCAD just to provide the geographical anchor.
+- `project verify my-house`: intact, 55 events, 52 artifact versions.
+
+#### H2 owner-supported location and environmental screening (2026-10-20, agent:codex)
+
+- Owner supplied a specific horizontal CRS, then recognised the calculated map
+  point. Both replies are retained verbatim in owner statements v10/v11; no
+  additional map pin is needed for preliminary location research.
+- Transformed all source POINTs into a separate research CSV/GeoJSON without
+  changing the canonical site, original drawings or approval status. Numerical
+  inverse checks passed. Legal boundary and vertical reference remain open.
+- Retrieved public NASA climate/hourly wind and PVGIS terrain horizon, recording
+  source URLs, periods, rounded-position disclosure, response hashes and model
+  limitations. Regional wind has a complete valid hourly year. Inspected both
+  generated figures visually. Primary provincial rainfall table retrieved with
+  agent-browser; missing/malformed/inconsistent entries prevent claiming a
+  verified station normal. No drainage or structural design values inferred.
+- Evidence: `projects/my-house/reviews/location-research/epsg-32638-preview/REPORT.md`,
+  raw service responses, coordinate table, derived summary and figures. Updated
+  the private site confirmation sheet and historical report notices.
+- Verification: project store intact (57 events, 54 artifact versions); full
+  pytest 867 passed in 443.64 s; Ruff clean; 29 schemas current; tracker checker
+  passed. These checks do not establish site or climate accuracy.
+- H1 stays BLOCKED overall pending human site facts/gate; H2 stays IN_PROGRESS.
+  No consent, site confirmation or gate approval was executed. ISS-43/44/45 and
+  final interview interpretation confirmation remain before program review.
+
+#### H2 PR #41 brought up to date with main (2026-11-18, agent:claude-code)
+
+- `main` merged into `stage/H2-interview-program`. `main` had not touched
+  `projects/my-house/` since the branch point, so the project record merges
+  unchanged; current code reads it: `project verify my-house` intact, 153
+  events, 149 artifact versions; interview v51 complete (50 turns), brief v42,
+  owner statements v25, space program v7. State stays `SITE_NEEDS_CONFIRMATION`;
+  no gate was approved and no site fact confirmed.
+- The records above stop at interview v19; later rounds, the program builds and
+  the `design/` studies (argon, claude, codex, `user-designed/`) are in the
+  project record and `projects/my-house/reviews/` but have no record here.
+- `main` had already given ISS-38 to ISS-40 to other issues, so this branch's
+  unmerged ISS-38/39/40 became ISS-43/44/45 (never published on `main`). All
+  three are fixed with regression tests. The solver now lets an accessible room
+  leave the entry level when the program has a lift
+  (`test_an_accessible_room_may_leave_the_entry_level_only_when_a_lift_serves_it`).
+- The tracker test now counts only `implementation` stages in its
+  one-stage-at-a-time check; human-dependent stages run in parallel (§E).
+- Dropped from the branch: the reviewer `serve` change that always exported an
+  exploratory bundle (untested, unused by the my-house outputs) and the
+  per-skill OWNER_DESIGN_RULES paragraphs; both rules now live in
+  `AGENT_CONTRACT.md` §7 and §9b.
+
 ## O. Session protocol and handoff
 
 A fresh session needs only the repository. Read, in order:
@@ -3682,9 +4004,21 @@ homeowner approval of any site, program, plan or model.
 ### Current handoff note
 
 - Stage S11 (glossary vocabulary, issues #2–#4) is implemented on `stage/S11-glossary-vocabulary`, review PENDING; see §N S11 handoff 1.
+- Continuation entry point: `projects/my-house/reviews/CONTINUE-H2.md` (private detailed handoff, current records, preserved requirements and next deliverable). Committed on `stage/H2-interview-program` (PR #41).
+
 - Stage S9 Floor-plan readiness gate closed with merge `d8a38b1` (CI run 39336825673 green).
 - All 10 software stages (S1–S10) on the path to good floor plans are complete. The software pipeline is verified ready to design the real house.
 - Next steps are human-dependent: H1 site verification with the owner (confirming UTM, CRS, datum, boundary), and H2 interview rounds. Stage X1 (optional tool research) can be explored any time.
+- H2 interview started on `stage/H2-interview-program` by `agent:codex`;
+  interview now v51 (complete), program v7 (see the PR #41 record in §N); flat-outdoor correction incorporated, final interpretation confirmation and compiler issues ISS-43/44/45 pending. See H2 in §N.
+- Owner CRS and map recognition now support preliminary geographic research;
+  all source POINT coordinates were transformed into separate private exports.
+  See `projects/my-house/reviews/location-research/epsg-32638-preview/REPORT.md`.
+  Sun/mountain horizon and regional climate/wind are documented; primary rainfall
+  inconsistencies are flagged. No further map pin is needed for this research.
+- Formal H1 site facts/gate, local design climate/ground evidence, final interview
+  interpretation confirmation and program compiler issues remain. Canonical site
+  is still unconfirmed; do not ask the owner to repeat resolved location questions.
 
 ## P. Rules for updating the tracker
 

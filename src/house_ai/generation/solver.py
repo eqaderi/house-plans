@@ -192,6 +192,7 @@ def _stair_range(rooms: ProgramRooms, rng: tuple[int, int], depth: int) -> tuple
 def build_units(m: Massing, rooms: ProgramRooms) -> tuple[list[Unit], list[str]]:  # noqa: C901
     """Units to place and reasons a cluster has nowhere to go (empty when feasible)."""
     entry_z = m.entry_elevation_m
+    has_lift = any(r.function is SpaceFunction.LIFT for r in rooms.rooms)
     units: list[Unit] = []
     problems: list[str] = []
     for cl in rooms.clusters:
@@ -202,7 +203,8 @@ def build_units(m: Massing, rooms: ProgramRooms) -> tuple[list[Unit], list[str]]
                 if cl.is_entry and not (bar.entry and row.side == "front"):
                     continue
                 needs_entry_level = any(
-                    r.item.accessible or r.function is SpaceFunction.LIFT for r in cl.members
+                    (not has_lift and r.item.accessible) or r.function is SpaceFunction.LIFT
+                    for r in cl.members
                 )
                 if needs_entry_level and not same_level:
                     continue

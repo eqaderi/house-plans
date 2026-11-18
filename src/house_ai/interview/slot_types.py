@@ -17,10 +17,10 @@ from .questions import SLOTS
 INT = {"adults", "children", "elders", "household_size", "bedrooms", "bathrooms", "storeys",
        "workspaces", "cars"}  # fmt: skip
 BOOL = {
-    "children_own_rooms", "elder_step_free", "ensuite", "entry_at_road", "open_plan",
-    "kitchen_smell_separate", "pantry", "office_quiet", "ev_charging", "laundry_room",
-    "storage_room", "lift", "accessible_ground_suite", "bedrooms_separate", "cross_ventilation",
-    "future_expansion", "prayer_room", "gathering_space",
+    "children_own_rooms", "elders_own_rooms", "elder_step_free", "ensuite", "entry_at_road",
+    "open_plan", "kitchen_smell_separate", "pantry", "office_quiet", "ev_charging",
+    "laundry_room", "storage_room", "lift", "accessible_ground_suite", "bedrooms_separate",
+    "cross_ventilation", "future_expansion", "prayer_room", "gathering_space",
 }  # fmt: skip
 CHOICE: dict[str, set[str]] = {
     "slope_strategy": {"step_down", "platform", "no_preference"},

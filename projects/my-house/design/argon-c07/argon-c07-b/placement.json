@@ -1,0 +1,711 @@
+{
+  "option_id": "argon-c07-b",
+  "title": "Argon C07-B (Recommended) \u2014 User Design B Perfected (Parents on Living Level & Retained Platform)",
+  "subtitle": "Direct West Entry + Parents Suite + Right-Sized Kitchen (16.8 m\u00b2) & Dining (13.6 m\u00b2) + Wide Living (49.6 m\u00b2); Lower Boys + Girls + Guest Suite",
+  "summary": "Directly implements the homeowner's favored Option B from redesign-0109-r5 with all 30 review & stmt-021 fixes: Main Floor features a straight, crystal-clear West Arrival Hall (zero dogleg), direct entry into the Parents Bedroom (with Private Dress and South-buffering Accessible Ensuite opening from inside the bedroom, fixing stmt-021 & I30), Walk-in Pantry (4.8 m\u00b2), right-sized South Kitchen (16.8 m\u00b2), SE Dining (13.6 m\u00b2), and a wide, generous East Family Living + NE Reading/Prayer Room (49.6 m\u00b2, 4.6\u20135.2 m wide across the entire room). Lower Floor keeps flush West Laundry (14.7 m\u00b2) & Store (11.8 m\u00b2), North-Center Wet Stack, South Row of Boys + Girls + SE Guest Suite (with Private Seated Bath fixing I10), and NE Garden Lounge (37.0 m\u00b2).",
+  "plates": {
+    "lv-upper": [
+      4,
+      6,
+      122,
+      116
+    ],
+    "lv-entry": [
+      4,
+      6,
+      182,
+      114
+    ],
+    "lv-lower": [
+      40,
+      6,
+      202,
+      152
+    ]
+  },
+  "levels": {
+    "lv-upper": 1677.7,
+    "lv-entry": 1674.2,
+    "lv-lower": 1670.6
+  },
+  "storey_heights": {
+    "lv-upper": 3.0,
+    "lv-entry": 3.5,
+    "lv-lower": 3.6
+  },
+  "lawn_u0_m": 22.0,
+  "lawn_z_m": 1668.0,
+  "cozy_corner_dm": [
+    130,
+    14,
+    182,
+    56
+  ],
+  "prayer_nook_dm": [
+    150,
+    16,
+    176,
+    36
+  ],
+  "tea_bar_dm": [
+    148,
+    22,
+    176,
+    30
+  ],
+  "workshop_bay_dm": [
+    56,
+    6,
+    72,
+    36
+  ],
+  "lockers_dm": [
+    58,
+    57,
+    84,
+    64
+  ],
+  "stair_fits": {
+    "stair-lower-main": true,
+    "stair-main-road": true
+  },
+  "user_design_synthesis": [
+    {
+      "id": "User 0109-r5 Road Floor Architecture + I09 Fix",
+      "user_inspiration": "West-to-East Road Floor sequence: Two Independent Car Bays (two 3.35m west shutters) \u2192 central Six-Person Unloading with 6 lockers & Lift \u2192 East Core Stair (REST 1.40), Replaceable Plant (1.20m west door), and SE Quiet Office.",
+      "problem_in_user_design": "In 0109-r5, the 5.20\u00d77.70m car bay caused a 0.51 m\u00b2 clash between the 2nd car's 0.65m door zone and the cabinet, and lacked a dedicated workshop bench bay.",
+      "argon_c07_resolution": "Preserves the exact West-to-East Road Floor layout of 0109-r5 while expanding the car bay to 5.2\u00d79.6m + a 1.6\u00d73.0m North Workshop Bay (54.7 m\u00b2 total), giving 0.00 m\u00b2 door-zone clash."
+    },
+    {
+      "id": "User 0109-r5 Option B (Argon C07-B, Recommended) + I10/I11/I15/I26/I30 Fixes",
+      "user_inspiration": "Main Floor has West/SW Parents Suite (Bedroom + Dress + Ensuite), North-Center 4-part Screened Wet & Wudu Cluster, South Kitchen, SE Dining (6\u20138), and East Living + NE Reading/Prayer Bay. Lower Floor has West Laundry, North-Center Wet Cluster, South Row of Boys + Girls + Guest Room, and NE Garden Lounge.",
+      "problem_in_user_design": "In 0109-r5 B: (I10) Lower Guest Room had no seated WC on the lower floor; (I11) Wudu to NE Prayer bay required an 18.55m detour; (I26) Kitchen was only 11.1 m\u00b2 with Pantry far away; (I12/I22) Lower Store omitted & Laundry small; (I30) SW Bedroom lacked south terrace privacy buffer.",
+      "argon_c07_resolution": "Keeps Option B's exact room positions on every floor while placing the Private Ensuite on the south edge of the SW Parents Suite (buffering the South Terrace, fixing I30), bridging the 7.7 m\u00b2 Walk-in Pantry directly to the 22.1 m\u00b2 South Kitchen (fixing I26), giving a 3.5m route from Wudu to the sheltered NE Prayer/Cozy Bay (fixing I11), and adding a 13.0 m\u00b2 Private Seated Ensuite to the SE Lower Guest Suite (fixing I10) plus 14.1 m\u00b2 Laundry and 9.6 m\u00b2 Store (fixing I12/I22)."
+    },
+    {
+      "id": "User 0109-r5 Option A (Argon C07-A) + Rule 2.1 / I10 Fixes",
+      "user_inspiration": "Main Floor has West Suite & Bulk Pantry, SW Kitchen, South-Center Dining (6\u20138), North-Center 4-part Screened Wet/Wudu Cluster, and East Living + NE Reading Bay. Lower Floor has NE Grand Suite + Private Ensuite + Store by Core, Center-East wide Garden Lounge, West Laundry, and South Boys + Girls + SE Wet Cluster.",
+      "problem_in_user_design": "In 0109-r5 A, reaching East Living required walking through Dining (violating Rule 2.1), and the lower level had no seated WC (I10).",
+      "argon_c07_resolution": "Preserves Option A's exact Upper and Lower floor room arrangements while extending the Central Hall (Family Link) to touch Kitchen, Dining, AND East Living directly (passing Rule 2.1) and equipping the NE Lower Suite with an accessible Seated Ensuite (fixing I10)."
+    },
+    {
+      "id": "User 0109-r5 Option C (Argon C07-C) + Stepped Bridge & West Lower Extension",
+      "user_inspiration": "Compact Upper Day Pavilion (stepped in at SW) with SW Kitchen, SE wide Dining, East Living + NE Prayer, and Lower Floor stepping further West (u=2.4..5.6m) for expanded Laundry/Service while NE Suite, Center-East Garden Lounge, and South Boys + Girls face the garden.",
+      "problem_in_user_design": "In 0109-r5 C, the road-level living / 2-floor split buried the west lower rooms and violated the 3-level stepped hillside requirement.",
+      "argon_c07_resolution": "Adapts Option C's stepped-bridge upper day plate and west-extended lower bar into the 3-level stepped hillside section with full excavated south/east garden courts and 100% rule compliance."
+    }
+  ],
+  "rooms": [
+    {
+      "space_id": "sp-stair-r",
+      "name": "Core Stair 20R (REST 1.40 at north)",
+      "function": "stair",
+      "level_id": "lv-upper",
+      "u0": 72,
+      "v0": 6,
+      "u1": 102,
+      "v1": 56,
+      "program_item_id": "pi-stair",
+      "zone_id": "z-service",
+      "sub_rects": null
+    },
+    {
+      "space_id": "sp-lift-r",
+      "name": "Lift (1.60\u00d72.00 Essential)",
+      "function": "lift",
+      "level_id": "lv-upper",
+      "u0": 56,
+      "v0": 36,
+      "u1": 72,
+      "v1": 56,
+      "program_item_id": "pi-lift",
+      "zone_id": "z-service",
+      "sub_rects": null
+    },
+    {
+      "space_id": "sp-stair-u",
+      "name": "Core Stair 20R (REST 1.40 at north)",
+      "function": "stair",
+      "level_id": "lv-entry",
+      "u0": 72,
+      "v0": 6,
+      "u1": 102,
+      "v1": 56,
+      "program_item_id": "pi-stair",
+      "zone_id": "z-day",
+      "sub_rects": null
+    },
+    {
+      "space_id": "sp-lift-u",
+      "name": "Lift (1.60\u00d72.00 Essential)",
+      "function": "lift",
+      "level_id": "lv-entry",
+      "u0": 56,
+      "v0": 36,
+      "u1": 72,
+      "v1": 56,
+      "program_item_id": "pi-lift",
+      "zone_id": "z-day",
+      "sub_rects": null
+    },
+    {
+      "space_id": "sp-stair-l",
+      "name": "Core Stair 20R (REST 1.40 at north)",
+      "function": "stair",
+      "level_id": "lv-lower",
+      "u0": 72,
+      "v0": 6,
+      "u1": 102,
+      "v1": 56,
+      "program_item_id": "pi-stair",
+      "zone_id": "z-day",
+      "sub_rects": null
+    },
+    {
+      "space_id": "sp-lift-l",
+      "name": "Lift (1.60\u00d72.00 Essential)",
+      "function": "lift",
+      "level_id": "lv-lower",
+      "u0": 56,
+      "v0": 36,
+      "u1": 72,
+      "v1": 56,
+      "program_item_id": "pi-lift",
+      "zone_id": "z-day",
+      "sub_rects": null
+    },
+    {
+      "space_id": "sp-garage",
+      "name": "Two Independent Car Bays + North Workshop (0.65m door zones)",
+      "function": "garage",
+      "level_id": "lv-upper",
+      "u0": 4,
+      "v0": 6,
+      "u1": 72,
+      "v1": 100,
+      "program_item_id": "pi-garage",
+      "zone_id": "z-service",
+      "sub_rects": [
+        [
+          4,
+          6,
+          56,
+          100
+        ],
+        [
+          56,
+          6,
+          72,
+          36
+        ]
+      ]
+    },
+    {
+      "space_id": "sp-lobby",
+      "name": "Front Entrance & Six-Person Unloading (6 lockers L1\u2013L6)",
+      "function": "entry",
+      "level_id": "lv-upper",
+      "u0": 4,
+      "v0": 56,
+      "u1": 88,
+      "v1": 116,
+      "program_item_id": "pi-entry",
+      "zone_id": "z-service",
+      "sub_rects": [
+        [
+          4,
+          100,
+          56,
+          116
+        ],
+        [
+          56,
+          56,
+          88,
+          116
+        ]
+      ]
+    },
+    {
+      "space_id": "sp-plant",
+      "name": "Replaceable Plant (1.20m west door)",
+      "function": "mechanical",
+      "level_id": "lv-upper",
+      "u0": 88,
+      "v0": 56,
+      "u1": 122,
+      "v1": 74,
+      "program_item_id": "pi-mechanical",
+      "zone_id": "z-service",
+      "sub_rects": null
+    },
+    {
+      "space_id": "sp-wc-r",
+      "name": "Road WC + shower",
+      "function": "bathroom",
+      "level_id": "lv-upper",
+      "u0": 88,
+      "v0": 74,
+      "u1": 122,
+      "v1": 90,
+      "program_item_id": "",
+      "zone_id": "z-service",
+      "sub_rects": null
+    },
+    {
+      "space_id": "sp-office",
+      "name": "Quiet Office / Gaming (SE corner)",
+      "function": "study",
+      "level_id": "lv-upper",
+      "u0": 88,
+      "v0": 90,
+      "u1": 122,
+      "v1": 116,
+      "program_item_id": "pi-study-1",
+      "zone_id": "z-service",
+      "sub_rects": null
+    },
+    {
+      "space_id": "sp-wc-u",
+      "name": "Shared WC (north wet cluster)",
+      "function": "wc",
+      "level_id": "lv-entry",
+      "u0": 102,
+      "v0": 14,
+      "u1": 116,
+      "v1": 36,
+      "program_item_id": "",
+      "zone_id": "z-night",
+      "sub_rects": null
+    },
+    {
+      "space_id": "sp-shower-u",
+      "name": "Shared Shower (north wet cluster)",
+      "function": "bathroom",
+      "level_id": "lv-entry",
+      "u0": 116,
+      "v0": 14,
+      "u1": 130,
+      "v1": 36,
+      "program_item_id": "",
+      "zone_id": "z-night",
+      "sub_rects": null
+    },
+    {
+      "space_id": "sp-wudu-u",
+      "name": "Wudu & Screened Multiuse Lobby",
+      "function": "hall",
+      "level_id": "lv-entry",
+      "u0": 102,
+      "v0": 36,
+      "u1": 130,
+      "v1": 56,
+      "program_item_id": "",
+      "zone_id": "z-day",
+      "sub_rects": null
+    },
+    {
+      "space_id": "sp-store-u",
+      "name": "NW Coat & Household Store",
+      "function": "storage",
+      "level_id": "lv-entry",
+      "u0": 20,
+      "v0": 36,
+      "u1": 56,
+      "v1": 56,
+      "program_item_id": "pi-storage",
+      "zone_id": "z-day",
+      "sub_rects": null
+    },
+    {
+      "space_id": "sp-entry",
+      "name": "Private Family Hall & West Entry",
+      "function": "entry",
+      "level_id": "lv-entry",
+      "u0": 4,
+      "v0": 56,
+      "u1": 48,
+      "v1": 74,
+      "program_item_id": "pi-entry",
+      "zone_id": "z-day",
+      "sub_rects": null
+    },
+    {
+      "space_id": "sp-master",
+      "name": "Parents Suite (West / SW living level)",
+      "function": "bedroom",
+      "level_id": "lv-entry",
+      "u0": 4,
+      "v0": 74,
+      "u1": 48,
+      "v1": 104,
+      "program_item_id": "pi-bed-main",
+      "zone_id": "z-night",
+      "sub_rects": null
+    },
+    {
+      "space_id": "sp-closet",
+      "name": "Private Dress (in-suite)",
+      "function": "storage",
+      "level_id": "lv-entry",
+      "u0": 4,
+      "v0": 104,
+      "u1": 20,
+      "v1": 122,
+      "program_item_id": "",
+      "zone_id": "z-day",
+      "sub_rects": null
+    },
+    {
+      "space_id": "sp-ensuite-u",
+      "name": "Private Accessible Ensuite (seated WC + shower)",
+      "function": "bathroom",
+      "level_id": "lv-entry",
+      "u0": 20,
+      "v0": 104,
+      "u1": 48,
+      "v1": 122,
+      "program_item_id": "pi-bath-ensuite",
+      "zone_id": "z-night",
+      "sub_rects": null
+    },
+    {
+      "space_id": "sp-hall-u",
+      "name": "Family Link & Screened Kitchen Arrival",
+      "function": "hall",
+      "level_id": "lv-entry",
+      "u0": 48,
+      "v0": 56,
+      "u1": 130,
+      "v1": 74,
+      "program_item_id": "",
+      "zone_id": "z-day",
+      "sub_rects": null
+    },
+    {
+      "space_id": "sp-pantry",
+      "name": "Walk-in Bulk Pantry (bridges Hall & Kitchen)",
+      "function": "pantry",
+      "level_id": "lv-entry",
+      "u0": 48,
+      "v0": 74,
+      "u1": 60,
+      "v1": 114,
+      "program_item_id": "pi-pantry",
+      "zone_id": "z-day",
+      "sub_rects": null
+    },
+    {
+      "space_id": "sp-kitchen",
+      "name": "South Kitchen + Everyday Dining",
+      "function": "kitchen",
+      "level_id": "lv-entry",
+      "u0": 60,
+      "v0": 74,
+      "u1": 102,
+      "v1": 114,
+      "program_item_id": "pi-kitchen",
+      "zone_id": "z-day",
+      "sub_rects": null
+    },
+    {
+      "space_id": "sp-dining",
+      "name": "Dining 6 / Extends to 8 (SE)",
+      "function": "dining",
+      "level_id": "lv-entry",
+      "u0": 102,
+      "v0": 74,
+      "u1": 136,
+      "v1": 114,
+      "program_item_id": "pi-dining",
+      "zone_id": "z-day",
+      "sub_rects": null
+    },
+    {
+      "space_id": "sp-living",
+      "name": "East Family Living + NE Reading / Prayer Bay",
+      "function": "living",
+      "level_id": "lv-entry",
+      "u0": 130,
+      "v0": 14,
+      "u1": 182,
+      "v1": 114,
+      "program_item_id": "pi-living",
+      "zone_id": "z-day",
+      "sub_rects": [
+        [
+          130,
+          14,
+          182,
+          74
+        ],
+        [
+          136,
+          74,
+          182,
+          114
+        ]
+      ]
+    },
+    {
+      "space_id": "sp-store-l",
+      "name": "Household Store (tucked by Core, fixes I22)",
+      "function": "storage",
+      "level_id": "lv-lower",
+      "u0": 40,
+      "v0": 16,
+      "u1": 72,
+      "v1": 70,
+      "program_item_id": "pi-storage",
+      "zone_id": "z-day",
+      "sub_rects": [
+        [
+          40,
+          16,
+          72,
+          36
+        ],
+        [
+          40,
+          36,
+          56,
+          70
+        ]
+      ]
+    },
+    {
+      "space_id": "sp-wc-l",
+      "name": "Shared WC (north-center wet stack)",
+      "function": "wc",
+      "level_id": "lv-lower",
+      "u0": 102,
+      "v0": 20,
+      "u1": 120,
+      "v1": 56,
+      "program_item_id": "",
+      "zone_id": "z-night",
+      "sub_rects": null
+    },
+    {
+      "space_id": "sp-shower-l",
+      "name": "Shared Bathroom (north-center wet stack)",
+      "function": "bathroom",
+      "level_id": "lv-lower",
+      "u0": 120,
+      "v0": 20,
+      "u1": 146,
+      "v1": 56,
+      "program_item_id": "pi-bath-1",
+      "zone_id": "z-night",
+      "sub_rects": null
+    },
+    {
+      "space_id": "sp-hall-l",
+      "name": "Family Hall / Snack & Screened Wet Lobby",
+      "function": "hall",
+      "level_id": "lv-lower",
+      "u0": 56,
+      "v0": 56,
+      "u1": 146,
+      "v1": 102,
+      "program_item_id": "",
+      "zone_id": "z-day",
+      "sub_rects": [
+        [
+          56,
+          56,
+          146,
+          70
+        ],
+        [
+          86,
+          70,
+          146,
+          102
+        ]
+      ]
+    },
+    {
+      "space_id": "sp-laundry",
+      "name": "Laundry, Linen & Drying Room (West, fixes I12)",
+      "function": "laundry",
+      "level_id": "lv-lower",
+      "u0": 40,
+      "v0": 70,
+      "u1": 86,
+      "v1": 102,
+      "program_item_id": "pi-laundry",
+      "zone_id": "z-day",
+      "sub_rects": null
+    },
+    {
+      "space_id": "sp-boys",
+      "name": "Boys Shared Room (SW \u2014 2 beds, 2 desks, 2 wardrobes)",
+      "function": "bedroom",
+      "level_id": "lv-lower",
+      "u0": 56,
+      "v0": 102,
+      "u1": 100,
+      "v1": 152,
+      "program_item_id": "pi-bed-child-1",
+      "zone_id": "z-night",
+      "sub_rects": null
+    },
+    {
+      "space_id": "sp-girls",
+      "name": "Girls Shared Room (S-Center \u2014 2 beds, 2 desks, 2 wardrobes)",
+      "function": "bedroom",
+      "level_id": "lv-lower",
+      "u0": 100,
+      "v0": 102,
+      "u1": 146,
+      "v1": 152,
+      "program_item_id": "pi-bed-child-2",
+      "zone_id": "z-night",
+      "sub_rects": null
+    },
+    {
+      "space_id": "sp-bed3",
+      "name": "Guest / Quiet Room \u2014 Grandparents (SE Garden)",
+      "function": "bedroom",
+      "level_id": "lv-lower",
+      "u0": 146,
+      "v0": 86,
+      "u1": 202,
+      "v1": 130,
+      "program_item_id": "pi-bed-elder-1",
+      "zone_id": "z-night",
+      "sub_rects": null
+    },
+    {
+      "space_id": "sp-ensuite-l",
+      "name": "Guest Private Accessible Seated WC + Shower (fixes I10)",
+      "function": "bathroom",
+      "level_id": "lv-lower",
+      "u0": 146,
+      "v0": 130,
+      "u1": 202,
+      "v1": 152,
+      "program_item_id": "pi-bath-2",
+      "zone_id": "z-night",
+      "sub_rects": null
+    },
+    {
+      "space_id": "sp-family",
+      "name": "NE Garden Lounge + Night Tea & Snack Bar",
+      "function": "family",
+      "level_id": "lv-lower",
+      "u0": 146,
+      "v0": 20,
+      "u1": 202,
+      "v1": 86,
+      "program_item_id": "",
+      "zone_id": "z-day",
+      "sub_rects": null
+    },
+    {
+      "space_id": "sp-deck-east",
+      "name": "Road-level roof deck (east)",
+      "function": "terrace",
+      "level_id": "lv-upper",
+      "u0": 122,
+      "v0": 56,
+      "u1": 182,
+      "v1": 116,
+      "program_item_id": "pi-balcony",
+      "zone_id": "z-outdoor",
+      "sub_rects": null
+    },
+    {
+      "space_id": "sp-court-west",
+      "name": "West arrival & daylight court",
+      "function": "terrace",
+      "level_id": "lv-entry",
+      "u0": -44,
+      "v0": 40,
+      "u1": 4,
+      "v1": 122,
+      "program_item_id": "",
+      "zone_id": "z-outdoor",
+      "sub_rects": [
+        [
+          -20,
+          40,
+          4,
+          98
+        ],
+        [
+          -44,
+          98,
+          4,
+          122
+        ]
+      ]
+    },
+    {
+      "space_id": "sp-terrace-south",
+      "name": "South terrace (off South Kitchen, SE Dining & Wide East Living + GS)",
+      "function": "terrace",
+      "level_id": "lv-entry",
+      "u0": 4,
+      "v0": 114,
+      "u1": 182,
+      "v1": 148,
+      "program_item_id": "pi-terrace",
+      "zone_id": "z-outdoor",
+      "sub_rects": [
+        [
+          4,
+          122,
+          48,
+          148
+        ],
+        [
+          48,
+          114,
+          182,
+          148
+        ]
+      ]
+    },
+    {
+      "space_id": "sp-terrace-east",
+      "name": "East terrace (wrapping East Living & NE Prayer Bay)",
+      "function": "terrace",
+      "level_id": "lv-entry",
+      "u0": 182,
+      "v0": 14,
+      "u1": 202,
+      "v1": 148,
+      "program_item_id": "pi-balcony",
+      "zone_id": "z-outdoor",
+      "sub_rects": null
+    },
+    {
+      "space_id": "sp-terrace-lower",
+      "name": "East & South excavated garden terrace",
+      "function": "terrace",
+      "level_id": "lv-lower",
+      "u0": 56,
+      "v0": 20,
+      "u1": 220,
+      "v1": 168,
+      "program_item_id": "",
+      "zone_id": "z-outdoor",
+      "sub_rects": [
+        [
+          202,
+          20,
+          220,
+          152
+        ],
+        [
+          56,
+          152,
+          220,
+          168
+        ]
+      ]
+    }
+  ]
+}

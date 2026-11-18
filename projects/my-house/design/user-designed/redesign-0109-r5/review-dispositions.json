@@ -1,0 +1,34 @@
+[
+  {
+    "topic": "Missing survey / full sections",
+    "disposition": "Correct the premise: local0108 has registered20-point TIN, full W\u2013E/N\u2013S sections and actual terrain; licensed accuracy/datum, geotechnical/civil reports remain absent."
+  },
+  {
+    "topic": "Missing B drawings",
+    "disposition": "Incorrect for the local project: B/drawings exists and was inspected. The review saw an incomplete archive."
+  },
+  {
+    "topic": "No lift / no storage",
+    "disposition": "Existing geometry already has lift/shaft and named storage. New work improves dimensioned space/use and preserves unknown product/accessibility evidence."
+  },
+  {
+    "topic": "Water / fire / maintenance / structure",
+    "disposition": "Accept the risks and reserve real space, escape routes, water/maintenance diagrams. Do not treat any drawing as an engineering solution."
+  },
+  {
+    "topic": "Four child rooms / extra shared WC / second child shower",
+    "disposition": "Do not adopt: conflicts with explicit two shared rooms, exactlythree WCs and one routine child shower. Upper shared shower retained without counting it as extra morning child capacity."
+  },
+  {
+    "topic": "Universal100mm sill /60min ratings /0.53m\u00b2 openings / fixed safety factors",
+    "disposition": "Do not prescribe as local law. Raised curb can obstruct step-free arrival; fire consultant must coordinate separation and flush protected access. Ratings/products and governing code unresolved."
+  },
+  {
+    "topic": "25\u201350% cost savings / pier scheme eliminates pumps and tanking",
+    "disposition": "Reject unsupported savings/guarantees. No soil, outfall, structural design or local pricing supports those assertions."
+  },
+  {
+    "topic": "Delete all roof terraces / minimise every retaining wall",
+    "disposition": "Not adopted wholesale: terraces and flat soil gardens are explicit family needs. Engineer water and support; reduce unjustified area, not the requirement."
+  }
+]

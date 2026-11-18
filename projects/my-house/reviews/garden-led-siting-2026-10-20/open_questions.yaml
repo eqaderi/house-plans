@@ -1,0 +1,24 @@
+project_id: my-house
+scope: follow-up evidence for selecting a final siting concept
+questions:
+  - id: geotechnical-siting
+    question: What are the rock/soil profile, groundwater, slope stability and foundation/retaining implications in the western/northern search area and alternatives?
+    status: open
+  - id: controls
+    question: What are the applicable permitted storeys, heights, coverage and additional north/west clearances?
+    status: open
+  - id: road-access-level
+    question: What are the verified near-side road/kerb levels, permitted gate positions, and workable turning/threshold geometry?
+    status: open
+  - id: affordability
+    question: What budget is available for house, retaining/excavation, lift, drainage and landscaping together?
+    status: open
+  - id: shadows
+    question: What are the future neighbor envelopes and shadows from the proposed house, walls and mature trees on the main play surface?
+    status: open
+  - id: garden-water
+    question: What are the garden water supply, safe stormwater route, rooting soil and planting constraints?
+    status: open
+  - id: scheme-choice
+    question: Which section performs better when plan fit is tested: two residential levels plus a smaller road garage tier, or two levels total including garage?
+    status: open
