@@ -315,153 +315,6 @@ def _partition_wings(
     return wing_a, wing_b
 
 
-def _apply_two_wing_constraints(
-    md: cp_model.CpModel,
-    rooms: list[PlacementRoom],
-    x_vars: dict[str, cp_model.IntVar],
-    y_vars: dict[str, cp_model.IntVar],
-    xe_vars: dict[str, cp_model.IntVar],
-    ye_vars: dict[str, cp_model.IntVar],
-    touch_vars: dict[tuple[str, str], cp_model.BoolVar],
-    env_w_dm: int,
-    env_h_dm: int,
-) -> None:
-    """Enforce two-wing L-shaped layout with free wing positioning (S7-14)."""
-    wing_a, wing_b = _partition_wings(rooms)
-
-    xa_min = md.NewIntVar(0, env_w_dm, "xa_min")
-    xa_max = md.NewIntVar(0, env_w_dm, "xa_max")
-    ya_min = md.NewIntVar(0, env_h_dm, "ya_min")
-    ya_max = md.NewIntVar(0, env_h_dm, "ya_max")
-
-    xb_min = md.NewIntVar(0, env_w_dm, "xb_min")
-    xb_max = md.NewIntVar(0, env_w_dm, "xb_max")
-    yb_min = md.NewIntVar(0, env_h_dm, "yb_min")
-    yb_max = md.NewIntVar(0, env_h_dm, "yb_max")
-
-    if not wing_a or not wing_b:
-        raise Solve2DFailed("two-wing layout needs rooms in both wings")
-    for group, x0, x1, y0, y1 in [
-        (wing_a, xa_min, xa_max, ya_min, ya_max),
-        (wing_b, xb_min, xb_max, yb_min, yb_max),
-    ]:
-        md.AddMinEquality(x0, [x_vars[r.space_id] for r in group])
-        md.AddMaxEquality(x1, [xe_vars[r.space_id] for r in group])
-        md.AddMinEquality(y0, [y_vars[r.space_id] for r in group])
-        md.AddMaxEquality(y1, [ye_vars[r.space_id] for r in group])
-
-    # Wings are connected at a junction: at least one shared wall between wings
-    wing_touches: list[cp_model.BoolVar] = []
-    for ra in wing_a:
-        for rb in wing_b:
-            pair = (min(ra.space_id, rb.space_id), max(ra.space_id, rb.space_id))
-            if pair in touch_vars:
-                wing_touches.append(touch_vars[pair])
-    if wing_touches:
-        md.Add(sum(wing_touches) >= 1)
-
-    # L-shaped re-entrant recess: wings have free relative positions, but do not degenerate
-    # into a single rectangular solid. One wing extends past the other in X and/or Y.
-    bx_diff = md.NewBoolVar("bx_diff")
-    by_diff = md.NewBoolVar("by_diff")
-    md.Add(xa_max >= xb_max + L_SHAPE_MIN_RECESS_DM).OnlyEnforceIf(bx_diff)
-    md.Add(xb_max >= xa_max + L_SHAPE_MIN_RECESS_DM).OnlyEnforceIf(bx_diff.Not())
-    md.Add(ya_max >= yb_max + L_SHAPE_MIN_RECESS_DM).OnlyEnforceIf(by_diff)
-    md.Add(yb_max >= ya_max + L_SHAPE_MIN_RECESS_DM).OnlyEnforceIf(by_diff.Not())
-    md.Add(bx_diff + by_diff == 1)
-
-
-def _apply_courtyard_constraints(
-    md: cp_model.CpModel,
-    court_id: str,
-    interior_rooms: list[PlacementRoom],
-    touch_details: dict[tuple[str, str], dict[str, cp_model.BoolVar]],
-) -> None:
-    """Enforce central courtyard enclosure on at least 3 sides (S7-15)."""
-    t_north_list: list[cp_model.BoolVar] = []
-    t_south_list: list[cp_model.BoolVar] = []
-    t_east_list: list[cp_model.BoolVar] = []
-    t_west_list: list[cp_model.BoolVar] = []
-
-    for r in interior_rooms:
-        sa = r.space_id
-        k = (min(sa, court_id), max(sa, court_id))
-        if k in touch_details:
-            dirs = touch_details[k]
-            if sa < court_id:
-                t_west_list.append(dirs["east"])
-                t_east_list.append(dirs["west"])
-                t_south_list.append(dirs["north"])
-                t_north_list.append(dirs["south"])
-            else:
-                t_east_list.append(dirs["east"])
-                t_west_list.append(dirs["west"])
-                t_north_list.append(dirs["north"])
-                t_south_list.append(dirs["south"])
-
-    has_n = md.NewBoolVar("court_has_n")
-    has_s = md.NewBoolVar("court_has_s")
-    has_e = md.NewBoolVar("court_has_e")
-    has_w = md.NewBoolVar("court_has_w")
-
-    if t_north_list:
-        md.Add(sum(t_north_list) >= 1).OnlyEnforceIf(has_n)
-        md.Add(sum(t_north_list) == 0).OnlyEnforceIf(has_n.Not())
-    else:
-        md.Add(has_n == 0)
-
-    if t_south_list:
-        md.Add(sum(t_south_list) >= 1).OnlyEnforceIf(has_s)
-        md.Add(sum(t_south_list) == 0).OnlyEnforceIf(has_s.Not())
-    else:
-        md.Add(has_s == 0)
-
-    if t_east_list:
-        md.Add(sum(t_east_list) >= 1).OnlyEnforceIf(has_e)
-        md.Add(sum(t_east_list) == 0).OnlyEnforceIf(has_e.Not())
-    else:
-        md.Add(has_e == 0)
-
-    if t_west_list:
-        md.Add(sum(t_west_list) >= 1).OnlyEnforceIf(has_w)
-        md.Add(sum(t_west_list) == 0).OnlyEnforceIf(has_w.Not())
-    else:
-        md.Add(has_w == 0)
-
-    # Courtyard enclosed on >= 3 sides (e.g. U-shape or 4-side courtyard)
-    md.Add(has_n + has_s + has_e + has_w >= 3)
-
-
-def _apply_zoning_objectives(
-    md: cp_model.CpModel,
-    rooms: list[PlacementRoom],
-    x_vars: dict[str, cp_model.IntVar],
-    y_vars: dict[str, cp_model.IntVar],
-    xe_vars: dict[str, cp_model.IntVar],
-    ye_vars: dict[str, cp_model.IntVar],
-    obj_terms: list[cp_model.LinearExpr],
-    env_w_dm: int,
-    env_h_dm: int,
-) -> None:
-    """Add intra-zone compactness objectives for privacy-driven zoning (S7-17)."""
-    by_zone: dict[str, list[PlacementRoom]] = {}
-    for r in rooms:
-        by_zone.setdefault(r.zone_id, []).append(r)
-
-    for zid, zrooms in by_zone.items():
-        if len(zrooms) >= 2:
-            zx_min = md.NewIntVar(0, env_w_dm, f"zx_min_{zid}")
-            zx_max = md.NewIntVar(0, env_w_dm, f"zx_max_{zid}")
-            zy_min = md.NewIntVar(0, env_h_dm, f"zy_min_{zid}")
-            zy_max = md.NewIntVar(0, env_h_dm, f"zy_max_{zid}")
-            for r in zrooms:
-                md.Add(x_vars[r.space_id] >= zx_min)
-                md.Add(xe_vars[r.space_id] <= zx_max)
-                md.Add(y_vars[r.space_id] >= zy_min)
-                md.Add(ye_vars[r.space_id] <= zy_max)
-            obj_terms.append(W_ZONE_CLUSTER * ((zx_max - zx_min) + (zy_max - zy_min)))
-
-
 def is_privacy_separated(ra: PlacementRoom, rb: PlacementRoom) -> bool:
     """Returns True if a direct door between ra and rb is prohibited for privacy (S7-17)."""
     is_guest_a = ra.zone_id == ZONE_GUEST or ra.function is SpaceFunction.GUEST_SUITE
@@ -573,8 +426,6 @@ def solve_2d_placement(
     multi_level: bool = False,
 ) -> Solution2D:
     """Place a fully connected, envelope-contained model with exact contact indicators."""
-    from .terrain_levels import placement_level_variables
-
     started = time.perf_counter()
     rooms = extract_placement_rooms(program, opts.min_areas, opts.min_widths)
     if not rooms:
@@ -589,22 +440,14 @@ def solve_2d_placement(
     levels = _levels(rooms, program, proposal, multi_level)
     cores = _add_stair_cores(rooms, levels)
 
-    pm = _PlacementModel(opts, env_w, env_h, road_front)
-    pm.add_rooms(rooms, levels, obstacles)
+    pm = _PlacementModel(opts, rooms, levels, env_w, env_h, road_front)
+    pm.add_rooms(obstacles)
     ends = _endpoints(rooms)
     requirements = _requirements(program, proposal, opts, link_pairs)
     pm.add_contacts(strategy, _hard_connected(requirements, ends))
     entry = _entry_room(rooms)
     pm.anchor_to_road(entry)
-    elevations = placement_level_variables(
-        pm.md,
-        levels,
-        pm.x[entry.space_id],
-        pm.xe[entry.space_id],
-        road_front,
-        env_w,
-        Ground(site, frame),
-    )
+    elevations = pm.add_level_elevations(entry, Ground(site, frame))
     ext_ids = _exterior_ids(requirements, ends, entry)
     pm.add_exterior_walls(ext_ids)
     if cores:
@@ -910,13 +753,27 @@ class _PlacementModel:
     """The CP-SAT model of one placement: room boxes, contacts, doors and the objective.
 
     Variables are created in a fixed order; with one worker and a fixed seed, that order
-    is part of what makes a placement reproducible.
+    is part of what makes a placement reproducible. `solve_2d_placement` calls the `add_*`
+    methods in that order: rooms, contacts, road anchor, level elevations, exterior walls,
+    stair cores, connectivity, requirements, strategy, zoning; then `solve`.
     """
 
-    def __init__(self, opts: PlacementOptions, env_w: int, env_h: int, road_front: int) -> None:
+    def __init__(
+        self,
+        opts: PlacementOptions,
+        rooms: list[PlacementRoom],
+        levels: list[str],
+        env_w: int,
+        env_h: int,
+        road_front: int,
+    ) -> None:
         self.md = cp_model.CpModel()
         self.opts = opts
+        self.rooms, self.levels = rooms, levels
+        self.ids = {r.space_id: r for r in rooms}
         self.env_w, self.env_h, self.road_front = env_w, env_h, road_front
+        self.max_x = self.md.NewIntVar(0, env_w, "max_x")
+        self.max_y = self.md.NewIntVar(0, env_h, "max_y")
         self.obj: list = []
         self.x: dict[str, cp_model.IntVar] = {}
         self.y: dict[str, cp_model.IntVar] = {}
@@ -960,17 +817,13 @@ class _PlacementModel:
 
     # Rooms
 
-    def add_rooms(self, rooms: list[PlacementRoom], levels: list[str], obstacles: list) -> None:
+    def add_rooms(self, obstacles: list) -> None:
         md = self.md
-        self.rooms, self.levels = rooms, levels
-        self.ids = {r.space_id: r for r in rooms}
-        self.max_x = md.NewIntVar(0, self.env_w, "max_x")
-        self.max_y = md.NewIntVar(0, self.env_h, "max_y")
-        ix: dict[str, list] = {lv: [] for lv in levels}
-        iy: dict[str, list] = {lv: [] for lv in levels}
-        for r in rooms:
+        ix: dict[str, list] = {lv: [] for lv in self.levels}
+        iy: dict[str, list] = {lv: [] for lv in self.levels}
+        for r in self.rooms:
             self._add_room(r, obstacles, ix, iy)
-        for lv in levels:
+        for lv in self.levels:
             md.AddNoOverlap2D(ix[lv], iy[lv])
         md.AddMaxEquality(self.max_x, list(self.xe.values()))
         md.AddMaxEquality(self.max_y, list(self.ye.values()))
@@ -1092,6 +945,22 @@ class _PlacementModel:
         self.md.Add(self.y[entry.space_id] == self.road_front)
         for r in self.rooms:
             self.md.Add(self.y[r.space_id] >= self.road_front)
+
+    def add_level_elevations(
+        self, entry: PlacementRoom, ground: Ground
+    ) -> dict[str, cp_model.IntVar]:
+        """Each level's solved elevation (cm), tied to the terrain at the entry's road side."""
+        from .terrain_levels import placement_level_variables
+
+        return placement_level_variables(
+            self.md,
+            self.levels,
+            self.x[entry.space_id],
+            self.xe[entry.space_id],
+            self.road_front,
+            self.env_w,
+            ground,
+        )
 
     def add_exterior_walls(self, ext_ids: set[str]) -> None:
         x, y, xe, ye = self.x, self.y, self.xe, self.ye
@@ -1233,37 +1102,142 @@ class _PlacementModel:
     def add_strategy_constraints(self, strategy: str, courtyard: bool) -> None:
         md, rooms = self.md, self.rooms
         if strategy == STRATEGY_TWO_WING:
-            _apply_two_wing_constraints(
-                md, rooms, self.x, self.y, self.xe, self.ye, self.touch, self.env_w, self.env_h
-            )
+            self._add_two_wings()
         if courtyard:
-            _apply_courtyard_constraints(
-                md,
+            self._add_courtyard(
                 COURTYARD_SPACE_ID,
                 [
                     r
                     for r in rooms
                     if r.level_pref == LEVEL_ENTRY and r.space_id != COURTYARD_SPACE_ID
                 ],
-                self.directions,
             )
         if strategy == STRATEGY_OPEN_PLAN:
             for ra, rb in combinations([r for r in rooms if r.function in OPEN_PLAN_FUNCTIONS], 2):
                 if ra.function == SpaceFunction.DINING or rb.function == SpaceFunction.DINING:
                     md.Add(self.touch.get((ra.space_id, rb.space_id), md.NewConstant(0)) == 1)
 
+    def _add_two_wings(self) -> None:
+        """Enforce two-wing L-shaped layout with free wing positioning (S7-14)."""
+        md, env_w_dm, env_h_dm = self.md, self.env_w, self.env_h
+        wing_a, wing_b = _partition_wings(self.rooms)
+
+        xa_min = md.NewIntVar(0, env_w_dm, "xa_min")
+        xa_max = md.NewIntVar(0, env_w_dm, "xa_max")
+        ya_min = md.NewIntVar(0, env_h_dm, "ya_min")
+        ya_max = md.NewIntVar(0, env_h_dm, "ya_max")
+
+        xb_min = md.NewIntVar(0, env_w_dm, "xb_min")
+        xb_max = md.NewIntVar(0, env_w_dm, "xb_max")
+        yb_min = md.NewIntVar(0, env_h_dm, "yb_min")
+        yb_max = md.NewIntVar(0, env_h_dm, "yb_max")
+
+        if not wing_a or not wing_b:
+            raise Solve2DFailed("two-wing layout needs rooms in both wings")
+        for group, x0, x1, y0, y1 in [
+            (wing_a, xa_min, xa_max, ya_min, ya_max),
+            (wing_b, xb_min, xb_max, yb_min, yb_max),
+        ]:
+            md.AddMinEquality(x0, [self.x[r.space_id] for r in group])
+            md.AddMaxEquality(x1, [self.xe[r.space_id] for r in group])
+            md.AddMinEquality(y0, [self.y[r.space_id] for r in group])
+            md.AddMaxEquality(y1, [self.ye[r.space_id] for r in group])
+
+        # Wings are connected at a junction: at least one shared wall between wings
+        wing_touches: list[cp_model.BoolVar] = []
+        for ra in wing_a:
+            for rb in wing_b:
+                pair = (min(ra.space_id, rb.space_id), max(ra.space_id, rb.space_id))
+                if pair in self.touch:
+                    wing_touches.append(self.touch[pair])
+        if wing_touches:
+            md.Add(sum(wing_touches) >= 1)
+
+        # L-shaped re-entrant recess: wings have free relative positions, but do not degenerate
+        # into a single rectangular solid. One wing extends past the other in X and/or Y.
+        bx_diff = md.NewBoolVar("bx_diff")
+        by_diff = md.NewBoolVar("by_diff")
+        md.Add(xa_max >= xb_max + L_SHAPE_MIN_RECESS_DM).OnlyEnforceIf(bx_diff)
+        md.Add(xb_max >= xa_max + L_SHAPE_MIN_RECESS_DM).OnlyEnforceIf(bx_diff.Not())
+        md.Add(ya_max >= yb_max + L_SHAPE_MIN_RECESS_DM).OnlyEnforceIf(by_diff)
+        md.Add(yb_max >= ya_max + L_SHAPE_MIN_RECESS_DM).OnlyEnforceIf(by_diff.Not())
+        md.Add(bx_diff + by_diff == 1)
+
+    def _add_courtyard(self, court_id: str, interior_rooms: list[PlacementRoom]) -> None:
+        """Enforce central courtyard enclosure on at least 3 sides (S7-15)."""
+        md, touch_details = self.md, self.directions
+        t_north_list: list[cp_model.BoolVar] = []
+        t_south_list: list[cp_model.BoolVar] = []
+        t_east_list: list[cp_model.BoolVar] = []
+        t_west_list: list[cp_model.BoolVar] = []
+
+        for r in interior_rooms:
+            sa = r.space_id
+            k = (min(sa, court_id), max(sa, court_id))
+            if k in touch_details:
+                dirs = touch_details[k]
+                if sa < court_id:
+                    t_west_list.append(dirs["east"])
+                    t_east_list.append(dirs["west"])
+                    t_south_list.append(dirs["north"])
+                    t_north_list.append(dirs["south"])
+                else:
+                    t_east_list.append(dirs["east"])
+                    t_west_list.append(dirs["west"])
+                    t_north_list.append(dirs["north"])
+                    t_south_list.append(dirs["south"])
+
+        has_n = md.NewBoolVar("court_has_n")
+        has_s = md.NewBoolVar("court_has_s")
+        has_e = md.NewBoolVar("court_has_e")
+        has_w = md.NewBoolVar("court_has_w")
+
+        if t_north_list:
+            md.Add(sum(t_north_list) >= 1).OnlyEnforceIf(has_n)
+            md.Add(sum(t_north_list) == 0).OnlyEnforceIf(has_n.Not())
+        else:
+            md.Add(has_n == 0)
+
+        if t_south_list:
+            md.Add(sum(t_south_list) >= 1).OnlyEnforceIf(has_s)
+            md.Add(sum(t_south_list) == 0).OnlyEnforceIf(has_s.Not())
+        else:
+            md.Add(has_s == 0)
+
+        if t_east_list:
+            md.Add(sum(t_east_list) >= 1).OnlyEnforceIf(has_e)
+            md.Add(sum(t_east_list) == 0).OnlyEnforceIf(has_e.Not())
+        else:
+            md.Add(has_e == 0)
+
+        if t_west_list:
+            md.Add(sum(t_west_list) >= 1).OnlyEnforceIf(has_w)
+            md.Add(sum(t_west_list) == 0).OnlyEnforceIf(has_w.Not())
+        else:
+            md.Add(has_w == 0)
+
+        # Courtyard enclosed on >= 3 sides (e.g. U-shape or 4-side courtyard)
+        md.Add(has_n + has_s + has_e + has_w >= 3)
+
     def add_zoning_objectives(self) -> None:
-        _apply_zoning_objectives(
-            self.md,
-            self.rooms,
-            self.x,
-            self.y,
-            self.xe,
-            self.ye,
-            self.obj,
-            self.env_w,
-            self.env_h,
-        )
+        """Add intra-zone compactness objectives for privacy-driven zoning (S7-17)."""
+        md, env_w_dm, env_h_dm = self.md, self.env_w, self.env_h
+        by_zone: dict[str, list[PlacementRoom]] = {}
+        for r in self.rooms:
+            by_zone.setdefault(r.zone_id, []).append(r)
+
+        for zid, zrooms in by_zone.items():
+            if len(zrooms) >= 2:
+                zx_min = md.NewIntVar(0, env_w_dm, f"zx_min_{zid}")
+                zx_max = md.NewIntVar(0, env_w_dm, f"zx_max_{zid}")
+                zy_min = md.NewIntVar(0, env_h_dm, f"zy_min_{zid}")
+                zy_max = md.NewIntVar(0, env_h_dm, f"zy_max_{zid}")
+                for r in zrooms:
+                    md.Add(self.x[r.space_id] >= zx_min)
+                    md.Add(self.xe[r.space_id] <= zx_max)
+                    md.Add(self.y[r.space_id] >= zy_min)
+                    md.Add(self.ye[r.space_id] <= zy_max)
+                self.obj.append(W_ZONE_CLUSTER * ((zx_max - zx_min) + (zy_max - zy_min)))
 
     def solve(self) -> tuple[cp_model.CpSolver, int]:
         self.md.Minimize(sum(self.obj))
