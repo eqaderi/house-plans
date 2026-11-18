@@ -21,7 +21,7 @@ from house_ai.domain.program import Privacy, SpaceFunction, Strength
 from house_ai.domain.terrain import elevation_at, site_surface
 
 from .base import EvaluationContext
-from .evaluators import _Out, _privacy
+from .evaluators import EvaluatorOutput, space_privacy
 from .routes import RouteNetwork, shortest_in_polygon
 from .templates import PROJECT, TEMPLATES, UsabilityPolicy, dimension, template
 from .usability_geometry import (
@@ -65,7 +65,7 @@ def template_front_strip(item, depth):
     return affinity.translate(strip, *item.position)
 
 
-class _CriticOut(_Out):
+class _CriticOut(EvaluatorOutput):
     def result(self):
         result = super().result()
         result.run.version = "1.0.0"
@@ -78,11 +78,10 @@ class _CriticOut(_Out):
         self.metrics[-1].assumption_basis = basis
 
     def flag(self, code, ids, message, *, method="polygon_intersection", basis=PROJECT, status=INF):
-        self.violation(code, Strength.SOFT, message, ids, status)
+        self.violation(code, Strength.SOFT, message, ids, status, method=method)
         self.violations[-1].id = (
             "u-" + sha256((self.name + code + repr(ids) + message).encode()).hexdigest()[:20]
         )
-        self.violations[-1].method = method
         self.violations[-1].assumption_basis = basis
 
 
@@ -753,7 +752,7 @@ class RouteUsabilityEvaluator(Critic):
     def evaluate(self, ctx):
         out, model, p = _CriticOut(self.name), ctx.model, self.policy
         net = RouteNetwork.for_model(model)
-        privacy = _privacy(model)
+        privacy = space_privacy(model)
         crossing_routes = 0
         guest_routes_complete = True
         guest_routes_estimated = False

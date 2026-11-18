@@ -30,14 +30,16 @@ loop.
 - **The Evaluation is the only source of Findings about a Plan version.**
   Every Finding comes from an evaluator (or from `check_model` through the
   geometry evaluator) and says how it was obtained.
-- **One label layout** (`render2d/labels.py`): the room labels, their text
+- **One label layout** (`domain/label_layout.py`): the room labels, their text
   lines and the drawing scale (every Space, and the Site boundary when there is
   one, plus 2.5 m) are computed once. The plan drawing draws them (its output
   is unchanged) and `evaluation/drawing.py`'s `LabelCollisionEvaluator`
   reports overlapping labels on one Level as `label_collision`, soft,
   `measured`, method `drawing_label_layout`. It never closes the plan gate.
-  The evaluation package imports the 2D rendering package for this one pure
-  layout function, as it already imports `geospatial`.
+  The layout lives in the domain, not in `render2d`, so the evaluation package
+  does not depend on the 2D rendering package (pipeline packages depend on the
+  domain only). It is geometry only: text, baseline offsets, sizes and the
+  scale; the colour and weight of each line stay in `render2d/plan_svg.py`.
 - **What a revision fixed is checked, not assumed** (`evaluation/findings.py`).
   `PlanService.revise` compares the Findings of the parent's Evaluation and of
   the new one for the ids the request targeted
@@ -75,6 +77,13 @@ loop.
   Evaluations are untouched; re-evaluating a stored Plan version reports them.
 - A window in a retaining wall is reported once per window, whatever the
   room, from the wall's kind; with terrain it is no longer also sampled.
+  Before, it was reported only with terrain and only for a habitable room, so
+  the seeded defect (no terrain) was not reported. The rule differs only for a
+  window in a retaining wall, which the generators never place (Enclosure,
+  ADR 0031) and no committed Plan version has: every house model in the
+  repository (41, 337 windows, none in a retaining wall) gets the same
+  daylight metrics and Findings before and after, with and without the
+  synthetic hillside Site, so stored Plan versions evaluate as before.
 - A revision whose request names no Space (only `--strategy` or `--stair`)
   reports three empty lists.
 - Findings about ids the request did not target are not in the three lists;

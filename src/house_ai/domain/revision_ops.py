@@ -28,7 +28,7 @@ from .base import Id, StrictModel, UtcDatetime, utc_now
 from .program import LEVEL_PREFERENCES
 
 
-class RevisionOpError(ValueError):
+class RevisionOperationError(ValueError):
     """A Revision operation the system cannot act on; nothing was changed."""
 
 
@@ -92,8 +92,10 @@ REVISION_VERBS: dict[RevisionVerb, VerbRule] = {
 _KNOWN = ", ".join(sorted(v.value for v in RevisionVerb))
 
 
-def _unknown(verb: object, text: str) -> RevisionOpError:
-    return RevisionOpError(f"unknown revision operation {verb!r} in {text!r}; known: {_KNOWN}")
+def _unknown(verb: object, text: str) -> RevisionOperationError:
+    return RevisionOperationError(
+        f"unknown revision operation {verb!r} in {text!r}; known: {_KNOWN}"
+    )
 
 
 def _check(verb: RevisionVerb, target: str, value: Any, text: str) -> None:
@@ -103,34 +105,34 @@ def _check(verb: RevisionVerb, target: str, value: Any, text: str) -> None:
     if rule.names == 2:
         parts = target.split(",")
         if len(parts) != 2 or not all(p.strip() for p in parts) or value is not None:
-            raise RevisionOpError(shape)
+            raise RevisionOperationError(shape)
         return
     if not target or (rule.names == 1 and "," in target):
-        raise RevisionOpError(shape)
+        raise RevisionOperationError(shape)
     words = rule.words
     if rule.names == 0:
         if value is not None:
-            raise RevisionOpError(shape)
+            raise RevisionOperationError(shape)
         if words is not None and target not in words:
-            raise RevisionOpError(f"{text!r}: {verb.value} must be one of {sorted(words)}")
+            raise RevisionOperationError(f"{text!r}: {verb.value} must be one of {sorted(words)}")
         return
     if rule.sep is None:
         if value is not None:
-            raise RevisionOpError(shape)
+            raise RevisionOperationError(shape)
         return
     if value is None:
         if not rule.optional:
-            raise RevisionOpError(shape)
+            raise RevisionOperationError(shape)
         return
     if rule.number:
         try:
             number = float(value)
         except (TypeError, ValueError):
-            raise RevisionOpError(shape) from None
+            raise RevisionOperationError(shape) from None
         if isinstance(value, bool) or not math.isfinite(number) or number <= 0:
-            raise RevisionOpError(shape)
+            raise RevisionOperationError(shape)
     elif words is not None and value not in words:
-        raise RevisionOpError(f"{text!r}: {verb.value} must be one of {sorted(words)}")
+        raise RevisionOperationError(f"{text!r}: {verb.value} must be one of {sorted(words)}")
 
 
 class RevisionComment(StrictModel):
@@ -175,7 +177,7 @@ class RevisionOp(StrictModel):
         """The one parser of the text form; refuses what the system cannot act on."""
         verb_text, colon, arg = text.partition(":")
         if not colon:
-            raise RevisionOpError(f"{text!r}: a revision operation is VERB:TARGET")
+            raise RevisionOperationError(f"{text!r}: a revision operation is VERB:TARGET")
         try:
             verb = RevisionVerb(verb_text)
         except ValueError:
@@ -186,7 +188,7 @@ class RevisionOp(StrictModel):
             target, sep, rest = arg.partition(rule.sep)
             value = rest if sep else None
             if sep and not rest:
-                raise RevisionOpError(f"{text!r}: {verb.value} needs {rule.form}")
+                raise RevisionOperationError(f"{text!r}: {verb.value} needs {rule.form}")
         _check(verb, target, value, text)
         return cls(op_type=verb, target=target, value=value)
 
@@ -218,17 +220,17 @@ class RevisionOp(StrictModel):
     @property
     def area_m2(self) -> float:
         if not self.rule.number or self.value is None:
-            raise RevisionOpError(f"{self} carries no area")
+            raise RevisionOperationError(f"{self} carries no area")
         return float(self.value)
 
     @property
     def outdoor_kind(self) -> str:
         if self.op_type is not RevisionVerb.OUTDOOR:
-            raise RevisionOpError(f"{self} is not an outdoor link")
+            raise RevisionOperationError(f"{self} is not an outdoor link")
         return str(self.value) if self.value is not None else OUTDOOR_LINK_TERRACE
 
 
-def parse_ops(texts: list[str]) -> list[RevisionOp]:
+def parse_operations(texts: list[str]) -> list[RevisionOp]:
     """Parse several text forms, refusing the first one the system cannot act on."""
     return [RevisionOp.parse(t) for t in texts]
 

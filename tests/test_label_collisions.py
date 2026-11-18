@@ -2,6 +2,10 @@
 
 from __future__ import annotations
 
+import ast
+from pathlib import Path
+
+import house_ai
 from examples.usability.scenarios import flat_site, rectangle, space
 from house_ai.constants.evaluations import PLAN_GATE_BLOCKING_CODES
 from house_ai.domain.epistemics import ClaimStatus
@@ -87,3 +91,18 @@ def test_labels_on_different_levels_never_collide():
     )
     model.levels.append(Level(id="upper", name="Upper", elevation_m=3, floor_to_floor_m=3))
     assert _collisions(_evaluate(model)) == []
+
+
+def test_the_evaluation_and_the_domain_import_no_rendering_package():
+    # AGENT_CONTRACT §2: pipeline packages depend on the domain only. The label layout the
+    # Finding shares with the drawing lives in the domain, so neither imports render2d.
+    src = Path(house_ai.__file__).parent
+    for package in ("evaluation", "domain"):
+        for path in sorted((src / package).glob("*.py")):
+            imported = [
+                (node.module or "") if isinstance(node, ast.ImportFrom) else alias.name
+                for node in ast.walk(ast.parse(path.read_text()))
+                if isinstance(node, ast.Import | ast.ImportFrom)
+                for alias in node.names
+            ]
+            assert not [m for m in imported if m.startswith("house_ai.render2d")], path

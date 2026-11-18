@@ -843,138 +843,19 @@
     "ungrounded_ids": {},
     "png_sha256": "b45d0b4cbe1bbab146bc78e3b90d4c09f9676a09faf6b54760c326c7a60ca173",
     "critique_made_on_this_rendering": true,
-    "detector_findings": [
+    "evaluation_findings": [
       {
-        "type": "overlapping_labels",
-        "elements": [
-          "sp-corridor-b0",
-          "sp-dining"
-        ]
+        "code": "large_underfloor_void",
+        "subjects": []
       },
       {
-        "type": "overlapping_labels",
-        "elements": [
-          "sp-corridor-b0",
-          "sp-study-1"
-        ]
+        "code": "height_limit_exceeded",
+        "subjects": []
       },
       {
-        "type": "overlapping_labels",
-        "elements": [
-          "sp-entry",
-          "sp-storage"
-        ]
-      },
-      {
-        "type": "overlapping_labels",
-        "elements": [
-          "sp-entry",
-          "sp-flex-b0-front"
-        ]
-      },
-      {
-        "type": "overlapping_labels",
-        "elements": [
-          "sp-kitchen",
-          "sp-pantry"
-        ]
-      },
-      {
-        "type": "overlapping_labels",
-        "elements": [
-          "sp-study-1",
-          "sp-laundry"
-        ]
-      },
-      {
-        "type": "overlapping_labels",
-        "elements": [
-          "sp-study-1",
-          "sp-mechanical"
-        ]
-      },
-      {
-        "type": "overlapping_labels",
-        "elements": [
-          "sp-study-1",
-          "sp-flex-b0-front"
-        ]
-      },
-      {
-        "type": "overlapping_labels",
-        "elements": [
-          "sp-laundry",
-          "sp-mechanical"
-        ]
-      },
-      {
-        "type": "overlapping_labels",
-        "elements": [
-          "sp-laundry",
-          "sp-flex-b0-front"
-        ]
-      },
-      {
-        "type": "overlapping_labels",
-        "elements": [
-          "sp-storage",
-          "sp-flex-b0-front"
-        ]
-      },
-      {
-        "type": "overlapping_labels",
-        "elements": [
-          "sp-mechanical",
-          "sp-flex-b0-front"
-        ]
-      },
-      {
-        "type": "overlapping_labels",
-        "elements": [
-          "sp-mechanical",
-          "sp-garage"
-        ]
-      },
-      {
-        "type": "overlapping_labels",
-        "elements": [
-          "sp-corridor-b1",
-          "sp-bath-ensuite"
-        ]
-      },
-      {
-        "type": "overlapping_labels",
-        "elements": [
-          "sp-corridor-b1",
+        "code": "bed_double_no_sampled_fit",
+        "subjects": [
           "sp-bed-main"
-        ]
-      },
-      {
-        "type": "overlapping_labels",
-        "elements": [
-          "sp-corridor-b1",
-          "sp-bed-child-1"
-        ]
-      },
-      {
-        "type": "overlapping_labels",
-        "elements": [
-          "sp-corridor-b1",
-          "sp-bed-child-2"
-        ]
-      },
-      {
-        "type": "overlapping_labels",
-        "elements": [
-          "sp-bath-ensuite",
-          "sp-bed-main"
-        ]
-      },
-      {
-        "type": "overlapping_labels",
-        "elements": [
-          "sp-bath-ensuite",
-          "sp-bath-1"
         ]
       }
     ]

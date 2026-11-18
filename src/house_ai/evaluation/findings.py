@@ -31,7 +31,7 @@ class FindingsChange:
     remaining: tuple[Violation, ...] = ()
     new: tuple[Violation, ...] = ()
 
-    def as_json(self) -> dict:
+    def to_json(self) -> dict:
         def rows(items: tuple[Violation, ...]) -> list[dict]:
             return [v.model_dump(mode="json") for v in items]
 

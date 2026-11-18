@@ -54,14 +54,18 @@ from .site_context import site_context_for
 
 S = WorkflowState
 
-#: Ordinary (non-gate) transitions.
+#: The states a project is in while its Site is ingested or awaits the Owner's confirmation.
+SITE_STATES = frozenset({S.SITE_INGESTION, S.SITE_NEEDS_CONFIRMATION})
+
+#: Ordinary (non-gate) transitions. PROGRAM_REVIEW has none: leaving it backwards is the
+#: Owner's ``program reject`` (``InterviewService.reject_program``, ADR 0029), never a
+#: transition, and forwards is the program gate.
 TRANSITIONS: dict[WorkflowState, frozenset[WorkflowState]] = {
     S.NEW_PROJECT: frozenset({S.SITE_INGESTION}),
     S.SITE_INGESTION: frozenset({S.SITE_NEEDS_CONFIRMATION}),
     S.SITE_NEEDS_CONFIRMATION: frozenset({S.SITE_INGESTION}),
     S.SITE_APPROVED: frozenset({S.INTERVIEWING}),
     S.INTERVIEWING: frozenset({S.PROGRAM_REVIEW}),
-    S.PROGRAM_REVIEW: frozenset({S.INTERVIEWING}),
     S.PROGRAM_APPROVED: frozenset({S.PLAN_GENERATION}),
     S.PLAN_GENERATION: frozenset({S.PLAN_REVIEW}),
     S.PLAN_REVIEW: frozenset({S.PLAN_GENERATION}),
@@ -217,14 +221,19 @@ def _blocker(kind: BlockerKind, code: str, message: str, *subject_ids: str) -> B
     return Blocker(kind=kind, code=code, subject_ids=list(subject_ids), message=message)
 
 
+def _contradiction_blocker(cid: str, statement: str, *subject_ids: str) -> Blocker:
+    message = f"unresolved contradiction {cid}: {statement}"
+    return _blocker(BlockerKind.CONTRADICTION, cid, message, *subject_ids)
+
+
 def _program_check_blockers(finding: ProgramFinding, asked: set[str]) -> list[Blocker]:
     """The Blocker for one blocking program check, unless an Open question covers it."""
     if finding.code == "missing_information" and set(finding.subject_ids) <= asked:
         return []  # its blocking Open question is the Blocker
     if finding.code == "contradiction":
-        cid = finding.subject_ids[0]
-        message = f"unresolved contradiction {cid}: {finding.message}"
-        return [_blocker(BlockerKind.CONTRADICTION, cid, message, *finding.subject_ids)]
+        return [
+            _contradiction_blocker(finding.subject_ids[0], finding.message, *finding.subject_ids)
+        ]
     message = f"program check {finding.code}: {finding.message}"
     return [_blocker(BlockerKind.PROGRAM_CHECK, finding.code, message, *finding.subject_ids)]
 
@@ -232,9 +241,7 @@ def _program_check_blockers(finding: ProgramFinding, asked: set[str]) -> list[Bl
 def _uncited_brief_blockers(program: SpaceProgram, briefs: list[DesignBrief]) -> list[Blocker]:
     """Contradictions and unknown fact ids across several briefs, none cited by the program."""
     out = [
-        _blocker(
-            BlockerKind.CONTRADICTION, c.id, f"unresolved contradiction {c.id}: {c.statement}", c.id
-        )
+        _contradiction_blocker(c.id, c.statement, c.id)
         for brief in briefs
         for c in brief.unresolved_contradictions()
     ]
@@ -323,6 +330,8 @@ class Workflow:
                 f"{to.value} is behind an approval gate; it can only be reached by a human "
                 "approval (approve), never by a transition"
             )
+        if current is S.PROGRAM_REVIEW and to is S.INTERVIEWING:
+            raise UseProgramReject()
         if to not in TRANSITIONS.get(current, frozenset()):
             allowed = ", ".join(s.value for s in self.allowed_transitions()) or "none"
             raise TransitionNotAllowed(
@@ -330,8 +339,6 @@ class Workflow:
             )
         if not reason.strip():
             raise TransitionNotAllowed("a transition needs a reason")
-        if current is S.PROGRAM_REVIEW and to is S.INTERVIEWING:
-            raise UseProgramReject()
         problems = self._transition_guard(current, to)
         if problems:
             raise TransitionNotAllowed(f"{current.value} -> {to.value}: " + "; ".join(problems))
@@ -382,7 +389,7 @@ class Workflow:
         of the gate's kind exists. ``None`` when there is no such gate or version.
         """
         status = self.status()
-        if status.state in (S.SITE_INGESTION, S.SITE_NEEDS_CONFIRMATION):
+        if status.state in SITE_STATES:
             gate: Gate | None = Gate.SITE
         else:
             gate = next((g for g, s in GATES.items() if s.review_state is status.state), None)
@@ -399,8 +406,7 @@ class Workflow:
     ) -> NextHumanAction | None:
         if approvable:
             return NextHumanAction(HumanAction.APPROVE, gate, ref.id, ref.version)
-        site_states = (S.SITE_INGESTION, S.SITE_NEEDS_CONFIRMATION)
-        if gate is Gate.SITE and status.state in site_states and ref.kind is ArtifactKind.SITE:
+        if gate is Gate.SITE and status.state in SITE_STATES and ref.kind is ArtifactKind.SITE:
             try:
                 clears = site_blockers(self.store.get(ref, Site))
             except StoreError:

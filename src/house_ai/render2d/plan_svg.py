@@ -36,6 +36,7 @@ from house_ai.domain.base import EXTERIOR
 from house_ai.domain.epistemics import ConfirmationStatus
 from house_ai.domain.evaluation import EvaluationReport
 from house_ai.domain.geometry import Point2, Polygon2D
+from house_ai.domain.label_layout import LabelLayout, drawing_scale, label_layout
 from house_ai.domain.model import HouseModel, Opening, OpeningKind, Operation, Wall, WallKind
 from house_ai.domain.plan import PlanVersion
 from house_ai.domain.program import Privacy
@@ -46,10 +47,11 @@ from house_ai.domain.site import (
     Site,
     SiteFeatureKind,
 )
-from house_ai.render2d.labels import LabelLayout, drawing_scale, label_layout
 
 HEADER_H = 92.0
 SECTION_H = 230.0
+#: Colour and weight of a room label's name, area and dimensions lines.
+LABEL_LINE_STYLE = (("#222", "bold"), ("#222", "normal"), ("#555", "normal"))
 
 FILL = {
     Privacy.PUBLIC: "#f6e7c8",
@@ -389,10 +391,8 @@ def _level_panel(
         if label.level_id != level_id:
             continue
         x, y = v.p(label.anchor)
-        for line in label.lines:
-            out.append(
-                _t(x, y + line.dy, line.text, line.size, colour=line.colour, weight=line.weight)
-            )
+        for line, (colour, weight) in zip(label.lines, LABEL_LINE_STYLE, strict=True):
+            out.append(_t(x, y + line.dy, line.text, line.size, colour=colour, weight=weight))
     out.append(_overall_dims(v, model, level_id))
     title = f"{lv.name} — FFL {lv.elevation_m:+.2f} m (local)"
     out.append(_t(v.ox - MARGIN + 10, v.oy - MARGIN + 18, title, 12, anchor="start", weight="bold"))
