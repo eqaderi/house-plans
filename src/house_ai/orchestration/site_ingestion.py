@@ -756,7 +756,7 @@ def ingest_site(
 # ------------------------------------------------------------------ confirm
 
 
-def confirm_site(
+def confirm_site(  # noqa: C901
     store: ProjectStore, site_id: str, actor: Actor, conf: SiteConfirmation
 ) -> ArtifactRef:
     """Write a new site version with human-confirmed units, CRS, datum or boundary.

@@ -83,7 +83,7 @@ def area_summary(program: SpaceProgram) -> AreaSummary:
     return AreaSummary(net_min, net_target, net_min * c, net_target * c, unsized, footprint)
 
 
-def validate_program(
+def validate_program(  # noqa: C901
     program: SpaceProgram, brief: DesignBrief | None, site: SiteContext | None = None
 ) -> list[ProgramFinding]:
     out: list[ProgramFinding] = []

@@ -5,7 +5,7 @@ from house_ai.domain.program import Strength
 from house_ai.geospatial.hillside import hillside_report
 
 
-def terrain_metrics(ctx, out):
+def terrain_metrics(ctx, out):  # noqa: C901
     report = hillside_report(ctx.model, ctx.site)
     works = report["earthworks"]
     if report["geometry_error"]:

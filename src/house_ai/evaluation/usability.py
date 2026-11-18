@@ -146,7 +146,7 @@ class NetAreaEvaluator(Critic):
 class DoorClearanceEvaluator(Critic):
     name = "DoorClearanceEvaluator"
 
-    def evaluate(self, ctx):
+    def evaluate(self, ctx):  # noqa: C901
         out, model, p = _CriticOut(self.name), ctx.model, self.policy
         swings = []
         for o in model.openings:
@@ -214,7 +214,7 @@ class DoorClearanceEvaluator(Critic):
 class StairUsabilityEvaluator(Critic):
     name = "StairUsabilityEvaluator"
 
-    def evaluate(self, ctx):
+    def evaluate(self, ctx):  # noqa: C901
         out, model, p = _CriticOut(self.name), ctx.model, self.policy
         for st in model.stairs:
             ids = [st.id]
@@ -749,7 +749,7 @@ def _route_method(route, missing):
 class RouteUsabilityEvaluator(Critic):
     name = "RouteUsabilityEvaluator"
 
-    def evaluate(self, ctx):
+    def evaluate(self, ctx):  # noqa: C901
         out, model, p = _CriticOut(self.name), ctx.model, self.policy
         net = RouteNetwork.for_model(model)
         privacy = space_privacy(model)

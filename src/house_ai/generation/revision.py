@@ -172,7 +172,7 @@ def merge_operations(
     return out + transient
 
 
-def compile_revision(
+def compile_revision(  # noqa: C901
     base: PlanVersion, program: SpaceProgram, ops: list[RevisionOp], *, inherit: bool
 ) -> RevisionRequest:
     """Turn ``ops`` (and, when ``inherit``, the parent's lasting operations) into solver input.

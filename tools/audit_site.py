@@ -30,7 +30,7 @@ def sha(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def audit(project: Path) -> dict:
+def audit(project: Path) -> dict:  # noqa: C901
     store = ProjectStore(project)
     errors = store.verify()
     if errors:

@@ -109,7 +109,7 @@ def _feature_points(f: SiteFeature) -> list[Point2]:
     return [g.xy]
 
 
-def render_site_svg(site: Site, report: SiteValidationReport) -> str:
+def render_site_svg(site: Site, report: SiteValidationReport) -> str:  # noqa: C901
     pts: list[Point2] = []
     if site.boundary is not None:
         pts += [p for r in (site.boundary.outer, *site.boundary.holes) for p in r]

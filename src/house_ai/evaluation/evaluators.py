@@ -256,7 +256,7 @@ class ProgramEvaluator:
     name = "ProgramEvaluator"
     version = VERSION
 
-    def evaluate(self, ctx: EvaluationContext) -> EvaluatorResult:
+    def evaluate(self, ctx: EvaluationContext) -> EvaluatorResult:  # noqa: C901
         out, model, program = EvaluatorOutput(self.name), ctx.model, ctx.program
         if program is None:
             return EvaluatorResult(

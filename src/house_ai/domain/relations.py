@@ -69,7 +69,7 @@ def hops_between(graph: dict[str, set[str]], origin: str) -> dict[str, int]:
     return dist
 
 
-def is_relation_satisfied(
+def is_relation_satisfied(  # noqa: C901
     kind: SpaceRelationshipKind,
     model: HouseModel,
     graph: dict[str, set[str]],

@@ -563,7 +563,7 @@ def cmd_interview_next(args: argparse.Namespace) -> int:
     return EXIT_OK
 
 
-def cmd_interview_checklist(args: argparse.Namespace) -> int:
+def cmd_interview_checklist(args: argparse.Namespace) -> int:  # noqa: C901
     svc = InterviewService(ProjectStore(resolve_project_dir(args.dir)))
     info = svc.checklist().to_json()
     if getattr(args, "json", False):

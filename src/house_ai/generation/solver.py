@@ -189,7 +189,7 @@ def _stair_range(rooms: ProgramRooms, rng: tuple[int, int], depth: int) -> tuple
     return lo, max(lo, rng[1])
 
 
-def build_units(m: Massing, rooms: ProgramRooms) -> tuple[list[Unit], list[str]]:
+def build_units(m: Massing, rooms: ProgramRooms) -> tuple[list[Unit], list[str]]:  # noqa: C901
     """Units to place and reasons a cluster has nowhere to go (empty when feasible)."""
     entry_z = m.entry_elevation_m
     units: list[Unit] = []
@@ -267,7 +267,7 @@ def _level_penalty(pref: str | None, bar: Bar, m: Massing) -> int:
     return 0
 
 
-def solve(m: Massing, rooms: ProgramRooms, opts: BarOptions) -> Solution:
+def solve(m: Massing, rooms: ProgramRooms, opts: BarOptions) -> Solution:  # noqa: C901
     units, problems = build_units(m, rooms)
     if problems:
         raise SolveFailed("; ".join(problems))

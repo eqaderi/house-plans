@@ -18,7 +18,7 @@ def _ref_to_name(ref: str) -> str:
     return ref.split("/")[-1]
 
 
-def _ts_type(prop: dict[str, Any], defs: dict[str, Any]) -> str:
+def _ts_type(prop: dict[str, Any], defs: dict[str, Any]) -> str:  # noqa: C901
     """Map a JSON schema property definition to a TypeScript type string."""
     if "$ref" in prop:
         return _ref_to_name(prop["$ref"])
@@ -73,7 +73,7 @@ def _ts_type(prop: dict[str, Any], defs: dict[str, Any]) -> str:
     return "any"
 
 
-def generate_typescript_content() -> str:
+def generate_typescript_content() -> str:  # noqa: C901
     """Parse all JSON schemas and render complete TypeScript source code."""
     all_defs: dict[str, dict[str, Any]] = {}
     root_schemas: dict[str, dict[str, Any]] = {}

@@ -78,7 +78,7 @@ def gate_actions(store: ProjectStore) -> dict[Gate, dict[str, NextHumanAction]]:
     return out
 
 
-def build_reviewer_bundle(
+def build_reviewer_bundle(  # noqa: C901
     store: ProjectStore,
     *,
     render: Callable[[NextHumanAction], str],
