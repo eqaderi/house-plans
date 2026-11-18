@@ -5,10 +5,6 @@ description: Generate solver-backed residential floor-plan options using CP-SAT 
 
 # Generate Plan Options
 
-Follow [docs/AGENT_CONTRACT.md](../../docs/AGENT_CONTRACT.md) (§3 one model,
-§9b plan options, §10 professional boundary). In every command,
-`agent:<tool>` is your own tool name: `claude-code`, `codex` or `gemini`.
-
 ## Purpose
 Guide the agent through generating solver-backed, geometrically checked plan options from an approved space program and site. The generator tries six massing strategies, reports why rejected strategies are infeasible, applies structured revision operations (each makes the next plan version), and prepares a plan version for the human plan gate.
 
@@ -66,6 +62,10 @@ Guide the agent through generating solver-backed, geometrically checked plan opt
    .venv/bin/house-ai plan revise <project> <option-id> "<verbatim owner words>" \
      --kind restart_from_program --actor agent:<tool>
    ```
+   "Three more alternatives" is `plan generate` with a new `--seed`. Combining
+   features of several plan options ("the entrance of B with the courtyard of
+   A") is `plan combine`, which needs the owner's words confirming the feature
+   mapping (`.venv/bin/house-ai plan combine --help`).
 
 6. **Request the plan gate review:**
    ```bash

@@ -15,6 +15,7 @@ import re
 from pathlib import Path
 
 from house_ai.cli.main import main
+from house_ai.constants.skills import CANONICAL_SKILLS_DIR
 from house_ai.domain.provenance import Actor, ActorKind, ArtifactKind, DataClassification
 from house_ai.domain.units import LengthUnit
 from house_ai.domain.workflow import Gate, WorkflowState
@@ -365,7 +366,7 @@ def test_generate_plan_options_and_critique_skills_workflow(tmp_path: Path):
     valid = collect_canonical_ids(json.loads(plan_json.read_text(encoding="utf-8")))
     valid |= collect_canonical_ids(store.get(program_ref))
     for skill in ("generate-plan-options", "critique-plan"):
-        text = (REPO / "skills" / skill / "SKILL.md").read_text(encoding="utf-8")
+        text = (REPO / CANONICAL_SKILLS_DIR / skill / "SKILL.md").read_text(encoding="utf-8")
         cited = set(re.findall(r"\b(?:pi|sp|z|lv|level|adj|rel)-[a-z0-9-]*[a-z0-9]\b", text))
         assert cited, skill
         assert cited <= valid, f"{skill} cites unknown IDs {sorted(cited - valid)}"

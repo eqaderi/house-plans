@@ -5,10 +5,6 @@ description: Conduct an adaptive owner interview (English, Persian, or mixed), r
 
 # Architectural Programming
 
-Follow [docs/AGENT_CONTRACT.md](../../docs/AGENT_CONTRACT.md) (§4 provenance,
-§6 epistemic status, §9 interview). In every command, `agent:<tool>` is your
-own tool name: `claude-code`, `codex` or `gemini`.
-
 ## Purpose
 Guide the agent through an adaptive, high-information architectural interview with the owner, recording verbatim answers in English, Persian, or mixed language, recording interpretations as unconfirmed inferences, resolving trade-offs and contradictions, building the validated space program, and requesting the human program gate.
 

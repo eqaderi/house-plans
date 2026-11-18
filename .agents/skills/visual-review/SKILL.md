@@ -5,10 +5,6 @@ description: Perform grounded visual inspection and critique of floor-plan optio
 
 # Visual Plan Review
 
-Follow [docs/AGENT_CONTRACT.md](../../docs/AGENT_CONTRACT.md) (§3 one model,
-§6 epistemic status, §10 professional boundary). In every command,
-`agent:<tool>` is your own tool name: `claude-code`, `codex` or `gemini`.
-
 ## Purpose
 Guide the agent through visual inspection and grounded visual critique of plan options rendered in the 2D plan viewer. Agents inspect semantic SVG elements, identify layout findings (such as door-swing collisions, window-wall misalignments, label collisions, and stair landing issues), cite elements strictly by their canonical IDs, propose structured revisions, and verify that fixes actually resolve them.
 

@@ -16,11 +16,10 @@ CANONICAL_SKILL_NAMES = (
     SKILL_VISUAL_REVIEW,
 )
 
-CANONICAL_SKILLS_DIR = "skills"
-PROVIDER_SKILLS_DIRS = (
-    ".claude/skills",
-    ".agents/skills",
-)
+#: The only copy of each skill; Codex, Gemini CLI and Antigravity read it here (ADR 0034).
+CANONICAL_SKILLS_DIR = ".agents/skills"
+#: Claude Code's skills folder: a symlink to the whole canonical folder.
+CLAUDE_SKILLS_LINK = ".claude/skills"
 
 REQUIRED_SKILL_FRONTMATTER = (
     "name",

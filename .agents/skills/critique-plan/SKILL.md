@@ -5,10 +5,6 @@ description: Perform grounded architectural critique of floor-plan options acros
 
 # Critique Plan
 
-Follow [docs/AGENT_CONTRACT.md](../../docs/AGENT_CONTRACT.md) (§3 one model,
-§6 epistemic status, §10 professional boundary). In every command,
-`agent:<tool>` is your own tool name: `claude-code`, `codex` or `gemini`.
-
 ## Purpose
 Guide the agent through an evidence-grounded architectural critique of generated floor plans: functional quality, zoning, circulation, daylight, privacy, and hillside relationships. Every claim carries its epistemic status, every cited element is a canonical ID that exists in the plan, and every proposed change is an explicit `plan revise` operation.
 

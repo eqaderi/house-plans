@@ -5,10 +5,6 @@ description: Inspect and ingest survey CAD files (DWG/DXF), validate boundary an
 
 # Site Survey Review
 
-Follow [docs/AGENT_CONTRACT.md](../../docs/AGENT_CONTRACT.md) (§5 private data,
-§6 unknowns, §7 CAD and coordinates, §8 gates). In every command,
-`agent:<tool>` is your own tool name: `claude-code`, `codex` or `gemini`.
-
 ## Purpose
 Guide the agent through inspecting raw CAD survey files, ingesting survey entities into the project store with a human layer mapping, computing boundary and terrain metrics, evaluating site blockers, writing the owner's questions and confirmation sheet, and requesting the human site gate.
 

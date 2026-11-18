@@ -121,7 +121,7 @@ Then continue through the program and plan gates:
 Generate plan options on the synthetic steep hillside (Milestone D). The
 exploratory preview stores nothing and needs no approval; the gated run works
 only after the human approved the site and program gates
-([worked examples](docs/AGENT_WORKFLOWS.md)):
+([`generate-plan-options` skill](.agents/skills/generate-plan-options/SKILL.md)):
 
 ```bash
 .venv/bin/house-ai example load project-data/hill --name synthetic-hillside --project-id synthetic-hillside --actor human:<you>
@@ -173,8 +173,8 @@ Validate any file against its schema:
 | `tests/` | Automated tests (synthetic data only) |
 | `projects/` | One folder per house project; `my-house/` is the owner's own (committed, private repository) |
 | `project-data/` | Private scratch space, git-ignored |
-| `skills/` | Canonical agent skills, linked into `.claude/skills/` and `.agents/skills/` ([skills/README.md](skills/README.md)) |
+| `.agents/skills/` | Agent skills (`.claude/skills` is a symlink to this folder) |
 | `apps/reviewer/` | Placeholder for later milestones |
 
-AI agents: start with [AGENTS.md](AGENTS.md), [CLAUDE.md](CLAUDE.md) or
-[GEMINI.md](GEMINI.md), which all point to the agent contract.
+AI agents: start with [AGENTS.md](AGENTS.md) (`CLAUDE.md` and `GEMINI.md`
+are symlinks to it), which loads the agent contract.

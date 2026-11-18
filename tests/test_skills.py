@@ -1,11 +1,10 @@
-"""Tests for canonical agent skills layout, authoring template, and provider discovery."""
+"""Tests for the agent skills folder, authoring template, and Claude Code's link to it."""
 
 from __future__ import annotations
 
 import argparse
 import os
 import re
-import shutil
 from pathlib import Path
 
 import pytest
@@ -14,7 +13,8 @@ from house_ai.cli.main import build_parser
 from house_ai.constants.skills import (
     CANONICAL_SKILL_NAMES,
     CANONICAL_SKILLS_DIR,
-    PROVIDER_SKILLS_DIRS,
+    CLAUDE_SKILLS_LINK,
+    REQUIRED_SKILL_FRONTMATTER,
     REQUIRED_SKILL_SECTIONS,
 )
 from house_ai.validation.grounding import (
@@ -22,60 +22,51 @@ from house_ai.validation.grounding import (
     extract_entity_ids_from_text,
     validate_cited_ids,
 )
-from tools.sync_skills import get_canonical_skills, sync_skills, validate_skill_content
 
 REPO = Path(__file__).resolve().parent.parent
 
 
-def test_canonical_skills_exist():
-    canonical = get_canonical_skills(REPO)
-    for name in CANONICAL_SKILL_NAMES:
-        assert name in canonical, f"Missing canonical skill: {name}"
-    assert len(canonical) == len(CANONICAL_SKILL_NAMES)
+def validate_skill_content(skill_path: Path) -> list[str]:
+    """Template errors in a skill folder's SKILL.md: front matter fields and sections."""
+    skill_file = skill_path / "SKILL.md"
+    if not skill_file.is_file():
+        return [f"Missing SKILL.md in {skill_path}"]
+    text = skill_file.read_text(encoding="utf-8")
+    parts = text.split("---", 2)
+    if not text.startswith("---") or len(parts) < 3:
+        return [f"{skill_file}: Must start with closed YAML frontmatter"]
+    errors = [
+        f"{skill_file}: Frontmatter missing required field '{field}:'"
+        for field in REQUIRED_SKILL_FRONTMATTER
+        if f"{field}:" not in parts[1]
+    ]
+    errors += [
+        f"{skill_file}: Missing required section '## {section}'"
+        for section in REQUIRED_SKILL_SECTIONS
+        if f"## {section}" not in text
+    ]
+    return errors
+
+
+def test_skills_folder_holds_exactly_the_canonical_skills_as_real_folders():
+    skills_dir = REPO / CANONICAL_SKILLS_DIR
+    entries = {p.name: p for p in skills_dir.iterdir() if not p.name.startswith(".")}
+    assert sorted(entries) == sorted(CANONICAL_SKILL_NAMES)
+    for path in entries.values():
+        assert path.is_dir() and not path.is_symlink(), f"{path} must be a real folder"
+
+
+def test_claude_skills_is_a_relative_link_to_the_whole_skills_folder():
+    link = REPO / CLAUDE_SKILLS_LINK
+    assert link.is_symlink()
+    assert os.readlink(link) == "../.agents/skills"
+    assert link.resolve() == (REPO / CANONICAL_SKILLS_DIR).resolve()
+    assert sorted(p.name for p in link.iterdir()) == sorted(CANONICAL_SKILL_NAMES)
 
 
 @pytest.mark.parametrize("skill_name", CANONICAL_SKILL_NAMES)
 def test_skill_structure_and_frontmatter(skill_name: str):
-    skill_dir = REPO / CANONICAL_SKILLS_DIR / skill_name
-    assert skill_dir.is_dir()
-
-    skill_file = skill_dir / "SKILL.md"
-    assert skill_file.is_file()
-
-    errors = validate_skill_content(skill_dir)
-    assert errors == [], f"Validation errors for {skill_name}: {errors}"
-
-    text = skill_file.read_text(encoding="utf-8")
-    for section in REQUIRED_SKILL_SECTIONS:
-        assert f"## {section}" in text, f"Skill {skill_name} missing section '{section}'"
-
-
-@pytest.mark.parametrize("provider_dir", PROVIDER_SKILLS_DIRS)
-def test_provider_skills_symlinks_and_drift(provider_dir: str):
-    target_dir = REPO / provider_dir
-    assert target_dir.is_dir(), f"Provider directory {provider_dir} missing"
-
-    for skill_name in CANONICAL_SKILL_NAMES:
-        link = target_dir / skill_name
-        assert link.exists(), f"Provider skill link {link} missing"
-        assert link.is_symlink(), f"Provider skill {link} is not a symlink"
-
-        # Check target is relative symlink pointing to ../../skills/<skill_name>
-        raw_target = os.readlink(link)
-        expected_raw_target = f"../../skills/{skill_name}"
-        assert raw_target == expected_raw_target, (
-            f"Link {link} points to {raw_target}, expected {expected_raw_target}"
-        )
-
-        # Verify content identity (zero drift)
-        canonical_content = (REPO / CANONICAL_SKILLS_DIR / skill_name / "SKILL.md").read_bytes()
-        provider_content = (link / "SKILL.md").read_bytes()
-        assert provider_content == canonical_content, f"Content drift detected in {link}"
-
-
-def test_sync_skills_check_mode_clean():
-    err_count, errors = sync_skills(REPO, check_only=True)
-    assert err_count == 0, f"sync_skills --check reported errors: {errors}"
+    assert validate_skill_content(REPO / CANONICAL_SKILLS_DIR / skill_name) == []
 
 
 def test_drift_detector_catches_invalid_frontmatter(tmp_path: Path):
@@ -143,43 +134,6 @@ def test_skills_never_hardcode_an_agent_identity(skill_name: str):
     text = _skill_text(skill_name)
     assert re.findall(r"agent:(?!<tool>)[a-z]", text) == []
     assert "--actor agent:<tool>" in text
-
-
-@pytest.mark.parametrize("skill_name", CANONICAL_SKILL_NAMES)
-def test_skills_link_the_agent_contract(skill_name: str):
-    assert "](../../docs/AGENT_CONTRACT.md)" in _skill_text(skill_name)
-    assert (REPO / "docs" / "AGENT_CONTRACT.md").is_file()
-
-
-def test_sync_keeps_local_skills_unless_pruned(tmp_path: Path):
-    shutil.copytree(REPO / CANONICAL_SKILLS_DIR, tmp_path / CANONICAL_SKILLS_DIR)
-    local = tmp_path / ".claude" / "skills" / "my-local-skill"
-    local.mkdir(parents=True)
-    (local / "SKILL.md").write_text("mine\n", encoding="utf-8")
-
-    _, errors = sync_skills(tmp_path)
-    assert local.is_dir()
-    assert errors == [
-        f"Non-canonical provider skill entry: {local} "
-        "(left in place; rerun with --prune to remove)"
-    ]
-    for provider_dir in PROVIDER_SKILLS_DIRS:
-        for name in CANONICAL_SKILL_NAMES:
-            assert os.readlink(tmp_path / provider_dir / name) == f"../../skills/{name}"
-
-    assert sync_skills(tmp_path, prune=True) == (0, [])
-    assert not local.exists()
-
-
-def test_sync_never_replaces_a_real_copy(tmp_path: Path):
-    shutil.copytree(REPO / CANONICAL_SKILLS_DIR, tmp_path / CANONICAL_SKILLS_DIR)
-    copy = tmp_path / ".agents" / "skills" / CANONICAL_SKILL_NAMES[0]
-    copy.mkdir(parents=True)
-    (copy / "SKILL.md").write_text("edited copy\n", encoding="utf-8")
-
-    count, errors = sync_skills(tmp_path, prune=True)
-    assert count == 1 and "is a real copy, not a symlink" in errors[0]
-    assert (copy / "SKILL.md").read_text(encoding="utf-8") == "edited copy\n"
 
 
 def test_grounding_extracts_only_backticked_ids():

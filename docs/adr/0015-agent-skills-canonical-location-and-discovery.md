@@ -2,6 +2,10 @@
 
 Status: accepted (approved by the owner 2026-10-17, Stage S2, S2-01)
 
+Revised by [ADR 0034](0034-one-entry-file-and-one-skills-folder.md): skills live in
+`.agents/skills/` itself, `.claude/skills` links to that folder, and
+`tools/sync_skills.py` is removed.
+
 ## Context
 
 Stage S2 introduces project skills (`site-survey-review`,
