@@ -108,6 +108,32 @@ def _grs80_meridian_arc_m(lat_deg: float, steps: int = 2000) -> float:
     return h / 3 * (m[0] + m[-1] + 4 * sum(m[1:-1:2]) + 2 * sum(m[2:-1:2]))
 
 
+def _utm_32n_grs80(lon_deg: float, lat_deg: float) -> tuple[float, float]:
+    """Easting and northing in UTM zone 32N on GRS80, by the Krüger series (no PROJ involved).
+
+    Transverse Mercator to fourth order in the third flattening n (Krüger 1912; Karney 2011,
+    eq. 35): the truncation error is far below a micrometre inside a UTM zone.
+    """
+    a, f = 6_378_137.0, 1 / 298.257222101
+    n = f / (2 - f)
+    radius = a / (1 + n) * (1 + n**2 / 4 + n**4 / 64)
+    alpha = [
+        n / 2 - 2 * n**2 / 3 + 5 * n**3 / 16 + 41 * n**4 / 180,
+        13 * n**2 / 48 - 3 * n**3 / 5 + 557 * n**4 / 1440,
+        61 * n**3 / 240 - 103 * n**4 / 140,
+        49561 * n**4 / 161280,
+    ]
+    phi, lam = math.radians(lat_deg), math.radians(lon_deg - 9.0)
+    c = 2 * math.sqrt(n) / (1 + n)
+    t = math.sinh(math.atanh(math.sin(phi)) - c * math.atanh(c * math.sin(phi)))
+    xi = math.atan2(t, math.cos(lam))
+    eta = math.atanh(math.sin(lam) / math.sqrt(1 + t * t))
+    terms = list(enumerate(alpha, start=1))
+    east = eta + sum(aj * math.cos(2 * j * xi) * math.sinh(2 * j * eta) for j, aj in terms)
+    north = xi + sum(aj * math.sin(2 * j * xi) * math.cosh(2 * j * eta) for j, aj in terms)
+    return 500_000.0 + 0.9996 * radius * east, 0.9996 * radius * north
+
+
 def test_grid_to_lonlat_against_utm_ground_truth():
     """EPSG:25832 is UTM 32N on GRS80: central meridian 9°E, false easting 500 000 m, false
     northing 0, scale 0.9996. On the central meridian northing = 0.9996 x meridian arc."""
@@ -115,14 +141,18 @@ def test_grid_to_lonlat_against_utm_ground_truth():
     lon, lat = grid_to_lonlat(25832, 500_000.0, 5_400_000.0)
     assert lon == pytest.approx(9.0, abs=1e-12)
     assert 0.9996 * _grs80_meridian_arc_m(lat) == pytest.approx(5_400_000.0, abs=1e-3)
-    # 100 m east of the meridian is east of 9°E; at ~48.75°N one degree of longitude is
-    # ~73.5 km, so 100 m / 0.9996 is 0.001362° (to 1 %).
-    lon, _ = grid_to_lonlat(25832, 500_100.0, 5_400_200.0)
-    a, f = 6_378_137.0, 1 / 298.257222101
-    e2 = f * (2 - f)
-    phi = math.radians(lat)
-    deg_lon_m = math.radians(1) * a * math.cos(phi) / math.sqrt(1 - e2 * math.sin(phi) ** 2)
-    assert lon - 9.0 == pytest.approx(100 / 0.9996 / deg_lon_m, rel=1e-2)
+    # The series agrees with the integrated arc on the meridian, so it can stand as ground
+    # truth off it.
+    assert _utm_32n_grs80(9.0, lat) == pytest.approx((500_000.0, 5_400_000.0), abs=1e-6)
+    # Off the meridian, projecting the returned longitude and latitude forward gives the grid
+    # point back to a tenth of a millimetre: 100 m and 150 km east of the meridian. 1e-9 degrees
+    # is 0.1 mm of latitude, so both coordinates are checked to that.
+    for e, n in ((500_100.0, 5_400_200.0), (650_000.0, 5_400_200.0)):
+        assert _utm_32n_grs80(*grid_to_lonlat(25832, e, n)) == pytest.approx((e, n), abs=1e-4)
+    # East of the meridian is east of 9°E, and the same northing is further south there.
+    lon_e, lat_e = grid_to_lonlat(25832, 650_000.0, 5_400_200.0)
+    _, lat_m = grid_to_lonlat(25832, 500_000.0, 5_400_200.0)
+    assert lon_e > 9.0 and lat_e < lat_m
 
 
 def test_utm_zone_lists_every_datum_and_picks_none():

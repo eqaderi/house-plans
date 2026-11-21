@@ -15,6 +15,8 @@ from shapely.geometry import Point
 
 from examples.readiness.run_demo import DEFECT_CODES, HERE, HILLSIDE, REVISIONS, VISUAL_OPTION, run
 from house_ai.domain.evaluation import EvaluationReport
+from house_ai.domain.label_layout import label_layout
+from house_ai.domain.plan import PlanVersion
 from house_ai.domain.program import Strength
 from house_ai.domain.provenance import ArtifactKind
 from house_ai.domain.site import Site
@@ -109,6 +111,17 @@ def test_readiness_demonstration_end_to_end(tmp_path):
         for v in report.violations
         if v.code in DEFECT_CODES
     ]
+    # Colliding labels are a Finding of the Evaluation, from the drawing's own layout (#34):
+    # the record lists exactly the pairs that layout gives for the stored Plan version. Which
+    # labels collide depends on the platform's solver output, so the pairs are laid out here
+    # from the stored model, never pinned.
+    plan = store.get(report.plan_ref, PlanVersion)
+    pairs = label_layout(plan.model, store.get(plan.model.site_ref, Site)).collisions()
+    assert [d["subjects"] for d in two_wing["defects"] if d["code"] == "label_collision"] == [
+        [a.space_id, b.space_id] for a, b in pairs
+    ]
+    (label_metric,) = [m for m in report.metrics if m.metric == "label_collisions"]
+    assert label_metric.value == len(pairs)
 
     # S10-05, S10-06: stairs have measured walking lines and no unbuildable clashes.
     assert len(two_wing["stairs"]) >= 1
@@ -155,8 +168,8 @@ def test_readiness_demonstration_end_to_end(tmp_path):
         vr["png_sha256"] == critique["screenshot_hash"]
     )
     # The visual review cites the same version's Evaluation as the concept table (ADR 0033).
-    # Which defects a layout has varies by platform; that colliding labels are found is
-    # tests/test_label_collisions.py.
+    # Which defects a layout has varies by platform; the label collisions among them were
+    # checked against the drawing's layout above.
     assert vr["evaluation_findings"] == [
         {"code": d["code"], "subjects": d["subjects"]} for d in two_wing["defects"]
     ]
