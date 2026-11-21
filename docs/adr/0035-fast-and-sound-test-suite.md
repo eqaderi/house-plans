@@ -68,4 +68,10 @@ not an option for now.
   reviewer of a stage checks for repeated solves.
 - The evaluator speedups change no result. Any later change to them must keep
   `tests/test_geometry_caches.py` passing, which compares the cached route graph
-  with a fresh one and the vectorised candidates with `template_shapes`.
+  with a fresh one and the vectorised candidates with `template_shapes`, and checks
+  the furniture search's three array tests against rooms sized by hand from the
+  double-bed template: the envelope inside the floor
+  (`test_a_double_bed_does_not_fit_an_l_shaped_room_with_narrow_arms`,
+  `test_a_double_bed_fits_a_room_exactly_the_size_of_its_envelope`), and door swings
+  and door approaches
+  (`test_door_swings_keep_the_envelope_out_and_door_approaches_keep_the_body_out`).
