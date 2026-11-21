@@ -71,7 +71,7 @@ def all_hillside_candidates() -> list:
 
 
 @pytest.fixture(scope="module")
-def hillside():
+def hillside_inputs():
     return _load(HILLSIDE)
 
 
@@ -95,9 +95,9 @@ def test_fixture_is_synthetic_and_not_the_real_project():
 
 
 def test_steep_site_gets_at_least_three_valid_structurally_different_concepts(
-    hillside, hillside_plans
+    hillside_inputs, hillside_plans
 ):
-    site, program = hillside
+    site, program = hillside_inputs
     assert len(hillside_plans) >= 3
     for strategy, plan in hillside_plans.items():
         assert errors(check_model(plan.model, site, program)) == [], strategy
@@ -114,8 +114,8 @@ def test_steep_site_gets_at_least_three_valid_structurally_different_concepts(
     assert levels["linear"] == 1 and levels["compact"] >= 2 and levels["split_level"] >= 2
 
 
-def test_every_room_meets_its_program_minimum_and_width(hillside, hillside_plans):
-    _, program = hillside
+def test_every_room_meets_its_program_minimum_and_width(hillside_inputs, hillside_plans):
+    _, program = hillside_inputs
     items = {i.id: i for i in program.space_requirements}
     for plan in hillside_plans.values():
         for s in plan.model.spaces:
@@ -131,9 +131,9 @@ def test_every_room_meets_its_program_minimum_and_width(hillside, hillside_plans
                 assert side >= item.min_width_m - 1e-6, (plan.strategy, s.id)
 
 
-def test_hard_connections_are_doors_or_openings(hillside, hillside_plans):
+def test_hard_connections_are_doors_or_openings(hillside_inputs, hillside_plans):
     """Read straight from the openings, independent of check_model's door graph."""
-    _, program = hillside
+    _, program = hillside_inputs
     hard = {
         a.id
         for a in program.space_relationships
@@ -159,8 +159,8 @@ def test_hard_connections_are_doors_or_openings(hillside, hillside_plans):
                 assert pairs & passable, (plan.strategy, rel.id)
 
 
-def test_open_plan_triangle_is_laid_out_so_every_pair_touches(hillside):
-    _, program = hillside
+def test_open_plan_triangle_is_laid_out_so_every_pair_touches(hillside_inputs):
+    _, program = hillside_inputs
     rooms = expand_program(program)
     lkd = next(
         c for c in rooms.clusters if {"sp-living", "sp-kitchen"} <= {m.space_id for m in c.members}
@@ -170,16 +170,16 @@ def test_open_plan_triangle_is_laid_out_so_every_pair_touches(hillside):
     assert lkd.unsatisfied == []
 
 
-def test_design_frame_follows_the_rotated_road_edge(hillside):
-    site, _ = hillside
+def test_design_frame_follows_the_rotated_road_edge(hillside_inputs):
+    site, _ = hillside_inputs
     frame = design_frame(site)
     assert frame.road_feature_id == "road-uphill"
     # The fixture is rotated 12 degrees from the local axes.
     assert math.degrees(math.atan2(frame.u_dir[1], frame.u_dir[0])) == pytest.approx(12.0, abs=1e-3)
 
 
-def test_entry_level_sits_on_the_road_side_ground(hillside, hillside_plans):
-    site, _ = hillside
+def test_entry_level_sits_on_the_road_side_ground(hillside_inputs, hillside_plans):
+    site, _ = hillside_inputs
     surface = site_surface(site)
     for plan in hillside_plans.values():
         entry = plan.model.level("lv-entry")
@@ -219,9 +219,10 @@ def test_walk_out_level_has_retaining_walls_and_no_windows_in_them(hillside_plan
     assert any(i.id == "iss-hillside-engineering" for i in plan.model.issues)
 
 
-def test_generation_is_deterministic(hillside, hillside_plans):
+@pytest.mark.fresh_solves
+def test_generation_is_deterministic(hillside_inputs, hillside_plans):
     """A fresh solve equals the shared all-strategy solve, byte for byte."""
-    fresh = _generate(*hillside, strategies=["split_level", "two_wing"])
+    fresh = _generate(*hillside_inputs, strategies=["split_level", "two_wing"])
     assert [canonical_json(c.plan) for c in fresh] == [
         canonical_json(hillside_plans[s]) for s in ("split_level", "two_wing")
     ]
@@ -251,13 +252,13 @@ def test_split_level_is_refused_on_a_flat_site_with_a_reason():
     assert len(valid) >= 3
 
 
-def test_unknown_strategy_is_reported_not_raised(hillside):
-    [c] = _generate(*hillside, strategies=["pagoda"])
+def test_unknown_strategy_is_reported_not_raised(hillside_inputs):
+    [c] = _generate(*hillside_inputs, strategies=["pagoda"])
     assert c.plan is None and "unknown strategy" in (c.reason or "")
 
 
-def test_site_without_envelope_uses_parcel_and_says_so(hillside):
-    site, program = hillside
+def test_site_without_envelope_uses_parcel_and_says_so(hillside_inputs):
+    site, program = hillside_inputs
     bare = site.model_copy(update={"buildable_envelope": None})
     [c] = _generate(bare, program, strategies=["linear"])
     assert c.valid
@@ -266,15 +267,15 @@ def test_site_without_envelope_uses_parcel_and_says_so(hillside):
     assert any(i.id == "iss-envelope-unknown" for i in c.plan.model.issues)
 
 
-def test_site_without_local_frame_is_refused(hillside):
-    site, program = hillside
+def test_site_without_local_frame_is_refused(hillside_inputs):
+    site, program = hillside_inputs
     coords = site.coordinates.model_copy(update={"local": None})
     [c] = _generate(site.model_copy(update={"coordinates": coords}), program, strategies=["linear"])
     assert c.plan is None and "local coordinate system" in (c.reason or "")
 
 
-def test_unknown_terrain_still_generates_but_refuses_split_level(hillside):
-    site, program = hillside
+def test_unknown_terrain_still_generates_but_refuses_split_level(hillside_inputs):
+    site, program = hillside_inputs
     flat = site.model_copy(
         update={
             "terrain": site.terrain.model_copy(update={"spot_elevations": [], "status": "unknown"})

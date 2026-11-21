@@ -1,9 +1,11 @@
 """Count CP-SAT solves and repeats across a pytest run (ADR 0035).
 
 As a pytest plugin it logs one line per `CpSolver.Solve`: a fingerprint of the model and
-its parameters, the solve time, the worker, and the running test. As a script it
-summarises the logs: total and distinct solves, and the repeats, split into same-worker
-repeats (avoidable by sharing) and repeats on another worker.
+its parameters, the time the call took, the worker, the running test, and whether the
+solve memo of `tests/conftest.py` answered it (`memo`) or the solver ran (`solved`). As a
+script it summarises the logs: the calls, the distinct models, the calls the memo answered,
+and the real solves of a model already solved, on the same worker (only tests marked
+`fresh_solves` should have any) and on another worker.
 
     rm -rf /tmp/solves && mkdir /tmp/solves
     SOLVE_LOG_DIR=/tmp/solves PYTHONPATH=tools .venv/bin/python -m pytest -q -p solve_fingerprints
@@ -33,8 +35,9 @@ def _install() -> None:
         test = os.environ.get("PYTEST_CURRENT_TEST", "").split(" ")[0]
         worker = os.environ.get("PYTEST_XDIST_WORKER", "main")
         line = [hashlib.sha1(key).hexdigest()[:16], f"{time.perf_counter() - start:.3f}"]
+        how = "memo" if getattr(self, "from_memo", False) else "solved"
         with out.open("a") as f:
-            f.write("\t".join([*line, worker, test]) + "\n")
+            f.write("\t".join([*line, worker, test, how]) + "\n")
         return result
 
     cp_model.CpSolver.Solve = solve
@@ -46,24 +49,28 @@ def summarise(log_dir: Path) -> str:
         for path in sorted(log_dir.glob("log-*.tsv"))
         for line in path.read_text().splitlines()
     ]
-    seen: dict[str, set[str]] = collections.defaultdict(set)
-    same = other = 0
+    solved: dict[str, set[str]] = collections.defaultdict(set)
+    replayed = same = other = 0
     same_s = 0.0
-    by_test: collections.Counter[str] = collections.Counter()
-    for digest, seconds, worker, test in rows:
-        if digest in seen:
-            if worker in seen[digest]:
-                same += 1
-                same_s += float(seconds)
-                by_test[test.split("::")[0]] += 1
-            else:
-                other += 1
-        seen[digest].add(worker)
+    again: collections.Counter[str] = collections.Counter()
+    for digest, seconds, worker, test, how in rows:
+        if how == "memo":
+            replayed += 1
+            continue
+        if worker in solved[digest]:
+            same += 1
+            same_s += float(seconds)
+            again[test] += 1
+        elif solved[digest]:
+            other += 1
+        solved[digest].add(worker)
     lines = [
-        f"solves {len(rows)}, distinct {len(seen)}, "
-        f"same-worker repeats {same} ({same_s:.1f} s), other-worker repeats {other}"
+        f"solve calls {len(rows)}, distinct models {len({r[0] for r in rows})}, "
+        f"answered by the memo {replayed}, solved {len(rows) - replayed}",
+        f"solved again on the same worker {same} ({same_s:.1f} s), "
+        f"solved again on another worker {other}",
     ]
-    lines += [f"  {n:3d}  {f}" for f, n in by_test.most_common(15)]
+    lines += [f"  {n:3d}  {test}" for test, n in again.most_common()]
     return "\n".join(lines)
 
 

@@ -43,6 +43,18 @@ not an option for now.
    hands out deep copies, and tests that write copy a template store, so no test
    sees another's changes. A test solves afresh only when fresh solving is what it
    checks (reproducibility).
+   Sharing fixtures cannot reach every repeat: a test of `plan propose`, `plan revise`
+   or a stored `plan generate` has to run the command, and which files share a worker
+   changes from run to run (review 1 counted 82 solves of a model its worker had
+   already solved). So `tests/conftest.py` also keeps a **solve memo** per test
+   process: `CpSolver.solve` is wrapped, and a model with the same content and solver
+   parameters as one already solved gets that solve's response. This is sound because
+   the product solves on one worker with a fixed seed and a deterministic time limit.
+   A test marked `@pytest.mark.fresh_solves` solves again
+   (`test_solver_reproducibility_budget`, `test_generation_is_deterministic`: they
+   compare a fresh solve with a shared one, which is the standing proof that a replay
+   equals a solve). `pytest --fresh-solves` runs the whole suite without replays, and
+   `tools/solve_fingerprints.py` reports calls, replays and real re-solves.
 3. **Faster evaluation with identical output.** `routes.shortest_in_polygon` keeps
    one visibility graph per floor (`_floor_visibility`, keyed by the floor's WKB) and
    adds the two query points; neighbour lists keep the ascending order of the old
@@ -64,8 +76,13 @@ not an option for now.
 ## Consequences
 
 - The local default run uses four cores; a machine with fewer cores still works.
-- New tests that generate plans should reuse `hillside` or a module fixture; the
-  reviewer of a stage checks for repeated solves.
+- New tests that generate plans should reuse `hillside` or a module fixture, which
+  also saves the evaluation and the store set-up; the solve memo catches the solves
+  that still repeat. The reviewer of a stage runs `tools/solve_fingerprints.py`: only
+  tests marked `fresh_solves` may solve a model their worker has already solved.
+- The memo reads one private attribute of ortools' `CpSolver` (its response). If an
+  ortools release moves it, the memo stops replaying, nothing else breaks, and
+  `tests/test_solve_memo.py` fails and says so.
 - The evaluator speedups change no result. Any later change to them must keep
   `tests/test_geometry_caches.py` passing, which compares the cached route graph
   with a fresh one and the vectorised candidates with `template_shapes`, and checks

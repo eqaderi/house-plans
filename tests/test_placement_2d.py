@@ -268,6 +268,7 @@ def test_open_plan_living_arrangement():
     assert not errors(check_model(model, case.site, case.program))
 
 
+@pytest.mark.fresh_solves
 def test_solver_reproducibility_budget():
     """S7-13: Test that solver runs within budget and produces identical results across runs."""
     shared = _case("flat-simple", STRATEGY_CORRIDOR_FREE).sol
