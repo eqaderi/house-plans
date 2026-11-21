@@ -142,12 +142,21 @@ def test_rasterize_svg_to_png(tool, tmp_path):
     assert pixels[50][65] == SKY  # 35 px left of the centre
 
 
-def test_rasterize_scales_to_the_requested_size(tool, tmp_path):
-    out_png = rasterize_svg_to_png(SAMPLE_SVG, tmp_path / "big.png", width=400, height=200)
-    pixels = png_pixels(out_png.read_bytes())
-    assert (len(pixels[0]), len(pixels)) == (400, 200)
-    assert pixels[40][200] == SKY  # the circle's top area, scaled x2
+def test_rasterize_scales_width_and_height_independently(tool, tmp_path):
+    """400 x 100 from the 200 x 100 drawing: x doubles, y stays, so neither can be ignored."""
+    out_png = rasterize_svg_to_png(SAMPLE_SVG, tmp_path / "wide.png", width=400, height=100)
+    data = out_png.read_bytes()
+    assert png_size(data) == (400, 100)
+    pixels = png_pixels(data)
+    assert (len(pixels[0]), len(pixels)) == (400, 100)
     assert pixels[0][0] == NAVY
+    assert pixels[99][399] == NAVY
+    # The circle becomes an ellipse about (200, 50), 80 px wide each way and 40 px high. On
+    # row 30, above the text, it spans x = 200 ± 80 x sqrt(1 - (20 / 40)²) = 200 ± 69: 60 px
+    # left of the centre is inside it, where an unstretched circle (r 40) would not reach,
+    # and 85 px left is outside.
+    assert pixels[30][140] == SKY
+    assert pixels[30][115] == NAVY
 
 
 def test_rasterize_reports_a_failing_tool(tool, tmp_path):

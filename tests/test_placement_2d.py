@@ -38,6 +38,7 @@ from house_ai.constants.evaluations import (
 )
 from house_ai.constants.placement2d import (
     COURTYARD_SPACE_ID,
+    L_SHAPE_MIN_RECESS_DM,
     LEVEL_ENTRY,
     LEVEL_UPPER,
     OPEN_PLAN_SHARED_WALL_MIN_M,
@@ -303,11 +304,23 @@ def test_two_wing_l_shaped_arrangement_free_positioning():
 
     # The footprint is one polygon with a re-entrant corner: an L (or more) and not a
     # rectangle, so it covers less than its bounding box and has at least six true corners.
-    fp = unary_union([box(r.u0, r.v0, r.u1, r.v1) for r in sol.rooms]).simplify(0)
+    rooms = {r.space_id: box(r.u0, r.v0, r.u1, r.v1) for r in sol.rooms}
+    fp = unary_union(list(rooms.values())).simplify(0)
     assert fp.geom_type == "Polygon"
     assert fp.area == pytest.approx(sum(r.width_dm * r.depth_dm for r in sol.rooms))
     assert fp.area < fp.envelope.area - 1
     assert len(fp.exterior.coords) - 1 >= 6
+
+    # The L is the wings': one wing reaches at least the recess further in x and the other
+    # at least the recess further in y, so the corner beyond both is empty (solver grid, dm).
+    # Any six-cornered footprint passes the checks above; this is the two-wing rule.
+    (_, _, xd, yd) = unary_union([rooms[i] for i in day_ids]).bounds
+    (_, _, xn, yn) = unary_union([rooms[i] for i in night_ids]).bounds
+    assert (xd - xn >= L_SHAPE_MIN_RECESS_DM and yn - yd >= L_SHAPE_MIN_RECESS_DM) or (
+        xn - xd >= L_SHAPE_MIN_RECESS_DM and yd - yn >= L_SHAPE_MIN_RECESS_DM
+    )
+    notch = box(min(xd, xn), min(yd, yn), max(xd, xn), max(yd, yn))
+    assert fp.intersection(notch).area == 0
 
     assert not errors(check_model(case.model, case.site, case.program))
 

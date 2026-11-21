@@ -8,8 +8,10 @@ import json
 import re
 from pathlib import Path
 
+from house_ai.domain.integrity import check_model, errors
 from house_ai.domain.model import Opening, OpeningKind, WallKind
 from house_ai.domain.plan import PlanVersion
+from house_ai.domain.program import SpaceProgram
 from house_ai.domain.revision_ops import RevisionOpsFile
 from house_ai.domain.site import Site
 from house_ai.domain.visual_critique import VisualCritiqueFile
@@ -27,23 +29,37 @@ HILLSIDE = REPO / "examples" / "projects" / "synthetic-hillside"
 SEEDED_WINDOW, RETAINING_WALL, MOVED_TO = "win-buried-001", "w-down-300-001", "w-down-300-013"
 
 
-def _base() -> tuple[PlanVersion, Site]:
+#: The drawings' window is not a valid model state, as README.md says: at 1.0 m it runs 0.2 m
+#: past the end of the 2.0 m retaining wall, it opens onto `sp-study`, which the plan lacks,
+#: and MOVED_TO is an interior wall already filled by an opening. The Evaluation is tested on
+#: the same window seeded soundly: 0.4 m along the retaining wall, opening off the room
+#: behind it, and for the clean twin on the exposed wall of the ensuite on the same Level.
+RETAINED_ROOM = "sp-flex-b-walkout-front"
+EXPOSED_WALL, EXPOSED_ROOM = "w-down-300-018", "sp-bath-ensuite"
+
+
+def _base() -> tuple[PlanVersion, Site, SpaceProgram]:
     plan = load_document(HILLSIDE / "concepts/concept-split-walkout/exploratory/plan.json")
     site = load_document(HILLSIDE / "site.yaml")
-    return PlanVersion.model_validate(copy.deepcopy(plan)), Site.model_validate(copy.deepcopy(site))
+    program = load_document(HILLSIDE / "space_program.yaml")
+    return (
+        PlanVersion.model_validate(copy.deepcopy(plan)),
+        Site.model_validate(copy.deepcopy(site)),
+        SpaceProgram.model_validate(copy.deepcopy(program)),
+    )
 
 
-def _with_window_on(plan: PlanVersion, wall_id: str) -> PlanVersion:
+def _with_window_on(plan: PlanVersion, wall_id: str, room_id: str) -> PlanVersion:
     seeded = plan.model_copy(deep=True)
     seeded.model.openings.append(
         Opening(
             id=SEEDED_WINDOW,
             host_wall_id=wall_id,
             kind=OpeningKind.WINDOW,
-            offset_m=1.0,
+            offset_m=0.4,
             width_m=1.2,
             height_m=1.2,
-            connects=("sp-study", "exterior"),
+            connects=(room_id, "exterior"),
         )
     )
     return seeded
@@ -98,7 +114,7 @@ def test_demonstration_critique_schema_and_grounding():
 
     # Grounding: the wall and the room the claim and its operation name are in the plan
     # option, and the wall is a retaining wall; only the window is the seeded one.
-    base, _ = _base()
+    base, _, _ = _base()
     walls = {w.id: w for w in base.model.walls}
     assert walls[RETAINING_WALL].kind is WallKind.RETAINING
     assert walls[MOVED_TO].kind is not WallKind.RETAINING
@@ -115,13 +131,17 @@ def test_demonstration_critique_schema_and_grounding():
 
 
 def test_the_seeded_window_is_buried_before_and_not_after():
-    """The Evaluation measures the critique's defect in the seeded plan, and not once the
-    window is moved to the wall the after drawing shows."""
-    base, site = _base()
+    """The Evaluation measures the critique's defect in a seeded plan that is otherwise
+    sound, and not once the window is on an exposed wall."""
+    base, site, program = _base()
+    before = _with_window_on(base, RETAINING_WALL, RETAINED_ROOM)
+    after = _with_window_on(base, EXPOSED_WALL, EXPOSED_ROOM)
+    # The seed is the only thing wrong with the plan: all three states pass integrity.
+    for plan in (base, before, after):
+        assert errors(check_model(plan.model, site, program)) == []
     assert _buried(base, site) == []
-    before = _buried(_with_window_on(base, RETAINING_WALL), site)
-    assert before == [[SEEDED_WINDOW, RETAINING_WALL, "sp-study"]]
-    assert _buried(_with_window_on(base, MOVED_TO), site) == []
+    assert _buried(before, site) == [[SEEDED_WINDOW, RETAINING_WALL, RETAINED_ROOM]]
+    assert _buried(after, site) == []
 
 
 def test_after_drawing_differs_from_before_only_by_the_version_and_one_window():
@@ -150,6 +170,6 @@ def test_demonstration_screenshots_valid_and_distinct():
         for row_b, row_a in zip(before, after, strict=True)
         for a, b in zip(row_a, row_b, strict=True)
     )
-    # The version in the title and one small window symbol: far under 0.1 % of the image.
-    assert 0 < changed < 800 * 600 // 1000
+    # The version in the title and one small window symbol: 86 of the 480 000 pixels.
+    assert changed == 86
     assert not compare_image_bytes(before_png, after_png, max_diff_ratio=0.0)[0]
