@@ -215,6 +215,16 @@ def test_2d_placement_basic_and_check_model_clean():
         assert sw.length_m >= SHARED_WALL_MIN_M
 
     assert {s.id for s in model.spaces} == FLAT_SIMPLE_ROOMS
+    # The walls enclose what was placed: exterior walls trace the footprint's outline and
+    # interior walls are the shared walls, metre for metre.
+    footprint = unary_union([s.boundary.to_shapely() for s in model.spaces])
+    assert footprint.geom_type == "Polygon"
+    assert {w.kind for w in model.walls} == {WallKind.EXTERIOR, WallKind.INTERIOR}
+    length = lambda kind: sum(  # noqa: E731
+        LineString([w.start, w.end]).length for w in model.walls if w.kind is kind
+    )
+    assert length(WallKind.EXTERIOR) == pytest.approx(footprint.exterior.length)
+    assert length(WallKind.INTERIOR) == pytest.approx(sum(sw.length_m for sw in sol.shared_walls))
     # The three hard CONNECTED relations of the program are passable openings.
     doors = _door_pairs(model)
     for pair in ({"sp-hall", EXTERIOR}, {"sp-living", "sp-kitchen"}, {"sp-hall", "sp-bath"}):
