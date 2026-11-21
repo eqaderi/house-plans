@@ -116,13 +116,13 @@ to reopen A–D):
 
 | | |
 |---|---|
-| **Current stage** | S12 Fast and sound test suite (IN_PROGRESS, review PENDING after §N S12 handoff 4: the only blocker of review 2, the S11 closure, is done and the full suite passes); human track H2 Real interview and program IN_PROGRESS |
-| **Awaiting review** | S12 (review 3: since the reviewed `5a33626` only `docs/PROJECT_TRACKER.md` changed, see §N S12 handoff 4) |
-| **Next eligible stage** | none until S12 is closed; H1 Real site verification and H2 Real interview and program (human parallel tracks), or X1 Optional tool research |
+| **Current stage** | no software stage in progress: S12 Fast and sound test suite closed on 2026-11-22 (§N S12 closure); human track H2 Real interview and program IN_PROGRESS |
+| **Awaiting review** | none |
+| **Next eligible stage** | H1 Real site verification and H2 Real interview and program (human parallel tracks), or X1 Optional tool research |
 | **Path to good floor plans** | S1 (done) → S2 (done) → S3 (done) → S4 (done) → S5 (done) → S6 (done) → S7 (done) → S8 (done) → S10 (done) → S9 (done; 10 stages complete) |
 | **Blocked** | H1 site facts (owner or surveyor input); program gate (needs site gate); H3 real design (needs H1 and H2) |
 | **Human parallel tracks** | H1 site verification with the owner any time; H2 interview any time (S1-09 closed) |
-| **`main` health** | S12 merged early at the owner's request (not closed). GitHub Actions runs again since the repository became public on 2026-11-21 (ISS-48 resolved): run 44936702603 on `61a5c85` failed with 3 failed, 1182 passed, 2 skipped, 4 xfailed in 175 s: `test_the_committed_tracker_is_consistent` (ISS-51, resolved on `main` in `73383f8` on 2026-11-21 by closing S11) and two Linux-only failures fixed on the stage branch in `ec6a6b9`, which reach `main` when S12 merges |
+| **`main` health** | S12 closed at merge `caf089b` (2026-11-22): locally `pytest -q` 1206 passed, 9 xfailed in 63.94 s on macOS arm64, with ruff, `schemas check`, `leak_scan.py`, `check_tracker.py` and `project verify my-house` clean; CI run 44961175218 on `caf089b`: success; 1205 passed, 2 skipped (no ODA converter, no anthropic package), 8 xfailed in 156.87 s on Python 3.13; Reviewer App job passed (19 Vitest, 8 Playwright). GitHub Actions has run again since the repository became public on 2026-11-21 (ISS-48 resolved) |
 | **Homeowner gates on `my-house`** | site: not approved (5 blockers) · program: none · plan: none · model: none |
 
 
@@ -1719,7 +1719,7 @@ claimed without a recorded professional verification.
 | Field | Value |
 |---|---|
 | Kind | implementation |
-| Status | IN_PROGRESS |
+| Status | DONE |
 | Review | APPROVED |
 | Branch | `stage/S12-fast-sound-tests` |
 | Depends on | S9 |
@@ -1731,41 +1731,41 @@ claimed without a recorded professional verification.
 | Demonstration | Before and after timings (serial baseline, default runner) and the solve-fingerprint count |
 | Artifacts | ADR 0035; contract §10; `pyproject.toml` runner settings |
 | Review requirements | Reviewer re-runs the suite and the timing, spot-checks that rewritten tests fail when their behaviour is broken, and confirms no assertion was weakened |
-| Evidence | Branch `stage/S12-fast-sound-tests`; before: 1107 passed in 467.32 s serial (`-p no:xdist`), 148.81 s on 4 workers, 328 CP-SAT solves of 123 distinct models, 133 s of solver time on repeats; at handoff 1: 1185 passed, 5 xfailed, 1 failed (1191 collected) in 69.92 s, and 246 solves of 129 distinct models with 82 same-worker repeats (38.0 s), as review 1 measured (handoff 1 said 1186 passed and 241 solves); after the review 1 fixes, code head `2616930`: 1215 collected, 1205 passed, 9 strict xfail cases in 7 tests (6 product gaps: ISS-49, ISS-52, ISS-55, ISS-56, ISS-57, ISS-59), 1 failure `test_the_committed_tracker_is_consistent` (ISS-51, owner decision #52), 58.50 s on the default runner; 252 solve calls of 132 distinct models, 80 answered by the solve memo, 172 solved, 9 of them a model the worker had already solved (5.6 s, all in tests marked `fresh_solves` or the memo's own tests), 31 a model another worker had solved; `pytest --fresh-solves` gives the same results without replays in 64.13 s; Linux CI run 44940037595: 1 failed (the tracker test, ISS-51), 1204 passed, 2 skipped (no ODA converter, no anthropic package), 8 xfailed in 161.35 s on Python 3.13; Reviewer App job passed (19 Vitest, 8 Playwright); after the S11 closure (merge of `main`, `59da245`, tracker only): 1215 collected, 1206 passed, 9 strict xfail cases, none failed, 58.16 s on the default runner; Linux CI run 44944217517: success, 1205 passed, 2 skipped, 8 xfailed in 123.13 s; handoffs in §N S12 handoff 3 and handoff 4 |
+| Evidence | merge `caf089b` (2026-11-22); CI run 44961175218 on `main`; reviewed commit `d86fdd3` (CI run 44959447754); §N S12 review 3 and closure; Branch `stage/S12-fast-sound-tests`; before: 1107 passed in 467.32 s serial (`-p no:xdist`), 148.81 s on 4 workers, 328 CP-SAT solves of 123 distinct models, 133 s of solver time on repeats; at handoff 1: 1185 passed, 5 xfailed, 1 failed (1191 collected) in 69.92 s, and 246 solves of 129 distinct models with 82 same-worker repeats (38.0 s), as review 1 measured (handoff 1 said 1186 passed and 241 solves); after the review 1 fixes, code head `2616930`: 1215 collected, 1205 passed, 9 strict xfail cases in 7 tests (6 product gaps: ISS-49, ISS-52, ISS-55, ISS-56, ISS-57, ISS-59), 1 failure `test_the_committed_tracker_is_consistent` (ISS-51, owner decision #52), 58.50 s on the default runner; 252 solve calls of 132 distinct models, 80 answered by the solve memo, 172 solved, 9 of them a model the worker had already solved (5.6 s, all in tests marked `fresh_solves` or the memo's own tests), 31 a model another worker had solved; `pytest --fresh-solves` gives the same results without replays in 64.13 s; Linux CI run 44940037595: 1 failed (the tracker test, ISS-51), 1204 passed, 2 skipped (no ODA converter, no anthropic package), 8 xfailed in 161.35 s on Python 3.13; Reviewer App job passed (19 Vitest, 8 Playwright); after the S11 closure (merge of `main`, `59da245`, tracker only): 1215 collected, 1206 passed, 9 strict xfail cases, none failed, 58.16 s on the default runner; Linux CI run 44944217517: success, 1205 passed, 2 skipped, 8 xfailed in 123.13 s; handoffs in §N S12 handoff 3 and handoff 4 |
 
 #### Runner and evaluation speed
 
-- [ ] **S12-01** Run the suite on four workers, one file per worker — `IN_PROGRESS` · P1 · deps: none
+- [x] **S12-01** Run the suite on four workers, one file per worker — `DONE` · P1 · deps: none
   - Accept: `pytest` uses `-n 4 --dist loadfile` by default; `-n 0` runs single-process
   - Verify: full suite timing on the default runner
-  - Evidence: `pyproject.toml` `[tool.pytest.ini_options]`; measured 148.81 s at 4 workers and 212.45 s at 11 workers on the same tree; on the Linux runner the four-worker suite took 175.41 s (run 44936702603), so `.github/workflows/ci.yml` times out at 10 minutes
-- [ ] **S12-02** Cache the route visibility graph per floor and vectorise the furniture search — `IN_PROGRESS` · P1 · deps: none
+  - Evidence: `pyproject.toml` `[tool.pytest.ini_options]`; measured 148.81 s at 4 workers and 212.45 s at 11 workers on the same tree; on the Linux runner the four-worker suite took 175.41 s (run 44936702603), so `.github/workflows/ci.yml` times out at 10 minutes; merge `caf089b`
+- [x] **S12-02** Cache the route visibility graph per floor and vectorise the furniture search — `DONE` · P1 · deps: none
   - Accept: identical evaluation output; reference set evaluates at least 3x faster
   - Verify: `tests/test_geometry_caches.py`; the reference harness (38 cases, 978 route calls, 60 fit calls) reports 38/38 identical
-  - Evidence: `src/house_ai/evaluation/routes.py::_floor_visibility`; `src/house_ai/evaluation/usability_geometry.py::shifted`; reference set 17.07 s to 4.24 s
-- [ ] **S12-03** Share solves between tests instead of repeating them — `IN_PROGRESS` · P1 · deps: S12-01
+  - Evidence: `src/house_ai/evaluation/routes.py::_floor_visibility`; `src/house_ai/evaluation/usability_geometry.py::shifted`; reference set 17.07 s to 4.24 s; merge `caf089b`
+- [x] **S12-03** Share solves between tests instead of repeating them — `DONE` · P1 · deps: S12-01
   - Accept: on one worker, no identical CP-SAT model and parameters is solved twice, except by tests marked `fresh_solves`
   - Verify: `tools/solve_fingerprints.py` over the full suite (usage in its docstring); `tests/test_solve_memo.py`; `pytest --fresh-solves` gives the same results
-  - Evidence: `tests/conftest.py::hillside` (verified equal to a joint `generate` of compact, split_level and two_wing); module templates copied per writing test in `test_plan_propose.py`, `test_plan_workflow.py`, `test_plan_provenance_revisions.py`, `test_skills_workflows.py`, `test_reviewer_bundle.py`, `test_plan_gate_unbuildable.py`, `test_interview.py`; `test_placement_2d.py` 14 to 8 solves; `tests/conftest.py::SolveMemo` (`4601129`) replays a model its worker has already solved, because fixtures cannot share the solves of commands under test (`plan propose`, `plan revise`, stored `plan generate`) or between files that happen to share a worker; measured at code head `2616930`: 328 solves before S12, now 252 solve calls of 132 distinct models, 80 answered by the memo, 172 solved, 9 solved again on the same worker (5.6 s: 5 `test_generation_is_deterministic`, 1 `test_solver_reproducibility_budget`, 3 in `tests/test_solve_memo.py`), 31 on another worker; before the memo this head had 73 same-worker repeats (36.7 s)
+  - Evidence: `tests/conftest.py::hillside` (verified equal to a joint `generate` of compact, split_level and two_wing); module templates copied per writing test in `test_plan_propose.py`, `test_plan_workflow.py`, `test_plan_provenance_revisions.py`, `test_skills_workflows.py`, `test_reviewer_bundle.py`, `test_plan_gate_unbuildable.py`, `test_interview.py`; `test_placement_2d.py` 14 to 8 solves; `tests/conftest.py::SolveMemo` (`4601129`) replays a model its worker has already solved, because fixtures cannot share the solves of commands under test (`plan propose`, `plan revise`, stored `plan generate`) or between files that happen to share a worker; measured at code head `2616930`: 328 solves before S12, now 252 solve calls of 132 distinct models, 80 answered by the memo, 172 solved, 9 solved again on the same worker (5.6 s: 5 `test_generation_is_deterministic`, 1 `test_solver_reproducibility_budget`, 3 in `tests/test_solve_memo.py`), 31 on another worker; before the memo this head had 73 same-worker repeats (36.7 s); merge `caf089b`
 
 #### Test soundness
 
-- [ ] **S12-04** Fix tests that are weaker than their names, vacuous or circular — `IN_PROGRESS` · P1 · deps: none
+- [x] **S12-04** Fix tests that are weaker than their names, vacuous or circular — `DONE` · P1 · deps: none
   - Accept: each finding of the 2026-11-21 review fixed or answered; each fix shown to fail against the broken behaviour
   - Verify: reviewer spot-checks by breaking the behaviour
-  - Evidence: findings answered per file in §N S12 handoff 1, e.g. `test_concept_proposal.py` (field `space_requirements`, exact code lists), `test_relation_semantics.py` (pair with no hard link, exact feasible set), `test_placement_2d.py` (exact ids, real L-shape, court on 3 sides, `Solve2DFailed` with its reason), `test_s7_review_fixes.py`, `test_visual_regression.py` (pixels decoded), `test_human_gates.py` (five human-only commands x no terminal, agent, wrong phrase, byte snapshot), `test_safety_invariants.py` (no test names `projects/`), `tests/test_provider_boundary.py`, `tests/test_hillside_plan_quality.py`; review 1 findings 2 to 4, 6, 7, 9 and 11 fixed with the mutation each test fails against named in its commit (`14d1075`, `cd1863b`, `575ddeb`, `5e478ac`, `5d4a3a4`, `6a33674`, `65c7401`, `2616930`), listed in §N S12 handoff 3
-- [ ] **S12-05** The grounding validator compares a claimed number with the cited metric — `IN_PROGRESS` · P1 · deps: none
+  - Evidence: findings answered per file in §N S12 handoff 1, e.g. `test_concept_proposal.py` (field `space_requirements`, exact code lists), `test_relation_semantics.py` (pair with no hard link, exact feasible set), `test_placement_2d.py` (exact ids, real L-shape, court on 3 sides, `Solve2DFailed` with its reason), `test_s7_review_fixes.py`, `test_visual_regression.py` (pixels decoded), `test_human_gates.py` (five human-only commands x no terminal, agent, wrong phrase, byte snapshot), `test_safety_invariants.py` (no test names `projects/`), `tests/test_provider_boundary.py`, `tests/test_hillside_plan_quality.py`; review 1 findings 2 to 4, 6, 7, 9 and 11 fixed with the mutation each test fails against named in its commit (`14d1075`, `cd1863b`, `575ddeb`, `5e478ac`, `5d4a3a4`, `6a33674`, `65c7401`, `2616930`), listed in §N S12 handoff 3; merge `caf089b`
+- [x] **S12-05** The grounding validator compares a claimed number with the cited metric — `DONE` · P1 · deps: none
   - Accept: a claim citing a metric with a wrong value is rejected
   - Verify: `tests/test_grounding.py`
-  - Evidence: `src/house_ai/validation/grounding.py` (stated value compared with the cited metric within half a unit of its last written digit; ops never excuse a wrong value; a range such as "3-5 m²" must contain the value, each bound widened the same way; numbers after a hyphen or a leading dot and hyphenated units are quantities again, `a3ffb4c`); `tests/test_grounding.py` (7 tests failed before the first fix, 7 more before the second); plan-version check still dead (ISS-56); no command calls the validator yet (ISS-64)
-- [ ] **S12-06** Seeded bad and clean twins for every finding code no test exercised — `IN_PROGRESS` · P2 · deps: none
+  - Evidence: `src/house_ai/validation/grounding.py` (stated value compared with the cited metric within half a unit of its last written digit; ops never excuse a wrong value; a range such as "3-5 m²" must contain the value, each bound widened the same way; numbers after a hyphen or a leading dot and hyphenated units are quantities again, `a3ffb4c`); `tests/test_grounding.py` (7 tests failed before the first fix, 7 more before the second); plan-version check still dead (ISS-56); no command calls the validator yet (ISS-64); merge `caf089b`
+- [x] **S12-06** Seeded bad and clean twins for every finding code no test exercised — `DONE` · P2 · deps: none
   - Accept: each listed code fires on its seeded defect, stays silent on its clean twin, or reports not_checked with its reason
   - Verify: `tests/test_finding_codes_seeded.py`
-  - Evidence: `tests/test_finding_codes_seeded.py`: 9 codes fire on a seeded defect with exact element ids and stay silent on a clean twin; `garage_pedestrian_route_blocked` cannot fire (ISS-54); no-zones crossing reported as measured 0 (ISS-55, strict xfail)
-- [ ] **S12-07** Record the decision and the test rules — `IN_PROGRESS` · P2 · deps: S12-01
+  - Evidence: `tests/test_finding_codes_seeded.py`: 9 codes fire on a seeded defect with exact element ids and stay silent on a clean twin; `garage_pedestrian_route_blocked` cannot fire (ISS-54); no-zones crossing reported as measured 0 (ISS-55, strict xfail); merge `caf089b`
+- [x] **S12-07** Record the decision and the test rules — `DONE` · P2 · deps: S12-01
   - Accept: ADR 0035; contract §10 names the default runner and the test rules
   - Verify: reviewer reads ADR 0035 and contract §10
-  - Evidence: `docs/adr/0035-fast-and-sound-test-suite.md`; `docs/AGENT_CONTRACT.md` §10
+  - Evidence: `docs/adr/0035-fast-and-sound-test-suite.md`; `docs/AGENT_CONTRACT.md` §10; merge `caf089b`
 
 ### Stage X1 — Optional tool research
 
@@ -2585,6 +2585,7 @@ lifecycle · 0015 agent skills canonical location and discovery · 0016 event-he
 
 | Date | What | Evidence |
 |---|---|---|
+| 2026-11-22 | Stage S12 closed: fast and sound test suite (four workers with one file per worker, cached route graph and vectorised furniture search with identical output, shared solves and a solve memo, the 467 s serial run now about 60 s, weak tests repaired against named mutations, grounding value and range check, seeded finding-code tests, ADR 0035) | merge `caf089b`; CI run 44961175218; §N S12 review 3 and closure |
 | 2026-11-21 | Stage S11 closed: code vocabulary aligned with the glossary (ADR 0025: saved names renamed with validation aliases, the owner's floor count recorded as storeys, CLI text, docs and skills renamed) | merge `59da504` (PR #5, 2026-11-17); CI run 44151985380; §N S11 review 1 |
 | 2026-10-20 | Stage S9 closed: floor-plan readiness gate (all 13 readiness criteria FPR-01 to FPR-13 verified PASS with evidence from S10 remediation; synthetic steep hillside demonstration replayed clean with 5/5 refusals, 5 feasible strategies, 2D proposal, stair walking lines, 9 canonical fixtures, revision regression separation, reviewer bundle export, 102 events store integrity; homeowner acknowledgement of 5 architectural/engineering boundaries confirmed verbatim in §I; test decoupling verified) | merge `d8a38b1`; CI run 39336825673 |
 | 2026-10-19 | Stage S10 closed: readiness remediation (reviewer serve URL and viewport auto-fit, revision request checking and regression separation, distinct proposal concept options, consistent stair rise/headroom/wall clash checks, U-shaped walking lines, ADR 0024 unbuildable plan-gate blocking findings, wet-room and kitchen fixture generation, furniture-study kitchen sizing, double-bed and vehicle program studies, bar terraces and outdoor items, requested-storey explanation, 2D terrain entry and solved levels per DEC-04, vehicle-sized garages per DEC-12, 117-probe benchmark suite, plan.svg semantic attributes and cut stairs, slab-penetration and label-collision detectors, synthetic hillside context, demo property assertions) | merge `af4b41c`; CI run 39318675202 |
@@ -2636,6 +2637,11 @@ Closure record template:
 ```
 
 ### S12 records
+
+#### S12 closure
+- Merged: `stage/S12-fast-sound-tests` at `d86fdd3` (reviewed commit; branch head `f85084b` adds only the review 3 record and the Review row) into `main` as `caf089b` on 2026-11-22. The stage's first state had reached `main` on 2026-11-21 as `61a5c85`, at the owner's request and before closure (§N S12 handoff 2).
+- CI on main: run 44961175218 on `caf089b`: success; 1205 passed, 2 skipped (no ODA converter, no anthropic package), 8 xfailed in 156.87 s on Python 3.13; Reviewer App job passed (19 Vitest, 8 Playwright).
+- Closed by: agent:claude-code on the owner's order of 2026-11-22 ("now lets finsh this and make it into main"), after the APPROVED review 3.
 
 #### S12 review 3 — APPROVED
 - Reviewed commit: d86fdd328f50b6e48b6ee0416c0501c8bf5d8c8d (code head `2616930`: `git diff --name-only 2616930 d86fdd3` lists only `docs/PROJECT_TRACKER.md`).
@@ -4268,7 +4274,7 @@ homeowner approval of any site, program, plan or model.
 
 ### Current handoff note
 
-- Stage S12 (fast and sound test suite): review PENDING; the only blocker of review 2, the S11 closure, is done and the full suite passes; see §N S12 handoff 4. Next: "Review stage S12" in a fresh session, then "Close stage S12".
+- Stage S12 (fast and sound test suite) is closed: merged to `main` as `caf089b` on 2026-11-22 after review 3 APPROVED; see §N S12 records. No software stage is in progress; next eligible: the human tracks H1 and H2, or X1 Optional tool research.
 - Stage S11 (glossary vocabulary, issues #2–#4) is closed: merged to `main` by PR #5 as `59da504`, then reviewed and closed on 2026-11-21 on the owner's order; see §N S11 records.
 - Continuation entry point: `projects/my-house/reviews/CONTINUE-H2.md` (private detailed handoff, current records, preserved requirements and next deliverable). Committed on `stage/H2-interview-program` (PR #41).
 
