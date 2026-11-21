@@ -116,8 +116,8 @@ to reopen A–D):
 
 | | |
 |---|---|
-| **Current stage** | S12 Fast and sound test suite (IN_PROGRESS, review CHANGES_REQUESTED: §N S12 review 2, whose only blocker was the S11 closure, done on `main` in `73383f8`); human track H2 Real interview and program IN_PROGRESS |
-| **Awaiting review** | none pending; S12 has review 2 CHANGES_REQUESTED |
+| **Current stage** | S12 Fast and sound test suite (IN_PROGRESS, review PENDING after §N S12 handoff 4: the only blocker of review 2, the S11 closure, is done and the full suite passes); human track H2 Real interview and program IN_PROGRESS |
+| **Awaiting review** | S12 (review 3: since the reviewed `5a33626` only `docs/PROJECT_TRACKER.md` changed, see §N S12 handoff 4) |
 | **Next eligible stage** | none until S12 is closed; H1 Real site verification and H2 Real interview and program (human parallel tracks), or X1 Optional tool research |
 | **Path to good floor plans** | S1 (done) → S2 (done) → S3 (done) → S4 (done) → S5 (done) → S6 (done) → S7 (done) → S8 (done) → S10 (done) → S9 (done; 10 stages complete) |
 | **Blocked** | H1 site facts (owner or surveyor input); program gate (needs site gate); H3 real design (needs H1 and H2) |
@@ -1720,7 +1720,7 @@ claimed without a recorded professional verification.
 |---|---|
 | Kind | implementation |
 | Status | IN_PROGRESS |
-| Review | CHANGES_REQUESTED |
+| Review | PENDING |
 | Branch | `stage/S12-fast-sound-tests` |
 | Depends on | S9 |
 | Tasks | S12-01, S12-02, S12-03, S12-04, S12-05, S12-06, S12-07 |
@@ -1731,7 +1731,7 @@ claimed without a recorded professional verification.
 | Demonstration | Before and after timings (serial baseline, default runner) and the solve-fingerprint count |
 | Artifacts | ADR 0035; contract §10; `pyproject.toml` runner settings |
 | Review requirements | Reviewer re-runs the suite and the timing, spot-checks that rewritten tests fail when their behaviour is broken, and confirms no assertion was weakened |
-| Evidence | Branch `stage/S12-fast-sound-tests`; before: 1107 passed in 467.32 s serial (`-p no:xdist`), 148.81 s on 4 workers, 328 CP-SAT solves of 123 distinct models, 133 s of solver time on repeats; at handoff 1: 1185 passed, 5 xfailed, 1 failed (1191 collected) in 69.92 s, and 246 solves of 129 distinct models with 82 same-worker repeats (38.0 s), as review 1 measured (handoff 1 said 1186 passed and 241 solves); after the review 1 fixes, code head `2616930`: 1215 collected, 1205 passed, 9 strict xfail cases in 6 tests (product gaps ISS-49, ISS-52, ISS-55, ISS-56, ISS-57, ISS-59), 1 failure `test_the_committed_tracker_is_consistent` (ISS-51, owner decision #52), 58.50 s on the default runner; 252 solve calls of 132 distinct models, 80 answered by the solve memo, 172 solved, 9 of them a model the worker had already solved (5.6 s, all in tests marked `fresh_solves` or the memo's own tests), 31 a model another worker had solved; `pytest --fresh-solves` gives the same results without replays in 64.13 s; Linux CI run 44940037595: 1 failed (the tracker test, ISS-51), 1204 passed, 2 skipped (no ODA converter, no anthropic package), 8 xfailed in 161.35 s on Python 3.13; Reviewer App job passed (19 Vitest, 8 Playwright); handoff in §N S12 handoff 3 |
+| Evidence | Branch `stage/S12-fast-sound-tests`; before: 1107 passed in 467.32 s serial (`-p no:xdist`), 148.81 s on 4 workers, 328 CP-SAT solves of 123 distinct models, 133 s of solver time on repeats; at handoff 1: 1185 passed, 5 xfailed, 1 failed (1191 collected) in 69.92 s, and 246 solves of 129 distinct models with 82 same-worker repeats (38.0 s), as review 1 measured (handoff 1 said 1186 passed and 241 solves); after the review 1 fixes, code head `2616930`: 1215 collected, 1205 passed, 9 strict xfail cases in 7 tests (6 product gaps: ISS-49, ISS-52, ISS-55, ISS-56, ISS-57, ISS-59), 1 failure `test_the_committed_tracker_is_consistent` (ISS-51, owner decision #52), 58.50 s on the default runner; 252 solve calls of 132 distinct models, 80 answered by the solve memo, 172 solved, 9 of them a model the worker had already solved (5.6 s, all in tests marked `fresh_solves` or the memo's own tests), 31 a model another worker had solved; `pytest --fresh-solves` gives the same results without replays in 64.13 s; Linux CI run 44940037595: 1 failed (the tracker test, ISS-51), 1204 passed, 2 skipped (no ODA converter, no anthropic package), 8 xfailed in 161.35 s on Python 3.13; Reviewer App job passed (19 Vitest, 8 Playwright); after the S11 closure (merge of `main`, `59da245`, tracker only): 1215 collected, 1206 passed, 9 strict xfail cases, none failed, 58.16 s on the default runner; Linux CI run 44944217517: success, 1205 passed, 2 skipped, 8 xfailed in 123.13 s; handoffs in §N S12 handoff 3 and handoff 4 |
 
 #### Runner and evaluation speed
 
@@ -2637,6 +2637,15 @@ Closure record template:
 
 ### S12 records
 
+#### S12 handoff 4 — review 2's blocker resolved, review PENDING
+- Branch `stage/S12-fast-sound-tests` at `59da245`, the merge of `main` at `73383f8`. Code and tests are unchanged since `2616930`: `git diff --name-only 5a33626 59da245` lists only `docs/PROJECT_TRACKER.md` (review 2's record and Review row, and the S11 closure that came with `main`).
+- Author: agent:claude-code (Claude Fable 5.2), in the session that wrote S12 review 2 and S11 review 1, on the owner's order of 2026-11-21 to mark S11 done and make the tracker test pass. Review 3 needs another session: this one made the change it would review.
+- Finding 1 of reviews 1 and 2 (BLOCKING) is resolved: S11 is DONE with review APPROVED (§N S11 review 1 and closure, ISS-51 resolved), so one implementation stage is IN_PROGRESS and `test_the_committed_tracker_is_consistent` passes.
+- Not changed: findings 2 to 5 of review 2 (LOW, at the implementer's discretion) and finding 7 (the account handle, the owner's decision). Of finding 6, the Evidence row now says 7 xfail tests; the three indirect imports of `tree` stay.
+- Measured at `59da245` on macOS arm64: `pytest -q` 1206 passed, 9 xfailed in 58.16 s (1215 collected, none failed). `ruff check src tests examples tools` clean; `house-ai schemas check` 30 up to date; `tools/leak_scan.py` clean; `tools/check_tracker.py` clean; `house-ai project verify my-house` intact, 154 events, 150 artifact versions.
+- CI: run 44944217517 on `59da245`: success; 1205 passed, 2 skipped (no ODA converter, no anthropic package), 8 xfailed in 123.13 s on Python 3.13; Reviewer App job passed. It is the first green run of this branch.
+- `main` at `73383f8` (the S11 closure): locally `pytest -q` 1186 passed, 5 xfailed in 69.08 s, none failed. CI run 44944057005 on it failed with 2 failed, 1183 passed, 2 skipped, 4 xfailed in 210.92 s: the two Linux-only failures fixed on this branch in `ec6a6b9` (`test_millimetre_drawing_gives_the_same_site`, `test_privacy_zoning_routes_avoid_family_rooms`); the tracker test passes there. They reach `main` when S12 merges.
+- Resume: "Review stage S12" in a fresh session (only the tracker changes since `5a33626` need review), then "Close stage S12".
 #### S12 review 2 — CHANGES_REQUESTED
 - Reviewed commit: 5a3362640ab1adc2ded8c83dcf6daf47edfb8bb9 (code head `2616930`; `5a33626` adds only tracker text).
 - Reviewer: agent:claude-code, Claude Fable 5.2, fresh session (implementer of the review 1 fixes was agent:claude-code, Claude Fable 5.2; handoff 3 asked for another agent or model, or at least a fresh session: this is the second). No delegated audits: every check below was run by the reviewer.
@@ -4224,7 +4233,7 @@ homeowner approval of any site, program, plan or model.
 
 ### Current handoff note
 
-- Stage S12 (fast and sound test suite): review 2 CHANGES_REQUESTED; its only blocker, the S11 closure, is done on `main` (`73383f8`); see §N S12 review 2.
+- Stage S12 (fast and sound test suite): review PENDING; the only blocker of review 2, the S11 closure, is done and the full suite passes; see §N S12 handoff 4. Next: "Review stage S12" in a fresh session, then "Close stage S12".
 - Stage S11 (glossary vocabulary, issues #2–#4) is closed: merged to `main` by PR #5 as `59da504`, then reviewed and closed on 2026-11-21 on the owner's order; see §N S11 records.
 - Continuation entry point: `projects/my-house/reviews/CONTINUE-H2.md` (private detailed handoff, current records, preserved requirements and next deliverable). Committed on `stage/H2-interview-program` (PR #41).
 
