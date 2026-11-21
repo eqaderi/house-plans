@@ -13,10 +13,11 @@ from house_ai.domain.provenance import ApprovalRequiresHuman, ArtifactKind, Data
 from house_ai.domain.units import LengthUnit
 from house_ai.domain.workflow import EventType, Gate, WorkflowState
 from house_ai.orchestration.site import SiteService
-from house_ai.orchestration.site_ingestion import SiteConfirmation
+from house_ai.orchestration.site_ingestion import SiteConfirmation, confirm_site
 from house_ai.orchestration.workflow import Workflow
 
 from .conftest import AGENT, HUMAN, SURVEY_DXF, SURVEY_LAYERS
+from .test_human_gates import tree
 
 #: What keeps the synthetic survey out of the site gate before anyone confirms it.
 SURVEY_BLOCKERS = [
@@ -153,6 +154,40 @@ def test_an_agent_cannot_confirm_site_facts(ingested):
     with pytest.raises(ApprovalRequiresHuman):
         SiteService(store).confirm("site", AGENT, FULL)
     assert len(store.events()) == events
+
+
+#: Units and boundary only. With no EPSG code and no local-only there is no CRS to confirm,
+#: so the CRS check in `set_coordinate_reference_system` never runs: `confirm_site`'s own
+#: human check is the only thing between an agent and a confirmed site (ISS-63).
+UNITS_AND_BOUNDARY = SiteConfirmation(
+    units=LengthUnit.METRE, elevation_units=LengthUnit.METRE, boundary_verified=True
+)
+CONFIRM = {
+    "confirm_site": lambda store, who: confirm_site(store, "site", who, UNITS_AND_BOUNDARY),
+    "SiteService.confirm": lambda store, who: (
+        SiteService(store).confirm("site", who, UNITS_AND_BOUNDARY).site_ref
+    ),
+}
+
+
+@pytest.mark.parametrize("through", ["confirm_site", "SiteService.confirm"])
+def test_an_agent_cannot_confirm_units_and_boundary_without_a_crs(ingested, through):
+    store = ingested
+    before = tree(store.root)
+
+    with pytest.raises(ApprovalRequiresHuman) as refused:
+        CONFIRM[through](store, AGENT)
+
+    assert refused.type is ApprovalRequiresHuman
+    assert str(refused.value) == "agent 'claude-code' cannot confirm site facts; only a human can"
+    assert tree(store.root) == before
+
+    # The same confirmation from a human is accepted: the actor was the only thing wrong.
+    ref = CONFIRM[through](store, HUMAN)
+
+    assert (ref.id, ref.version) == ("site", 2)
+    assert _codes(SiteService(store).blockers()) == [SURVEY_CODES[1], SURVEY_CODES[3]]
+    assert Workflow(store).state is WorkflowState.SITE_NEEDS_CONFIRMATION
 
 
 def test_cli_site_confirm_goes_through_site_service(ingested, monkeypatch, capsys):
