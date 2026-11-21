@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import copy
 import math
+from pathlib import Path
 
 import pytest
 from shapely.geometry import Point, Polygon, box
@@ -76,6 +78,80 @@ def test_seeded_defects_and_clean_twins(case):
         assert all(v.strength.value == "soft" for v in result.violations)
 
 
+def _missing_input_cases():
+    """(case, critic, plan with the input, same plan without it, code, metric, reason)."""
+    car = dict(id="car", width_m=1.8, length_m=4.5, door_side_clearance_m=0.6, source="synthetic")
+    yield (
+        "dining-seats", FurnitureUsabilityEvaluator,
+        ctx(model(0.8, 0.8, "dining"), program=program(household_seats=4)),
+        ctx(model(0.8, 0.8, "dining")),
+        "dining_no_sampled_fit", "dining_sampled_fit", "household_seats_unknown",
+    )  # fmt: skip
+    yield (
+        "garage-vehicles", FurnitureUsabilityEvaluator,
+        ctx(model(2, 3, "garage"), program=program(vehicles=[car])),
+        ctx(model(2, 3, "garage")),
+        "garage_no_sampled_fit", "garage_sampled_fit", "vehicle_count_or_size_unknown",
+    )  # fmt: skip
+    headroom = stair_model(defect="headroom").model_dump(mode="json")
+    no_line = copy.deepcopy(headroom)
+    no_line["stairs"][0].pop("walking_line")
+    yield (
+        "stair-walking-line", StairUsabilityEvaluator, ctx(headroom), ctx(no_line),
+        "stair_low_headroom", "stair_min_headroom_m", "missing_walking_line",
+    )  # fmt: skip
+    short = stair_model(defect="run").model_dump(mode="json")
+    no_risers = copy.deepcopy(short)
+    no_risers["stairs"][0]["riser_count"] = None
+    yield (
+        "stair-risers", StairUsabilityEvaluator, ctx(short), ctx(no_risers),
+        "stair_run_does_not_fit", "stair_run_fit", "missing_riser_count_or_going",
+    )  # fmt: skip
+    swing = model(4, 6, doors=True)
+    swing["furniture"] = [furniture("bed", position=(1.4, 1.1))]
+    no_side = copy.deepcopy(swing)
+    no_side["openings"][0].pop("opens_into")
+    yield (
+        "door-swing-side", DoorClearanceEvaluator, ctx(swing), ctx(no_side),
+        "door_object_conflict", "door_swing_checked", "missing_swing_side",
+    )  # fmt: skip
+    dim = model(4, 4, "living")
+    dim["openings"] = [
+        dict(id="win", kind="window", host_wall_id="south", offset_m=1, width_m=0.6,
+             height_m=1.0, sill_m=0.9, connects=("room", "exterior"), operation="casement")
+    ]  # fmt: skip
+    yield (
+        "daylight-terrain", DaylightOpportunityEvaluator, ctx(dim, flat_site()), ctx(dim),
+        "low_daylight_opportunity", "unburied_glazing_to_net_area",
+        "three_point_tin_window_area_ratio",
+    )  # fmt: skip
+
+
+@pytest.mark.parametrize("case", list(_missing_input_cases()), ids=lambda c: c[0])
+def test_missing_input_is_reported_not_checked_never_as_a_pass(case):
+    """A bad plan whose deciding input is missing is not silently clean: the critic names
+    the unchecked metric and why, and claims no value for it."""
+    _, critic, with_input, without_input, code, name, reason = case
+    assert code in {v.code for v in critic().evaluate(with_input).violations}
+    result = critic().evaluate(without_input)
+    assert code not in {v.code for v in result.violations}
+    unchecked = [m for m in result.metrics if m.metric == name]
+    assert unchecked and all(
+        m.status == ClaimStatus.NOT_CHECKED and m.value is None and m.method == reason
+        for m in unchecked
+    )
+
+
+def test_vehicle_arrival_without_a_drive_or_path_is_not_checked():
+    car = dict(id="car", width_m=1.8, length_m=4.5, door_side_clearance_m=0.6,
+               turning_radius_m=5, source="synthetic")  # fmt: skip
+    result = VehicleArrivalEvaluator().evaluate(ctx(model(), flat_site(), program(vehicles=[car])))
+    assert [(m.value, m.status, m.method) for m in result.metrics] == [
+        (None, ClaimStatus.NOT_CHECKED, "road_drive_polygon_arrival_path_or_vehicle_unknown")
+    ]
+    assert result.violations == []
+
+
 def test_net_area_analytical_partition_room_and_door_recess():
     doc = model(4, 3)
     for w in doc["walls"]:
@@ -122,17 +198,14 @@ def test_door_geometry_area_handing_leaf_and_both_approaches(operation, area):
     assert set(door_geometry(house, house.openings[0]).approaches) == {"room", "hall"}
 
 
-def test_door_wall_door_conflict_and_unknown_swing():
+def test_door_wall_conflict_and_unknown_swing():
     doc = model(4, 3, doors=True)
     doc["walls"].append(wall("wall-end", (1.5, 0.3), (1.5, 1)))
     result = DoorClearanceEvaluator().evaluate(ctx(doc))
     assert any(
         v.code == "door_wall_conflict" and "wall-end" in v.subject_ids for v in result.violations
     )
-    doc["openings"].append(door("second", offset=1.8, operation="swing_right", opens_into="room"))
-    assert "door_door_conflict" in {
-        v.code for v in DoorClearanceEvaluator().evaluate(ctx(doc)).violations
-    }
+    # door_door_conflict: test_door_door_conflict_names_both_doors_and_clean_twin.
     doc["openings"][0].pop("opens_into")
     result = DoorClearanceEvaluator().evaluate(ctx(doc))
     assert metric(result, "door_swing_checked", "front-door").status == ClaimStatus.NOT_CHECKED
@@ -326,7 +399,11 @@ def test_portals_do_not_teleport_between_floors_or_outside():
     doc["levels"].append(dict(id="upper", name="Upper", elevation_m=3))
     doc["spaces"].append(space("up", "family", (0, 0, 4, 6), "upper"))
     network = RouteNetwork(HouseModel.model_validate(doc))
-    assert network.from_entrance("room") is not None
+    # Door centre (1.45, 0) to the room point (2, 3): the representative point sits on the
+    # scanline midway between the vertex heights around the centre (0.075 and 5.925).
+    route = network.from_entrance("room")
+    assert route.length_m == pytest.approx(math.hypot(0.55, 3))
+    assert route.element_ids == ("front-door", "room") and route.level_changes == 0
     assert network.from_entrance("up") is None
     doc = stair_model().model_dump(mode="json")
     doc["openings"] = [door()]
@@ -366,7 +443,7 @@ def test_daily_routes_and_private_crossing_name_rooms():
     )
     assert metric(result, "garage_to_kitchen_level_changes").value == 0
     assert metric(result, "garage_to_kitchen_rooms_crossed").value == "garage,kitchen"
-    assert metric(result, "garage_to_kitchen_length_m").value > 4
+    # Its length is hand computed in test_daily_route_length_hand_computed_and_long_route_flagged.
 
 
 def test_vertical_acoustic_stack_and_clean_shift():
@@ -400,6 +477,9 @@ def test_daylight_retaining_buried_windows_cross_ventilation_and_missing_terrain
     site = flat_site()
     evaluator = DaylightOpportunityEvaluator()
     clean = evaluator.evaluate(ctx(doc, site))
+    # Clean twin: 2 x 1.5 m of glazing, sill 0.9 m over flat ground at the floor level.
+    assert not {"window_buried", "low_daylight_opportunity"} & {v.code for v in clean.violations}
+    assert metric(clean, "unburied_glazing_to_net_area").status == ClaimStatus.INFERRED
     assert metric(clean, "unburied_glazing_to_net_area").value == pytest.approx(
         3 / (3.85**2), abs=0.001
     )
@@ -409,11 +489,18 @@ def test_daylight_retaining_buried_windows_cross_ventilation_and_missing_terrain
     assert metric(evaluator.evaluate(ctx(doc, site)), "cross_ventilation_opportunity").value is True
     doc["walls"][0]["kind"] = "retaining"
     result = evaluator.evaluate(ctx(doc, site))
-    assert any(v.code == "window_buried" and "win" in v.subject_ids for v in result.violations)
+    assert [v.subject_ids for v in result.violations if v.code == "window_buried"] == [
+        ["win", "south", "room"]
+    ]
     assert metric(result, "window_capable_external_length_m").value == 12
     doc["walls"][0]["kind"] = "exterior"
     site.terrain.surface.vertices = [(x, y, 2) for x, y, _ in site.terrain.surface.vertices]
-    assert "window_buried" in {v.code for v in evaluator.evaluate(ctx(doc, site)).violations}
+    # Ground 2 m up covers the 0.9..2.4 m window up to 2 m: both windows partly buried.
+    buried = evaluator.evaluate(ctx(doc, site))
+    assert [v.subject_ids for v in buried.violations if v.code == "window_buried"] == [
+        ["win", "south", "room"],
+        ["win-2", "north", "room"],
+    ]
     assert (
         metric(evaluator.evaluate(ctx(doc)), "unburied_glazing_to_net_area").status
         == ClaimStatus.NOT_CHECKED
@@ -469,7 +556,9 @@ def test_vehicle_arrival_conservative_sweep_and_missing_road():
             )
         )
     ]
-    assert metric(evaluator.evaluate(ctx(model(), site, req)), "vehicle_swept_path").value is True
+    clear = evaluator.evaluate(ctx(model(), site, req))
+    assert metric(clear, "vehicle_swept_path").value is True
+    assert "vehicle_arrival_conflict" not in {v.code for v in clear.violations}
     site.features[0].geometry.polygon = HouseModel.model_validate(model(2, 12)).spaces[0].boundary
     assert "vehicle_arrival_conflict" in {
         v.code for v in evaluator.evaluate(ctx(model(), site, req)).violations
@@ -530,21 +619,6 @@ def test_residual_space_excess_corridor_and_policy_threshold():
     }
 
 
-def test_bathroom_privacy_ray_occluded_by_screen():
-    doc = model(4, 4, "entry", doors=True)
-    doc["spaces"].append(space("bath", "bathroom", (4, 0, 7, 4)))
-    doc["openings"].append(door("bath-door", "east", 1.5, connects=("room", "bath")))
-    result = PrivacyUsabilityEvaluator().evaluate(ctx(doc))
-    assert any(
-        v.code == "bathroom_entrance_visible" and "bath-door" in v.subject_ids
-        for v in result.violations
-    )
-    doc["walls"].append(wall("screen", (3, 0.1), (3, 3.9)))
-    assert "bathroom_entrance_visible" not in {
-        v.code for v in PrivacyUsabilityEvaluator().evaluate(ctx(doc)).violations
-    }
-
-
 def test_through_kitchen_and_seating_zone_clean_twin_with_one_door():
     for function, code in [
         ("kitchen", "kitchen_through_traffic"),
@@ -599,7 +673,6 @@ def test_additive_fields_preserve_legacy_canonical_hashes():
 def test_all_critics_run_over_r2_cases_and_match_declared_expectations():
     from pathlib import Path
 
-    from house_ai.benchmarks.runner import run_fixture
     from house_ai.domain.benchmark import BenchmarkFixture
 
     paths = sorted((Path(__file__).parents[2] / "examples/benchmarks/fixtures").glob("*.json"))
@@ -608,7 +681,7 @@ def test_all_critics_run_over_r2_cases_and_match_declared_expectations():
     covered, positive = set(), set()
     for path in paths:
         fixture = BenchmarkFixture.model_validate_json(path.read_text())
-        assert all(r.outcome in {"PASS", "NOT_CHECKED"} for r in run_fixture(fixture))
+        # Runner outcomes: test_every_current_observation_matches_declared_expectations.
         assert not any(e.pending_stage == "S6" for e in fixture.expectations)
         for case in fixture.cases:
             count += 1
@@ -744,24 +817,74 @@ def test_maximum_vehicle_id_and_bed_requirement_references():
         program(vehicles=[vehicle, vehicle])
 
 
+_DEMO = Path(__file__).parents[2] / "examples/usability/demonstration/report.json"
+
+
+def _demo_inputs():
+    from house_ai.domain.site import Site
+
+    folder = Path(__file__).parents[2] / "examples/projects/synthetic-hillside"
+    site = Site.model_validate(load_document(folder / "site.yaml"))
+    return site, SpaceProgram.model_validate(load_document(folder / "space_program.yaml"))
+
+
 def test_committed_demo_is_grounded_and_has_three_integrity_checked_concepts():
+    """Each claim in the report is re-derived: integrity from the committed models, the
+    seeded-defect table from the scenarios; the critics' output is compared in
+    test_committed_demo_report_matches_a_fresh_evaluation."""
     import json
-    from pathlib import Path
 
     from house_ai.storage.hashing import content_hash
 
-    root = Path(__file__).parents[2]
-    report = json.loads((root / "examples/usability/demonstration/report.json").read_text())
+    report = json.loads(_DEMO.read_text())
     assert report["exploratory"] and not report["site_approved"] and not report["program_approved"]
-    assert len(report["options"]) == 3
-    assert all(r["defect_detected"] and r["clean_twin_passes"] for r in report["defects"])
+    assert [r["strategy"] for r in report["options"]] == ["compact", "split_level", "linear"]
     for row in report["options"]:
         house = HouseModel.model_validate(row["model"])
         assert content_hash(house) == row["model_hash"]
-        assert row["integrity_clean"]
-        assert {r["name"] for r in row["critics"]} == {e.name for e in USABILITY_EVALUATORS}
+        assert check_model(house) == [] and row["integrity_clean"] is True
+        assert [r["name"] for r in row["critics"]] == [e.name for e in USABILITY_EVALUATORS]
         assert all(set(v["subject_ids"]) <= set(house.all_ids()) for v in row["findings"])
-        assert row["findings"]  # Real geometric integrity does not imply architectural usability.
+        # Real geometric integrity does not imply architectural usability.
+        assert len(row["findings"]) > 0
+    recomputed = []
+    for ident, name, bad, clean, code, subject, pair_program in seeded_pairs():
+        critic = next(e for e in USABILITY_EVALUATORS if e.name == name)
+        found, twin = (
+            critic.evaluate(EvaluationContext(m, None, pair_program, None)).violations
+            for m in (bad, clean)
+        )
+        recomputed.append(
+            dict(
+                id=ident,
+                code=code,
+                subject=subject,
+                defect_detected=any(v.code == code and subject in v.subject_ids for v in found),
+                clean_twin_passes=code not in {v.code for v in twin},
+            )
+        )
+    assert all(r["defect_detected"] and r["clean_twin_passes"] for r in recomputed)
+    assert report["defects"] == recomputed
+
+
+def test_committed_demo_report_matches_a_fresh_evaluation():
+    """A stale report must fail: same inputs, and the critics' output recomputed."""
+    import json
+
+    from house_ai.storage.hashing import content_hash
+
+    report = json.loads(_DEMO.read_text())
+    site, hillside = _demo_inputs()
+    assert report["input_hashes"] == dict(site=content_hash(site), program=content_hash(hillside))
+    for row in report["options"]:
+        house = HouseModel.model_validate(row["model"])
+        results = [
+            e.evaluate(EvaluationContext(house, site, hillside, None, False))
+            for e in USABILITY_EVALUATORS
+        ]
+        assert row["critics"] == [r.run.model_dump(mode="json") for r in results]
+        assert row["findings"] == [v.model_dump(mode="json") for r in results for v in r.violations]
+        assert row["metrics"] == [m.model_dump(mode="json") for r in results for m in r.metrics]
 
 
 # ---------------------------------------------------------------- S6 review 1 regressions
@@ -802,14 +925,17 @@ def test_door_on_wall_with_generator_coordinate_noise_still_routes():
     ]
     doc["openings"].append(door("inner", "shared", 1, connects=("room", "next")))
     house = HouseModel.model_validate(doc)
-    assert RouteNetwork(house).from_entrance("next") is not None
+    # Front door (1.45, 0) -> inner door (4, 1.45) -> next's point (6, 2.9125), the 4e-7 m
+    # offset aside: the scanline sits midway between the vertex heights 1.9 and 3.925.
+    route = RouteNetwork(house).from_entrance("next")
+    assert route.length_m == pytest.approx(math.hypot(2.55, 1.45) + math.hypot(2, 1.4625))
+    assert route.element_ids == ("front-door", "inner", "next")
     result = NetAreaEvaluator().evaluate(ctx(house))
     assert metric(result, "net_wall_basis_complete", "next").value is True
 
 
-def test_fit_search_is_bounded_and_identical_vehicles_are_interchangeable():
-    import time
-
+def test_fit_search_is_bounded_and_identical_vehicles_are_interchangeable(monkeypatch):
+    from house_ai.evaluation import usability_geometry
     from house_ai.evaluation.usability import FurnitureUsabilityEvaluator as F
     from house_ai.evaluation.usability_geometry import _dimensions
 
@@ -825,17 +951,39 @@ def test_fit_search_is_bounded_and_identical_vehicles_are_interchangeable():
     two = program(vehicles=cars[:2])
     doc = model(7, 6.5, "garage")
     assert metric(evaluator.evaluate(ctx(doc, program=two)), "garage_sampled_fit").value is True
+    # End to end, IDs and sources do not change the verdict or which bodies are placed.
+    renamed = [{**c, "id": f"other-{i}", "source": "other synthetic"} for i, c in enumerate(cars)]
+    for vehicles in (renamed[:2], cars[1::-1]):
+        again = evaluator.evaluate(ctx(doc, program=program(vehicles=vehicles)))
+        assert [(m.metric, m.value, m.method) for m in again.metrics] == [
+            (m.metric, m.value, m.method)
+            for m in evaluator.evaluate(ctx(doc, program=two)).metrics
+        ]
     # 5.4 m: three 1.8 m bodies with 0.6 m door zones need 7.8 m; decided as no fit.
     narrow = evaluator.evaluate(ctx(model(5.4, 6.5, "garage"), program=program(vehicles=cars)))
     assert metric(narrow, "garage_sampled_fit").value is False
     assert "garage_no_sampled_fit" in {v.code for v in narrow.violations}
     # 7 m: still undecided within the search budget; reported as not checked, not as a failure.
-    start = time.perf_counter()
+    # The bound is a count of candidate placements tried, not a clock.
+    assert usability_geometry.FIT_BUDGET == 200_000
     result = evaluator.evaluate(ctx(doc, program=program(vehicles=cars)))
-    assert time.perf_counter() - start < 30
     fit = metric(result, "garage_sampled_fit")
-    assert fit.status == ClaimStatus.NOT_CHECKED and fit.method.startswith("search_budget")
+    assert (fit.status, fit.method) == (
+        ClaimStatus.NOT_CHECKED,
+        "search_budget_exhausted_before_decision",
+    )
     assert "garage_no_sampled_fit" not in {v.code for v in result.violations}
+    # With a 10-placement budget even the decidable two-car case stops undecided.
+    monkeypatch.setattr(usability_geometry, "FIT_BUDGET", 10)
+    usability_geometry._fit_cached.cache_clear()
+    try:
+        tiny = metric(evaluator.evaluate(ctx(doc, program=two)), "garage_sampled_fit")
+    finally:
+        usability_geometry._fit_cached.cache_clear()
+    assert (tiny.status, tiny.method) == (
+        ClaimStatus.NOT_CHECKED,
+        "search_budget_exhausted_before_decision",
+    )
 
 
 def test_riser_heights_rounded_to_four_places_are_not_a_mismatch():
@@ -953,7 +1101,11 @@ def test_estimated_stair_route_is_inferred_not_measured():
 def test_doors_with_a_threshold_still_join_routes():
     doc = model(4, 4, "entry", doors=True)
     doc["openings"][0]["sill_m"] = 0.02
-    assert RouteNetwork(HouseModel.model_validate(doc)).from_entrance("room") is not None
+    # A raised threshold adds no floor recess, so the door joins the floor at its finish
+    # face y = 0.075: (1.45, 0.075) to the room point (2, 2).
+    route = RouteNetwork(HouseModel.model_validate(doc)).from_entrance("room")
+    assert route.length_m == pytest.approx(math.hypot(0.55, 1.925))
+    assert route.element_ids == ("front-door", "room")
 
 
 def test_route_network_is_shared_between_critics_for_one_model():
@@ -1130,18 +1282,6 @@ def test_stair_width_going_and_invalid_walking_line_findings():
     )
 
 
-def test_bedroom_beside_noisy_room_and_clean_gap():
-    doc = model(4, 4)
-    doc["spaces"].append(space("noisy", "laundry", (4, 0, 7, 4)))
-    result = PrivacyUsabilityEvaluator().evaluate(ctx(doc))
-    assert any(
-        v.code == "bedroom_noise_adjacency" and set(v.subject_ids) == {"room", "noisy"}
-        for v in result.violations
-    )
-    doc["spaces"][-1]["boundary"] = rectangle(5, 0, 8, 4)
-    assert not PrivacyUsabilityEvaluator().evaluate(ctx(doc)).violations
-
-
 def test_low_daylight_opportunity_ratio_hand_computed():
     doc = model(4, 4, "living")
     doc["openings"] = [
@@ -1162,7 +1302,16 @@ def test_low_daylight_opportunity_ratio_hand_computed():
     assert metric(result, "unburied_glazing_to_net_area").value == pytest.approx(
         0.6 / 3.85**2, abs=1e-3
     )
-    assert "low_daylight_opportunity" in {v.code for v in result.violations}
+    assert [v.subject_ids for v in result.violations if v.code == "low_daylight_opportunity"] == [
+        ["room"]
+    ]
+    # Clean twin: a 1.6 x 1.0 m window gives 1.6 / 14.8225 = 10.8 % >= 10 %.
+    doc["openings"][0]["width_m"] = 1.6
+    result = DaylightOpportunityEvaluator().evaluate(ctx(doc, flat_site()))
+    ratio = metric(result, "unburied_glazing_to_net_area")
+    assert ratio.status == ClaimStatus.INFERRED
+    assert ratio.value == pytest.approx(1.6 / 3.85**2, abs=1e-3)
+    assert "low_daylight_opportunity" not in {v.code for v in result.violations}
 
 
 def test_net_area_from_incomplete_walls_is_inferred_and_tiny_rooms_do_not_crash():

@@ -84,7 +84,7 @@ def test_a_recorded_statement_confirms_nothing(new_store, make_survey):
     assert store.latest(K.SITE, "site") == site_before
     site = store.get(site_before, Site)
     assert site_verification_blockers(site) == blockers
-    assert site.coordinates.elevation_units.status is not C.USER_CONFIRMED
+    assert site.coordinates.elevation_units.status is C.DECLARED_IN_SOURCE  # not confirmed
     assert Workflow(store).state is state
     assert store.verify() == []
 

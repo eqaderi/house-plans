@@ -1,4 +1,9 @@
-"""Screenshot and semantic ID-map regression tests (Stage S5, Task S5-08)."""
+"""Semantic ID-map regression tests, and what the byte and pixel comparisons say (S5-08).
+
+`compare_image_bytes` compares encoded PNG bytes: equal bytes are the same image, but the ratio
+it reports for different bytes is not a pixel difference. The drawing's regression test is
+the SVG golden file (test_plan_svg.py); the rasterised test here decodes pixels.
+"""
 
 from __future__ import annotations
 
@@ -17,6 +22,8 @@ from house_ai.validation.semantic_map import (
     diff_semantic_id_maps,
     extract_svg_semantic_id_map,
 )
+
+from .test_rasterize import png_pixels, png_size
 
 REPO = Path(__file__).resolve().parent.parent
 BUNGALOW = REPO / "examples" / "projects" / "synthetic-bungalow"
@@ -39,6 +46,32 @@ def _load_hillside() -> tuple[PlanVersion, Site]:
     return PlanVersion.model_validate(plan_dict), Site.model_validate(site_dict)
 
 
+def _ids_by_kind(id_map) -> dict[str, set[str]]:
+    out: dict[str, set[str]] = {}
+    for rec in id_map.values():
+        assert rec.id in id_map and id_map[rec.id] is rec
+        out.setdefault(rec.kind, set()).add(rec.id)
+    return out
+
+
+def _model_ids_by_kind(plan: PlanVersion) -> dict[str, set[str]]:
+    """Every canonical element of the model, by the kind the ID map gives it."""
+    m = plan.model
+    kinds = {
+        "parcel": {"site-parcel-boundary"},
+        "envelope": {"site-buildable-envelope"},
+        "elevation-marker": {f"level-elev-{lv.id}" for lv in m.levels},
+        "space": {s.id for s in m.spaces},
+        "wall": {w.id for w in m.walls},
+        "door": {o.id for o in m.openings if o.is_passable},
+        "window": {o.id for o in m.openings if not o.is_passable},
+        "stair": {st.id for st in m.stairs},
+        "fixture": {f.id for f in m.fixtures},
+        "furniture": {f.id for f in m.furniture},
+    }
+    return {k: v for k, v in kinds.items() if v}
+
+
 def test_semantic_id_map_extraction_bungalow():
     """Verify semantic element map extracts all canonical bungalow entities."""
     plan, site = _load_bungalow()
@@ -59,14 +92,14 @@ def test_semantic_id_map_extraction_bungalow():
         "sp-kitchen",
         "sp-hall",
     }
+    by_kind = _ids_by_kind(id_map)
+    assert by_kind["space"] == expected_spaces
     for sp_id in expected_spaces:
-        assert sp_id in id_map
-        assert id_map[sp_id].kind == "space"
-        assert id_map[sp_id].attributes["area_m2"] > 0
+        assert id_map[sp_id].attributes["area_m2"] == round(plan.model.space(sp_id).area_m2, 2)
 
-    # Walls and openings
-    assert any(rec.kind == "wall" for rec in id_map.values())
-    assert any(rec.kind == "door" for rec in id_map.values())
+    # Walls and openings: exactly the model's, nothing more
+    assert by_kind == _model_ids_by_kind(plan)
+    assert by_kind["wall"] and by_kind["door"]
 
 
 def test_semantic_id_map_extraction_hillside():
@@ -74,10 +107,14 @@ def test_semantic_id_map_extraction_hillside():
     plan, site = _load_hillside()
     id_map = build_semantic_id_map(plan, site)
 
-    # Levels and stairs
-    assert any(rec.kind == "elevation-marker" for rec in id_map.values())
-    assert any(rec.kind == "stair" for rec in id_map.values())
-    assert any(rec.kind == "space" for rec in id_map.values())
+    # One elevation marker per Level, every stair and space: exactly the model's elements
+    by_kind = _ids_by_kind(id_map)
+    assert by_kind == _model_ids_by_kind(plan)
+    assert len(by_kind["elevation-marker"]) == len(plan.model.levels) > 1
+    assert by_kind["stair"]
+    for lv in plan.model.levels:
+        marker = id_map[f"level-elev-{lv.id}"]
+        assert (marker.level_id, marker.attributes) == (lv.id, {"elevation_m": lv.elevation_m})
 
 
 def test_semantic_id_map_diff_identical():
@@ -173,57 +210,62 @@ def test_extract_svg_semantic_id_map():
     assert extracted["sp-living"]["aria-label"] == "Space Living (sp-living)"
 
 
-def test_compare_image_bytes_identical_and_mismatch():
-    """Verify deterministic image byte comparisons."""
+def test_compare_image_bytes_counts_differing_bytes():
+    """The ratio is differing bytes over the longer input: a byte measure, not pixels."""
     png_header = b"\x89PNG\r\n\x1a\n"
     img1 = png_header + b"\x00" * 100
     img2 = png_header + b"\x00" * 100
     img3 = png_header + b"\xff" * 100
 
     # Identical
-    is_match, ratio, msg = compare_image_bytes(img1, img2)
-    assert is_match
-    assert ratio == 0.0
+    assert compare_image_bytes(img1, img2) == (True, 0.0, "Byte-exact match")
 
-    # Mismatch with zero tolerance
-    is_match, ratio, msg = compare_image_bytes(img1, img3, max_diff_ratio=0.0)
+    # 100 of the 108 bytes differ (the 8 header bytes agree)
+    is_match, ratio, _ = compare_image_bytes(img1, img3, max_diff_ratio=0.0)
     assert not is_match
-    assert ratio > 0.0
+    assert ratio == pytest.approx(100 / 108)
 
-    # Mismatch with broad tolerance
-    is_match, ratio, msg = compare_image_bytes(img1, img3, max_diff_ratio=1.0)
+    # A length difference counts every missing byte
+    _, ratio, _ = compare_image_bytes(img1, img1 + b"\x00" * 12)
+    assert ratio == pytest.approx(12 / 120)
+
+    # Mismatch within a broad tolerance
+    is_match, _, _ = compare_image_bytes(img1, img3, max_diff_ratio=1.0)
     assert is_match
 
+    # Not PNG
+    assert compare_image_bytes(b"GIF89a", b"GIF87a") == (False, 1.0, "Invalid PNG header")
 
-def test_rasterized_screenshot_regression_fails_on_unintended_change(tmp_path):
-    """Verify rasterized SVG diffing fails when SVG geometry/color changes."""
+
+def test_rasterized_svg_pixels_change_with_the_fill_and_only_there(tmp_path):
+    """Rasterise two SVGs that differ in one fill: every pixel has the SVG's exact colour."""
     tool = find_rasterizer()
     if tool is None:
         pytest.skip("Neither rsvg-convert nor inkscape is available")
 
-    svg_baseline = """<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+    def svg(fill: str) -> str:
+        return f"""<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
       <rect width="100" height="100" fill="#38bdf8"/>
+      <rect x="0" y="50" width="100" height="50" fill="{fill}"/>
     </svg>"""
 
-    svg_modified = """<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
-      <rect width="100" height="100" fill="#e11d48"/>
-    </svg>"""
+    def raster(fill: str, name: str) -> bytes:
+        out = rasterize_svg_to_png(svg(fill), tmp_path / name, width=100, height=100)
+        return out.read_bytes()
 
-    png_base = tmp_path / "baseline.png"
-    png_mod = tmp_path / "modified.png"
+    base_bytes, mod_bytes = raster("#38bdf8", "baseline.png"), raster("#e11d48", "modified.png")
+    assert png_size(base_bytes) == png_size(mod_bytes) == (100, 100)
 
-    rasterize_svg_to_png(svg_baseline, png_base, width=100, height=100)
-    rasterize_svg_to_png(svg_modified, png_mod, width=100, height=100)
+    # The same SVG rasterises to the same bytes
+    assert compare_image_bytes(base_bytes, raster("#38bdf8", "again.png"))[0]
 
-    base_bytes = png_base.read_bytes()
-    mod_bytes = png_mod.read_bytes()
-
-    # Identical rasterization of same SVG
-    is_match, ratio, msg = compare_image_bytes(base_bytes, base_bytes)
-    assert is_match
-    assert ratio == 0.0
-
-    # Changed SVG rasterization must fail exact equality
-    is_match, ratio, msg = compare_image_bytes(base_bytes, mod_bytes, max_diff_ratio=0.0)
-    assert not is_match
-    assert ratio > 0.0
+    sky, rose = (0x38, 0xBD, 0xF8, 255), (0xE1, 0x1D, 0x48, 255)
+    base, mod = png_pixels(base_bytes), png_pixels(mod_bytes)
+    assert {px for row in base for px in row} == {sky}
+    assert {px for row in mod[:50] for px in row} == {sky}  # the unchanged top half
+    assert {px for row in mod[50:] for px in row} == {rose}  # the changed bottom half
+    flat_base = [px for row in base for px in row]
+    flat_mod = [px for row in mod for px in row]
+    changed = sum(a != b for a, b in zip(flat_base, flat_mod, strict=True))
+    assert changed == 100 * 50
+    assert not compare_image_bytes(base_bytes, mod_bytes, max_diff_ratio=0.0)[0]

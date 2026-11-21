@@ -6,13 +6,34 @@ geometry is compared byte for byte.
 
 from __future__ import annotations
 
+import collections
 import hashlib
 import json
 
 import yaml
+from shapely.geometry import Point
 
-from examples.readiness.run_demo import HERE, REVISIONS, VISUAL_OPTION, run
+from examples.readiness.run_demo import DEFECT_CODES, HERE, HILLSIDE, REVISIONS, VISUAL_OPTION, run
+from house_ai.domain.evaluation import EvaluationReport
+from house_ai.domain.program import Strength
+from house_ai.domain.provenance import ArtifactKind
+from house_ai.domain.site import Site
+from house_ai.evaluation.report import report_id
 from house_ai.render2d.rasterize import find_rasterizer
+from house_ai.storage import ProjectStore
+from house_ai.storage.hashing import load_document
+
+
+def _stored_report(store: ProjectStore, option: str, version: int) -> EvaluationReport:
+    (report,) = [
+        r
+        for r in (
+            store.get(ref, EvaluationReport)
+            for ref in store.refs(ArtifactKind.EVALUATION_REPORT, report_id(option))
+        )
+        if (r.plan_ref.id, r.plan_ref.version) == (option, version)
+    ]
+    return report
 
 
 def test_readiness_demonstration_end_to_end(tmp_path):
@@ -61,13 +82,33 @@ def test_readiness_demonstration_end_to_end(tmp_path):
     # S10-17: site context reports derived slope and frontage with no unknowns.
     assert rec["site"]["unknown"] == []
     assert rec["site"]["blockers"] == []
-    assert rec["site"]["relief_m"] > 10  # steep fixture, about 36 % fall
+    # Relief is the fall between the highest and lowest spot elevation inside the parcel.
+    site = Site.model_validate(load_document(HILLSIDE / "site.yaml"))
+    parcel = site.boundary.to_shapely().buffer(1e-6)
+    zs = [p.z_m for p in site.terrain.spot_elevations if parcel.covers(Point(p.xy))]
+    assert rec["site"]["relief_m"] == round(max(zs) - min(zs), 3)
+    assert rec["site"]["relief_m"] > 10  # steep fixture
 
     # Concepts pin the approved inputs; critics ran and their findings are in the record.
     assert rec["concepts_pin_approved_inputs"] is True
     (two_wing,) = rec["concepts"]
     assert two_wing["option"] == "concept-two-wing" and two_wing["feasible"]
-    assert two_wing["soft"] > 0 and "not_checked" in two_wing
+    assert two_wing["version"] == 1
+    # The record states the stored Evaluation of that version, finding for finding.
+    store = ProjectStore(out / "project")
+    report = _stored_report(store, "concept-two-wing", 1)
+    hard = [v for v in report.violations if v.strength is Strength.HARD]
+    assert (two_wing["hard"], two_wing["soft"]) == (len(hard), len(report.violations) - len(hard))
+    assert two_wing["hard_codes"] == sorted({v.code for v in hard})
+    assert two_wing["codes"] == dict(collections.Counter(v.code for v in report.violations))
+    assert two_wing["not_checked"] == sorted(
+        {m.metric for m in report.metrics if m.status.value == "not_checked"}
+    )
+    assert two_wing["defects"] == [
+        {"code": v.code, "subjects": list(v.subject_ids), "message": v.message}
+        for v in report.violations
+        if v.code in DEFECT_CODES
+    ]
 
     # S10-05, S10-06: stairs have measured walking lines and no unbuildable clashes.
     assert len(two_wing["stairs"]) >= 1
@@ -113,9 +154,12 @@ def test_readiness_demonstration_end_to_end(tmp_path):
     assert vr["critique_made_on_this_rendering"] is (
         vr["png_sha256"] == critique["screenshot_hash"]
     )
-    # Colliding labels are a Finding of the Evaluation, from the drawing's own layout (#34).
-    assert any(d["code"] == "label_collision" for d in two_wing["defects"])
-    assert any(d["code"] == "label_collision" for d in vr["evaluation_findings"])
+    # The visual review cites the same version's Evaluation as the concept table (ADR 0033).
+    # Which defects a layout has varies by platform; that colliding labels are found is
+    # tests/test_label_collisions.py.
+    assert vr["evaluation_findings"] == [
+        {"code": d["code"], "subjects": d["subjects"]} for d in two_wing["defects"]
+    ]
 
     # Revisions keep the owner's words and ops and add versions 2 and 3.
     assert [(r["words"], r["ops"]) for r in rec["revisions"]] == REVISIONS

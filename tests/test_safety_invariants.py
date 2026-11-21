@@ -1,168 +1,201 @@
-"""Safety and integrity invariant tests (S1-08).
+"""Safety and integrity invariants (S1-08): where each one is tested.
 
-Documents and asserts the 8 safety and integrity invariants of the system:
-1. INV-CONSENT: Private homeowner data requires explicit human consent before external transmission.
-2. INV-SOURCE-IMMUTABLE: Raw source documents stored under source/ are immutable and read-only.
-3. INV-ARTIFACT-WRITE-ONCE: Versioned artifacts are write-once and cannot be overwritten.
-4. INV-HASH-CHAIN: Event log is hash-chained; modifying any event breaks verification.
-5. INV-HEAD-ANCHOR: Event log tail truncation is detected via head anchor.
-6. INV-HUMAN-GATES: Approval gates, reopening, site confirmation, and program rejection
-   require an interactive human terminal.
-7. INV-SCHEMA-DRIFT: Canonical domain models match JSON Schema export with drift detection.
-8. INV-PRIVATE-DATA-ISOLATION: Tests run on synthetic data only, without reading projects/my-house.
+1. INV-CONSENT: private homeowner data needs a human's consent before it reaches a provider.
+2. INV-SOURCE-IMMUTABLE: raw source documents under source/ are read-only and checked.
+3. INV-ARTIFACT-WRITE-ONCE: a stored artifact version is never overwritten.
+4. INV-HASH-CHAIN: the event log is hash-chained; editing or deleting an event is detected.
+5. INV-HEAD-ANCHOR: truncating the event log tail is detected and blocks further writes.
+6. INV-HUMAN-GATES: gate approval and reopening, site confirmation, provider consent and
+   program rejection need a human at an interactive terminal.
+7. INV-SCHEMA-DRIFT: the committed JSON Schemas match the canonical models.
+8. INV-PRIVATE-DATA-ISOLATION: tests use synthetic data only and never read the owner's
+   private project folder (agent contract section 5).
+
+Invariants 1-7 are tested where their code is (``COVERED_BY``); this module checks that
+those tests still exist and tests invariant 8 itself.
 """
 
 from __future__ import annotations
 
-import json
-import stat
-import sys
+import ast
+import re
 from pathlib import Path
 
 import pytest
 
-from house_ai.cli.main import EXIT_USAGE, main
-from house_ai.domain.provenance import Actor, ActorKind, DataClassification
-from house_ai.domain.provenance import ArtifactKind as K
-from house_ai.domain.registry import stale_schemas
-from house_ai.providers.base import (
-    DataFlowPolicy,
-    PrivateDataFlowError,
-    ProviderRequest,
-    check_data_flow,
+TESTS = Path(__file__).resolve().parent
+
+#: Each invariant and the tests that would fail if it broke.
+COVERED_BY = {
+    "INV-CONSENT": [
+        "test_providers_agents.py::test_private_data_is_refused_by_default",
+        "test_providers_agents.py::test_private_data_flows_only_to_the_provider_a_human_allowed",
+        "test_providers_agents.py::test_an_agent_cannot_grant_private_data_flow",
+        "test_provider_boundary.py::test_only_send_calls_a_provider",
+        "test_human_gates.py::test_every_human_command_refuses_without_a_terminal",
+    ],
+    "INV-SOURCE-IMMUTABLE": [
+        "test_storage.py::test_add_source_preserves_bytes_and_hash",
+        "test_storage.py::test_verify_detects_a_modified_source",
+    ],
+    "INV-ARTIFACT-WRITE-ONCE": [
+        "test_storage.py::test_artifact_files_are_read_only",
+        "test_storage.py::test_existing_version_file_cannot_be_overwritten",
+        "test_storage.py::test_a_change_is_a_new_version_never_an_overwrite",
+        "test_storage.py::test_get_detects_a_tampered_artifact",
+    ],
+    "INV-HASH-CHAIN": [
+        "test_storage.py::test_verify_detects_an_edited_event",
+        "test_storage.py::test_verify_detects_a_deleted_event",
+    ],
+    "INV-HEAD-ANCHOR": [
+        "test_storage.py::test_verify_detects_truncated_event_log_tail",
+        "test_storage.py::test_writes_cannot_reanchor_a_truncated_log",
+    ],
+    "INV-HUMAN-GATES": [
+        "test_human_gates.py::test_every_human_command_refuses_without_a_terminal",
+        "test_human_gates.py::test_every_human_command_refuses_an_agent_at_a_terminal",
+        "test_human_gates.py::test_every_human_command_refuses_a_wrong_phrase",
+        "test_human_only.py::test_no_terminal_refuses_even_a_human",
+    ],
+    "INV-SCHEMA-DRIFT": [
+        "test_schemas.py::test_committed_schemas_match_the_code",
+        "test_cli.py::test_schemas_check_fails_on_drift",
+    ],
+    "INV-PRIVATE-DATA-ISOLATION": [
+        "test_safety_invariants.py::test_no_test_refers_to_the_private_project_folder",
+    ],
+}
+
+
+def _test_functions(path: Path) -> set[str]:
+    tree = ast.parse(path.read_text(encoding="utf-8"))
+    return {n.name for n in tree.body if isinstance(n, ast.FunctionDef)}
+
+
+def test_every_invariant_names_tests_that_exist():
+    assert len(COVERED_BY) == 8
+    missing = [
+        node
+        for nodes in COVERED_BY.values()
+        for node in nodes
+        if node.split("::")[1] not in _test_functions(TESTS / node.split("::")[0])
+    ]
+    assert missing == []
+
+
+# ----------------------------------------------------- INV-PRIVATE-DATA-ISOLATION
+
+# Built from parts so this file's own constants never match what it looks for.
+PRIVATE_DIR = "proj" + "ects"
+PRIVATE_NAMES = ("my-" + "house", "seper" + "ated")
+#: The private folder as a path component, unless it is the synthetic examples' folder.
+_PATH = re.compile(rf"(?<!examples/)\b{PRIVATE_DIR}(?=/|$)")
+#: An expression that ends in the examples folder: ``REPO / "examples"``, ``EXAMPLES()``.
+_EXAMPLES = re.compile(r"examples?\W*$", re.I)
+
+
+def _flagged_anywhere(text: str) -> bool:
+    """A cheap first pass: a string constant can only match if its words are in the file."""
+    return any(word in text for word in (PRIVATE_DIR, *PRIVATE_NAMES))
+
+
+def _flagged(text: str) -> bool:
+    return bool(_PATH.search(text)) or any(name in text for name in PRIVATE_NAMES)
+
+
+def private_references(tests_dir: Path) -> set[tuple[str, str]]:
+    """``(file, string)`` for every string constant in a test module that names the
+    private project folder or the owner's project, except paths under the examples folder.
+    """
+    found = set()
+    for path in sorted(tests_dir.rglob("*.py")):
+        text = path.read_text(encoding="utf-8")
+        if not _flagged_anywhere(text):
+            continue
+        tree = ast.parse(text)
+        under_examples = {
+            id(node.right)
+            for node in ast.walk(tree)
+            if isinstance(node, ast.BinOp)
+            and isinstance(node.op, ast.Div)
+            and isinstance(node.right, ast.Constant)
+            and _EXAMPLES.search(ast.unparse(node.left))
+        }
+        for node in ast.walk(tree):
+            if (
+                isinstance(node, ast.Constant)
+                and isinstance(node.value, str)
+                and id(node) not in under_examples
+                and _flagged(node.value)
+            ):
+                found.add((path.relative_to(tests_dir).as_posix(), node.value))
+    return found
+
+
+#: Legitimate mentions, each with why it reads no private data.
+ALLOWED = {
+    ("test_leak_scan.py", PRIVATE_DIR):
+        "builds a fabricated private project under tmp_path, the layout the scanner reads",
+    ("test_project_tracker.py", f"../{PRIVATE_DIR}/"):
+        "skips tracker links into the private folder when it is absent; checks existence only",
+    ("test_project_tracker.py", f"../{PRIVATE_DIR}"):
+        "the existence check of the previous entry",
+    ("test_providers_agents.py",
+     rf"^{PRIVATE_DIR}/[a-z0-9][a-z0-9-]*/(surveys|source)/[^/]+\.dwg$"):
+        "matches tracked file names from `git ls-files`; never opens a file",
+    ("test_providers_agents.py", "Owner surveys are committed only in "
+     f"{PRIVATE_DIR}/<name>/ (ADR 0009); project-data/ stays\n    private, and no lock, "
+     "partial write or credential file is ever tracked."):
+        "the docstring of that file-name check",
+    ("test_next_human_action.py", PRIVATE_NAMES[0]):
+        "a project name rendered into a command string; no path is opened",
+    ("test_next_human_action.py", f"house-ai workflow approve {PRIVATE_NAMES[0]} plan --id "
+     "concept-compact --version 4 --approver owner"):
+        "the rendered command the previous entry produces",
+    ("test_plan_generation.py", PRIVATE_NAMES[0]):
+        "asserts the synthetic hillside fixture does not mention the owner's project",
+    ("test_plan_generation.py", PRIVATE_NAMES[1]):
+        "the same assertion for the owner's survey file name",
+    ("test_site_review_fixes.py", f"{PRIVATE_NAMES[1]}.dxf"):
+        "names a synthetic DXF it writes under tmp_path after the survey's file name",
+    ("test_site_review_fixes.py", f"src-{PRIVATE_NAMES[1]}#"):
+        "the source id of that synthetic DXF",
+}  # fmt: skip
+
+
+def test_no_test_refers_to_the_private_project_folder():
+    """A test that read the owner's project would have to name its folder; none does.
+
+    Every allowed mention must still be there, so the list cannot outlive its reason.
+    """
+    assert private_references(TESTS) == set(ALLOWED)
+
+
+@pytest.mark.parametrize(
+    "source",
+    [
+        f'REPO / "{PRIVATE_DIR}" / "x" / "site.yaml"',
+        f'Path("{PRIVATE_DIR}/x/project.json")',
+        f'Path("../{PRIVATE_DIR}")',
+        f'"{PRIVATE_NAMES[0]}"',
+        f'f"{{REPO}}/{PRIVATE_DIR}/{{name}}"',
+    ],
 )
-from house_ai.storage import ProjectStore
-
-HUMAN = Actor(kind=ActorKind.HUMAN, id="invariant-owner")
-AGENT = Actor(kind=ActorKind.AGENT, id="claude-code")
-
-
-def test_inv_consent_policy_blocks_unauthorized_external_transmission():
-    """INV-CONSENT: DataFlowPolicy blocks sending private data to providers without consent."""
-    policy = DataFlowPolicy(allowed_private_providers=frozenset())
-    req = ProviderRequest(
-        system="system", prompt="private prompt", classification=DataClassification.PRIVATE
-    )
-    with pytest.raises(PrivateDataFlowError, match="without explicit consent"):
-        check_data_flow("anthropic", req, policy)
-
-    # Allowed when consent given by a human
-    policy_with_consent = DataFlowPolicy(
-        allowed_private_providers=frozenset({"anthropic"}), granted_by=HUMAN
-    )
-    check_data_flow("anthropic", req, policy_with_consent)
+def test_the_private_folder_check_catches_a_reference(tmp_path, source):
+    (tmp_path / "test_reads_private.py").write_text(f"x = {source}\n", encoding="utf-8")
+    assert len(private_references(tmp_path)) == 1
 
 
-def test_inv_source_immutable_and_read_only(tmp_path: Path):
-    """INV-SOURCE-IMMUTABLE: Raw source documents stored in source/ are read-only and immutable."""
-    store = ProjectStore.init(
-        tmp_path / "proj", project_id="p1", name="P1", classification="synthetic", actor=HUMAN
-    )
-    src_file = tmp_path / "survey.dxf"
-    src_file.write_bytes(b"survey raw bytes")
-    doc = store.add_source(src_file, HUMAN)
-    stored = store.root / doc.stored_path
-    mode = stat.S_IMODE(stored.stat().st_mode)
-    assert mode & 0o222 == 0  # not writable
-
-
-def test_inv_artifact_write_once(tmp_path: Path):
-    """INV-ARTIFACT-WRITE-ONCE: Artifact files cannot be overwritten."""
-    store = ProjectStore.init(
-        tmp_path / "proj", project_id="p1", name="P1", classification="synthetic", actor=HUMAN
-    )
-    from house_ai.domain.site import Site
-
-    from .conftest import example_doc
-    site = Site.model_validate(example_doc("site.yaml"))
-    site.project_id = "p1"
-    ref = store.put(K.SITE, "site", site, HUMAN)
-    art_path = store._artifact_path(ref.kind, ref.id, ref.version)
-
-    # Direct overwrite must be prevented by permissions
-    with pytest.raises(PermissionError):
-        art_path.write_text("tamper", encoding="utf-8")
-
-
-def test_inv_hash_chain_tamper_detected(tmp_path: Path):
-    """INV-HASH-CHAIN: Tampering with any event in the event log breaks verification."""
-    store = ProjectStore.init(
-        tmp_path / "proj", project_id="p1", name="P1", classification="synthetic", actor=HUMAN
-    )
-    from house_ai.domain.site import Site
-
-    from .conftest import example_doc
-    site = Site.model_validate(example_doc("site.yaml"))
-    site.project_id = "p1"
-    store.put(K.SITE, "site", site, HUMAN)
-
-    log = store.root / "events.jsonl"
-    lines = log.read_text(encoding="utf-8").splitlines()
-    event = json.loads(lines[1])
-    event["actor"]["id"] = "tampered"
-    lines[1] = json.dumps(event)
-    log.write_text("\n".join(lines) + "\n", encoding="utf-8")
-    problems = store.verify()
-    assert any("modified after it was written" in p for p in problems)
-
-
-def test_inv_head_anchor_detects_log_truncation(tmp_path: Path):
-    """INV-HEAD-ANCHOR: Deleting events from the tail of events.jsonl fails verification."""
-    store = ProjectStore.init(
-        tmp_path / "proj", project_id="p1", name="P1", classification="synthetic", actor=HUMAN
-    )
-    from house_ai.domain.site import Site
-
-    from .conftest import example_doc
-    site = Site.model_validate(example_doc("site.yaml"))
-    site.project_id = "p1"
-    store.put(K.SITE, "site", site, HUMAN)
-
-    log = store.root / "events.jsonl"
-    lines = log.read_text(encoding="utf-8").splitlines()
-    del lines[-1]
-    log.write_text("\n".join(lines) + "\n", encoding="utf-8")
-    problems = store.verify()
-    assert any("tail does not match head anchor" in p for p in problems)
-
-
-def test_inv_human_gates_enforced_in_non_tty(tmp_path: Path, monkeypatch):
-    """INV-HUMAN-GATES: Non-interactive execution of human-only commands is refused."""
-    store = ProjectStore.init(
-        tmp_path / "proj", project_id="p1", name="P1", classification="synthetic", actor=HUMAN
-    )
-    monkeypatch.setattr(sys.stdin, "isatty", lambda: False)
-    assert (
-        main(["workflow", "reopen", str(store.root), "site", "--reason", "t", "--actor", "human:o"])
-        == EXIT_USAGE
-    )
-    assert (
-        main(["workflow", "approve", str(store.root), "site", "--id", "site", "--approver", "o"])
-        == EXIT_USAGE
-    )
-    assert (
-        main(
-            ["site", "confirm", str(store.root), "--id", "site", "--confirmer", "o", "--units", "m"]
-        )
-        == EXIT_USAGE
-    )
-
-
-def test_inv_schemas_up_to_date():
-    """INV-SCHEMA-DRIFT: All committed JSON schemas match current Pydantic models."""
-    schemas_dir = Path(__file__).resolve().parents[1] / "schemas"
-    stale = stale_schemas(schemas_dir)
-    assert stale == []
-
-
-def test_inv_private_data_isolation(tmp_path: Path, monkeypatch):
-    """INV-PRIVATE-DATA-ISOLATION: Tests run safely without projects/my-house present."""
-    import subprocess
-
-    from tools import leak_scan
-
-    subprocess.run(["git", "init", "-q", str(tmp_path)], check=True)
-    def refuse_private_read(*args):
-        pytest.fail("a synthetic-only checkout must not read private projects")
-    monkeypatch.setattr(leak_scan, "extract_private_signatures", refuse_private_read)
-    assert leak_scan.scan_repo(tmp_path) == []
+@pytest.mark.parametrize(
+    "source",
+    [
+        f'REPO / "examples" / "{PRIVATE_DIR}" / "synthetic-hillside"',
+        f'path_examples() / "{PRIVATE_DIR}/synthetic-bungalow/site.yaml"',
+        f'"examples/{PRIVATE_DIR}/synthetic-hillside"',
+        '"several private projects."',
+    ],
+)
+def test_the_private_folder_check_allows_the_synthetic_examples(tmp_path, source):
+    (tmp_path / "test_synthetic.py").write_text(f"x = {source}\n", encoding="utf-8")
+    assert private_references(tmp_path) == set()

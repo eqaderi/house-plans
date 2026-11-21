@@ -3,10 +3,14 @@
 from __future__ import annotations
 
 import json
+import shutil
 from pathlib import Path
+
+import pytest
 
 from house_ai.cli.human import command_for, renderer
 from house_ai.cli.main import main
+from house_ai.constants.evaluations import REQUEST_NOT_MET_PREFIX, REQUESTED_AREA_TOLERANCE_M2
 from house_ai.constants.reviewer import (
     APPROVAL_GATES,
     GATE_PLAN,
@@ -15,6 +19,7 @@ from house_ai.constants.reviewer import (
     REVIEWER_BUNDLE_FILENAME,
     REVIEWER_BUNDLE_SCHEMA_VERSION,
 )
+from house_ai.domain.plan import PlanVersion
 from house_ai.domain.provenance import Actor, ActorKind, ArtifactKind
 from house_ai.domain.revision_ops import (
     RevisionComment,
@@ -69,6 +74,17 @@ def _setup_project(tmp_path: Path) -> ProjectStore:
     return store
 
 
+@pytest.fixture(scope="module")
+def project(tmp_path_factory) -> ProjectStore:
+    """`_setup_project` once per module. Tests that write work on ``_copy``; the others
+    assert the store is unchanged."""
+    return _setup_project(tmp_path_factory.mktemp("bundle"))
+
+
+def _copy(store: ProjectStore, tmp_path: Path) -> ProjectStore:
+    return ProjectStore(shutil.copytree(store.root, tmp_path / store.root.name))
+
+
 def test_revision_ops_model_and_cli_conversion() -> None:
     """RevisionOpsFile validates structured ops and converts them to CLI strings."""
     ops_file = RevisionOpsFile(
@@ -105,9 +121,9 @@ def test_revision_ops_model_and_cli_conversion() -> None:
     assert restored.operations[0].value == 18.0
 
 
-def test_reviewer_bundle_is_strictly_read_only(tmp_path: Path) -> None:
+def test_reviewer_bundle_is_strictly_read_only(project: ProjectStore, tmp_path: Path) -> None:
     """Building and exporting the bundle never alters the ProjectStore or event log."""
-    store = _setup_project(tmp_path)
+    store = project
 
     # Record baseline store state
     initial_verification = store.verify()
@@ -121,7 +137,7 @@ def test_reviewer_bundle_is_strictly_read_only(tmp_path: Path) -> None:
     assert bundle["project"]["name"] == "synthetic-hillside"
     assert bundle["site"] is not None
     assert bundle["program"] is not None
-    assert len(bundle["plans"]) >= 1
+    assert [(p["option_id"], p["version"]) for p in bundle["plans"]] == [("concept-compact", 1)]
 
     # Verify store is untouched
     mid_verification = store.verify()
@@ -168,10 +184,12 @@ def test_reviewer_bundle_shows_the_commands_the_cli_renders(new_store) -> None:
     )
 
 
-def test_reviewer_bundle_approval_commands_and_no_mutation(tmp_path: Path) -> None:
+def test_reviewer_bundle_approval_commands_and_no_mutation(project: ProjectStore) -> None:
     """Reviewer bundle includes CLI commands for human gates and no mutation endpoints (S4-23)."""
-    store = _setup_project(tmp_path)
+    store = project
+    events = len(store.events())
     bundle = build_reviewer_bundle(store, render=renderer(store.project_id))
+    assert len(store.events()) == events
 
     gates = bundle["gates"]
     for gate_name in APPROVAL_GATES:
@@ -187,7 +205,7 @@ def test_reviewer_bundle_approval_commands_and_no_mutation(tmp_path: Path) -> No
 
     # Check plans in bundle
     plans = bundle["plans"]
-    assert len(plans) >= 1
+    assert len(plans) == 1
     first_plan = plans[0]
     assert first_plan["option_id"] == "concept-compact"
     assert first_plan["version"] == 1
@@ -199,9 +217,9 @@ def test_reviewer_bundle_approval_commands_and_no_mutation(tmp_path: Path) -> No
     assert "<svg" in first_plan["svg"]
 
 
-def test_cli_reviewer_export_and_plan_export_bundle(tmp_path: Path) -> None:
+def test_cli_reviewer_export_and_plan_export_bundle(project: ProjectStore, tmp_path: Path) -> None:
     """CLI export commands write valid bundle.json without modifying the store."""
-    store = _setup_project(tmp_path)
+    store = project
     events_before = len(store.events())
 
     out_1 = tmp_path / "export_1"
@@ -217,6 +235,8 @@ def test_cli_reviewer_export_and_plan_export_bundle(tmp_path: Path) -> None:
     assert main(["plan", "export-bundle", str(store.root), "--out", str(out_2)]) == 0
     bundle_file_2 = out_2 / REVIEWER_BUNDLE_FILENAME
     assert bundle_file_2.exists()
+    # Both commands export the same bundle.
+    assert json.loads(bundle_file_2.read_text(encoding="utf-8")) == data_1
 
     # Store must not have any new events
     reloaded_store = ProjectStore(store.root)
@@ -224,9 +244,9 @@ def test_cli_reviewer_export_and_plan_export_bundle(tmp_path: Path) -> None:
     assert reloaded_store.verify() == []
 
 
-def test_cli_plan_revise_from_file_round_trip(tmp_path: Path) -> None:
+def test_cli_plan_revise_from_file_round_trip(project: ProjectStore, tmp_path: Path) -> None:
     """Exported revision ops file replays through plan revise-from-file (S4-22)."""
-    store = _setup_project(tmp_path)
+    store = _copy(project, tmp_path)
 
     # 1. Create a revision ops file targeting the compact plan v1
     ops_file = RevisionOpsFile(
@@ -259,19 +279,32 @@ def test_cli_plan_revise_from_file_round_trip(tmp_path: Path) -> None:
 
     # 3. Verify a new plan version v2 was generated and stored
     plan_refs = store.refs(ArtifactKind.PLAN, "concept-compact")
-    assert len(plan_refs) == 2
-    v2_ref = plan_refs[-1]
-    assert v2_ref.version == 2
+    assert [r.version for r in plan_refs] == [1, 2]
+    v1, v2 = (store.get(r, PlanVersion) for r in plan_refs)
+    assert v2.parent == plan_refs[0]
+    assert v2.change_request.text == "Increase kitchen to 18 m2"
+    assert v2.generation.revision_ops == ops_file.to_cli_ops() == ["area:pi-kitchen=18.0"]
 
     # Check revision report exists
     rev_refs = store.latest_of_kind(ArtifactKind.REVISION_REPORT)
-    assert len(rev_refs) >= 1
+    assert [r.id for r in rev_refs] == ["rev-concept-compact-v2"]
     rev_report = store.get(rev_refs[-1])
     assert rev_report.requested_change == "Increase kitchen to 18 m2"
-    assert any(
-        c.space_id in ("sp-kitchen", "sp-kitchen-1") and c.after_m2 is not None
-        for c in rev_report.area_changes
-    )
+    before = v1.model.space("sp-kitchen").area_m2
+    after = v2.model.space("sp-kitchen").area_m2
+    (kitchen,) = [c for c in rev_report.area_changes if c.space_id == "sp-kitchen"]
+    assert kitchen.before_m2 == pytest.approx(before, abs=0.01)
+    assert kitchen.after_m2 == pytest.approx(after, abs=0.01)
+    assert after > before
+    # Met within the tolerance, or reported as not met with the measured area.
+    not_met = [v for v in rev_report.new_violations if v.startswith(REQUEST_NOT_MET_PREFIX)]
+    if after >= 18 - REQUESTED_AREA_TOLERANCE_M2:
+        assert not_met == []
+    else:
+        assert not_met == [
+            f"{REQUEST_NOT_MET_PREFIX}'area:pi-kitchen=18.0' "
+            f"(sp-kitchen area {after:.1f} m² < requested 18 m²)"
+        ]
 
 
 class _FakeServer:

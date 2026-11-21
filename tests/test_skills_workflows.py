@@ -12,10 +12,15 @@ from __future__ import annotations
 
 import json
 import re
+import shutil
 from pathlib import Path
 
+import pytest
+
 from house_ai.cli.main import main
+from house_ai.constants.evaluations import REQUEST_NOT_MET_PREFIX, REQUESTED_AREA_TOLERANCE_M2
 from house_ai.constants.skills import CANONICAL_SKILLS_DIR
+from house_ai.domain.plan import PlanVersion
 from house_ai.domain.provenance import Actor, ActorKind, ArtifactKind, DataClassification
 from house_ai.domain.units import LengthUnit
 from house_ai.domain.workflow import Gate, WorkflowState
@@ -30,6 +35,98 @@ from .conftest import AGENT, HUMAN, SURVEY_DXF, SURVEY_LAYERS
 REPO = Path(__file__).resolve().parent.parent
 OWNER = Actor(kind=ActorKind.HUMAN, id="test-owner")
 AGENT_ACTOR = "agent:gemini"
+
+
+def _load_hillside(proj_dir: Path) -> ProjectStore:
+    rc = main(
+        [
+            "example",
+            "load",
+            str(proj_dir),
+            "--name",
+            "synthetic-hillside",
+            "--project-id",
+            "synthetic-hillside",
+            "--actor",
+            "human:example",
+        ]
+    )
+    assert rc == 0
+    return ProjectStore(proj_dir)
+
+
+def _approve_site_and_program(store: ProjectStore) -> None:
+    """The owner's approvals, through the library (the "human fixture")."""
+    wf = Workflow(store)
+    wf.approve(Gate.SITE, store.latest(ArtifactKind.SITE, "site"), OWNER, "site approved")
+    wf.transition(WorkflowState.INTERVIEWING, AGENT, "interview done")
+    wf.transition(WorkflowState.PROGRAM_REVIEW, AGENT, "program ready")
+    wf.approve(
+        Gate.PROGRAM,
+        store.latest(ArtifactKind.SPACE_PROGRAM, "program"),
+        OWNER,
+        "program approved",
+    )
+
+
+@pytest.fixture(scope="module")
+def walkout(tmp_path_factory) -> ProjectStore:
+    """Gates approved by the owner, then `plan generate --strategy split_walkout --seed 1`.
+
+    Never written to: each test works on its own copy (``_copy``).
+    """
+    store = _load_hillside(tmp_path_factory.mktemp("walkout") / "synthetic-hillside")
+    _approve_site_and_program(store)
+    rc = main(
+        [
+            "plan",
+            "generate",
+            str(store.root),
+            "--strategy",
+            "split_walkout",
+            "--seed",
+            "1",
+            "--actor",
+            AGENT_ACTOR,
+        ]
+    )
+    assert rc == 0
+    assert [r.id for r in store.latest_of_kind(ArtifactKind.PLAN)] == ["concept-split-walkout"]
+    return store
+
+
+def _copy(store: ProjectStore, tmp_path: Path) -> ProjectStore:
+    return ProjectStore(shutil.copytree(store.root, tmp_path / store.root.name))
+
+
+def _assert_refused_as_human_only(store: ProjectStore, argv: list[str], capsys, noun: str):
+    """An agent's shell gets exit 2 and the human-only refusal; the store is unchanged."""
+    events = len(store.events())
+    capsys.readouterr()
+    assert main(argv) == 2
+    err = capsys.readouterr().err
+    assert f"{noun} needs an interactive terminal and a typed confirmation from a human" in err
+    assert "Agents must not" in err
+    assert len(store.events()) == events
+
+
+def _assert_kitchen_revision(store: ProjectStore, option_id: str, requested: float) -> None:
+    """v2 asks for the kitchen area; it is met within the tolerance or reported as not met."""
+    v1_ref, v2_ref = store.refs(ArtifactKind.PLAN, option_id)
+    v2 = store.get(v2_ref, PlanVersion)
+    assert v2.parent == v1_ref
+    op = f"area:pi-kitchen={requested:g}"
+    assert v2.generation.revision_ops == [op]
+    rev = store.get(store.latest(ArtifactKind.REVISION_REPORT, f"rev-{option_id}-v2"))
+    area = v2.model.space("sp-kitchen").area_m2
+    not_met = sorted(v for v in rev.new_violations if v.startswith(REQUEST_NOT_MET_PREFIX))
+    if area >= requested - REQUESTED_AREA_TOLERANCE_M2:
+        assert not_met == []
+    else:
+        assert not_met == [
+            f"{REQUEST_NOT_MET_PREFIX}'{op}' "
+            f"(sp-kitchen area {area:.1f} m² < requested {requested:g} m²)"
+        ]
 
 
 def test_site_survey_review_skill_workflow(tmp_path: Path, capsys):
@@ -127,21 +224,16 @@ def test_site_survey_review_skill_workflow(tmp_path: Path, capsys):
     assert rc == 0
 
     # 7. Human boundary: agent cannot confirm site or approve site gate
-    rc = main(
-        [
-            "site",
-            "confirm",
-            str(proj_dir),
-            "--units",
-            "m",
-            "--confirmer",
-            "agent:gemini",
-        ]
+    site_v1 = store.latest(ArtifactKind.SITE, "site")
+    _assert_refused_as_human_only(
+        store,
+        ["site", "confirm", str(proj_dir), "--units", "m", "--confirmer", "agent:gemini"],
+        capsys,
+        "site confirmation",
     )
-    assert rc == 2  # Refused non-interactively or agent approver
-
-
-    rc = main(
+    assert store.latest(ArtifactKind.SITE, "site") == site_v1  # no confirmed version
+    _assert_refused_as_human_only(
+        store,
         [
             "workflow",
             "approve",
@@ -153,12 +245,14 @@ def test_site_survey_review_skill_workflow(tmp_path: Path, capsys):
             "1",
             "--approver",
             "agent:gemini",
-        ]
+        ],
+        capsys,
+        "approval",
     )
-    assert rc == 2  # Refused non-interactively or agent approver
+    assert Workflow(store).state is WorkflowState.SITE_NEEDS_CONFIRMATION
 
 
-def test_architectural_programming_skill_workflow(tmp_path: Path):
+def test_architectural_programming_skill_workflow(tmp_path: Path, capsys):
     """Test the complete architectural-programming skill command sequence."""
     proj_dir = tmp_path / "test-prog-proj"
     store = ProjectStore.init(
@@ -293,7 +387,8 @@ def test_architectural_programming_skill_workflow(tmp_path: Path):
     assert Workflow(store).state is WorkflowState.PROGRAM_REVIEW
 
     # 7. Human boundary: agent cannot approve program gate
-    rc = main(
+    _assert_refused_as_human_only(
+        store,
         [
             "workflow",
             "approve",
@@ -305,39 +400,33 @@ def test_architectural_programming_skill_workflow(tmp_path: Path):
             "1",
             "--approver",
             "agent:gemini",
-        ]
+        ],
+        capsys,
+        "approval",
     )
-    assert rc == 2
+    assert Workflow(store).state is WorkflowState.PROGRAM_REVIEW
+    assert Gate.PROGRAM not in Workflow(store).status().approvals
 
 
-def test_generate_plan_options_and_critique_skills_workflow(tmp_path: Path):
+def test_generate_plan_options_and_critique_skills_workflow(
+    walkout: ProjectStore, tmp_path: Path, capsys
+):
     """Test the complete generate-plan-options and critique-plan skill command sequence."""
-    proj_dir = tmp_path / "synthetic-hillside"
-    # Load synthetic-hillside fixture
-    rc = main(
-        [
-            "example",
-            "load",
-            str(proj_dir),
-            "--name",
-            "synthetic-hillside",
-            "--project-id",
-            "synthetic-hillside",
-            "--actor",
-            "human:example",
-        ]
-    )
-    assert rc == 0
-    store = ProjectStore(proj_dir)
+    store = _load_hillside(tmp_path / "before-gates" / "synthetic-hillside")
+    proj_dir = store.root
 
-    # 1. Exploratory generation (works before gate approvals, stores nothing)
+    # 1. Exploratory generation (works before gate approvals, stores nothing). One strategy
+    # is the one the critique below reads; every strategy is solved independently.
     exploratory_dir = tmp_path / "exploratory-preview"
+    events = len(store.events())
     rc = main(
         [
             "plan",
             "generate",
             str(proj_dir),
             "--exploratory",
+            "--strategy",
+            "split_walkout",
             "--out",
             str(exploratory_dir),
             "--actor",
@@ -346,8 +435,10 @@ def test_generate_plan_options_and_critique_skills_workflow(tmp_path: Path):
     )
     assert rc == 0
     assert (exploratory_dir / "comparison.md").is_file()
+    assert "EXPLORATORY" in (exploratory_dir / "comparison.md").read_text("utf-8")
     # Confirm store untouched by exploratory generation
     assert store.refs(ArtifactKind.PLAN) == []
+    assert len(store.events()) == events
 
     # critique-plan before the gates: ground a critique of the exploratory plan option
     plan_json = exploratory_dir / "concept-split-walkout" / "exploratory" / "plan.json"
@@ -371,36 +462,12 @@ def test_generate_plan_options_and_critique_skills_workflow(tmp_path: Path):
         assert cited, skill
         assert cited <= valid, f"{skill} cites unknown IDs {sorted(cited - valid)}"
 
-    # Approve site and program via human fixture for gated generation
-    wf = Workflow(store)
-    wf.approve(Gate.SITE, store.latest(ArtifactKind.SITE, "site"), OWNER, "site approved")
-    wf.transition(WorkflowState.INTERVIEWING, AGENT, "interview done")
-    wf.transition(WorkflowState.PROGRAM_REVIEW, AGENT, "program ready")
-    wf.approve(
-        Gate.PROGRAM,
-        store.latest(ArtifactKind.SPACE_PROGRAM, "program"),
-        OWNER,
-        "program approved",
-    )
-
-
-    # 2. Gated generation (stores plan options)
-    rc = main(
-        [
-            "plan",
-            "generate",
-            str(proj_dir),
-            "--strategy",
-            "split_walkout",
-            "--seed",
-            "1",
-            "--actor",
-            AGENT_ACTOR,
-        ]
-    )
-    assert rc == 0
+    # 2. Gated generation (stores plan options): the owner approved site and program, then
+    # `plan generate --strategy split_walkout --seed 1` ran (the `walkout` fixture).
+    store = _copy(walkout, tmp_path)
+    proj_dir = store.root
     plans = store.latest_of_kind(ArtifactKind.PLAN)
-    assert len(plans) >= 1
+    assert [p.id for p in plans] == ["concept-split-walkout"]
     option_id = plans[0].id
 
     # 3. List and compare plan options
@@ -439,23 +506,25 @@ def test_generate_plan_options_and_critique_skills_workflow(tmp_path: Path):
             option_id,
             "Increase kitchen area and rethink night zone",
             "--area",
-            f"{valid_ids[0]}=18",
+            "pi-kitchen=18",
             "--actor",
             AGENT_ACTOR,
         ]
     )
     assert rc == 0
 
-    # Verify revised plan version exists
+    # Verify revised plan version exists and asks for the kitchen area
     revised_version = store.latest(ArtifactKind.PLAN, option_id)
     assert revised_version.version == 2
+    _assert_kitchen_revision(store, option_id, 18)
 
     # 6. Request plan review
     rc = main(["plan", "review", str(proj_dir), option_id, "--actor", AGENT_ACTOR])
     assert rc == 0
 
     # 7. Human boundary: agent cannot approve plan gate
-    rc = main(
+    _assert_refused_as_human_only(
+        store,
         [
             "workflow",
             "approve",
@@ -467,63 +536,23 @@ def test_generate_plan_options_and_critique_skills_workflow(tmp_path: Path):
             "2",
             "--approver",
             "agent:gemini",
-        ]
+        ],
+        capsys,
+        "approval",
     )
-    assert rc == 2
+    assert Gate.PLAN not in Workflow(store).status().approvals
 
 
-def test_visual_review_skill_workflow(tmp_path: Path):
+def test_visual_review_skill_workflow(walkout: ProjectStore, tmp_path: Path, capsys):
     """End-to-end synthetic workflow test for the visual-review skill (S5-11)."""
-    proj_dir = tmp_path / "synthetic-hillside"
     export_dir = tmp_path / "exported-plan-option"
     bundle_dir = tmp_path / "exported-bundle"
 
-    # Load synthetic-hillside fixture
-    rc = main(
-        [
-            "example",
-            "load",
-            str(proj_dir),
-            "--name",
-            "synthetic-hillside",
-            "--project-id",
-            "synthetic-hillside",
-            "--actor",
-            "human:example",
-        ]
-    )
-    assert rc == 0
-    store = ProjectStore(proj_dir)
-
-    # Approve site and program for gated generation
-    wf = Workflow(store)
-    wf.approve(Gate.SITE, store.latest(ArtifactKind.SITE, "site"), OWNER, "site approved")
-    wf.transition(WorkflowState.INTERVIEWING, AGENT, "interview done")
-    wf.transition(WorkflowState.PROGRAM_REVIEW, AGENT, "program ready")
-    wf.approve(
-        Gate.PROGRAM,
-        store.latest(ArtifactKind.SPACE_PROGRAM, "program"),
-        OWNER,
-        "program approved",
-    )
-
-    # Generate plan options
-    rc = main(
-        [
-            "plan",
-            "generate",
-            str(proj_dir),
-            "--strategy",
-            "split_walkout",
-            "--seed",
-            "1",
-            "--actor",
-            AGENT_ACTOR,
-        ]
-    )
-    assert rc == 0
+    # Gates approved and split_walkout generated (the `walkout` fixture), on a private copy
+    store = _copy(walkout, tmp_path)
+    proj_dir = store.root
     plans = store.latest_of_kind(ArtifactKind.PLAN)
-    assert len(plans) >= 1
+    assert [p.id for p in plans] == ["concept-split-walkout"]
     option_id = plans[0].id
 
     # 1. Export plan option files for visual inspection
@@ -571,15 +600,18 @@ def test_visual_review_skill_workflow(tmp_path: Path):
             option_id,
             "Enlarge kitchen for accessibility",
             "--area",
-            f"{valid_program_items[0]}=22",
+            "pi-kitchen=22",
             "--actor",
             AGENT_ACTOR,
         ]
     )
     assert rc == 0
+    assert "pi-kitchen" in valid_program_items
+    _assert_kitchen_revision(store, option_id, 22)
 
     # 6. Human boundary: agent cannot approve plan gate
-    rc = main(
+    _assert_refused_as_human_only(
+        store,
         [
             "workflow",
             "approve",
@@ -591,6 +623,8 @@ def test_visual_review_skill_workflow(tmp_path: Path):
             "2",
             "--approver",
             "agent:gemini",
-        ]
+        ],
+        capsys,
+        "approval",
     )
-    assert rc == 2
+    assert Gate.PLAN not in Workflow(store).status().approvals

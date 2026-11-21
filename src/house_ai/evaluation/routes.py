@@ -14,8 +14,11 @@ from __future__ import annotations
 import heapq
 import math
 from dataclasses import dataclass
+from functools import lru_cache
 from itertools import combinations
 
+import numpy as np
+import shapely
 from shapely.geometry import LineString, Point
 from shapely.ops import nearest_points
 
@@ -35,26 +38,62 @@ class Route:
     estimated: bool = False
 
 
-def shortest_in_polygon(poly, a, b):
-    """Visibility graph gives exact polygonal geodesic length, including holes."""
-    if not poly.buffer(EPS).covers(Point(a)) or not poly.buffer(EPS).covers(Point(b)):
-        return None
-    if poly.buffer(EPS).covers(LineString([a, b])):
-        return math.dist(a, b)
+def _segments_covered(cover, starts, ends):
+    """Whether each straight segment starts[k]–ends[k] lies inside the prepared ``cover``."""
+    if not len(starts):
+        return np.zeros(0, dtype=bool)
+    lines = shapely.linestrings(np.stack([np.asarray(starts), np.asarray(ends)], axis=1))
+    return shapely.covers(cover, lines)
+
+
+@lru_cache(maxsize=512)
+def _floor_visibility(poly_wkb):
+    """The polygon's corners, its prepared EPS cover, and which corner pairs see each other.
+
+    Depends only on the floor, so every route query on the same floor reuses it.
+    """
+    poly = shapely.from_wkb(poly_wkb)
     parts = [poly] if poly.geom_type == "Polygon" else list(getattr(poly, "geoms", []))
-    vertices = [a, b]
+    corners = []
     for part in parts:
         if part.geom_type == "Polygon":
-            vertices.extend(list(part.exterior.coords)[:-1])
+            corners.extend(list(part.exterior.coords)[:-1])
             for ring in part.interiors:
-                vertices.extend(list(ring.coords)[:-1])
-    graph = {i: [] for i in range(len(vertices))}
+                corners.extend(list(ring.coords)[:-1])
     cover = poly.buffer(EPS)
-    for i, j in combinations(graph, 2):
-        if cover.covers(LineString([vertices[i], vertices[j]])):
-            d = math.dist(vertices[i], vertices[j])
-            graph[i].append((j, d))
-            graph[j].append((i, d))
+    shapely.prepare(cover)
+    pairs = list(combinations(range(len(corners)), 2))
+    seen = _segments_covered(
+        cover, [corners[i] for i, _ in pairs], [corners[j] for _, j in pairs]
+    )
+    return corners, cover, [pair for pair, ok in zip(pairs, seen, strict=True) if ok]
+
+
+def shortest_in_polygon(poly, a, b):
+    """Visibility graph gives exact polygonal geodesic length, including holes."""
+    corners, cover, corner_pairs = _floor_visibility(poly.wkb)
+    if not cover.covers(Point(a)) or not cover.covers(Point(b)):
+        return None
+    if cover.covers(LineString([a, b])):
+        return math.dist(a, b)
+    # Node 0 is a, node 1 is b, corner k is node k + 2. Every neighbour list is in
+    # ascending node order, as an all-pairs scan in index order would build it.
+    vertices = [a, b, *corners]
+    graph = {i: [] for i in range(len(vertices))}
+    sees_a = _segments_covered(cover, [a] * len(corners), corners)
+    sees_b = _segments_covered(cover, [b] * len(corners), corners)
+    for end, sees in ((0, sees_a), (1, sees_b)):
+        for k, ok in enumerate(sees):
+            if ok:
+                graph[end].append((k + 2, math.dist(vertices[end], corners[k])))
+    for k in range(len(corners)):
+        for end, sees in ((0, sees_a), (1, sees_b)):
+            if sees[k]:
+                graph[k + 2].append((end, math.dist(vertices[end], corners[k])))
+    for i, j in corner_pairs:
+        d = math.dist(corners[i], corners[j])
+        graph[i + 2].append((j + 2, d))
+        graph[j + 2].append((i + 2, d))
     dist, queue = {0: 0.0}, [(0.0, 0)]
     while queue:
         d, i = heapq.heappop(queue)

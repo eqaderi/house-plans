@@ -81,8 +81,8 @@ def _minimal_program() -> SpaceProgram:
     return SpaceProgram(
         id="prog-test",
         project_id="proj-test",
-        items=items,
-        adjacencies=adj,
+        space_requirements=items,
+        space_relationships=adj,
         storeys=2,
         provenance=Provenance(
             created_at=WHEN,
@@ -283,7 +283,8 @@ def test_validate_proposal_unknown_program_item():
     )
     findings = validate_proposal(prop, prog)
     codes = [f.code for f in findings]
-    assert ERR_UNKNOWN_PROGRAM_ITEM in codes
+    assert codes == [ERR_UNKNOWN_PROGRAM_ITEM]
+    assert findings[0].subject_ids == ["pi-ghost"]
     assert is_valid_proposal(findings) is False
 
 
@@ -302,7 +303,8 @@ def test_validate_proposal_missing_level_assignment():
     )
     findings = validate_proposal(prop, prog)
     codes = [f.code for f in findings]
-    assert ERR_MISSING_LEVEL_ASSIGNMENT in codes
+    assert codes == [ERR_MISSING_LEVEL_ASSIGNMENT]
+    assert findings[0].subject_ids == ["pi-bed-1"]
     assert is_valid_proposal(findings) is False
 
 
@@ -325,9 +327,11 @@ def test_validate_proposal_excessive_levels():
             )
         ],
     )
+    # Entry and living on different levels also breaks the program's hard connection.
     findings = validate_proposal(prop, prog)
     codes = [f.code for f in findings]
-    assert ERR_EXCESSIVE_LEVELS in codes
+    assert codes == [ERR_EXCESSIVE_LEVELS, ERR_CROSS_LEVEL_HARD_ADJACENCY]
+    assert findings[0].subject_ids == ["lv-1", "lv-2", "lv-3"]
     assert is_valid_proposal(findings) is False
 
 
@@ -348,7 +352,8 @@ def test_validate_proposal_missing_vertical_circulation():
     )
     findings = validate_proposal(prop, prog)
     codes = [f.code for f in findings]
-    assert ERR_MISSING_VERTICAL_CIRCULATION in codes
+    assert codes == [ERR_MISSING_VERTICAL_CIRCULATION]
+    assert findings[0].subject_ids == ["lv-1", "lv-2"]
     assert is_valid_proposal(findings) is False
 
 
@@ -374,7 +379,8 @@ def test_validate_proposal_cross_level_hard_adjacency():
     )
     findings = validate_proposal(prop, prog)
     codes = [f.code for f in findings]
-    assert ERR_CROSS_LEVEL_HARD_ADJACENCY in codes
+    assert codes == [ERR_CROSS_LEVEL_HARD_ADJACENCY]
+    assert findings[0].subject_ids == ["adj-prog-entry-living", "pi-entry", "pi-living"]
     assert is_valid_proposal(findings) is False
 
 
@@ -403,7 +409,13 @@ def test_validate_proposal_program_hard_adjacency_violation():
     )
     findings = validate_proposal(prop, prog)
     codes = [f.code for f in findings]
-    assert ERR_PROGRAM_HARD_ADJACENCY_VIOLATION in codes
+    assert codes == [ERR_PROGRAM_HARD_ADJACENCY_VIOLATION]
+    assert findings[0].subject_ids == [
+        "padj-conflict",
+        "adj-prog-entry-living",
+        "pi-entry",
+        "pi-living",
+    ]
     assert is_valid_proposal(findings) is False
 
 
@@ -438,7 +450,8 @@ def test_validate_proposal_internal_conflict():
     )
     findings = validate_proposal(prop, prog)
     codes = [f.code for f in findings]
-    assert ERR_CONFLICTING_ADJACENCY in codes
+    assert codes == [ERR_CONFLICTING_ADJACENCY]
+    assert findings[0].subject_ids == ["padj-2", "pi-living", "pi-bed-1"]
     assert is_valid_proposal(findings) is False
 
 
@@ -446,7 +459,7 @@ def test_validate_proposal_disconnected_topology():
     prog = _minimal_program()
     prog = prog.model_copy(
         update={
-            "items": [
+            "space_requirements": [
                 *prog.space_requirements,
                 SpaceRequirement(
                     id="pi-bed-2",
@@ -488,5 +501,8 @@ def test_validate_proposal_disconnected_topology():
     )
     findings = validate_proposal(prop, prog)
     codes = [f.code for f in findings]
-    assert ERR_DISCONNECTED_TOPOLOGY in codes
+    assert codes == [ERR_DISCONNECTED_TOPOLOGY]
+    # Components are found from the sorted node list: the bedrooms first, so the entry
+    # cluster is the one reported as disconnected.
+    assert findings[0].subject_ids == ["pi-entry", "pi-living"]
     assert is_valid_proposal(findings) is False

@@ -77,21 +77,17 @@ def test_plan_svg_semantic_ids_fixtures_and_stair_section_on_hillside():
     svg = render_plan_svg(plan, site, version=1)
 
     elem_map = extract_svg_semantic_id_map(svg)
-    for s in plan.model.spaces:
-        assert s.id in elem_map
-        assert elem_map[s.id]["data-kind"] == "space"
-    for w in plan.model.walls:
-        assert w.id in elem_map
-        assert elem_map[w.id]["data-kind"] == "wall"
-    for o in plan.model.openings:
-        assert o.id in elem_map
-        assert elem_map[o.id]["data-kind"] in ("door", "window")
-    for st in plan.model.stairs:
-        assert st.id in elem_map
-        assert elem_map[st.id]["data-kind"] == "stair"
-    for f in plan.model.fixtures:
-        assert f.id in elem_map
-        assert elem_map[f.id]["data-kind"] == "fixture"
+    drawn: dict[str, set[str]] = {}
+    for eid, attrs in elem_map.items():
+        drawn.setdefault(attrs["data-kind"], set()).add(eid)
+    m = plan.model
+    # Every element of the model is drawn once with its kind, and nothing else is.
+    assert drawn["space"] == {s.id for s in m.spaces}
+    assert drawn["wall"] == {w.id for w in m.walls}
+    assert drawn["door"] == {o.id for o in m.openings if o.is_passable}
+    assert drawn["window"] == {o.id for o in m.openings if not o.is_passable}
+    assert drawn["stair"] == {st.id for st in m.stairs} != set()
+    assert drawn["fixture"] == {f.id for f in m.fixtures} != set()
 
     # Section panel cuts the primary stair (S10-15, ISS-34)
     root = ET.fromstring(svg)

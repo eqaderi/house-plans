@@ -13,10 +13,6 @@ from shapely.geometry import LineString
 from house_ai.domain.model import StairKind, WallKind
 from house_ai.evaluation.base import EvaluationContext
 from house_ai.evaluation.usability import StairUsabilityEvaluator
-from house_ai.orchestration.plans import PlanService
-
-from .conftest import AGENT
-from .test_plan_workflow import _approve_site_and_program, _load
 
 #: Strategies whose bars join side by side: split_level by a row link, two_wing by an end link.
 STRATEGIES = ["split_level", "two_wing"]
@@ -24,14 +20,11 @@ STRATEGIES = ["split_level", "two_wing"]
 GENERATED = [*STRATEGIES, "compact"]
 
 
-@pytest.fixture(scope="module")
-def concepts(tmp_path_factory):
-    store = _load(tmp_path_factory.mktemp("stairs"))
-    _approve_site_and_program(store)
-    svc = PlanService(store)
-    out = svc.generate(AGENT, strategies=GENERATED, exploratory=True)
-    inp = svc.inputs(exploratory=True)
-    return {o.candidate.strategy: o.candidate.plan for o in out.generated}, inp
+@pytest.fixture
+def concepts(hillside):
+    """The shared exploratory synthetic-hillside plans (conftest `hillside`), copied per test."""
+    plans = {s: hillside.option(s).candidate.plan for s in GENERATED}
+    return {s: p for s, p in plans.items() if p is not None}, hillside.inputs()
 
 
 def _metric(result, name, subject):

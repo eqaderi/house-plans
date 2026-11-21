@@ -7,6 +7,7 @@ import pytest
 from shapely.geometry import box
 from shapely.ops import unary_union
 
+from house_ai.constants.placement2d import L_SHAPE_MIN_RECESS_DM
 from house_ai.constraints.compiler import compile_constraints
 from house_ai.domain.benchmark import BenchmarkFixture
 from house_ai.domain.constraints import Constraint, ConstraintSource, MinAreaRule, MinDimensionRule
@@ -20,7 +21,6 @@ from house_ai.generation.frame import Ground, design_frame
 from house_ai.generation.generator import CpSatPlanGenerator, GenerationRequest
 from house_ai.generation.solver2d import (
     PlacementOptions,
-    Solve2DFailed,
     extract_placement_rooms,
     solve_2d_placement,
 )
@@ -99,25 +99,28 @@ def test_quantity_uses_canonical_instance_ids():
     }
 
 
-def test_compiled_bounds_reach_the_2d_generator():
-    f = fixture()
-    cs = compile_constraints(f.program, f.site, created_at=WHEN, actor=ACTOR).constraints
-    for kind, rule in [
-        ("area", MinAreaRule(program_item_id="pi-living", min_area_m2=45)),
-        ("width", MinDimensionRule(program_item_id="pi-living", min_width_m=4.5)),
-    ]:
-        cs.constraints.append(
-            Constraint(
-                id=f"review-{kind}",
-                strength="hard",
-                rule=rule,
-                source=ConstraintSource(kind="user"),
-            )
+@pytest.mark.parametrize(
+    "rule",
+    [
+        MinAreaRule(program_item_id="pi-living", min_area_m2=45),
+        MinDimensionRule(program_item_id="pi-living", min_width_m=4.5),
+    ],
+    ids=["area", "width"],
+)
+def test_compiled_bounds_reach_the_2d_generator(rule):
+    # Without the rule living gets about its 20 m2 target as a 3 m wide room, so each rule,
+    # alone, must change the layout to hold.
+    program, site = small_program(), fixture().site
+    cs = compile_constraints(program, site, created_at=WHEN, actor=ACTOR).constraints
+    cs.constraints.append(
+        Constraint(
+            id="review-bound", strength="hard", rule=rule, source=ConstraintSource(kind="user")
         )
+    )
     [candidate] = CpSatPlanGenerator().candidates(
         GenerationRequest(
-            site=f.site,
-            program=f.program,
+            site=site,
+            program=program,
             constraints=cs,
             site_ref=None,
             program_ref=None,
@@ -129,9 +132,11 @@ def test_compiled_bounds_reach_the_2d_generator():
     )
     assert candidate.plan is not None, candidate.reason
     room = candidate.plan.model.space("sp-living")
-    assert room.area_m2 >= 45 - 1e-6
-    x0, y0, x1, y1 = room.boundary.to_shapely().bounds
-    assert min(x1 - x0, y1 - y0) >= 4.5 - 1e-6
+    if isinstance(rule, MinAreaRule):
+        assert room.area_m2 >= 45 - 1e-6
+    else:
+        x0, y0, x1, y1 = room.boundary.to_shapely().bounds
+        assert min(x1 - x0, y1 - y0) >= 4.5 - 1e-6
 
 
 @pytest.mark.parametrize("kind", ["separated", "acoustic_separation", "connected", "near"])
@@ -158,13 +163,13 @@ def test_hard_exterior_connection_is_real_door():
 
 @pytest.mark.parametrize("name", ["concave", "narrow-deep"])
 def test_irregular_envelope_is_enforced(name):
+    # Both benchmark envelopes have room for their program: a solve that fails is a defect.
     f = fixture(name)
-    try:
-        _, model = solve_model(f.program, site=f.site)
-    except Solve2DFailed as exc:
-        assert "layout" in str(exc) or "envelope" in str(exc)
-        return
-    assert not errors(check_model(model, f.site, f.program))
+    _, model = solve_model(f.program, site=f.site)
+    assert {s.program_item_id for s in model.spaces} >= {
+        i.id for i in f.program.space_requirements
+    }
+    assert [e.code for e in errors(check_model(model, f.site, f.program))] == []
 
 
 def test_lower_levels_zones_and_outdoor_links_are_applied():
@@ -234,10 +239,25 @@ def test_entry_elevation_preserves_known_terrain():
 
 
 def test_two_wing_has_actual_reentrant_corner():
+    """The day wing (entry, living) and the night wing (bedroom) meet at a shared wall, and
+    one sticks out past the other by at least the recess along each axis: an L whose
+    corner at the far end of both wings is empty (solver grid units, dm)."""
     p = small_program()
     sol, _ = solve_model(p, strategy="two_wing")
-    footprint = unary_union([box(r.u0, r.v0, r.u1, r.v1) for r in sol.rooms])
-    assert footprint.convex_hull.area > footprint.area
+    rooms = {r.space_id: box(r.u0, r.v0, r.u1, r.v1) for r in sol.rooms}
+    assert set(rooms) == {"sp-entry", "sp-living", "sp-bed"}
+    day = unary_union([rooms["sp-entry"], rooms["sp-living"]])
+    night = rooms["sp-bed"]
+    assert day.intersection(night).length > 0  # a shared wall, not a gap or a corner point
+    (_, _, xd, yd), (_, _, xn, yn) = day.bounds, night.bounds
+    # Exactly one wing reaches further in x, and the other further in y.
+    assert (xd - xn >= L_SHAPE_MIN_RECESS_DM and yn - yd >= L_SHAPE_MIN_RECESS_DM) or (
+        xn - xd >= L_SHAPE_MIN_RECESS_DM and yd - yn >= L_SHAPE_MIN_RECESS_DM
+    )
+    footprint = unary_union(list(rooms.values()))
+    notch = box(min(xd, xn), min(yd, yn), max(xd, xn), max(yd, yn))
+    assert notch.area >= L_SHAPE_MIN_RECESS_DM**2
+    assert footprint.intersection(notch).area == 0
 
 
 def test_pinned_proposal_preserved_during_ordinary_revision(tmp_path):
@@ -273,7 +293,9 @@ def test_pinned_proposal_preserved_during_ordinary_revision(tmp_path):
             "target_strategy": "compact",
         }
     )
-    outcome = svc.propose(AGENT, prop)
+    # Feasible at a quarter of the default time; the checks below hold for any layout that
+    # meets the hard constraints, and the revision inherits the time.
+    outcome = svc.propose(AGENT, prop, deterministic_time=1.0)
     opt_id = outcome.options[0].candidate.option_id
     plan_v1 = outcome.options[0].candidate.plan
     assert plan_v1.generation.parameters.get("proposal_id") == prop.id
@@ -288,9 +310,20 @@ def test_pinned_proposal_preserved_during_ordinary_revision(tmp_path):
     )
     plan_v2 = rev_res.option.candidate.plan
     assert plan_v2 is not None
+    assert rev_res.option.plan_ref.version == 2
     assert plan_v2.generation.parameters.get("proposal_id") == prop.id
-    assert any(r.kind is ArtifactKind.CONCEPT_PROPOSAL for r in plan_v2.provenance.inputs)
+    (proposal_ref,) = [
+        r for r in plan_v1.provenance.inputs if r.kind is ArtifactKind.CONCEPT_PROPOSAL
+    ]
+    assert [r for r in plan_v2.provenance.inputs if r.kind is ArtifactKind.CONCEPT_PROPOSAL] == [
+        proposal_ref
+    ]
     assert "sp-living" in circulation_graph(plan_v2.model)["sp-kitchen"]
+    # The revision re-solves the same request with the same seed on one worker, so with no
+    # operation the layout comes back unchanged.
+    assert [(sp.id, sp.level_id, sp.boundary) for sp in plan_v2.model.spaces] == [
+        (sp.id, sp.level_id, sp.boundary) for sp in plan_v1.model.spaces
+    ]
 
 
 def test_open_plan_three_functions_composite_space():
@@ -354,5 +387,7 @@ def test_open_plan_three_functions_composite_space():
     assert len(model.composite_spaces) == 1
     comp = model.composite_spaces[0]
     assert set(comp.space_ids) == {"sp-living", "sp-dining", "sp-kitchen"}
-    assert comp.boundary.area_m2 > 0
+    # The union of three rooms that share walls has exactly their summed area.
+    rooms = sum(model.space(i).area_m2 for i in ("sp-living", "sp-dining", "sp-kitchen"))
+    assert comp.boundary.area_m2 == pytest.approx(rooms, abs=1e-6)
     assert not errors(check_model(model, fixture().site, program))

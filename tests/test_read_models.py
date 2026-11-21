@@ -1,7 +1,9 @@
 """What agents read: project status, the site summary, the interview turn result and checklist.
 
-Key-set tests pin the ``--json`` shapes at the orchestration interface (ADR 0011 §5):
-existing keys keep their names; outputs may gain keys and lose none. All data is synthetic.
+Key-set tests pin the exact ``--json`` shapes at the orchestration interface: a key that
+is added, renamed or lost fails them. ADR 0011 §5 lets an output gain keys but never lose
+or rename one, so adding a key means adding it to the pinned set here, on purpose; a lost
+key is a break. All data is synthetic.
 """
 
 from __future__ import annotations
@@ -21,6 +23,7 @@ from house_ai.orchestration.site_ingestion import SiteConfirmation
 from house_ai.orchestration.workflow import Workflow
 
 from .conftest import AGENT, HUMAN, SURVEY_DXF, SURVEY_LAYERS, example_doc
+from .test_human_gates import tree
 
 FULL = SiteConfirmation(
     units=LengthUnit.METRE, elevation_units=LengthUnit.METRE, epsg=25832,
@@ -279,7 +282,7 @@ def test_the_design_export_writes_the_six_files_from_the_stored_records(intervie
 
     _deferred_lift(interview)
     build = interview.build_program(AGENT)
-    events = len(interview.store.events())
+    before = tree(interview.store.root)
 
     written = interview.write_design_export(build, tmp_path / "design")
 
@@ -290,4 +293,4 @@ def test_the_design_export_writes_the_six_files_from_the_stored_records(intervie
     assert program == build.result.program.model_dump(mode="json")
     summary = (tmp_path / "design" / "interview-summary.md").read_text(encoding="utf-8")
     assert summary == interview.summary()
-    assert len(interview.store.events()) == events  # an export writes no project state
+    assert tree(interview.store.root) == before  # an export writes no project state

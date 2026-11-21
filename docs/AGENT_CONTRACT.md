@@ -62,11 +62,13 @@ game engine may become a dependency of `domain`; each sits behind an adapter.
 ## 5. Private data and providers
 
 - The owner committed `projects/my-house/` (`seperated.dwg` and `elevation.dwg`;
-  `final.dwg` is excluded) to this **private** repository
-  ([ADR 0009](adr/0009-personal-first-project-folders.md)). Before pushing,
-  verify `gh repo view --json visibility` is `PRIVATE`; else stop and ask.
-  Never copy real project data into `examples/`, `tests/` or public docs, and
-  never modify survey originals. `project-data/` stays git-ignored. Never
+  `final.dwg` is excluded) to this repository
+  ([ADR 0009](adr/0009-personal-first-project-folders.md)) and decided on
+  2026-11-21 that it may be public: the site, its location and the household's
+  requirements may be published. **No personal name** (the owner's or anyone
+  else's) goes into a tracked file; write `owner` and relative paths, never a
+  home directory. Never copy real project data into `examples/` or `tests/`,
+  and never modify survey originals. `project-data/` stays git-ignored. Never
   commit API keys or `.env` files.
 - Every external provider call goes through `providers.base.send`, which
   enforces `DataFlowPolicy`. Tests and examples use synthetic data only.
@@ -158,6 +160,12 @@ Never rename an existing study folder.
   is a symlink to that folder. `tests/test_skills.py` enforces their template.
 - Every behaviour change or bug fix has a deterministic offline test asserting
   ground-truth numbers. Record architectural decisions in `docs/adr/NNNN-*.md`.
+- Tests ([ADR 0035](adr/0035-fast-and-sound-test-suite.md)): assert exact values,
+  not `>=`, truthiness or presence where the value is known; never pin solver
+  coordinates. Show a new or repaired test fails against the broken behaviour.
+  Never solve the same problem twice: share plans through a module fixture or
+  `hillside` (`tests/conftest.py`). `pytest` runs on four workers; `-n 0` runs
+  one process.
 - Owner commands "Project status", "Next stage", "Review stage <ID>" and
   "Close stage <ID>" follow the tracker protocol (§O): one stage per branch
   `stage/<ID>-<slug>`, stop for independent review, no DONE without evidence.

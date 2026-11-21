@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import math
+import os
+import re
 import shutil
 import subprocess
 import sys
@@ -14,6 +16,7 @@ from house_ai.cad.dwg_oda import OdaDwgAdapter, find_oda_converter
 from house_ai.cad.layers import LayerMapping, load_layer_mapping
 from house_ai.cli.main import main
 from house_ai.domain.codepack import find_prohibited_claims
+from house_ai.domain.coordinates import SurveyTransform
 from house_ai.domain.epistemics import ConfirmationStatus as C
 from house_ai.domain.epistemics import Epistemic
 from house_ai.domain.provenance import ApprovalRequiresHuman, DataClassification
@@ -32,7 +35,11 @@ from house_ai.geospatial.terrain import elevation_at
 from house_ai.geospatial.validation import report_markdown, validate_site
 from house_ai.orchestration.site import SiteService
 from house_ai.orchestration.site_ingestion import SiteConfirmation, confirm_site, ingest_site
-from house_ai.orchestration.survey_inspection import inspect_file, inspection_markdown
+from house_ai.orchestration.survey_inspection import (
+    inspect_file,
+    inspect_files,
+    inspection_markdown,
+)
 from house_ai.orchestration.workflow import GateBlocked, Workflow
 from house_ai.render2d.site_svg import render_site_svg
 from house_ai.storage.hashing import file_sha256
@@ -135,7 +142,7 @@ def test_features_frontage_and_access(ingest, survey):
     assert all(f.status is Epistemic.INFERENCE for f in site.features)
 
 
-def test_millimetre_drawing_gives_the_same_site(ingest, make_survey):
+def test_millimetre_drawing_gives_the_same_site(ingest, make_survey, survey):
     store_m, res_m = ingest()
     store_mm, res_mm = ingest(make_survey(unit="mm"))
     a, b = _site(store_m, res_m.site_ref), _site(store_mm, res_mm.site_ref)
@@ -145,6 +152,18 @@ def test_millimetre_drawing_gives_the_same_site(ingest, make_survey):
     za = sorted(s.z_m for s in a.terrain.spot_elevations)
     zb = sorted(s.z_m for s in b.terrain.spot_elevations)
     assert zb == pytest.approx(za, abs=1e-9)
+    # LOCAL -> SOURCE gives back the raw millimetre CAD numbers: (E0 + x, N0 + y, z) x 1000.
+    to_source = SurveyTransform(0.001, 0.001, b.coordinates.local)
+    for x, y in b.boundary.outer:
+        assert to_source.local_to_source((x, y, 0.0)) == pytest.approx(
+            ((survey["E0"] + x) * 1000, (survey["N0"] + y) * 1000, 0.0), abs=1e-6
+        )
+    assert [p[:2] for p in b.boundary.outer] == pytest.approx(survey["PARCEL"], abs=1e-9)
+    for spot in b.terrain.spot_elevations:
+        x, y = spot.xy
+        assert to_source.local_to_source((x, y, spot.z_m)) == pytest.approx(
+            ((survey["E0"] + x) * 1000, (survey["N0"] + y) * 1000, spot.z_m * 1000), abs=1e-6
+        )
 
 
 # ----------------------------------------------------- unknowns and ambiguity
@@ -164,10 +183,39 @@ def test_nothing_is_confirmed_by_ingestion(ingest):
 
 
 def test_utm_like_numbers_without_geodata_leave_the_crs_unknown(ingest, make_survey):
-    store, result = ingest(make_survey(geodata=False))
-    crs = _site(store, result.site_ref).coordinates.horizontal_crs
-    assert crs.status is C.UNKNOWN and crs.declared_epsg is None
+    """E 500 100, N 5 400 200 look like UTM metres; without a declaration nothing follows."""
+    path = make_survey(geodata=False)
+    store, result = ingest(path)
+    site = _site(store, result.site_ref)
+    crs = site.coordinates.horizontal_crs
+    assert crs.status is C.UNKNOWN and crs.declared_epsg is None and crs.epsg is None
     assert any("horizontal CRS is unknown" in b for b in result.blockers)
+    report = validate_site(site)
+    # No geographic position, no convergence, no true bearing is derived from magnitudes.
+    assert report.coordinates.origin_lon_lat is None
+    assert report.coordinates.grid_to_true_north_deg is None
+    assert site.coordinates.local.grid_to_true_north_deg is None
+    assert report.boundary.edges and all(e.bearing_true_deg is None for e in report.boundary.edges)
+    # The only CRS wording is "unknown" and the question to the owner; no zone is named.
+    def crs_lines(text):
+        # The file's own path (pytest names it after this test) is not a CRS statement.
+        lines = [ln for ln in text.splitlines() if not ln.startswith("- Path:")]
+        return [ln for ln in lines if {"utm", "zone", "epsg"} & set(_words(ln))]
+
+    assert crs_lines(report_markdown(report)) == [
+        "- horizontal CRS is unknown; a human must confirm the EPSG code or confirm the survey "
+        "is local-only"
+    ]
+    assert crs_lines(inspection_markdown(inspect_files([path]))) == [
+        "- Declared EPSG: none",
+        "- Coordinate magnitudes are not evidence of a CRS, zone or unit.",
+        "- [ ] State the horizontal CRS as an EPSG code (for UTM: zone, hemisphere and datum, "
+        "e.g. ETRS89 / UTM 32N = EPSG:25832), or confirm the survey is local-only.",
+    ]
+
+
+def _words(line: str) -> list[str]:
+    return re.findall(r"[a-z]+", line.lower())
 
 
 def test_unitless_drawing_produces_no_geometry(ingest, make_survey):
@@ -319,12 +367,6 @@ def test_inspection_of_an_unreadable_file(tmp_path):
 
 
 # --------------------------------------------------------------- approval gate
-
-
-def test_agents_cannot_confirm_site_facts(ingest):
-    store, _ = ingest()
-    with pytest.raises(ApprovalRequiresHuman):
-        confirm_site(store, "site", AGENT, FULL)
 
 
 def test_human_confirmation_clears_blockers_and_the_human_approves(ingest):
@@ -512,27 +554,13 @@ def test_cli_pipeline(tmp_path):
     assert main(["project", "verify", p]) == 0
 
 
-def test_cli_site_confirm_refuses_a_non_interactive_shell(tmp_path):
-    result = subprocess.run(
-        [
-            sys.executable,
-            "-m",
-            "house_ai.cli.main",
-            "site",
-            "confirm",
-            str(tmp_path),
-            "--confirmer",
-            "owner",
-            "--units",
-            "m",
-        ],
-        capture_output=True,
-        text=True,
-        stdin=subprocess.DEVNULL,
-        cwd=REPO,
-    )
-    assert result.returncode == 2
-    assert "interactive terminal" in result.stderr
+def test_cli_site_confirm_refuses_a_non_interactive_shell(tmp_path, monkeypatch, capsys):
+    # A real non-terminal stdin (no faked isatty), as an agent's shell has; in process.
+    with open(os.devnull) as devnull:
+        monkeypatch.setattr(sys, "stdin", devnull)
+        code = main(["site", "confirm", str(tmp_path), "--confirmer", "owner", "--units", "m"])
+    assert code == 2
+    assert "interactive terminal" in capsys.readouterr().err
 
 
 def test_cli_inspect_writes_reports(tmp_path, capsys):

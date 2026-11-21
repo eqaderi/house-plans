@@ -22,7 +22,7 @@ from typing import Any
 
 from pydantic import BaseModel
 
-from house_ai.domain.evaluation import EvaluationReport
+from house_ai.domain.evaluation import EvaluationReport, MetricClaim
 from house_ai.domain.plan import PlanVersion
 from house_ai.domain.visual_critique import VisualCritiqueFile
 
@@ -115,11 +115,30 @@ CANONICAL_PLAN_TARGETS = {
     "circulation",
 }
 
-# Regex to detect ungrounded numeric assertions in text like "area is 25.5 m²"
+#: Units a measurable claim may state, longest first so ``m2`` is not read as ``m``.
+_UNIT = r"m²|m³|m2|m3|sqm|metres?|meters?|m|%|degrees?|deg|°"
+
+#: A number with a unit in text like "area is 25.5 m²". The number may not be part of an
+#: ID (``sp-bed-2``) and the unit may not run into a word (``3 mm``, ``2 months``).
 MEASURABLE_CLAIM_PATTERN = re.compile(
-    r"\b(\d+(?:\.\d+)?)\s*(m²|sqm|m2|meters?|metres?|%|deg|degrees?|m3|m³)\b",
+    r"(?<![\w.\-])(-?\d+(?:\.\d+)?)\s*(" + _UNIT + r")(?!\w)",
     re.IGNORECASE,
 )
+
+#: The value stated for a metric: the first number after its name, unit optional.
+_STATED_VALUE = re.compile(
+    r"(?<![\w.\-])(-?\d+(?:\.\d+)?)(?:\s*(" + _UNIT + r")(?!\w))?", re.IGNORECASE
+)
+#: Where a metric's statement ends: a semicolon, a line break, or a full stop.
+_CLAUSE_END = re.compile(r"[;\n]|\.(?!\d)")
+
+_UNIT_ALIASES = {
+    "m²": "m2", "sqm": "m2", "m2": "m2",
+    "m³": "m3", "m3": "m3",
+    "m": "m", "meter": "m", "meters": "m", "metre": "m", "metres": "m",
+    "%": "%",
+    "deg": "deg", "degree": "deg", "degrees": "deg", "°": "deg",
+}  # fmt: skip
 
 
 class GroundingError(Exception):
@@ -166,7 +185,8 @@ def validate_critique_grounding(
     3. Every cited element_id in every claim must exist in the canonical model.
     4. Suggested revision operations must target valid elements.
     5. Measurable numeric claims in text must either cite an evaluator metric or
-       include structured revision operations.
+       include structured revision operations, and a value stated for a cited metric
+       must agree with the evaluator's value (:func:`_measurable_findings`).
     """
     findings: list[GroundingFinding] = []
 
@@ -234,20 +254,69 @@ def validate_critique_grounding(
                     )
 
         # 5. Measurable numeric claims check
-        # If claim asserts numbers without ops or metric citation, verify in evaluation
-        has_metric_citation = False
-        if evaluation and evaluation.metrics:
-            eval_metrics = {m.metric for m in evaluation.metrics}
-            for m_name in eval_metrics:
-                if m_name in claim.claim_text:
-                    has_metric_citation = True
-                    break
+        findings.extend(_measurable_findings(claim, evaluation))
 
-        has_suggested_ops = len(claim.suggested_ops) > 0
+    return GroundingReport(
+        critique_id=f"critique-{critique.option}-v{critique.plan_version}",
+        plan_version=critique.plan_version,
+        is_grounded=len(findings) == 0,
+        findings=findings,
+    )
 
-        # If claim has numeric measurement pattern but no metric citation and no suggested ops:
-        match = MEASURABLE_CLAIM_PATTERN.search(claim.claim_text)
-        if match and not has_metric_citation and not has_suggested_ops:
+
+def _unit(text: str | None) -> str | None:
+    return _UNIT_ALIASES.get(text.lower(), text.lower()) if text else None
+
+
+def _decimals(number: str) -> int:
+    return len(number.split(".")[1]) if "." in number else 0
+
+
+def _measurable_findings(claim: Any, evaluation: EvaluationReport | None) -> list[GroundingFinding]:
+    """Rule 5: every number a claim states must be backed, and backed truthfully.
+
+    A metric is cited when its exact name appears as a whole token in the claim text;
+    the first number after the name (before ``;``, a full stop or a line break, or the
+    next cited name) is the value the claim states for it. That value must agree with
+    the evaluator's value to the precision the claim wrote it at: half a unit of its last
+    digit ("46" covers 45.5..46.5, "45.9" covers 45.85..45.95). Evaluator metrics are
+    stored at 3 decimals (``EvaluatorOutput.metric``), finer than any figure an agent
+    reads off a report, so a correctly rounded reading always lies inside that band and
+    a number outside it is not the metric's value. A percentage stated for a unitless
+    ratio is compared as a fraction. When several metrics share a name, those whose
+    ``subject_ids`` overlap the claim's ``element_ids`` are the candidates.
+
+    Every other number-with-unit must be covered by structured revision operations
+    (it is then a proposed target, not a measurement); otherwise it is an ungrounded
+    measurable claim. Revision operations never excuse a wrong value for a cited metric.
+    """
+    text = claim.claim_text
+    by_name: dict[str, list[MetricClaim]] = {}
+    for m in evaluation.metrics if evaluation else []:
+        by_name.setdefault(m.metric, []).append(m)
+    cited = sorted(
+        (hit.start(), hit.end(), name)
+        for name in by_name
+        for hit in re.finditer(r"(?<![A-Za-z0-9_])" + re.escape(name) + r"(?![A-Za-z0-9_])", text)
+    )
+
+    findings: list[GroundingFinding] = []
+    backed: set[tuple[int, int]] = set()
+    for i, (_, name_end, name) in enumerate(cited):
+        stop = cited[i + 1][0] if i + 1 < len(cited) else len(text)
+        clause_end = _CLAUSE_END.search(text, name_end, stop)
+        stated = _STATED_VALUE.search(text, name_end, clause_end.start() if clause_end else stop)
+        if stated is None:
+            continue  # the metric is named, no value is asserted for it
+        backed.add(stated.span(1))
+        issue = _stated_value_issue(name, stated, by_name[name], claim.element_ids)
+        if issue:
+            findings.append(GroundingFinding(claim_id=claim.id, issue=issue))
+
+    if claim.suggested_ops:
+        return findings
+    for match in MEASURABLE_CLAIM_PATTERN.finditer(text):
+        if match.span(1) not in backed:
             findings.append(
                 GroundingFinding(
                     claim_id=claim.id,
@@ -257,10 +326,49 @@ def validate_critique_grounding(
                     ),
                 )
             )
+    return findings
 
-    return GroundingReport(
-        critique_id=f"critique-{critique.option}-v{critique.plan_version}",
-        plan_version=critique.plan_version,
-        is_grounded=len(findings) == 0,
-        findings=findings,
+
+def _stated_value_issue(
+    name: str, stated: re.Match[str], metrics: list[MetricClaim], element_ids: list[str]
+) -> str | None:
+    """Why the value ``stated`` for metric ``name`` disagrees with the evaluator, or None."""
+    number, stated_unit = stated.group(1), _unit(stated.group(2))
+    shown = f"{number} {stated_unit}" if stated_unit else number
+    on_subject = [m for m in metrics if set(m.subject_ids) & set(element_ids)]
+    candidates = on_subject or metrics
+    numeric = [
+        m
+        for m in candidates
+        if isinstance(m.value, (int, float)) and not isinstance(m.value, bool)
+    ]
+    if not numeric:
+        statuses = ", ".join(sorted({m.status.value for m in candidates}))
+        return (
+            f"Claim states {name} = {shown} but the evaluator did not measure it "
+            f"(status {statuses})"
+        )
+    tolerance = 0.5 * 10 ** -_decimals(number)
+    value = float(number)
+    unit_errors: list[str] = []
+    for m in numeric:
+        metric_unit = _unit(m.unit)
+        scale = 1.0
+        if stated_unit and metric_unit is None and stated_unit == "%":
+            scale = 0.01  # a percentage of a unitless ratio
+        elif stated_unit and metric_unit in _UNIT_ALIASES.values() and stated_unit != metric_unit:
+            unit_errors.append(
+                f"Claim states {name} in {stated_unit} but the metric is in {metric_unit}"
+            )
+            continue
+        if abs(value * scale - float(m.value)) <= tolerance * scale + 1e-9:
+            return None
+    if unit_errors and len(unit_errors) == len(numeric):
+        return unit_errors[0]
+    measured = ", ".join(
+        f"{m.value} {_unit(m.unit)}" if m.unit else f"{m.value}" for m in numeric
+    )
+    return (
+        f"Claim states {name} = {shown} but the evaluator measured {measured} "
+        f"(tolerance ±{tolerance:g}, half a unit of the stated last digit)"
     )

@@ -5,7 +5,7 @@ from __future__ import annotations
 import math
 
 import pytest
-from pyproj import CRS, Proj, Transformer
+from pyproj import CRS, Proj
 
 from house_ai.domain.coordinates import LocalCoordinateSystem, SurveyTransform
 from house_ai.domain.epistemics import ConfirmationStatus as C
@@ -66,7 +66,8 @@ def test_survey_transform_round_trips_large_coordinates(rotation, unit):
 def test_local_frame_keeps_coordinates_small_and_rotates_correctly():
     local = LocalCoordinateSystem(id="lcs", origin=(500_000.0, 5_400_000.0, 0.0), rotation_deg=90.0)
     t = SurveyTransform(1.0, 1.0, local)
-    # A point 10 m grid-north of the origin lies on local -x when local x points grid north.
+    # Rotated 90° counter-clockwise, local +x points grid north and local +y grid west:
+    # a point 10 m grid-north of the origin is at local (+10, 0), 10 m grid-east at (0, -10).
     x, y, z = t.source_to_local((500_000.0, 5_400_010.0, 101.0))
     assert (x, y, z) == pytest.approx((10.0, 0.0, 101.0), abs=1e-9)
     assert t.source_to_local_2d((500_010.0, 5_400_000.0)) == pytest.approx((0.0, -10.0), abs=1e-9)
@@ -98,11 +99,30 @@ def test_true_north_is_computed_numerically_and_matches_proj():
     assert abs(grid_to_true_north_deg(25832, 500_000.0, n)) < 1e-7
 
 
-def test_grid_to_lonlat_matches_pyproj():
-    to_geo = Transformer.from_crs(25832, 4258, always_xy=True)
-    assert grid_to_lonlat(25832, 500_100.0, 5_400_200.0) == pytest.approx(
-        to_geo.transform(500_100.0, 5_400_200.0), abs=1e-12
-    )
+def _grs80_meridian_arc_m(lat_deg: float, steps: int = 2000) -> float:
+    """Meridian arc from the equator, integrated by Simpson's rule (no PROJ involved)."""
+    a, f = 6_378_137.0, 1 / 298.257222101
+    e2 = f * (2 - f)
+    h = math.radians(lat_deg) / steps
+    m = [a * (1 - e2) / (1 - e2 * math.sin(i * h) ** 2) ** 1.5 for i in range(steps + 1)]
+    return h / 3 * (m[0] + m[-1] + 4 * sum(m[1:-1:2]) + 2 * sum(m[2:-1:2]))
+
+
+def test_grid_to_lonlat_against_utm_ground_truth():
+    """EPSG:25832 is UTM 32N on GRS80: central meridian 9°E, false easting 500 000 m, false
+    northing 0, scale 0.9996. On the central meridian northing = 0.9996 x meridian arc."""
+    assert grid_to_lonlat(25832, 500_000.0, 0.0) == pytest.approx((9.0, 0.0), abs=1e-12)
+    lon, lat = grid_to_lonlat(25832, 500_000.0, 5_400_000.0)
+    assert lon == pytest.approx(9.0, abs=1e-12)
+    assert 0.9996 * _grs80_meridian_arc_m(lat) == pytest.approx(5_400_000.0, abs=1e-3)
+    # 100 m east of the meridian is east of 9°E; at ~48.75°N one degree of longitude is
+    # ~73.5 km, so 100 m / 0.9996 is 0.001362° (to 1 %).
+    lon, _ = grid_to_lonlat(25832, 500_100.0, 5_400_200.0)
+    a, f = 6_378_137.0, 1 / 298.257222101
+    e2 = f * (2 - f)
+    phi = math.radians(lat)
+    deg_lon_m = math.radians(1) * a * math.cos(phi) / math.sqrt(1 - e2 * math.sin(phi) ** 2)
+    assert lon - 9.0 == pytest.approx(100 / 0.9996 / deg_lon_m, rel=1e-2)
 
 
 def test_utm_zone_lists_every_datum_and_picks_none():

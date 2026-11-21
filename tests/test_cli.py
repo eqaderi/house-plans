@@ -31,12 +31,16 @@ def loaded(tmp_path, capsys):
 
 
 def test_schemas_check_passes_on_the_committed_schemas(capsys):
+    """The command the contract's finish check runs reads the committed schemas folder by
+    default (the library drift check is test_schemas.py)."""
     assert main(["schemas", "check"]) == 0
     assert "up to date" in capsys.readouterr().out
 
 
 def test_schemas_check_fails_on_drift(tmp_path, capsys):
     assert main(["schemas", "export", "--out", str(tmp_path)]) == 0
+    assert main(["schemas", "check", "--out", str(tmp_path)]) == 0  # a fresh export passes
+    capsys.readouterr()
     (tmp_path / "site.schema.json").write_text("{}")
     assert main(["schemas", "check", "--out", str(tmp_path)]) == 1
     assert "site" in capsys.readouterr().err
@@ -150,12 +154,16 @@ def test_source_add(loaded, tmp_path, capsys):
     assert "src-survey" in capsys.readouterr().out
 
 
-def test_console_script_runs_as_a_subprocess():
+def test_console_script_runs_as_a_subprocess(tmp_path):
+    """The module entry point runs a command and returns that command's exit code: an
+    invalid file gives the command's own exit 1 and message, not a crash (the drift check
+    is test_schemas_check_passes_on_the_committed_schemas; success in-process above)."""
+    bad = tmp_path / "site.yaml"
+    bad.write_text((EXAMPLE / "site.yaml").read_text().replace("boundary_status", "boundry"))
     result = subprocess.run(
-        [sys.executable, "-m", "house_ai.cli.main", "schemas", "check"],
-        capture_output=True,
-        text=True,
-        cwd=REPO,
-        check=False,
-    )
-    assert result.returncode == 0, result.stderr
+        [sys.executable, "-m", "house_ai.cli.main", "validate", "site", str(bad)],
+        capture_output=True, text=True, cwd=REPO, check=False,
+    )  # fmt: skip
+    assert result.returncode == 1, result.stderr
+    assert result.stderr.startswith(f"INVALID {bad}") and "Traceback" not in result.stderr
+    assert "boundry" in result.stderr

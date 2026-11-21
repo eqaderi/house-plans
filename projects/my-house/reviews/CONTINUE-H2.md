@@ -5,7 +5,7 @@ not a replacement for canonical records or homeowner approval.
 
 ## Start here
 
-Workspace: `/Users/ershadqaderi/_projects/house-plans`.
+Workspace: the repository root.
 Current branch: `stage/H2-interview-program`. Work is saved locally but has not
 been committed or pushed. Preserve the existing changes and survey originals.
 

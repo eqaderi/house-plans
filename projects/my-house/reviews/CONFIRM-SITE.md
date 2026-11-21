@@ -139,7 +139,7 @@ and 12.554 m between its surveyed interior spots. Those measurements and the
 Each command shows what you confirm and asks you to type a phrase.
 
 ```bash
-cd /Users/ershadqaderi/_projects/house-plans
+cd house-plans   # the repository root
 
 # 1. now: confirm the units you have stated (heights in metres, UTM is metres)
 .venv/bin/house-ai site confirm my-house --confirmer <your-name> --units m --elevation-units m

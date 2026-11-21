@@ -11,10 +11,6 @@ from house_ai.domain.program import SpaceProgram
 from house_ai.domain.records import AssumptionsFile, OpenQuestionsFile
 from house_ai.evaluation.base import EvaluationContext
 from house_ai.evaluation.usability import FurnitureUsabilityEvaluator
-from house_ai.orchestration.plans import PlanService
-
-from .conftest import AGENT
-from .test_plan_workflow import _approve_site_and_program, _load
 
 REPO = Path(__file__).resolve().parents[1]
 
@@ -46,15 +42,19 @@ def test_program_names_beds_and_typical_cars(folder, cars):
     assert car.blocking is False
 
 
-def test_bed_and_garage_studies_run_on_generated_plans(tmp_path):
-    store = _load(tmp_path)
-    _approve_site_and_program(store)
-    svc = PlanService(store)
-    (opt,) = svc.generate(AGENT, strategies=["compact"], exploratory=True).generated
-    inp = svc.inputs(exploratory=True)
+def test_bed_and_garage_studies_run_on_generated_plans(hillside):
+    plan = hillside.option("compact").candidate.plan
+    inp = hillside.inputs()
     result = FurnitureUsabilityEvaluator().evaluate(
-        EvaluationContext(opt.candidate.plan.model, inp.site, inp.program, None)
+        EvaluationContext(plan.model, inp.site, inp.program, None)
     )
-    claims = {m.metric: m for m in result.metrics if m.metric.endswith("_sampled_fit")}
-    for name in ("bed_double_sampled_fit", "garage_sampled_fit"):
-        assert claims[name].status.value != "not_checked", name
+    claims = {
+        (m.metric, tuple(m.subject_ids)): (m.status.value, m.value)
+        for m in result.metrics
+        if m.metric in ("bed_double_sampled_fit", "garage_sampled_fit")
+    }
+    # A sampled fit is an inference: the bed and the car fit where they were sampled.
+    assert claims == {
+        ("bed_double_sampled_fit", ("sp-bed-main",)): ("inferred", True),
+        ("garage_sampled_fit", ("sp-garage",)): ("inferred", True),
+    }

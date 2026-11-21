@@ -6,10 +6,11 @@ import math
 from dataclasses import dataclass
 from functools import lru_cache
 
+import numpy as np
+import shapely
 from shapely import affinity
 from shapely.geometry import GeometryCollection, LineString, Point, Polygon, box
 from shapely.ops import unary_union
-from shapely.prepared import prep
 from shapely.wkb import loads
 
 from house_ai.domain.base import EXTERIOR
@@ -203,6 +204,17 @@ def template_shapes(template, position, rotation=0, width=None, depth=None):
     return transform(body), transform(envelope)
 
 
+def shifted(poly, shifts):
+    """``poly`` translated by each (dx, dy) in ``shifts``, as a shapely array.
+
+    Adding the shift to the corners is exactly what `affinity.translate` computes, so
+    ``shifted(template_shapes(t, (0, 0), a)[i], [p])[0]`` equals
+    ``template_shapes(t, p, a)[i]`` coordinate for coordinate.
+    """
+    corners = shapely.get_coordinates(poly)[None]
+    return shapely.polygons(corners + np.asarray(shifts, dtype=float)[:, None, :])
+
+
 def placed_envelope(item):
     ident = getattr(item, "template_id", None) or item.fixture_type.replace("_", "-")
     aliases = {"bed-double": "bed-double", "kitchen-sink": "kitchen-run"}
@@ -273,6 +285,15 @@ def _overlap(p, q):
     return max(0.0, min(p[2], q[2]) - max(p[0], q[0])) * max(0.0, min(p[3], q[3]) - max(p[1], q[1]))
 
 
+def _clear_of(shapes, obstacle):
+    """Which shapes overlap ``obstacle`` by less than EPS of area."""
+    clear = ~shapely.intersects(obstacle, shapes)
+    touching = np.flatnonzero(~clear)
+    if len(touching):
+        clear[touching] = shapely.area(shapely.intersection(shapes[touching], obstacle)) < EPS
+    return clear
+
+
 @lru_cache(maxsize=256)
 def _fit_cached(floor_wkb, excluded_wkb, approach_wkb, template_jsons):
     from house_ai.domain.usability import FurnitureTemplate
@@ -282,8 +303,9 @@ def _fit_cached(floor_wkb, excluded_wkb, approach_wkb, template_jsons):
     templates = [FurnitureTemplate.model_validate_json(s) for s in template_jsons]
     if sum(t.width.value * t.depth.value for t in templates) > floor.area + EPS:
         return None
-    tolerant = prep(floor.buffer(EPS))
-    excluded_p, approaches_p = prep(excluded), prep(approaches)
+    tolerant = floor.buffer(EPS)
+    for g in (tolerant, excluded, approaches):
+        shapely.prepare(g)
     xmin, ymin, xmax, ymax = floor.bounds if not floor.is_empty else (0, 0, 0, 0)
     # Finish faces (not only the overall bounds, which include door recesses) anchor offsets.
     parts = getattr(floor, "geoms", [floor])
@@ -302,25 +324,30 @@ def _fit_cached(floor_wkb, excluded_wkb, approach_wkb, template_jsons):
         """In the room frame, every rotated body and envelope is an axis-aligned box."""
         out = []
         for angle in (0, 90, 180, 270):
-            _, env = template_shapes(t, (0, 0), angle)
-            ex0, ey0, ex1, ey1 = env.bounds
+            body0, env0 = template_shapes(t, (0, 0), angle)
+            ex0, ey0, ex1, ey1 = env0.bounds
             if ex1 - ex0 > xmax - xmin + EPS or ey1 - ey0 > ymax - ymin + EPS:
                 continue
-            # Bounds, face-aligned offsets and the regular 0.1 m sampling grid.
-            for x in offsets(xmin, xmax, ex0, ex1, vx):
-                for y in offsets(ymin, ymax, ey0, ey1, vy):
-                    body, env = template_shapes(t, (x, y), angle)
-                    if (
-                        tolerant.contains(env)
-                        and (
-                            not excluded_p.intersects(env) or env.intersection(excluded).area < EPS
-                        )
-                        and (
-                            not approaches_p.intersects(body)
-                            or body.intersection(approaches).area < EPS
-                        )
-                    ):
-                        out.append((body.bounds, env.bounds))
+            # Bounds, face-aligned offsets and the regular 0.1 m sampling grid, x outer.
+            xs = offsets(xmin, xmax, ex0, ex1, vx)
+            ys = offsets(ymin, ymax, ey0, ey1, vy)
+            if not xs or not ys:
+                continue
+            shifts = [(x, y) for x in xs for y in ys]
+            bodies, envs = shifted(body0, shifts), shifted(env0, shifts)
+            ok = shapely.contains(tolerant, envs)
+            keep = np.flatnonzero(ok)
+            ok[keep] = _clear_of(envs[keep], excluded)
+            keep = np.flatnonzero(ok)
+            ok[keep] = _clear_of(bodies[keep], approaches)
+            keep = np.flatnonzero(ok)
+            out.extend(
+                zip(
+                    map(tuple, shapely.bounds(bodies[keep]).tolist()),
+                    map(tuple, shapely.bounds(envs[keep]).tolist()),
+                    strict=True,
+                )
+            )
         return out
 
     keys = [_dimensions(t) for t in templates]

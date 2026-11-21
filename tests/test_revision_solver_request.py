@@ -66,7 +66,11 @@ def test_modify_inherits_intent_and_overrides_item_space_aliases() -> None:
     assert [r.kind for r in req.requests.relations] == [SpaceRelationshipKind.SEPARATED]
     assert _strings(req.operations) == prior[:3]
     assert _strings(req.parent_operations) == prior
-    assert _hints(req, program)[0]  # one-run rethink was not inherited
+    # The one-run rethink was not inherited: the parent's positions are hints, exactly as for a
+    # parent that never asked for it.
+    never = compile_revision(_concept(prior[:3] + prior[4:]), program, [], inherit=True)
+    assert _hints(req, program)[0]
+    assert _hints(req, program) == _hints(never, program)
     assert req.strategy == "compact"
 
     new = parse_operations(
@@ -182,6 +186,8 @@ def test_the_ids_a_request_targets_are_its_names_and_the_spaces_they_mean() -> N
         "sp-bath-ensuite",
         "sp-bath-1",
     }
+    # Every requirement of the example has quantity 1, so one Space each: pi-x is sp-x.
     everything = targeted_ids(parse_operations(["rethink:all"]), program)
-    assert {"sp-kitchen", "sp-garage", "sp-bed-main"} <= everything
-    assert "all" not in everything
+    assert everything == {
+        "sp-" + i.id.removeprefix("pi-") for i in program.space_requirements
+    }

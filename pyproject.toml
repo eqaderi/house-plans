@@ -23,11 +23,15 @@ dependencies = [
   "pyproj>=3.7,<4",
   # Milestone D: CP-SAT constraint solver for floor-plan layout (ADR 0013).
   "ortools>=9.12,<10",
+  # Vectorised geometry predicates in the usability evaluators (shapely's own array type).
+  "numpy>=1.26,<3",
 ]
 
 [project.optional-dependencies]
 dev = [
   "pytest>=8.0",
+  # Runs the suite on four worker processes by default (ADR 0035).
+  "pytest-xdist>=3.6",
   "ruff>=0.9",
 ]
 # Milestone C: the Claude adapter for the AI-assisted interview (ADR 0010). Optional;
@@ -44,7 +48,10 @@ where = ["src"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-addopts = "-ra"
+# Four workers measured fastest on an 11-core laptop (more workers contend for the CPU);
+# each test file stays on one worker so module fixtures are built once (ADR 0035).
+# Run single-process with `-n 0`.
+addopts = "-ra -n 4 --dist loadfile"
 
 [tool.ruff]
 line-length = 100

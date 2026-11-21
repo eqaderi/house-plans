@@ -49,10 +49,12 @@ def test_golden_brief_is_valid_and_keeps_unknowns_unknown():
     assert brief.facts_for(BriefTopic.KITCHEN_TYPE)[0].key == "kitchen_layout"
 
 
-def test_an_agent_inference_cannot_be_recorded_as_a_fact():
+@pytest.mark.parametrize("status", ["verified_fact", "preference"])
+def test_an_agent_inference_cannot_be_recorded_as_a_fact(status):
     doc = example_doc("design_brief.yaml")
     fact = next(f for f in doc["facts"] if f["id"] == "f-guest-sleep-living")
-    fact["status"] = "verified_fact"
+    assert (fact["status"], fact["source"]["kind"]) == ("inference", "agent_inference")
+    fact["status"] = status
     with pytest.raises(ValidationError, match="agent inference cannot be recorded"):
         DesignBrief.model_validate(doc)
 

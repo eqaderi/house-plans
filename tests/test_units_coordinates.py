@@ -98,15 +98,6 @@ def test_vertical_datum_needs_a_name_once_known():
     assert VerticalDatum(status=C.LOCAL_ONLY_CONFIRMED, name="BM1").resolved
 
 
-def test_utm_looking_coordinates_do_not_imply_a_crs(site_doc):
-    """A 6/7-digit origin looks like UTM. That must not resolve the CRS."""
-    site_doc["coordinates"]["horizontal_crs"] = {"status": "unknown"}
-    site = Site.model_validate(site_doc)
-    assert site.coordinates.local.origin[0] > 100_000
-    blockers = site_verification_blockers(site)
-    assert any("horizontal CRS is unknown" in b for b in blockers)
-
-
 @pytest.mark.parametrize(
     ("patch", "expected"),
     [
@@ -180,39 +171,17 @@ def test_site_geometry_frame_verified_flag(site_doc):
     assert not unconfirmed.geometry_frame_verified
 
 
-def test_geospatial_and_cad_boundaries(site):
-    from house_ai.cad.base import CadExtraction, RawPoint, RawPolyline
-    from house_ai.domain.site import CadImportProvenance
-    from house_ai.geospatial.base import (
-        build_terrain,
-        set_coordinate_reference_system,
-    )
+def test_build_terrain_status_follows_its_inputs(site):
+    """The CRS half of this boundary is tested in test_geospatial.py (only a human confirms)."""
+    from house_ai.domain.terrain import TinSurface
+    from house_ai.geospatial.base import build_terrain
 
-    from .conftest import AGENT, HUMAN
-
-    with pytest.raises(ValueError, match="only a human"):
-        set_coordinate_reference_system(
-            actor=AGENT, status=C.USER_CONFIRMED, epsg=32632
-        )
-    crs = set_coordinate_reference_system(actor=HUMAN, status=C.USER_CONFIRMED, epsg=32632)
-    assert crs.resolved and crs.epsg == 32632
-    terrain = build_terrain(site.terrain.spot_elevations, [])
-    assert terrain.status.value == "surveyed_points"
-
-    prov = CadImportProvenance(
-        source_document_id="src-1",
-        original_filename="survey.dxf",
-        sha256="a" * 64,
-        drawing_units=UnitDeclaration(unit=LengthUnit.MILLIMETRE, status=C.DECLARED_IN_SOURCE),
-        parser="ezdxf",
-        horizontal_crs_status=C.UNKNOWN,
-        vertical_datum_status=C.UNKNOWN,
-    )
-    ext = CadExtraction(
-        provenance=prov,
-        points=[RawPoint(xy=(10000.0, 20000.0), z=100.0, layer="TOPO")],
-        polylines=[RawPolyline(points=[(0.0, 0.0), (1000.0, 0.0)], closed=False, layer="BOUNDARY")],
-        layer_roles={"BOUNDARY": "boundary", "TOPO": "spot_elevation"},
-    )
-    assert len(ext.points) == 1 and len(ext.polylines) == 1
-
+    spots = site.terrain.spot_elevations
+    assert spots
+    assert build_terrain([], []).status.value == "unknown"
+    surveyed = build_terrain(spots, [])
+    assert surveyed.status.value == "surveyed_points" and surveyed.spot_elevations == spots
+    surface = TinSurface(vertices=[(0, 0, 1), (1, 0, 1), (0, 1, 1)], triangles=[(0, 1, 2)])
+    built = build_terrain(spots, [], surface=surface)
+    assert built.status.value == "surface_built" and built.surface == surface
+    assert build_terrain([], [], surface_ref="tin-1").status.value == "surface_built"
