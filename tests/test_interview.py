@@ -47,8 +47,7 @@ from house_ai.providers.base import DataFlowPolicy, PrivateDataFlowError
 from house_ai.providers.scripted import ScriptedProvider
 from house_ai.storage import ProjectStore
 
-from .conftest import AGENT, HUMAN, REPO, SURVEY_DXF, SURVEY_LAYERS, FakeClock
-from .test_human_gates import tree
+from .conftest import AGENT, HUMAN, REPO, SURVEY_DXF, SURVEY_LAYERS, FakeClock, tree
 
 EXAMPLE = REPO / "examples" / "interviews" / "synthetic-family"
 ANSWERS = yaml.safe_load((EXAMPLE / "answers.yaml").read_text())["answers"]
@@ -704,34 +703,63 @@ def test_cli_run_refuses_an_agent_looking_owner(new_store, monkeypatch, capsys, 
     assert tree(store.root) == before
 
 
-def test_an_agent_confirmation_without_owner_words_is_recorded_as_it_happened(svc):
-    """Current behaviour, pinned (a product gap, not a rule): the service accepts a
-    confirmation from an agent with no owner words. The turn names the agent and holds no
-    text, yet the facts become owner-sourced verified facts.
-    """
+HOUSEHOLD = ["adults", "children", "elders", "household_size"]
+
+
+def test_an_agent_confirmation_with_the_owners_words_is_recorded_as_it_happened(svc):
+    """An agent may record the owner's confirmation with the owner's verbatim words (DEC-09):
+    the turn names the agent and holds the words, and the facts become owner-sourced
+    verified facts."""
     svc.answer("Two adults.", HUMAN)
     before = [t.model_dump() for t in svc.session().turns]
+    words = "Yes, just the two of us."
 
-    assert svc.confirm(AGENT) == ["adults", "children", "elders", "household_size"]
+    assert svc.confirm(AGENT, text=words) == HOUSEHOLD
 
     turns = svc.session().turns
     assert [t.model_dump() for t in turns[:-1]] == before
     turn = turns[-1]
     assert (turn.seq, turn.kind, turn.actor, turn.text) == (
-        2, TurnKind.CONFIRMATION, AGENT, None
+        2, TurnKind.CONFIRMATION, AGENT, words
     )
-    assert turn.slots == ["adults", "children", "elders", "household_size"]
+    assert turn.slots == HOUSEHOLD
     fact = _fact(svc.brief(), "f-adults")
     assert (fact.value, fact.status, fact.source.kind, fact.source.ref) == (
         2, Epistemic.VERIFIED_FACT, FactSourceKind.OWNER_ANSWER, "confirmed:ans-q-household-1"
     )
 
 
-def test_the_cli_records_an_agents_confirmation_with_or_without_the_owners_words(
-    new_store, capsys
-):
-    """``interview confirm --actor agent:...`` needs no terminal; ``--text`` is kept verbatim
-    when given and nothing is recorded in its place when it is not (current behaviour)."""
+@pytest.mark.xfail(
+    strict=True,
+    reason="product gap (ISS-49): InterviewService.confirm accepts an agent's confirmation "
+    "with no owner words and turns the inferences into owner-sourced verified facts; DEC-09 "
+    "kept agent-recorded confirmation only with the owner's verbatim words",
+)
+@pytest.mark.parametrize("text", [None, "  "], ids=["none", "blank"])
+def test_an_agent_confirmation_without_the_owners_words_is_refused(svc, text):
+    svc.answer("Two adults.", HUMAN)
+    turns = [t.model_dump() for t in svc.session().turns]
+    inferred = (
+        2, Epistemic.INFERENCE, FactSourceKind.AGENT_INFERENCE, "ans-q-household-1 via parser"
+    )
+    fact = _fact(svc.brief(), "f-adults")
+    assert (fact.value, fact.status, fact.source.kind, fact.source.ref) == inferred
+    before = tree(svc.store.root)
+
+    # No refusal exists yet, so its message is not pinned: only that the service refuses as
+    # it refuses other arguments, with a ValueError (ApprovalRequiresHuman is one).
+    with pytest.raises(ValueError):
+        svc.confirm(AGENT, text=text)
+
+    assert tree(svc.store.root) == before
+    assert [t.model_dump() for t in svc.session().turns] == turns
+    assert svc.state().unconfirmed() == HOUSEHOLD
+    fact = _fact(svc.brief(), "f-adults")
+    assert (fact.value, fact.status, fact.source.kind, fact.source.ref) == inferred
+
+
+def _answered_through_the_cli(new_store, capsys) -> ProjectStore:
+    """An agent opened the interview and recorded one owner answer; nothing is confirmed."""
     from house_ai.cli.main import main
 
     store = _project(new_store)
@@ -740,19 +768,61 @@ def test_the_cli_records_an_agents_confirmation_with_or_without_the_owners_words
     assert main(["interview", "answer", d, "Two adults and one child.", "--actor",
                  "agent:codex"]) == 0  # fmt: skip
     capsys.readouterr()
+    return store
+
+
+def test_the_cli_records_an_agents_confirmation_with_the_owners_words(new_store, capsys):
+    """``interview confirm --actor agent:...`` needs no terminal; ``--text`` is kept verbatim,
+    for the slots named or, with none named, for everything that waits."""
+    from house_ai.cli.main import main
+
+    store = _answered_through_the_cli(new_store, capsys)
+    d = str(store.root)
     words = "Yes, two adults and one child is right."
     assert main(["interview", "confirm", d, "adults", "--text", words, "--json",
                  "--actor", "agent:codex"]) == 0  # fmt: skip
     assert json.loads(capsys.readouterr().out) == {"confirmed": ["adults"]}
-    assert main(["interview", "confirm", d, "--json", "--actor", "agent:codex"]) == 0
+    rest = "And no grandparents live with us."
+    assert main(["interview", "confirm", d, "--text", rest, "--json", "--actor",
+                 "agent:codex"]) == 0  # fmt: skip
     assert json.loads(capsys.readouterr().out) == {
         "confirmed": ["children", "elders", "household_size"]
     }
-    turns = InterviewService(store).session().turns
+    svc = InterviewService(store)
+    turns = svc.session().turns
     assert [(t.kind, t.actor.kind.value, t.actor.id, t.text, t.slots) for t in turns[-2:]] == [
         (TurnKind.CONFIRMATION, "agent", "codex", words, ["adults"]),
-        (TurnKind.CONFIRMATION, "agent", "codex", None, ["children", "elders", "household_size"]),
+        (TurnKind.CONFIRMATION, "agent", "codex", rest, ["children", "elders", "household_size"]),
     ]
+    fact = _fact(svc.brief(), "f-adults")
+    assert (fact.value, fact.status, fact.source.kind, fact.source.ref) == (
+        2, Epistemic.VERIFIED_FACT, FactSourceKind.OWNER_ANSWER, "confirmed:ans-q-household-1"
+    )
+
+
+@pytest.mark.xfail(
+    strict=True,
+    reason="product gap (ISS-49): `interview confirm --actor agent:...` without `--text` exits "
+    "0 and records the inferences as confirmed by the owner, with no owner words",
+)
+@pytest.mark.parametrize("no_words", [[], ["--text", "  "]], ids=["none", "blank"])
+def test_the_cli_refuses_an_agents_confirmation_without_the_owners_words(
+    new_store, capsys, no_words
+):
+    from house_ai.cli.main import EXIT_FAIL, EXIT_USAGE, main
+
+    store = _answered_through_the_cli(new_store, capsys)
+    before = tree(store.root)
+
+    code = main(["interview", "confirm", str(store.root), *no_words, "--json", "--actor",
+                 "agent:codex"])  # fmt: skip
+
+    # No refusal exists yet, so neither its message nor which of the two failure codes it
+    # returns is pinned: only that it is refused, prints no result and writes nothing.
+    assert code in (EXIT_FAIL, EXIT_USAGE)
+    assert capsys.readouterr().out == ""
+    assert tree(store.root) == before
+    assert InterviewService(store).state().unconfirmed() == HOUSEHOLD
 
 
 def test_an_empty_confirmation_confirms_nothing(svc, monkeypatch):

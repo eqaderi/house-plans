@@ -112,6 +112,18 @@ class FakeClock:
         return self.now
 
 
+def tree(root: Path) -> dict[str, bytes | None]:
+    """Every path under ``root``: a file's bytes, ``None`` for a folder.
+
+    "Writes nothing" is ``tree(root)`` equal before and after: a stray file or folder fails it
+    as surely as a new event.
+    """
+    return {
+        p.relative_to(root).as_posix(): (p.read_bytes() if p.is_file() else None)
+        for p in sorted(root.rglob("*"))
+    }
+
+
 @pytest.fixture
 def clock() -> FakeClock:
     return FakeClock()

@@ -21,7 +21,7 @@ from house_ai.orchestration.plans import PlanService, PlanWorkflowError
 from house_ai.orchestration.workflow import HumanAction, NextHumanAction, Workflow
 from house_ai.storage import ProjectStore
 
-from .conftest import AGENT, HUMAN
+from .conftest import AGENT, HUMAN, tree
 
 OWNER = Actor(kind=ActorKind.HUMAN, id="example-owner")
 SHIPPED_CONCEPTS = (
@@ -165,10 +165,10 @@ def test_generation_is_refused_before_the_gates_and_writes_nothing(tmp_path, cap
 
 def test_exploratory_preview_stores_nothing_and_says_so(tmp_path):
     store = _load(tmp_path)
-    before = len(store.events())
+    before = tree(store.root)
     out = tmp_path / "preview"
     res = PlanService(store).generate(AGENT, strategies=["compact"], out_dir=out, exploratory=True)
-    assert len(store.events()) == before
+    assert tree(store.root) == before
     assert store.refs(ArtifactKind.PLAN) == []
     assert [opt.candidate.option_id for opt in res.generated] == ["concept-compact"]
     for opt in res.generated:

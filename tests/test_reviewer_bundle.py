@@ -37,6 +37,8 @@ from house_ai.orchestration.reviewer_bundle import (
 from house_ai.orchestration.workflow import Workflow
 from house_ai.storage import ProjectStore
 
+from .conftest import tree
+
 OWNER = Actor(kind=ActorKind.HUMAN, id="test-owner")
 AGENT = Actor(kind=ActorKind.AGENT, id="agent:gemini")
 
@@ -125,11 +127,10 @@ def test_reviewer_bundle_is_strictly_read_only(project: ProjectStore, tmp_path: 
     """Building and exporting the bundle never alters the ProjectStore or event log."""
     store = project
 
-    # Record baseline store state
+    # Record baseline store state: every file's bytes
     initial_verification = store.verify()
     assert initial_verification == []
-    initial_event_count = len(store.events())
-    initial_plan_count = len(store.latest_of_kind(ArtifactKind.PLAN))
+    before = tree(store.root)
 
     # Build bundle in memory
     bundle = build_reviewer_bundle(store, render=renderer(store.project_id))
@@ -140,10 +141,9 @@ def test_reviewer_bundle_is_strictly_read_only(project: ProjectStore, tmp_path: 
     assert [(p["option_id"], p["version"]) for p in bundle["plans"]] == [("concept-compact", 1)]
 
     # Verify store is untouched
+    assert tree(store.root) == before
     mid_verification = store.verify()
     assert mid_verification == []
-    assert len(store.events()) == initial_event_count
-    assert len(store.latest_of_kind(ArtifactKind.PLAN)) == initial_plan_count
 
     # Export bundle to disk
     out_dir = tmp_path / "bundle_export"
@@ -152,10 +152,9 @@ def test_reviewer_bundle_is_strictly_read_only(project: ProjectStore, tmp_path: 
     assert bundle_file.name == REVIEWER_BUNDLE_FILENAME
 
     # Re-verify store remains untouched after file export
+    assert tree(store.root) == before
     post_verification = store.verify()
     assert post_verification == []
-    assert len(store.events()) == initial_event_count
-    assert len(store.latest_of_kind(ArtifactKind.PLAN)) == initial_plan_count
 
 
 def test_reviewer_bundle_shows_the_commands_the_cli_renders(new_store) -> None:
@@ -187,9 +186,9 @@ def test_reviewer_bundle_shows_the_commands_the_cli_renders(new_store) -> None:
 def test_reviewer_bundle_approval_commands_and_no_mutation(project: ProjectStore) -> None:
     """Reviewer bundle includes CLI commands for human gates and no mutation endpoints (S4-23)."""
     store = project
-    events = len(store.events())
+    before = tree(store.root)
     bundle = build_reviewer_bundle(store, render=renderer(store.project_id))
-    assert len(store.events()) == events
+    assert tree(store.root) == before
 
     gates = bundle["gates"]
     for gate_name in APPROVAL_GATES:
@@ -220,7 +219,7 @@ def test_reviewer_bundle_approval_commands_and_no_mutation(project: ProjectStore
 def test_cli_reviewer_export_and_plan_export_bundle(project: ProjectStore, tmp_path: Path) -> None:
     """CLI export commands write valid bundle.json without modifying the store."""
     store = project
-    events_before = len(store.events())
+    before = tree(store.root)
 
     out_1 = tmp_path / "export_1"
     assert main(["reviewer", "export", str(store.root), "--out", str(out_1)]) == 0
@@ -238,10 +237,9 @@ def test_cli_reviewer_export_and_plan_export_bundle(project: ProjectStore, tmp_p
     # Both commands export the same bundle.
     assert json.loads(bundle_file_2.read_text(encoding="utf-8")) == data_1
 
-    # Store must not have any new events
-    reloaded_store = ProjectStore(store.root)
-    assert len(reloaded_store.events()) == events_before
-    assert reloaded_store.verify() == []
+    # Nothing in the project changed: the exports went to the folders given
+    assert tree(store.root) == before
+    assert ProjectStore(store.root).verify() == []
 
 
 def test_cli_plan_revise_from_file_round_trip(project: ProjectStore, tmp_path: Path) -> None:
