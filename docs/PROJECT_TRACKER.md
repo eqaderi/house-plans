@@ -1720,7 +1720,7 @@ claimed without a recorded professional verification.
 |---|---|
 | Kind | implementation |
 | Status | IN_PROGRESS |
-| Review | PENDING |
+| Review | APPROVED |
 | Branch | `stage/S12-fast-sound-tests` |
 | Depends on | S9 |
 | Tasks | S12-01, S12-02, S12-03, S12-04, S12-05, S12-06, S12-07 |
@@ -2636,6 +2636,41 @@ Closure record template:
 ```
 
 ### S12 records
+
+#### S12 review 3 — APPROVED
+- Reviewed commit: d86fdd328f50b6e48b6ee0416c0501c8bf5d8c8d (code head `2616930`: `git diff --name-only 2616930 d86fdd3` lists only `docs/PROJECT_TRACKER.md`).
+- Reviewer: agent:claude-code, Claude Fable 5.2, a fresh session that wrote none of the stage's code, tests, handoffs or earlier reviews (implementers were agent:claude-code, Claude Opus 5.5 and Claude Fable 5.2; handoff 4 was written by the session of review 2). No delegated audits: every check below was run by the reviewer.
+- Date: 2026-11-22
+- Checks run:
+  - Pytest, default runner: 1206 passed, 9 xfailed in 60.53 s (1215 collected, none failed).
+  - Baseline, measured again: `main` before the stage (`d920ad9`), one process, in its own worktree: 1107 passed in 400.12 s (the implementer measured 467.32 s and review 1 466.16 s; the machine's load differs between runs). Against this lower figure the default runner's 60.53 s is 6.6 times faster.
+  - `pytest -q --fresh-solves`: 2 failed, 1204 passed, 9 xfailed in 68.15 s. The two failures are the memo's own tests (review 2 finding 2, unchanged); every other test gives the same result with every model solved.
+  - Solve fingerprints (`tools/solve_fingerprints.py`, default runner): 244 solve calls of 132 distinct models, 72 answered by the memo, 172 solved; 9 solved again on the same worker (5.4 s): 5 `test_generation_is_deterministic`, 1 `test_solver_reproducibility_budget`, 2 `test_a_test_marked_fresh_solves_solves_again`, 1 `test_a_solution_callback_always_sees_a_real_search`; 31 on another worker. Read from the log: the 72 calls marked `memo` took 0.108 s together (the slowest 9 ms), so none ran the solver, and no determinism or reproducibility test got a replay. Both product call sites (`generation/solver.py:567-571`, `solver2d.py:1244-1248`) set one worker, a fixed seed and a deterministic time limit.
+  - S12-02, measured again: the usability critics over the five synthetic-hillside plan options give the same digest with the branch's `routes.py` and `usability_geometry.py` and with those two files from `d920ad9`, in 2.71 s against 10.80 s (4.0 times faster).
+  - `ruff check src tests examples tools`: clean. `house-ai schemas check`: 30 up to date. `tools/leak_scan.py`: clean. `tools/check_tracker.py`: exit 0. `house-ai project verify my-house`: intact, 154 events, 150 artifact versions. `git diff main...HEAD -- projects/`: empty.
+  - CI: no run existed for `d86fdd3`; `gh workflow run ci.yml --ref stage/S12-fast-sound-tests` gave run 44959447754: success; 1205 passed, 2 skipped, 8 xfailed in 150.37 s on Python 3.13; Reviewer App job passed (19 Vitest, 8 Playwright). Handoff 4's two runs were read from their logs and are as it says: 44944217517 on `59da245` (success, 1205 passed, 2 skipped, 8 xfailed in 123.13 s) and 44944057005 on `main` at `73383f8` (2 failed, 1183 passed, 2 skipped, 4 xfailed in 210.92 s).
+  - Mutation checks, chosen by the reviewer, each in a scratch worktree with the file restored afterwards. Each of these fails the test named and passes without the mutation:
+    - S12-05 (`validation/grounding.py`): any stated value accepted (6 tests of `tests/test_grounding.py` fail); the tolerance doubled (6); the ID guard `(?<!\w-)` removed (1); the lower bound of a range not widened (1); `suggested_ops` excusing a wrong stated value (1).
+    - Furniture search (`evaluation/usability_geometry.py:338-342`): containment always true; door approaches ignored (`tests/test_geometry_caches.py`).
+    - `revision_ops=[]` (`orchestration/plans.py:521`): `test_topology_revision_connect_stair_outdoor`.
+    - `refuse_non_human` removed from `confirm_site` (`orchestration/site_ingestion.py:767`): both ISS-63 cases.
+    - Every benchmark expectation reported NOT_CHECKED (`benchmarks/runner.py:219`): 27 tests of `tests/test_benchmarks.py`.
+    - Height ignored (`render2d/rasterize.py`): `test_rasterize_scales_width_and_height_independently`.
+    - Solve memo: key without the solver parameters; a marked test replayed anyway (`tests/test_solve_memo.py`).
+    - `bedroom_noise_adjacency` never reported (`evaluation/usability.py:938`): `tests/test_finding_codes_seeded.py`.
+    - Terminal check skipped (`cli/human.py:156`): all five human-only commands of `tests/test_human_gates.py`.
+    - `pairs = []` (`evaluation/drawing.py:26`): `test_readiness_demonstration_end_to_end`. Kept findings dropped (`evaluation/findings.py:101`): `tests/test_revision_findings.py`.
+    - A refusal added to `InterviewService.confirm` for an agent without owner words: the four ISS-49 cases become strict XPASS failures, so they assert the right behaviour.
+    - Not a behaviour change, so nothing to catch: the reset of `solve_memo.fresh` after a test removed (`tests/conftest.py:101`); the next test's set-up sets the flag again.
+- Artifacts and screenshots inspected: `git diff main...HEAD` in full (29 files); the tracker changes since review 2 (`git diff 4868ff3 d86fdd3`: §D, the S11 stage and records that came with `main`, the S12 Review and Evidence rows, ISS-51, §M, handoff 4, the current handoff note); the stage's two evaluator files against `d920ad9` (`evaluation/routes.py`, `usability_geometry.py`); `tests/conftest.py`, `tests/test_solve_memo.py`, `tests/test_geometry_caches.py`, `tools/solve_fingerprints.py`; ADR 0035; contract §10; `pyproject.toml`; `.github/workflows/ci.yml`.
+- Findings:
+  1. LOW, new: `tests/test_geometry_caches.py:82` compares the cached route graph with a fresh one for the first 20 sample points only, all on one side of the floor. With every corner pair counted as visible (`evaluation/routes.py:69`) that file passes; the suite still fails, in `tests/benchmarks/test_usability.py` (`test_garage_pedestrian_route_blocked_by_vehicle_body`, `test_committed_demo_report_matches_a_fresh_evaluation`), so the behaviour is guarded, but not by the file ADR 0035 names as the guard. With no corner pair visible the file fails (2 tests).
+  2. LOW, carried from review 2 and unchanged: its findings 2 (`pytest --fresh-solves` fails two of the memo's own tests), 3 (the memo replays for any solver parameters), 4, 5, and the three indirect imports of `tree` in finding 6.
+  3. Open, owner's decision, carried: the account handle in two CI-run URLs of this file. No other personal name or home-directory path is in a tracked file.
+- Acceptance: the full suite passes on the default runner in 60.53 s; a model is solved again on its worker only by the two tests marked `fresh_solves` and the memo's own tests; the changed assertions tried here all fail against the broken behaviour; the evaluation output is identical. All 7 xfail marks are strict (9 cases, 6 product gaps recorded in §K).
+- Scope, boundaries, data: the stage's product changes are three files (`evaluation/routes.py`, `evaluation/usability_geometry.py`, `validation/grounding.py`), all in scope. No change to gate, confirmation or consent code. The stage's only edits under `projects/` are the three name removals of `eec9ac6` (DEC-15, review 1 finding 12), none in the hash-chained record. `my-house` is still in `SITE_NEEDS_CONFIRMATION` with no gate approved; this approval is of the software stage only.
+- Tracker accuracy: yes. Tasks are IN_PROGRESS, none DONE; every commit, file and issue the S12 rows name exists; the counts, timings and CI runs match what was measured here (solve calls and replays differ from the handoff's 252 and 80 only by which files shared a worker; 132 distinct models, 172 solved and 9 same-worker re-solves are the same). §D and the current handoff note still say review PENDING; the protocol limits this commit to this record and the Review row, and "Close stage S12" updates them.
+- Verdict: APPROVED
 
 #### S12 handoff 4 — review 2's blocker resolved, review PENDING
 - Branch `stage/S12-fast-sound-tests` at `59da245`, the merge of `main` at `73383f8`. Code and tests are unchanged since `2616930`: `git diff --name-only 5a33626 59da245` lists only `docs/PROJECT_TRACKER.md` (review 2's record and Review row, and the S11 closure that came with `main`).
