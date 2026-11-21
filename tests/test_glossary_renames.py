@@ -23,13 +23,11 @@ from house_ai.domain.workflow import EventType, WorkflowState
 from house_ai.evaluation.explain import comparison_markdown
 from house_ai.interview.state import fold
 from house_ai.orchestration.interview import InterviewService
-from house_ai.orchestration.plans import PlanService
 from house_ai.program.builder import Facts
 from house_ai.storage import ProjectStore
 from house_ai.storage.hashing import content_hash
 
 from .conftest import AGENT, HUMAN
-from .test_plan_workflow import _approve_site_and_program, _load
 
 FIXTURE = Path(__file__).parent / "fixtures" / "pre_adr0025" / "store"
 HILLSIDE = Path(__file__).parents[1] / "examples" / "projects" / "synthetic-hillside"
@@ -188,15 +186,11 @@ def test_storeys_are_counted_from_level_elevations():
     assert count(0.0, 3.0, 6.0) == 3
 
 
-def test_the_program_asks_for_storeys_and_the_plan_derives_its_levels(tmp_path):
-    store = _load(tmp_path)
-    _approve_site_and_program(store)
-    svc = PlanService(store)
-    program = svc.inputs(exploratory=True).program
+def test_the_program_asks_for_storeys_and_the_plan_derives_its_levels(hillside):
+    program = hillside.inputs().program
     assert program.provenance.method == "program_from_brief"
     assert program.storeys == 2
-    outcome = svc.generate(AGENT, strategies=["split_walkout"], exploratory=True)
-    (generated,) = outcome.generated
+    generated = hillside.option("split_walkout")
     model = generated.candidate.plan.model
     assert len(model.levels) == 3
     assert model.storey_count == 2
@@ -206,11 +200,8 @@ def test_the_program_asks_for_storeys_and_the_plan_derives_its_levels(tmp_path):
     assert not [a for a in model.assumptions if a.id == "asm-gen-requested-storeys"]
 
 
-def test_a_plan_saved_with_the_old_requested_levels_assumption_is_still_reported(tmp_path):
-    store = _load(tmp_path)
-    _approve_site_and_program(store)
-    outcome = PlanService(store).generate(AGENT, strategies=["linear"], exploratory=True)
-    (generated,) = outcome.generated
+def test_a_plan_saved_with_the_old_requested_levels_assumption_is_still_reported(hillside):
+    generated = hillside.option("linear")
     plan, report = generated.candidate.plan, generated.report
     (note,) = [a for a in plan.model.assumptions if a.id == "asm-gen-requested-storeys"]
     old_note = note.model_copy(update={"id": "asm-gen-requested-levels"})

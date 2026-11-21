@@ -26,13 +26,13 @@ from house_ai.evaluation.evaluators import ProgramEvaluator, SiteEvaluator
 from house_ai.generation.frame import design_frame
 from house_ai.generation.massing import FLOOR_TO_FLOOR_M
 
-from .test_plan_generation import HILLSIDE, _generate, _load
+from .test_plan_generation import HILLSIDE, _load, all_hillside_candidates
 
 
 @pytest.fixture(scope="module")
 def concepts():
     site, program = _load(HILLSIDE)
-    candidates = _generate(site, program)
+    candidates = all_hillside_candidates()
     return site, program, {c.strategy: c.plan for c in candidates if c.plan is not None}
 
 
@@ -54,11 +54,10 @@ def test_hybrid_reuses_entry_footprint_and_reports_cut_void_tradeoff(concepts):
     assert metrics["split_walkout"][METRIC_FILL_VOLUME] < metrics["split_level"][METRIC_FILL_VOLUME]
     assert metrics["split_walkout"][METRIC_EXCAVATION_VOLUME] > 0
     # Since S8 the joint level solve has tied optima (DEC-04 keeps earthworks out of the
-    # objective) and every strategy's max fill is set by the entry bar's downhill edge
-    # (~4.8 m), so a strict max-fill ordering compares an arbitrary, platform-dependent
-    # tie-break. Only require that it is reported.
-    assert metrics["split_walkout"][METRIC_MAX_FILL] is not None
-    assert metrics["split_level"][METRIC_MAX_FILL] is not None
+    # objective), so a strict max-fill ordering compares an arbitrary, platform-dependent
+    # tie-break. Require a reported, positive void under both: each steps over the fall.
+    assert metrics["split_walkout"][METRIC_MAX_FILL] > 0
+    assert metrics["split_level"][METRIC_MAX_FILL] > 0
     assert sum(s.area_m2 for s in hybrid.model.spaces) > sum(
         s.area_m2 for s in plans["compact"].model.spaces
     )  # hybrid's additional area is a real disadvantage
@@ -102,7 +101,13 @@ def test_elevated_support_and_existing_ground_access_are_explicit(concepts):
     support = next(v for v in result.violations if v.code == VIOLATION_ELEVATED_FLOOR_SUPPORT)
     assert support.status.value == "inferred"
     assert "not specified engineered fill" in support.message
-    assert any(m.metric == METRIC_EXTERIOR_DOOR_GROUND_DELTA for m in result.metrics)
+    # One inferred ground-delta claim for each exterior door: front door and garage door.
+    model = plans["linear"].model
+    exterior_doors = {o.id for o in model.openings if o.is_passable and "exterior" in o.connects}
+    assert exterior_doors == {"d-front-entry-ext", "d-garage-garage-ext"}
+    deltas = [m for m in result.metrics if m.metric == METRIC_EXTERIOR_DOOR_GROUND_DELTA]
+    assert sorted(i for m in deltas for i in m.subject_ids) == sorted(exterior_doors)
+    assert all(m.status.value == "inferred" and m.value is not None for m in deltas)
 
 
 def test_terrain_wholly_outside_building_is_unknown_not_zero(concepts):
@@ -157,12 +162,21 @@ def test_windows_use_distinct_selected_facades_and_garages_face_road(concepts):
                 o for o in plan.model.openings if o.kind is OpeningKind.WINDOW and sid in o.connects
             ]
             assert len({o.host_wall_id for o in windows}) == len(windows)
-        for o in plan.model.openings:
-            if o.id.startswith("d-garage") and "exterior" in o.connects:
-                w = plan.model.wall(o.host_wall_id)
-                a, b = frame.to_design(w.start), frame.to_design(w.end)
-                assert a[1] == pytest.approx(b[1], abs=1e-5)
-                assert w.kind is WallKind.EXTERIOR
+        # The one vehicle door lies on the garage's road-side edge: in the design frame the
+        # road runs along v = 0, so that edge is the garage's lowest v.
+        (o,) = [
+            o
+            for o in plan.model.openings
+            if o.id.startswith("d-garage") and "exterior" in o.connects
+        ]
+        (garage_id,) = set(o.connects) - {"exterior"}
+        garage = plan.model.space(garage_id)
+        road_v = min(frame.to_design(p)[1] for p in garage.boundary.outer)
+        w = plan.model.wall(o.host_wall_id)
+        a, b = frame.to_design(w.start), frame.to_design(w.end)
+        assert a[1] == pytest.approx(road_v, abs=1e-5), plan.strategy
+        assert b[1] == pytest.approx(road_v, abs=1e-5), plan.strategy
+        assert w.kind is WallKind.EXTERIOR
 
 
 def test_open_blocking_plan_issue_is_an_integrity_failure(concepts):

@@ -86,13 +86,43 @@ def test_drift_detector_catches_missing_section(tmp_path: Path):
     assert any("Missing required section" in err for err in errors)
 
 
-def test_human_approval_boundaries_documented_in_all_skills():
-    """All skills must explicitly prohibit automated gate approval."""
-    for skill_name in CANONICAL_SKILL_NAMES:
-        skill_file = REPO / CANONICAL_SKILLS_DIR / skill_name / "SKILL.md"
-        text = skill_file.read_text(encoding="utf-8")
-        assert "NEVER" in text
-        assert "human" in text.lower()
+#: The human-only commands each skill's workflow reaches, as its **NEVER** lines name them.
+HUMAN_ONLY_NEVER = {
+    "architectural-programming": [
+        "house-ai workflow approve <project> program",
+        "house-ai program reject",
+        "house-ai interview consent",
+    ],
+    "critique-plan": ["house-ai workflow approve <project> plan"],
+    "generate-plan-options": ["house-ai workflow approve <project> plan"],
+    "site-survey-review": [
+        "house-ai site confirm",
+        "house-ai workflow approve <project> site",
+    ],
+    "visual-review": ["house-ai workflow approve <project> plan"],
+}
+
+
+def _never_commands(text: str) -> list[str]:
+    """The backticked `house-ai ...` commands on the skill's **NEVER** lines, in order."""
+    lines = [line for line in text.splitlines() if "**NEVER**" in line]
+    return [cmd for line in lines for cmd in re.findall(r"`(house-ai [^`]+)`", line)]
+
+
+def test_every_skill_names_a_never_rule_for_each_human_only_command_it_reaches():
+    """Each skill forbids, by name, running the human-only commands of its gate."""
+    assert sorted(HUMAN_ONLY_NEVER) == sorted(CANONICAL_SKILL_NAMES)
+    for skill_name, commands in HUMAN_ONLY_NEVER.items():
+        assert _never_commands(_skill_text(skill_name)) == commands, skill_name
+
+
+def test_the_never_rule_check_reads_only_never_lines():
+    text = (
+        "Run `house-ai workflow request-approval <project> plan`.\n"
+        "- **NEVER** run `house-ai program reject` or `house-ai interview consent`.\n"
+        "- Never run `house-ai site confirm` yourself.\n"
+    )
+    assert _never_commands(text) == ["house-ai program reject", "house-ai interview consent"]
 
 
 def _skill_text(skill_name: str) -> str:

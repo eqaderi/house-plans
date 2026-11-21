@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import shutil
+
 import pytest
 
 from house_ai.cli.main import main
@@ -12,6 +14,7 @@ from house_ai.domain.provenance import ArtifactKind
 from house_ai.domain.workflow import Gate
 from house_ai.orchestration.plans import PlanService
 from house_ai.orchestration.workflow import GateBlocked, Workflow
+from house_ai.storage import ProjectStore
 
 from .conftest import AGENT
 from .test_plan_workflow import OWNER, _approve_site_and_program, _load
@@ -27,6 +30,23 @@ def _finding(code: str, message: str) -> Violation:
         status=ClaimStatus.MEASURED,
         evaluator="StairUsabilityEvaluator",
     )
+
+
+@pytest.fixture(scope="module")
+def generated_template(tmp_path_factory):
+    """synthetic-hillside, site and program approved, `compact` generated and stored once."""
+    store = _load(tmp_path_factory.mktemp("gate-template"))
+    _approve_site_and_program(store)
+    PlanService(store).generate(AGENT, strategies=["compact"])
+    return store.root
+
+
+@pytest.fixture
+def store(generated_template, tmp_path) -> ProjectStore:
+    """A private copy of the template project: tests here write to it."""
+    root = tmp_path / generated_template.name
+    shutil.copytree(generated_template, root)
+    return ProjectStore(root)
 
 
 def _with(store, ref, extra: list[Violation]) -> None:
@@ -47,11 +67,7 @@ def _with(store, ref, extra: list[Violation]) -> None:
     )
 
 
-def test_soft_unbuildable_stair_finding_blocks_plan_approval(tmp_path, capsys):
-    store = _load(tmp_path)
-    _approve_site_and_program(store)
-    svc = PlanService(store)
-    svc.generate(AGENT, strategies=["compact"])
+def test_soft_unbuildable_stair_finding_blocks_plan_approval(store, capsys):
     ref = store.latest(ArtifactKind.PLAN, "concept-compact")
     wf = Workflow(store)
     assert wf.gate_status(Gate.PLAN, ref).blockers == []
@@ -88,11 +104,8 @@ def test_soft_unbuildable_stair_finding_blocks_plan_approval(tmp_path, capsys):
     assert store.verify() == []
 
 
-def test_colliding_labels_never_close_the_plan_gate(tmp_path):
+def test_colliding_labels_never_close_the_plan_gate(store):
     """A drawing defect is shown in the Evaluation and never blocks (ADR 0024, ADR 0033)."""
-    store = _load(tmp_path)
-    _approve_site_and_program(store)
-    PlanService(store).generate(AGENT, strategies=["compact"])
     ref = store.latest(ArtifactKind.PLAN, "concept-compact")
     _with(store, ref, [_finding("label_collision", "The labels of a and b overlap.")])
     status = Workflow(store).gate_status(Gate.PLAN, ref)

@@ -116,13 +116,13 @@ to reopen A–D):
 
 | | |
 |---|---|
-| **Current stage** | S11 Align code vocabulary with the glossary (IN_PROGRESS, review PENDING); human track H2 Real interview and program IN_PROGRESS |
-| **Awaiting review** | S11 (branch `stage/S11-glossary-vocabulary`) |
+| **Current stage** | S12 Fast and sound test suite (IN_PROGRESS, review PENDING); S11 merged to `main` by PR #5 but not closed in this tracker (ISS-51); human track H2 Real interview and program IN_PROGRESS |
+| **Awaiting review** | S12 (branch `stage/S12-fast-sound-tests`); S11 (merged by PR #5, see ISS-51) |
 | **Next eligible stage** | none until S11 is reviewed; H1 Real site verification and H2 Real interview and program (human parallel tracks), or X1 Optional tool research |
 | **Path to good floor plans** | S1 (done) → S2 (done) → S3 (done) → S4 (done) → S5 (done) → S6 (done) → S7 (done) → S8 (done) → S10 (done) → S9 (done; 10 stages complete) |
 | **Blocked** | H1 site facts (owner or surveyor input); program gate (needs site gate); H3 real design (needs H1 and H2) |
 | **Human parallel tracks** | H1 site verification with the owner any time; H2 interview any time (S1-09 closed) |
-| **`main` health** | S9 closed; CI green on `d8a38b1` (run 39336825673) |
+| **`main` health** | GitHub Actions jobs have not started since 2026-11-18 (billing, ISS-48); the local required checks are the gate |
 | **Homeowner gates on `my-house`** | site: not approved (5 blockers) · program: none · plan: none · model: none |
 
 
@@ -152,6 +152,7 @@ until done, then goes to review once.
 | 9 | S10 Readiness remediation (DEC-11) | S4, S5, S6, S7, S8 |
 | 10 | S9 Floor-plan readiness gate | S2, S5, S6, S7, S8, S10 |
 | 11 | S11 Align code vocabulary with the glossary (DEC-14) | S9 |
+| 12 | S12 Fast and sound test suite (owner request 2026-11-21) | S9 |
 | — | X1 Optional tool research | T0.1 |
 | — | H1 Real site verification (human) | none |
 | — | H2 Real interview and program (human) | S1-09, H1 |
@@ -1713,6 +1714,59 @@ claimed without a recorded professional verification.
   - Verify: grep of the _Avoid_ lists over `src/house_ai/cli` and `skills/`
   - Evidence: classes `SpaceRequirement`, `SpaceRelationship`, `SpaceRelationshipKind`, `PlanRelationship`; CLI help and messages; skill `generate-plan-options`; new exports in `design/plan-options/`; `AGENT_CONTRACT.md` (11,974 characters), `AGENT_WORKFLOWS.md`, `DOMAIN_MODEL.md`, README; the _Avoid_ grep over `src/house_ai/cli` and `skills/` finds only literal ids, command names and allowed senses; issue #4
 
+### Stage S12 — Fast and sound test suite
+
+| Field | Value |
+|---|---|
+| Kind | implementation |
+| Status | IN_PROGRESS |
+| Review | PENDING |
+| Branch | `stage/S12-fast-sound-tests` |
+| Depends on | S9 |
+| Tasks | S12-01, S12-02, S12-03, S12-04, S12-05, S12-06, S12-07 |
+| Objective | Make the full suite fast enough to run before every hand-off, and make every test check what its name promises (owner request 2026-11-21, ADR 0035) |
+| Scope | In: pytest runner settings; evaluation geometry speed with byte-identical outputs; shared solves in tests; weak, vacuous and circular tests found by the 2026-11-21 review; the grounding value check; seeded tests for finding codes no test exercised. Out: new critics or blocking rules (owner-rules checker stage), the `artifact put` and design-brief safety gaps (§K), `projects/` |
+| Acceptance | Full suite passes on the default runner at a measured fraction of the 467 s serial baseline; an identical CP-SAT model is solved again only where re-solving is what the test checks (reproducibility, a no-op revision) or on another worker; every changed assertion was shown to fail against the broken behaviour or the exception is listed; evaluation reports byte-identical on the reference set |
+| Tests | Full suite; `tests/test_geometry_caches.py`; `tests/test_finding_codes_seeded.py`; `tests/test_provider_boundary.py` |
+| Demonstration | Before and after timings (serial baseline, default runner) and the solve-fingerprint count |
+| Artifacts | ADR 0035; contract §10; `pyproject.toml` runner settings |
+| Review requirements | Reviewer re-runs the suite and the timing, spot-checks that rewritten tests fail when their behaviour is broken, and confirms no assertion was weakened |
+| Evidence | Branch `stage/S12-fast-sound-tests`; before: 1107 passed in 467.32 s serial (`-p no:xdist`), 148.81 s on 4 workers, 328 CP-SAT solves of 123 distinct models, 133 s of solver time on repeats; after: 1186 passed, 5 strict xfails (product gaps ISS-52, ISS-55, ISS-56, ISS-57, ISS-59), 1 failure `test_the_committed_tracker_is_consistent` (ISS-51, owner decision), 69.92 s on the default runner; 241 solves of 129 distinct models, 38 s on repeats; handoff in §N S12 handoff 1 |
+
+#### Runner and evaluation speed
+
+- [ ] **S12-01** Run the suite on four workers, one file per worker — `IN_PROGRESS` · P1 · deps: none
+  - Accept: `pytest` uses `-n 4 --dist loadfile` by default; `-n 0` runs single-process
+  - Verify: full suite timing on the default runner
+  - Evidence: `pyproject.toml` `[tool.pytest.ini_options]`; measured 148.81 s at 4 workers and 212.45 s at 11 workers on the same tree
+- [ ] **S12-02** Cache the route visibility graph per floor and vectorise the furniture search — `IN_PROGRESS` · P1 · deps: none
+  - Accept: identical evaluation output; reference set evaluates at least 3x faster
+  - Verify: `tests/test_geometry_caches.py`; the reference harness (38 cases, 978 route calls, 60 fit calls) reports 38/38 identical
+  - Evidence: `src/house_ai/evaluation/routes.py::_floor_visibility`; `src/house_ai/evaluation/usability_geometry.py::shifted`; reference set 17.07 s to 4.24 s
+- [ ] **S12-03** Share solves between tests instead of repeating them — `IN_PROGRESS` · P1 · deps: S12-01
+  - Accept: no identical CP-SAT model and parameters solved twice in one run, except reproducibility checks
+  - Verify: solve-fingerprint run over the full suite
+  - Evidence: `tests/conftest.py::hillside` (verified equal to a joint `generate` of compact, split_level and two_wing); module templates copied per writing test in `test_plan_propose.py`, `test_plan_workflow.py`, `test_plan_provenance_revisions.py`, `test_skills_workflows.py`, `test_reviewer_bundle.py`, `test_plan_gate_unbuildable.py`, `test_interview.py`; `test_placement_2d.py` 14 to 8 solves; solve fingerprints 328 to 241, repeats 133 s to 38 s
+
+#### Test soundness
+
+- [ ] **S12-04** Fix tests that are weaker than their names, vacuous or circular — `IN_PROGRESS` · P1 · deps: none
+  - Accept: each finding of the 2026-11-21 review fixed or answered; each fix shown to fail against the broken behaviour
+  - Verify: reviewer spot-checks by breaking the behaviour
+  - Evidence: findings answered per file in §N S12 handoff 1, e.g. `test_concept_proposal.py` (field `space_requirements`, exact code lists), `test_relation_semantics.py` (pair with no hard link, exact feasible set), `test_placement_2d.py` (exact ids, real L-shape, court on 3 sides, `Solve2DFailed` with its reason), `test_s7_review_fixes.py`, `test_visual_regression.py` (pixels decoded), `test_human_gates.py` (five human-only commands x no terminal, agent, wrong phrase, byte snapshot), `test_safety_invariants.py` (no test names `projects/`), `tests/test_provider_boundary.py`, `tests/test_hillside_plan_quality.py`
+- [ ] **S12-05** The grounding validator compares a claimed number with the cited metric — `IN_PROGRESS` · P1 · deps: none
+  - Accept: a claim citing a metric with a wrong value is rejected
+  - Verify: `tests/test_grounding.py`
+  - Evidence: `src/house_ai/validation/grounding.py` (stated value compared with the cited metric within half a unit of its last written digit; ops never excuse a wrong value); `tests/test_grounding.py` (7 tests failed before the fix); plan-version check still dead (ISS-56)
+- [ ] **S12-06** Seeded bad and clean twins for every finding code no test exercised — `IN_PROGRESS` · P2 · deps: none
+  - Accept: each listed code fires on its seeded defect, stays silent on its clean twin, or reports not_checked with its reason
+  - Verify: `tests/test_finding_codes_seeded.py`
+  - Evidence: `tests/test_finding_codes_seeded.py`: 9 codes fire on a seeded defect with exact element ids and stay silent on a clean twin; `garage_pedestrian_route_blocked` cannot fire (ISS-54); no-zones crossing reported as measured 0 (ISS-55, strict xfail)
+- [ ] **S12-07** Record the decision and the test rules — `IN_PROGRESS` · P2 · deps: S12-01
+  - Accept: ADR 0035; contract §10 names the default runner and the test rules
+  - Verify: reviewer reads ADR 0035 and contract §10
+  - Evidence: `docs/adr/0035-fast-and-sound-test-suite.md`; `docs/AGENT_CONTRACT.md` §10
+
 ### Stage X1 — Optional tool research
 
 | Field | Value |
@@ -2475,6 +2529,23 @@ changed), **decision** (owner must choose), **risk**.
 | ISS-43 | The dining slot cannot explicitly request both kitchen eating space and a separate dining area. With open_plan false and dining kitchen, the builder omits pi-dining even when the relationship list mentions dining | risk | `src/house_ai/program/builder.py:238-255`; code-path inspection, not yet reproduced with a synthetic fixture | Resolved in the PR #41 merge: a dining relationship keeps a separate `pi-dining` beside "Kitchen and everyday dining"; `test_iss_43_kitchen_eating_space_and_separate_dining_preserved` | H2-14 |
 | ISS-44 | Shared older-relative bedrooms cannot be expressed: needed_bedrooms adds one room per elder, and _bedrooms adds each elder before child rooms then truncates to the total; this can raise a false shortage and omit a requested child room | defect | `interview/questions.py:757-766`; `program/builder.py:324-359`; H2 interview v12/v13 exposes the contradiction against the confirmed arrangement | Resolved in the PR #41 merge: new `elders_own_rooms` slot; shared older relatives need ceil(elders/2) rooms in the check and the builder; `test_iss_44_shared_older_relatives_bedroom_calculation_and_building` | H2-14 |
 | ISS-45 | CLI slot normalization treats the valid enumerated string none as unknown before checking the slot type; explicit no-special-guest-accommodation and accessibility-none choices cannot be recorded through structured interpretation | defect | `orchestration/interview.py:113-127`; diagnostic: check(guest_accommodation, none) returns the string, parse_slot_value returns null | Resolved in the PR #41 merge: an allowed `none` choice is kept before generic unknown aliases apply; `test_iss_45_slot_normalization_preserves_none_choice` | H2-14 |
+| ISS-46 | `artifact put` stores a site version with `user_confirmed` CRS and units from any actor; `SiteService.assess` then clears the blockers, so an agent can skip the human-only `site confirm` (the human site-gate approval still stands) | defect | `src/house_ai/cli/main.py::cmd_artifact_put`; `tests/test_workflow.py:265-267` writes the same document as `HUMAN` | Refuse `user_confirmed` site facts in a site version written by a non-human actor; test both actors | S12 review 2026-11-21; next safety stage |
+| ISS-47 | `artifact put design_brief --actor agent:...` can store answers marked `source.kind: owner_answer` and `status: preference` | defect | `src/house_ai/cli/main.py::cmd_artifact_put` (no kind-specific guard) | Limit design-brief writes to `InterviewService`, or refuse owner-answer claims from agents; test | S12 review 2026-11-21; next safety stage |
+| ISS-48 | GitHub Actions jobs do not start: "recent account payments have failed or your spending limit needs to be increased"; every run on `main` since 2026-11-18 failed in 3 s, so `main health` in §D is stale | risk | `gh run view 44927567498` | Owner restores Actions minutes or makes the repository public; until then the local suite is the gate (ADR 0035) | owner |
+| ISS-49 | `interview confirm --actor agent:...` without `--text` (and `InterviewService.confirm(AGENT)`) turns inferences into `verified_fact`/`preference` sourced `owner_answer` with no owner words; the turn's text is None. DEC-09 kept agent-recorded confirmation only *with* the owner's verbatim words | defect | `tests/test_interview.py` (S12 tests pinning current behaviour, service and CLI) | Require the owner's verbatim reply for an agent-recorded confirmation; test | next safety stage |
+| ISS-50 | `house-ai validate site <missing file>` crashes with a traceback instead of a clean error exit | defect | found by the S12 test review 2026-11-21 | Exit with a usage error naming the file; test | next safety stage |
+| ISS-51 | S11 was merged to `main` by PR #5 (`59da504`, with PR review fixes `d92c959`) but the tracker still shows it IN_PROGRESS, review PENDING, with no §O review record; `test_the_committed_tracker_is_consistent` allows one software stage IN_PROGRESS, so it fails while S12 is open | stale doc | §D; Stage S11; `git merge-base --is-ancestor origin/stage/S11-glossary-vocabulary main` | Owner chooses: "Review stage S11" then "Close stage S11", or authorise recording the PR #5 merge as its closure | owner |
+| ISS-52 | S7-17 privacy zoning blocks only a direct door between zones: with seed 42 the 2D privacy fixture reaches the hall through the laundry, a child bedroom and the master bedroom (`guest_private_crossings` = 2), and no finding blocks it | defect | `tests/test_placement_2d.py::test_privacy_zoning_routes_avoid_family_rooms` (strict xfail) | Constrain routes, not only doors, between zones; make a route through a private room a blocking finding | owner-rules checker stage |
+| ISS-53 | flat-simple `corridor_free`: the hall opens only to the outside and the bathroom; kitchen and living are reached through the bathroom and the parents' bedroom, and the plan still validates | defect | S12 generation-test review 2026-11-21 (one-off run) | Seeded test plus a blocking finding for a main room reached only through a bathroom or bedroom | owner-rules checker stage |
+| ISS-54 | `garage_pedestrian_route_blocked` cannot fire through the evaluator: sampled car bodies sit inside their clearance envelopes and never touch, so the garage floor stays connected to the house door | defect | `tests/test_finding_codes_seeded.py` (route True on a tightly packed two-car garage) | Test the route with the cars' doors-open zones and body widths as obstacles; seeded test | owner-rules checker stage |
+| ISS-55 | With no zones defined, the circulation check reports `private_space_crossed` as a measured 0 instead of not_checked | defect | `tests/test_finding_codes_seeded.py` (strict xfail) | Report not_checked with the missing input | owner-rules checker stage |
+| ISS-56 | The grounding validator's plan-version check never runs: `PlanVersion` has no `version` field, so `hasattr(plan, "version")` is always false | defect | `src/house_ai/validation/grounding.py`; `tests/test_grounding.py` (strict xfail) | Compare against the stored artifact version from the plan's `ArtifactRef` | next safety stage |
+| ISS-57 | `terrain_svg._segment_at` drops a contour level that passes exactly through TIN vertices (the 101 m level on the synthetic site) | defect | `tests/test_site_review_fixes.py` (strict xfail) | Handle vertex-on-level crossings; test | §K backlog |
+| ISS-58 | A door without `opens_into` silently skips the door-approach check; the daylight not_checked claim has no reason and the same method as the measured case | defect | S12 site/benchmark test review 2026-11-21 | Report not_checked with a reason for each missing input | owner-rules checker stage |
+| ISS-59 | `plan combine` can silently drop a connection: combined `connect:` operations are soft and `request_unmet` ignores them, so concept-compact v2 loses linear's living-terrace door with no finding | defect | `tests/test_plan_provenance_revisions.py::test_combined_connections_are_met_or_reported` (strict xfail) | Report an unmet combined connection; consider making it hard | owner-rules checker stage |
+| ISS-60 | `evaluate_plan` raises `StopIteration` (`evaluation/usability.py:948`) when an opening connects a space id that does not exist, instead of reporting it | defect | S12 workflow-test review 2026-11-21 | Report the dangling reference as a finding (integrity already detects it) | §K backlog |
+| ISS-61 | Revisions that do not move the plan: split_walkout area revisions leave the kitchen at 8.16 m² for targets 10–22 (seed 1, also with `--rethink`, reported as not met); topology and combine revisions on compact switch to the 2D engine, put bedrooms on `lv-upper` and raise `height_limit_exceeded`; in the multi-step revision test, steps 2–5 return an identical model | defect | S12 workflow-test review 2026-11-21; `tests/test_plan_provenance_revisions.py` | Investigate per strategy; a revision that cannot change the plan should say why | owner-rules checker stage |
+| ISS-62 | `examples/reviewer/make_bundles.py` checks for `plan-a.yaml` (the file is `plan-a.json`), so its `plan generate` branch is dead and its return code ignored; `examples/readiness/run_demo.py` runs an extra `linear` generation (about 9 s of the demo test) | stale doc | S12 workflow and proposal test reviews 2026-11-21 | Fix the path or drop the branch; decide whether the demo needs the extra generation | §K backlog |
 
 ## L. Decisions
 
@@ -2556,6 +2627,24 @@ Closure record template:
 - CI on main: <run id, result>
 - Closed by: <agent:tool> on the owner's "Close stage <ID>"
 ```
+
+### S12 records
+
+#### S12 handoff 1 — all seven tasks implemented, review PENDING
+- Branch: `stage/S12-fast-sound-tests` from `main` at `d920ad9`; implementer: agent:claude-code (Claude Opus 5.5) on the owner's request of 2026-11-21 ("tests should be solid, rock solid, and they should be fast"). The owner authorised working while S11 still shows review PENDING (ISS-51). Per-file test work was done by five delegated subagents on disjoint files and checked by the implementer (removed test names traced to their replacements; the safety refusals still asserted).
+- Measured: serial baseline 467.32 s (1107 tests); default runner after 69.92 s (1191 collected: 1186 passed, 5 strict xfails, 1 failed). The failure is `test_the_committed_tracker_is_consistent`, because S11 and S12 are both IN_PROGRESS (ISS-51).
+- Done:
+  - S12-01: `-n 4 --dist loadfile`; 4 workers beat 11 (148.81 s against 212.45 s on the same tree).
+  - S12-02: route visibility graph cached per floor; furniture candidates built and tested per rotation in one array call. Reference harness (38 evaluations, 978 route calls, 60 fit calls) byte-identical; evaluation 17.07 s to 4.24 s.
+  - S12-03: shared solves (see task evidence); repeats 133 s to 38 s; the remaining repeats re-solve on purpose or run on another worker.
+  - S12-04: review findings fixed file by file; each subagent bite-checked its fixes by breaking the behaviour or feeding a bad input, and listed the ones it could not.
+  - S12-05: grounding validator compares stated values (test-first).
+  - S12-06: `tests/test_finding_codes_seeded.py`.
+  - S12-07: ADR 0035; contract §10.
+  - `examples/usability/demonstration/report.*` regenerated: it predated the current hillside program and the stair-wall critic, and its freshness test now recomputes it.
+- Found, not fixed (product): ISS-46, ISS-47, ISS-49, ISS-50, ISS-52 to ISS-62.
+- CI: Actions jobs do not start on this repository (ISS-48); no CI run exists for this branch.
+- Resume: review with "Review stage S12".
 
 ### S11 records
 
@@ -4003,7 +4092,8 @@ homeowner approval of any site, program, plan or model.
 
 ### Current handoff note
 
-- Stage S11 (glossary vocabulary, issues #2–#4) is implemented on `stage/S11-glossary-vocabulary`, review PENDING; see §N S11 handoff 1.
+- Stage S12 (fast and sound test suite) is implemented on `stage/S12-fast-sound-tests`; see §N S12 handoff 1.
+- Stage S11 (glossary vocabulary, issues #2–#4) is implemented on `stage/S11-glossary-vocabulary`, review PENDING; see §N S11 handoff 1. It was merged to `main` by PR #5 without a tracker review or closure (ISS-51).
 - Continuation entry point: `projects/my-house/reviews/CONTINUE-H2.md` (private detailed handoff, current records, preserved requirements and next deliverable). Committed on `stage/H2-interview-program` (PR #41).
 
 - Stage S9 Floor-plan readiness gate closed with merge `d8a38b1` (CI run 39336825673 green).

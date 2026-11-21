@@ -9,6 +9,7 @@ import copy
 from datetime import UTC, datetime
 from pathlib import Path
 
+from house_ai.constants.relations import SHARED_WALL_MIN_M
 from house_ai.constraints.compiler import compile_constraints
 from house_ai.domain.base import EXTERIOR
 from house_ai.domain.brief import DesignBrief
@@ -161,19 +162,13 @@ def _build_simple_two_room_model(
 
 
 def test_relation_semantics_adr_0020_exists_and_covers_requirements():
+    """Kept as a documentation contract, not behaviour: ADR 0020 is the shared definition
+    the solver and evaluator cite, so every relation kind the code accepts must be defined
+    there. Taken from the enum, a new kind without its ADR definition fails here."""
     adr_path = REPO / "docs" / "adr" / "0020-relation-semantics-between-solver-and-evaluator.md"
     assert adr_path.exists(), "ADR 0020 must exist"
     text = adr_path.read_text(encoding="utf-8")
-    for keyword in (
-        "ADJACENT",
-        "CONNECTED",
-        "NEAR",
-        "SEPARATED",
-        "ACOUSTIC_SEPARATION",
-        "VISUAL",
-        "hall",
-        "EXTERIOR",
-    ):
+    for keyword in (*(k.name for k in SpaceRelationshipKind), "hall", "EXTERIOR"):
         assert keyword in text, f"ADR 0020 must define {keyword}"
 
 
@@ -424,29 +419,21 @@ def test_soft_objectives_reported_in_explanation():
     ):
         assert by_name[unopt][0] == "not_optimised"
 
-    # Generate one plan and verify explanation includes the compiled soft objectives section
-    req = GenerationRequest(
-        site=site,
-        program=program,
-        constraints=cs,
-        site_ref=None,
-        program_ref=None,
-        created_at=WHEN,
-        strategies=["linear"],
-        seed=0,
+    # The explanation of a plan lists the compiled soft objectives section. The section
+    # comes from the constraint set, so the committed linear concept serves; no solve needed.
+    plan = PlanVersion.model_validate(
+        load_document(HILLSIDE / "concepts" / "concept-linear" / "exploratory" / "plan.json")
     )
-    [cand] = CpSatPlanGenerator().candidates(req)
-    assert cand.plan is not None
     rep = evaluate_plan(
-        cand.plan,
-        _ref(cand.plan),
+        plan,
+        _ref(plan),
         site=site,
         program=program,
         constraints=cs,
         codepack=None,
         created_at=WHEN,
     )
-    text = explanation_markdown(cand.plan, 1, rep, program, constraints=cs)
+    text = explanation_markdown(plan, 1, rep, program, constraints=cs)
     assert "## Compiled soft objectives" in text
     assert "`circulation_efficiency` | `optimised`" in text
     assert "`cross_ventilation` | `not_optimised`" in text
@@ -458,15 +445,20 @@ def test_soft_objectives_reported_in_explanation():
 def test_soft_connected_produces_doors_when_touching():
     site, program = _load(HILLSIDE)
 
-    # Add a soft CONNECTED requirement between two living/dining spaces that touch
+    # The two child bedrooms share a 5.4 m wall in the linear concept and no relation of the
+    # program links them, so only a soft CONNECTED request can give them a door.
+    pair = {"pi-bed-child-1", "pi-bed-child-2"}
+    assert not [
+        r for r in program.space_relationships if {r.a, r.b} == pair
+    ], "the pair must have no relation of its own"
     adj = SpaceRelationship(
-        id="adj-soft-living-dining",
-        a="pi-living",
-        b="pi-dining",
+        id="adj-soft-children",
+        a="pi-bed-child-1",
+        b="pi-bed-child-2",
         kind=SpaceRelationshipKind.CONNECTED,
         strength=Strength.SOFT,
         weight=2.0,
-        rationale="open plan connection",
+        rationale="shared children's door",
     )
     mod_program = program.model_copy(
         update={"space_relationships": [*program.space_relationships, adj]}
@@ -487,33 +479,36 @@ def test_soft_connected_produces_doors_when_touching():
     assert cand.plan is not None
     model = cand.plan.model
 
-    living = next(s for s in model.spaces if s.program_item_id == "pi-living")
-    dining = next(s for s in model.spaces if s.program_item_id == "pi-dining")
+    a = next(s for s in model.spaces if s.program_item_id == "pi-bed-child-1")
+    b = next(s for s in model.spaces if s.program_item_id == "pi-bed-child-2")
+    assert a.level_id == b.level_id
+    assert shared_wall_length(model, a.id, b.id) >= SHARED_WALL_MIN_M
+    (door,) = [o for o in model.openings if {a.id, b.id} <= set(o.connects)]
+    assert door.is_passable, "Touching spaces with soft CONNECTED must have a door"
 
-    # If living and dining share a wall, an opening must connect them
-    if shared_wall_length(model, living.id, dining.id) >= 0.8:
-        connects = [o for o in model.openings if {living.id, dining.id} <= set(o.connects)]
-        assert len(connects) >= 1, "Touching spaces with soft CONNECTED must have a door"
-
-        # Evaluator must agree that it is satisfied
-        rep = evaluate_plan(
-            cand.plan,
-            _ref(cand.plan),
-            site=site,
-            program=mod_program,
-            constraints=cs,
-            codepack=None,
-            created_at=WHEN,
-        )
-        claim = next(
-            m
-            for m in rep.metrics
-            if m.metric == "adjacency_satisfied" and "adj-soft-living-dining" in m.subject_ids
-        )
-        assert claim.value is True
+    # Evaluator must agree that it is satisfied
+    rep = evaluate_plan(
+        cand.plan,
+        _ref(cand.plan),
+        site=site,
+        program=mod_program,
+        constraints=cs,
+        codepack=None,
+        created_at=WHEN,
+    )
+    (claim,) = [
+        m
+        for m in rep.metrics
+        if m.metric == "adjacency_satisfied" and "adj-soft-children" in m.subject_ids
+    ]
+    assert claim.value is True
 
 
 # --- S7-05: Solver and evaluator agreement across strategies
+
+#: Default strategies with a layout on synthetic-hillside; courtyard has no room for its
+#: second pavilion (asserted below).
+FEASIBLE = ["compact", "split_level", "linear", "two_wing", "split_walkout"]
 
 
 def test_solver_evaluator_agreement_across_all_strategies():
@@ -527,13 +522,14 @@ def test_solver_evaluator_agreement_across_all_strategies():
         site_ref=None,
         program_ref=None,
         created_at=WHEN,
-        strategies=["compact", "split_level", "linear", "two_wing", "split_walkout"],
+        strategies=[*FEASIBLE, "courtyard"],
         seed=0,
     )
-    cands = CpSatPlanGenerator().candidates(req)
-    for c in cands:
-        if c.plan is None:
-            continue
+    cands = {c.strategy: c for c in CpSatPlanGenerator().candidates(req)}
+    assert [s for s, c in cands.items() if c.plan is not None] == FEASIBLE
+    assert "no room for a second pavilion" in (cands["courtyard"].reason or "")
+    for strategy in FEASIBLE:
+        c = cands[strategy]
         rep = evaluate_plan(
             c.plan,
             _ref(c.plan),
@@ -543,6 +539,15 @@ def test_solver_evaluator_agreement_across_all_strategies():
             codepack=None,
             created_at=WHEN,
         )
-        # Evaluator must find zero hard adjacency violations for all generated feasible concepts
-        hard_unmet = [v for v in rep.hard_violations if v.code == "hard_adjacency_unmet"]
-        assert hard_unmet == [], f"Strategy {c.strategy} had hard adjacency unmet: {hard_unmet}"
+        # The solver enforced every hard constraint, so the evaluator finds none broken.
+        broken = [(v.code, v.constraint_id) for v in rep.hard_violations]
+        assert broken == [], f"Strategy {strategy} breaks hard constraints: {broken}"
+        # And it agrees on each hard relation: every one is measured as satisfied.
+        hard_rel = [r.id for r in program.space_relationships if r.strength is Strength.HARD]
+        for rel_id in hard_rel:
+            claims = [
+                m
+                for m in rep.metrics
+                if m.metric == "adjacency_satisfied" and rel_id in m.subject_ids
+            ]
+            assert claims and all(m.value is True for m in claims), (strategy, rel_id)

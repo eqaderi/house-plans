@@ -6,6 +6,7 @@ import copy
 import json
 import math
 import runpy
+import shutil
 from pathlib import Path
 
 import pytest
@@ -65,23 +66,33 @@ def test_steep_reference_analytical_ground_truth_and_local_frame():
 
 @pytest.mark.parametrize("name,front,rear", [("road-high", 15, 0), ("road-low", 0, 15)])
 def test_opposite_road_elevation_scenarios(name, front, rear):
-    points = {s.id: s.z_m for s in load(name).site.terrain.spot_elevations}
-    assert points["spot-sw"] == front
-    assert points["spot-nw"] == rear
+    fixture = load(name)
+    surface = build_tin(fixture.site.terrain.spot_elevations, []).surface
+    # A plane from the road edge (y = 0, z = front) to the rear (y = 30, z = rear):
+    # z = front + (rear - front) * y / 30, so 3 m in from the road and mid-depth are
+    # interpolated, not read from a survey point.
+    assert elevation_at(surface, (10, 3)) == pytest.approx(front + (rear - front) * 0.1)
+    assert elevation_at(surface, (5, 15)) == pytest.approx(7.5)
+    # 15 m over 30 m of depth is a 50 % slope, whichever way the plot falls.
+    slope = next(r for r in run_fixture(fixture) if r.check == "slope")
+    assert slope.observed == pytest.approx(50) and slope.outcome == "PASS"
 
 
 def test_slope_directions_and_concave_envelope():
     cross = load("cross-slope")
     s = build_tin(cross.site.terrain.spot_elevations, []).surface
-    assert elevation_at(s, (0, 15)) == 0
-    assert elevation_at(s, (20, 15)) == 8
+    # Cross-fall z = 0.4 x (0 m west, 8 m east over 20 m), constant along y.
+    for xy, z in [((0, 15), 0), ((20, 15), 8), ((10, 15), 4), ((5, 25), 2), ((15, 3), 6)]:
+        assert elevation_at(s, xy) == pytest.approx(z)
     diagonal = load("diagonal-slope")
     assert next(r for r in run_fixture(diagonal) if r.check == "slope").observed == 50
     concave = load("concave")
     polygon = concave.site.boundary.to_shapely()
+    # A 30 x 30 m square less its 18 x 18 m north-east corner: 900 - 324.
     assert polygon.area == 576
-    assert polygon.convex_hull.area > polygon.area
-    assert concave.site.buildable_envelope.polygon.area_m2 == 318
+    assert polygon.convex_hull.area == 900 - 18 * 18 / 2
+    # Envelope: a 26 x 7 m bar (x 2..28, y 3..10) plus an 8 x 17 m bar (x 2..10, y 10..27).
+    assert concave.site.buildable_envelope.polygon.area_m2 == 26 * 7 + 8 * 17 == 318
 
 
 def test_conflicting_near_duplicates_refuse_surface_and_breakline_intent_retained():
@@ -210,14 +221,48 @@ def test_fixture_rejects_private_sites_unknown_targets_and_duplicate_expectation
         BenchmarkFixture.model_validate(doc)
 
 
-def test_runner_table_all_categories_and_incomplete_gate(capsys, tmp_path):
-    assert main([str(HERE / "fixtures")]) == 0
-    table = capsys.readouterr().out
-    assert all(category.value in table for category in AcceptanceCategory)
-    assert "NOT_CHECKED" in table
-    assert main([str(HERE / "fixtures"), "--require-complete"]) == 0
+def test_committed_fixtures_are_complete():
+    """Static equivalent of ``main([fixtures, "--require-complete"]) == 0``.
+
+    ``main`` returns 1 only for a FAIL or, with ``--require-complete``, a NOT_CHECKED
+    outcome, and exits 2 on duplicate fixture IDs. ``_check`` gives NOT_CHECKED to
+    exactly the ``source: future`` expectations; FAIL is excluded fixture by fixture in
+    ``test_every_current_observation_matches_declared_expectations``.
+    """
+    fixtures = [BenchmarkFixture.model_validate_json(p.read_text()) for p in PATHS]
+    assert len({f.id for f in fixtures}) == len(fixtures) == 18
+    assert [(f.id, e.id) for f in fixtures for e in f.expectations if e.source == "future"] == []
+
+
+def _table(counts: dict[str, tuple[int, int, int]]) -> list[str]:
+    rows = ["| Category | PASS | FAIL | NOT_CHECKED |", "|---|---:|---:|---:|"]
+    for category in AcceptanceCategory:
+        p, f, n = counts.get(category.value, (0, 0, 0))
+        rows.append(f"| {category.value} | {p} | {f} | {n} |")
+    return rows
+
+
+#: flat-simple's nine expectations by category (all PASS).
+FLAT_SIMPLE = {
+    "geometric_feasibility": (2, 0, 0),
+    "terrain_compatibility": (2, 0, 0),
+    "metric_accuracy": (2, 0, 0),
+    "visual_consistency": (1, 0, 0),
+    "versioned_revisions": (2, 0, 0),
+}
+
+
+def test_runner_table_counts_each_category_and_incomplete_gate(capsys, tmp_path):
+    flat = HERE / "fixtures/flat-simple.json"
+    complete = tmp_path / "complete"
+    complete.mkdir()
+    shutil.copy(flat, complete)
+    assert main([str(complete)]) == 0
+    assert capsys.readouterr().out.splitlines() == _table(FLAT_SIMPLE)
+    assert main([str(complete), "--require-complete"]) == 0
     capsys.readouterr()
-    doc = json.loads((HERE / "fixtures/social-cooking.json").read_text())
+
+    doc = json.loads(flat.read_text())
     doc["id"] = "synthetic-incomplete"
     doc["expectations"].append(
         {
@@ -231,13 +276,27 @@ def test_runner_table_all_categories_and_incomplete_gate(capsys, tmp_path):
             "basis": "synthetic future probe",
         }
     )
-    (tmp_path / "incomplete.json").write_text(json.dumps(doc))
-    assert main([str(tmp_path), "--require-complete"]) == 1
+    both = tmp_path / "both"
+    both.mkdir()
+    shutil.copy(flat, both)
+    (both / "incomplete.json").write_text(json.dumps(doc))
+    # NOT_CHECKED is reported, counted in its own column, and is not a failure...
+    assert main([str(both)]) == 0
+    doubled = {k: (2 * p, f, n) for k, (p, f, n) in FLAT_SIMPLE.items()}
+    assert capsys.readouterr().out.splitlines() == [
+        *_table({**doubled, "practical_usability": (0, 0, 1)}),
+        "NOT_CHECKED: synthetic-incomplete/stale-future: expected=None observed=None; "
+        "S99: synthetic future probe",
+    ]
+    # ...until completeness is required.
+    assert main([str(both), "--require-complete"]) == 1
     capsys.readouterr()
-    assert main([str(HERE / "fixtures/social-cooking.json"), "--json"]) == 0
+
+    assert main([str(flat), "--json"]) == 0
     rows = json.loads(capsys.readouterr().out)
-    assert all(row["method"] and row["claim_status"] for row in rows)
-    assert "versioned_revisions" in category_table([])
+    assert len(rows) == 9
+    assert all(r["outcome"] == "PASS" and r["method"] and r["claim_status"] for r in rows)
+    assert category_table([]).splitlines() == _table({})
 
 
 def test_runner_rejects_empty_or_invalid_inputs(tmp_path):

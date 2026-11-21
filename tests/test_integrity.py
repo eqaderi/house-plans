@@ -27,6 +27,11 @@ def codes(findings) -> list[str]:
     return [f.code for f in findings]
 
 
+def found(findings) -> list[tuple[str, list[str]]]:
+    """Every finding as (code, subject ids): an exact list also catches unexpected ones."""
+    return [(f.code, f.subject_ids) for f in findings]
+
+
 def find(items: list[dict], ident: str) -> dict:
     return next(i for i in items if i["id"] == ident)
 
@@ -93,14 +98,12 @@ def test_overlapping_spaces(plan_doc):
         [10, 17],
     ]
     findings = check_model(model_from(plan_doc))
-    overlap = [f for f in findings if f.code == "space_overlap"]
-    assert len(overlap) == 1
-    assert set(overlap[0].subject_ids) == {"sp-living", "sp-kitchen"}
-    assert "5.000 m²" in overlap[0].message
-
-
-def test_spaces_sharing_an_edge_do_not_overlap(plan):
-    assert "space_overlap" not in codes(check_model(plan.model))
+    # The cased opening between them now has the overlap on both of its sides.
+    assert found(findings) == [
+        ("space_overlap", ["sp-living", "sp-kitchen"]),
+        ("opening_side_ambiguous", ["o-living-kitchen"]),
+    ]
+    assert "5.000 m²" in findings[0].message
 
 
 def test_dangling_host_wall(plan_doc):
@@ -112,27 +115,34 @@ def test_dangling_host_wall(plan_doc):
 
 def test_opening_beyond_wall_end(plan_doc):
     find(plan_doc["model"]["openings"], "win-kitchen-e")["offset_m"] = 9.5
-    assert "opening_outside_wall" in codes(check_model(model_from(plan_doc)))
+    assert found(check_model(model_from(plan_doc))) == [
+        ("opening_outside_wall", ["win-kitchen-e", "w-ext-e"])
+    ]
 
 
 def test_opening_taller_than_wall(plan_doc):
     find(plan_doc["model"]["openings"], "win-living-w")["sill_m"] = 2.0
-    assert "opening_taller_than_wall" in codes(check_model(model_from(plan_doc)))
+    assert found(check_model(model_from(plan_doc))) == [
+        ("opening_taller_than_wall", ["win-living-w", "w-ext-w"])
+    ]
 
 
 def test_door_that_claims_the_wrong_room(plan_doc):
     # The door sits in the hall/bath wall but says it opens into the bedroom.
     find(plan_doc["model"]["openings"], "d-hall-bath")["connects"] = ["sp-hall", "sp-bed-parents"]
     findings = check_model(model_from(plan_doc))
-    mismatch = [f for f in findings if f.code == "opening_sides_mismatch"]
-    assert len(mismatch) == 1
-    assert "sp-bath" in mismatch[0].message
+    # ...and the bath, whose only door that was, is unreachable.
+    assert found(findings) == [
+        ("opening_sides_mismatch", ["d-hall-bath"]),
+        ("space_unreachable", ["sp-bath"]),
+    ]
+    assert "sp-bath" in findings[0].message
 
 
 def test_door_moved_off_its_room(plan_doc):
     # Same claim, but the door slides along the hall wall into the next room.
     find(plan_doc["model"]["openings"], "d-hall-bath")["offset_m"] = 7.5
-    assert "opening_sides_mismatch" in codes(check_model(model_from(plan_doc)))
+    assert found(check_model(model_from(plan_doc))) == [("opening_sides_mismatch", ["d-hall-bath"])]
 
 
 def test_unreachable_room(plan_doc):
@@ -147,8 +157,12 @@ def test_unreachable_room(plan_doc):
 
 def test_duplicate_ids_across_entity_types(plan_doc):
     find(plan_doc["model"]["walls"], "w-hall-s")["id"] = "sp-hall"
-    findings = check_model(model_from(plan_doc))
-    assert "duplicate_id" in codes(findings)
+    # The two doors hosted by w-hall-s now name a wall id that no longer exists.
+    assert found(check_model(model_from(plan_doc))) == [
+        ("duplicate_id", ["sp-hall"]),
+        ("dangling_reference", ["d-hall-living"]),
+        ("dangling_reference", ["d-hall-kitchen"]),
+    ]
 
 
 def test_reserved_exterior_id(plan_doc):
@@ -157,7 +171,7 @@ def test_reserved_exterior_id(plan_doc):
         {**w, "material_id": None} if w["material_id"] == "m-render" else w
         for w in plan_doc["model"]["walls"]
     ]
-    assert "reserved_id" in codes(check_model(model_from(plan_doc)))
+    assert found(check_model(model_from(plan_doc))) == [("reserved_id", ["exterior"])]
 
 
 def test_fixture_outside_its_space(plan_doc):
@@ -189,7 +203,7 @@ def test_falls_back_to_parcel_boundary_with_a_warning(plan, site_doc):
 
 def test_model_in_a_different_coordinate_system(plan_doc, site):
     plan_doc["model"]["coordinate_system_id"] = "lcs-other"
-    assert "coordinate_system_mismatch" in codes(check_model(model_from(plan_doc), site))
+    assert found(check_model(model_from(plan_doc), site)) == [("coordinate_system_mismatch", [])]
 
 
 def test_schema_level_geometry_rules(plan_doc):
@@ -211,8 +225,7 @@ def test_opening_straddling_two_rooms_is_rejected(plan_doc):
     door = find(plan_doc["model"]["openings"], "d-hall-bath")
     door["offset_m"] = 3.1
     door["width_m"] = 2.0
-    findings = check_model(model_from(plan_doc))
-    assert "opening_sides_mismatch" in codes(findings)
+    assert found(check_model(model_from(plan_doc))) == [("opening_sides_mismatch", ["d-hall-bath"])]
 
 
 def test_overlapping_openings_on_same_wall(plan_doc):
@@ -220,8 +233,11 @@ def test_overlapping_openings_on_same_wall(plan_doc):
     door = find(plan_doc["model"]["openings"], "d-hall-bath")
     door["offset_m"] = 1.8
     door["connects"] = ["sp-hall", "sp-bed-parents"]
-    findings = check_model(model_from(plan_doc))
-    assert "opening_overlap" in codes(findings)
+    # The bath loses its door to the bedroom it now claims, so it is unreachable too.
+    assert found(check_model(model_from(plan_doc))) == [
+        ("opening_overlap", ["d-hall-bed-parents", "d-hall-bath", "w-hall-n"]),
+        ("space_unreachable", ["sp-bath"]),
+    ]
 
 
 def test_unattached_wall_is_rejected(plan_doc):
@@ -236,18 +252,18 @@ def test_unattached_wall_is_rejected(plan_doc):
             "kind": "exterior",
         }
     )
-    assert "unattached_wall" in codes(check_model(model_from(plan_doc)))
+    assert found(check_model(model_from(plan_doc))) == [("unattached_wall", ["w-floating"])]
 
 
 def test_fixture_protruding_outside_space_despite_interior_center(plan_doc):
     # Center is at x=14.05 inside sp-bath [14, 17], but width_m=0.4 extends to x=13.85.
     find(plan_doc["model"]["fixtures"], "fx-wc")["position"] = [14.05, 21.4]
-    assert "fixture_outside_space" in codes(check_model(model_from(plan_doc)))
+    assert found(check_model(model_from(plan_doc))) == [("fixture_outside_space", ["fx-wc"])]
 
 
 def test_overlapping_fixtures_in_same_space(plan_doc):
     find(plan_doc["model"]["fixtures"], "fx-basin")["position"] = [14.6, 21.4]
-    assert "fixture_overlap" in codes(check_model(model_from(plan_doc)))
+    assert found(check_model(model_from(plan_doc))) == [("fixture_overlap", ["fx-wc", "fx-basin"])]
 
 
 def test_stair_level_and_footprint_checks(plan_doc):
@@ -264,9 +280,11 @@ def test_stair_level_and_footprint_checks(plan_doc):
             "width_m": 1.0,
         }
     )
-    findings = check_model(model_from(plan_doc))
-    assert "stair_level_mismatch" in codes(findings)
-    assert "stair_outside_connected_space" in codes(findings)
+    assert found(check_model(model_from(plan_doc))) == [
+        ("stair_level_mismatch", ["st-main", "sp-living"]),
+        ("stair_outside_connected_space", ["st-main", "sp-hall"]),
+        ("stair_outside_connected_space", ["st-main", "sp-living"]),
+    ]
 
 
 def test_opening_opens_into_must_match_connects(plan_doc):

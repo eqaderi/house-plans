@@ -27,6 +27,7 @@ from house_ai.storage.importer import import_folder
 from house_ai.storage.project_store import HEAD_ANCHOR_REQUIRED
 
 from .conftest import AGENT, EXAMPLE, HUMAN, SYSTEM, example_doc
+from .test_human_gates import tree
 
 S = WorkflowState
 K = ArtifactKind
@@ -285,14 +286,14 @@ def test_ambiguous_site_stops_at_needs_verification(project):
 @pytest.mark.parametrize("actor", [HUMAN, AGENT, SYSTEM])
 def test_only_program_reject_leaves_program_review(project, actor):
     project.to_program_review()
-    events = len(project.store.events())
+    before = tree(project.store.root)
 
     with pytest.raises(UseProgramReject, match="program reject") as refused:
         project.wf.transition(S.INTERVIEWING, actor, "undo the review")
 
     assert refused.value.next_action == NextHumanAction(HumanAction.REJECT_PROGRAM, Gate.PROGRAM)
     assert project.wf.state is S.PROGRAM_REVIEW
-    assert len(project.store.events()) == events
+    assert tree(project.store.root) == before
 
 
 def test_program_review_advertises_no_transition(project):
@@ -366,7 +367,7 @@ def test_plan_must_be_drawn_on_the_approved_site_and_program(project):
     doc["model"]["program_ref"] = None
     stale = project.store.put(K.PLAN, "plan-c", doc, AGENT)
     status = project.wf.gate_status(Gate.PLAN, stale)
-    assert _codes(status)[:2] == [
+    assert _codes(status) == [
         ("pinned_input", "site_version"),
         ("pinned_input", "program_version"),
     ]

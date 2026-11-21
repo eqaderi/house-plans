@@ -13,22 +13,30 @@ from house_ai.domain.usability_templates import TEMPLATES
 from house_ai.evaluation.base import EvaluationContext
 from house_ai.evaluation.usability import FurnitureUsabilityEvaluator
 from house_ai.generation.fixtures import FIXTURE_SETS, layout_fixtures
-from house_ai.orchestration.plans import PlanService
-
-from .conftest import AGENT
-from .test_plan_workflow import _approve_site_and_program, _load
 
 # DEC-13 (ISS-37): support linear, opposite-wall, and L-shaped fixture arrangements
 # with approved program areas and existing fixture clearances unchanged.
 
 
 @pytest.fixture(scope="module")
-def compact(tmp_path_factory):
-    store = _load(tmp_path_factory.mktemp("fixtures"))
-    _approve_site_and_program(store)
-    svc = PlanService(store)
-    (opt,) = svc.generate(AGENT, strategies=["compact"], exploratory=True).generated
-    return opt.candidate.plan.model, svc.inputs(exploratory=True)
+def compact(hillside):
+    """The compact plan option on synthetic-hillside (solved once per worker, a copy)."""
+    plan = hillside.option("compact").candidate.plan
+    assert plan is not None
+    return plan.model, hillside.inputs()
+
+
+def _room_angle(space) -> float:
+    """The direction of a room's first edge, in degrees: the room's own frame."""
+    (x0, y0), (x1, y1) = space.boundary.outer[:2]
+    return math.degrees(math.atan2(y1 - y0, x1 - x0))
+
+
+def _rotations_in_room(model, space_id: str) -> list[int]:
+    """Each fixture's rotation in its room's frame, in whole degrees modulo 360."""
+    space = next(s for s in model.spaces if s.id == space_id)
+    fixtures = sorted((f for f in model.fixtures if f.space_id == space_id), key=lambda f: f.id)
+    return [round(f.rotation_deg - _room_angle(space)) % 360 for f in fixtures]
 
 
 def test_kitchens_and_wet_rooms_get_their_template_sets(compact):
@@ -46,6 +54,8 @@ def test_kitchens_and_wet_rooms_get_their_template_sets(compact):
             t = TEMPLATES[f.fixture_type.replace("_", "-")]
             assert (f.width_m, f.depth_m) == (t.width.value, t.depth.value)
             # Fronts face into the room: rotation is a multiple of 90° in the room frame.
+            turn = (f.rotation_deg - _room_angle(space)) % 90
+            assert min(turn, 90 - turn) < 1e-3, (f.id, f.rotation_deg)
             assert space.boundary.to_shapely().covers(f.footprint_polygon().to_shapely())
 
 
@@ -54,9 +64,7 @@ def test_critics_measure_the_placed_fixtures(compact):
     result = FurnitureUsabilityEvaluator().evaluate(
         EvaluationContext(model, inp.site, inp.program, None)
     )
-    codes = {v.code for v in result.violations}
-    assert "object_clearance_blocked" not in codes
-    assert "kitchen_no_sampled_fit" not in codes
+    assert [v.code for v in result.violations] == []  # no blocked clearance, no missing fit
     kitchen = next(s for s in model.spaces if s.function is S.KITCHEN)
     run = next(
         m
@@ -85,10 +93,18 @@ def test_a_room_that_cannot_hold_its_set_gets_none():
 
 
 def test_l_shaped_and_opposite_wall_arrangements_pass_and_clear(compact):
-    """DEC-13: ensuite places fixtures across perpendicular and opposite walls."""
-    model, _ = compact
-    ensuite_fx = [f for f in model.fixtures if f.space_id == "sp-bath-ensuite"]
-    assert len(ensuite_fx) == 3
-    rots = {round(f.rotation_deg % 360, 1) for f in ensuite_fx}
-    # Multiple distinct wall orientations are used (L-shaped and opposite-wall).
-    assert len(rots) >= 2
+    """DEC-13: the ensuite puts its fixtures on three walls (shower on one, basin on the
+    perpendicular wall: L-shaped; WC opposite the shower), bath 1 lines all three up on one
+    wall, and every placement passes the integrity and clearance checks."""
+    model, inp = compact
+    assert [f.id for f in model.fixtures if f.space_id == "sp-bath-ensuite"] == [
+        "fx-bath-ensuite-1", "fx-bath-ensuite-2", "fx-bath-ensuite-3",
+    ]  # fmt: skip
+    # shower, basin, WC: 0° (one wall), 270° (perpendicular: L), 180° (opposite the shower)
+    assert _rotations_in_room(model, "sp-bath-ensuite") == [0, 270, 180]
+    assert _rotations_in_room(model, "sp-bath-1") == [270, 270, 270]  # linear, one wall
+    assert errors(check_model(model, inp.site, inp.program)) == []
+    result = FurnitureUsabilityEvaluator().evaluate(
+        EvaluationContext(model, inp.site, inp.program, None)
+    )
+    assert result.violations == []

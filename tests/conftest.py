@@ -117,3 +117,66 @@ def make_survey(tmp_path: Path, survey):
         return survey["build_survey"](tmp_path / f"survey-{next(counter)}.dxf", **options)
 
     return make
+
+
+# ------------------------------------------------------------ shared hillside concepts
+
+
+class HillsideConcepts:
+    """Exploratory plan options on synthetic-hillside, each strategy solved once per worker.
+
+    `CpSatPlanGenerator` solves every strategy independently (generator.py `_strategy`), so
+    a strategy solved alone gives the same plan as one solved alongside others. Callers get
+    deep copies: changing a returned plan or report never leaks into another test.
+    """
+
+    def __init__(self, store: ProjectStore):
+        from house_ai.orchestration.plans import PlanService
+
+        self.store = store
+        self.service = PlanService(store)
+        self._solved: dict[str, object] = {}
+
+    def inputs(self):
+        return self.service.inputs(exploratory=True)
+
+    def option(self, strategy: str):
+        """The `StoredOption` (candidate, report) for one feasible strategy.
+
+        An infeasible strategy raises `PlanWorkflowError` naming its reason, as
+        `PlanService.generate` does when no requested strategy produces a layout.
+        """
+        from house_ai.orchestration.plans import PlanWorkflowError
+
+        if strategy not in self._solved:
+            try:
+                out = self.service.generate(AGENT, strategies=[strategy], exploratory=True)
+                (self._solved[strategy],) = out.options
+            except PlanWorkflowError as exc:
+                self._solved[strategy] = exc
+        solved = self._solved[strategy]
+        if isinstance(solved, PlanWorkflowError):
+            raise PlanWorkflowError(str(solved))
+        return copy.deepcopy(solved)
+
+    def models(self, strategies):
+        """{strategy: HouseModel} for the feasible strategies among ``strategies``."""
+        from house_ai.orchestration.plans import PlanWorkflowError
+
+        out = {}
+        for s in strategies:
+            try:
+                out[s] = self.option(s).candidate.plan.model
+            except PlanWorkflowError:
+                continue
+        return out
+
+
+@pytest.fixture(scope="session")
+def hillside(tmp_path_factory) -> HillsideConcepts:
+    """synthetic-hillside with its site and program approved; never write to its store."""
+    from .test_plan_workflow import _approve_site_and_program, _load
+
+    store = _load(tmp_path_factory.mktemp("hillside-shared"))
+    _approve_site_and_program(store)
+    return HillsideConcepts(store)

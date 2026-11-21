@@ -6,6 +6,7 @@ All households, answers and sites here are synthetic.
 from __future__ import annotations
 
 import json
+import shutil
 from pathlib import Path
 
 import pytest
@@ -14,6 +15,7 @@ import yaml
 from house_ai.cad.layers import load_layer_mapping
 from house_ai.domain.brief import BriefTopic, DesignBrief, FactSourceKind
 from house_ai.domain.epistemics import Epistemic
+from house_ai.domain.geometry import Polygon2D
 from house_ai.domain.interview import InterviewSession, SiteContext, TurnKind
 from house_ai.domain.program import (
     SpaceFunction,
@@ -24,6 +26,7 @@ from house_ai.domain.program import (
 )
 from house_ai.domain.provenance import ApprovalRequiresHuman, DataClassification
 from house_ai.domain.provenance import ArtifactKind as K
+from house_ai.domain.site import Site, SpotElevation, Terrain, TerrainStatus
 from house_ai.domain.units import LengthUnit
 from house_ai.domain.workflow import EventType, Gate, WorkflowState
 from house_ai.interview import parsing
@@ -42,8 +45,10 @@ from house_ai.orchestration.workflow import (
 from house_ai.program.validation import blocking, validate_program
 from house_ai.providers.base import DataFlowPolicy, PrivateDataFlowError
 from house_ai.providers.scripted import ScriptedProvider
+from house_ai.storage import ProjectStore
 
-from .conftest import AGENT, HUMAN, REPO, SURVEY_DXF, SURVEY_LAYERS
+from .conftest import AGENT, HUMAN, REPO, SURVEY_DXF, SURVEY_LAYERS, FakeClock
+from .test_human_gates import tree
 
 EXAMPLE = REPO / "examples" / "interviews" / "synthetic-family"
 ANSWERS = yaml.safe_load((EXAMPLE / "answers.yaml").read_text())["answers"]
@@ -55,7 +60,10 @@ FULL = SiteConfirmation(
 
 def _project(new_store, *, approve_site: bool = True):
     """A synthetic project with the synthetic survey; site approved by a scripted human."""
-    store = new_store("family")
+    return _with_survey(new_store("family"), approve_site=approve_site)
+
+
+def _with_survey(store: ProjectStore, *, approve_site: bool = True) -> ProjectStore:
     doc = store.add_source(SURVEY_DXF, HUMAN, classification=DataClassification.SYNTHETIC)
     wf = Workflow(store)
     sites = SiteService(store)
@@ -66,14 +74,18 @@ def _project(new_store, *, approve_site: bool = True):
     return store
 
 
-def _run(svc: InterviewService, answers=ANSWERS, until: str | None = None):
+def _run(svc: InterviewService, answers=ANSWERS, until: str | None = None) -> list:
+    """Answer ``answers`` in order; the prompts asked, each checked against its answer."""
+    asked = []
     for step in answers:
         if until and step["question"] == until:
-            return
+            return asked
         prompt = svc.pending()
         assert prompt is not None, f"interview ended before {step['question']}"
         assert prompt.id == step["question"], f"expected {step['question']}, asked {prompt.id}"
+        asked.append(prompt)
         svc.answer(step["answer"], HUMAN)
+    return asked
 
 
 def _fact(brief: DesignBrief, fact_id: str):
@@ -87,15 +99,44 @@ def svc(new_store):
     return service
 
 
+@pytest.fixture(scope="module")
+def answered_template(tmp_path_factory):
+    """One project with every answer of answers.yaml given, nothing confirmed.
+
+    Answering takes most of this module's time, so it runs once; each test gets its own
+    copy (``answered``) and never writes to this one. Returns the folder, the clock's time
+    when it was built and the prompts asked, in order.
+    """
+    clock = FakeClock()
+    store = ProjectStore.init(
+        tmp_path_factory.mktemp("answered") / "family", project_id="family",
+        name="Test project", classification=DataClassification.SYNTHETIC, actor=HUMAN,
+        clock=clock,
+    )  # fmt: skip
+    service = InterviewService(_with_survey(store))
+    service.start(AGENT)
+    asked = _run(service)
+    return store.root, clock.now, asked
+
+
+@pytest.fixture
+def answered(answered_template, tmp_path):
+    """The completed interview of ``answered_template`` in a copy this test may change."""
+    root, now, _ = answered_template
+    copy = shutil.copytree(root, tmp_path / "family")
+    clock = FakeClock()
+    clock.now = now
+    return InterviewService(ProjectStore(copy, clock=clock))
+
+
 # ------------------------------------------------------------ normal interview
 
 
-def test_normal_interview_produces_a_confirmed_brief_and_a_valid_program(svc):
-    _run(svc)
-    assert svc.pending() is None
-    session = svc.session()
+def test_normal_interview_produces_a_confirmed_brief_and_a_valid_program(answered):
+    assert answered.pending() is None
+    session = answered.session()
     assert session.status.value == "complete"
-    brief = svc.brief()
+    brief = answered.brief()
     # The owner's words are kept verbatim as owner_answer facts.
     words = {f.statement for f in brief.facts if f.key == "answer"}
     assert {a["answer"] for a in ANSWERS} <= words
@@ -108,15 +149,15 @@ def test_normal_interview_produces_a_confirmed_brief_and_a_valid_program(svc):
     assert bedrooms.source.kind is FactSourceKind.AGENT_INFERENCE
     assert brief.household == []  # only confirmed counts become members
 
-    confirmed = svc.confirm(HUMAN)
-    assert "bedrooms" in confirmed and svc.state().unconfirmed() == []
-    brief = svc.brief()
+    confirmed = answered.confirm(HUMAN)
+    assert "bedrooms" in confirmed and answered.state().unconfirmed() == []
+    brief = answered.brief()
     assert _fact(brief, "f-adults").status is Epistemic.VERIFIED_FACT
     assert _fact(brief, "f-open_plan").status is Epistemic.PREFERENCE
     assert len(brief.household) == 4 and brief.target_gross_area_m2 == 180.0
     assert brief.budget is not None and brief.budget.amount == 450000
 
-    build = svc.build_program(AGENT)
+    build = answered.build_program(AGENT)
     program = build.result.program
     assert blocking(build.findings) == [], [f.message for f in build.findings]
     funcs = [i.function for i in program.space_requirements]
@@ -131,25 +172,24 @@ def test_normal_interview_produces_a_confirmed_brief_and_a_valid_program(svc):
     assert ("pi-bed-main", "pi-bath-ensuite", SpaceRelationshipKind.CONNECTED) in kinds
     assert ("pi-kitchen", "exterior", SpaceRelationshipKind.NEAR) in kinds  # kitchen next to garden
     # Every program item that came from an answer cites a fact that is in the brief.
-    fact_ids = {f.id for f in svc.brief().facts}
+    fact_ids = {f.id for f in answered.brief().facts}
     assert all(fid in fact_ids for i in program.space_requirements for fid in i.source_fact_ids)
 
-    build, gate = svc.review_program(AGENT)
+    build, gate = answered.review_program(AGENT)
     assert gate.blockers == []
-    wf = svc.workflow
+    wf = answered.workflow
     assert wf.state is WorkflowState.PROGRAM_REVIEW
     wf.approve(Gate.PROGRAM, build.program_ref, HUMAN, "synthetic owner approves")
     assert wf.state is WorkflowState.PROGRAM_APPROVED
-    assert svc.store.verify() == []
+    assert answered.store.verify() == []
 
 
-def test_questions_are_asked_one_at_a_time_and_never_repeated(svc):
-    asked = []
-    for step in ANSWERS:
-        prompt = svc.pending()
-        asked.append(prompt.id)
+def test_questions_are_asked_one_at_a_time_and_never_repeated(answered_template):
+    _, _, prompts = answered_template  # every prompt the full interview asked, in order
+    assert len(prompts) == len(ANSWERS)
+    for prompt in prompts:
         assert "\n" not in prompt.text or prompt.kind == "resolve"
-        svc.answer(step["answer"], HUMAN)
+    asked = [p.id for p in prompts]
     assert len(asked) == len(set(asked))
     # Questions whose condition does not hold are skipped (no lift question: nobody needs one).
     assert "q-lift" not in asked and "q-dining" not in asked
@@ -260,22 +300,21 @@ def test_deferring_a_contradiction_keeps_it_open_and_blocks_the_gate(svc):
 # ------------------------------------------------------------------ revisions
 
 
-def test_changing_an_earlier_answer_keeps_the_history(svc):
-    _run(svc)
-    svc.confirm(HUMAN)
-    before = svc.session()
-    result = svc.revise("q-bedrooms", "Actually four bedrooms.", HUMAN)
+def test_changing_an_earlier_answer_keeps_the_history(answered):
+    answered.confirm(HUMAN)
+    before = answered.session()
+    result = answered.revise("q-bedrooms", "Actually four bedrooms.", HUMAN)
     assert [u.value for u in result.understood if u.slot == "bedrooms"] == [4]
-    session = svc.session()
+    session = answered.session()
     assert len(session.turns) == len(before.turns) + 1
     assert session.turns[-1].kind is TurnKind.REVISION
     old = [t for t in session.turns if t.question_id == "q-bedrooms"]
     assert [t.text for t in old] == ["Three bedrooms.", "Actually four bedrooms."]
-    brief = svc.brief()
+    brief = answered.brief()
     assert _fact(brief, "f-bedrooms").value == 4
     assert _fact(brief, "f-bedrooms").status is Epistemic.INFERENCE  # reconfirm the change
-    svc.confirm(HUMAN, ["bedrooms"])
-    build = svc.build_program(AGENT)
+    answered.confirm(HUMAN, ["bedrooms"])
+    build = answered.build_program(AGENT)
     reqs = build.result.program.space_requirements
     beds = [i for i in reqs if i.function is SpaceFunction.BEDROOM]
     assert len(beds) == 4
@@ -308,10 +347,9 @@ def test_conflicting_room_adjacencies_are_detected(svc):
     assert svc.state().values["relationships"] == ["office|apart|kitchen"]
 
 
-def test_conflicting_hard_adjacencies_in_a_program_block(svc):
-    _run(svc)
-    svc.confirm(HUMAN)
-    program = svc.build_program(AGENT).result.program
+def test_conflicting_hard_adjacencies_in_a_program_block(answered):
+    answered.confirm(HUMAN)
+    program = answered.build_program(AGENT).result.program
     clash = SpaceRelationship(
         id="adj-clash", a="pi-kitchen", b="pi-living",
         kind=SpaceRelationshipKind.SEPARATED, strength=Strength.HARD,
@@ -320,22 +358,21 @@ def test_conflicting_hard_adjacencies_in_a_program_block(svc):
     bad = SpaceProgram.model_validate(
         {**doc, "space_relationships": [*doc["space_relationships"], clash.model_dump()]}
     )
-    found = [f for f in validate_program(bad, svc.brief()) if f.code == "adjacency_conflict"]
+    found = [f for f in validate_program(bad, answered.brief()) if f.code == "adjacency_conflict"]
     assert found and found[0].severity.value == "blocking" and len(found[0].options) == 2
 
 
-def test_an_unrealistic_total_area_is_infeasible_with_options(svc):
-    answers = [dict(a) for a in ANSWERS]
-    next(a for a in answers if a["question"] == "q-area")["answer"] = "60 m2 in total."
-    _run(svc, answers)
-    svc.confirm(HUMAN)
-    build = svc.build_program(AGENT)
+def test_an_unrealistic_total_area_is_infeasible_with_options(answered):
+    answered.revise("q-area", "60 m2 in total.", HUMAN)
+    answered.confirm(HUMAN)
+    assert _fact(answered.brief(), "f-target_area").value == 60.0
+    build = answered.build_program(AGENT)
     infeasible = next(f for f in build.findings if f.code == "area_infeasible")
     assert infeasible.severity.value == "blocking"
     assert any("Raise the total" in o for o in infeasible.options)
     assert build.result.program.target_gross_area_m2 == 60.0  # not silently raised
     tiny = SiteContext(parcel_area_m2=50.0, verified=True)
-    over = next(f for f in validate_program(build.result.program, svc.brief(), tiny)
+    over = next(f for f in validate_program(build.result.program, answered.brief(), tiny)
                 if f.code == "exceeds_parcel")  # fmt: skip
     assert over.severity.value == "blocking" and "Add a storey" in over.options
 
@@ -364,83 +401,78 @@ def test_an_interrupted_interview_resumes_from_the_store(new_store):
 # ------------------------------------------------------------ program review
 
 
-def test_a_rejected_program_goes_back_to_the_interview_with_the_owners_words(svc):
-    _run(svc)
-    svc.confirm(HUMAN)
-    build, _ = svc.review_program(AGENT)
+def test_a_rejected_program_goes_back_to_the_interview_with_the_owners_words(answered):
+    answered.confirm(HUMAN)
+    build, _ = answered.review_program(AGENT)
     with pytest.raises(ApprovalRequiresHuman):
-        svc.reject_program(AGENT, "agent tries")
+        answered.reject_program(AGENT, "agent tries")
     words = "No: the study must be on the garden level, not upstairs."
-    svc.reject_program(HUMAN, words)
-    wf = svc.workflow
+    answered.reject_program(HUMAN, words)
+    wf = answered.workflow
     assert wf.state is WorkflowState.INTERVIEWING
     assert wf.status().approvals.get(Gate.PROGRAM) is None
-    assert any(f.statement == words for f in svc.brief().facts if f.key == "program_rejection")
-    last = svc.store.events()[-1]
+    assert any(f.statement == words for f in answered.brief().facts if f.key == "program_rejection")
+    last = answered.store.events()[-1]
     assert last.to_state is WorkflowState.INTERVIEWING and words in last.reason
     with pytest.raises(GateBlocked):  # not in review any more
         wf.approve(Gate.PROGRAM, build.program_ref, HUMAN, "too late")
 
 
-def test_an_ai_cannot_approve_the_program(svc, tmp_path):
-    _run(svc)
-    svc.confirm(HUMAN)
-    build, _ = svc.review_program(AGENT)
-    wf = svc.workflow
+def test_an_ai_cannot_approve_the_program(answered, tmp_path):
+    answered.confirm(HUMAN)
+    build, _ = answered.review_program(AGENT)
+    wf = answered.workflow
     with pytest.raises(ApprovalRequiresHuman):
         wf.approve(Gate.PROGRAM, build.program_ref, AGENT, "agent approves")
     from house_ai.cli.main import main
 
-    code = main(["workflow", "approve", str(svc.store.root), "program", "--id", "program",
+    code = main(["workflow", "approve", str(answered.store.root), "program", "--id", "program",
                  "--approver", "claude"])  # fmt: skip
     assert code == 2  # needs an interactive terminal and a typed phrase
     assert wf.state is WorkflowState.PROGRAM_REVIEW
 
 
-def test_unconfirmed_interpretations_block_the_program_gate(svc):
-    _run(svc)  # nothing confirmed
-    build, gate = svc.review_program(AGENT)
+def test_unconfirmed_interpretations_block_the_program_gate(answered):
+    # nothing confirmed
+    build, gate = answered.review_program(AGENT)
     assert ("program_check", "unconfirmed_interpretation") in [
         (b.kind.value, b.code) for b in gate.blockers
     ]
     with pytest.raises(GateBlocked):
-        svc.workflow.approve(Gate.PROGRAM, build.program_ref, HUMAN, "too early")
+        answered.workflow.approve(Gate.PROGRAM, build.program_ref, HUMAN, "too early")
 
 
-def test_a_missing_blocking_answer_is_one_blocker_its_open_question(svc):
-    _run(svc)
-    svc.revise("q-household", "We have not decided who will live there.", HUMAN,
+def test_a_missing_blocking_answer_is_one_blocker_its_open_question(answered):
+    answered.revise("q-household", "We have not decided who will live there.", HUMAN,
                interpreted={"adults": None})  # fmt: skip
-    svc.confirm(HUMAN)
+    answered.confirm(HUMAN)
 
-    _, gate = svc.review_program(AGENT)
+    _, gate = answered.review_program(AGENT)
 
     assert [(b.kind.value, b.code, b.subject_ids) for b in gate.blockers] == [
         ("open_question", "oq-adults", ["oq-adults"])
     ]
 
 
-def test_an_unresolved_contradiction_is_one_blocker(svc):
-    _run(svc)
-    svc.confirm(HUMAN)
-    program = svc.build_program(AGENT)
+def test_an_unresolved_contradiction_is_one_blocker(answered):
+    answered.confirm(HUMAN)
+    program = answered.build_program(AGENT)
     assert not blocking(program.findings)
-    svc.revise("q-bedrooms", "Two bedrooms.", HUMAN)  # three people need their own rooms
-    svc.confirm(HUMAN)
+    answered.revise("q-bedrooms", "Two bedrooms.", HUMAN)  # three people need their own rooms
+    answered.confirm(HUMAN)
 
-    _, gate = svc.review_program(AGENT)
+    _, gate = answered.review_program(AGENT)
 
     contradiction = [b for b in gate.blockers if b.kind.value == "contradiction"]
     assert len(contradiction) == 1 and len(gate.blockers) == 1
 
 
-def test_answers_cannot_change_once_the_program_is_approved(svc):
-    _run(svc)
-    svc.confirm(HUMAN)
-    build, _ = svc.review_program(AGENT)
-    svc.workflow.approve(Gate.PROGRAM, build.program_ref, HUMAN, "approved")
+def test_answers_cannot_change_once_the_program_is_approved(answered):
+    answered.confirm(HUMAN)
+    build, _ = answered.review_program(AGENT)
+    answered.workflow.approve(Gate.PROGRAM, build.program_ref, HUMAN, "approved")
     with pytest.raises(InterviewLocked):
-        svc.revise("q-bedrooms", "Five bedrooms.", HUMAN)
+        answered.revise("q-bedrooms", "Five bedrooms.", HUMAN)
 
 
 # ------------------------------------------------------------ program review moves
@@ -451,30 +483,28 @@ def _moves(store) -> list[tuple[str, str]]:
             if e.type is EventType.TRANSITION]  # fmt: skip
 
 
-def test_program_review_makes_its_own_move_out_of_site_approved(svc):
-    _run(svc)
-    svc.confirm(HUMAN)
-    assert svc.workflow.state is WorkflowState.SITE_APPROVED
+def test_program_review_makes_its_own_move_out_of_site_approved(answered):
+    answered.confirm(HUMAN)
+    assert answered.workflow.state is WorkflowState.SITE_APPROVED
 
-    _, gate = svc.review_program(AGENT)
+    _, gate = answered.review_program(AGENT)
 
     assert gate.blockers == []
-    assert svc.workflow.state is WorkflowState.PROGRAM_REVIEW
-    assert _moves(svc.store)[-2:] == [
+    assert answered.workflow.state is WorkflowState.PROGRAM_REVIEW
+    assert _moves(answered.store)[-2:] == [
         ("SITE_APPROVED", "INTERVIEWING"),
         ("INTERVIEWING", "PROGRAM_REVIEW"),
     ]
 
 
-def test_program_review_works_unchanged_from_interviewing(svc):
-    _run(svc)
-    svc.confirm(HUMAN)
-    svc.workflow.transition(WorkflowState.INTERVIEWING, AGENT, "recovery: moved by hand")
+def test_program_review_works_unchanged_from_interviewing(answered):
+    answered.confirm(HUMAN)
+    answered.workflow.transition(WorkflowState.INTERVIEWING, AGENT, "recovery: moved by hand")
 
-    svc.review_program(AGENT)
+    answered.review_program(AGENT)
 
-    assert svc.workflow.state is WorkflowState.PROGRAM_REVIEW
-    assert _moves(svc.store)[-1] == ("INTERVIEWING", "PROGRAM_REVIEW")
+    assert answered.workflow.state is WorkflowState.PROGRAM_REVIEW
+    assert _moves(answered.store)[-1] == ("INTERVIEWING", "PROGRAM_REVIEW")
 
 
 # ------------------------------------------------------------ unverified site
@@ -666,12 +696,63 @@ def test_cli_run_refuses_an_agent_looking_owner(new_store, monkeypatch, capsys, 
     from house_ai.cli.main import EXIT_USAGE, main
 
     store = _project(new_store)
-    before = len(store.events())
+    before = tree(store.root)
     monkeypatch.setattr("sys.stdin.isatty", lambda: True)
     monkeypatch.setattr("builtins.input", lambda *_: pytest.fail("asked a question"))
     assert main(["interview", "run", str(store.root), "--owner", owner]) == EXIT_USAGE
     assert "disallowed owner" in capsys.readouterr().err
-    assert len(store.events()) == before
+    assert tree(store.root) == before
+
+
+def test_an_agent_confirmation_without_owner_words_is_recorded_as_it_happened(svc):
+    """Current behaviour, pinned (a product gap, not a rule): the service accepts a
+    confirmation from an agent with no owner words. The turn names the agent and holds no
+    text, yet the facts become owner-sourced verified facts.
+    """
+    svc.answer("Two adults.", HUMAN)
+    before = [t.model_dump() for t in svc.session().turns]
+
+    assert svc.confirm(AGENT) == ["adults", "children", "elders", "household_size"]
+
+    turns = svc.session().turns
+    assert [t.model_dump() for t in turns[:-1]] == before
+    turn = turns[-1]
+    assert (turn.seq, turn.kind, turn.actor, turn.text) == (
+        2, TurnKind.CONFIRMATION, AGENT, None
+    )
+    assert turn.slots == ["adults", "children", "elders", "household_size"]
+    fact = _fact(svc.brief(), "f-adults")
+    assert (fact.value, fact.status, fact.source.kind, fact.source.ref) == (
+        2, Epistemic.VERIFIED_FACT, FactSourceKind.OWNER_ANSWER, "confirmed:ans-q-household-1"
+    )
+
+
+def test_the_cli_records_an_agents_confirmation_with_or_without_the_owners_words(
+    new_store, capsys
+):
+    """``interview confirm --actor agent:...`` needs no terminal; ``--text`` is kept verbatim
+    when given and nothing is recorded in its place when it is not (current behaviour)."""
+    from house_ai.cli.main import main
+
+    store = _project(new_store)
+    d = str(store.root)
+    assert main(["interview", "start", d, "--actor", "agent:codex"]) == 0
+    assert main(["interview", "answer", d, "Two adults and one child.", "--actor",
+                 "agent:codex"]) == 0  # fmt: skip
+    capsys.readouterr()
+    words = "Yes, two adults and one child is right."
+    assert main(["interview", "confirm", d, "adults", "--text", words, "--json",
+                 "--actor", "agent:codex"]) == 0  # fmt: skip
+    assert json.loads(capsys.readouterr().out) == {"confirmed": ["adults"]}
+    assert main(["interview", "confirm", d, "--json", "--actor", "agent:codex"]) == 0
+    assert json.loads(capsys.readouterr().out) == {
+        "confirmed": ["children", "elders", "household_size"]
+    }
+    turns = InterviewService(store).session().turns
+    assert [(t.kind, t.actor.kind.value, t.actor.id, t.text, t.slots) for t in turns[-2:]] == [
+        (TurnKind.CONFIRMATION, "agent", "codex", words, ["adults"]),
+        (TurnKind.CONFIRMATION, "agent", "codex", None, ["children", "elders", "household_size"]),
+    ]
 
 
 def test_an_empty_confirmation_confirms_nothing(svc, monkeypatch):
@@ -1057,101 +1138,88 @@ def test_agent_first_end_to_end_workflow_with_persian_english_and_mixed_answers(
     assert Workflow(store).state is WorkflowState.PROGRAM_REVIEW
 
 
+def _steep_site(store: ProjectStore) -> Site:
+    """A synthetic 20 x 26 m parcel whose ground rises 14.5 m from front to back."""
+    spots = [((1, 1), 0.0), ((19, 1), 0.0), ((1, 25), 14.5), ((19, 25), 14.5)]
+    return Site(
+        id="site", project_id=store.project_id, name="Synthetic steep parcel",
+        classification=DataClassification.SYNTHETIC,
+        boundary=Polygon2D.rectangle(0, 0, 20, 26), boundary_status=Epistemic.INFERENCE,
+        terrain=Terrain(status=TerrainStatus.SURVEYED_POINTS, spot_elevations=[
+            SpotElevation(id=f"s{i}", xy=xy, z_m=z) for i, (xy, z) in enumerate(spots, 1)
+        ]),
+        provenance={"created_at": store.clock(), "created_by": HUMAN, "method": "test"},
+    )  # fmt: skip
+
+
 def test_steep_hillside_site_records_engineering_assumptions_and_warns_on_flat_pad(new_store):
-    """On a steep unverified site like projects/my-house (~600 m2, ~12.4 m relief),
-    the space program builder records hillside engineering assumptions and warns if a flat
-    pad is chosen.
+    """On a steep unverified site the space program the service builds records hillside
+    engineering assumptions, and choosing a flat pad is warned about.
     """
-    store = _project(new_store, approve_site=False)
+    store = new_store("steep")
+    store.put(K.SITE, "site", _steep_site(store), HUMAN)
     svc = InterviewService(store)
     svc.start(AGENT)
+    # The service reads the site from the store: unverified, 520 m2, 14.5 m relief.
+    assert svc.site().model_dump(exclude={"site_ref"}) == {
+        "verified": False, "parcel_area_m2": 520.0, "relief_m": 14.5,
+        "mean_slope_pct": 60.42, "frontage_m": None,
+    }  # fmt: skip
     _run(svc)
-    # Override site context on the latest session to match a steep synthetic relief parcel.
-    steep_site = SiteContext(
-        site_ref=store.latest(K.SITE, "site"),
-        verified=False,
-        parcel_area_m2=520.0,
-        relief_m=14.5,
-        mean_slope_pct=55.0,
-        frontage_m=18.5,
-    )
-    svc.revise(
-        "q-slope",
-        "Keep it on a flat pad even though the land is steep.",
-        AGENT,
-        interpreted={"slope_strategy": "flat"},
-    )
-    svc.confirm(AGENT)
-    brief = svc.brief()
-    brief_ref = store.latest(K.DESIGN_BRIEF, "brief")
-    assert brief_ref is not None
-    from house_ai.program.builder import build_program
+    svc.revise("q-slope", "Keep it on a flat pad even though the land is steep.", AGENT,
+               interpreted={"slope_strategy": "flat"})  # fmt: skip
+    assert svc.state().values["slope_strategy"] == "platform"
+    svc.confirm(HUMAN)
 
-    result = build_program(
-        brief, site=steep_site, brief_ref=brief_ref, created_at=store.clock()
-    )
-    asm_ids = {a.id for a in result.assumptions.assumptions}
-    assert "asm-site-unverified" in asm_ids
-    assert "asm-hillside-engineering" in asm_ids
-    hillside_asm = next(
-        a for a in result.assumptions.assumptions if a.id == "asm-hillside-engineering"
-    )
-    for keyword in (
-        "split-level",
-        "road-level",
-        "excavation",
-        "retaining walls",
-        "drainage",
-        "structural",
-    ):
-        assert keyword in hillside_asm.statement
+    build = svc.build_program(AGENT)
 
-    findings = validate_program(result.program, brief, steep_site)
-    codes = {f.code for f in findings}
-    assert "steep_site_flat_pad" in codes
+    assert not build.result.program.site_approved
+    asm = {a.id: a for a in build.result.assumptions.assumptions}
+    assert {"asm-site-unverified", "asm-hillside-engineering"} <= set(asm)
+    assert asm["asm-hillside-engineering"].confirm_with == "engineer"
+    for keyword in ("split-level", "road-level", "excavation", "retaining walls", "drainage",
+                    "structural"):  # fmt: skip
+        assert keyword in asm["asm-hillside-engineering"].statement
+    (pad,) = [f for f in build.findings if f.code == "steep_site_flat_pad"]
+    assert pad.severity.value == "warning"
+    assert "(14.5 m relief, 60.4% mean slope)" in pad.message
+    assert pad.options == [
+        "Step the house down the slope (split-level)",
+        "Use a lower garden / walk-out level",
+        "Keep a flat pad with engineered retaining walls",
+    ]
 
-
-def test_agent_inspects_synthetic_project_without_modifying_it(tmp_path, capsys):
-    """Verify status and blockers report an unverified steep site in
-    SITE_NEEDS_CONFIRMATION without modifying any files in the project.
+def test_agent_inspects_synthetic_project_without_modifying_it(new_store, capsys):
+    """Status and blockers report an unverified steep site in SITE_NEEDS_CONFIRMATION
+    without changing any file or folder in the project.
     """
     from house_ai.cli.main import main
-    from house_ai.domain.geometry import Polygon2D
-    from house_ai.domain.site import Epistemic, Site, SiteCoordinates
-    from house_ai.storage import ProjectStore
 
-    proj_dir = tmp_path / "synthetic-steep"
-    store = ProjectStore.init(
-        proj_dir,
-        project_id="synthetic-steep",
-        name="Synthetic Steep Project",
-        classification="synthetic",  # type: ignore[arg-type]
-        actor=HUMAN,
-    )
-    # Put a site that needs verification (unverified boundary, local coords only)
-    site = Site(
-        id="site",
-        project_id="synthetic-steep",
-        name="Synthetic Steep Site",
-        classification="synthetic",  # type: ignore[arg-type]
-        coordinates=SiteCoordinates(),
-        boundary=Polygon2D.rectangle(0, 0, 20, 26),
-        boundary_status=Epistemic.INFERENCE,
-        provenance={"created_at": store.clock(), "created_by": HUMAN, "method": "test"},  # type: ignore[arg-type]
-    )
-    s_ref = store.put(K.SITE, "site", site, HUMAN)
+    store = new_store("synthetic-steep")
+    proj_dir = store.root
+    s_ref = store.put(K.SITE, "site", _steep_site(store), HUMAN)
     SiteService(store).assess(s_ref, HUMAN)
 
-    before_events = len(store.events())
+    before = tree(proj_dir)
     assert main(["project", "status", str(proj_dir), "--json"]) == 0
     status = json.loads(capsys.readouterr().out)
     assert status["state"] == "SITE_NEEDS_CONFIRMATION"
     assert status["site"]["verified"] is False
-    assert len(status["site"]["verification_blockers"]) >= 1
+    assert status["site"]["relief_m"] == 14.5
+    assert status["site"]["verification_blockers"] == [
+        "drawing units are unknown; a human must confirm them",
+        "horizontal CRS is unknown; a human must confirm the EPSG code or confirm the survey "
+        "is local-only",
+        "elevation units are unknown; a human must confirm them",
+        "vertical datum is unknown; a human must confirm it or confirm elevations are relative "
+        "to a local benchmark",
+        "no local project coordinate system has been created",
+        "parcel boundary status is inference, not verified",
+    ]
     assert main(["interview", "status", str(proj_dir), "--json"]) == 0
     istatus = json.loads(capsys.readouterr().out)
     assert istatus["session_status"] == "not_started"
-    assert len(store.events()) == before_events
+    assert tree(proj_dir) == before
 
 
 # ----------------------------------------------------------- ISS-43/44/45 fixes
@@ -1253,3 +1321,4 @@ def test_follow_up_with_unmatched_topic_lands_in_priorities_not_a_crash(svc):
     ref = "followup-hillside-q-followup-c04-entrance"
     facts = [f for f in svc.brief().facts if f.source.ref == ref]
     assert [(f.topic, f.statement) for f in facts] == [(BriefTopic.PRIORITIES, "Both")]
+

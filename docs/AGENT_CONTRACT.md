@@ -158,6 +158,12 @@ Never rename an existing study folder.
   is a symlink to that folder. `tests/test_skills.py` enforces their template.
 - Every behaviour change or bug fix has a deterministic offline test asserting
   ground-truth numbers. Record architectural decisions in `docs/adr/NNNN-*.md`.
+- Tests ([ADR 0035](adr/0035-fast-and-sound-test-suite.md)): assert exact values,
+  not `>=`, truthiness or presence where the value is known; never pin solver
+  coordinates. Show a new or repaired test fails against the broken behaviour.
+  Never solve the same problem twice: share plans through a module fixture or
+  `hillside` (`tests/conftest.py`). `pytest` runs on four workers; `-n 0` runs
+  one process.
 - Owner commands "Project status", "Next stage", "Review stage <ID>" and
   "Close stage <ID>" follow the tracker protocol (§O): one stage per branch
   `stage/<ID>-<slug>`, stop for independent review, no DONE without evidence.

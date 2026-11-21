@@ -12,23 +12,14 @@ from house_ai.domain.program import SpaceFunction as S
 from house_ai.evaluation.base import EvaluationContext
 from house_ai.evaluation.usability import FurnitureUsabilityEvaluator
 from house_ai.generation.rooms import garage_dims_dm
-from house_ai.orchestration.plans import PlanService
-
-from .conftest import AGENT
-from .test_plan_workflow import _approve_site_and_program, _load
 
 STRATEGIES = ["compact", "split_level", "two_wing"]
 
 
-@pytest.fixture(scope="module")
-def concepts(tmp_path_factory):
-    store = _load(tmp_path_factory.mktemp("garage"))
-    _approve_site_and_program(store)
-    svc = PlanService(store)
-    out = svc.generate(AGENT, strategies=STRATEGIES, exploratory=True)
-    return {o.candidate.strategy: o.candidate.plan.model for o in out.generated}, svc.inputs(
-        exploratory=True
-    )
+@pytest.fixture
+def concepts(hillside):
+    """The shared exploratory synthetic-hillside plans (conftest `hillside`), copied per test."""
+    return hillside.models(STRATEGIES), hillside.inputs()
 
 
 def test_garage_size_follows_the_program_cars(concepts):

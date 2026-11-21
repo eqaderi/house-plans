@@ -3,6 +3,8 @@ and when processing a real two-file survey. All data here is synthetic."""
 
 from __future__ import annotations
 
+import math
+import re
 from pathlib import Path
 
 import ezdxf
@@ -327,10 +329,23 @@ def test_site_context_and_validation_derive_terrain_and_frontage_when_unstored()
 
     ref = ArtifactRef(kind=K.SITE, id="site", version=1, sha256="0" * 64)
     ctx = site_context_for(site, ref, None)
+    # Regression value: the area-weighted gradient of the TIN clipped to the parcel; it has
+    # no closed form (35 surveyed points), unlike the three values below.
     assert ctx.mean_slope_pct == pytest.approx(36.65, abs=0.01)
-    assert ctx.frontage_m == pytest.approx(24.0, abs=0.01)
-    assert ctx.relief_m == pytest.approx(10.38, abs=0.01)
-    assert ctx.parcel_area_m2 == pytest.approx(737.503, abs=0.01)
+    # Frontage is edge 0, (0, 0) -> (23.476, 4.99): sqrt(551.123 + 24.900) = 24.0004 m.
+    corners = site.boundary.outer
+    assert ctx.frontage_m == pytest.approx(math.hypot(*corners[1]), abs=1e-3) == 24.0
+    # Relief over the 14 spots inside the parcel: spot-p13-q02 12.48 m - spot-p26-q32 2.10 m.
+    z = {s.id: s.z_m for s in site.terrain.spot_elevations}
+    assert (z["spot-p13-q02"], z["spot-p26-q32"]) == (12.48, 2.1)
+    assert ctx.relief_m == pytest.approx(12.48 - 2.10, abs=1e-9)
+    # Shoelace over the four corners: (720.010 + 754.996) / 2 = 737.503 m².
+    shoelace = sum(
+        x0 * y1 - x1 * y0
+        for (x0, y0), (x1, y1) in zip(corners, [*corners[1:], corners[0]], strict=True)
+    )
+    assert ctx.parcel_area_m2 == pytest.approx(shoelace / 2, abs=1e-3)
+    assert ctx.parcel_area_m2 == pytest.approx(737.503, abs=1e-3)
 
 
 def test_source_audit_replays_synthetic_entities_without_writing_store(tmp_path, new_store):
@@ -368,29 +383,6 @@ def test_source_audit_replays_synthetic_entities_without_writing_store(tmp_path,
     assert first["metrics"]["arithmetic_triangle_mean_pct"] == pytest.approx(50.0)
     assert (store.root / "events.jsonl").read_bytes() == events_before
     assert store.verify() == []
-
-
-def test_implausibly_steep_tin_triangles_are_reported(tmp_path, new_store):
-    path = _labelled_spots(
-        tmp_path / "steep.dxf",
-        [
-            ((2, 2, 100.0), "A\\P100.000"),
-            ((28, 2, 100.5), "B\\P100.500"),
-            ((15, 18, 101.0), "C\\P101.000"),
-            ((15.5, 18, 103.0), "D\\P103.000"),  # 2 m rise over 0.5 m: a wall or an error
-        ],
-    )
-    store = new_store("steep")
-    sid = _add(store, path)
-    mapping = LayerMapping(
-        layers={"0": LayerRole.SPOT_ELEVATION}, boundary_handle=f"{sid}#{_first_polyline(path)}"
-    )
-    site = store.get(ingest_site(store, sid, mapping, AGENT).site_ref, Site)
-    report = validate_site(site)
-    steep = [f for f in report.findings if f.code == "steep_terrain"]
-    assert len(steep) == 1 and steep[0].severity.value == "warning"
-    assert "spot-steep-" in steep[0].message
-    assert report.terrain.max_slope_pct > 100
 
 
 def test_each_steep_triangle_is_listed_with_its_measurements(tmp_path, new_store):
@@ -434,6 +426,11 @@ def test_each_steep_triangle_is_listed_with_its_measurements(tmp_path, new_store
     assert "mixes sources" not in t.traits and "no steep edge" not in t.traits
     assert report.terrain.tin_triangles == 2  # nothing removed or smoothed
     assert "steep triangles" in report_markdown(report).lower()
+    # One warning names the steep spots, and the steepest triangle is that one.
+    (finding,) = [f for f in report.findings if f.code == "steep_terrain"]
+    assert finding.severity.value == "warning"
+    assert ids["C"] in finding.message and ids["D"] in finding.message
+    assert report.terrain.max_slope_pct == pytest.approx(expected, abs=0.1)
 
 
 def test_a_thin_triangle_can_be_steep_although_none_of_its_edges_is(tmp_path, new_store):
@@ -489,7 +486,27 @@ def test_terrain_svg_shades_slope_and_labels_calculated_contours(new_store, mapp
     assert slope_class(11.18) == 1 and "5–15 %: 100 % of TIN area" in svg
     assert "interpolated from the TIN, not surveyed" in svg
     assert "north not established" in svg
-    assert svg.count("calculated contour") >= 3
+    # TIN z runs 100..105 m, so the interval is 0.5 m (10 levels <= 15). The 100 m level only
+    # touches the corner vertex; 101 m is dropped because every triangle it crosses has a
+    # vertex on the surveyed 101 m contour (test_a_calculated_contour_through_tin_vertices...).
+    levels = re.findall(r"calculated contour (\d+\.\d\d) m", svg)
+    assert levels == [f"{z:.2f}" for z in (100.5, 101.5, 102, 102.5, 103, 103.5, 104, 104.5)]
+
+
+@pytest.mark.xfail(
+    strict=True,
+    reason="product bug: render2d.terrain_svg._segment_at needs strict sign changes, so a "
+    "level that passes exactly through TIN vertices (the surveyed 101 m contour) is not drawn",
+)
+def test_a_calculated_contour_through_tin_vertices_is_drawn(new_store, mapping):
+    from house_ai.render2d.terrain_svg import render_terrain_svg
+
+    from .conftest import SURVEY_DXF
+
+    store = new_store("synthetic-survey")
+    site = store.get(ingest_site(store, _add(store, SURVEY_DXF), mapping, AGENT).site_ref, Site)
+    svg = render_terrain_svg(site, validate_site(site))
+    assert "calculated contour 101.00 m" in svg
 
 
 def test_review_page_labels_how_each_value_is_known(tmp_path):

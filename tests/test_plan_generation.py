@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import copy
+import functools
 import math
 from datetime import UTC, datetime
 from itertools import combinations
@@ -55,14 +57,27 @@ def _generate(site: Site, program: SpaceProgram, **kw):
     return CpSatPlanGenerator().candidates(req)
 
 
+@functools.cache
+def _hillside_candidates_once() -> tuple:
+    return tuple(_generate(*_load(HILLSIDE)))
+
+
+def all_hillside_candidates() -> list:
+    """Every default strategy on synthetic-hillside, no constraint set, solved once per process.
+
+    Shared with test_plan_architectural_review; each caller gets its own deep copy.
+    """
+    return copy.deepcopy(list(_hillside_candidates_once()))
+
+
 @pytest.fixture(scope="module")
 def hillside():
     return _load(HILLSIDE)
 
 
 @pytest.fixture(scope="module")
-def hillside_candidates(hillside):
-    return _generate(*hillside)
+def hillside_candidates():
+    return all_hillside_candidates()
 
 
 @pytest.fixture(scope="module")
@@ -117,16 +132,31 @@ def test_every_room_meets_its_program_minimum_and_width(hillside, hillside_plans
 
 
 def test_hard_connections_are_doors_or_openings(hillside, hillside_plans):
+    """Read straight from the openings, independent of check_model's door graph."""
     _, program = hillside
-    hard = [
-        a
+    hard = {
+        a.id
         for a in program.space_relationships
         if a.strength is Strength.HARD and a.kind is SpaceRelationshipKind.CONNECTED
-    ]
-    assert hard, "the fixture should exercise hard connections (open-plan living)"
+    }
+    assert hard == {
+        "adj-01-entry-exterior",
+        "adj-02-kitchen-living",
+        "adj-03-dining-living",
+        "adj-04-kitchen-dining",
+        "adj-05-bed-main-bath-ensuite",
+    }
     for plan in hillside_plans.values():
-        codes = {f.code for f in check_model(plan.model, None, program)}
-        assert "hard_adjacency_violation" not in codes, plan.strategy
+        model = plan.model
+        passable = {frozenset(o.connects) for o in model.openings if o.is_passable}
+
+        ids = {"exterior": {"exterior"}}
+        for s in model.spaces:
+            ids.setdefault(s.program_item_id, set()).add(s.id)
+        for rel in program.space_relationships:
+            if rel.id in hard:
+                pairs = {frozenset((a, b)) for a in ids[rel.a] for b in ids[rel.b]}
+                assert pairs & passable, (plan.strategy, rel.id)
 
 
 def test_open_plan_triangle_is_laid_out_so_every_pair_touches(hillside):
@@ -189,10 +219,12 @@ def test_walk_out_level_has_retaining_walls_and_no_windows_in_them(hillside_plan
     assert any(i.id == "iss-hillside-engineering" for i in plan.model.issues)
 
 
-def test_generation_is_deterministic(hillside):
-    a = _generate(*hillside, strategies=["split_level", "two_wing"])
-    b = _generate(*hillside, strategies=["split_level", "two_wing"])
-    assert [canonical_json(c.plan) for c in a] == [canonical_json(c.plan) for c in b]
+def test_generation_is_deterministic(hillside, hillside_plans):
+    """A fresh solve equals the shared all-strategy solve, byte for byte."""
+    fresh = _generate(*hillside, strategies=["split_level", "two_wing"])
+    assert [canonical_json(c.plan) for c in fresh] == [
+        canonical_json(hillside_plans[s]) for s in ("split_level", "two_wing")
+    ]
 
 
 def test_plan_records_how_it_was_generated(hillside_plans):

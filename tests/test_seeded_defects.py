@@ -180,7 +180,8 @@ def test_overlapping_space_labels_are_a_finding_of_the_evaluation(clean_model):
 def test_clean_model_has_no_seeded_defect_findings(clean_model):
     """A clean model: the Evaluation reports none of the seeded defects below."""
     report = _evaluation(clean_model)
-    assert not {v.code for v in report.violations} & SEEDED_CODES
+    assert {v.code for v in report.violations} & SEEDED_CODES == set()
+    assert {f.code for f in check_model(clean_model)} & SEEDED_CODES == set()
     headroom = next(m for m in report.metrics if m.metric == "stair_min_headroom_m")
     assert headroom.status is ClaimStatus.NOT_CHECKED  # no slab over the flight
     # Its integrity errors are only that the hand-built rooms have no doors.
@@ -243,6 +244,7 @@ def test_window_on_a_retaining_wall_of_a_room_that_is_not_habitable_is_reported(
     )
     (finding,) = _findings(_evaluation(clean_model), "window_buried")
     assert finding.subject_ids == ["win-store", "w-ret-store", "sp-living"]
+    assert (finding.status, finding.method) == (ClaimStatus.MEASURED, "host_wall_is_retaining")
 
 
 def test_missing_stair_level_and_arrival_space_are_dangling_references(clean_model):

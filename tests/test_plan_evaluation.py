@@ -265,8 +265,14 @@ def hillside_reports():
 
 def test_hillside_site_metrics_expose_cut_fill_and_retaining(hillside_reports):
     by = {p.strategy: r for p, r, _ in hillside_reports}
+    plans = {p.strategy: p for p, _, _ in hillside_reports}
     compact, split = by["compact"], by["split_level"]
-    assert _metric(compact, "retaining_wall_length_m").value > 0
+    # Every wall the generator drew as RETAINING is counted, plus exterior walls holding
+    # back more than 0.6 m of ground.
+    drawn = sum(w.length_m for w in plans["compact"].model.walls if w.kind.value == "retaining")
+    assert drawn > 0
+    retaining = _metric(compact, "retaining_wall_length_m")
+    assert retaining.value >= drawn - 1e-6 and retaining.status is ClaimStatus.INFERRED
     assert _metric(compact, "max_cut_m").value > 1.0  # the walk-out level is dug in
     assert _metric(split, "terrain_coverage_pct").value == pytest.approx(100.0)
     assert _metric(by["linear"], "level_count").value == 1
