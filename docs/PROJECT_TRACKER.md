@@ -1720,7 +1720,7 @@ claimed without a recorded professional verification.
 |---|---|
 | Kind | implementation |
 | Status | IN_PROGRESS |
-| Review | PENDING |
+| Review | CHANGES_REQUESTED |
 | Branch | `stage/S12-fast-sound-tests` |
 | Depends on | S9 |
 | Tasks | S12-01, S12-02, S12-03, S12-04, S12-05, S12-06, S12-07 |
@@ -2635,6 +2635,40 @@ Closure record template:
 ```
 
 ### S12 records
+
+#### S12 review 2 — CHANGES_REQUESTED
+- Reviewed commit: 5a3362640ab1adc2ded8c83dcf6daf47edfb8bb9 (code head `2616930`; `5a33626` adds only tracker text).
+- Reviewer: agent:claude-code, Claude Fable 5.2, fresh session (implementer of the review 1 fixes was agent:claude-code, Claude Fable 5.2; handoff 3 asked for another agent or model, or at least a fresh session: this is the second). No delegated audits: every check below was run by the reviewer.
+- Date: 2026-11-21
+- Checks run:
+  - Pytest, default runner: 1 failed, 1205 passed, 9 xfailed in 58.17 s (1215 collected). The failure is `tests/test_project_tracker.py::test_the_committed_tracker_is_consistent` (`['S11', 'S12']`, ISS-51). One process (`-n 0`): the same counts in 179.85 s.
+  - `pytest -q --fresh-solves`: 3 failed, 1203 passed, 9 xfailed in 65.33 s: the tracker test and two of the memo's own tests (finding 2). Every other test gives the same result with every model solved.
+  - Solve fingerprints (`tools/solve_fingerprints.py`, default runner): 244 solve calls of 132 distinct models, 62 answered by the memo, 182 solved; 9 solved again on the same worker (5.3 s): 5 `test_generation_is_deterministic`, 1 `test_solver_reproducibility_budget`, 2 `test_a_test_marked_fresh_solves_solves_again`, 1 `test_a_solution_callback_always_sees_a_real_search`; 41 on another worker. Read from the log without the memo's own flag: the 62 calls marked `memo` took 0.096 s together (the slowest 8 ms), so none of them ran the solver. The handoff's 252, 80, 172 and 31 differ only by which files shared a worker; 132 and 9 are the same.
+  - `ruff check src tests examples tools`: clean. `house-ai schemas check`: 30 up to date. `tools/leak_scan.py`: clean. `tools/check_tracker.py`: exit 0. `house-ai project verify my-house`: intact, 154 events, 150 artifact versions. `git diff main...HEAD -- projects/`: empty.
+  - CI: no run existed for `5a33626`; `gh workflow run ci.yml --ref stage/S12-fast-sound-tests` gave run 44940723624: 1 failed (the tracker test), 1204 passed, 2 skipped, 8 xfailed in 217.33 s on Python 3.13; Reviewer App job passed.
+  - Mutation checks, each in a scratch worktree with the source restored afterwards. All of these fail the repaired test and pass without the mutation:
+    - Finding 2: `revision_ops=[]` (`orchestration/plans.py:521`).
+    - Finding 3: program and finding expectations reported NOT_CHECKED (`benchmarks/runner.py`, 8 tests fail). Also `_matches` always true: caught by `test_wrong_numbers_missing_or_ambiguous_probes_and_stale_references_fail`.
+    - Finding 4: kept findings dropped (`evaluation/findings.py`); `pairs = []` (`evaluation/drawing.py:26`); latitude and longitude each off by 1e-8 degrees off the meridian (`geospatial/crs.py`).
+    - Finding 5: `main`'s `validation/grounding.py` fails 7 tests of `tests/test_grounding.py`; the lower bound ignored, the lower bound not widened, the upper bound not widened, and the ID guard `(?<!\w-)` removed each fail one test.
+    - Finding 6: containment always true, door-swing check removed, door-approach check removed (`evaluation/usability_geometry.py:338-342`).
+    - Finding 7: `-w` dropped, `-h` dropped (`render2d/rasterize.py`); L-recess constraints removed (`generation/solver2d.py:1160-1163`); retaining rule never fires and fires for any wall (`evaluation/usability.py`); 13 tamperings of `examples/usability/demonstration/report.json` and `report.md` (policy, policy basis, template, option status, reason, integrity flag, model hash, defect flag, exploratory flag, site approval flag, a dropped finding, an extra key, edited markdown).
+    - Finding 9: a refusal added to `InterviewService.confirm` turns the four ISS-49 cases into strict XPASS failures; a stray file written by `build_reviewer_bundle` and by exploratory `generate` fails the byte snapshots; interior walls classed exterior (`generation/enclosure.py`) fails the restored wall assertion.
+    - Finding 11: `refuse_non_human` removed from `confirm_site` (`orchestration/site_ingestion.py:767`): both ISS-63 cases fail.
+    - Solve memo: key without the parameters, key without the model, response attribute moved, the `fresh` flag ignored, a callback solve replayed: each fails `tests/test_solve_memo.py`.
+- Artifacts and screenshots inspected: `git diff main...HEAD` in full (29 files, the 12 commits since review 1); `tests/conftest.py`, `tests/test_solve_memo.py`, `tools/solve_fingerprints.py`; `src/house_ai/validation/grounding.py`; `src/house_ai/generation/solver.py:567-571` and `solver2d.py:1244-1248` (the only two solver call sites: one worker, fixed seed, deterministic time limit, no callback); ADR 0035; contract §10; `pyproject.toml`; `.github/workflows/ci.yml`; `examples/usability/demonstration/report.json`. S12-02 was not measured again: `git diff eec9ac6 HEAD -- src/` changes only `validation/grounding.py`, so review 1's byte-identical result stands for the same two evaluator files.
+- Findings:
+  1. BLOCKING, acceptance, carried from review 1 finding 1: the full suite does not pass. `test_the_committed_tracker_is_consistent` fails while S11 and S12 are both IN_PROGRESS (ISS-51). It needs the owner's S11 decision (#52), not implementer work; handoff 3 says so.
+  2. LOW: `pytest --fresh-solves` fails `tests/test_solve_memo.py:47` and `:107`, which assert a replay and `fresh is False`. ADR 0035 decision 2 and the S12-03 Verify line say the option runs the whole suite with the same results; only handoff 3 names the `--deselect`. Skip the two tests under the option, or say it where the option is described.
+  3. LOW: `tests/conftest.py:53` replays a response for any solver, whatever its parameters. The replay is sound only for one worker and a deterministic time limit, which both product call sites set today; a later solver with several workers or `max_time_in_seconds` would be replayed too, and only the two `fresh_solves` tests would solve it twice. Replaying only when `num_workers == 1` and no wall-clock limit is set would hold the premise.
+  4. LOW: `tests/test_plan_provenance_revisions.py:223` still cannot tell one ignored operation: with `stair:` alone or `outdoor:` alone dropped in `generation/revision.py` it passes (it fails with both dropped, by the engine name, and with `revision_ops=[]`). The test says in its comment that v1 already meets all three requests. Each single mutation is caught by `tests/test_revision_solver_request.py:125-126`, so nothing is unguarded.
+  5. LOW: `tests/test_readiness_demo.py:120` and `tests/test_revision_findings.py:89-92` compare with lists derived from the stored model, which is right for platform-dependent layouts, but pass as `[] == []` on a platform whose layout has no colliding labels or no finding kept by the revision. On macOS arm64 both lists are non-empty and both mutations are caught.
+  6. LOW, tracker accuracy: the Evidence row says "9 strict xfail cases in 6 tests"; there are 7 xfail tests (9 cases) for 6 product gaps. Handoff 3 says `tree` moved to `tests/conftest.py`; `tests/test_site_service.py:20`, `tests/test_read_models.py:26` and `tests/test_workflow.py:30` still import it through `tests/test_human_gates.py` (it works).
+  7. Open, owner's decision, carried from review 1 finding 12: the account handle in two CI-run URLs (`docs/PROJECT_TRACKER.md:3260`, `:3361` before this record).
+- Resolved from review 1: findings 2 to 11. No assertion in the 12 commits is weaker than the one it replaces: the three restored tests (`test_utm_looking_coordinates_do_not_imply_a_crs`, the wall assertion, the ISS-63 test) assert exact values where `d920ad9` asserted presence. All 7 xfail marks are strict. The acceptance criterion on repeated solves holds as now worded (9 same-worker re-solves, all in marked tests or the memo's own). No determinism test is answered by the memo: the 31 tests that got a replay were read by name against the two marked tests.
+- Scope, boundaries, data: the only product change is `validation/grounding.py`, in scope (S12-05). No change to gate, confirmation or consent code; ISS-49 (an agent's confirmation without owner words becomes an owner-sourced verified fact) is a real gap at the approval boundary, recorded in §K and held by strict xfails, outside this stage's scope. No personal name or home-directory path in the added lines.
+- Tracker accuracy: yes, except finding 6. Statuses are right (tasks IN_PROGRESS, none DONE); the timing, pass counts, CI run and fingerprint evidence match what was measured here.
+- Verdict: CHANGES_REQUESTED. The only blocker is finding 1. Once the owner's S11 decision is recorded and the suite passes, the remaining review is of that tracker change alone; findings 2 to 6 are at the implementer's discretion.
 
 #### S12 handoff 3 — review 1 findings addressed, review PENDING
 - Branch `stage/S12-fast-sound-tests`, code head `2616930c7af0b4d05b1c00072389f835092a8a37`; implementer: agent:claude-code (Claude Fable 5.2) on the owner's request of 2026-11-21 to work through GitHub issue #42 and its sub-issues. Review 1 was also done by Claude Fable 5.2, so review 2 needs another agent or model, or at least a fresh session. Sub-issues #50 and #51 were done by two delegated subagents in their own worktrees; the implementer read both diffs and re-ran their mutation checks before taking the commits.
