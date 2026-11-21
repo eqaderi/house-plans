@@ -40,8 +40,10 @@ def test_generated_fixtures_are_current_and_no_unexpected_files():
 def test_every_current_observation_matches_declared_expectations(path):
     fixture = BenchmarkFixture.model_validate_json(path.read_text())
     results = run_fixture(fixture)
-    assert len(results) == len(fixture.expectations)
-    assert all(r.outcome in ("PASS", "NOT_CHECKED") for r in results), results
+    # NOT_CHECKED is right only for an expectation the fixture declares `future`.
+    assert [(r.check, r.outcome) for r in results] == [
+        (e.id, "NOT_CHECKED" if e.source == "future" else "PASS") for e in fixture.expectations
+    ], results
     for r in results:
         if r.outcome == "PASS":
             assert r.method
@@ -221,17 +223,17 @@ def test_fixture_rejects_private_sites_unknown_targets_and_duplicate_expectation
         BenchmarkFixture.model_validate(doc)
 
 
-def test_committed_fixtures_are_complete():
-    """Static equivalent of ``main([fixtures, "--require-complete"]) == 0``.
-
-    ``main`` returns 1 only for a FAIL or, with ``--require-complete``, a NOT_CHECKED
-    outcome, and exits 2 on duplicate fixture IDs. ``_check`` gives NOT_CHECKED to
-    exactly the ``source: future`` expectations; FAIL is excluded fixture by fixture in
-    ``test_every_current_observation_matches_declared_expectations``.
-    """
+def test_runner_over_every_committed_fixture_is_complete(capsys):
+    """Every committed expectation is checked and passes: none FAIL, none NOT_CHECKED."""
     fixtures = [BenchmarkFixture.model_validate_json(p.read_text()) for p in PATHS]
     assert len({f.id for f in fixtures}) == len(fixtures) == 18
-    assert [(f.id, e.id) for f in fixtures for e in f.expectations if e.source == "future"] == []
+    declared = [e.category.value for f in fixtures for e in f.expectations]
+    assert len(declared) == 121
+    assert main([str(HERE / "fixtures"), "--require-complete"]) == 0
+    # The table counts come from the fixture files, not from the runner.
+    assert capsys.readouterr().out.splitlines() == _table(
+        {c.value: (declared.count(c.value), 0, 0) for c in AcceptanceCategory}
+    )
 
 
 def _table(counts: dict[str, tuple[int, int, int]]) -> list[str]:
