@@ -116,8 +116,8 @@ to reopen A–D):
 
 | | |
 |---|---|
-| **Current stage** | S12 Fast and sound test suite (IN_PROGRESS, review PENDING); S11 merged to `main` by PR #5 but not closed in this tracker (ISS-51); human track H2 Real interview and program IN_PROGRESS |
-| **Awaiting review** | S12 (branch `stage/S12-fast-sound-tests`); S11 (merged by PR #5, see ISS-51) |
+| **Current stage** | S12 Fast and sound test suite (IN_PROGRESS, review CHANGES_REQUESTED; resume from §N S12 handoff 2); S11 merged to `main` by PR #5 but not closed in this tracker (ISS-51); human track H2 Real interview and program IN_PROGRESS |
+| **Awaiting review** | S11 (merged by PR #5, see ISS-51); S12 has review 1 CHANGES_REQUESTED |
 | **Next eligible stage** | none until S11 is reviewed; H1 Real site verification and H2 Real interview and program (human parallel tracks), or X1 Optional tool research |
 | **Path to good floor plans** | S1 (done) → S2 (done) → S3 (done) → S4 (done) → S5 (done) → S6 (done) → S7 (done) → S8 (done) → S10 (done) → S9 (done; 10 stages complete) |
 | **Blocked** | H1 site facts (owner or surveyor input); program gate (needs site gate); H3 real design (needs H1 and H2) |
@@ -2546,6 +2546,7 @@ changed), **decision** (owner must choose), **risk**.
 | ISS-60 | `evaluate_plan` raises `StopIteration` (`evaluation/usability.py:948`) when an opening connects a space id that does not exist, instead of reporting it | defect | S12 workflow-test review 2026-11-21 | Report the dangling reference as a finding (integrity already detects it) | §K backlog |
 | ISS-61 | Revisions that do not move the plan: split_walkout area revisions leave the kitchen at 8.16 m² for targets 10–22 (seed 1, also with `--rethink`, reported as not met); topology and combine revisions on compact switch to the 2D engine, put bedrooms on `lv-upper` and raise `height_limit_exceeded`; in the multi-step revision test, steps 2–5 return an identical model | defect | S12 workflow-test review 2026-11-21; `tests/test_plan_provenance_revisions.py` | Investigate per strategy; a revision that cannot change the plan should say why | owner-rules checker stage |
 | ISS-62 | `examples/reviewer/make_bundles.py` checks for `plan-a.yaml` (the file is `plan-a.json`), so its `plan generate` branch is dead and its return code ignored; `examples/readiness/run_demo.py` runs an extra `linear` generation (about 9 s of the demo test) | stale doc | S12 workflow and proposal test reviews 2026-11-21 | Fix the path or drop the branch; decide whether the demo needs the extra generation | §K backlog |
+| ISS-63 | Removing `refuse_non_human` from `confirm_site` (`orchestration/site_ingestion.py:767`) fails no test: every test of the guard uses a confirmation that a second guard on the EPSG branch refuses, so an agent confirming units and boundary through the library is untested | defect | §N S12 review 1, finding 11 (reproduced) | Test an agent confirming units and boundary only (no EPSG) through `confirm_site` and `SiteService.confirm` | S12 (review fix) |
 
 ## L. Decisions
 
@@ -2663,6 +2664,22 @@ Closure record template:
 - Tracker accuracy: no. Statuses are right (tasks IN_PROGRESS, none DONE). Evidence is wrong in findings 8 and 10, and the handoff's "each fix shown to fail against the broken behaviour" and "no assertion was weakened" do not hold for findings 2, 3, 4 and 7. §D still says review PENDING; the protocol limits this commit to this record and the Review row.
 - Verdict: CHANGES_REQUESTED. To resolve: findings 1 to 8; record finding 11 in §K. Findings 9, 10 and 12 at the implementer's and owner's discretion.
 
+
+#### S12 handoff 2 — resume after review 1 (CHANGES_REQUESTED)
+- Branch `stage/S12-fast-sound-tests`; start from its head (after `ac3c4e0`). Read S12 review 1 above in full: it names each test, line and the mutation that slips through.
+- Owner decisions first (ask; do not decide): (a) S11, ISS-51: "Review stage S11" then "Close stage S11", or record the PR #5 merge as its closure. Finding 1 cannot pass until then. (b) Whether the account handle in the two CI-run URLs (finding 12) and the owner's job statement in interview/brief records count as personal data under DEC-15.
+- Fix, in this order; each fix must fail against the reviewer's mutation before it is trusted:
+  - Finding 2: put the exact `revision_ops` assertions back in `test_topology_revision_connect_stair_outdoor`, and make the geometry checks compare against v1 (they must not already hold on the base).
+  - Finding 3: restore a run of the benchmark runner over every fixture with `--require-complete` (cheap after S12-02), and make the per-fixture test reject NOT_CHECKED except for `future` expectations.
+  - Finding 4: `test_revision_findings.py` asserts hand-derived kept, new and disappeared lists (ground truth in `test_findings_change.py`), not `compare_findings` output; non-empty before and after. Restore the readiness label-collision checks in a platform-independent form, and the latitude check in the geospatial test.
+  - Finding 5: tests for "3-5 m²", ".5 m²", "12-15 %", "the 4-m corridor" in `validation/grounding.py`; fix the pattern. Add a §K issue that `validate_critique_grounding` has no caller in `src/`.
+  - Finding 6: a guard test where a double bed must not fit an L-shaped room with 1.2 m arms (`usability_geometry.py:338`); show the "always inside" mutation fails it, and list it in ADR 0035's guard sentence.
+  - Finding 7: the four tests that cannot fail: rasterize with a non-uniform scale; the two-wing L-recess in `test_placement_2d.py:285`; the seeded buried window on a plan that passes `check_model`; the report freshness test recomputing the whole report.
+  - Finding 8: remove the avoidable same-worker repeats (`test_plan_propose.py`, `test_relation_semantics.py:514` and the others the review lists), then measure with `tools/solve_fingerprints.py` (usage in its docstring) and write the measured numbers into the Acceptance row and S12-03.
+  - Finding 11: ISS-63 test (agent confirming units and boundary without EPSG).
+  - Findings 9 and 10 (cheap, recommended): turn the two ISS-49 tests into strict xfails of the right behaviour; check "writes nothing" by byte snapshot in the files listed; correct the pass and solve counts.
+- Work file by file with `-n 0` on the touched files; run the full required checks once at the end; then handoff 3, set Review to PENDING, push, and print the review prompt naming the new head.
+- Publishing: `main` gets the name removals (`eec9ac6`) only when S12 merges. If the owner wants to publish sooner, they can authorise a branch from `main` with only that commit.
 #### S12 handoff 1 — all seven tasks implemented, review PENDING
 - Branch: `stage/S12-fast-sound-tests` from `main` at `d920ad9`; implementer: agent:claude-code (Claude Opus 5.5) on the owner's request of 2026-11-21 ("tests should be solid, rock solid, and they should be fast"). The owner authorised working while S11 still shows review PENDING (ISS-51). Per-file test work was done by five delegated subagents on disjoint files and checked by the implementer (removed test names traced to their replacements; the safety refusals still asserted).
 - Measured: serial baseline 467.32 s (1107 tests); default runner after 69.92 s (1191 collected: 1186 passed, 5 strict xfails, 1 failed). The failure is `test_the_committed_tracker_is_consistent`, because S11 and S12 are both IN_PROGRESS (ISS-51).
@@ -4125,7 +4142,7 @@ homeowner approval of any site, program, plan or model.
 
 ### Current handoff note
 
-- Stage S12 (fast and sound test suite) is implemented on `stage/S12-fast-sound-tests`; see §N S12 handoff 1.
+- Stage S12 (fast and sound test suite): review 1 CHANGES_REQUESTED; resume from §N S12 handoff 2.
 - Stage S11 (glossary vocabulary, issues #2–#4) is implemented on `stage/S11-glossary-vocabulary`, review PENDING; see §N S11 handoff 1. It was merged to `main` by PR #5 without a tracker review or closure (ISS-51).
 - Continuation entry point: `projects/my-house/reviews/CONTINUE-H2.md` (private detailed handoff, current records, preserved requirements and next deliverable). Committed on `stage/H2-interview-program` (PR #41).
 
