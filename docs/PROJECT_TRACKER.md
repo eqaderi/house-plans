@@ -116,13 +116,13 @@ to reopen A–D):
 
 | | |
 |---|---|
-| **Current stage** | S12 Fast and sound test suite (IN_PROGRESS, review CHANGES_REQUESTED; resume from §N S12 handoff 2); S11 merged to `main` by PR #5 but not closed in this tracker (ISS-51); human track H2 Real interview and program IN_PROGRESS |
-| **Awaiting review** | S11 (merged by PR #5, see ISS-51); S12 has review 1 CHANGES_REQUESTED |
-| **Next eligible stage** | none until S11 is reviewed; H1 Real site verification and H2 Real interview and program (human parallel tracks), or X1 Optional tool research |
+| **Current stage** | S12 Fast and sound test suite (IN_PROGRESS, review CHANGES_REQUESTED; resume from §N S12 handoff 2); human track H2 Real interview and program IN_PROGRESS |
+| **Awaiting review** | none pending; S12 has review 1 CHANGES_REQUESTED |
+| **Next eligible stage** | none until S12 is closed; H1 Real site verification and H2 Real interview and program (human parallel tracks), or X1 Optional tool research |
 | **Path to good floor plans** | S1 (done) → S2 (done) → S3 (done) → S4 (done) → S5 (done) → S6 (done) → S7 (done) → S8 (done) → S10 (done) → S9 (done; 10 stages complete) |
 | **Blocked** | H1 site facts (owner or surveyor input); program gate (needs site gate); H3 real design (needs H1 and H2) |
 | **Human parallel tracks** | H1 site verification with the owner any time; H2 interview any time (S1-09 closed) |
-| **`main` health** | S12 merged early at the owner's request (not closed); `test_the_committed_tracker_is_consistent` fails until S11 is closed (ISS-51, #52); GitHub Actions jobs have not started since 2026-11-18 (billing, ISS-48, #54) |
+| **`main` health** | S12 merged early at the owner's request (not closed); S11 closed on 2026-11-21 (ISS-51 resolved), so `test_the_committed_tracker_is_consistent` passes again; GitHub Actions jobs have not started since 2026-11-18 (billing, ISS-48, #54) |
 | **Homeowner gates on `my-house`** | site: not approved (5 blockers) · program: none · plan: none · model: none |
 
 
@@ -1685,8 +1685,8 @@ claimed without a recorded professional verification.
 | Field | Value |
 |---|---|
 | Kind | implementation |
-| Status | IN_PROGRESS |
-| Review | PENDING |
+| Status | DONE |
+| Review | APPROVED |
 | Branch | `stage/S11-glossary-vocabulary` |
 | Depends on | S9 |
 | Tasks | S11-01, S11-02, S11-03 |
@@ -1697,22 +1697,22 @@ claimed without a recorded professional verification.
 | Demonstration | Old and new space program and plan records loaded side by side |
 | Artifacts | Updated ADR 0025 table, schemas, `DOMAIN_MODEL.md`, skills |
 | Review requirements | Reviewer confirms no stored record changed (`git diff main -- projects/` empty) and spot-checks the aliases |
-| Evidence | Branch `stage/S11-glossary-vocabulary` (PR to `main`); ADR 0025 mapping table settled; `tests/test_glossary_renames.py` on the pre-rename store `tests/fixtures/pre_adr0025/store` written by `386be0d`; `house-ai project verify my-house` intact (13 events, 10 artifact versions); `git diff main -- projects/` empty; handoff in §N S11 records |
+| Evidence | Merged to `main` as `59da504` (PR #5) at `d92c959` on 2026-11-17; CI run 44149154539 on `d92c959` and run 44151985380 on `59da504`, both success; §N S11 review 1 and closure; ADR 0025 mapping table settled; `tests/test_glossary_renames.py` on the pre-rename store `tests/fixtures/pre_adr0025/store` written by `386be0d`; `house-ai project verify my-house` intact (13 events, 10 artifact versions); `git diff main -- projects/` empty; handoff in §N S11 records |
 
 #### Renames
 
-- [ ] **S11-01** Rename saved names with validation aliases (ADR 0025 rows marked saved) — `IN_PROGRESS` · P2 · deps: none
+- [x] **S11-01** Rename saved names with validation aliases (ADR 0025 rows marked saved) — `DONE` · P2 · deps: none
   - Accept: new records use new names; old records load unchanged and keep their hashes
   - Verify: alias tests; `project verify my-house`
-  - Evidence: space programs schema 0.2.0 (`domain/program.py::RENAMED_FIELDS`, 0.1.0 written back with old names); `domain/workflow.py::RENAMED_STATES` and `WorkflowEvent._old_states`; `domain/interview.py::current_slot`, `current_question_id`; `tests/test_glossary_renames.py` (17 old artifacts keep their hashes, files byte-identical, chain intact, old state names on the CLI); `project verify my-house` intact; issue #2
-- [ ] **S11-02** Record the owner's floor count as storeys (`SpaceProgram.levels`), levels derived from the plan — `IN_PROGRESS` · P2 · deps: S11-01
+  - Evidence: space programs schema 0.2.0 (`domain/program.py::RENAMED_FIELDS`, 0.1.0 written back with old names); `domain/workflow.py::RENAMED_STATES` and `WorkflowEvent._old_states`; `domain/interview.py::current_slot`, `current_question_id`; `tests/test_glossary_renames.py` (17 old artifacts keep their hashes, files byte-identical, chain intact, old state names on the CLI); `project verify my-house` intact; issue #2; merge `59da504`
+- [x] **S11-02** Record the owner's floor count as storeys (`SpaceProgram.levels`), levels derived from the plan — `DONE` · P2 · deps: S11-01
   - Accept: interview and program builder ask and store a storey count; the plan derives the level count
   - Verify: program builder test on a split-level fixture
-  - Evidence: question `q-storeys`, slot `storeys`; `SpaceProgram.storeys`; `HouseModel.storey_count` (levels less than a storey apart share one); evaluator metric `storey_count` and violation `storey_count_differs`; `tests/test_glossary_renames.py::test_the_program_asks_for_storeys_and_the_plan_derives_its_levels` (synthetic hillside: program 2 storeys, split-walkout 3 levels in 2 storeys) and `::test_storeys_are_counted_from_level_elevations` (4 split levels in 2 storeys); issue #3
-- [ ] **S11-03** Rename unsaved identifiers, CLI text, docs and skills to the glossary terms — `IN_PROGRESS` · P2 · deps: none
+  - Evidence: question `q-storeys`, slot `storeys`; `SpaceProgram.storeys`; `HouseModel.storey_count` (levels less than a storey apart share one); evaluator metric `storey_count` and violation `storey_count_differs`; `tests/test_glossary_renames.py::test_the_program_asks_for_storeys_and_the_plan_derives_its_levels` (synthetic hillside: program 2 storeys, split-walkout 3 levels in 2 storeys) and `::test_storeys_are_counted_from_level_elevations` (4 split levels in 2 storeys); issue #3; merge `59da504`
+- [x] **S11-03** Rename unsaved identifiers, CLI text, docs and skills to the glossary terms — `DONE` · P2 · deps: none
   - Accept: no avoided term from GLOSSARY.md remains in CLI help or skills, except in quoted history
   - Verify: grep of the _Avoid_ lists over `src/house_ai/cli` and `skills/`
-  - Evidence: classes `SpaceRequirement`, `SpaceRelationship`, `SpaceRelationshipKind`, `PlanRelationship`; CLI help and messages; skill `generate-plan-options`; new exports in `design/plan-options/`; `AGENT_CONTRACT.md` (11,974 characters), `AGENT_WORKFLOWS.md`, `DOMAIN_MODEL.md`, README; the _Avoid_ grep over `src/house_ai/cli` and `skills/` finds only literal ids, command names and allowed senses; issue #4
+  - Evidence: classes `SpaceRequirement`, `SpaceRelationship`, `SpaceRelationshipKind`, `PlanRelationship`; CLI help and messages; skill `generate-plan-options`; new exports in `design/plan-options/`; `AGENT_CONTRACT.md` (11,974 characters), `AGENT_WORKFLOWS.md`, `DOMAIN_MODEL.md`, README; the _Avoid_ grep over `src/house_ai/cli` and `skills/` finds only literal ids, command names and allowed senses; issue #4; merge `59da504`
 
 ### Stage S12 — Fast and sound test suite
 
@@ -2534,7 +2534,7 @@ changed), **decision** (owner must choose), **risk**.
 | ISS-48 | GitHub Actions jobs do not start: "recent account payments have failed or your spending limit needs to be increased"; every run on `main` since 2026-11-18 failed in 3 s, so `main health` in §D is stale | risk | `gh run view 44927567498` | Owner restores Actions minutes or makes the repository public; until then the local suite is the gate (ADR 0035) | owner |
 | ISS-49 | `interview confirm --actor agent:...` without `--text` (and `InterviewService.confirm(AGENT)`) turns inferences into `verified_fact`/`preference` sourced `owner_answer` with no owner words; the turn's text is None. DEC-09 kept agent-recorded confirmation only *with* the owner's verbatim words | defect | `tests/test_interview.py` (S12 tests pinning current behaviour, service and CLI) | Require the owner's verbatim reply for an agent-recorded confirmation; test | next safety stage |
 | ISS-50 | `house-ai validate site <missing file>` crashes with a traceback instead of a clean error exit | defect | found by the S12 test review 2026-11-21 | Exit with a usage error naming the file; test | next safety stage |
-| ISS-51 | S11 was merged to `main` by PR #5 (`59da504`, with PR review fixes `d92c959`) but the tracker still shows it IN_PROGRESS, review PENDING, with no §O review record; `test_the_committed_tracker_is_consistent` allows one software stage IN_PROGRESS, so it fails while S12 is open | stale doc | §D; Stage S11; `git merge-base --is-ancestor origin/stage/S11-glossary-vocabulary main` | Owner chooses: "Review stage S11" then "Close stage S11", or authorise recording the PR #5 merge as its closure | owner |
+| ISS-51 | S11 was merged to `main` by PR #5 (`59da504`, with PR review fixes `d92c959`) but the tracker still shows it IN_PROGRESS, review PENDING, with no §O review record; `test_the_committed_tracker_is_consistent` allows one software stage IN_PROGRESS, so it fails while S12 is open | stale doc | §D; Stage S11; `git merge-base --is-ancestor origin/stage/S11-glossary-vocabulary main` | Resolved 2026-11-21: on the owner's order S11 was reviewed at `d92c959` (§N S11 review 1, APPROVED) and closed with the PR #5 merge `59da504` as its merge (§N S11 closure) | owner |
 | ISS-52 | S7-17 privacy zoning blocks only a direct door between zones: with seed 42 the 2D privacy fixture reaches the hall through the laundry, a child bedroom and the master bedroom (`guest_private_crossings` = 2), and no finding blocks it | defect | `tests/test_placement_2d.py::test_privacy_zoning_routes_avoid_family_rooms` (strict xfail) | Constrain routes, not only doors, between zones; make a route through a private room a blocking finding | owner-rules checker stage |
 | ISS-53 | flat-simple `corridor_free`: the hall opens only to the outside and the bathroom; kitchen and living are reached through the bathroom and the parents' bedroom, and the plan still validates | defect | S12 generation-test review 2026-11-21 (one-off run) | Seeded test plus a blocking finding for a main room reached only through a bathroom or bedroom | owner-rules checker stage |
 | ISS-54 | `garage_pedestrian_route_blocked` cannot fire through the evaluator: sampled car bodies sit inside their clearance envelopes and never touch, so the garage floor stays connected to the house door | defect | `tests/test_finding_codes_seeded.py` (route True on a tightly packed two-car garage) | Test the route with the cars' doors-open zones and body widths as obstacles; seeded test | owner-rules checker stage |
@@ -2581,6 +2581,7 @@ lifecycle · 0015 agent skills canonical location and discovery · 0016 event-he
 
 | Date | What | Evidence |
 |---|---|---|
+| 2026-11-21 | Stage S11 closed: code vocabulary aligned with the glossary (ADR 0025: saved names renamed with validation aliases, the owner's floor count recorded as storeys, CLI text, docs and skills renamed) | merge `59da504` (PR #5, 2026-11-17); CI run 44151985380; §N S11 review 1 |
 | 2026-10-20 | Stage S9 closed: floor-plan readiness gate (all 13 readiness criteria FPR-01 to FPR-13 verified PASS with evidence from S10 remediation; synthetic steep hillside demonstration replayed clean with 5/5 refusals, 5 feasible strategies, 2D proposal, stair walking lines, 9 canonical fixtures, revision regression separation, reviewer bundle export, 102 events store integrity; homeowner acknowledgement of 5 architectural/engineering boundaries confirmed verbatim in §I; test decoupling verified) | merge `d8a38b1`; CI run 39336825673 |
 | 2026-10-19 | Stage S10 closed: readiness remediation (reviewer serve URL and viewport auto-fit, revision request checking and regression separation, distinct proposal concept options, consistent stair rise/headroom/wall clash checks, U-shaped walking lines, ADR 0024 unbuildable plan-gate blocking findings, wet-room and kitchen fixture generation, furniture-study kitchen sizing, double-bed and vehicle program studies, bar terraces and outdoor items, requested-storey explanation, 2D terrain entry and solved levels per DEC-04, vehicle-sized garages per DEC-12, 117-probe benchmark suite, plan.svg semantic attributes and cut stairs, slab-penetration and label-collision detectors, synthetic hillside context, demo property assertions) | merge `af4b41c`; CI run 39318675202 |
 | 2026-10-19 | Stage S8 closed: hillside geometry (exact TIN quantities and mesh booleans, true section cuts and local facade projections, coupled bar/level CP-SAT optimisation without excavation penalty per DEC-04, walkout/split-level/stepped/elevated/hybrid sectional strategies, underfloor void reporting, retaining walls and explicit pad earthworks, terrain-contact door access and garage grades, mapped breaklines and sliver quality checks, concept-level professional engineering risk register and exports, ADR 0022) | merge `3c2de1d`; CI run 39191955991 |
@@ -2699,6 +2700,27 @@ Closure record template:
 - Resume: review with "Review stage S12".
 
 ### S11 records
+
+#### S11 closure
+- Merged: `stage/S11-glossary-vocabulary` at `d92c959` (reviewed commit) into `main` as `59da504` on 2026-11-17, by PR #5, before any tracker review (ISS-51). The review record below was written on `main` on 2026-11-21, because the stage branch was already merged.
+- CI on main: run 44151985380 on `59da504`, success.
+- Closed by: agent:claude-code on the owner's order of 2026-11-21 to mark S11 done.
+
+#### S11 review 1 — APPROVED
+- Reviewed commit: d92c959b6ceb0387e1f3184305b8e34e67d44244
+- Reviewer: agent:claude-code, Claude Fable 5.2 (implementer was agent:claude-code, Claude Opus 5.5). The review was made four days after the merge, on the owner's order of 2026-11-21, in the session that wrote S12 review 2.
+- Date: 2026-11-21
+- Checks run, in a worktree at `d92c959`:
+  - Pytest on four workers: 880 passed in 107.92 s.
+  - `ruff check src tests examples tools`: clean. `house-ai schemas check`: 29 up to date. `tools/check_tracker.py`: clean. `tools/leak_scan.py`: clean. `house-ai project verify my-house`: intact, 13 events, 10 artifact versions.
+  - `git diff 386be0d d92c959 -- projects/`: empty, so no stored record changed.
+  - CI: run 44149154539 on `d92c959` (PR #5): success on Python 3.11, Python 3.13 and the Reviewer App.
+  - Aliases, each removed in turn with `tests/test_glossary_renames.py` run against it (13 pass untouched): the slot alias `floors` (2 fail), the question alias `q-floors` (2), the state alias `CONCEPT_REVIEW` (8), the field alias `site_verified` (5), the usability alias `single_bed_program_item_ids` (5), a schema 0.1.0 program written back with the new names (5, recorded hash no longer matches), old event state names rewritten on write (3, chain broken).
+  - Avoided terms: "homeowner", "program item", "slot value", "slot inference", "room requirement", `generate-concepts`, "adjacency" and "floor" for a storey do not occur in `src/house_ai/cli` or `.agents/skills`; "concept" in the CLI is only the old export folder name and its alias, as ADR 0025 says.
+- Artifacts and screenshots inspected: ADR 0025 mapping table (every row is renamed or kept with a reason); `tests/test_glossary_renames.py`; `tests/fixtures/pre_adr0025/store`; `domain/program.py::RENAMED_FIELDS`, `domain/workflow.py::RENAMED_STATES`, `domain/interview.py::current_slot`. The diff has 203 files, most of them regenerated examples and the fixture store; the renames were checked through the tests and the checks above, not read line by line.
+- Findings: none.
+- Tracker accuracy: yes at `d92c959` (tasks IN_PROGRESS with evidence). The tracker on `main` then stayed IN_PROGRESS with review PENDING after the merge (ISS-51), which this record and the closure above settle.
+- Verdict: APPROVED
 
 #### S11 handoff 1 — all three tasks implemented, review PENDING
 - Branch: `stage/S11-glossary-vocabulary` from `main` at `386be0d`; implementer: agent:claude-code (Claude Opus 5.5) on the owner's request to implement issues #2, #3 and #4 in one PR, 2026-11-17. The docs and skills pass was done by a delegated subagent and checked by the implementer.
@@ -4145,7 +4167,7 @@ homeowner approval of any site, program, plan or model.
 ### Current handoff note
 
 - Stage S12 (fast and sound test suite): review 1 CHANGES_REQUESTED; resume from §N S12 handoff 2.
-- Stage S11 (glossary vocabulary, issues #2–#4) is implemented on `stage/S11-glossary-vocabulary`, review PENDING; see §N S11 handoff 1. It was merged to `main` by PR #5 without a tracker review or closure (ISS-51).
+- Stage S11 (glossary vocabulary, issues #2–#4) is closed: merged to `main` by PR #5 as `59da504`, then reviewed and closed on 2026-11-21 on the owner's order; see §N S11 records.
 - Continuation entry point: `projects/my-house/reviews/CONTINUE-H2.md` (private detailed handoff, current records, preserved requirements and next deliverable). Committed on `stage/H2-interview-program` (PR #41).
 
 - Stage S9 Floor-plan readiness gate closed with merge `d8a38b1` (CI run 39336825673 green).
