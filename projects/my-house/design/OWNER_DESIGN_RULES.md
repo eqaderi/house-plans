@@ -61,6 +61,9 @@ Sources are cited as `stmt-NNN` (owner statement) or `brief` (interview answer i
 6. A big garden is wanted, but not at the cost of rules 1 to 4. (stmt-012)
 7. **The house must fit the 600 m² field comfortably and leave a real garden on the east, down the hill.** Nothing (house, terraces, paths) may cross the boundary or the 1 m setbacks. A house of about 525–555 m² gross, covering about half the field, with only a 35–43 m² lawn, is too big and fails. **Target (stmt-024): lower floor ends at u ≈ 18 m, leaving ~150 m² of east garden; excavation stays ≤ ~4.5 m; keep a separate downstairs lounge.** (stmt-023: *"It is too big. It's basically going outside the boundaries of our field... There is no place for a garden on the eastern side. Down the hill"*)
 
+8. **Take both falls of the field into account: west → east and north → south.** (stmt-026: *"we have elevation from west to east and also from north to south or south to north... We need to see that clearly, and you need to consider that."*)
+   - Agent's reading, not the owner's words: a level floor meets this hill along a diagonal line, so the south and east of a floor are open while its north-west is buried. Put bedrooms, day rooms and terraces where the natural ground is at or below the floor; never give a bedroom a window onto a dug trench. `design/990_2026-11-18_claude-c10/checks.py` (`ground_clearance`) measures it.
+
 ## 5. Garage, lift and stair
 
 1. **There is an indoor route from the garage to the lift, for carrying groceries.** Having to walk outside from the garage to reach the lift fails. (stmt-015)
@@ -89,6 +92,10 @@ Sources are cited as `stmt-NNN` (owner statement) or `brief` (interview answer i
 2. Every design shows all levels: road level with the garage, main floor, lower floor and garden (stmt-016), plus the section required by rule 4.5.
 3. Show furnished room layouts (2 cars + door swing zones, 6 lockers, workbench, kitchen counters, 6–8 seat dining, L-sofa + cozy/prayer nook, master bed/dress, twin beds/desks/wardrobes in children's rooms, WC sightline baffles, exterior garden stair) clearly without label collisions. (stmt-019)
 4. **Design like a seasoned architect, never "robotic".** Every room has a reason to be where it is, real walls, doors and furniture, and a size that is standard and comfortable for a family: not oversized, not cramped. Rectangles packed into a grid with no thought behind them fail. (stmt-022: *"They just seem very robotic... unfinished, childish"*; *"every room, every area should be standard. We don't want big unnecessarily. We don't want small"*)
+
+5. **Show the field in 3D with the house sitting on it, so both falls can be seen clearly.** (stmt-026: *"we need, somehow, the 3D layout of the field and how the house sits on top of it"*)
+   - The reference implementation is `design/990_2026-11-18_claude-c10/model3d.py` with `viewer_template.html`: the bare field coloured by height, the house on it, the digging, and each floor opened. Reuse it, or build the same views.
+6. **Present every design in a very clear, understandable way.** The idea first, in plain words; then the drawings. (stmt-026)
 
 ## 8. Process (every agent, every time)
 

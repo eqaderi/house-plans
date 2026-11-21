@@ -25,7 +25,7 @@ its own folder, named so that a plain name sort puts the **newest at the top**:
   the name they were made with (`argon` was Gemini). The owner's own drawings use
   `user-designed` in place of `<author>-c<NN>`.
 - `c<NN>`: the design cycle, counting up across all agents (C05 was deleted; the next
-  is C10). Option IDs inside keep the bare series name (`claude-c09`, `C09-1`); only
+  is C11). Option IDs inside keep the bare series name (`claude-c09`, `C09-1`); only
   the folder carries rank and date.
 
 Never rename an existing study folder. Add a row to the top of this table with each
@@ -33,6 +33,7 @@ new one.
 
 | Folder | Date | Made by | Contents |
 |---|---|---|---|
+| [990_2026-11-18_claude-c10](990_2026-11-18_claude-c10/) | 2026-11-18 | Claude Code | C10: one design fitted to both falls of the field, with a 3D model of field and house |
 | [991_2026-10-27_claude-c09](991_2026-10-27_claude-c09/) | 2026-10-27 | Claude Code | C09-1, C09-2: compact versions of C08 |
 | [992_2026-10-27_claude-c08](992_2026-10-27_claude-c08/) | 2026-10-27 | Claude Code | C08-1 to 3, reworked from the owner's 0109-r5 |
 | [993_2026-10-26_argon-c07](993_2026-10-26_argon-c07/) | 2026-10-26 | Gemini (argon) | C07 A, B, C |
