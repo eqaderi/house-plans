@@ -104,9 +104,9 @@ def test_a_site_confirmation_asks_for_what_its_blockers_need():
 
 def test_the_approve_command_pins_the_version():
     action = NextHumanAction(HumanAction.APPROVE, Gate.PLAN, "concept-compact", 4)
-    assert command_for(action, "my-house", who="ershad") == (
+    assert command_for(action, "my-house", who="owner") == (
         "house-ai workflow approve my-house plan --id concept-compact --version 4 "
-        "--approver ershad"
+        "--approver owner"
     )
 
 

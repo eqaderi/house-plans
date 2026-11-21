@@ -30,12 +30,12 @@ await page.evaluate('() => document.querySelector(\'output\').value');
 ```
 
 ### Result
-- [Screenshot of viewport](../../../../../../../Users/ershadqaderi/_projects/house-plans/examples/tool-evaluations/playwright/results/cli.png)
+- [Screenshot of viewport](../../../../examples/tool-evaluations/playwright/results/cli.png)
 ### Ran Playwright code
 ```js
-// Screenshot viewport and save it as ../../../../../../../Users/ershadqaderi/_projects/house-plans/examples/tool-evaluations/playwright/results/cli.png
+// Screenshot viewport and save it as ../../../../examples/tool-evaluations/playwright/results/cli.png
 await page.screenshot({
-  path: '../../../../../../../Users/ershadqaderi/_projects/house-plans/examples/tool-evaluations/playwright/results/cli.png',
+  path: '../../../../examples/tool-evaluations/playwright/results/cli.png',
   scale: 'css',
   type: 'png'
 });

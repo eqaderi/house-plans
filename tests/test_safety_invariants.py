@@ -151,7 +151,7 @@ ALLOWED = {
     ("test_next_human_action.py", PRIVATE_NAMES[0]):
         "a project name rendered into a command string; no path is opened",
     ("test_next_human_action.py", f"house-ai workflow approve {PRIVATE_NAMES[0]} plan --id "
-     "concept-compact --version 4 --approver ershad"):
+     "concept-compact --version 4 --approver owner"):
         "the rendered command the previous entry produces",
     ("test_plan_generation.py", PRIVATE_NAMES[0]):
         "asserts the synthetic hillside fixture does not mention the owner's project",

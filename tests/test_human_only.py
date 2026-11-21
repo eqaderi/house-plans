@@ -65,8 +65,8 @@ def test_an_agent_looking_or_empty_name_is_refused(name):
 
 
 def test_a_human_at_a_terminal_is_returned_as_a_human_actor():
-    assert require_human(human.APPROVE, "ershad", ScriptedTerminal()) == Actor(
-        kind=ActorKind.HUMAN, id="ershad"
+    assert require_human(human.APPROVE, "owner", ScriptedTerminal()) == Actor(
+        kind=ActorKind.HUMAN, id="owner"
     )
     owner = Actor(kind=ActorKind.HUMAN, id="owner")
     assert require_human(human.REOPEN, owner, ScriptedTerminal()) is owner

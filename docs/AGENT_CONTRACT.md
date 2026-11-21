@@ -62,11 +62,13 @@ game engine may become a dependency of `domain`; each sits behind an adapter.
 ## 5. Private data and providers
 
 - The owner committed `projects/my-house/` (`seperated.dwg` and `elevation.dwg`;
-  `final.dwg` is excluded) to this **private** repository
-  ([ADR 0009](adr/0009-personal-first-project-folders.md)). Before pushing,
-  verify `gh repo view --json visibility` is `PRIVATE`; else stop and ask.
-  Never copy real project data into `examples/`, `tests/` or public docs, and
-  never modify survey originals. `project-data/` stays git-ignored. Never
+  `final.dwg` is excluded) to this repository
+  ([ADR 0009](adr/0009-personal-first-project-folders.md)) and decided on
+  2026-11-21 that it may be public: the site, its location and the household's
+  requirements may be published. **No personal name** (the owner's or anyone
+  else's) goes into a tracked file; write `owner` and relative paths, never a
+  home directory. Never copy real project data into `examples/` or `tests/`,
+  and never modify survey originals. `project-data/` stays git-ignored. Never
   commit API keys or `.env` files.
 - Every external provider call goes through `providers.base.send`, which
   enforces `DataFlowPolicy`. Tests and examples use synthetic data only.
