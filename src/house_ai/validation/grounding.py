@@ -118,17 +118,23 @@ CANONICAL_PLAN_TARGETS = {
 #: Units a measurable claim may state, longest first so ``m2`` is not read as ``m``.
 _UNIT = r"m²|m³|m2|m3|sqm|metres?|meters?|m|%|degrees?|deg|°"
 
-#: A number with a unit in text like "area is 25.5 m²". The number may not be part of an
-#: ID (``sp-bed-2``) and the unit may not run into a word (``3 mm``, ``2 months``).
-MEASURABLE_CLAIM_PATTERN = re.compile(
-    r"(?<![\w.\-])(-?\d+(?:\.\d+)?)\s*(" + _UNIT + r")(?!\w)",
-    re.IGNORECASE,
+#: A number, or a range of two ("3-5", "12–15"). It may start with a dot (".5") and carry a
+#: sign. It may not be part of an ID: not inside a word or a number, and not after a word and
+#: a hyphen (``sp-bed-2``, ``w-down-300-002``), which is where an ID differs from a range.
+_QUANTITY = (
+    r"(?<![\w.])(?<!\w-)"
+    r"(?:(?P<low>-?(?:\d+(?:\.\d+)?|\.\d+))\s*[-–—]\s*)?"
+    r"(?P<value>-?(?:\d+(?:\.\d+)?|\.\d+))"
 )
+#: The unit after a number, after spaces or one hyphen ("4-m"); it may not run into a word
+#: (``3 mm``, ``2 months``).
+_QUANTITY_UNIT = r"(?:\s*|-)(?P<unit>" + _UNIT + r")(?!\w)"
 
-#: The value stated for a metric: the first number after its name, unit optional.
-_STATED_VALUE = re.compile(
-    r"(?<![\w.\-])(-?\d+(?:\.\d+)?)(?:\s*(" + _UNIT + r")(?!\w))?", re.IGNORECASE
-)
+#: A number or a range with a unit in text like "area is 25.5 m²" or "3-5 m²".
+MEASURABLE_CLAIM_PATTERN = re.compile(_QUANTITY + _QUANTITY_UNIT, re.IGNORECASE)
+
+#: The value stated for a metric: the first number or range after its name, unit optional.
+_STATED_VALUE = re.compile(_QUANTITY + r"(?:" + _QUANTITY_UNIT + r")?", re.IGNORECASE)
 #: Where a metric's statement ends: a semicolon, a line break, or a full stop.
 _CLAUSE_END = re.compile(r"[;\n]|\.(?!\d)")
 
@@ -279,7 +285,10 @@ def _measurable_findings(claim: Any, evaluation: EvaluationReport | None) -> lis
     the first number after the name (before ``;``, a full stop or a line break, or the
     next cited name) is the value the claim states for it. That value must agree with
     the evaluator's value to the precision the claim wrote it at: half a unit of its last
-    digit ("46" covers 45.5..46.5, "45.9" covers 45.85..45.95). Evaluator metrics are
+    digit ("46" covers 45.5..46.5, "45.9" covers 45.85..45.95). A range ("3-5 m²") states
+    that the value lies between its bounds, each read the same way ("3-5" covers 2.5..5.5);
+    only a hyphen or a dash makes a range, so in "3 to 5 m²" the 3 is the stated value and
+    "5 m²" is a second quantity that needs its own backing. Evaluator metrics are
     stored at 3 decimals (``EvaluatorOutput.metric``), finer than any figure an agent
     reads off a report, so a correctly rounded reading always lies inside that band and
     a number outside it is not the metric's value. A percentage stated for a unitless
@@ -308,7 +317,7 @@ def _measurable_findings(claim: Any, evaluation: EvaluationReport | None) -> lis
         stated = _STATED_VALUE.search(text, name_end, clause_end.start() if clause_end else stop)
         if stated is None:
             continue  # the metric is named, no value is asserted for it
-        backed.add(stated.span(1))
+        backed.add(stated.span("value"))
         issue = _stated_value_issue(name, stated, by_name[name], claim.element_ids)
         if issue:
             findings.append(GroundingFinding(claim_id=claim.id, issue=issue))
@@ -316,7 +325,7 @@ def _measurable_findings(claim: Any, evaluation: EvaluationReport | None) -> lis
     if claim.suggested_ops:
         return findings
     for match in MEASURABLE_CLAIM_PATTERN.finditer(text):
-        if match.span(1) not in backed:
+        if match.span("value") not in backed:
             findings.append(
                 GroundingFinding(
                     claim_id=claim.id,
@@ -333,8 +342,9 @@ def _stated_value_issue(
     name: str, stated: re.Match[str], metrics: list[MetricClaim], element_ids: list[str]
 ) -> str | None:
     """Why the value ``stated`` for metric ``name`` disagrees with the evaluator, or None."""
-    number, stated_unit = stated.group(1), _unit(stated.group(2))
-    shown = f"{number} {stated_unit}" if stated_unit else number
+    low, number, stated_unit = stated["low"], stated["value"], _unit(stated["unit"])
+    written = f"{low}-{number}" if low else number
+    shown = f"{written} {stated_unit}" if stated_unit else written
     on_subject = [m for m in metrics if set(m.subject_ids) & set(element_ids)]
     candidates = on_subject or metrics
     numeric = [
@@ -349,7 +359,8 @@ def _stated_value_issue(
             f"(status {statuses})"
         )
     tolerance = 0.5 * 10 ** -_decimals(number)
-    value = float(number)
+    upper = float(number) + tolerance
+    lower = float(low) - 0.5 * 10 ** -_decimals(low) if low else float(number) - tolerance
     unit_errors: list[str] = []
     for m in numeric:
         metric_unit = _unit(m.unit)
@@ -361,14 +372,16 @@ def _stated_value_issue(
                 f"Claim states {name} in {stated_unit} but the metric is in {metric_unit}"
             )
             continue
-        if abs(value * scale - float(m.value)) <= tolerance * scale + 1e-9:
+        if lower * scale - 1e-9 <= float(m.value) <= upper * scale + 1e-9:
             return None
     if unit_errors and len(unit_errors) == len(numeric):
         return unit_errors[0]
     measured = ", ".join(
         f"{m.value} {_unit(m.unit)}" if m.unit else f"{m.value}" for m in numeric
     )
-    return (
-        f"Claim states {name} = {shown} but the evaluator measured {measured} "
-        f"(tolerance ±{tolerance:g}, half a unit of the stated last digit)"
+    band = (
+        "each bound widened by half a unit of its last digit"
+        if low
+        else f"tolerance ±{tolerance:g}, half a unit of the stated last digit"
     )
+    return f"Claim states {name} = {shown} but the evaluator measured {measured} ({band})"
