@@ -422,6 +422,79 @@ def test_bare_metres_and_percent_are_measurable_quantities():
     ]
 
 
+_UNBACKED = (
+    "Measurable quantity '{}' asserted without citing an evaluation metric "
+    "or providing structured revision operations"
+)
+
+
+@pytest.mark.parametrize(
+    ("text", "quantity"),
+    [
+        ("The pantry is 3-5 m² at most", "3-5 m²"),
+        ("The pantry is 3–5 m² at most", "3–5 m²"),
+        ("A niche of .5 m² is left over", ".5 m²"),
+        ("Circulation takes 12-15 % of the floor", "12-15 %"),
+        ("the 4-m corridor is long", "4-m"),
+    ],
+)
+def test_a_range_a_leading_dot_and_a_hyphenated_unit_are_measurable_quantities(text, quantity):
+    """A number after a hyphen or a leading dot is still a number (S12 review 1, finding 5)."""
+    assert _issues(text) == [_UNBACKED.format(quantity)]
+
+
+def test_a_number_inside_an_id_is_not_a_measurable_quantity():
+    # `2` and `002` belong to the IDs; `300-002` is not a range.
+    assert _issues("sp-bed-2 m, w-down-300-002 m and v1.5 m are IDs, not lengths") == []
+
+
+def test_a_range_stated_for_a_cited_metric_must_contain_its_value():
+    """Each bound is widened by half a unit of its last digit, as a single value is."""
+    for text in (
+        "gross_internal_area_m2 is 45-47 m²",
+        "gross_internal_area_m2 is 44–46 m²",  # the bounds are inclusive
+    ):
+        assert _issues(text, _GIA) == [], text
+    # 12.346 rounds to 12.35 and to 12.3, so it lies in both ranges.
+    width = _metric("min_corridor_width_m", 12.346, "m")
+    for text in ("min_corridor_width_m of 12.35-13 m", "min_corridor_width_m of 12-12.3 m"):
+        assert _issues(text, width) == [], text
+    assert _issues("gross_internal_area_m2 is 3-5 m²", _GIA) == [
+        "Claim states gross_internal_area_m2 = 3-5 m2 but the evaluator measured 46.0 m2 "
+        "(each bound widened by half a unit of its last digit)"
+    ]
+    # 47 covers 46.5 and up; 45.9 covers up to 45.95.
+    for text, shown in (
+        ("gross_internal_area_m2 is 47-48 m²", "47-48"),
+        ("gross_internal_area_m2 is 44-45.9 m²", "44-45.9"),
+    ):
+        assert _issues(text, _GIA) == [
+            f"Claim states gross_internal_area_m2 = {shown} m2 but the evaluator measured "
+            "46.0 m2 (each bound widened by half a unit of its last digit)"
+        ]
+    ratio = _metric("circulation_ratio", 0.182, None)
+    assert _issues("circulation_ratio of 17-19 % is high", ratio) == []
+    assert _issues("circulation_ratio of 12-15 % is high", ratio) == [
+        "Claim states circulation_ratio = 12-15 % but the evaluator measured 0.182 "
+        "(each bound widened by half a unit of its last digit)"
+    ]
+
+
+def test_a_leading_dot_and_a_hyphenated_unit_stated_for_a_cited_metric_are_compared():
+    niche = _metric("smallest_room_area_m2", 0.5, "m2")
+    assert _issues("smallest_room_area_m2 of .5 m² is a cupboard", niche) == []
+    assert _issues("smallest_room_area_m2 of .9 m² is a cupboard", niche) == [
+        "Claim states smallest_room_area_m2 = .9 m2 but the evaluator measured 0.5 m2 "
+        "(tolerance ±0.05, half a unit of the stated last digit)"
+    ]
+    width = _metric("min_corridor_width_m", 12.346, "m")
+    assert _issues("min_corridor_width_m gives a 12-m corridor", width) == []
+    assert _issues("min_corridor_width_m gives a 4-m corridor", width) == [
+        "Claim states min_corridor_width_m = 4 m but the evaluator measured 12.346 m "
+        "(tolerance ±0.5, half a unit of the stated last digit)"
+    ]
+
+
 def test_a_metric_name_inside_a_longer_name_is_not_a_citation():
     """`area_m2` is not cited by the text `gross_internal_area_m2`."""
     short = _metric("area_m2", 99.0, "m2")

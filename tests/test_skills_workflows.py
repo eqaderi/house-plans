@@ -30,7 +30,7 @@ from house_ai.orchestration.workflow import Workflow
 from house_ai.storage import ProjectStore
 from house_ai.validation.grounding import collect_canonical_ids, validate_cited_ids
 
-from .conftest import AGENT, HUMAN, SURVEY_DXF, SURVEY_LAYERS
+from .conftest import AGENT, HUMAN, SURVEY_DXF, SURVEY_LAYERS, tree
 
 REPO = Path(__file__).resolve().parent.parent
 OWNER = Actor(kind=ActorKind.HUMAN, id="test-owner")
@@ -418,7 +418,7 @@ def test_generate_plan_options_and_critique_skills_workflow(
     # 1. Exploratory generation (works before gate approvals, stores nothing). One strategy
     # is the one the critique below reads; every strategy is solved independently.
     exploratory_dir = tmp_path / "exploratory-preview"
-    events = len(store.events())
+    before = tree(proj_dir)
     rc = main(
         [
             "plan",
@@ -436,9 +436,9 @@ def test_generate_plan_options_and_critique_skills_workflow(
     assert rc == 0
     assert (exploratory_dir / "comparison.md").is_file()
     assert "EXPLORATORY" in (exploratory_dir / "comparison.md").read_text("utf-8")
-    # Confirm store untouched by exploratory generation
+    # Confirm store untouched by exploratory generation: every file's bytes
     assert store.refs(ArtifactKind.PLAN) == []
-    assert len(store.events()) == events
+    assert tree(proj_dir) == before
 
     # critique-plan before the gates: ground a critique of the exploratory plan option
     plan_json = exploratory_dir / "concept-split-walkout" / "exploratory" / "plan.json"

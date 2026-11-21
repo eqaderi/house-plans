@@ -868,23 +868,76 @@ def test_committed_demo_is_grounded_and_has_three_integrity_checked_concepts():
 
 
 def test_committed_demo_report_matches_a_fresh_evaluation():
-    """A stale report must fail: same inputs, and the critics' output recomputed."""
+    """A stale or edited report must fail: the whole of report.json is recomputed from the
+    site, the program, the policy, the templates and the seeded scenarios, and report.md from
+    report.json. Only the three solved layouts are taken from the file: solver output differs
+    by platform, so they are checked for integrity, not solved again."""
     import json
+    from dataclasses import asdict
 
+    from examples.usability.make_report import CREATED, markdown
+    from house_ai.constraints.compiler import compile_constraints
+    from house_ai.domain.integrity import errors
+    from house_ai.domain.provenance import Actor, ActorKind
     from house_ai.storage.hashing import content_hash
 
     report = json.loads(_DEMO.read_text())
     site, hillside = _demo_inputs()
-    assert report["input_hashes"] == dict(site=content_hash(site), program=content_hash(hillside))
+    constraints = compile_constraints(
+        hillside, site, created_at=CREATED, actor=Actor(kind=ActorKind.AGENT, id="agent:codex")
+    ).constraints
+    assert [row["strategy"] for row in report["options"]] == ["compact", "split_level", "linear"]
+    options = []
     for row in report["options"]:
         house = HouseModel.model_validate(row["model"])
         results = [
-            e.evaluate(EvaluationContext(house, site, hillside, None, False))
+            e.evaluate(EvaluationContext(house, site, hillside, constraints, False))
             for e in USABILITY_EVALUATORS
         ]
-        assert row["critics"] == [r.run.model_dump(mode="json") for r in results]
-        assert row["findings"] == [v.model_dump(mode="json") for r in results for v in r.violations]
-        assert row["metrics"] == [m.model_dump(mode="json") for r in results for m in r.metrics]
+        options.append(
+            dict(
+                strategy=row["strategy"],
+                # A row with a layout is a generated candidate, which carries no reason.
+                status="generated",
+                reason=None,
+                integrity_clean=not errors(check_model(house, site, hillside)),
+                model=row["model"],
+                model_hash=content_hash(house),
+                critics=[r.run.model_dump(mode="json") for r in results],
+                metrics=[m.model_dump(mode="json") for r in results for m in r.metrics],
+                findings=[v.model_dump(mode="json") for r in results for v in r.violations],
+            )
+        )
+    defects = []
+    for ident, name, bad, clean, code, subject, pair_program in seeded_pairs():
+        critic = next(e for e in USABILITY_EVALUATORS if e.name == name)
+        found, twin = (
+            critic.evaluate(EvaluationContext(m, None, pair_program, None)).violations
+            for m in (bad, clean)
+        )
+        defects.append(
+            dict(
+                id=ident,
+                code=code,
+                subject=subject,
+                defect_detected=any(v.code == code and subject in v.subject_ids for v in found),
+                clean_twin_passes=code not in {v.code for v in twin},
+            )
+        )
+    assert report == dict(
+        classification="synthetic",
+        exploratory=True,
+        site_approved=False,
+        program_approved=False,
+        input_hashes=dict(site=content_hash(site), program=content_hash(hillside)),
+        policy=asdict(UsabilityPolicy()),
+        policy_basis={k: UsabilityPolicy().basis(k) for k in asdict(UsabilityPolicy())},
+        templates=[t.model_dump(mode="json") for t in TEMPLATES.values()],
+        options=options,
+        defects=defects,
+    )
+    assert all(row["integrity_clean"] for row in report["options"])
+    assert _DEMO.with_suffix(".md").read_text() == markdown(report)
 
 
 # ---------------------------------------------------------------- S6 review 1 regressions

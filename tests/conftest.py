@@ -1,11 +1,13 @@
 from __future__ import annotations
 
 import copy
+import hashlib
 from collections.abc import Callable
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 import pytest
+from ortools.sat.python import cp_model
 
 from house_ai.domain.plan import PlanVersion
 from house_ai.domain.provenance import Actor, ActorKind, DataClassification
@@ -22,6 +24,83 @@ AGENT = Actor(kind=ActorKind.AGENT, id="claude-code", provider="anthropic", mode
 SYSTEM = Actor(kind=ActorKind.SYSTEM, id="house-ai")
 
 
+class SolveMemo:
+    """Each CP-SAT model is solved once per test process; a repeat gets the first response.
+
+    The solvers run on one worker with a fixed seed and a deterministic time limit, so an
+    identical model with identical parameters has one answer
+    (`test_solver_reproducibility_budget` and `test_generation_is_deterministic` solve again
+    and compare). Whichever tests share a worker, none of them pays for a problem another has
+    solved (ADR 0035). `tests/test_solve_memo.py` checks the replay itself.
+    """
+
+    #: Where `CpSolver.solve` keeps its response (its private `__response`).
+    RESPONSE = "_CpSolver__response"
+
+    def __init__(self) -> None:
+        self.responses: dict[bytes, object] = {}
+        self.solved = 0
+        self.replayed = 0
+        #: Set by the `fresh_solves` marker: solve again, whatever is remembered.
+        self.fresh = False
+        self._solve = cp_model.CpSolver.solve
+
+    @staticmethod
+    def key(solver: cp_model.CpSolver, model: cp_model.CpModel) -> bytes:
+        """The model and the solver's parameters, as `tools/solve_fingerprints.py` reads them."""
+        return hashlib.sha1((str(model.Proto()) + str(solver.parameters)).encode()).digest()
+
+    def solve(self, solver: cp_model.CpSolver, model: cp_model.CpModel, solution_callback=None):
+        if solution_callback is not None:  # a callback must see the search itself
+            return self._solve(solver, model, solution_callback)
+        key = self.key(solver, model)
+        response = None if self.fresh else self.responses.get(key)
+        solver.from_memo = response is not None
+        if response is None:
+            status = self._solve(solver, model)
+            self.solved += 1
+            # Without the response there is nothing to replay: the next solve is a real one.
+            if getattr(solver, self.RESPONSE, None) is not None:
+                self.responses[key] = getattr(solver, self.RESPONSE)
+            return status
+        setattr(solver, self.RESPONSE, response)
+        self.replayed += 1
+        return response.status
+
+
+def pytest_addoption(parser: pytest.Parser) -> None:
+    parser.addoption(
+        "--fresh-solves",
+        action="store_true",
+        help="solve every CP-SAT model again; the solve memo answers nothing",
+    )
+
+
+@pytest.fixture(scope="session", autouse=True)
+def solve_memo():
+    """Installs the `SolveMemo` for this test process."""
+    memo = SolveMemo()
+
+    def solve(solver, model, solution_callback=None):
+        return memo.solve(solver, model, solution_callback)
+
+    with pytest.MonkeyPatch.context() as patch:
+        patch.setattr(cp_model.CpSolver, "solve", solve)
+        yield memo
+
+
+@pytest.fixture(autouse=True)
+def _fresh_solves(request, solve_memo):
+    """`@pytest.mark.fresh_solves`: solving again is what the test checks.
+
+    `pytest --fresh-solves` does the same for every test, to check the memo changes no result.
+    """
+    marked = request.node.get_closest_marker("fresh_solves") is not None
+    solve_memo.fresh = marked or request.config.getoption("--fresh-solves")
+    yield
+    solve_memo.fresh = False
+
+
 class FakeClock:
     """Deterministic clock: each call advances one second."""
 
@@ -31,6 +110,18 @@ class FakeClock:
     def __call__(self) -> datetime:
         self.now += timedelta(seconds=1)
         return self.now
+
+
+def tree(root: Path) -> dict[str, bytes | None]:
+    """Every path under ``root``: a file's bytes, ``None`` for a folder.
+
+    "Writes nothing" is ``tree(root)`` equal before and after: a stray file or folder fails it
+    as surely as a new event.
+    """
+    return {
+        p.relative_to(root).as_posix(): (p.read_bytes() if p.is_file() else None)
+        for p in sorted(root.rglob("*"))
+    }
 
 
 @pytest.fixture

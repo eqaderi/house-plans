@@ -164,8 +164,10 @@ Never rename an existing study folder.
   not `>=`, truthiness or presence where the value is known; never pin solver
   coordinates. Show a new or repaired test fails against the broken behaviour.
   Never solve the same problem twice: share plans through a module fixture or
-  `hillside` (`tests/conftest.py`). `pytest` runs on four workers; `-n 0` runs
-  one process.
+  `hillside` (`tests/conftest.py`); the solve memo there replays any model a
+  worker has already solved, so mark a test `fresh_solves` only when solving
+  again is what it checks. `pytest` runs on four workers; `-n 0` runs one
+  process.
 - Owner commands "Project status", "Next stage", "Review stage <ID>" and
   "Close stage <ID>" follow the tracker protocol (§O): one stage per branch
   `stage/<ID>-<slug>`, stop for independent review, no DONE without evidence.

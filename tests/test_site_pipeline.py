@@ -158,7 +158,10 @@ def test_millimetre_drawing_gives_the_same_site(ingest, make_survey, survey):
         assert to_source.local_to_source((x, y, 0.0)) == pytest.approx(
             ((survey["E0"] + x) * 1000, (survey["N0"] + y) * 1000, 0.0), abs=1e-6
         )
-    assert [p[:2] for p in b.boundary.outer] == pytest.approx(survey["PARCEL"], abs=1e-9)
+    # Flat lists: pytest.approx compares numbers, not nested points.
+    assert [c for p in b.boundary.outer for c in p[:2]] == pytest.approx(
+        [c for p in survey["PARCEL"] for c in p], abs=1e-9
+    )
     for spot in b.terrain.spot_elevations:
         x, y = spot.xy
         assert to_source.local_to_source((x, y, spot.z_m)) == pytest.approx(

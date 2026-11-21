@@ -21,6 +21,7 @@ from __future__ import annotations
 
 import copy
 import functools
+import platform
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
@@ -37,6 +38,7 @@ from house_ai.constants.evaluations import (
 )
 from house_ai.constants.placement2d import (
     COURTYARD_SPACE_ID,
+    L_SHAPE_MIN_RECESS_DM,
     LEVEL_ENTRY,
     LEVEL_UPPER,
     OPEN_PLAN_SHARED_WALL_MIN_M,
@@ -213,6 +215,16 @@ def test_2d_placement_basic_and_check_model_clean():
         assert sw.length_m >= SHARED_WALL_MIN_M
 
     assert {s.id for s in model.spaces} == FLAT_SIMPLE_ROOMS
+    # The walls enclose what was placed: exterior walls trace the footprint's outline and
+    # interior walls are the shared walls, metre for metre.
+    footprint = unary_union([s.boundary.to_shapely() for s in model.spaces])
+    assert footprint.geom_type == "Polygon"
+    assert {w.kind for w in model.walls} == {WallKind.EXTERIOR, WallKind.INTERIOR}
+    length = lambda kind: sum(  # noqa: E731
+        LineString([w.start, w.end]).length for w in model.walls if w.kind is kind
+    )
+    assert length(WallKind.EXTERIOR) == pytest.approx(footprint.exterior.length)
+    assert length(WallKind.INTERIOR) == pytest.approx(sum(sw.length_m for sw in sol.shared_walls))
     # The three hard CONNECTED relations of the program are passable openings.
     doors = _door_pairs(model)
     for pair in ({"sp-hall", EXTERIOR}, {"sp-living", "sp-kitchen"}, {"sp-hall", "sp-bath"}):
@@ -266,6 +278,7 @@ def test_open_plan_living_arrangement():
     assert not errors(check_model(model, case.site, case.program))
 
 
+@pytest.mark.fresh_solves
 def test_solver_reproducibility_budget():
     """S7-13: Test that solver runs within budget and produces identical results across runs."""
     shared = _case("flat-simple", STRATEGY_CORRIDOR_FREE).sol
@@ -302,11 +315,23 @@ def test_two_wing_l_shaped_arrangement_free_positioning():
 
     # The footprint is one polygon with a re-entrant corner: an L (or more) and not a
     # rectangle, so it covers less than its bounding box and has at least six true corners.
-    fp = unary_union([box(r.u0, r.v0, r.u1, r.v1) for r in sol.rooms]).simplify(0)
+    rooms = {r.space_id: box(r.u0, r.v0, r.u1, r.v1) for r in sol.rooms}
+    fp = unary_union(list(rooms.values())).simplify(0)
     assert fp.geom_type == "Polygon"
     assert fp.area == pytest.approx(sum(r.width_dm * r.depth_dm for r in sol.rooms))
     assert fp.area < fp.envelope.area - 1
     assert len(fp.exterior.coords) - 1 >= 6
+
+    # The L is the wings': one wing reaches at least the recess further in x and the other
+    # at least the recess further in y, so the corner beyond both is empty (solver grid, dm).
+    # Any six-cornered footprint passes the checks above; this is the two-wing rule.
+    (_, _, xd, yd) = unary_union([rooms[i] for i in day_ids]).bounds
+    (_, _, xn, yn) = unary_union([rooms[i] for i in night_ids]).bounds
+    assert (xd - xn >= L_SHAPE_MIN_RECESS_DM and yn - yd >= L_SHAPE_MIN_RECESS_DM) or (
+        xn - xd >= L_SHAPE_MIN_RECESS_DM and yd - yn >= L_SHAPE_MIN_RECESS_DM
+    )
+    notch = box(min(xd, xn), min(yd, yn), max(xd, xn), max(yd, yn))
+    assert fp.intersection(notch).area == 0
 
     assert not errors(check_model(case.model, case.site, case.program))
 
@@ -493,9 +518,17 @@ def test_privacy_driven_zoning():
     assert not errors(check_model(model, case.site, case.program))
 
 
+#: ISS-52 shows on the layout CP-SAT returns for this model and seed on macOS arm64. Linux
+#: x86-64 gets another layout from the same model and seed (ISS-21) whose routes happen to
+#: stay out of the family rooms (CI run 44936702603), so there the test runs unmarked: it
+#: passes today, and fails with the gap's own assertion if a layout there ever shows it.
+ISS_52_SHOWS_HERE = (platform.system(), platform.machine()) == ("Darwin", "arm64")
+
+
 @pytest.mark.xfail(
+    ISS_52_SHOWS_HERE,
     strict=True,
-    reason="product gap: S7-17 zoning only bars direct doors; seed 42 reaches the hall "
+    reason="product gap (ISS-52): S7-17 zoning only bars direct doors; seed 42 reaches the hall "
     "through laundry, the child bedroom and the master bedroom (guest_private_crossings 2)",
 )
 def test_privacy_zoning_routes_avoid_family_rooms():

@@ -14,9 +14,9 @@ jobs:
     name: Tests (Python ${{ matrix.python }})
     runs-on: ubuntu-latest
     # The suite runs on four pytest-xdist workers (ADR 0035): about 70 s on the
-    # owner's laptop. Linux runner time was 14.5 min single-process before S12 and
-    # has not been measured since; keep the margin until it has.
-    timeout-minutes: 20
+    # owner's laptop and 175 s on this runner (run 44936702603, whole job 3 min 34 s;
+    # it was 14.5 min single-process before S12).
+    timeout-minutes: 10
     strategy:
       fail-fast: false
       matrix:

@@ -35,18 +35,10 @@ from house_ai.orchestration.interview import InterviewService
 from house_ai.orchestration.workflow import Workflow
 from house_ai.storage import ProjectStore
 
-from .conftest import example_doc
+from .conftest import example_doc, tree
 
 HUMAN = Actor(kind=ActorKind.HUMAN, id="test-owner")
 AGENT = Actor(kind=ActorKind.AGENT, id="claude-code")
-
-
-def tree(root: Path) -> dict[str, bytes | None]:
-    """Every path under ``root``: a file's bytes, ``None`` for a folder."""
-    return {
-        p.relative_to(root).as_posix(): (p.read_bytes() if p.is_file() else None)
-        for p in sorted(root.rglob("*"))
-    }
 
 
 @pytest.fixture

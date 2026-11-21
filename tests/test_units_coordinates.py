@@ -120,6 +120,19 @@ def test_ambiguous_site_coordinates_block_approval(site_doc, patch, expected):
     assert any(expected in b for b in blockers), blockers
 
 
+def test_utm_looking_coordinates_do_not_imply_a_crs(site_doc):
+    """A 6/7-digit origin looks like UTM. That must not resolve the CRS."""
+    site_doc["coordinates"]["horizontal_crs"] = {"status": "unknown"}
+    site = Site.model_validate(site_doc)
+    assert site.coordinates.local.origin == (500000.0, 5400000.0, 100.0)
+    crs = site.coordinates.horizontal_crs
+    assert (crs.epsg, crs.declared_epsg, crs.resolved) == (None, None, False)
+    assert site_verification_blockers(site) == [
+        "horizontal CRS is unknown; a human must confirm the EPSG code or confirm the survey "
+        "is local-only"
+    ]
+
+
 def test_golden_site_has_no_blockers(site):
     assert site_verification_blockers(site) == []
 

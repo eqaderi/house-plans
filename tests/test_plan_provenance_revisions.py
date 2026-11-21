@@ -224,6 +224,8 @@ def test_topology_revision_connect_stair_outdoor(generated, tmp_path):
     """Test S7-21: Revisions that change architectural topology."""
     store = _copy(generated, tmp_path)
     svc = PlanService(store)
+    base = _plan(store, "concept-compact")
+    ops = ["connect:sp-kitchen,sp-dining", "stair:perimeter", "outdoor:sp-living,terrace"]
 
     # Revise with topology operations: connect, stair relocation, outdoor links
     rev_res = svc.revise(
@@ -231,17 +233,24 @@ def test_topology_revision_connect_stair_outdoor(generated, tmp_path):
         "Add a direct terrace connection from living room, relocate stair to perimeter, "
         "and connect kitchen and dining.",
         AGENT,
-        ops=[
-            "connect:sp-kitchen,sp-dining",
-            "stair:perimeter",
-            "outdoor:sp-living,terrace",
-        ],
+        ops=ops,
     )
     plan_v2 = rev_res.option.candidate.plan
     assert plan_v2 is not None
     assert plan_v2.parent == store.refs(ArtifactKind.PLAN, "concept-compact")[0]
     assert plan_v2.change_request.kind is ChangeRequestKind.MODIFY
     assert rev_res.option.plan_ref.version == 2
+    # The Plan version records the operations it was asked for; v1 recorded none. This is the
+    # guard: on this fixture v1 already meets all three requests (the program's hard adj-04
+    # joins kitchen and dining, v1's terrace opens off the living room, and its entry-Level
+    # stair room has an exterior wall), so the geometry checks below show only that the
+    # revision kept them.
+    assert base.generation.revision_ops == []
+    assert plan_v2.generation.revision_ops == ops
+    # What v1 does not have: a stair position or an outdoor link goes to the 2D engine, the
+    # only one that can place them (ADR 0032); v1 came from the bar engine.
+    assert base.generation.solver == "ortools-cp-sat"
+    assert plan_v2.generation.solver == "ortools-cp-sat-nooverlap2d"
     model = plan_v2.model
     # connect: a passable opening joins the kitchen and the dining room.
     assert "sp-dining" in circulation_graph(model)["sp-kitchen"]
