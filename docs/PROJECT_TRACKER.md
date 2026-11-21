@@ -122,7 +122,7 @@ to reopen A–D):
 | **Path to good floor plans** | S1 (done) → S2 (done) → S3 (done) → S4 (done) → S5 (done) → S6 (done) → S7 (done) → S8 (done) → S10 (done) → S9 (done; 10 stages complete) |
 | **Blocked** | H1 site facts (owner or surveyor input); program gate (needs site gate); H3 real design (needs H1 and H2) |
 | **Human parallel tracks** | H1 site verification with the owner any time; H2 interview any time (S1-09 closed) |
-| **`main` health** | GitHub Actions jobs have not started since 2026-11-18 (billing, ISS-48); the local required checks are the gate |
+| **`main` health** | S12 merged early at the owner's request (not closed); `test_the_committed_tracker_is_consistent` fails until S11 is closed (ISS-51, #52); GitHub Actions jobs have not started since 2026-11-18 (billing, ISS-48, #54) |
 | **Homeowner gates on `my-house`** | site: not approved (5 blockers) · program: none · plan: none · model: none |
 
 
@@ -2667,6 +2667,8 @@ Closure record template:
 
 #### S12 handoff 2 — resume after review 1 (CHANGES_REQUESTED)
 - Branch `stage/S12-fast-sound-tests`; start from its head (after `ac3c4e0`). Read S12 review 1 above in full: it names each test, line and the mutation that slips through.
+- Tracked on GitHub: parent issue #42 with sub-issues #43–#51 (agent work, in order) and #52 (owner's S11 decision); related #53 (personal data), #54 (publish and Actions); later stages #55 (safety), #56 (owner-rules checker), #57 (backlog).
+- Merged into `main` on 2026-11-21 at the owner's request, before closure, so that `main` carries the name removals (DEC-15). This is not a closure: S12 stays IN_PROGRESS with review CHANGES_REQUESTED, `main` carries the failing `test_the_committed_tracker_is_consistent` (ISS-51) and the weakened tests listed in review 1, and the fixes continue on the stage branch and merge again after an APPROVED review.
 - Owner decisions first (ask; do not decide): (a) S11, ISS-51: "Review stage S11" then "Close stage S11", or record the PR #5 merge as its closure. Finding 1 cannot pass until then. (b) Whether the account handle in the two CI-run URLs (finding 12) and the owner's job statement in interview/brief records count as personal data under DEC-15.
 - Fix, in this order; each fix must fail against the reviewer's mutation before it is trusted:
   - Finding 2: put the exact `revision_ops` assertions back in `test_topology_revision_connect_stair_outdoor`, and make the geometry checks compare against v1 (they must not already hold on the base).
