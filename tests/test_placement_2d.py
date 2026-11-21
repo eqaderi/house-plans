@@ -21,6 +21,7 @@ from __future__ import annotations
 
 import copy
 import functools
+import platform
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
@@ -493,9 +494,17 @@ def test_privacy_driven_zoning():
     assert not errors(check_model(model, case.site, case.program))
 
 
+#: ISS-52 shows on the layout CP-SAT returns for this model and seed on macOS arm64. Linux
+#: x86-64 gets another layout from the same model and seed (ISS-21) whose routes happen to
+#: stay out of the family rooms (CI run 44936702603), so there the test runs unmarked: it
+#: passes today, and fails with the gap's own assertion if a layout there ever shows it.
+ISS_52_SHOWS_HERE = (platform.system(), platform.machine()) == ("Darwin", "arm64")
+
+
 @pytest.mark.xfail(
+    ISS_52_SHOWS_HERE,
     strict=True,
-    reason="product gap: S7-17 zoning only bars direct doors; seed 42 reaches the hall "
+    reason="product gap (ISS-52): S7-17 zoning only bars direct doors; seed 42 reaches the hall "
     "through laundry, the child bedroom and the master bedroom (guest_private_crossings 2)",
 )
 def test_privacy_zoning_routes_avoid_family_rooms():
