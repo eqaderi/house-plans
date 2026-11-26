@@ -1,0 +1,2158 @@
+{
+  "option": "C11",
+  "rules": [
+    {
+      "id": "geom.overlap.road",
+      "status": "pass",
+      "evidence": "overlapping rooms: none",
+      "group": "geom"
+    },
+    {
+      "id": "2.3.voids.road",
+      "status": "pass",
+      "evidence": "enclosed leftover holes in the plate: 0",
+      "group": "rule"
+    },
+    {
+      "id": "geom.overlap.main",
+      "status": "pass",
+      "evidence": "overlapping rooms: none",
+      "group": "geom"
+    },
+    {
+      "id": "2.3.voids.main",
+      "status": "pass",
+      "evidence": "enclosed leftover holes in the plate: 0",
+      "group": "rule"
+    },
+    {
+      "id": "geom.overlap.lower",
+      "status": "pass",
+      "evidence": "overlapping rooms: none",
+      "group": "geom"
+    },
+    {
+      "id": "2.3.voids.lower",
+      "status": "pass",
+      "evidence": "enclosed leftover holes in the plate: 0",
+      "group": "rule"
+    },
+    {
+      "id": "1.1 kitchen → south terrace",
+      "status": "pass",
+      "evidence": "kitchen south wall is the façade; 2.0 m slider onto South Terrace",
+      "group": "rule"
+    },
+    {
+      "id": "1.2 kitchen on prime frontage",
+      "status": "pass",
+      "evidence": "kitchen spans u 4.4–9.4 on the SSE façade (bearing 158°)",
+      "group": "rule"
+    },
+    {
+      "id": "1.3 semi-open kitchen",
+      "status": "pass",
+      "evidence": "2 doorless openings [('hall', 1.1), ('dining', 1.1)]; full-height walls otherwise; hood ducted up riser SH-K",
+      "group": "rule"
+    },
+    {
+      "id": "1.4 snacks in the kitchen for 3-4",
+      "status": "pass",
+      "evidence": "3 stools at the island",
+      "group": "rule"
+    },
+    {
+      "id": "1.5 kitchen 15-17 m², pantry 4-5 m², dining seats 8",
+      "status": "pass",
+      "evidence": "kitchen 15.6 m² clear, pantry 4.3 m², dining clear 3.08 × 4.04 m: 2.2 × 1.0 m table with 0.9 m all round (2.8 × 4.0 m) fits = True; 8 chairs drawn",
+      "group": "rule"
+    },
+    {
+      "id": "2.1 every main room off a hall",
+      "status": "pass",
+      "evidence": "reachable without crossing another main room: {'dining': True, 'kitchen': True, 'living': True, 'master': True, 'boys': True, 'girls': True, 'guest': True, 'lounge': True}",
+      "group": "rule"
+    },
+    {
+      "id": "2.2 no long corridors",
+      "status": "open",
+      "evidence": "main family hall 10.6 m long, 2.2 m deep in the west and 1.45 m in front of the dining; open 2.6 m to the stair, 2.2 m to the entry, 1.6 m to the dining, 1.2 m to the living. The kitchen, dining and living open off it, so it reads as a hall, not a double-loaded corridor. Lower hall 4.4 × 3.65 m, square. Your call (kept open since C10).",
+      "group": "rule"
+    },
+    {
+      "id": "2.4 no unnecessary doors (safety doors allowed)",
+      "status": "pass",
+      "evidence": "safety doors: [('garage', 'lobby-r', 'fire'), ('lobby-r', 'stair-r', 'screen')]; other doors are bedrooms, baths, stores, plant and the lockable door to the shared lower bathroom (§4c)",
+      "group": "rule"
+    },
+    {
+      "id": "2.5 master not through the closet",
+      "status": "pass",
+      "evidence": "bedroom door from ['hall']; dressing and ensuite each open from inside the bedroom (['dress', 'ens'])",
+      "group": "rule"
+    },
+    {
+      "id": "2.6 clear front doors",
+      "status": "pass",
+      "evidence": "road: 1.0 m door on the west façade facing the forecourt, straight into the 9.4 m hall that ends on the lit core lobby; main: 1.0 m door under the covered porch, facing the arrival court, into the entry, then the hall (one turn) to the stair",
+      "group": "rule"
+    },
+    {
+      "id": "3.3 living ~34 m², ≥5.0 m wide",
+      "status": "pass",
+      "evidence": "living 34.0 m² clear, 5.19 × 6.55 m; 5.0 m square fits = True",
+      "group": "rule"
+    },
+    {
+      "id": "3.1 cozy corner, north closed",
+      "status": "manual",
+      "evidence": "L-sofa in the NE corner against the 200 mm masonry wall (v 6.2); clerestory only above it",
+      "group": "rule"
+    },
+    {
+      "id": "3.2 living has its own hall entry",
+      "status": "pass",
+      "evidence": "1.2 m opening from the hall, screened by a 1.1 m shelf",
+      "group": "rule"
+    },
+    {
+      "id": "4.2 lower floors reach at least as far east",
+      "status": "pass",
+      "evidence": "east edges road/main/lower u = [12.6, 18.0, 18.0]",
+      "group": "rule"
+    },
+    {
+      "id": "4.7 fits the field, ~150 m² east garden",
+      "status": "pass",
+      "evidence": "lower floor ends at u 18.0 (wall face 18.25); east garden 147 m² inside the setbacks; gross floor 510 m²",
+      "group": "rule"
+    },
+    {
+      "id": "4.3 terraces on the main floor, south and east",
+      "status": "pass",
+      "evidence": "61 m² of main-floor terraces: {'South Terrace': 35.4, 'East Balcony': 18.9, 'Master Balcony': 6.7}; on the ['E', 'S'] sides; no north terrace or balcony",
+      "group": "rule"
+    },
+    {
+      "id": "4.4 digging ≤ ~4.5 m",
+      "status": "pass",
+      "evidence": "deepest building cut to formation 4.22 m (formation 0.60 m under the floor, C11-GEO-04)",
+      "group": "rule"
+    },
+    {
+      "id": "4.9 / §7.1 every slab stands on something",
+      "status": "pass",
+      "evidence": "Lower Floor floor 170 m² (ground 157, wall 5, span 8, cantilever 0, NONE 0.0); Loggia 13 m² (ground 0, wall 4, span 8, cantilever 0, NONE 0.0); Garden Terrace 30 m² (ground 0, wall 8, span 21, cantilever 0, NONE 0.0);  2 m² (ground 0, wall 1, span 1, cantilever 0, NONE 0.0);  2 m² (ground 0, wall 0, span 1, cantilever 0, NONE 0.0); walk on a slab where the ground falls 4 m² (ground 0, wall 1, span 2, cantilever 0, NONE 0.0); walk on a slab, open to the loggia 3 m² (ground 0, wall 1, span 1, cantilever 0, NONE 0.0); Main Floor floor 207 m² (ground 61, wall 57, span 90, cantilever 0, NONE 0.0); South Terrace 35 m² (ground 0, wall 12, span 22, cantilever 2, NONE 0.0); East Balcony 19 m² (ground 0, wall 9, span 9, cantilever 0, NONE 0.0); Master Balcony 7 m² (ground 0, wall 3, span 3, cantilever 0, NONE 0.0); Road Level floor 133 m² (ground 0, wall 44, span 88, cantilever 0, NONE 0.0); Roof Terrace 37 m² (ground 0, wall 7, span 30, cantilever 0, NONE 0.0); Green Roof 42 m² (ground 0, wall 9, span 32, cantilever 0, NONE 0.0); suspended deck 19 m² (ground 0, wall 6, span 12, cantilever 1, NONE 0.0); Road-level roof 133 m² (ground 0, wall 31, span 101, cantilever 0, NONE 0.0)",
+      "group": "new"
+    },
+    {
+      "id": "§7.2 wall over wall",
+      "status": "pass",
+      "evidence": "bearing walls of the main and road storeys landing mid-span: 0 m; offsets 0.10–0.50 m: 0 m ",
+      "group": "new"
+    },
+    {
+      "id": "§7.2b columns founded, beam ends supported",
+      "status": "pass",
+      "evidence": "16 columns, 21 beams; problems: none",
+      "group": "new"
+    },
+    {
+      "id": "§7.2c lower walls reach sound ground",
+      "status": "pass",
+      "evidence": "lower outer wall points where the ground falls below the formation without a foundation wall under them: none",
+      "group": "new"
+    },
+    {
+      "id": "4.11 / §7.23 every outdoor connection is possible",
+      "status": "pass",
+      "evidence": "fore → court-w: fore → fore-deck → rs-head → rs-f1 → rs-l1 → rs-f2 → court-w; court-w → walk-s: court-w → cs-f1 → cs-l1 → cs-f2 → cs-l2 → cs-f3 → walk-s; court-w → loggia: court-w → cs-f1 → cs-l1 → cs-f2 → cs-l2 → cs-f3 → walk-s → walk-m → walk-e → loggia; court-w → t-low: court-w → cs-f1 → cs-l1 → cs-f2 → cs-l2 → cs-f3 → walk-s → walk-m → walk-e → loggia → t-low; court-w → lawn: court-w → cs-f1 → cs-l1 → cs-f2 → cs-l2 → cs-f3 → walk-s → walk-m → walk-e → loggia → t-low → ls-top → ls-f1 → ls-l1 → ls-f2 → lawn; t-south → court-w: t-south → court-w",
+      "group": "new"
+    },
+    {
+      "id": "§7.3 one set of supports in plans, sections and 3D",
+      "status": "pass",
+      "evidence": "63 columns and retaining/site walls; missing in plans none, in 3D none; sections draw 53 of them and nothing invented (none); ground steps ≥0.3 m without a wall: none; outdoor flights not cut by a section: none",
+      "group": "new"
+    },
+    {
+      "id": "§7.4 fill under ground-bearing slabs ≤ 1.0 m",
+      "status": "pass",
+      "evidence": "deepest fill under each ground-bearing slab: [('Lower Floor + Garden', 0.9), ('Main Floor', 0.35)]; suspended parts: lounge east, loggia, garden terrace, forecourt deck; deepest cut to formation 4.22 m (limit ~4.5)",
+      "group": "new"
+    },
+    {
+      "id": "4.11 / §7.5 outdoor stairs easy to use",
+      "status": "pass",
+      "evidence": "rs-f1: 12 × 164 mm / 320 mm, 2R+G 0.648, run 3.52 m (needs 3.52), 1.40 m; rs-f2: 12 × 158 mm / 320 mm, 2R+G 0.637, run 3.52 m (needs 3.52), 1.40 m; cs-f1: 8 × 151 mm / 340 mm, 2R+G 0.642, run 2.38 m (needs 2.38), 1.27 m; cs-f2: 8 × 151 mm / 340 mm, 2R+G 0.642, run 2.38 m (needs 2.38), 1.27 m; cs-f3: 8 × 151 mm / 340 mm, 2R+G 0.642, run 2.38 m (needs 2.38), 1.27 m; ls-f1: 8 × 149 mm / 320 mm, 2R+G 0.617, run 2.24 m (needs 2.24), 1.30 m; ls-f2: 8 × 149 mm / 320 mm, 2R+G 0.617, run 2.24 m (needs 2.24), 1.30 m. Landings ≥1.2 m at top and bottom of every flight; handrails both sides. Problems: none",
+      "group": "new"
+    },
+    {
+      "id": "5.2 / §7.6 one stair, same flights on every floor",
+      "status": "pass",
+      "evidence": "road→main 24 × 162.5 mm, main→lower 24 × 150.0 mm, every flight 12 risers / 11 goings of 309 mm over 3.4 m; 2R+G 0.634 / 0.609; 1.40 m landings; same box u 6.8–9.4, v 1.1–7.3 on all floors",
+      "group": "new"
+    },
+    {
+      "id": "§7.7 guard at every drop ≥0.6 m, 0.6 m clear in front",
+      "status": "pass",
+      "evidence": "225 m of 1.1 m guards on every edge with a drop of 0.6 m or more (max drop 7.8 m); drops without a guard: none; furniture within 0.6 m of a guard: none; openings only at stair heads and gates",
+      "group": "new"
+    },
+    {
+      "id": "§7.8 terraces over rooms set down",
+      "status": "pass",
+      "evidence": "terraces over heated rooms with the structural slab set down: [('t-south', 29.7, 0.25), ('deck-r', 36.7, 0.25), ('green-r', 41.8, 0.25), ('loggia', 13.1, 0.2), ('t-low', 30.4, 0.2), ('ls-top', 1.7, 0.2), ('ls-l1', 1.7, 0.2), ('walk-m', 4.0, 0.2), ('walk-e', 2.9, 0.2)] (0.40 build-up − 0.15 floor = 0.25 m); every door onto them has a 150 mm slot channel and a ≤20 mm threshold",
+      "group": "new"
+    },
+    {
+      "id": "§7.9 water: falls, 2 outlets + overflow, never towards a door",
+      "status": "pass",
+      "evidence": "17 outdoor surfaces, each with a fall, ≥2 outlets and an overflow; problems: none. Court outlet: channel + DN150 outfall. Garage floor falls 1 % to the shutters into a trench drain and interceptor.",
+      "group": "new"
+    },
+    {
+      "id": "§7.9b forecourt crest above the road edge",
+      "status": "open",
+      "evidence": "Forecourt 1677.47 at the shutters falls to a channel at the boundary, but the road crown and gutter are not surveyed (F6). Confirm with a road survey before fixing the levels (Q6).",
+      "group": "new"
+    },
+    {
+      "id": "§7.10 clear routes, doors, lift landings",
+      "status": "pass",
+      "evidence": "53 doors and openings checked with their swings; blocked none; narrow none; garage aisle u 5.54–6.74 × v 1.25–8.84 clear of cars and furniture: True ; 1.5 m circle at each lift door (level, wall m², furniture m²): [('road', 0.0, 0.0), ('main', 0.0, 0.0), ('lower', 0.0, 0.0)]; doorways narrowed by risers, columns or thick walls: none; furniture standing in a column: none",
+      "group": "new"
+    },
+    {
+      "id": "4.8 / §7.11 2 m of open ground below every bedroom window",
+      "status": "pass",
+      "evidence": "highest finished ground or slab 0.3–2.0 m in front of each bedroom window or door, against the floor (sill +0.90): master (16.2, 1.1): -3.05; master (18.0, 4.1): -0.02; guest (18.0, 2.2): -0.02; guest (18.0, 4.3): -0.02; boys (9.8, 15.8): +0.40; girls (13.1, 15.8): -0.02",
+      "group": "new"
+    },
+    {
+      "id": "§7.12 no window faces a void, a plinth or a wall within 2 m",
+      "status": "pass",
+      "evidence": "13 windows checked; problems: none",
+      "group": "new"
+    },
+    {
+      "id": "4.7 / §7.13 everything inside the envelope, walls included",
+      "status": "pass",
+      "evidence": "plates with their 0.25 m outer wall, terraces, stairs, platforms and site walls: outside nothing",
+      "group": "new"
+    },
+    {
+      "id": "§7.14 real walls and right sizes",
+      "status": "pass",
+      "evidence": "exterior walls 0.40 m (0.45 m against earth), core 0.25 m RC, lift 0.20 m RC, partitions 0.12 m, acoustic 0.20 m, all deducted. Living 5.19 m clear wide; kitchen 15.6 m²; pantry 4.3 m²; laundry 5.2 m² with separate stores ['store-u', 'store-s']; dining fits 2.8 × 4.0 m",
+      "group": "new"
+    },
+    {
+      "id": "§7.15 services: risers, hood duct, no WC or tank over the kitchen",
+      "status": "pass",
+      "evidence": "every wet room within 4.5 m of a riser (all); hob under riser SH-K, which rises through the road plant room to 1.0 m above the roof; wet rooms over the kitchen: none; tanks on the ground slab under the garage",
+      "group": "new"
+    },
+    {
+      "id": "§7.16 safety doors present; new doors justified",
+      "status": "pass",
+      "evidence": "garage fire door and the glazed stair screen are drawn. Doors not in C10, each a room door, a store or the safety doors: ['lower:guest→gwalk', 'lower:laundry→store-s', 'lower:stair-l→store-u', 'main:hall→master', 'main:hall→tanks', 'main:tanks→bulk', 'main:wudu→sh-m', 'road:lobby-r→office']",
+      "group": "new"
+    },
+    {
+      "id": "§7.17 no straight view of a WC pan from a hall or the kitchen",
+      "status": "pass",
+      "evidence": "5 pans ray-tested from every hall and kitchen opening (doors open); hits: none",
+      "group": "new"
+    },
+    {
+      "id": "7.6 / §7.18 qibla and north on every plan; mats on the qibla",
+      "status": "pass",
+      "evidence": "every plan shows grid north, true north (grid + 0.78°) and the qibla 204.6° true (inferred from the owner-supplied point; CRS unconfirmed). 2 mats, off the qibla by [0.0, 0.0]°",
+      "group": "new"
+    },
+    {
+      "id": "§7.19 lift shaft, pit and overrun",
+      "status": "pass",
+      "evidence": "clear shaft 1.80 × 2.64 m on every floor (stretcher car, supplier to confirm); pit floor 1668.80 (1.2 m, tanked, gravity drain); overrun 0.8 m behind the roof louvre; 0.9 m automatic doors on the south face",
+      "group": "new"
+    },
+    {
+      "id": "§7.20 text matches the geometry",
+      "status": "pass",
+      "evidence": "11 numbers in the notes recomputed; wrong: none. No 0110-r2 defect is marked fixed without a measured test.",
+      "group": "new"
+    },
+    {
+      "id": "§7.21 owner levels unchanged",
+      "status": "pass",
+      "evidence": "road 1677.50, main 1673.60, lower 1670.00; lawn 1667.60 (Q4 default)",
+      "group": "new"
+    },
+    {
+      "id": "§7.22 storeys per façade and coverage (reported)",
+      "status": "manual",
+      "evidence": "storeys seen above the finished ground: {'west (road)': 1, 'south': 3, 'east': 2, 'north': 2}; building cover 241 m² (40% of 600 m²), slab terraces and roofs 213 m², courts 62 m²; permit rules unknown (F5)",
+      "group": "new"
+    },
+    {
+      "id": "5.5 garage 55–60 m², closable, 2 cars",
+      "status": "pass",
+      "evidence": "garage 57.1 m² on the grid (53.0 m² clear inside 0.40 m walls, less the 0.4 m² riser box); two 3.35 m insulated shutters; reverse in, LC300 in bay 2; workbench and bikes on the back wall",
+      "group": "rule"
+    },
+    {
+      "id": "5.1 garage → lift indoors",
+      "status": "pass",
+      "evidence": "garage → fire door → core lobby → lift, 3.6 m",
+      "group": "rule"
+    },
+    {
+      "id": "5.3 stair at the heart",
+      "status": "manual",
+      "evidence": "the stair opens 2.6 m onto the hall on the road and main floors, 1.2 m on the lower; glazed screen only at road level",
+      "group": "rule"
+    },
+    {
+      "id": "5.4 step-free",
+      "status": "manual",
+      "evidence": "lift to all 3 floors; thresholds ≤20 mm with slot channels; step-free outdoor rooms: south terrace, garden terrace, loggia, garden walk",
+      "group": "rule"
+    },
+    {
+      "id": "6.5 master on the main floor + 3 lower bedrooms",
+      "status": "pass",
+      "evidence": "main ['Master Bedroom'] on the north side; lower ['Grandparents', 'Boys', 'Girls']",
+      "group": "rule"
+    },
+    {
+      "id": "6.1 master ensuite; shared baths",
+      "status": "pass",
+      "evidence": "ensuite off the bedroom; lower family bathroom; grandparents' seated ensuite; main 4-part wet cluster with an accessible WC",
+      "group": "rule"
+    },
+    {
+      "id": "6.7 owner's 4.3 × 4.8 m children's rooms",
+      "status": "pass",
+      "evidence": "boys and girls 4.3 × 4.8 m on the grid, clear (4.14, 4.59) and (4.05, 4.59) inside real walls; 2 beds, 2 desks, 2 wardrobes each",
+      "group": "rule"
+    },
+    {
+      "id": "6.3 compact laundry, stores in sensible places",
+      "status": "pass",
+      "evidence": "laundry 5.2 m² (stmt-028); household store under the stair 5.1 m²; store beside the laundry 6.0 m²; bulk store under the garage 9.6 m²",
+      "group": "rule"
+    },
+    {
+      "id": "6.6 tea/snack bar downstairs",
+      "status": "pass",
+      "evidence": "tea bar counter with sink, fridge and kettle in the garden lounge",
+      "group": "rule"
+    },
+    {
+      "id": "6.4 bedrooms away from living areas",
+      "status": "manual",
+      "evidence": "200 mm dense walls between the lounge and the bedrooms; TV and tea bar against the grandparents' wardrobes",
+      "group": "rule"
+    },
+    {
+      "id": "6.7b owner's 0109-r5 parts kept",
+      "status": "manual",
+      "evidence": "central stair + lift core with REST 1.40; 4-part wudu cluster; 4.3 × 4.8 m children's rooms side by side; grandparents' seated ensuite; lounge with tea bar; compact laundry + separate store; walk-in pantry; road: 2 bays, lockers, workbench, plant room, office + WC",
+      "group": "rule"
+    },
+    {
+      "id": "7.4 standard, comfortable sizes",
+      "status": "manual",
+      "evidence": "Master Bedroom 27; Kitchen 16; Dining · 8 12; Living 34; Grandparents 27; Boys 19; Girls 18; Garden Lounge + Tea Bar 24 m² clear",
+      "group": "rule"
+    },
+    {
+      "id": "4.1 south and east for day rooms",
+      "status": "manual",
+      "evidence": "kitchen, dining, living, children, lounge and the terraces face SSE or ENE; services, stores and the stair in the buried NW",
+      "group": "rule"
+    },
+    {
+      "id": "4.10 owner's full arrival court",
+      "status": "manual",
+      "evidence": "court 40.6 m² open + 4.2 m² covered porch (C10 34.0 m²); stair at the far west against the road",
+      "group": "rule"
+    },
+    {
+      "id": "doors.clear.road",
+      "status": "pass",
+      "evidence": "12 doors and openings checked with their swings; blocked: none",
+      "group": "rule"
+    },
+    {
+      "id": "doors.clear.main",
+      "status": "pass",
+      "evidence": "24 doors and openings checked with their swings; blocked: none",
+      "group": "rule"
+    },
+    {
+      "id": "doors.clear.lower",
+      "status": "pass",
+      "evidence": "17 doors and openings checked with their swings; blocked: none",
+      "group": "rule"
+    },
+    {
+      "id": "daylight.rooms.main",
+      "status": "pass",
+      "evidence": "windows and glazed outside doors per room: {'Master Bedroom': 2, 'Kitchen': 2, 'Dining · 8': 2, 'Living': 4}",
+      "group": "rule"
+    },
+    {
+      "id": "daylight.rooms.lower",
+      "status": "pass",
+      "evidence": "windows and glazed outside doors per room: {'Grandparents': 2, 'Boys': 1, 'Girls': 1, 'Garden Lounge + Tea Bar': 3}",
+      "group": "rule"
+    },
+    {
+      "id": "daylight.rooms.road",
+      "status": "pass",
+      "evidence": "windows and glazed outside doors per room: {'Quiet Office': 2}",
+      "group": "rule"
+    },
+    {
+      "id": "7.1 labels never overlap",
+      "status": "pass",
+      "evidence": "label collisions per plan: {'road': [], 'main': [], 'lower': []}",
+      "group": "rule"
+    }
+  ],
+  "label_collisions": {
+    "road": [],
+    "main": [],
+    "lower": []
+  },
+  "earthworks": {
+    "rows": [
+      {
+        "zone": "Lower Floor + Garden dig (formation 1669.40)",
+        "kind": "pit",
+        "area_m2": 157.8,
+        "cut_m3": 271.6,
+        "fill_m3": 0.0,
+        "max_cut_m": 4.22,
+        "max_fill_m": 0.0
+      },
+      {
+        "zone": "Main Floor dig (formation 1673.00)",
+        "kind": "pit",
+        "area_m2": 61.4,
+        "cut_m3": 80.9,
+        "fill_m3": 0.0,
+        "max_cut_m": 4.15,
+        "max_fill_m": 0.0
+      },
+      {
+        "zone": "Forecourt (finished 1677.47)",
+        "kind": "court",
+        "area_m2": 17.1,
+        "cut_m3": 0.0,
+        "fill_m3": 12.6,
+        "max_cut_m": 0,
+        "max_fill_m": 1.63
+      },
+      {
+        "zone": "Porch (finished 1673.60)",
+        "kind": "court",
+        "area_m2": 4.2,
+        "cut_m3": 2.7,
+        "fill_m3": 0.0,
+        "max_cut_m": 1.18,
+        "max_fill_m": 0
+      },
+      {
+        "zone": "Arrival Court (finished 1673.60)",
+        "kind": "court",
+        "area_m2": 40.6,
+        "cut_m3": 32.2,
+        "fill_m3": 7.4,
+        "max_cut_m": 2.77,
+        "max_fill_m": 1.55
+      },
+      {
+        "zone": " (finished 1675.50)",
+        "kind": "landing",
+        "area_m2": 3.9,
+        "cut_m3": 5.4,
+        "fill_m3": 0.0,
+        "max_cut_m": 1.9,
+        "max_fill_m": 0
+      },
+      {
+        "zone": "Play Lawn (finished 1667.60)",
+        "kind": "lawn",
+        "area_m2": 61.1,
+        "cut_m3": 3.9,
+        "fill_m3": 31.2,
+        "max_cut_m": 1.08,
+        "max_fill_m": 1.33
+      }
+    ],
+    "total_cut_m3": 397.0,
+    "total_fill_m3": 51.0,
+    "method": "house_ai.geospatial.earthworks.integrate on the stored survey TIN (inferred surface); building formation 0.60 m below FFL (slab, gravel gas layer, insulation; GEO-04); suspended slabs stand over a crawl void dug to the same level; excludes footings, batters, bulking, drainage layers."
+  },
+  "support": [
+    {
+      "id": "lower-plate",
+      "name": "Lower Floor floor",
+      "level": "lower",
+      "z": 1670.0,
+      "area": 170.2,
+      "ground": 156.7,
+      "wall": 4.6,
+      "span": 8.0,
+      "cantilever": 0.0,
+      "unsupported": 0.0,
+      "unsupported_where": []
+    },
+    {
+      "id": "loggia",
+      "name": "Loggia",
+      "level": "lower",
+      "z": 1669.98,
+      "area": 13.1,
+      "ground": 0.0,
+      "wall": 4.1,
+      "span": 8.4,
+      "cantilever": 0.0,
+      "unsupported": 0.0,
+      "unsupported_where": []
+    },
+    {
+      "id": "t-low",
+      "name": "Garden Terrace",
+      "level": "lower",
+      "z": 1669.98,
+      "area": 30.4,
+      "ground": 0.0,
+      "wall": 7.9,
+      "span": 21.4,
+      "cantilever": 0.0,
+      "unsupported": 0.0,
+      "unsupported_where": []
+    },
+    {
+      "id": "ls-top",
+      "name": "",
+      "level": "lower",
+      "z": 1669.98,
+      "area": 1.7,
+      "ground": 0.0,
+      "wall": 0.8,
+      "span": 0.9,
+      "cantilever": 0.0,
+      "unsupported": 0.0,
+      "unsupported_where": []
+    },
+    {
+      "id": "ls-l1",
+      "name": "",
+      "level": "lower",
+      "z": 1668.79,
+      "area": 1.7,
+      "ground": 0.0,
+      "wall": 0.5,
+      "span": 1.2,
+      "cantilever": 0.0,
+      "unsupported": 0.0,
+      "unsupported_where": []
+    },
+    {
+      "id": "walk-m",
+      "name": "walk on a slab where the ground falls",
+      "level": "lower",
+      "z": 1669.98,
+      "area": 4.0,
+      "ground": 0.0,
+      "wall": 1.1,
+      "span": 2.4,
+      "cantilever": 0.0,
+      "unsupported": 0.0,
+      "unsupported_where": []
+    },
+    {
+      "id": "walk-e",
+      "name": "walk on a slab, open to the loggia",
+      "level": "lower",
+      "z": 1669.98,
+      "area": 2.9,
+      "ground": 0.0,
+      "wall": 1.3,
+      "span": 1.2,
+      "cantilever": 0.0,
+      "unsupported": 0.0,
+      "unsupported_where": []
+    },
+    {
+      "id": "main-plate",
+      "name": "Main Floor floor",
+      "level": "main",
+      "z": 1673.6,
+      "area": 207.2,
+      "ground": 60.6,
+      "wall": 56.8,
+      "span": 89.8,
+      "cantilever": 0.0,
+      "unsupported": 0.0,
+      "unsupported_where": []
+    },
+    {
+      "id": "t-south",
+      "name": "South Terrace",
+      "level": "main",
+      "z": 1673.58,
+      "area": 35.4,
+      "ground": 0.0,
+      "wall": 11.7,
+      "span": 22.1,
+      "cantilever": 1.5,
+      "unsupported": 0.0,
+      "unsupported_where": []
+    },
+    {
+      "id": "balc-e",
+      "name": "East Balcony",
+      "level": "main",
+      "z": 1673.58,
+      "area": 18.9,
+      "ground": 0.0,
+      "wall": 8.8,
+      "span": 9.0,
+      "cantilever": 0.0,
+      "unsupported": 0.0,
+      "unsupported_where": []
+    },
+    {
+      "id": "balc-m",
+      "name": "Master Balcony",
+      "level": "main",
+      "z": 1673.58,
+      "area": 6.7,
+      "ground": 0.0,
+      "wall": 2.9,
+      "span": 3.2,
+      "cantilever": 0.0,
+      "unsupported": 0.0,
+      "unsupported_where": []
+    },
+    {
+      "id": "road-plate",
+      "name": "Road Level floor",
+      "level": "road",
+      "z": 1677.5,
+      "area": 132.9,
+      "ground": 0.0,
+      "wall": 43.8,
+      "span": 88.3,
+      "cantilever": 0.0,
+      "unsupported": 0.0,
+      "unsupported_where": []
+    },
+    {
+      "id": "deck-r",
+      "name": "Roof Terrace",
+      "level": "road",
+      "z": 1677.48,
+      "area": 36.7,
+      "ground": 0.0,
+      "wall": 6.8,
+      "span": 29.7,
+      "cantilever": 0.0,
+      "unsupported": 0.0,
+      "unsupported_where": []
+    },
+    {
+      "id": "green-r",
+      "name": "Green Roof",
+      "level": "road",
+      "z": 1677.48,
+      "area": 41.8,
+      "ground": 0.0,
+      "wall": 9.2,
+      "span": 31.5,
+      "cantilever": 0.0,
+      "unsupported": 0.0,
+      "unsupported_where": []
+    },
+    {
+      "id": "fore-deck",
+      "name": "suspended deck",
+      "level": "road",
+      "z": 1677.47,
+      "area": 19.4,
+      "ground": 0.0,
+      "wall": 6.4,
+      "span": 11.6,
+      "cantilever": 0.6,
+      "unsupported": 0.0,
+      "unsupported_where": []
+    },
+    {
+      "id": "roof",
+      "name": "Road-level roof",
+      "level": "roof",
+      "z": 1680.8,
+      "area": 132.9,
+      "ground": 0.0,
+      "wall": 30.8,
+      "span": 101.3,
+      "cantilever": 0.0,
+      "unsupported": 0.0,
+      "unsupported_where": []
+    }
+  ],
+  "wall_over_wall": {
+    "rows": [],
+    "mid_span_total_m": 0,
+    "offset_total_m": 0
+  },
+  "site_walls": [
+    {
+      "id": "SW-1",
+      "from": [
+        -4.2,
+        8.6
+      ],
+      "to": [
+        -1.65,
+        8.6
+      ],
+      "top": 1677.47,
+      "bottom": 1675.96,
+      "height": 1.51
+    },
+    {
+      "id": "SW-2",
+      "from": [
+        -1.65,
+        8.6
+      ],
+      "to": [
+        -0.2,
+        5.6
+      ],
+      "top": 1677.47,
+      "bottom": 1675.81,
+      "height": 1.66
+    },
+    {
+      "id": "RC-0",
+      "from": [
+        0.0,
+        9.5
+      ],
+      "to": [
+        0.0,
+        11.6
+      ],
+      "top": 1674.75,
+      "bottom": 1673.6,
+      "height": 1.15
+    },
+    {
+      "id": "RW-W3",
+      "from": [
+        -6.08,
+        15.37
+      ],
+      "to": [
+        -3.48,
+        15.37
+      ],
+      "top": 1676.22,
+      "bottom": 1673.6,
+      "height": 2.62
+    },
+    {
+      "id": "RW-W4c",
+      "from": [
+        -2.98,
+        17.12
+      ],
+      "to": [
+        -1.43,
+        17.12
+      ],
+      "top": 1674.34,
+      "bottom": 1673.6,
+      "height": 0.74
+    },
+    {
+      "id": "SW-6",
+      "from": [
+        0.16,
+        16.0
+      ],
+      "to": [
+        1.82,
+        16.0
+      ],
+      "top": 1673.6,
+      "bottom": 1672.61,
+      "height": 0.99
+    },
+    {
+      "id": "SW-7",
+      "from": [
+        1.82,
+        16.0
+      ],
+      "to": [
+        3.49,
+        16.0
+      ],
+      "top": 1673.6,
+      "bottom": 1672.39,
+      "height": 1.21
+    },
+    {
+      "id": "SW-8",
+      "from": [
+        3.49,
+        16.0
+      ],
+      "to": [
+        4.6,
+        16.0
+      ],
+      "top": 1673.6,
+      "bottom": 1671.97,
+      "height": 1.63
+    },
+    {
+      "id": "RW-W1",
+      "from": [
+        -0.01,
+        11.6
+      ],
+      "to": [
+        -4.01,
+        11.6
+      ],
+      "top": 1676.19,
+      "bottom": 1673.6,
+      "height": 2.59
+    },
+    {
+      "id": "RW-W3",
+      "from": [
+        -4.02,
+        11.6
+      ],
+      "to": [
+        -6.08,
+        15.37
+      ],
+      "top": 1676.39,
+      "bottom": 1673.6,
+      "height": 2.79
+    },
+    {
+      "id": "RW-W3",
+      "from": [
+        -4.86,
+        12.42
+      ],
+      "to": [
+        -4.41,
+        11.6
+      ],
+      "top": 1677.47,
+      "bottom": 1676.49,
+      "height": 0.98
+    },
+    {
+      "id": "SW-12",
+      "from": [
+        -4.42,
+        11.6
+      ],
+      "to": [
+        -6.01,
+        11.6
+      ],
+      "top": 1677.47,
+      "bottom": 1676.67,
+      "height": 0.8
+    },
+    {
+      "id": "RW-W3",
+      "from": [
+        -6.55,
+        15.51
+      ],
+      "to": [
+        -5.82,
+        14.18
+      ],
+      "top": 1676.54,
+      "bottom": 1675.64,
+      "height": 0.9
+    },
+    {
+      "id": "RW-W3",
+      "from": [
+        -5.34,
+        13.3
+      ],
+      "to": [
+        -4.86,
+        12.42
+      ],
+      "top": 1677.33,
+      "bottom": 1676.5,
+      "height": 0.83
+    },
+    {
+      "id": "RW-W2",
+      "from": [
+        -6.33,
+        12.19
+      ],
+      "to": [
+        -7.78,
+        14.83
+      ],
+      "top": 1677.4,
+      "bottom": 1675.64,
+      "height": 1.76
+    },
+    {
+      "id": "RW-W4a",
+      "from": [
+        -9.03,
+        17.12
+      ],
+      "to": [
+        -6.5,
+        17.12
+      ],
+      "top": 1677.25,
+      "bottom": 1675.5,
+      "height": 1.75
+    },
+    {
+      "id": "RW-W2",
+      "from": [
+        -7.78,
+        14.84
+      ],
+      "to": [
+        -9.03,
+        17.12
+      ],
+      "top": 1677.42,
+      "bottom": 1675.5,
+      "height": 1.92
+    },
+    {
+      "id": "RW-W4b",
+      "from": [
+        -6.5,
+        17.12
+      ],
+      "to": [
+        -2.98,
+        17.12
+      ],
+      "top": 1675.97,
+      "bottom": 1673.74,
+      "height": 2.23
+    },
+    {
+      "id": "RW-W3",
+      "from": [
+        -3.48,
+        15.72
+      ],
+      "to": [
+        -6.5,
+        15.72
+      ],
+      "top": 1676.37,
+      "bottom": 1674.01,
+      "height": 2.36
+    },
+    {
+      "id": "SW-20",
+      "from": [
+        20.6,
+        6.84
+      ],
+      "to": [
+        22.05,
+        6.84
+      ],
+      "top": 1668.82,
+      "bottom": 1667.7,
+      "height": 1.12
+    },
+    {
+      "id": "FW-22.05",
+      "from": [
+        22.05,
+        6.84
+      ],
+      "to": [
+        22.05,
+        4.6
+      ],
+      "top": 1669.83,
+      "bottom": 1667.6,
+      "height": 2.23
+    },
+    {
+      "id": "SW-22",
+      "from": [
+        22.05,
+        4.6
+      ],
+      "to": [
+        20.6,
+        4.6
+      ],
+      "top": 1669.95,
+      "bottom": 1668.01,
+      "height": 1.94
+    },
+    {
+      "id": "FW-20.6",
+      "from": [
+        20.6,
+        4.6
+      ],
+      "to": [
+        20.6,
+        6.84
+      ],
+      "top": 1669.83,
+      "bottom": 1668.11,
+      "height": 1.72
+    },
+    {
+      "id": "FW-22.05",
+      "from": [
+        22.05,
+        9.72
+      ],
+      "to": [
+        22.05,
+        8.04
+      ],
+      "top": 1668.64,
+      "bottom": 1667.6,
+      "height": 1.04
+    },
+    {
+      "id": "SW-25",
+      "from": [
+        22.05,
+        8.04
+      ],
+      "to": [
+        20.6,
+        8.04
+      ],
+      "top": 1668.76,
+      "bottom": 1667.55,
+      "height": 1.21
+    },
+    {
+      "id": "FW-20.6",
+      "from": [
+        20.6,
+        8.04
+      ],
+      "to": [
+        20.6,
+        9.72
+      ],
+      "top": 1668.64,
+      "bottom": 1667.7,
+      "height": 0.94
+    },
+    {
+      "id": "SW-27",
+      "from": [
+        10.77,
+        17.12
+      ],
+      "to": [
+        11.8,
+        17.12
+      ],
+      "top": 1669.98,
+      "bottom": 1669.51,
+      "height": 0.47
+    },
+    {
+      "id": "FW-11.8",
+      "from": [
+        11.8,
+        17.12
+      ],
+      "to": [
+        11.8,
+        16.0
+      ],
+      "top": 1669.98,
+      "bottom": 1669.46,
+      "height": 0.52
+    },
+    {
+      "id": "SW-29",
+      "from": [
+        10.26,
+        16.0
+      ],
+      "to": [
+        9.74,
+        16.0
+      ],
+      "top": 1670.26,
+      "bottom": 1669.98,
+      "height": 0.28
+    },
+    {
+      "id": "FW-15.75",
+      "from": [
+        11.8,
+        16.0
+      ],
+      "to": [
+        11.28,
+        16.0
+      ],
+      "top": 1669.98,
+      "bottom": 1669.72,
+      "height": 0.26
+    },
+    {
+      "id": "FW-12.8T",
+      "from": [
+        18.76,
+        12.8
+      ],
+      "to": [
+        18.25,
+        12.8
+      ],
+      "top": 1667.89,
+      "bottom": 1667.6,
+      "height": 0.29
+    },
+    {
+      "id": "FW-20.6",
+      "from": [
+        20.8,
+        12.8
+      ],
+      "to": [
+        20.29,
+        12.8
+      ],
+      "top": 1667.6,
+      "bottom": 1667.18,
+      "height": 0.42
+    },
+    {
+      "id": "SW-33",
+      "from": [
+        23.39,
+        1.0
+      ],
+      "to": [
+        20.8,
+        1.0
+      ],
+      "top": 1668.6,
+      "bottom": 1667.6,
+      "height": 1.0
+    },
+    {
+      "id": "SW-34",
+      "from": [
+        28.05,
+        1.0
+      ],
+      "to": [
+        24.94,
+        1.0
+      ],
+      "top": 1667.6,
+      "bottom": 1666.36,
+      "height": 1.24
+    },
+    {
+      "id": "RC-18L",
+      "from": [
+        18.25,
+        12.8
+      ],
+      "to": [
+        18.25,
+        13.88
+      ],
+      "top": 1667.94,
+      "bottom": 1667.6,
+      "height": 0.34
+    },
+    {
+      "id": "SW-36",
+      "from": [
+        18.25,
+        16.58
+      ],
+      "to": [
+        18.25,
+        17.12
+      ],
+      "top": 1667.6,
+      "bottom": 1667.34,
+      "height": 0.26
+    },
+    {
+      "id": "FW-20.6",
+      "from": [
+        20.8,
+        1.0
+      ],
+      "to": [
+        20.8,
+        3.4
+      ],
+      "top": 1668.67,
+      "bottom": 1667.6,
+      "height": 1.07
+    },
+    {
+      "id": "FW-20.6",
+      "from": [
+        20.8,
+        11.29
+      ],
+      "to": [
+        20.8,
+        12.8
+      ],
+      "top": 1667.6,
+      "bottom": 1667.14,
+      "height": 0.46
+    },
+    {
+      "id": "FW-22.05",
+      "from": [
+        22.05,
+        3.4
+      ],
+      "to": [
+        22.05,
+        4.46
+      ],
+      "top": 1668.01,
+      "bottom": 1667.6,
+      "height": 0.41
+    },
+    {
+      "id": "SW-40",
+      "from": [
+        18.25,
+        17.12
+      ],
+      "to": [
+        20.83,
+        17.12
+      ],
+      "top": 1667.6,
+      "bottom": 1666.49,
+      "height": 1.11
+    },
+    {
+      "id": "FW-3.4L",
+      "from": [
+        20.8,
+        3.4
+      ],
+      "to": [
+        22.05,
+        3.4
+      ],
+      "top": 1668.32,
+      "bottom": 1667.6,
+      "height": 0.72
+    },
+    {
+      "id": "SW-42",
+      "from": [
+        20.83,
+        17.12
+      ],
+      "to": [
+        28.05,
+        1.0
+      ],
+      "top": 1667.6,
+      "bottom": 1666.27,
+      "height": 1.33
+    },
+    {
+      "id": "FW-22.05",
+      "from": [
+        22.05,
+        4.46
+      ],
+      "to": [
+        22.05,
+        6.58
+      ],
+      "top": 1669.91,
+      "bottom": 1667.6,
+      "height": 2.31
+    },
+    {
+      "id": "SW-44",
+      "from": [
+        5.86,
+        16.0
+      ],
+      "to": [
+        4.67,
+        16.0
+      ],
+      "top": 1671.94,
+      "bottom": 1671.34,
+      "height": 0.6
+    },
+    {
+      "id": "SW-45",
+      "from": [
+        6.61,
+        16.0
+      ],
+      "to": [
+        5.86,
+        16.0
+      ],
+      "top": 1671.52,
+      "bottom": 1671.19,
+      "height": 0.33
+    },
+    {
+      "id": "SW-46",
+      "from": [
+        9.74,
+        16.0
+      ],
+      "to": [
+        9.14,
+        16.0
+      ],
+      "top": 1670.45,
+      "bottom": 1670.13,
+      "height": 0.32
+    }
+  ],
+  "elements": [
+    {
+      "id": "LW-6.2",
+      "kind": "wall",
+      "z_bot": 1670.0,
+      "z_top": 1673.6,
+      "t": 0.2,
+      "note": "under the master/living wall"
+    },
+    {
+      "id": "LB-18E",
+      "kind": "beam",
+      "z_bot": 1673.1,
+      "z_top": 1673.6,
+      "t": 0.3,
+      "note": "lintel beam over the lower east openings"
+    },
+    {
+      "id": "FW-18L",
+      "kind": "wall",
+      "z_bot": 1667.5,
+      "z_top": 1670.0,
+      "t": 0.4,
+      "note": "foundation wall under the lower east wall, stepped to sound ground (STR-N02)"
+    },
+    {
+      "id": "FW-15.75",
+      "kind": "wall",
+      "z_bot": 1667.8,
+      "z_top": 1670.0,
+      "t": 0.4,
+      "note": "foundation wall under the girls' south wall (STR-N02)"
+    },
+    {
+      "id": "FW-10.95",
+      "kind": "wall",
+      "z_bot": 1667.5,
+      "z_top": 1670.0,
+      "t": 0.4,
+      "note": "foundation wall under the lounge's south wall over the falling ground"
+    },
+    {
+      "id": "LB-15.75",
+      "kind": "beam",
+      "z_bot": 1673.1,
+      "z_top": 1673.6,
+      "t": 0.3,
+      "note": "lintel beam over the children's windows, carries the terrace lip"
+    },
+    {
+      "id": "LW-12.6",
+      "kind": "wall",
+      "z_bot": 1670.0,
+      "z_top": 1673.6,
+      "t": 0.2,
+      "note": "hall/lounge, under main u 12.6"
+    },
+    {
+      "id": "LW-11.4",
+      "kind": "wall",
+      "z_bot": 1670.0,
+      "z_top": 1673.6,
+      "t": 0.2,
+      "note": "ensuite/walk-in, lift side"
+    },
+    {
+      "id": "LW-10.95",
+      "kind": "wall",
+      "z_bot": 1670.0,
+      "z_top": 1673.6,
+      "t": 0.2,
+      "note": "bedrooms' north wall, lounge south wall"
+    },
+    {
+      "id": "LW-11.1",
+      "kind": "wall",
+      "z_bot": 1670.0,
+      "z_top": 1673.6,
+      "t": 0.2,
+      "note": "boys/girls"
+    },
+    {
+      "id": "LW-15.4",
+      "kind": "wall",
+      "z_bot": 1668.0,
+      "z_top": 1673.6,
+      "t": 0.25,
+      "note": "girls/loggia, founded below the falling ground"
+    },
+    {
+      "id": "LW-6.8",
+      "kind": "wall",
+      "z_bot": 1670.0,
+      "z_top": 1673.6,
+      "t": 0.2,
+      "note": "bathroom/boys, under the kitchen"
+    },
+    {
+      "id": "LW-7.3",
+      "kind": "wall",
+      "z_bot": 1670.0,
+      "z_top": 1673.6,
+      "t": 0.2,
+      "note": "under the main wudu/hall wall"
+    },
+    {
+      "id": "LW-8.2",
+      "kind": "wall",
+      "z_bot": 1670.0,
+      "z_top": 1673.6,
+      "t": 0.2,
+      "note": "bathroom/hall"
+    },
+    {
+      "id": "LB-13.0",
+      "kind": "beam",
+      "z_bot": 1673.05,
+      "z_top": 1673.6,
+      "t": 0.4,
+      "note": "300 x 550 beam under the south façade"
+    },
+    {
+      "id": "LB-18",
+      "kind": "beam",
+      "z_bot": 1673.05,
+      "z_top": 1673.6,
+      "t": 0.4,
+      "note": "over the loggia opening"
+    },
+    {
+      "id": "LB-16.0",
+      "kind": "beam",
+      "z_bot": 1673.05,
+      "z_top": 1673.6,
+      "t": 0.3,
+      "note": "loggia front, carries the terrace"
+    },
+    {
+      "id": "LB-9.5",
+      "kind": "beam",
+      "z_bot": 1673.1499999999999,
+      "z_top": 1673.6,
+      "t": 0.3,
+      "note": "under the main hall/kitchen wall"
+    },
+    {
+      "id": "RC-18L",
+      "kind": "wall",
+      "z_bot": 1666.6,
+      "z_top": 1673.6,
+      "t": 0.3,
+      "note": "loggia east RC wall (C11-STR-04)"
+    },
+    {
+      "id": "MW-2.0",
+      "kind": "wall",
+      "z_bot": 1673.6,
+      "z_top": 1677.5,
+      "t": 0.3,
+      "note": "service room/entry west wall, carries the garage"
+    },
+    {
+      "id": "MW-2.8",
+      "kind": "wall",
+      "z_bot": 1673.6,
+      "z_top": 1677.5,
+      "t": 0.2,
+      "note": "under the garage"
+    },
+    {
+      "id": "MW-4.6",
+      "kind": "wall",
+      "z_bot": 1673.6,
+      "z_top": 1677.5,
+      "t": 0.2,
+      "note": "bulk store/pantry"
+    },
+    {
+      "id": "MW-3.8",
+      "kind": "wall",
+      "z_bot": 1673.6,
+      "z_top": 1677.5,
+      "t": 0.2,
+      "note": "pantry/wet cluster"
+    },
+    {
+      "id": "MW-7.3",
+      "kind": "wall",
+      "z_bot": 1673.6,
+      "z_top": 1677.5,
+      "t": 0.2,
+      "note": "under the garage, hall north wall"
+    },
+    {
+      "id": "MW-9.5",
+      "kind": "wall",
+      "z_bot": 1673.6,
+      "z_top": 1677.5,
+      "t": 0.3,
+      "note": "service room/porch"
+    },
+    {
+      "id": "MB-9.5",
+      "kind": "beam",
+      "z_bot": 1676.9,
+      "z_top": 1677.5,
+      "t": 0.3,
+      "note": "carries the garage/hall wall"
+    },
+    {
+      "id": "MB-6.8",
+      "kind": "beam",
+      "z_bot": 1676.9,
+      "z_top": 1677.5,
+      "t": 0.3,
+      "note": "carries the garage/lobby wall (C11-STR-05)"
+    },
+    {
+      "id": "MB-11.6",
+      "kind": "beam",
+      "z_bot": 1676.9,
+      "z_top": 1677.5,
+      "t": 0.3,
+      "note": "porch front, carries the road hall"
+    },
+    {
+      "id": "MB-12.6",
+      "kind": "beam",
+      "z_bot": 1676.9,
+      "z_top": 1677.5,
+      "t": 0.3,
+      "note": "over the living openings, carries the office and the deck"
+    },
+    {
+      "id": "MB-9.4",
+      "kind": "beam",
+      "z_bot": 1676.9,
+      "z_top": 1677.5,
+      "t": 0.3,
+      "note": "kitchen/dining, carries the office west wall"
+    },
+    {
+      "id": "MB-7.3E",
+      "kind": "beam",
+      "z_bot": 1677.0,
+      "z_top": 1677.5,
+      "t": 0.25,
+      "note": "carries the lobby's south wall over the hall recess"
+    },
+    {
+      "id": "MB-18",
+      "kind": "beam",
+      "z_bot": 1677.0,
+      "z_top": 1677.5,
+      "t": 0.3,
+      "note": "lintel beam over the main east openings, carries the roof terrace and green roof edge"
+    },
+    {
+      "id": "MB-1.1N",
+      "kind": "beam",
+      "z_bot": 1677.0,
+      "z_top": 1677.5,
+      "t": 0.3,
+      "note": "lintel beam over the master's north window"
+    },
+    {
+      "id": "MB-13.0",
+      "kind": "beam",
+      "z_bot": 1676.85,
+      "z_top": 1677.5,
+      "t": 0.4,
+      "note": "400 x 650 beam over the south glazing at road-slab level (fix round, STR-N01)"
+    },
+    {
+      "id": "MW-6.2",
+      "kind": "wall",
+      "z_bot": 1673.6,
+      "z_top": 1677.5,
+      "t": 0.2,
+      "note": "master/living masonry"
+    },
+    {
+      "id": "MW-11.4",
+      "kind": "wall",
+      "z_bot": 1673.6,
+      "z_top": 1677.5,
+      "t": 0.2,
+      "note": "ensuite/dressing"
+    },
+    {
+      "id": "MW-SE",
+      "kind": "wall",
+      "z_bot": 1673.6,
+      "z_top": 1677.5,
+      "t": 0.3,
+      "note": "solid SE L-wall (C11-STR-06)"
+    },
+    {
+      "id": "RC-0",
+      "kind": "retaining",
+      "z_bot": 1672.6999999999998,
+      "z_top": 1677.5,
+      "t": 0.35,
+      "note": "porch west wall, holds 0.8-1.0 m of ground"
+    },
+    {
+      "id": "RW-9.5",
+      "kind": "wall",
+      "z_bot": 1677.5,
+      "z_top": 1680.8,
+      "t": 0.2,
+      "note": "garage/hall fire wall"
+    },
+    {
+      "id": "RW-6.8",
+      "kind": "wall",
+      "z_bot": 1677.5,
+      "z_top": 1680.8,
+      "t": 0.2,
+      "note": "garage/lobby fire wall, on beam MB-6.8"
+    },
+    {
+      "id": "RB-5.05",
+      "kind": "beam",
+      "z_bot": 1680.2,
+      "z_top": 1680.8,
+      "t": 0.3,
+      "note": "garage roof beam on the shutter pier (C11-STR-10)"
+    },
+    {
+      "id": "RW-12.6",
+      "kind": "wall",
+      "z_bot": 1677.5,
+      "z_top": 1680.8,
+      "t": 0.4,
+      "note": "office/lobby east wall"
+    },
+    {
+      "id": "RW-9.4",
+      "kind": "wall",
+      "z_bot": 1677.5,
+      "z_top": 1680.8,
+      "t": 0.2,
+      "note": "office west wall"
+    },
+    {
+      "id": "RW-2.0",
+      "kind": "wall",
+      "z_bot": 1677.5,
+      "z_top": 1680.8,
+      "t": 0.4,
+      "note": "WC west wall"
+    },
+    {
+      "id": "C-4.6/13",
+      "kind": "column",
+      "z_bot": 1668.6,
+      "z_top": 1680.8,
+      "t": 0.35,
+      "note": "continuous RC column, footing to road roof"
+    },
+    {
+      "id": "C-6.8/13",
+      "kind": "column",
+      "z_bot": 1668.6,
+      "z_top": 1680.8,
+      "t": 0.35,
+      "note": "continuous RC column, footing to road roof"
+    },
+    {
+      "id": "C-11.1/13",
+      "kind": "column",
+      "z_bot": 1668.6,
+      "z_top": 1680.8,
+      "t": 0.35,
+      "note": "continuous RC column, footing to road roof"
+    },
+    {
+      "id": "C-15.4/13",
+      "kind": "column",
+      "z_bot": 1666.6,
+      "z_top": 1677.5,
+      "t": 0.35,
+      "note": "continuous RC column, footing to roof terrace"
+    },
+    {
+      "id": "C-18/13",
+      "kind": "column",
+      "z_bot": 1666.6,
+      "z_top": 1677.5,
+      "t": 0.35,
+      "note": "continuous RC column, footing to roof terrace"
+    },
+    {
+      "id": "C-6.8/9.5",
+      "kind": "column",
+      "z_bot": 1673.6,
+      "z_top": 1677.5,
+      "t": 0.3,
+      "note": "main storey only, standing on lower wall LW-6.8 (clear of the lower WC door)"
+    },
+    {
+      "id": "C-18/10.95",
+      "kind": "column",
+      "z_bot": 1667.5,
+      "z_top": 1677.5,
+      "t": 0.35,
+      "note": "SE corner over the loggia opening (STR-N03)"
+    },
+    {
+      "id": "C-B/2.75",
+      "kind": "column",
+      "z_bot": 1667.2,
+      "z_top": 1673.6,
+      "t": 0.3,
+      "note": "balcony column, footing below the garden terrace"
+    },
+    {
+      "id": "C-B/6.2",
+      "kind": "column",
+      "z_bot": 1667.2,
+      "z_top": 1673.6,
+      "t": 0.3,
+      "note": "balcony column, footing below the garden terrace"
+    },
+    {
+      "id": "C-B/9.4",
+      "kind": "column",
+      "z_bot": 1667.2,
+      "z_top": 1673.6,
+      "t": 0.3,
+      "note": "balcony column, footing below the garden terrace"
+    },
+    {
+      "id": "C-B/12.8",
+      "kind": "column",
+      "z_bot": 1666.0,
+      "z_top": 1673.6,
+      "t": 0.3,
+      "note": "balcony column, footing below the garden terrace"
+    },
+    {
+      "id": "C-B/16.2",
+      "kind": "column",
+      "z_bot": 1666.0,
+      "z_top": 1673.6,
+      "t": 0.3,
+      "note": "balcony column, footing below the garden terrace"
+    },
+    {
+      "id": "BB-19.6",
+      "kind": "beam",
+      "z_bot": 1673.1499999999999,
+      "z_top": 1673.6,
+      "t": 0.3,
+      "note": "balcony edge beam"
+    },
+    {
+      "id": "BB-16.4",
+      "kind": "beam",
+      "z_bot": 1673.1499999999999,
+      "z_top": 1673.6,
+      "t": 0.3,
+      "note": "balcony SE corner"
+    },
+    {
+      "id": "FW-20.6",
+      "kind": "retaining",
+      "z_bot": 1666.5,
+      "z_top": 1669.98,
+      "t": 0.3,
+      "note": "garden terrace east wall (C11-GEO-03)"
+    },
+    {
+      "id": "FW-1.1T",
+      "kind": "retaining",
+      "z_bot": 1667.6,
+      "z_top": 1669.98,
+      "t": 0.3,
+      "note": "garden terrace north wall"
+    },
+    {
+      "id": "FW-12.8T",
+      "kind": "wall",
+      "z_bot": 1666.6,
+      "z_top": 1669.98,
+      "t": 0.3,
+      "note": "garden terrace south wall, garden store door"
+    },
+    {
+      "id": "FW-6.2T",
+      "kind": "wall",
+      "z_bot": 1666.8,
+      "z_top": 1669.98,
+      "t": 0.25,
+      "note": "cistern end wall on the column line (cistern floor 1667.7, ~14 m³, 0.6 m hatch)"
+    },
+    {
+      "id": "FW-17.1",
+      "kind": "wall",
+      "z_bot": 1666.8,
+      "z_top": 1669.98,
+      "t": 0.25,
+      "note": "carries the walk slab along the children's rooms and the loggia front"
+    },
+    {
+      "id": "FW-11.8",
+      "kind": "wall",
+      "z_bot": 1668.6,
+      "z_top": 1669.98,
+      "t": 0.25,
+      "note": "end of the walk slab"
+    },
+    {
+      "id": "FW-22.05",
+      "kind": "wall",
+      "z_bot": 1666.6,
+      "z_top": 1669.98,
+      "t": 0.25,
+      "note": "east wall of the lawn stair; landings and flights are RC slabs between it and FW-20.6"
+    },
+    {
+      "id": "FW-3.4L",
+      "kind": "wall",
+      "z_bot": 1667.2,
+      "z_top": 1669.98,
+      "t": 0.25,
+      "note": "north end of the lawn stair"
+    },
+    {
+      "id": "FW-16.0",
+      "kind": "wall",
+      "z_bot": 1667.4,
+      "z_top": 1670.0,
+      "t": 0.3,
+      "note": "loggia front foundation wall"
+    },
+    {
+      "id": "FW-13.4",
+      "kind": "wall",
+      "z_bot": 1667.6,
+      "z_top": 1670.0,
+      "t": 0.2,
+      "note": "loggia slab mid support"
+    },
+    {
+      "id": "FW-15.4",
+      "kind": "wall",
+      "z_bot": 1668.6,
+      "z_top": 1670.0,
+      "t": 0.2,
+      "note": "ground beam under the lounge slab"
+    },
+    {
+      "id": "RW-W1",
+      "kind": "retaining",
+      "z_bot": 1673.0,
+      "z_top": 1677.47,
+      "t": 0.4,
+      "note": "W1: forecourt edge over the court, carries the forecourt deck"
+    },
+    {
+      "id": "RW-W2",
+      "kind": "retaining",
+      "z_bot": 1673.0,
+      "z_top": 1678.3,
+      "t": 0.35,
+      "note": "W2: road-edge wall with a 0.7 m RC vehicle parapet + rail; one drained RC U-trough with W3 and the flights on a common base at 1673.0 (fix round, GEO-03)"
+    },
+    {
+      "id": "RW-W3",
+      "kind": "retaining",
+      "z_bot": 1673.0,
+      "z_top": 1677.45,
+      "t": 0.35,
+      "note": "W3: inner edge of the road stair, holds the stair over the court"
+    },
+    {
+      "id": "RW-W4a",
+      "kind": "retaining",
+      "z_bot": 1674.9,
+      "z_top": 1677.6,
+      "t": 0.3,
+      "note": "W4: south wall of the corner landing, top follows the bank, guard on top"
+    },
+    {
+      "id": "RW-W4b",
+      "kind": "retaining",
+      "z_bot": 1673.0,
+      "z_top": 1676.0,
+      "t": 0.3,
+      "note": "W4: south wall of the second flight, guard on top"
+    },
+    {
+      "id": "RW-W4c",
+      "kind": "retaining",
+      "z_bot": 1673.0,
+      "z_top": 1674.7,
+      "t": 0.3,
+      "note": "W4: south edge of the court"
+    },
+    {
+      "id": "LIFT-PIT",
+      "kind": "retaining",
+      "z_bot": 1668.8,
+      "z_top": 1670.0,
+      "t": 0.25,
+      "note": "tanked lift pit 1.2 m, gravity drain east (C11-WAT-05)"
+    },
+    {
+      "id": "LIFT-OVR",
+      "kind": "wall",
+      "z_bot": 1680.8,
+      "z_top": 1681.6,
+      "t": 0.2,
+      "note": "lift overrun upstand 0.8 m behind the roof louvre (C11-CIR-02)"
+    },
+    {
+      "id": "PB-F",
+      "kind": "beam",
+      "z_bot": 1676.6,
+      "z_top": 1677.47,
+      "t": 0.3,
+      "note": "forecourt deck pier line (C11-GEO-02)"
+    },
+    {
+      "id": "PB-8.6",
+      "kind": "beam",
+      "z_bot": 1676.6,
+      "z_top": 1677.47,
+      "t": 0.3,
+      "note": "forecourt deck beam on v 8.6"
+    },
+    {
+      "id": "PB-W",
+      "kind": "beam",
+      "z_bot": 1676.6,
+      "z_top": 1677.47,
+      "t": 0.3,
+      "note": "forecourt deck beam 0.5 m inside the road boundary"
+    },
+    {
+      "id": "MW-0F",
+      "kind": "wall",
+      "z_bot": 1673.0,
+      "z_top": 1677.47,
+      "t": 0.45,
+      "note": "garage west wall below the shutters"
+    },
+    {
+      "id": "PW-N1",
+      "kind": "retaining",
+      "z_bot": 1666.5,
+      "z_top": 1676.0,
+      "t": 0.45,
+      "note": "secant Ø450 piles, toe 1666.5, cap 0.2 m under the ground"
+    },
+    {
+      "id": "PW-N2",
+      "kind": "retaining",
+      "z_bot": 1666.5,
+      "z_top": 1674.8,
+      "t": 0.45,
+      "note": "secant Ø450 piles, toe 1666.5"
+    },
+    {
+      "id": "PW-N3",
+      "kind": "retaining",
+      "z_bot": 1664.5,
+      "z_top": 1673.5,
+      "t": 0.45,
+      "note": "secant Ø450 piles, toe 1664.5"
+    },
+    {
+      "id": "PW-N4",
+      "kind": "retaining",
+      "z_bot": 1664.5,
+      "z_top": 1671.8,
+      "t": 0.45,
+      "note": "secant Ø450 piles, toe 1664.5"
+    },
+    {
+      "id": "PW-N5",
+      "kind": "retaining",
+      "z_bot": 1667.0,
+      "z_top": 1670.2,
+      "t": 0.45,
+      "note": "secant Ø450 piles, toe 1667.0"
+    },
+    {
+      "id": "P-F1",
+      "kind": "column",
+      "z_bot": 1674.0,
+      "z_top": 1677.47,
+      "t": 0.4,
+      "note": "forecourt deck pier"
+    },
+    {
+      "id": "P-F2",
+      "kind": "column",
+      "z_bot": 1674.0,
+      "z_top": 1677.47,
+      "t": 0.4,
+      "note": "forecourt deck pier"
+    },
+    {
+      "id": "P-F3",
+      "kind": "column",
+      "z_bot": 1674.0,
+      "z_top": 1677.47,
+      "t": 0.4,
+      "note": "forecourt deck pier"
+    },
+    {
+      "id": "P-F4",
+      "kind": "column",
+      "z_bot": 1674.0,
+      "z_top": 1677.47,
+      "t": 0.4,
+      "note": "forecourt deck pier"
+    }
+  ],
+  "claims": [
+    [
+      "living clear width (note: 5.2)",
+      5.2,
+      5.19,
+      0.05
+    ],
+    [
+      "living clear depth (note: 6.5)",
+      6.5,
+      6.55,
+      0.06
+    ],
+    [
+      "garage door → lift door walk (note: 4.4 m)",
+      4.4,
+      4.4,
+      0.15
+    ],
+    [
+      "court stair risers (note: 24 × 15.1 cm)",
+      24,
+      24,
+      0
+    ],
+    [
+      "lawn stair risers (note: 16)",
+      16,
+      16,
+      0
+    ],
+    [
+      "laundry clear m² (note: about 5)",
+      5.0,
+      5.2,
+      0.5
+    ],
+    [
+      "open ground in front of the children's windows (note: 2.4 m)",
+      2.4,
+      2.42,
+      0.05
+    ],
+    [
+      "grandparents' transfer space (note: 1.75 m)",
+      1.75,
+      1.75,
+      0.01
+    ],
+    [
+      "plant room on the grid (note: 5.0 × 1.7 m)",
+      8.5,
+      8.5,
+      0.01
+    ],
+    [
+      "master balcony starts south of the north wall (note: 1.5 m)",
+      1.5,
+      1.5,
+      0.01
+    ],
+    [
+      "stools at the island (note: 3)",
+      3,
+      3,
+      0
+    ]
+  ],
+  "facades": {
+    "west (road)": 1,
+    "south": 3,
+    "east": 2,
+    "north": 2
+  },
+  "guards_m": 225.2
+}

@@ -1,0 +1,263 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>My House C11 · 3D model of the field and the house</title>
+<style>
+html,body{margin:0;height:100%;background:#eef1f2;font:14px/1.4 Helvetica,Arial,sans-serif;color:#1d2f3a;overflow:hidden}
+#wrap{position:relative;width:100%;height:100%;background:linear-gradient(#dfe9ee,#f6f4ee 70%)}
+canvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none;cursor:grab}
+canvas:active{cursor:grabbing}
+#labels{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.lb{position:absolute;transform:translate(-50%,-50%);white-space:nowrap;text-align:center;font-size:11px;font-weight:600;
+  background:rgba(255,255,255,.82);border-radius:3px;padding:1px 5px;color:#1d2f3a;line-height:1.25}
+.lb i{display:block;font-style:normal;font-weight:400;font-size:10px;color:#4c5b66}
+.lb.lvl{font-size:13px;background:#22343f;color:#fff}.lb.lvl i{color:#d5dde2}
+.lb.small{font-size:9.5px;font-weight:500;padding:0 3px}
+.lb.terr{background:rgba(255,248,232,.9);color:#5b4a2c}
+.lb.h{background:#b4472f;color:#fff}.lb.h i{color:#fff;font-size:11px;font-weight:700}
+.lb.s{background:#111;color:#fff;font-size:12.5px}.lb.s i{color:#e6e6e6}
+.lb.c{background:none;color:#5a4526;font-weight:500;font-size:10px}
+.lb.dig{background:#a5512b;color:#fff}.lb.dig i{color:#fff}
+.lb.fill{background:#4f7a3a;color:#fff}.lb.fill i{color:#fff}
+.bar{position:absolute;display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+#modes{left:12px;top:12px;right:12px}
+#views{left:12px;top:86px;max-width:170px;flex-direction:column;align-items:stretch}
+button{font:600 13px Helvetica,Arial,sans-serif;border:1px solid #b9c3c9;background:rgba(255,255,255,.92);color:#1d2f3a;
+  border-radius:6px;padding:7px 11px;cursor:pointer}
+button:hover{border-color:#1f6f6a}
+button.on{background:#1f6f6a;border-color:#1f6f6a;color:#fff}
+#views button{font-weight:500;font-size:12px;padding:5px 9px;text-align:left}
+#views b{font-size:11px;letter-spacing:.6px;color:#5c6a73;margin-top:6px}
+#views label{font-size:12px;background:rgba(255,255,255,.85);border-radius:6px;padding:4px 8px;cursor:pointer}
+#cap{position:absolute;left:12px;right:120px;bottom:10px;background:rgba(255,255,255,.9);border-radius:8px;padding:7px 12px;max-width:640px;font-size:13px}
+#cap b{display:block;font-size:14px}
+#cap small{color:#5c6a73}
+#compass{position:absolute;right:18px;bottom:18px;width:86px;height:86px;border-radius:50%;background:rgba(255,255,255,.88);border:1px solid #b9c3c9}
+#compass svg{width:100%;height:100%}
+#scale{position:absolute;right:16px;top:54px;width:118px;background:rgba(255,255,255,.9);border-radius:8px;padding:8px 10px;font-size:11px;display:none}
+#scale div{width:18px;height:150px;float:left;margin-right:8px;border:1px solid #888;
+  background:linear-gradient(#b2182b,#ef6b2d,#f6c63c,#b9e04b,#3fd08f,#28b6d8,#3b62d8)}
+#scale span{display:block;height:25px}
+body.shot .bar, body.shot #cap{display:none}
+body.shot #compass{right:12px;bottom:12px}
+#err{position:absolute;inset:0;display:none;align-items:center;justify-content:center;padding:40px;text-align:center}
+</style>
+</head>
+<body>
+<div id="wrap">
+  <canvas id="c"></canvas>
+  <div id="labels"></div>
+  <div class="bar" id="modes"></div>
+  <div class="bar" id="views"></div>
+  <div id="scale"><div></div><span>1678 m, road</span><span>1676</span><span>1674</span><span>1672</span><span>1670</span><span>1668</span><span>1665 m, lowest</span></div>
+  <div id="cap"><b id="capt"></b><span id="capd"></span><br><small>Drag to turn · scroll or pinch to zoom · right-drag (or Shift + drag) to move · true scale, nothing exaggerated</small></div>
+  <div id="compass"><svg viewBox="-50 -50 100 100"><g id="needle"><path d="M0,-36 L9,8 L0,2 L-9,8 Z" fill="#b4472f"/><text y="-38" text-anchor="middle" font-size="13" font-weight="700" fill="#b4472f">N</text></g>
+    <text y="46" text-anchor="middle" font-size="8" fill="#5c6a73">grid north</text></svg></div>
+  <div id="err">This 3D view needs WebGL, which this browser has switched off. The still pictures on the main page show the same model.</div>
+</div>
+<script>
+const M = /*MODEL*/;
+const BASE = ['road', 'parcel', 'earth'];
+const SITE = ['garden', 'trees', 'people', 'struct'];
+const closed = k => ['shell-' + k, 'terr-' + k, 'base-' + k], open = k => ['plan-' + k, 'terr-' + k, 'base-' + k];
+const MODES = {
+  house: {name: 'The house on the hill', view: 'se',
+    show: [...BASE, ...SITE, 'fin', ...closed('road'), ...closed('main'), ...closed('lower')],
+    labels: ['shell-road', 'shell-main', 'shell-lower', 'garden', 'heights'],
+    text: 'Three floors step down the hill from the road (left, top) to the garden (right, bottom). Each floor sits further east than the one above, and its roof is the terrace of the floor above.'},
+  field: {name: 'The bare field', view: 'se', colour: true,
+    show: [...BASE, 'nat', 'contours', 'slopes', 'ghost'],
+    labels: ['heights', 'slopes', 'contours'],
+    text: 'Your field as surveyed, coloured by height. It falls steeply from the road to the east, and more gently from north to south, so the lowest corner is the south-east. The thin frame is where the house will stand.'},
+  structure: {name: 'What stands on what', view: 'se',
+    show: [...BASE, 'fin', 'struct', 'ghost', ...open('lower')],
+    labels: ['earthwork'],
+    text: 'The floors above the lower floor lifted off: the columns (dark), the walls that hold the ground and the foundation walls under the suspended slabs, with their real heights. The thin frame is the house.'},
+  dig: {name: 'Digging and filling', view: 'high',
+    show: [...BASE, 'fin', 'ghost', 'natlid', 'struct'],
+    labels: ['earthwork'],
+    text: 'The house lifted off. Brown floors are dug into the hill; the flat grey, beige and green areas are built up behind walls. The see-through yellow skin is the natural ground before any work, and the thin frame is the house.'},
+  road: {name: 'Open: road level', view: 'high',
+    show: [...BASE, ...SITE, 'fin', ...open('road'), ...closed('main'), ...closed('lower')],
+    labels: ['plan-road', 'terr-road'],
+    text: 'Road level with its roof taken off: garage for two cars, front door and entrance hall, stair and lift, office, and the roof terrace over the living room.'},
+  main: {name: 'Open: main floor', view: 'high',
+    show: [...BASE, ...SITE, 'fin', ...open('main'), ...closed('lower')],
+    labels: ['plan-main', 'terr-main'],
+    text: 'Main floor with the road level taken off: kitchen, dining and living along the south and east with their terraces; master suite on the quiet north-east; pantry and wet rooms in the buried north-west.'},
+  lower: {name: 'Open: lower floor', view: 'high',
+    show: [...BASE, ...SITE, 'fin', ...open('lower')],
+    labels: ['plan-lower', 'terr-lower', 'garden'],
+    text: 'Lower floor with everything above taken off: children on the south, lounge and grandparents on the east, service rooms against the hill. Terrace, loggia and play lawn beyond.'},
+};
+const VIEWS = {
+  se: {name: 'From the south-east', yaw: 48, pitch: 24, dist: 66},
+  high: {name: 'From above, south-east', yaw: 30, pitch: 50, dist: 58},
+  south: {name: 'From the south: the west → east fall', yaw: 0, pitch: 5, dist: 60},
+  east: {name: 'From the east: the north → south fall', yaw: 90, pitch: 7, dist: 56},
+  road: {name: 'From the road', yaw: 238, pitch: 10, dist: 27, target: [2, 14.6, 7]},
+  top: {name: 'Straight down', yaw: 0, pitch: 89.5, dist: 66},
+};
+const TARGET0 = [10.5, 6.4, 9.2];
+
+const canvas = document.getElementById('c');
+const gl = canvas.getContext('webgl', {antialias: true, preserveDrawingBuffer: true});
+if (!gl) document.getElementById('err').style.display = 'flex';
+
+const VS = `attribute vec3 p;attribute vec3 n;attribute vec4 c;uniform mat4 mvp;uniform float lit;uniform float alpha;varying vec4 col;
+void main(){gl_Position=mvp*vec4(p,1.);vec3 L=normalize(vec3(.42,.80,.43));float d=dot(n,L);
+float s=.58+.42*max(d,0.)+.10*max(-d,0.)*step(n.y,-.5);col=vec4(c.rgb*mix(1.,s,lit),c.a*alpha);}`;
+const FS = `precision mediump float;varying vec4 col;void main(){gl_FragColor=col;}`;
+function shader(t, src) { const s = gl.createShader(t); gl.shaderSource(s, src); gl.compileShader(s); return s; }
+const prog = gl.createProgram();
+gl.attachShader(prog, shader(gl.VERTEX_SHADER, VS)); gl.attachShader(prog, shader(gl.FRAGMENT_SHADER, FS)); gl.linkProgram(prog); gl.useProgram(prog);
+const loc = {p: gl.getAttribLocation(prog, 'p'), n: gl.getAttribLocation(prog, 'n'), c: gl.getAttribLocation(prog, 'c'),
+  mvp: gl.getUniformLocation(prog, 'mvp'), lit: gl.getUniformLocation(prog, 'lit'), alpha: gl.getUniformLocation(prog, 'alpha')};
+
+function ramp(stops, t) {
+  t = Math.min(1, Math.max(0, t)) * (stops.length - 1);
+  const i = Math.min(stops.length - 2, Math.floor(t)), f = t - i;
+  return stops[i].map((a, k) => a + (stops[i + 1][k] - a) * f);
+}
+const RAINBOW = [[.23,.38,.85],[.16,.71,.85],[.25,.82,.56],[.73,.88,.29],[.96,.78,.24],[.94,.42,.18],[.70,.09,.17]];
+const EARTHY = [[.66,.68,.47],[.71,.71,.50],[.76,.74,.54],[.80,.76,.58]];
+function terrainColour(y, rainbow) {
+  const t = (y + M.z0 - M.zrange[0]) / (M.zrange[1] - M.zrange[0]);
+  return ramp(rainbow ? RAINBOW : EARTHY, t);
+}
+function makeBuffer(data) { const b = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, b); gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW); return b; }
+function build(batch, isLine, rainbow) {
+  const src = batch.p, nv = src.length / 3, pos = new Float32Array(src.length), nor = new Float32Array(src.length), col = new Float32Array(nv * 4);
+  for (let i = 0; i < src.length; i++) pos[i] = src[i] / 100;
+  const terrain = batch.c === 'terrain';
+  if (!isLine) for (let i = 0; i < nv; i += 3) {
+    const a = i * 3, ux = pos[a + 3] - pos[a], uy = pos[a + 4] - pos[a + 1], uz = pos[a + 5] - pos[a + 2];
+    const vx = pos[a + 6] - pos[a], vy = pos[a + 7] - pos[a + 1], vz = pos[a + 8] - pos[a + 2];
+    let nx = uy * vz - uz * vy, ny = uz * vx - ux * vz, nz = ux * vy - uy * vx; const l = Math.hypot(nx, ny, nz) || 1;
+    for (let k = 0; k < 3; k++) { nor[a + k * 3] = nx / l; nor[a + k * 3 + 1] = ny / l; nor[a + k * 3 + 2] = nz / l; }
+  }
+  for (let i = 0; i < nv; i++) {
+    const c = terrain ? terrainColour(pos[i * 3 + 1], rainbow) : batch.c;
+    col[i * 4] = c[0]; col[i * 4 + 1] = c[1]; col[i * 4 + 2] = c[2]; col[i * 4 + 3] = c.length > 3 ? c[3] : 1;
+  }
+  return {g: batch.g, n: nv, pos: makeBuffer(pos), nor: makeBuffer(nor), col: makeBuffer(col), terrain,
+    clear: !terrain && batch.c.length > 3 && batch.c[3] < 1};
+}
+let tris = [], trisRainbow = [], lines = [];
+if (gl) {
+  tris = M.tris.map(b => build(b, false, false));
+  trisRainbow = M.tris.map((b, i) => b.c === 'terrain' ? build(b, false, true) : tris[i]);
+  lines = M.lines.map(b => build(b, true, false));
+}
+
+// ---- camera
+const cam = {yaw: 48, pitch: 24, dist: 62, target: TARGET0.slice()};
+let goal = null;
+function mul(a, b) { const o = new Float32Array(16); for (let i = 0; i < 4; i++) for (let j = 0; j < 4; j++) { let s = 0; for (let k = 0; k < 4; k++) s += a[k * 4 + j] * b[i * 4 + k]; o[i * 4 + j] = s; } return o; }
+function persp(fov, asp, n, f) { const t = 1 / Math.tan(fov / 2), o = new Float32Array(16); o[0] = t / asp; o[5] = t; o[10] = (f + n) / (n - f); o[11] = -1; o[14] = 2 * f * n / (n - f); return o; }
+function eye() { const y = cam.yaw * Math.PI / 180, p = cam.pitch * Math.PI / 180;
+  return [cam.target[0] + cam.dist * Math.cos(p) * Math.sin(y), cam.target[1] + cam.dist * Math.sin(p), cam.target[2] + cam.dist * Math.cos(p) * Math.cos(y)]; }
+function basis() { const e = eye(), t = cam.target; let f = [t[0] - e[0], t[1] - e[1], t[2] - e[2]]; const fl = Math.hypot(...f); f = f.map(x => x / fl);
+  let r = [-f[2], 0, f[0]]; const rl = Math.hypot(...r) || 1; r = r.map(x => x / rl);
+  const u = [r[1] * f[2] - r[2] * f[1], r[2] * f[0] - r[0] * f[2], r[0] * f[1] - r[1] * f[0]]; return {e, f, r, u}; }
+function viewMat() { const {e, f, r, u} = basis(); const o = new Float32Array(16);
+  o[0] = r[0]; o[4] = r[1]; o[8] = r[2]; o[12] = -(r[0] * e[0] + r[1] * e[1] + r[2] * e[2]);
+  o[1] = u[0]; o[5] = u[1]; o[9] = u[2]; o[13] = -(u[0] * e[0] + u[1] * e[1] + u[2] * e[2]);
+  o[2] = -f[0]; o[6] = -f[1]; o[10] = -f[2]; o[14] = f[0] * e[0] + f[1] * e[1] + f[2] * e[2]; o[15] = 1; return o; }
+
+// ---- state
+const state = {mode: 'house', colour: false, names: true, contours: false};
+let dirty = true, W = 1, H = 1, mvp = null;
+const labelBox = document.getElementById('labels');
+const labelEls = M.labels.map(l => { const d = document.createElement('div'); d.className = 'lb ' + l.k; d.innerHTML = l.t + (l.s ? '<i>' + l.s + '</i>' : ''); labelBox.appendChild(d); return d; });
+
+function resize() { const dpr = Math.min(2, window.devicePixelRatio || 1); W = canvas.clientWidth; H = canvas.clientHeight;
+  canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr); dirty = true; }
+window.addEventListener('resize', resize);
+
+function bind(b) { gl.bindBuffer(gl.ARRAY_BUFFER, b.pos); gl.enableVertexAttribArray(loc.p); gl.vertexAttribPointer(loc.p, 3, gl.FLOAT, false, 0, 0);
+  gl.bindBuffer(gl.ARRAY_BUFFER, b.nor); gl.enableVertexAttribArray(loc.n); gl.vertexAttribPointer(loc.n, 3, gl.FLOAT, false, 0, 0);
+  gl.bindBuffer(gl.ARRAY_BUFFER, b.col); gl.enableVertexAttribArray(loc.c); gl.vertexAttribPointer(loc.c, 4, gl.FLOAT, false, 0, 0); }
+
+function draw() {
+  if (goal) { let done = true;
+    for (const k of ['yaw', 'pitch', 'dist']) { let d = goal[k] - cam[k]; if (k === 'yaw') d = ((d + 540) % 360) - 180; if (Math.abs(d) > .05) { cam[k] += d * .18; done = false; } else cam[k] = goal[k]; }
+    for (let i = 0; i < 3; i++) { const d = goal.target[i] - cam.target[i]; if (Math.abs(d) > .01) { cam.target[i] += d * .18; done = false; } }
+    if (done) goal = null; dirty = true; }
+  if (!dirty || !gl) return requestAnimationFrame(draw);
+  dirty = false;
+  const m = MODES[state.mode], show = new Set(m.show), ghost = new Set(m.ghost || []);
+  if (state.contours) show.add('contours');
+  gl.viewport(0, 0, canvas.width, canvas.height); gl.clearColor(0, 0, 0, 0); gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+  gl.enable(gl.DEPTH_TEST); gl.depthFunc(gl.LEQUAL);
+  mvp = mul(persp(30 * Math.PI / 180, W / H, 1, 400), viewMat()); gl.uniformMatrix4fv(loc.mvp, false, mvp);
+  const set = state.colour ? trisRainbow : tris;
+  gl.enable(gl.POLYGON_OFFSET_FILL); gl.polygonOffset(1, 1); gl.disable(gl.BLEND); gl.depthMask(true); gl.uniform1f(loc.lit, 1); gl.uniform1f(loc.alpha, 1);
+  for (const b of set) if (show.has(b.g) && !b.clear) { bind(b); gl.drawArrays(gl.TRIANGLES, 0, b.n); }
+  gl.disable(gl.POLYGON_OFFSET_FILL); gl.uniform1f(loc.lit, 0); gl.enable(gl.BLEND); gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+  for (const b of lines) if (show.has(b.g)) { bind(b); gl.drawArrays(gl.LINES, 0, b.n); }
+  gl.depthMask(false); gl.uniform1f(loc.lit, 1);
+  for (const b of set) if (show.has(b.g) && b.clear) { bind(b); gl.drawArrays(gl.TRIANGLES, 0, b.n); }
+  gl.uniform1f(loc.alpha, .28);
+  for (const b of set) if (ghost.has(b.g)) { bind(b); gl.drawArrays(gl.TRIANGLES, 0, b.n); }
+  gl.depthMask(true);
+  // labels
+  const want = new Set(state.names ? m.labels : []); if (state.contours && state.names) want.add('contours');
+  M.labels.forEach((l, i) => { const el = labelEls[i]; if (!want.has(l.g)) { el.style.display = 'none'; return; }
+    const p = l.p, x = mvp[0] * p[0] + mvp[4] * p[1] + mvp[8] * p[2] + mvp[12], y = mvp[1] * p[0] + mvp[5] * p[1] + mvp[9] * p[2] + mvp[13],
+      w = mvp[3] * p[0] + mvp[7] * p[1] + mvp[11] * p[2] + mvp[15];
+    if (w <= 0) { el.style.display = 'none'; return; }
+    el.style.display = 'block'; el.style.left = ((x / w + 1) / 2 * W).toFixed(1) + 'px'; el.style.top = ((1 - y / w) / 2 * H).toFixed(1) + 'px'; });
+  // compass: grid north as seen from this camera
+  const {r, u} = basis(), nx = M.north[0], nz = M.north[1];
+  const sx = r[0] * nx + r[2] * nz, sy = u[0] * nx + u[2] * nz;
+  document.getElementById('needle').setAttribute('transform', 'rotate(' + (Math.atan2(sx, sy) * 180 / Math.PI).toFixed(1) + ')');
+  requestAnimationFrame(draw);
+}
+
+// ---- controls
+function setMode(k, keepView) { state.mode = k; const m = MODES[k]; state.colour = !!m.colour;
+  document.querySelectorAll('#modes button').forEach(b => b.classList.toggle('on', b.dataset.k === k));
+  document.getElementById('capt').textContent = m.name; document.getElementById('capd').textContent = m.text;
+  document.getElementById('colour').checked = state.colour; document.getElementById('scale').style.display = state.colour ? 'block' : 'none';
+  if (!keepView) setView(m.view); dirty = true; }
+function setView(k, jump) { const v = VIEWS[k]; goal = {yaw: v.yaw, pitch: v.pitch, dist: v.dist * Math.max(1, 1.25 * H / W), target: (v.target || TARGET0).slice()};
+  if (jump) { Object.assign(cam, goal); cam.target = goal.target.slice(); goal = null; } dirty = true; }
+const modesEl = document.getElementById('modes'), viewsEl = document.getElementById('views');
+for (const k in MODES) { const b = document.createElement('button'); b.textContent = MODES[k].name; b.dataset.k = k; b.onclick = () => setMode(k); modesEl.appendChild(b); }
+viewsEl.insertAdjacentHTML('beforeend', '<b>LOOK FROM</b>');
+for (const k in VIEWS) { const b = document.createElement('button'); b.textContent = VIEWS[k].name; b.onclick = () => setView(k); viewsEl.appendChild(b); }
+viewsEl.insertAdjacentHTML('beforeend', '<b>SHOW</b><label><input type="checkbox" id="colour"> Ground coloured by height</label>' +
+  '<label><input type="checkbox" id="contours"> Contour lines (1 m)</label><label><input type="checkbox" id="names" checked> Names</label>');
+document.getElementById('colour').onchange = e => { state.colour = e.target.checked; document.getElementById('scale').style.display = state.colour ? 'block' : 'none'; dirty = true; };
+document.getElementById('contours').onchange = e => { state.contours = e.target.checked; dirty = true; };
+document.getElementById('names').onchange = e => { state.names = e.target.checked; dirty = true; };
+
+const ptrs = new Map(); let pinch = 0;
+canvas.addEventListener('contextmenu', e => e.preventDefault());
+canvas.addEventListener('pointerdown', e => { canvas.setPointerCapture(e.pointerId); ptrs.set(e.pointerId, [e.clientX, e.clientY, e.button, e.shiftKey]); goal = null; });
+canvas.addEventListener('pointerup', e => { ptrs.delete(e.pointerId); pinch = 0; });
+canvas.addEventListener('pointercancel', e => { ptrs.delete(e.pointerId); pinch = 0; });
+canvas.addEventListener('pointermove', e => { const p = ptrs.get(e.pointerId); if (!p) return; const dx = e.clientX - p[0], dy = e.clientY - p[1]; p[0] = e.clientX; p[1] = e.clientY;
+  if (ptrs.size === 2) { const [a, b] = [...ptrs.values()], d = Math.hypot(a[0] - b[0], a[1] - b[1]); if (pinch) cam.dist = Math.min(160, Math.max(8, cam.dist * pinch / d)); pinch = d; pan(dx / 2, dy / 2); }
+  else if (p[2] === 2 || p[3]) pan(dx, dy);
+  else { cam.yaw = (cam.yaw - dx * .35 + 360) % 360; cam.pitch = Math.min(89.5, Math.max(-5, cam.pitch + dy * .3)); }
+  dirty = true; });
+function pan(dx, dy) { const {r, u} = basis(), k = cam.dist * .0011; for (let i = 0; i < 3; i++) cam.target[i] += (-r[i] * dx + u[i] * dy) * k; }
+canvas.addEventListener('wheel', e => { e.preventDefault(); goal = null; cam.dist = Math.min(160, Math.max(8, cam.dist * Math.exp(e.deltaY * .0012))); dirty = true; }, {passive: false});
+
+// ---- start: #mode=house&view=se&shot=1&names=0&colour=1
+const args = Object.fromEntries(new URLSearchParams(location.hash.slice(1)));
+if (args.shot) document.body.classList.add('shot');
+resize();
+setMode(MODES[args.mode] ? args.mode : 'house', true);
+if (args.colour !== undefined) { state.colour = args.colour === '1'; document.getElementById('colour').checked = state.colour; document.getElementById('scale').style.display = state.colour ? 'block' : 'none'; }
+if (args.names === '0') { state.names = false; document.getElementById('names').checked = false; }
+if (args.contours === '1') { state.contours = true; document.getElementById('contours').checked = true; }
+setView(VIEWS[args.view] ? args.view : MODES[state.mode].view, true);
+requestAnimationFrame(draw);
+</script>
+</body>
+</html>
